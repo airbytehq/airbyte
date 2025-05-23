@@ -7,11 +7,13 @@ import enum
 import logging
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, Final, List, Mapping, Optional
+from typing import Any, Callable, Dict, Final, List, Mapping, Optional, Union
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -323,3 +325,48 @@ class EagerlyCachedStreamState:
             return func(*args, **kwargs)
 
         return decorator
+
+
+class LimitReducingErrorHandler(HttpStatusErrorHandler):
+    """Custom error handler that reduces the request limit on 500 errors and retries.
+    The limit is halved on each retry until it reaches 1, while still applying exponential backoff.
+    """
+
+    def __init__(self, initial_limit: int, logger: logging.Logger, max_retries: int, error_mapping: dict):
+        super().__init__(logger=logger, max_retries=max_retries, error_mapping=error_mapping)
+        self.original_limit = initial_limit
+        self.current_limit = initial_limit
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response):
+            response = response_or_exception
+            if response.status_code == 200:
+                # Reset limit to original value on success
+                self.current_limit = self.original_limit
+                return super().interpret_response(response_or_exception)
+            elif response.status_code == 500:
+                if self.current_limit > 1:
+                    new_limit = max(1, self.current_limit // 2)
+                    self.current_limit = new_limit
+                    new_url = self.update_limit_in_url(response.request.url, new_limit)
+                    response.request.url = new_url
+                    return ErrorResolution(
+                        response_action=ResponseAction.RETRY,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Server error 500: Reduced limit to {new_limit}",
+                    )
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.transient_error,
+                    error_message="Persistent 500 error after reducing limit to 1",
+                )
+        return super().interpret_response(response_or_exception)
+
+    def update_limit_in_url(self, url: str, new_limit: int) -> str:
+        """Update the 'limit' parameter in the URL query string."""
+        parsed = urlparse(url)
+        query = parse_qs(parsed.query)
+        query["limit"] = [str(new_limit)]
+        new_query = urlencode(query, doseq=True)
+        updated_url = urlunparse(parsed._replace(query=new_query))
+        return updated_url

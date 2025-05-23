@@ -57,9 +57,6 @@ class ShopifyStream(HttpStream, ABC):
 
     @property
     def default_filter_field_value(self) -> Union[int, str]:
-        # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
-        # but many other use `str` values for this, we determine what to use based on `filter_field` value
-        # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
         return 0 if self.filter_field == "since_id" else (self.config.get("start_date") or "")
 
     def path(self, **kwargs) -> str:
@@ -73,40 +70,45 @@ class ShopifyStream(HttpStream, ABC):
             return None
 
     def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
+        params = {"limit": self.limit}  # Use static limit; handler adjusts if needed
         if next_page_token:
-            params.update(**next_page_token)
+            temp_params = dict(next_page_token)
+            temp_params.pop("limit", None)  # Use self.limit, not token's limit
+            params.update(temp_params)
         else:
             params["order"] = f"{self.order_field} asc"
-            params[self.filter_field] = self.default_filter_field_value
+            stream_state = kwargs.get("stream_state")
+            if stream_state is not None:
+                params[self.filter_field] = stream_state.get(self.filter_field, self.default_filter_field_value)
+            else:
+                params[self.filter_field] = self.default_filter_field_value
         return params
 
-    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code is requests.codes.OK:
+        if response.status_code == requests.codes.OK:
             try:
                 json_response = response.json()
-                records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+                records = json_response.get(self.data_field, []) if self.data_field else json_response
                 yield from self.produce_records(records)
-            except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
+            except requests.exceptions.JSONDecodeError as e:
+                error_msg = (
+                    f"Failed to decode JSON from response (status code: {response.status_code}, "
+                    f"content length: {len(response.content)}). JSONDecodeError at position {e.pos}: {e.msg}"
+                )
+                self.logger.warning(error_msg)
                 yield {}
+        else:
+            self.logger.warning(f"Non-OK response: {response.status_code}")
+            yield from []
 
     def produce_records(
         self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None
     ) -> Iterable[Mapping[str, Any]]:
-        # transform method was implemented according to issue 4841
-        # Shopify API returns price fields as a string and it should be converted to number
-        # this solution designed to convert string into number, but in future can be modified for general purpose
         if isinstance(records, dict):
-            # for cases when we have a single record as dict
-            # add shop_url to the record to make querying easy
             records["shop_url"] = self.config["shop"]
             yield self._transformer.transform(records)
         else:
-            # for other cases
             for record in records:
-                # add shop_url to the record to make querying easy
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 

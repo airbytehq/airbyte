@@ -31,9 +31,12 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (
@@ -92,6 +95,17 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         if not next_page_token:
             params["status"] = "any"
         return params
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        known_errors = ShopifyNonRetryableErrors(self.name)
+        error_mapping = DEFAULT_ERROR_MAPPING | known_errors
+        error_handler = LimitReducingErrorHandler(
+            initial_limit=self.limit,  # Use the stream's limit (e.g., 250)
+            logger=self.logger,
+            max_retries=5,
+            error_mapping=error_mapping,
+        )
+        return error_handler
 
 
 class Disputes(IncrementalShopifyStream):
