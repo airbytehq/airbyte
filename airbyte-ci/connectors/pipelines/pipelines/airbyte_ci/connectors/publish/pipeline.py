@@ -56,15 +56,27 @@ class CheckConnectorImageDoesNotExist(Step):
             crane_ls_stdout = await crane_ls.stdout()
         except ExecError as e:
             if "NAME_UNKNOWN" in e.stderr:
-                return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"The docker repository {docker_repository} does not exist. Image must be pre-published before running publish pipeline.")
+                return StepResult(
+                    step=self,
+                    status=StepStatus.FAILURE,
+                    stderr=f"The docker repository {docker_repository} does not exist. Image must be pre-published before running publish pipeline.",
+                )
             else:
                 return StepResult(step=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout)
         else:  # The docker repo exists and ls was successful
             existing_tags = crane_ls_stdout.split("\n")
             docker_tag_already_exists = docker_tag in existing_tags
             if docker_tag_already_exists:
-                return StepResult(step=self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"No manifest found for {self.context.docker_image}. Image must be pre-published before running publish pipeline.")
+                return StepResult(
+                    step=self,
+                    status=StepStatus.SKIPPED,
+                    stderr=f"{self.context.docker_image} already exists.",
+                )
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=f"No manifest found for {self.context.docker_image}. Image must be pre-published before running publish pipeline.",
+            )
 
 
 class CheckPythonRegistryPackageDoesNotExist(Step):
@@ -546,25 +558,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if check_connector_image_results.status is StepStatus.FAILURE:
                 return create_connector_report(results, context)
 
-            # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
-            # We also need to upload the spec to the spec cache bucket.
-            if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
-                context.logger.info(
-                    "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
-                )
-                already_published_connector = context.dagger_client.container().from_(context.docker_image)
-                upload_to_spec_cache_results = await upload_spec_to_cache_step.run(already_published_connector)
-                results.append(upload_to_spec_cache_results)
-                if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
-                    return create_connector_report(results, context)
 
-                upload_sbom_results = await upload_sbom_step.run()
-                results.append(upload_sbom_results)
-                if upload_sbom_results.status is not StepStatus.SUCCESS:
-                    return create_connector_report(results, context)
-
-                metadata_upload_results = await metadata_upload_step.run()
-                results.append(metadata_upload_results)
 
             # For pre-releases, we need to handle them separately
             if check_connector_image_results.status is StepStatus.SUCCESS and context.pre_release:

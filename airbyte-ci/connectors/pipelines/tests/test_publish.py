@@ -45,11 +45,11 @@ class TestCheckConnectorImageDoesNotExists:
             step_result = await step.run()
             assert step_result.status == StepStatus.SKIPPED
 
-    async def test_run_success_when_already_published(self, publish_context):
+    async def test_run_failure_when_not_published(self, publish_context):
         publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
         step = publish_pipeline.CheckConnectorImageDoesNotExist(publish_context)
         step_result = await step.run()
-        assert step_result.status == StepStatus.SUCCESS
+        assert step_result.status == StepStatus.FAILURE
 
 
 class TestUploadSpecToCache:
@@ -277,92 +277,38 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
         )
 
 
-@pytest.mark.parametrize(
-    "pre_release, build_step_status, push_step_status, pull_step_status, upload_to_spec_cache_step_status, metadata_upload_step_status",
-    [
-        (False, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS),
-        (False, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.FAILURE),
-        (False, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.FAILURE, None),
-        (False, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.FAILURE, None, None),
-        (False, StepStatus.SUCCESS, StepStatus.FAILURE, None, None, None),
-        (False, StepStatus.FAILURE, None, None, None, None),
-        (True, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS),
-    ],
-)
-async def test_run_connector_publish_pipeline_when_image_does_not_exist(
-    mocker,
-    pre_release,
-    build_step_status,
-    push_step_status,
-    pull_step_status,
-    upload_to_spec_cache_step_status,
-    metadata_upload_step_status,
-):
-    """We check that the full pipeline is executed as expected when the connector image does not exist and the metadata validation passed."""
+async def test_run_connector_publish_pipeline_when_image_does_not_exist(mocker):
+    """We check that the pipeline fails early when the connector image does not exist."""
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
+    
     publish_pipeline.MetadataValidation.return_value.run.return_value = mocker.Mock(
         name="metadata_validation_result", status=StepStatus.SUCCESS
     )
+    
     publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
-        name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
+        name="check_connector_image_does_not_exist_result", status=StepStatus.FAILURE
     )
 
-    # have output.values return []
-    built_connector_platform = mocker.Mock()
-    built_connector_platform.values.return_value = ["linux/amd64"]
-
-    publish_pipeline.steps.run_connector_build.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output=built_connector_platform
-    )
-
-    publish_pipeline.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
-        name="push_connector_image_to_registry_result", status=push_step_status
-    )
-
-    publish_pipeline.PullConnectorImageFromRegistry.return_value.run.return_value = mocker.Mock(
-        name="pull_connector_image_from_registry_result", status=pull_step_status
-    )
-
-    publish_pipeline.UploadSpecToCache.return_value.run.return_value = mocker.Mock(
-        name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status
-    )
-    publish_pipeline.MetadataUpload.return_value.run.return_value = mocker.Mock(
-        name="metadata_upload_result", status=metadata_upload_step_status
-    )
-
-    context = mocker.MagicMock(pre_release=pre_release, rollout_mode=RolloutMode.PUBLISH)
+    context = mocker.MagicMock(pre_release=False, rollout_mode=RolloutMode.PUBLISH)
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
 
-    steps_to_run = [
-        publish_pipeline.MetadataValidation.return_value.run,
-        publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run,
-        publish_pipeline.steps.run_connector_build,
-        publish_pipeline.PushConnectorImageToRegistry.return_value.run,
-        publish_pipeline.PullConnectorImageFromRegistry.return_value.run,
-    ]
-
-    for i, step_to_run in enumerate(steps_to_run):
-        if step_to_run.return_value.status is StepStatus.FAILURE or i == len(steps_to_run) - 1:
-            assert len(report.steps_results) == len(context.report.steps_results)
-
-            previous_steps = steps_to_run[:i]
-            for _, step_ran in enumerate(previous_steps):
-                step_ran.assert_called_once()
-                step_ran.return_value
-
-            remaining_steps = steps_to_run[i + 1 :]
-            for step_to_run in remaining_steps:
-                step_to_run.assert_not_called()
-            break
-    if build_step_status is StepStatus.SUCCESS:
-        publish_pipeline.PushConnectorImageToRegistry.return_value.run.assert_called_once_with(["linux/amd64"])
-    else:
-        publish_pipeline.PushConnectorImageToRegistry.return_value.run.assert_not_called()
-        publish_pipeline.PullConnectorImageFromRegistry.return_value.run.assert_not_called()
-        publish_pipeline.UploadSpecToCache.return_value.run.assert_not_called()
-        publish_pipeline.MetadataUpload.return_value.run.assert_not_called()
+    publish_pipeline.MetadataValidation.return_value.run.assert_called_once()
+    publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.assert_called_once()
+    
+    for module, to_mock in STEPS_TO_PATCH:
+        if to_mock not in ["MetadataValidation", "CheckConnectorImageDoesNotExist"]:
+            getattr(module, to_mock).return_value.run.assert_not_called()
+    
+    assert (
+        report.steps_results
+        == context.report.steps_results
+        == [
+            publish_pipeline.MetadataValidation.return_value.run.return_value,
+            publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.return_value,
+        ]
+    )
 
 
 @pytest.mark.parametrize(
