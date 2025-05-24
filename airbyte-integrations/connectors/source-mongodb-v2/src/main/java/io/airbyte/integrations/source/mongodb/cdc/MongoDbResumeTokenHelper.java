@@ -11,11 +11,10 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
@@ -55,6 +54,41 @@ public class MongoDbResumeTokenHelper {
       return eventStreamCursor.getResumeToken();
     }
   }
+
+  public static BsonDocument getMostRecentResumeTokenForDatabases(final MongoClient mongoClient,
+                                                      final List<String> databaseNames,
+                                                      final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+
+    // databaseNames and streamsByDatabase must be the same length
+    List<Bson> orFilters = new ArrayList<>();
+    for (int i = 0; i < databaseNames.size(); i++) {
+      String dbName = databaseNames.get(i);
+      List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
+      List<String> collectionNames = streams.stream()
+              .map(s -> s.getStream().getName())
+              .toList();
+      // Match documents where ns.db == dbName and ns.coll in collectionNames
+      orFilters.add(Filters.and(
+              Filters.eq("ns.db", dbName),
+              Filters.in("ns.coll", collectionNames)
+      ));
+    }
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
+      /*
+       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+       * the call to getResumeToken() will return null!
+       */
+      eventStreamCursor.tryNext();
+      return eventStreamCursor.getResumeToken();
+    }
+  }
+
+
+
+
 
   /**
    * Extracts the timestamp from a Debezium MongoDB change event.

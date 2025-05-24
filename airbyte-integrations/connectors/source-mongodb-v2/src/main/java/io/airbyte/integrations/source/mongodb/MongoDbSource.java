@@ -211,9 +211,8 @@ public class MongoDbSource extends BaseConnector implements Source {
 
     for (String databaseName : sourceConfig.getDatabaseNames()) {
       List<ConfiguredAirbyteStream> databaseStreams = streams.stream()
-          .filter(stream -> stream.getStream().getName().startsWith(databaseName + "."))
+              .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
           .toList();
-
       if (!databaseStreams.isEmpty()) {
         LOGGER.info("Processing full refresh for database: {} with {} streams", databaseName, databaseStreams.size());
         fullRefreshIterators.addAll(initialSnapshotHandler.getIterators(

@@ -35,7 +35,7 @@ public class MongoDbCdcProperties {
 
     props.setProperty(CONNECTOR_CLASS_KEY, CONNECTOR_CLASS_VALUE);
     props.setProperty(SNAPSHOT_MODE_KEY, SNAPSHOT_MODE_VALUE);
-    props.setProperty(CAPTURE_SCOPE_KEY, CAPTURE_SCOPE_VALUE);
+    //props.setProperty(CAPTURE_SCOPE_KEY, CAPTURE_SCOPE_VALUE);
     props.setProperty(CAPTURE_MODE_KEY, CAPTURE_MODE_VALUE);
     props.setProperty(HEARTBEAT_INTERVAL_KEY, HEARTBEAT_FREQUENCY_MS);
     props.setProperty(TOMBSTONE_ON_DELETE_KEY, TOMBSTONE_ON_DELETE_VALUE);

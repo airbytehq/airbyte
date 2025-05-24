@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
@@ -25,16 +26,9 @@ import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbPartition;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.pipeline.spi.Partition;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+
+import java.util.*;
+
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
@@ -128,6 +122,50 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       return false;
     }
   }
+
+  public boolean isValidResumeToken(final BsonDocument savedOffset,
+                                    final MongoClient mongoClient,
+                                    final List<String> databaseNames,
+                                    final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+    if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
+      return true;
+    }
+
+    // databaseNames and streamsByDatabase must be the same length
+    List<Bson> orFilters = new ArrayList<>();
+    for (int i = 0; i < databaseNames.size(); i++) {
+      String dbName = databaseNames.get(i);
+      List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
+      List<String> collectionNames = streams.stream()
+              .map(s -> s.getStream().getName())
+              .toList();
+      // Match documents where ns.db == dbName and ns.coll in collectionNames
+      orFilters.add(Filters.and(
+              Filters.eq("ns.db", dbName),
+              Filters.in("ns.coll", collectionNames)
+      ));
+    }
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+
+    // Attempt to start the stream after the saved offset.
+    eventStream.resumeAfter(savedOffset);
+    try (final var ignored = eventStream.cursor()) {
+      LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
+                      + "up-to-date streams.",
+              ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
+      return true;
+    } catch (final MongoCommandException | MongoChangeStreamException e) {
+      LOGGER.info("Exception : {}", e.getMessage());
+      LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
+              ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
+      return false;
+    }
+  }
+
+
+
 
   /**
    * Saves and retrieves the Debezium offset data. This method writes the provided CDC state to the
