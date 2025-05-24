@@ -32,7 +32,7 @@ While it is not recommended to build Docker images from scratch, it can be usefu
 See the following guides for more information on building custom Airbyte Docker images:
 
 - [Using Custom Connectors](../platform/operator-guides/using-custom-connectors)
-- [Airbyte Docker Protocol](../platform/understanding-airbyte/airbyte-protocol-docker.md)
+- [Airbyte Docker Protocol](../platform/understanding-airbyte/airbyte-protocol-docker)
 
 :::
 
