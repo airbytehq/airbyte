@@ -314,3 +314,5 @@ class TestSuiteReportStream(TestReportStream):
         first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+0000"
         first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+0000"
         assert output.most_recent_state.stream_state.__dict__ == first_read_state
+
+    # todo: add test for dedup, two user that shared an account; only records for that shared account once
