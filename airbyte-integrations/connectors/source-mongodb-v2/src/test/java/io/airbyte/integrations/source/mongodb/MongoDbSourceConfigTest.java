@@ -32,7 +32,7 @@ class MongoDbSourceConfigTest {
   void testCreatingMongoDbSourceConfig() {
     final String authSource = "auth";
     final Integer checkpointInterval = 1;
-    final String database = "database";
+    final String database = "databases";
     final Integer queueSize = 1;
     final String password = "password";
     final Integer sampleSize = 5000;
@@ -53,7 +53,7 @@ class MongoDbSourceConfigTest {
     assertNotNull(sourceConfig);
     assertEquals(authSource, sourceConfig.getAuthSource());
     assertEquals(checkpointInterval, sourceConfig.getCheckpointInterval());
-    assertEquals(database, sourceConfig.getDatabaseName());
+    assertEquals(database, sourceConfig.getDatabaseNames().get(0));
     assertEquals(password, sourceConfig.getPassword());
     assertEquals(OptionalInt.of(queueSize), sourceConfig.getQueueSize());
     assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());
@@ -74,7 +74,6 @@ class MongoDbSourceConfigTest {
     assertNotNull(sourceConfig);
     assertEquals(DEFAULT_AUTH_SOURCE, sourceConfig.getAuthSource());
     assertEquals(CHECKPOINT_INTERVAL, sourceConfig.getCheckpointInterval());
-    assertEquals(null, sourceConfig.getDatabaseName());
     assertEquals(null, sourceConfig.getPassword());
     assertEquals(OptionalInt.empty(), sourceConfig.getQueueSize());
     assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());

@@ -95,8 +95,6 @@ public class MongoDbCdcInitializer {
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
     final BsonDocument initialResumeToken =
-        // MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseNames.get(0),
-        // incrementalOnlyStreamsCatalog);
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
