@@ -73,3 +73,7 @@ This is the directory to which temporary files will be mounted, including the `c
 The connector code must only write only to directories permitted within the connector's base image.
 
 For a list of permitted write directories, please consult the base image definitions in the [`airbytehq/airbyte` repo](https://github.com/airbytehq/airbyte), under the [`docker-images` directory](https://github.com/airbytehq/airbyte/tree/master/docker-images).
+
+## Must be an `amd64` or multi-arch image
+
+To run on Airbyte Platform, the image bust be valid for `amd64`. Since most developers contribute from (ARM-based) Mac M-series laptops, we recommend creating a multi-arch image that covers both `arm64/amd64` so that the same image tags work on both ARM and AMD runtimes.
