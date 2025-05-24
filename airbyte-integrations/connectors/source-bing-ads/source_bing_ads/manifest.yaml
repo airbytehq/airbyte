@@ -273,7 +273,7 @@ definitions:
               {{ time_period }}
       - type: AddFields
         fields:
-          $ref: "#/definitions/transformations/ad_performance_report_transformations"
+          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: RemoveFields
         field_pointers:
           - ["TopImpressionRatePercent"]
@@ -388,6 +388,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
   ad_performance_report_weekly_stream:
     type: DeclarativeStream
@@ -497,6 +500,9 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
@@ -610,6 +616,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
   basic_async_retriever:
     type: AsyncRetriever
@@ -714,7 +723,20 @@ definitions:
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
   transformations:
+    # not used in hourly stream
     ad_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {{ record.get('AbsoluteTopImpressionRatePercent') | replace('%', '') | float if record.get('AbsoluteTopImpressionRatePercent') | default('') | trim else none }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {{ record.get('TopImpressionRatePercent') | replace('%', '') | float if record.get('TopImpressionRatePercent') | default('') | trim else none }}
+    # used in all ad performance streams
+    ad_performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
           - AccountId
@@ -745,11 +767,14 @@ definitions:
           - AllReturnOnAdSpend
         value: |
           {{ record.get('AllReturnOnAdSpend') | float if record.get('AllReturnOnAdSpend') | default('') | trim else none }}
+        # to remove the comma, specifically found for the AllRevenue field, but adding to the other revenue fields as well.
+        # ref: https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#formatversion
+      # format 2.0 is supposed to set things like 3,071.00 to 3071.00 but this is not always the case so im adding a "replace"
       - type: AddedFieldDefinition
         path:
           - AllRevenue
         value: |
-          {{ record.get('AllRevenue') | float if record.get('AllRevenue') | default('') | trim else none }}
+          {{ record.get('AllRevenue') | replace(',', '') | float if record.get('AllRevenue') | default('') | trim else none }}
       - type: AddedFieldDefinition
         path:
           - Assists
@@ -814,7 +839,7 @@ definitions:
         path:
           - Revenue
         value: |
-          {{ record.get('Revenue') | float if record.get('Revenue') | default('') | trim else none }}
+          {{ record.get('Revenue') | replace(',', '') | float if record.get('Revenue') | default('') | trim else none }}
       - type: AddedFieldDefinition
         path:
           - Spend
@@ -825,7 +850,7 @@ definitions:
           - ViewThroughConversions
         value: |
           {{ record.get('ViewThroughConversions') | int if record.get('ViewThroughConversions') | default('') | trim else none }}
-      # next fields didn't appear in SOAP api if no data was available, but we get empty string in rest version
+
       - type: AddedFieldDefinition
         path:
           - AllCostPerConversion
@@ -835,7 +860,7 @@ definitions:
         path:
           - AllRevenuePerConversion
         value: |
-          {{ record.get('AllRevenuePerConversion') | float if record.get('AllRevenuePerConversion') | default('') | trim else none }}
+          {{ record.get('AllRevenuePerConversion') | replace(',', '') | float if record.get('AllRevenuePerConversion') | default('') | trim else none }}
       - type: AddedFieldDefinition
         path:
           - CostPerAssist
@@ -850,12 +875,12 @@ definitions:
         path:
           - RevenuePerAssist
         value: |
-          {{ record.get('RevenuePerAssist') | float if record.get('RevenuePerAssist') | default('') | trim else none }}
+          {{ record.get('RevenuePerAssist') | replace(',', '') | float if record.get('RevenuePerAssist') | default('') | trim else none }}
       - type: AddedFieldDefinition
         path:
           - RevenuePerConversion
         value: |
-          {{ record.get('RevenuePerConversion') | float if record.get('RevenuePerConversion') | default('') | trim else none }}
+          {{ record.get('RevenuePerConversion') | replace(',', '') | float if record.get('RevenuePerConversion') | default('') | trim else none }}
       - type: AddedFieldDefinition
         path:
           - ViewThroughConversionsQualified
