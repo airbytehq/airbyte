@@ -702,7 +702,11 @@ definitions:
     datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config['reports_start_date'] }}"
+      datetime: |
+        {%- set last_year = now_utc() - duration('P1Y') -%}
+        {%- set default_date = last_year.strftime('%Y-01-01') -%}
+        {%- set start_date = config.get('reports_start_date', default_date) -%}
+        {{ start_date }}
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
@@ -716,7 +720,11 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config['reports_start_date'] }}"
+      datetime: |
+        {%- set last_year = now_utc() - duration('P1Y') -%}
+        {%- set default_date = last_year.strftime('%Y-01-01') -%}
+        {%- set start_date = config.get('reports_start_date', default_date) -%}
+        {{ start_date }}
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime

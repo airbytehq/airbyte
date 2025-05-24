@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import re
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Optional
 
@@ -289,3 +290,27 @@ class TestSuiteReportStream(TestReportStream):
         last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
         assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"
+
+    @freeze_time("2024-05-06")
+    def test_no_config_start_date(self):
+        """
+        If the field reports_start_date is blank, Airbyte will replicate all data from previous and current calendar years.
+        """
+        # here we mock the report start date to be the first day of the year 2023
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AdPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AdPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "CampaignId", "AdGroupId", "AdId", "TimePeriod", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "CurrencyCode", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS", "TopVsOther", "BidMatchType", "DeliveredMatchType", "AccountName", "CampaignName", "CampaignType", "AdGroupName", "Impressions", "Clicks", "Ctr", "Spend", "CostPerConversion", "DestinationUrl", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "FinalAppUrl", "AdDescription", "AdDescription2", "ViewThroughConversions", "ViewThroughConversionsQualified", "AllCostPerConversion", "AllReturnOnAdSpend", "Conversions", "ConversionRate", "ConversionsQualified", "AverageCpc", "AveragePosition", "AverageCpm", "AllConversions", "AllConversionRate", "AllRevenue", "AllRevenuePerConversion", "Revenue", "RevenuePerConversion", "RevenuePerAssist"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        if self.stream_name not in MIGRATED_STREAMS:
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        config = deepcopy(self._config)
+        del config["reports_start_date"]
+        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, config, self.report_file)
+        assert len(output.records) == self.records_number
+        first_read_state = deepcopy(self.first_read_state)
+        # this corresponds to the last read record as we don't have started_date in the config
+        # the self.first_read_state is set using the config start date so it is not correct for this test
+        first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+0000"
+        first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+0000"
+        assert output.most_recent_state.stream_state.__dict__ == first_read_state
