@@ -48,9 +48,9 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
 
   public java.util.List<String> getDatabaseNames() {
-      java.util.List<String> databases = new java.util.ArrayList<>();
-      getDatabaseConfig().get(DATABASE_CONFIGURATION_KEY).forEach(db -> databases.add(db.asText()));
-      return databases;
+    java.util.List<String> databases = new java.util.ArrayList<>();
+    getDatabaseConfig().get(DATABASE_CONFIGURATION_KEY).forEach(db -> databases.add(db.asText()));
+    return databases;
   }
 
   public OptionalInt getQueueSize() {

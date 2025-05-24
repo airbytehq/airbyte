@@ -11,9 +11,8 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
@@ -56,8 +55,8 @@ public class MongoDbResumeTokenHelper {
   }
 
   public static BsonDocument getMostRecentResumeTokenForDatabases(final MongoClient mongoClient,
-                                                      final List<String> databaseNames,
-                                                      final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+                                                                  final List<String> databaseNames,
+                                                                  final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
 
     // databaseNames and streamsByDatabase must be the same length
     List<Bson> orFilters = new ArrayList<>();
@@ -65,13 +64,12 @@ public class MongoDbResumeTokenHelper {
       String dbName = databaseNames.get(i);
       List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
       List<String> collectionNames = streams.stream()
-              .map(s -> s.getStream().getName())
-              .toList();
+          .map(s -> s.getStream().getName())
+          .toList();
       // Match documents where ns.db == dbName and ns.coll in collectionNames
       orFilters.add(Filters.and(
-              Filters.eq("ns.db", dbName),
-              Filters.in("ns.coll", collectionNames)
-      ));
+          Filters.eq("ns.db", dbName),
+          Filters.in("ns.coll", collectionNames)));
     }
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
@@ -85,10 +83,6 @@ public class MongoDbResumeTokenHelper {
       return eventStreamCursor.getResumeToken();
     }
   }
-
-
-
-
 
   /**
    * Extracts the timestamp from a Debezium MongoDB change event.

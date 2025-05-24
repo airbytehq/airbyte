@@ -62,7 +62,7 @@ public class InitialSnapshotHandler {
 
     return streams
         .stream()
-            .filter(airbyteStream -> airbyteStream.getStream().getNamespace().equals(database.getName()))
+        .filter(airbyteStream -> airbyteStream.getStream().getNamespace().equals(database.getName()))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var namespace = airbyteStream.getStream().getNamespace();

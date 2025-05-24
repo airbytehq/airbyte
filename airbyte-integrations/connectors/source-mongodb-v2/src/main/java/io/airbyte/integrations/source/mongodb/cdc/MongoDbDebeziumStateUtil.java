@@ -26,9 +26,7 @@ import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbPartition;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.pipeline.spi.Partition;
-
 import java.util.*;
-
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
@@ -137,13 +135,12 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       String dbName = databaseNames.get(i);
       List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
       List<String> collectionNames = streams.stream()
-              .map(s -> s.getStream().getName())
-              .toList();
+          .map(s -> s.getStream().getName())
+          .toList();
       // Match documents where ns.db == dbName and ns.coll in collectionNames
       orFilters.add(Filters.and(
-              Filters.eq("ns.db", dbName),
-              Filters.in("ns.coll", collectionNames)
-      ));
+          Filters.eq("ns.db", dbName),
+          Filters.in("ns.coll", collectionNames)));
     }
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
@@ -153,19 +150,16 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     eventStream.resumeAfter(savedOffset);
     try (final var ignored = eventStream.cursor()) {
       LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
-                      + "up-to-date streams.",
-              ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
+          + "up-to-date streams.",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
     } catch (final MongoCommandException | MongoChangeStreamException e) {
       LOGGER.info("Exception : {}", e.getMessage());
       LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
-              ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
       return false;
     }
   }
-
-
-
 
   /**
    * Saves and retrieves the Debezium offset data. This method writes the provided CDC state to the

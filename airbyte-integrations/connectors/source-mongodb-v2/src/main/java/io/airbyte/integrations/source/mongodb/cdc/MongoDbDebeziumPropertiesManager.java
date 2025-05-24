@@ -88,9 +88,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     // Database/collection selection
     properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
     properties.setProperty(DATABASE_INCLUDE_LIST_KEY, String.join(",",
-            StreamSupport.stream(config.get(DATABASE_CONFIGURATION_KEY).spliterator(), false)
-                    .map(JsonNode::asText)
-                    .collect(Collectors.toList())));
+        StreamSupport.stream(config.get(DATABASE_CONFIGURATION_KEY).spliterator(), false)
+            .map(JsonNode::asText)
+            .collect(Collectors.toList())));
     return properties;
   }
 
