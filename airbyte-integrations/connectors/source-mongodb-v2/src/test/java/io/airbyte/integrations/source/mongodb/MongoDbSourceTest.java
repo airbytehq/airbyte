@@ -273,7 +273,7 @@ class MongoDbSourceTest {
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
     final Map<String, Object> baseConfig = new HashMap<>();
-    baseConfig.put("databases", List.of(DB_NAME));
+    baseConfig.put(DATABASE_CONFIGURATION_KEY, List.of(DB_NAME));
     baseConfig.put(MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/");
     baseConfig.put(MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
     baseConfig.put(MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE);
