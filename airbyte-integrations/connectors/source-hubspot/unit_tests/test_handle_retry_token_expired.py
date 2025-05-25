@@ -23,7 +23,7 @@ def test_handle_request_with_retry(config, requests_mock):
     assert len(stream_slices) == 1
     list(stream_instance.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
     # one request per each mock
-    assert requests_mock.call_count == 3
+    assert requests_mock.call_count == 4
 
 
 def test_handle_request_with_retry_token_expired(config, requests_mock):

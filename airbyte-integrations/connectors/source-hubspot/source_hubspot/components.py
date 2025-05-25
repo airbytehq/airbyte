@@ -30,6 +30,7 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -345,8 +346,7 @@ class EntitySchemaNormalization(TypeTransformer):
         super().__init__(config)
         self.registerCustomTransform(self.get_transform_function())
 
-    @staticmethod
-    def get_transform_function():
+    def get_transform_function(self):
         def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
@@ -389,8 +389,17 @@ class EntitySchemaNormalization(TypeTransformer):
                             return transformed_value
                         else:
                             return original_value
-
-            return original_value
+            if "properties" in field_schema and isinstance(original_value, dict):
+                normalized_nested_properties = dict()
+                for nested_key, nested_val in original_value.items():
+                    nested_property_schema = field_schema.get("properties").get(nested_key)
+                    if nested_property_schema:
+                        normalized_nested_properties[nested_key] = transform_function(nested_val, nested_property_schema)
+                    else:
+                        normalized_nested_properties[nested_key] = nested_val
+                return normalized_nested_properties
+            else:
+                return self.default_convert(original_value, field_schema)
 
         return transform_function
 
@@ -663,3 +672,85 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size
+
+
+@dataclass
+class HubspotCustomObjectsSchemaLoader(SchemaLoader):
+    """
+    Custom schema loader for HubSpot custom object streams.
+
+    This class generates a JSON schema based on the properties defined in the manifest.
+    These properties are injected into the parameters by the HttpComponentsResolver used within the DynamicDeclarativeStream.
+    """
+
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        raw_schema_properties: List[Mapping[str, Any]] = parameters.get("schema_properties", {})
+        properties = self._get_properties(raw_schema=raw_schema_properties)
+        self._schema = self._generate_schema(properties)
+
+    def _get_properties(self, raw_schema: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+        return {field["name"]: self._field_to_property_schema(field) for field in raw_schema}
+
+    def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
+        field_type = field["type"]
+
+        if field_type in ["string", "enumeration", "phone_number", "object_coordinates", "json"]:
+            return {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date-time":
+            return {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "date":
+            return {"type": ["null", "string"], "format": "date"}
+        elif field_type == "number":
+            return {"type": ["null", "number"]}
+        elif field_type == "boolean" or field_type == "bool":
+            return {"type": ["null", "boolean"]}
+        else:
+            logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            return {"type": ["null", "string"]}
+
+    def _generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
+        unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+                "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+                "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
+                **unnested_properties,
+            },
+        }
+
+        return schema
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._schema
+
+
+_TRUTHY_STRINGS = ("y", "yes", "t", "true", "on", "1")
+_FALSEY_STRINGS = ("n", "no", "f", "false", "off", "0")
+
+
+def _strtobool(value: str, /) -> int:
+    """Mimic the behavior of distutils.util.strtobool.
+
+    From: https://docs.python.org/2/distutils/apiref.html#distutils.util.strtobool
+
+    > Convert a string representation of truth to true (1) or false (0).
+    > True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0. Raises
+    > `ValueError` if val is anything else.
+    """
+    normalized_str = value.lower().strip()
+    if normalized_str in _TRUTHY_STRINGS:
+        return 1
+
+    if normalized_str in _FALSEY_STRINGS:
+        return 0
+
+    raise ValueError(f"Invalid boolean value: {normalized_str}")
