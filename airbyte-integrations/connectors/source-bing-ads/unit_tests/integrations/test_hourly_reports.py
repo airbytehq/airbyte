@@ -87,8 +87,7 @@ class TestAdPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfter
     state_file = "hourly_reports_state"
     incremental_report_file = "ad_performance_report_hourly_incremental"
 
-    def setUp(self):
-        super().setUp()
+    def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
         self.mock_accounts_search_api(
             response_template="accounts_search_for_report",

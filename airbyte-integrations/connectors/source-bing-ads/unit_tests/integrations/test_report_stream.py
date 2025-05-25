@@ -72,13 +72,19 @@ class TestSuiteReportStream(TestReportStream):
         if not self.stream_name:
             self.skipTest("Skipping TestSuiteReportStream")
 
+    def mock_report_apis(self):
+        # make noop for no migrated streams to manifest (rest api).
+        ...
+
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file(self):
+        self.mock_report_apis()
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
 
     @freeze_time("2024-05-06")
     def test_transform_records_from_given_csv_file(self):
+        self.mock_report_apis()
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
 
         assert len(output.records) == self.records_number
@@ -87,6 +93,7 @@ class TestSuiteReportStream(TestReportStream):
 
     @freeze_time("2024-05-06")
     def test_incremental_read_returns_records(self):
+        self.mock_report_apis()
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         assert output.most_recent_state.stream_state.__dict__ == self.first_read_state
@@ -97,6 +104,7 @@ class TestSuiteReportStream(TestReportStream):
             self.skipTest(f"Skipping test_incremental_read_returns_records for NOT migrated to manifest stream: {self.stream_name}")
         if not self.report_file_with_records_further_start_date or not self.first_read_state_for_records_further_start_date:
             assert False, "test_incremental_read_returns_records_further_config_start_date is not correctly set"
+        self.mock_report_apis()
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file_with_records_further_start_date)
         assert len(output.records) == self.records_number
         assert output.most_recent_state.stream_state.__dict__ == self.first_read_state_for_records_further_start_date
@@ -105,6 +113,7 @@ class TestSuiteReportStream(TestReportStream):
     def test_incremental_read_with_state_returns_records(self):
         if self.stream_name in MIGRATED_STREAMS:
             self.skipTest(f"Skipping for migrated to manifest stream: : {self.stream_name}")
+        self.mock_report_apis()
         state = self._state(self.state_file, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
@@ -134,6 +143,7 @@ class TestSuiteReportStream(TestReportStream):
         """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        self.mock_report_apis()
         state = self._state(self.state_file_after_migration, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
@@ -167,6 +177,7 @@ class TestSuiteReportStream(TestReportStream):
         """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: : {self.stream_name}")
+        self.mock_report_apis()
         provided_state = self._state(self.state_file_after_migration_with_cursor_further_config_start_date, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file_with_records_further_cursor, provided_state
@@ -234,6 +245,7 @@ class TestSuiteReportStream(TestReportStream):
         """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        self.mock_report_apis()
         provided_state = self._state(self.state_file_legacy, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file_with_records_further_cursor, provided_state
@@ -296,14 +308,15 @@ class TestSuiteReportStream(TestReportStream):
         """
         If the field reports_start_date is blank, Airbyte will replicate all data from previous and current calendar years.
         """
+        if self.stream_name not in MIGRATED_STREAMS:
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        self.mock_report_apis()
         # here we mock the report start date to be the first day of the year 2023
         self.mock_generate_report_api(
             endpoint="Submit",
             response_template="generate_report",
             body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AdPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AdPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "CampaignId", "AdGroupId", "AdId", "TimePeriod", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "CurrencyCode", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS", "TopVsOther", "BidMatchType", "DeliveredMatchType", "AccountName", "CampaignName", "CampaignType", "AdGroupName", "Impressions", "Clicks", "Ctr", "Spend", "CostPerConversion", "DestinationUrl", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "FinalAppUrl", "AdDescription", "AdDescription2", "ViewThroughConversions", "ViewThroughConversionsQualified", "AllCostPerConversion", "AllReturnOnAdSpend", "Conversions", "ConversionRate", "ConversionsQualified", "AverageCpc", "AveragePosition", "AverageCpm", "AllConversions", "AllConversionRate", "AllRevenue", "AllRevenuePerConversion", "Revenue", "RevenuePerConversion", "RevenuePerAssist"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
         )
-        if self.stream_name not in MIGRATED_STREAMS:
-            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         config = deepcopy(self._config)
         del config["reports_start_date"]
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, config, self.report_file)
