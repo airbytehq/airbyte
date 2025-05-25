@@ -41,7 +41,6 @@
                 "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
                 "order": 2
               },
-
               "databases": {
                 "title": "Database Names",
                 "type": "array",
@@ -49,7 +48,7 @@
                   "type": "string"
                 },
                 "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
-                "order": 4
+                "order": 3
               },
               "username": {
                 "title": "Username",
@@ -103,7 +102,6 @@
                 ],
                 "order": 2
               },
-
               "databases": {
                 "title": "Database Names",
                 "type": "array",
@@ -111,7 +109,7 @@
                   "type": "string"
                 },
                 "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
-                "order": 4
+                "order": 3
               },
               "username": {
                 "title": "Username",
