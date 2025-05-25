@@ -700,6 +700,7 @@ definitions:
     cursor_datetime_formats:
       - "%Y-%m-%d"
     datetime_format: "%Y-%m-%d"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
     start_datetime:
       type: MinMaxDatetime
       datetime: |
@@ -710,14 +711,17 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
-      datetime_format: "%Y-%m-%d"
+      # we need the end time to include the time part as well to distinguish from the start time
+      # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   incremental_sync_report_hourly_datetime_cursor:
     type: DatetimeBasedCursor
     cursor_field: TimePeriod
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S%z"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
     start_datetime:
       type: MinMaxDatetime
       datetime: |
@@ -728,8 +732,10 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
-      datetime_format: "%Y-%m-%d"
+      # we need the end time to include the time part as well to distinguish from the start time
+      # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
     # not used in hourly stream
     ad_performance_report_transformations:
