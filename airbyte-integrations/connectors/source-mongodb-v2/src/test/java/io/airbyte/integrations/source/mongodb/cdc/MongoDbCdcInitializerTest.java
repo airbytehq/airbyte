@@ -122,9 +122,6 @@ class MongoDbCdcInitializerTest {
                   Filters.eq("ns.db", DATABASE),
                   Filters.in("ns.coll", List.of(COLLECTION)))))));
 
-  // private static final List<Bson> PIPELINE = Collections.singletonList(Aggregates.match(
-  // Filters.in("ns.coll", List.of(COLLECTION))));
-
   @BeforeEach
   void setUp() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN1));
@@ -151,7 +148,6 @@ class MongoDbCdcInitializerTest {
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(mongoDatabase.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
