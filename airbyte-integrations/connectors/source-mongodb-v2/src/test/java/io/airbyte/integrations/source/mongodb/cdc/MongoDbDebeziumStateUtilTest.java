@@ -83,7 +83,8 @@ class MongoDbDebeziumStateUtilTest {
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
-    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, database);
+    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument,
+        config.get(MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY).asText());
 
     assertNotNull(initialState);
     assertEquals(1, initialState.size());

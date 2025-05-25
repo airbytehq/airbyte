@@ -24,7 +24,7 @@ class MongoDbCdcPropertiesTest {
   @Test
   void testDebeziumProperties() {
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
-    assertEquals(6, debeziumProperties.size());
+    assertEquals(5, debeziumProperties.size());
     assertEquals(CONNECTOR_CLASS_VALUE, debeziumProperties.get(CONNECTOR_CLASS_KEY));
     assertEquals(SNAPSHOT_MODE_VALUE, debeziumProperties.get(SNAPSHOT_MODE_KEY));
     assertEquals(CAPTURE_MODE_VALUE, debeziumProperties.get(CAPTURE_MODE_KEY));

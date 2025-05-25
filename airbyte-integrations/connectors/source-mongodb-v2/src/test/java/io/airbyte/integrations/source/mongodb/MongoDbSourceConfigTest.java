@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class MongoDbSourceConfigTest {
   void testCreatingMongoDbSourceConfig() {
     final String authSource = "auth";
     final Integer checkpointInterval = 1;
-    final String database = "databases";
+    final String database = "database";
     final Integer queueSize = 1;
     final String password = "password";
     final Integer sampleSize = 5000;
@@ -45,7 +46,7 @@ class MongoDbSourceConfigTest {
             DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(
                 AUTH_SOURCE_CONFIGURATION_KEY, authSource,
                 CHECKPOINT_INTERVAL_CONFIGURATION_KEY, checkpointInterval,
-                DATABASE_CONFIGURATION_KEY, database,
+                DATABASE_CONFIGURATION_KEY, List.of(database),
                 PASSWORD_CONFIGURATION_KEY, password,
                 USERNAME_CONFIGURATION_KEY, username,
                 SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
