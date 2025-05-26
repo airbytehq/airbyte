@@ -186,7 +186,6 @@ definitions:
           failure_type: config_error
           error_message: "Incorrect Property ID. Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id to find your Property ID."
 
-
 dynamic_streams:
   - type: DynamicDeclarativeStream
     stream_template:
@@ -858,7 +857,7 @@ dynamic_streams:
             - property_ids
       components_mapping:
         - type: ComponentMappingDefinition
-          field_path: [ "retriever", "requester", "request_body_json"]
+          field_path: ["retriever", "requester", "request_body_json"]
           create_or_update: True
           value: >
             {% set pivots = components_values.get("pivots") %}
@@ -882,7 +881,7 @@ dynamic_streams:
               }
               {% endif %}
         - type: ComponentMappingDefinition
-          field_path: [ "retriever", "paginator"]
+          field_path: ["retriever", "paginator"]
           create_or_update: True
           value: >
             {% if components_values.get("pivots") %}
@@ -899,7 +898,7 @@ dynamic_streams:
                 stop_condition: "{% raw %}{{ not response.get('offset', {}) }}{% endraw %}"
             {% endif %}
         - type: ComponentMappingDefinition
-          field_path: [ "retriever", "requester", "path" ]
+          field_path: ["retriever", "requester", "path"]
           value: >
             {% if components_values.get("pivots") %}
             "properties/{{ components_values['source_config_1'][1] }}:runPivotReport"
@@ -907,13 +906,13 @@ dynamic_streams:
             "properties/{{ components_values['source_config_1'][1] }}:runReport"
             {% endif %}
         - type: ComponentMappingDefinition
-          field_path: [ "schema_loader", "retriever", "requester", "path" ]
+          field_path: ["schema_loader", "retriever", "requester", "path"]
           value: "properties/{{ components_values['source_config_1'][1] }}/metadata"
         - type: ComponentMappingDefinition
-          field_path: [ "**", "name" ]
+          field_path: ["**", "name"]
           value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
         - type: ComponentMappingDefinition
-          field_path: [ "transformations"]
+          field_path: ["transformations"]
           create_or_update: True
           value: >
             {% set property_id = components_values['source_config_1'][1] %}
@@ -922,7 +921,7 @@ dynamic_streams:
                   - path: [ "property_id" ]
                     value: {{ property_id }}
                     value_type: string
-            
+
             {% set cohort = components_values.get("cohortSpec") %}
             {% if not (cohort and cohort.get("enabled") in [True, "true", "True"]) %}
               - type: AddFields
@@ -935,19 +934,21 @@ dynamic_streams:
                     value: "{% raw %}{{ stream_slice.end_time or format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}{% endraw %}"
             {% endif %}
         - type: ComponentMappingDefinition
-          field_path: [ "retriever", "requester", "request_body_json", "metrics" ]
+          field_path: ["retriever", "requester", "request_body_json", "metrics"]
           value: >
             [{% for metric in components_values["metrics"] %}
                 {"name": "{{ metric }}"}{% if not loop.last %},{% endif %}
               {% endfor %}]
         - type: ComponentMappingDefinition
-          field_path: [ "retriever", "requester", "request_body_json", "dimensions" ]
+          field_path:
+            ["retriever", "requester", "request_body_json", "dimensions"]
           value: >
             [{% for dimension in components_values["dimensions"] %}
                 {"name": "{{ dimension }}"}{% if not loop.last %},{% endif %}
               {% endfor %}]
         - type: ComponentMappingDefinition
-          field_path: [ "retriever", "requester", "request_body_json", "dateRanges"]
+          field_path:
+            ["retriever", "requester", "request_body_json", "dateRanges"]
           value: >
             {% set ns = namespace(cursor="") %}
             {% set dimensions = components_values["dimensions"] %}
@@ -1000,12 +1001,12 @@ dynamic_streams:
                 datetime_format: "%Y-%m-%d"
             {% endif %}
         - type: ComponentMappingDefinition
-          field_path: [ "schema_loader", "schema_filter", "condition" ]
+          field_path: ["schema_loader", "schema_filter", "condition"]
           value: >
             {{ '{{ record[0] in ' ~ (components_values["metrics"] | tojson) ~ ' }}' }}
 
         - type: ComponentMappingDefinition
-          field_path: [ "schema_loader", "schema_transformations" ]
+          field_path: ["schema_loader", "schema_transformations"]
           create_or_update: True
           value: >
             {% for dimension in components_values["dimensions"] %}
@@ -1092,7 +1093,8 @@ spec:
               credentials_json:
                 title: Service Account JSON Key
                 type: string
-                description: The JSON key linked to the service account used for authorization.
+                description:
+                  The JSON key linked to the service account used for authorization.
                   For steps on obtaining this key, refer to <a href="https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide">the
                   setup guide</a>.
                 examples:
@@ -1101,7 +1103,8 @@ spec:
                 order: 1
       property_ids:
         title: Property IDs
-        description: A list of your Property IDs. The Property ID is a unique number
+        description:
+          A list of your Property IDs. The Property ID is a unique number
           assigned to each property in Google Analytics, found in your GA4 property
           URL. This ID allows the connector to track the specific events associated
           with your property. Refer to the <a href='https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id'>Google
@@ -1112,25 +1115,27 @@ spec:
           type: string
           pattern: "^[0-9]*$"
         examples:
-          - - '1738294'
-            - '5729978930'
+          - - "1738294"
+            - "5729978930"
         uniqueItems: true
       date_ranges_start_date:
         type: string
         title: Start Date
-        description: The start date from which to replicate report data in the format
+        description:
+          The start date from which to replicate report data in the format
           YYYY-MM-DD. Data generated before this date will not be included in the report.
           Not applied to custom Cohort reports.
         format: date
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         pattern_descriptor: YYYY-MM-DD
         examples:
-          - '2021-01-01'
+          - "2021-01-01"
         order: 2
       date_ranges_end_date:
         type: string
         title: End Date
-        description: The end date from which to replicate report data in the format
+        description:
+          The end date from which to replicate report data in the format
           YYYY-MM-DD. Data generated after this date will not be included in the report.
           Not applied to custom Cohort reports. When no date is provided or the date
           is in the future, the date from today is used.
@@ -1138,7 +1143,7 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         pattern_descriptor: YYYY-MM-DD
         examples:
-          - '2021-01-31'
+          - "2021-01-31"
         order: 3
       custom_reports_array:
         title: Custom Reports
@@ -1151,7 +1156,8 @@ spec:
           properties:
             name:
               title: Name
-              description: The name of the custom report, this name would be used as
+              description:
+                The name of the custom report, this name would be used as
                 stream name.
               type: string
               order: 0
@@ -1760,7 +1766,8 @@ spec:
                         - filter
                 - title: filter
                   type: object
-                  description: A primitive filter. In the same FilterExpression, all of
+                  description:
+                    A primitive filter. In the same FilterExpression, all of
                     the filter's field names need to be either all dimensions.
                   properties:
                     filter_type:
@@ -2533,7 +2540,8 @@ spec:
                         - filter
                 - title: filter
                   type: object
-                  description: A primitive filter. In the same FilterExpression, all of
+                  description:
+                    A primitive filter. In the same FilterExpression, all of
                     the filter's field names need to be either all metrics.
                   properties:
                     filter_type:
@@ -2719,7 +2727,8 @@ spec:
                     - filter
             cohortSpec:
               title: Cohort Reports
-              description: Cohort reports creates a time series of user retention for
+              description:
+                Cohort reports creates a time series of user retention for
                 the cohort.
               type: object
               order: 5
@@ -2729,13 +2738,13 @@ spec:
                   properties:
                     enabled:
                       type: string
-                      const: 'false'
+                      const: "false"
                 - title: Enabled
                   type: object
                   properties:
                     enabled:
                       type: string
-                      const: 'true'
+                      const: "true"
                     cohorts:
                       name: Cohorts
                       order: 0
@@ -2753,13 +2762,15 @@ spec:
                             type: string
                             always_show: true
                             pattern: "^(?!(cohort_|RESERVED_)).*$"
-                            description: Assigns a name to this cohort. If not set, cohorts
+                            description:
+                              Assigns a name to this cohort. If not set, cohorts
                               are named by their zero based index cohort_0, cohort_1,
                               etc.
                             order: 0
                           dimension:
                             title: Dimension
-                            description: Dimension used by the cohort. Required and only
+                            description:
+                              Dimension used by the cohort. Required and only
                               supports `firstSessionDate`
                             type: string
                             enum:
@@ -2778,7 +2789,7 @@ spec:
                                 pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
                                 pattern_descriptor: YYYY-MM-DD
                                 examples:
-                                  - '2021-01-01'
+                                  - "2021-01-01"
                                 order: 2
                               endDate:
                                 title: End Date
@@ -2787,7 +2798,7 @@ spec:
                                 pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
                                 pattern_descriptor: YYYY-MM-DD
                                 examples:
-                                  - '2021-01-01'
+                                  - "2021-01-01"
                                 order: 3
                     cohortsRange:
                       type: object
@@ -2798,7 +2809,8 @@ spec:
                       properties:
                         granularity:
                           title: Granularity
-                          description: The granularity used to interpret the startOffset
+                          description:
+                            The granularity used to interpret the startOffset
                             and endOffset for the extended reporting date range for a
                             cohort report.
                           type: string
@@ -2810,14 +2822,16 @@ spec:
                           order: 0
                         startOffset:
                           title: Start Offset
-                          description: Specifies the start date of the extended reporting
+                          description:
+                            Specifies the start date of the extended reporting
                             date range for a cohort report.
                           type: integer
                           minimum: 0
                           order: 1
                         endOffset:
                           title: End Offset
-                          description: Specifies the end date of the extended reporting
+                          description:
+                            Specifies the end date of the extended reporting
                             date range for a cohort report.
                           type: integer
                           minimum: 0
@@ -2830,7 +2844,8 @@ spec:
                         accumulate:
                           always_show: true
                           title: Accumulate
-                          description: If true, accumulates the result from first touch
+                          description:
+                            If true, accumulates the result from first touch
                             day to the end day
                           type: boolean
           required:
@@ -2840,7 +2855,8 @@ spec:
       window_in_days:
         type: integer
         title: Data Request Interval (Days)
-        description: The interval in days for each data request made to the Google Analytics
+        description:
+          The interval in days for each data request made to the Google Analytics
           API. A larger value speeds up data sync, but increases the chance of data
           sampling, which may result in inaccuracies. We recommend a value of 1 to minimize
           sampling, unless speed is an absolute priority over accuracy. Acceptable values
@@ -2861,7 +2877,8 @@ spec:
       lookback_window:
         type: integer
         title: Lookback window (Days)
-        description: Since attribution changes after the event date, and Google Analytics
+        description:
+          Since attribution changes after the event date, and Google Analytics
           has a data processing latency, we should specify how many days in the past
           we should refresh the data in every run. So if you set it at 5 days, in every
           sync it will fetch the last bookmark date minus 5 days.
@@ -2879,7 +2896,8 @@ spec:
       keep_empty_rows:
         type: boolean
         title: Keep Empty Rows
-        description: If false, each row with all metrics equal to 0 will not be returned.
+        description:
+          If false, each row with all metrics equal to 0 will not be returned.
           If true, these rows will be returned if they are not separately removed by
           a filter. More information is available in <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body">the
           documentation</a>.
@@ -2888,7 +2906,8 @@ spec:
       convert_conversions_event:
         type: boolean
         title: Convert `conversions:*` Metrics to Float
-        description: Enables conversion of `conversions:*` event metrics from integers
+        description:
+          Enables conversion of `conversions:*` event metrics from integers
           to floats. This is beneficial for preventing data rounding when the API returns
           float values for any `conversions:*` fields.
         default: false
