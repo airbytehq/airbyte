@@ -4,9 +4,8 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # We need to use Contacts stream once it is migrated
   stream_names:
-    - marketing_emails
+    - contacts
 
 definitions:
   # Authenticator Definitions
@@ -1476,6 +1475,22 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
 
+  companies_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: companies
+      entity: company
+      associations:
+        - contacts
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/companies"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
   engagements_calls_stream:
     type: StateDelegatingStream
     full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
@@ -1771,12 +1786,123 @@ definitions:
         schema:
           $ref: "#/schemas/line_items"
 
+  contacts_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/base_crm_search_full_refresh_stream"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["updatedAt"]
+              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+        - type: CustomTransformation
+          class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+        - type: CustomTransformation
+          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_lifecyclestage_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path:
+            - properties
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+    incremental_stream:
+      $ref: "#/definitions/base_crm_search_incremental_stream"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_lifecyclestage_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path: ["properties"]
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+    $parameters:
+      name: contacts
+      entity: contact
+      associations:
+        - contacts
+        - companies
+      cursor_filter_property_field: lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/contacts"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+          schema_transformations:
+            - type: CustomTransformation
+              class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+              field_mapping:
+                hs_lifecyclestage_: "hs_v2_date_entered_"
+                hs_date_exited_: "hs_v2_date_exited_"
+                hs_time_in_: "hs_v2_latest_time_in_"
+            - type: CustomTransformation
+              class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+
+  deal_splits_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: deal_splits
+      entity: deal_split
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/deal_splits"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  leads_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: leads
+      entity: leads
+      associations:
+        - companies
+        - contacts
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/leads"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  tickets_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: tickets
+      entity: ticket
+      associations:
+        - companies
+        - contacts
+        - deals
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/tickets"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
 streams:
   - "#/definitions/campaigns_stream"
+  - "#/definitions/companies_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
+  - "#/definitions/contacts_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
+  - "#/definitions/deal_splits_stream"
   - "#/definitions/deals_archived_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/deals_stream"
@@ -1791,6 +1917,7 @@ streams:
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/goals_stream"
+  - "#/definitions/leads_stream"
   - "#/definitions/line_items_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/owners_archived_stream"
@@ -1798,7 +1925,217 @@ streams:
   - "#/definitions/products_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: StateDelegatingStream
+      name: custom_object_stream_name # will be set by components_resolver
+      $parameters:
+        entity: "custom_entity" # will be set by components_resolver
+        schema_properties: "schema_properties_placeholder" # will be set by components_resolver
+        schema_loader:
+          type: CustomSchemaLoader
+          class_name: source_hubspot.components.HubspotCustomObjectsSchemaLoader
+      full_refresh_stream:
+        name: custom_object_stream_name # will be set by components_resolver
+        primary_key:
+          - id
+        $ref: "#/definitions/stream_base"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: "/crm/v3/objects/{{ parameters['entity'] }}"
+            request_parameters:
+              archived: "false"
+              properties:
+                type: QueryProperties
+                property_list:
+                  - "placeholder_for_properties" # will be set by components_resolver
+                property_chunking:
+                  type: PropertyChunking
+                  property_limit_type: characters
+                  property_limit: 15000
+                  record_merge_strategy:
+                    type: GroupByKeyMergeStrategy
+                    key: id
+          paginator:
+            $ref: "#/definitions/cursor_paginator"
+          record_selector:
+            $ref: "#/definitions/base_selector"
+            schema_normalization:
+              type: CustomSchemaNormalization
+              class_name: source_hubspot.components.EntitySchemaNormalization
+        transformations:
+          - type: AddFields
+            fields:
+              - path: ["updatedAt"]
+                value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+          - type: DpathFlattenFields
+            field_path:
+              - properties
+            key_transformation:
+              type: KeyTransformation
+              prefix: properties_
+        incremental_sync:
+          $ref: "#/definitions/incremental_sync"
+          is_client_side_incremental: true
+      incremental_stream:
+        name: custom_object_stream_name # will be set by components_resolver
+        primary_key:
+          - id
+        $ref: "#/definitions/stream_base"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+            http_method: POST
+            request_body_json:
+              sorts:
+                - propertyName: hs_object_id
+                  direction: ASCENDING
+              filters:
+                - propertyName: "hs_lastmodifieddate"
+                  operator: GTE
+                  value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+                - propertyName: "hs_lastmodifieddate"
+                  operator: LTE
+                  value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+                - propertyName: hs_object_id
+                  operator: GTE
+                  value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+              properties: "properties_placeholder" # will be set by components_resolver
+              after: "{{ next_page_token['next_page_token']['after'] }}"
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: CustomPaginationStrategy
+              class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+              page_size: 200
+            page_size_option:
+              type: RequestOption
+              inject_into: body_json
+              field_name: limit
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - results
+            schema_normalization:
+              type: CustomSchemaNormalization
+              class_name: source_hubspot.components.EntitySchemaNormalization
+        transformations:
+          - type: DpathFlattenFields
+            field_path: ["properties"]
+            key_transformation:
+              type: KeyTransformation
+              prefix: properties_
+        incremental_sync:
+          $ref: "#/definitions/incremental_sync"
+          is_client_side_incremental: true
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /crm/v3/schemas
+          http_method: GET
+          error_handler:
+            # Same as the base error handler, but ignores 403 errors
+            # to avoid failing the sync when fetching dynamic streams.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+              # HubSpot API does not always return Retry-After value for 429 HTTP error
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: >-
+                  HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 502
+                  - 503
+                error_message: >-
+                  HubSpot server error (5xx). Retrying with exponential backoff...
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 530
+                error_message: >-
+                  The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: >-
+                  Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                error_message: >-
+                  Bad request (400). Please verify your credentials and try again.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - full_refresh_stream
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_stream
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - entity
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - full_refresh_stream
+            - retriever
+            - requester
+            - request_parameters
+            - properties
+            - property_list
+          value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_stream
+            - retriever
+            - requester
+            - request_body_json
+            - properties
+          value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - schema_properties
+          value: "{{ components_values.properties }}"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -1999,6 +2336,46 @@ schemas:
       default:
         description: Indicates if this pipeline is the default one in the system.
 
+  companies:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the company
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the company was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the company was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates whether the company is archived or active
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: List of contacts associated with the company
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of individual contacts
+          type: string
+
   companies_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:
@@ -2052,6 +2429,47 @@ schemas:
         type:
           - "null"
           - boolean
+
+  contacts:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the contact.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the contact was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the contact was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the contact is archived or not.
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: List of companies associated with the contact.
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of a company associated with the contact.
+          type:
+            - "null"
+            - string
 
   contacts_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
@@ -2133,6 +2551,37 @@ schemas:
             - integer
       archived:
         description: Indicates whether the data is associated with a contact record.
+        type:
+          - "null"
+          - boolean
+
+  deal_splits:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the deal split
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the deal split was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: The date and time when the deal split was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the deal is archived
         type:
           - "null"
           - boolean
@@ -3865,6 +4314,53 @@ schemas:
           - object
     additionalProperties: true
 
+  leads:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the lead
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the lead was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the lead was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates whether the lead is archived or active
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: List of companies associated with the lead
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of individual companies
+          type: string
+      contacts:
+        description: List of contacts associated with the lead
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of individual contacts
+          type: string
+
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
     type:
@@ -5089,6 +5585,67 @@ schemas:
           - "null"
           - string
         format: date-time
+
+  tickets:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the ticket
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the ticket was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the ticket was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the ticket is archived or not
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Contacts associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          description: Contact data
+          type:
+            - "null"
+            - string
+      companies:
+        description: Companies associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          description: Company data
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          description: Deal data
+          type:
+            - "null"
+            - string
 
   campaigns:
     $schema: http://json-schema.org/draft-07/schema#
