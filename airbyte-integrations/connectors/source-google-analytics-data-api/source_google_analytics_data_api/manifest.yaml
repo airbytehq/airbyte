@@ -21,9 +21,11 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: CombinedExtractor
+            type: CustomRecordExtractor
+            class_name: source_google_analytics_data_api.components.CombinedExtractor
             extractors:
-              - type: KeyValueExtractor
+              - type: CustomRecordExtractor
+                class_name: source_google_analytics_data_api.components.KeyValueExtractor
                 keys_extractor:
                   type: DpathExtractor
                   field_path:
@@ -38,7 +40,8 @@ definitions:
                     - metricValues
                     - "*"
                     - value
-              - type: KeyValueExtractor
+              - type: CustomRecordExtractor
+                class_name: source_google_analytics_data_api.components.KeyValueExtractor
                 keys_extractor:
                   type: DpathExtractor
                   field_path:
