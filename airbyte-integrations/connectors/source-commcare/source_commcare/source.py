@@ -472,7 +472,7 @@ class SourceCommcare(AbstractSource):
                 name=k,
                 xmlns=key,
                 schema=self.base_schema(),
-                include_archived=config["include_archived"],
+                include_archived=config.get("include_archived", False),
                 **form_args,
             )
             streams.append(stream)
@@ -481,7 +481,7 @@ class SourceCommcare(AbstractSource):
             start_date=config["start_date"],
             schema=self.base_schema(),
             app_id=config["app_id"],
-            import_all_cases=config["import_all_cases"],
+            import_all_cases=config.get("import_all_cases", False),
             project_space=config["project_space"],
             form_fields_to_exclude=form_fields_to_exclude,
             **args,
