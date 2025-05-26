@@ -17,6 +17,17 @@ class SubstreamDedupPartitionRouter(SubstreamPartitionRouter):
         but regular SubstreamPartitionRouter will include the parent_slice in the partition that
         LegacyToPerPartitionStateMigration can't add in transformed state.
         Then, we remove the parent_slice and also deduplicate partitions.
+
+        e.g.
+        super().stream_slices() = [
+            StreamSlice(partition={"parent_slice": {"user_id": 1, "parent_slice": {}}, "account_id": 1}, cursor_slice={}, extra_fields=None),
+            StreamSlice(partition={"parent_slice": {"user_id": 2, "parent_slice": {}}, "account_id": 2}, cursor_slice={}, extra_fields=None),
+            StreamSlice(partition={"parent_slice": {"user_id": 3, "parent_slice": {}}, "account_id": 2}, cursor_slice={}, extra_fields=None)
+            ]
+        Router yields: [
+            StreamSlice(partition={"account_id": 1}, cursor_slice={}, extra_fields=None),
+            StreamSlice(partition={"account_id": 2}, cursor_slice={}, extra_fields=None),
+        ]
         """
         stream_slices = super().stream_slices()
         seen_keys = set()

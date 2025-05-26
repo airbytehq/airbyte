@@ -100,6 +100,9 @@ class TestSuiteReportStream(TestReportStream):
 
     @freeze_time("2024-05-06")
     def test_incremental_read_returns_records_further_config_start_date(self):
+        """
+        We validate the state cursor is set to the value of the latest record read.
+        """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest(f"Skipping test_incremental_read_returns_records for NOT migrated to manifest stream: {self.stream_name}")
         if not self.report_file_with_records_further_start_date or not self.first_read_state_for_records_further_start_date:
@@ -170,7 +173,7 @@ class TestSuiteReportStream(TestReportStream):
     def test_incremental_read_with_state_returns_records_after_migration_with_records_further_state_cursor(self):
         """
         For this test we get records with TimePeriod further the config start date and the state TimePeriod cursor.
-        The provide state is taken from a previous run; with stream manifest; so, is in the new state format, and
+        The provide state is "taken" from a previous run; with stream manifest; so, is in the new state format, and
         where the resultant cursor was further the config start date.
         So we validate that the cursor in the output.most_recent_state is moved to the value of the latest record read.
         The state format before migration IS NOT involved in this test.
@@ -238,10 +241,11 @@ class TestSuiteReportStream(TestReportStream):
     def test_incremental_read_with_legacy_state_returns_records_after_migration_with_records_further_state_cursor(self):
         """
         For this test we get records with TimePeriod further the config start date and the state TimePeriod cursor.
-        The provide state is taken from a previous run; with stream manifest; so, is in the new state format, and
+        The provide state is taken from a previous run; with python stream; so, is already in legacy format, and
         where the resultant cursor was further the config start date.
         So we validate that the cursor in the output.most_recent_state is moved to the value of the latest record read.
-        The state format before migration IS NOT involved in this test.
+        Also, the state is migrated to the new format, so we can validate that the partition is correctly set.
+        The state format before migration (legacy) IS involved in this test.
         """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
@@ -274,8 +278,6 @@ class TestSuiteReportStream(TestReportStream):
             assert False, f"Expected state is empty for account_id: {self.account_id}"
         # here the cursor moved to expected that is the latest record read
         assert actual_cursor == expected_cursor
-        # this is important as we are expecting the new migrated state partition
-        # to contain the parent slice as should be happening in the custom migrate component
         assert actual_partition == expected_partition
 
         # Let's check in the logs what was the start_time and end_time values of the Job
@@ -307,6 +309,7 @@ class TestSuiteReportStream(TestReportStream):
     def test_no_config_start_date(self):
         """
         If the field reports_start_date is blank, Airbyte will replicate all data from previous and current calendar years.
+        This test is to validate that the stream will return all records from the first day of the year 2023 (CustomDateRangeStart in mocked body).
         """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
