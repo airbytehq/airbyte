@@ -682,7 +682,7 @@ definitions:
       authenticator: "#/definitions/authenticator"
   account_substream_partition_router:
     type: CustomPartitionRouter
-    class_name: source_bing_ads.components.partition_routers.SubstreamDedupPartitionRouter
+    class_name: source_bing_ads.components.partition_routers.LightSubstreamPartitionRouter
     parent_stream_configs:
       - type: ParentStreamConfig
         # Id is the primary key of the accounts stream but an integer
