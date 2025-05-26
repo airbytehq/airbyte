@@ -187,7 +187,9 @@ class DestinationMotherDuck(Destination):
 
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
-            raise ValueError(f"destination_path={destination_path} is not a valid path. A valid path shall start with /local or no / prefix")
+            raise ValueError(
+                f"destination_path={destination_path} is not a valid path. A valid path shall start with /local or no / prefix"
+            )
 
         return destination_path
 
