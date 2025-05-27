@@ -32,7 +32,7 @@ class FeedReader(
     private val log = KotlinLogging.logger {}
 
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed)
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory)
 
     /** Reads records from this [feed]. */
     suspend fun read() {

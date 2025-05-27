@@ -9,6 +9,7 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -35,6 +36,7 @@ class ReadOperation(
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -49,6 +51,7 @@ class ReadOperation(
                 outputConsumer,
                 metaFieldDecorator,
                 partitionsCreatorFactories,
+                boostedOutputConsumerFactory
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->

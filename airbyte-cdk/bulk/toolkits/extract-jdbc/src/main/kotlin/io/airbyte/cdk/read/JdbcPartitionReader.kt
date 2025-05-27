@@ -4,10 +4,13 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.BoostedOutputConsumerFactory
+import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.first
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
 
@@ -20,34 +23,62 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val stream: Stream = streamState.stream
     val sharedState: JdbcSharedState = streamState.sharedState
     val selectQuerier: SelectQuerier = sharedState.selectQuerier
-    val streamRecordConsumer: StreamRecordConsumer =
-        streamState.streamFeedBootstrap.streamRecordConsumer()
 
-    private val acquiredResources = AtomicReference<AcquiredResources>()
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory? =
+        streamState.streamFeedBootstrap.boostedOutputConsumerFactory
+
+    lateinit var streamRecordConsumer: StreamRecordConsumer
+
+    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
+    interface AcquiredResourceWithResource<T>: AcquiredResources {
+        val resource: T
+    }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val acquiredResources: AcquiredResources =
+        val acquiredResources: Map<ResourceType, AcquiredResources> =
             partition.tryAcquireResourcesForReader()
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
+
+        if (::streamRecordConsumer.isInitialized.not()) {
+            val rr = this.acquiredResources.get()
+            /*val acwr = rr.first { r -> r is AcquiredResourceWithResource<SocketResource.AcquiredSocket> } as AcquiredResourceWithResource<*>*/
+            val acwr: AcquiredResources? = rr.get(ResourceType.RESOURCE_OUTPUT_SOCKET)
+            val assock = acwr as AcquiredResourceWithResource<SocketResource.AcquiredSocket>
+            val s = assock.resource.s
+
+            streamRecordConsumer = streamState.streamFeedBootstrap.streamRecordConsumer(
+                boostedOutputConsumerFactory?.boostedOutputConsumer(
+                    /*(this.acquiredResources.get().first { it is AcquiredResourceWithResource<*> } as AcquiredResourceWithResource<SocketResource.AcquiredSocket>).resource.s*/
+                    s
+                ))
+        }
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     fun out(row: SelectQuerier.ResultRow) {
+/*        if (::streamRecordConsumer.isInitialized.not()) {
+            streamRecordConsumer = streamState.streamFeedBootstrap.streamRecordConsumer(
+                boostedOutputConsumerFactory?.boostedOutputConsumer(
+                    (acquiredResources.get().first { it is AcquiredResourceWithResource<*> } as AcquiredResourceWithResource<SocketResource.AcquiredSocket>).resource.s
+                ))
+        }*/
+
+
         streamRecordConsumer.accept(row.data, row.changes)
     }
 
     override fun releaseResources() {
-        acquiredResources.getAndSet(null)?.close()
+//        acquiredResources.getAndSet(null)?.close() // TEMP
     }
 
     /** If configured max feed read time elapsed we exit with a transient error */
     protected fun checkMaxReadTimeElapsed() {
         sharedState.configuration.maxSnapshotReadDuration?.let {
-            if (java.time.Duration.between(sharedState.snapshotReadStartTime, Instant.now()) > it) {
+            if (Duration.between(sharedState.snapshotReadStartTime, Instant.now()) > it) {
                 throw TransientErrorException("Shutting down snapshot reader: max duration elapsed")
             }
         }

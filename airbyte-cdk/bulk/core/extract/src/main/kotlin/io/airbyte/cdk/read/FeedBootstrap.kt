@@ -10,6 +10,8 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.BoostedOutputConsumer
+import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -37,7 +39,8 @@ sealed class FeedBootstrap<T : Feed>(
     /** [StateManager] singleton which is encapsulated by this [FeedBootstrap]. */
     private val stateManager: StateManager,
     /** [Feed] to emit records for. */
-    val feed: T
+    val feed: T,
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
 ) {
 
     /** Delegates to [StateManager.feeds]. */
@@ -60,9 +63,9 @@ sealed class FeedBootstrap<T : Feed>(
     }
 
     /** A map of all [StreamRecordConsumer] for this [feed]. */
-    fun streamRecordConsumers(): Map<StreamIdentifier, StreamRecordConsumer> =
+    fun streamRecordConsumers(boostedOutputConsumer: BoostedOutputConsumer? = null): Map<StreamIdentifier, StreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to EfficientStreamRecordConsumer(stream)
+            stream.id to EfficientStreamRecordConsumer(stream, boostedOutputConsumer)
         }
 
     /**
@@ -72,8 +75,10 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
+    private inner class EfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: BoostedOutputConsumer?) :
         StreamRecordConsumer {
+        val outputer: OutputConsumer = boostedOutputConsumer ?: outputConsumer
+
 
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
@@ -95,7 +100,7 @@ sealed class FeedBootstrap<T : Feed>(
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
-                outputConsumer.accept(reusedMessageWithoutChanges)
+                outputer.accept(reusedMessageWithoutChanges)
             }
         }
 
@@ -108,7 +113,7 @@ sealed class FeedBootstrap<T : Feed>(
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
                 reusedRecordMeta.changes = changes
-                outputConsumer.accept(reusedMessageWithChanges)
+                outputer.accept(reusedMessageWithChanges)
             }
         }
 
@@ -132,7 +137,7 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.schema.forEach { recordData.putNull(it.id) }
                 if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
                     metaFieldDecorator.decorateRecordData(
-                        timestamp = outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
+                        timestamp = outputer.recordEmittedAt.atOffset(ZoneOffset.UTC),
                         globalStateValue =
                             if (precedingGlobalFeed != null)
                                 stateManager.scoped(precedingGlobalFeed).current()
@@ -152,7 +157,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                 )
 
@@ -165,7 +170,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                         .withMeta(reusedRecordMeta)
                 )
@@ -221,12 +226,13 @@ sealed class FeedBootstrap<T : Feed>(
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
+            boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory)
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory)
             }
     }
 }
@@ -270,7 +276,8 @@ class GlobalFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global)
+    boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, boostedOutputConsumerFactory)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
@@ -278,8 +285,9 @@ class StreamFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     stream: Stream,
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream) {
+    boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, boostedOutputConsumerFactory) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun streamRecordConsumer(): StreamRecordConsumer = streamRecordConsumers()[feed.id]!!
+    fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = streamRecordConsumers(boostedOutputConsumer)[feed.id]!!
 }

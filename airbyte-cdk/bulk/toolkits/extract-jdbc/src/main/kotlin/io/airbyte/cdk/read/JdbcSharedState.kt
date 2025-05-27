@@ -55,5 +55,5 @@ interface JdbcSharedState {
     fun tryAcquireResourcesForCreator(): JdbcPartitionsCreator.AcquiredResources?
 
     /** Tries to acquire global resources for [JdbcPartitionReader]. */
-    fun tryAcquireResourcesForReader(resourceTypes: Any): JdbcPartitionReader.AcquiredResources?
+    fun tryAcquireResourcesForReader(resourceTypes: Any): Map<ResourceType, JdbcPartitionReader.AcquiredResources>?
 }

@@ -51,9 +51,9 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
 
 /** A [Resource] used to manage concurrency. */
 @Singleton
-class ConcurrencyResource(maxConcurrency: Int, val socketManager: SocketManager?) : Resource<ConcurrencyResource.AcquiredThread> {
+class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.AcquiredThread> {
 
-    @Inject constructor(configuration: SourceConfiguration, socketManager: SocketManager?) : this(configuration.maxConcurrency, socketManager)
+    @Inject constructor(configuration: SourceConfiguration) : this(configuration.maxConcurrency)
 
     private val semaphore = Semaphore(maxConcurrency)
 

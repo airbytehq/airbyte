@@ -1,7 +1,10 @@
 package io.airbyte.cdk.output.sockets
 
+import ddtrot.jnr.ffi.annotations.Out
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.OutputStream
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
 import java.nio.channels.Channels
@@ -34,6 +37,7 @@ interface SocketWrapper {
     var bound: Boolean
     fun bindSocket()
     fun unbindSocket()
+    var outputStream: OutputStream?
 }
 
 class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper {
@@ -41,6 +45,7 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
     private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SocketWrapper.SocketStatus.SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
 
+    override var outputStream: OutputStream? = null
     override val status: SocketWrapper.SocketStatus
         get() = socketStatus.get()
 
@@ -66,7 +71,7 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
             // accept blocks until a listener connects
             val socketChennel: SocketChannel? = serverSocketChannel.accept()
             socketStatus.set(SocketWrapper.SocketStatus.SOCKET_READY)
-            Channels.newOutputStream(socketChennel).buffered()
+            outputStream = Channels.newOutputStream(socketChennel).buffered()
             logger.info { "connected to server socket at $socketFilePath" }
         }
         Unit

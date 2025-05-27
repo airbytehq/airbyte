@@ -57,14 +57,23 @@ class DefaultJdbcSharedState(
         return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
-    override fun tryAcquireResourcesForReader(resourceTypes: Any): JdbcPartitionReader.AcquiredResources? {
+    override fun tryAcquireResourcesForReader(resourceTypes: Any): Map<ResourceType, JdbcPartitionReader.AcquiredResources>? {
         val reses = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_DB_CONNECTION,
             ResourceType.RESOURCE_OUTPUT_SOCKET))
-        val acquiredThread = reses?.get(ResourceType.RESOURCE_DB_CONNECTION) ?: return null
+        val acquiredThread: Resource.Acquired = reses?.get(ResourceType.RESOURCE_DB_CONNECTION) ?: return null
+        val acquiredSocket = reses.get(ResourceType.RESOURCE_OUTPUT_SOCKET) ?: return null
 /*
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire() ?: return null
 */
-        return JdbcPartitionReader.AcquiredResources { acquiredThread.close() }
+        val aa = object : JdbcPartitionReader.AcquiredResourceWithResource<SocketResource.AcquiredSocket> {
+            override val resource: SocketResource.AcquiredSocket = acquiredSocket as SocketResource.AcquiredSocket
+            override fun close() = acquiredSocket.close()
+        }
+
+        return mapOf(
+            ResourceType.RESOURCE_DB_CONNECTION to JdbcPartitionReader.AcquiredResources { acquiredThread.close() },
+            ResourceType.RESOURCE_OUTPUT_SOCKET to aa
+        )
     }
 }
