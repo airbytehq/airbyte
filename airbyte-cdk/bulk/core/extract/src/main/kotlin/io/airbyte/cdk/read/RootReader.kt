@@ -36,6 +36,7 @@ class RootReader(
     val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    val resourceAcquirer: ResourceAcquirer,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -76,7 +77,7 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
+                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, boostedOutputConsumerFactory).read() }
                 }
             // Call listener hook.
             listener(feedJobs)

@@ -36,7 +36,8 @@ class ReadOperation(
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    val resourceAcquirer: ResourceAcquirer,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -51,7 +52,8 @@ class ReadOperation(
                 outputConsumer,
                 metaFieldDecorator,
                 partitionsCreatorFactories,
-                boostedOutputConsumerFactory
+                boostedOutputConsumerFactory,
+                resourceAcquirer,
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->

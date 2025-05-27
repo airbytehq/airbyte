@@ -3,6 +3,8 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.BoostedOutputConsumer
+import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,6 +30,8 @@ import kotlinx.coroutines.withTimeout
 class FeedReader(
     val root: RootReader,
     val feed: Feed,
+    val resourceAcquirer: ResourceAcquirer,
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -36,6 +40,7 @@ class FeedReader(
 
     /** Reads records from this [feed]. */
     suspend fun read() {
+        maybeCheckpoint() // TEMP
         var partitionsCreatorID = 1L
         while (true) {
             // Create PartitionReader instances.
@@ -307,14 +312,30 @@ class FeedReader(
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
+    var acquiredSocket: SocketResource.AcquiredSocket? = null
     private fun maybeCheckpoint() {
-        val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
-        if (stateMessages.isEmpty()) {
-            return
+
+        try {
+            //streamState.sharedState.tryAcquireResourcesForReader(Any()) // TEMP
+            val acqs = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
+            acquiredSocket =
+                acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
+                    ?: return // No output socket available, skip checkpoint.
+
+            val boostedOutputConsumer =
+                boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.s)
+            val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
+            if (stateMessages.isEmpty()) {
+                return
+            }
+            log.info { "checkpoint of ${stateMessages.size} state message(s)" }
+            for (stateMessage in stateMessages) {
+                boostedOutputConsumer?.accept(stateMessage)
+                root.outputConsumer.accept(stateMessage)
+            }
+        } finally {
+            acquiredSocket?.close()
         }
-        log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-        for (stateMessage in stateMessages) {
-            root.outputConsumer.accept(stateMessage)
-        }
+
     }
 }
