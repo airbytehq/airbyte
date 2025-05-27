@@ -84,41 +84,6 @@ class GoogleSearchConsole(HttpStream, ABC):
         return response.status_code == 429 or 500 <= response.status_code < 600
 
 
-class Sites(GoogleSearchConsole):
-    """
-    API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
-    """
-
-    primary_key = None
-    is_resumable = False
-
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        return f"sites/{stream_slice.get('site_url')}"
-
-
-class Sitemaps(GoogleSearchConsole):
-    """
-    API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
-    """
-
-    primary_key = None
-    data_field = "sitemap"
-    is_resumable = False
-
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        return f"sites/{stream_slice.get('site_url')}/sitemaps"
-
-
 class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
     """
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics
