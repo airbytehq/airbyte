@@ -114,6 +114,7 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
 
   @Override
   public boolean reachedTargetPosition(Lsn positionFromHeartbeat) {
+    LOGGER.info("Checking if target position is reached. Target LSN: " + targetLsn + ", Position from heartbeat: " + positionFromHeartbeat);
     return positionFromHeartbeat.compareTo(targetLsn) >= 0;
   }
 
