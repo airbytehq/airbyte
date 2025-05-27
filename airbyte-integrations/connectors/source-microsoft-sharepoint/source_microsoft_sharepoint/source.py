@@ -3,8 +3,8 @@
 #
 
 
-from typing import Any, Mapping, Optional, Tuple
 import logging
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification, TState
 from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
@@ -37,12 +37,12 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             # Mark the stream reader as being used in a check operation
             if hasattr(self.stream_reader, "mark_as_check"):
                 self.stream_reader.mark_as_check()
-            
+
             # Call the parent check_connection method
             return super().check_connection(logger, config)
         except Exception as e:
             return False, str(e)
-            
+
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
         Returns the specification describing what fields can be configured by a user when setting up a file-based source.

@@ -503,7 +503,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         if chunk:
                             local_file.write(chunk)
                 logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
-            
+
             # Get the file size
             file_size = getsize(local_file_path) if not (is_check_operation and file_size > self.CHECK_SIZE_LIMIT) else file_size
 

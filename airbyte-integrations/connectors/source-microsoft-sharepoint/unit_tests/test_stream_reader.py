@@ -974,25 +974,27 @@ def test_get_all_sites_with_no_results(test_case, search_job_value, primary_quer
 @patch("source_microsoft_sharepoint.stream_reader.requests.head")
 @patch("source_microsoft_sharepoint.stream_reader.open")
 @patch("source_microsoft_sharepoint.stream_reader.getsize")
-def test_upload_check_operation_large_file(mock_getsize, mock_open, mock_requests_head, mock_requests_get, mock_get_access_token, setup_reader_class):
+def test_upload_check_operation_large_file(
+    mock_getsize, mock_open, mock_requests_head, mock_requests_get, mock_get_access_token, setup_reader_class
+):
     """
     Test that large files are not actually downloaded during check operations but placeholder files are created instead.
     """
     instance = setup_reader_class
-    
+
     # Mark as check operation
     instance.mark_as_check()
-    
+
     # Mock file size to be above CHECK_SIZE_LIMIT but below FILE_SIZE_LIMIT
     file_size = instance.CHECK_SIZE_LIMIT + 1000  # 8MB + 1KB
     mock_requests_head.return_value.headers = {"Content-Length": str(file_size)}
     mock_requests_head.return_value.status_code = 200
-    
+
     # Mock response
     mock_response = Mock()
     mock_response.status_code = 200
     mock_requests_get.return_value = mock_response
-    
+
     # Mock file
     file = MicrosoftSharePointRemoteFile(
         uri="large_file.xlsx",
@@ -1000,43 +1002,45 @@ def test_upload_check_operation_large_file(mock_getsize, mock_open, mock_request
         last_modified=datetime(2021, 1, 1),
         created_at=datetime(2021, 1, 1),
     )
-    
+
     # Mock file paths
-    instance._get_file_transfer_paths = Mock(return_value={
-        instance.LOCAL_FILE_PATH: "/tmp/large_file.xlsx",
-        instance.FILE_RELATIVE_PATH: "large_file.xlsx",
-        instance.FILE_NAME: "large_file.xlsx",
-        instance.FILE_FOLDER: "",
-    })
-    
+    instance._get_file_transfer_paths = Mock(
+        return_value={
+            instance.LOCAL_FILE_PATH: "/tmp/large_file.xlsx",
+            instance.FILE_RELATIVE_PATH: "large_file.xlsx",
+            instance.FILE_NAME: "large_file.xlsx",
+            instance.FILE_FOLDER: "",
+        }
+    )
+
     # Mock logger
     logger = Mock()
-    
+
     # Mock getsize to return the same file size
     mock_getsize.return_value = file_size
-    
+
     # Call the method
     file_record_data, file_reference = instance.upload(file, "/tmp", logger)
-    
+
     # Verify that head request was made to get file size
     mock_requests_head.assert_called_once()
-    
+
     # Verify that GET request was NOT made (we shouldn't download large files during check)
     mock_requests_get.assert_not_called()
-    
+
     # Verify that we created an empty file
     mock_open.assert_called_once_with("/tmp/large_file.xlsx", "wb")
     mock_open.return_value.__enter__.return_value.write.assert_called_once_with(b"")
-    
+
     # Verify the returned record data and file reference
     assert file_record_data.file_name == "large_file.xlsx"
     assert file_record_data.bytes == file_size  # Should still have the actual file size
     assert file_record_data.source_uri == "large_file.xlsx"
-    
+
     assert file_reference.staging_file_url == "/tmp/large_file.xlsx"
     assert file_reference.source_file_relative_path == "large_file.xlsx"
     assert file_reference.file_size_bytes == file_size
-    
+
     # Verify that appropriate log message was created
     logger.info.assert_called_once_with(f"Created placeholder for large file {file.uri} (size: {file_size} bytes) during check operation")
 
@@ -1046,26 +1050,28 @@ def test_upload_check_operation_large_file(mock_getsize, mock_open, mock_request
 @patch("source_microsoft_sharepoint.stream_reader.requests.head")
 @patch("source_microsoft_sharepoint.stream_reader.open")
 @patch("source_microsoft_sharepoint.stream_reader.getsize")
-def test_upload_check_operation_small_file(mock_getsize, mock_open, mock_requests_head, mock_requests_get, mock_get_access_token, setup_reader_class):
+def test_upload_check_operation_small_file(
+    mock_getsize, mock_open, mock_requests_head, mock_requests_get, mock_get_access_token, setup_reader_class
+):
     """
     Test that small files are actually downloaded during check operations.
     """
     instance = setup_reader_class
-    
+
     # Mark as check operation
     instance.mark_as_check()
-    
+
     # Mock file size to be below CHECK_SIZE_LIMIT
     file_size = instance.CHECK_SIZE_LIMIT - 1000  # 8MB - 1KB
     mock_requests_head.return_value.headers = {"Content-Length": str(file_size)}
     mock_requests_head.return_value.status_code = 200
-    
+
     # Mock response for the actual file download
     mock_response = Mock()
     mock_response.status_code = 200
     mock_response.iter_content.return_value = [b"test content"]
     mock_requests_get.return_value = mock_response
-    
+
     # Mock file
     file = MicrosoftSharePointRemoteFile(
         uri="small_file.csv",
@@ -1073,43 +1079,45 @@ def test_upload_check_operation_small_file(mock_getsize, mock_open, mock_request
         last_modified=datetime(2021, 1, 1),
         created_at=datetime(2021, 1, 1),
     )
-    
+
     # Mock file paths
-    instance._get_file_transfer_paths = Mock(return_value={
-        instance.LOCAL_FILE_PATH: "/tmp/small_file.csv",
-        instance.FILE_RELATIVE_PATH: "small_file.csv",
-        instance.FILE_NAME: "small_file.csv",
-        instance.FILE_FOLDER: "",
-    })
-    
+    instance._get_file_transfer_paths = Mock(
+        return_value={
+            instance.LOCAL_FILE_PATH: "/tmp/small_file.csv",
+            instance.FILE_RELATIVE_PATH: "small_file.csv",
+            instance.FILE_NAME: "small_file.csv",
+            instance.FILE_FOLDER: "",
+        }
+    )
+
     # Mock getsize to return the file size
     mock_getsize.return_value = file_size
-    
+
     # Mock logger
     logger = Mock()
-    
+
     # Call the method
     file_record_data, file_reference = instance.upload(file, "/tmp", logger)
-    
+
     # Verify that head request was made to get file size
     mock_requests_head.assert_called_once()
-    
+
     # Verify that GET request WAS made (we should download small files even during check)
     mock_requests_get.assert_called_once()
-    
+
     # Verify that we wrote the file contents
     file_handle = mock_open.return_value.__enter__.return_value
     file_handle.write.assert_called_once_with(b"test content")
-    
+
     # Verify the returned record data and file reference
     assert file_record_data.file_name == "small_file.csv"
     assert file_record_data.bytes == file_size
     assert file_record_data.source_uri == "small_file.csv"
-    
+
     assert file_reference.staging_file_url == "/tmp/small_file.csv"
     assert file_reference.source_file_relative_path == "small_file.csv"
     assert file_reference.file_size_bytes == file_size
-    
+
     # Verify that appropriate log message was created
     logger.info.assert_called_once_with(f"Finished uploading file {file.uri} to /tmp/small_file.csv")
 
@@ -1119,13 +1127,13 @@ def test_mark_as_check(setup_reader_class):
     Test that mark_as_check properly sets the flag.
     """
     instance = setup_reader_class
-    
+
     # Verify flag is not set initially
     assert not hasattr(instance, "_is_check_operation")
-    
+
     # Mark as check operation
     instance.mark_as_check()
-    
+
     # Verify flag is now set
     assert hasattr(instance, "_is_check_operation")
     assert instance._is_check_operation is True
