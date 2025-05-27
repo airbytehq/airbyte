@@ -14,15 +14,19 @@ NUMBER_OF_PROPERTIES = 2000
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",
+    "contact",
     "deal",
+    "deal_split",
     "emails",
     "form",
     "goal_targets",
+    "leads",
     "line_item",
     "meetings",
     "notes",
     "tasks",
     "product",
+    "ticket",
 ]
 
 
@@ -119,8 +123,8 @@ def http_mocker():
     return None
 
 
-def find_stream(stream_name, config):
-    for stream in SourceHubspot(config=config, catalog=None, state=None).streams(config=config):
+def find_stream(stream_name, config, state=None):
+    for stream in SourceHubspot(config=config, catalog=None, state=state).streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
@@ -154,6 +158,13 @@ def mock_dynamic_schema_requests(requests_mock):
 
 
 def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
+    # Mock CustomObjects streams
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={},
+        status_code=200,
+    )
+
     for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
         if object_name in object_to_skip:
             continue
