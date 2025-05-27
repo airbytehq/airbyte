@@ -11,13 +11,35 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ClickHouseSpecification: ConfigurationSpecification() {
-    @get:JsonSchemaTitle("Test")
-    @get:JsonPropertyDescription(
-        """test""",
-    )
-    @get:JsonProperty("test")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 0}""")
-    val test: String = ""
+    @get:JsonSchemaTitle("Hostname")
+    @get:JsonPropertyDescription("Hostname of the database.")
+    @get:JsonProperty("hostname")
+    @get:JsonSchemaInject(json = """{"order": 0}""")
+    val hostname: String = ""
+
+    @get:JsonSchemaTitle("Port")
+    @get:JsonPropertyDescription("HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443")
+    @get:JsonProperty("port")
+    @get:JsonSchemaInject(json = """{"order": 1}""")
+    val port: String = "8443"
+
+    @get:JsonSchemaTitle("Database")
+    @get:JsonPropertyDescription("Name of the database.")
+    @get:JsonProperty("database")
+    @get:JsonSchemaInject(json = """{"order": 2}""")
+    val database: String = ""
+
+    @get:JsonSchemaTitle("Username")
+    @get:JsonPropertyDescription("Username to use to access the database.")
+    @get:JsonProperty("username")
+    @get:JsonSchemaInject(json = """{"order": 3}""")
+    val username: String = ""
+
+    @get:JsonSchemaTitle("Password")
+    @get:JsonPropertyDescription("Password associated with the username.")
+    @get:JsonProperty("password")
+    @get:JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
+    val password: String = ""
 }
 
 @Singleton
