@@ -27,13 +27,13 @@ class ClickHouseSpecification: ConfigurationSpecification() {
     @get:JsonPropertyDescription("Name of the database.")
     @get:JsonProperty("database")
     @get:JsonSchemaInject(json = """{"order": 2}""")
-    val database: String = ""
+    val database: String = "default"
 
     @get:JsonSchemaTitle("Username")
     @get:JsonPropertyDescription("Username to use to access the database.")
     @get:JsonProperty("username")
     @get:JsonSchemaInject(json = """{"order": 3}""")
-    val username: String = ""
+    val username: String = "default"
 
     @get:JsonSchemaTitle("Password")
     @get:JsonPropertyDescription("Password associated with the username.")
