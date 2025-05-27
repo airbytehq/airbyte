@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.write
+package io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.QueryJobConfiguration
