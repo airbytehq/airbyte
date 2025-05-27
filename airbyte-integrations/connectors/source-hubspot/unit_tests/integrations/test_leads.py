@@ -112,6 +112,7 @@ class TestLeadsStream(HubspotTestCase):
     def test_given_missing_scopes_error_when_read_then_stop_sync(self, http_mocker: HttpMocker):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, [])
+        self.mock_custom_objects_streams(http_mocker)
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh, expecting_exception=True)
 
     @HttpMocker()
