@@ -1,4 +1,4 @@
-package io.airbyte.integration.destination.clickhouse.v2
+package io.airbyte.integrations.destination.clickhouse_v2
 
 import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.file.s3.S3Object
