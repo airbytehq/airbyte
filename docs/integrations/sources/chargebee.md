@@ -104,6 +104,8 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.6 | 2025-04-26 | [58729](https://github.com/airbytehq/airbyte/pull/58729) | Update dependencies |
+| 0.10.5 | 2025-04-19 | [57648](https://github.com/airbytehq/airbyte/pull/57648) | Update dependencies |
 | 0.10.4 | 2025-04-05 | [57130](https://github.com/airbytehq/airbyte/pull/57130) | Update dependencies |
 | 0.10.3 | 2025-03-29 | [56138](https://github.com/airbytehq/airbyte/pull/56138) | Update dependencies |
 | 0.10.2 | 2025-03-17 | [55799](https://github.com/airbytehq/airbyte/pull/55799) | Adding the new field `discount_quantity` to stream `coupon` |

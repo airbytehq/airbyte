@@ -9,42 +9,16 @@ import mock
 import pendulum
 import pytest
 from source_hubspot.streams import (
-    Campaigns,
-    Companies,
-    ContactLists,
-    Contacts,
-    ContactsListMemberships,
-    ContactsMergedAudit,
-    ContactsPropertyHistory,
     ContactsWebAnalytics,
     CustomObject,
-    DealPipelines,
     Deals,
-    DealsArchived,
-    DealSplits,
-    EmailEvents,
-    EngagementsCalls,
-    EngagementsEmails,
-    EngagementsMeetings,
-    EngagementsNotes,
-    EngagementsTasks,
-    Forms,
-    FormSubmissions,
-    Goals,
-    Leads,
-    LineItems,
-    Owners,
-    OwnersArchived,
-    Products,
     RecordUnnester,
-    TicketPipelines,
-    Tickets,
-    Workflows,
 )
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
+from airbyte_cdk.sources.types import Record
 
-from .conftest import find_stream
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -54,97 +28,94 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
-    stream = ContactLists(**common_params)
-
+def test_updated_at_field_non_exist_handler(requests_mock, config, common_params, fake_properties_list, custom_object_schema):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    stream = find_stream("contact_lists", config)
+    created_at = "2022-03-25T16:43:11Z"
     responses = [
         {
             "json": {
-                stream.data_field: [
+                "lists": [
                     {
                         "id": "test_id",
-                        "createdAt": "2022-03-25T16:43:11Z",
+                        "createdAt": created_at,
                     },
                 ],
             }
         }
     ]
-    properties_response = [
-        {
-            "json": [
-                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-                for property_name in fake_properties_list
-            ],
-            "status_code": 200,
-        }
-    ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", properties_response)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
 
-    _, stream_state = read_incremental(stream, {})
+    stream_slices = list(stream.retriever.stream_slicer.stream_slices())
+    assert len(stream_slices) == 1
 
-    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
-
-    assert stream_state[stream.updated_at_field] == expected
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
+    assert len(records) == 1
+    assert records[0]["updatedAt"] == created_at
 
 
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
-        (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
-        (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
-        (DealPipelines, "deal", {"updatedAt": 1675121674226}),
-        (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("campaigns", "campaigns", {"lastUpdatedTime": 1675121674226}),
+        ("companies", "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contact_lists", "contact", {"createdAt": "2021-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
+        ("deal_splits", "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsNotes, "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsTasks, "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Forms, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (FormSubmissions, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Goals, "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_calls", "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_emails", "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_meetings", "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_notes", "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_tasks", "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("forms", "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("form_submissions", "form", {"updatedAt": 1675121674227}),
+        ("goals", "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("leads", "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("line_items", "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updated": "1634050455543"}),
-        (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (OwnersArchived, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Workflows, "", {"updatedAt": 1675121674226}),
+        ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("products", "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("tickets", "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams_read(
     mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, config
 ):
-    if isinstance(stream_class, str):
-        stream = find_stream(stream_class, config)
-        data_field = stream.retriever.record_selector.extractor.field_path[0]
-    else:
-        stream = stream_class(**common_params)
-        data_field = stream.data_field
-    responses = [
+    mock_dynamic_schema_requests_with_skip(requests_mock, [])
+    stream = find_stream(stream_class, config)
+    data_field = (
+        stream.retriever.record_selector.extractor.field_path[0] if len(stream.retriever.record_selector.extractor.field_path) > 0 else None
+    )
+
+    list_entities = [
         {
-            "json": {
-                data_field: [
-                    {
-                        "id": "test_id",
-                        "created": "2022-02-25T16:43:11Z",
-                    }
-                    | cursor_value
-                ],
-            }
+            "id": "test_id",
+            "created": "2022-02-25T16:43:11Z",
         }
+        | cursor_value
     ]
+    responses = [{"json": {data_field: list_entities} if data_field else list_entities}]
+
+    is_form_submission = stream_class == "form_submissions"
+
+    if is_form_submission:
+        forms_response = [
+            {
+                "json": {
+                    data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}],
+                }
+            }
+        ]
 
     properties_response = [
         {
@@ -184,10 +155,12 @@ def test_streams_read(
         }
     ]
 
-    is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+        stream_slice = {}
+        if is_form_submission:
+            stream_slice = {"form_id": ["test_id"]}
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path(stream_slice=stream_slice)
     else:
         stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
@@ -195,21 +168,23 @@ def test_streams_read(
     requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
     requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
-    requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
+    requests_mock.register_uri("GET", "/marketing/v3/forms", responses if not is_form_submission else forms_response)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
+    requests_mock.register_uri("GET", "/email/public/v1/campaigns?count=500", [{"json": {"campaigns": list_entities}}])
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
+    requests_mock.register_uri("POST", "/crm/v3/lists/search", responses)
 
     records = read_full_refresh(stream)
     assert records
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint, cursor_value",
+    "stream_class, endpoint, cursor_value",
     [
-        (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
     ],
     ids=[
         "Contacts stream with v2 field transformations",
@@ -217,14 +192,29 @@ def test_streams_read(
         "DealsArchived stream with v2 field transformations",
     ],
 )
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_stream_read_with_legacy_field_transformation(
-    stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, migrated_properties_list
+    mock_get_custom_object_streams,
+    stream_class,
+    endpoint,
+    cursor_value,
+    requests_mock,
+    common_params,
+    fake_properties_list,
+    migrated_properties_list,
+    config,
 ):
-    stream = stream(**common_params)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    if isinstance(stream_class, str):
+        stream = find_stream(stream_class, config)
+        data_field = stream.retriever.record_selector.extractor.field_path[0]
+    else:
+        stream = stream_class(**common_params)
+        data_field = stream.data_field
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
@@ -253,7 +243,11 @@ def test_stream_read_with_legacy_field_transformation(
     ]
     stream._sync_mode = SyncMode.full_refresh
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    if isinstance(stream_class, str):
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+    else:
+        stream_url = stream.url
+    requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
 
     records = read_full_refresh(stream)
@@ -278,27 +272,41 @@ def test_stream_read_with_legacy_field_transformation(
         "properties_hs_time_in_prospect": "1 month",
         "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
     } | cursor_value
-    if isinstance(stream, Contacts):
+    if stream_class == "contacts":
         expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
     else:
         expected_record = expected_record | {"properties_hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
-    assert records[0] == expected_record
+    record = records[0].data if isinstance(records[0], Record) else records[0]
+    assert json.dumps(record, sort_keys=True) == json.dumps(expected_record, sort_keys=True)
 
 
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
-def test_crm_search_streams_with_no_associations(sync_mode, common_params, requests_mock, fake_properties_list):
-    stream = DealSplits(**common_params)
-    stream_state = {
-        "type": "STREAM",
-        "stream": {"stream_descriptor": {"name": "deal_splits"}, "stream_state": {"updatedAt": "2021-01-01T00:00:00.000000Z"}},
-    }
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_crm_search_streams_with_no_associations(
+    mock_get_custom_object_streams, sync_mode, common_params, requests_mock, fake_properties_list, config
+):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    stream_state = AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="deal_splits"), stream_state=AirbyteStateBlob(updatedAt="2021-01-01T00:00:00.000000Z")
+        ),
+    )
+
+    if sync_mode == SyncMode.incremental:
+        stream = find_stream("deal_splits", config, [stream_state])
+    else:
+        stream = find_stream("deal_splits", config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
+
     cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
@@ -309,14 +317,12 @@ def test_crm_search_streams_with_no_associations(sync_mode, common_params, reque
         }
     ]
     if sync_mode == SyncMode.full_refresh:
-        stream.set_sync(SyncMode.full_refresh, stream_state=None)
-        endpoint_path = f"/crm/v3/objects/{stream.entity}"
+        endpoint_path = "/crm/v3/objects/deal_split"
         requests_mock.register_uri("GET", endpoint_path, responses)
     else:
-        stream.set_sync(SyncMode.incremental, stream_state)
-        endpoint_path = f"/crm/v3/objects/{stream.entity}/search"
+        endpoint_path = "/crm/v3/objects/deal_split/search"
         requests_mock.register_uri("POST", endpoint_path, responses)
-    properties_path = f"/properties/v2/{stream.entity}/properties"
+    properties_path = f"/properties/v2/deal_split/properties"
     properties_response = [
         {
             "json": [
@@ -330,7 +336,7 @@ def test_crm_search_streams_with_no_associations(sync_mode, common_params, reque
     requests_mock.register_uri("POST", endpoint_path, responses)
     requests_mock.register_uri("GET", properties_path, properties_response)
     if sync_mode == SyncMode.incremental:
-        records, state = read_incremental(stream, stream_state=stream_state)
+        records, state = read_incremental(stream, stream_state=stream_state.stream.stream_state.__dict__)
         assert state
     else:
         records = read_full_refresh(stream)
@@ -343,11 +349,13 @@ def test_crm_search_streams_with_no_associations(sync_mode, common_params, reque
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},
-        {"text": "Not a JSON", "status_code": 200},
     ],
 )
-def test_common_error_retry(error_response, requests_mock, common_params, fake_properties_list):
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_common_error_retry(mock_get_custom_object_streams, error_response, requests_mock, common_params, fake_properties_list, config):
     """Error once, check that we retry and not fail"""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     properties_response = [
         {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
         for property_name in fake_properties_list
@@ -360,10 +368,11 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
         },
     ]
 
-    stream = Companies(**common_params)
+    stream = find_stream("companies", config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
 
     response = {
-        stream.data_field: [
+        data_field: [
             {
                 "id": "test_id",
                 "created": "2022-02-25T16:43:11Z",
@@ -374,58 +383,63 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     }
     requests_mock.register_uri("GET", "/properties/v2/company/properties", responses)
     stream._sync_mode = SyncMode.full_refresh
-    stream_url = stream.url
+    stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
     stream._sync_mode = None
     requests_mock.register_uri("GET", stream_url, [{"json": response}])
     records = read_full_refresh(stream)
 
-    assert [response[stream.data_field][0]] == records
+    expected_record = response[data_field][0]
+    record = records[0].data if isinstance(records[0], Record) else records[0]
+    assert json.dumps(record, sort_keys=True) == json.dumps(expected_record, sort_keys=True)
     assert len(requests_mock.request_history) > 1
 
 
-def test_contact_lists_transform(requests_mock, common_params):
-    stream = ContactLists(**common_params)
+def test_contact_lists_transform(requests_mock, common_params, config, custom_object_schema):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    stream = find_stream("contact_lists", config)
 
     responses = [
         {
             "json": {
-                stream.data_field: [
+                "lists": [
                     {
                         "listId": 1,
-                        "createdAt": 1654117200000,
-                        "filters": [[{"value": "@hubspot"}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
                     },
                     {
                         "listId": 2,
-                        "createdAt": 1654117200001,
-                        "filters": [[{"value": True}, {"value": "FORM_ABUSE"}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
                     },
                     {
                         "listId": 3,
-                        "createdAt": 1654117200002,
-                        "filters": [[{"value": 1000}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
                     },
                 ]
             }
         }
     ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
     records = read_full_refresh(stream)
 
-    assert records[0]["filters"][0][0]["value"] == "@hubspot"
-    assert records[1]["filters"][0][0]["value"] == "True"
-    assert records[1]["filters"][0][1]["value"] == "FORM_ABUSE"
-    assert records[2]["filters"][0][0]["value"] == "1000"
+    assert len(records) > 0
+    for record in records:
+        assert isinstance(record["updatedAt"], str)
 
 
-def test_client_side_incremental_stream(requests_mock, common_params, fake_properties_list):
-    stream = Forms(**common_params)
-    latest_cursor_value = "2030-01-30T23:46:36.287Z"
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_client_side_incremental_stream(
+    mock_get_custom_object_streams, mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config
+):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    stream = find_stream("forms", config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
+    latest_cursor_value = "2024-01-30T23:46:36.287000Z"
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {"id": "test_id_1", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-01-30T23:46:36.287Z"},
                     {"id": "test_id_2", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": latest_cursor_value},
                     {"id": "test_id_3", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-02-20T23:46:36.287Z"},
@@ -443,53 +457,13 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
         }
     ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+
+    requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
 
-    list(stream.read_records(SyncMode.incremental))
-    assert stream.state == {stream.cursor_field: pendulum.parse(latest_cursor_value).to_rfc3339_string()}
-
-
-@pytest.mark.parametrize(
-    "state, record, expected",
-    [
-        (
-            {"updatedAt": ""},
-            {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"},
-            (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"}),
-        ),
-        (
-            {"updatedAt": "2023-01-30T23:46:36.287000+00:00"},
-            {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"},
-            (False, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"}),
-        ),
-    ],
-    ids=[
-        "Empty Sting in state + new record",
-        "State + old record",
-    ],
-)
-def test_empty_string_in_state(state, record, expected, requests_mock, common_params, fake_properties_list):
-    stream = Forms(**common_params)
-    stream.state = state
-    # overcome the availability strartegy issues by mocking the responses
-    # A.K.A: not related to the test at all, but definetely required.
-    properties_response = [
-        {
-            "json": [
-                {"name": property_name, "type": "string", "CreatedAt": "2023-01-30T23:46:24.355Z", "updatedAt": "2023-01-30T23:46:36.287Z"}
-                for property_name in fake_properties_list
-            ],
-            "status_code": 200,
-        }
-    ]
-    requests_mock.register_uri("GET", stream.url, json=record)
-    requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
-    # end of mocking `availability strategy`
-
-    result = stream.filter_by_state(stream.state, record)
-    assert result == expected[0]
-    assert stream.state == expected[1]
+    output = read_from_stream(config, "forms", SyncMode.incremental)
+    assert output.state_messages[-1].state.stream.stream_state.__dict__[stream.cursor_field] == latest_cursor_value
 
 
 @pytest.fixture(name="custom_object_schema")
@@ -564,29 +538,6 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     json_schema = stream.get_json_schema()
 
     assert json_schema == expected_custom_object_json_schema
-    assert not adapter.called
-
-
-def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(requests_mock, common_params):
-    stream = ContactsMergedAudit(**common_params)
-
-    adapter = requests_mock.register_uri(
-        "GET",
-        f"/properties/v2/{stream.entity}/properties",
-        [
-            {
-                "json": [
-                    {
-                        "name": "hs_object_id",
-                        "label": "Record ID",
-                        "type": "number",
-                    }
-                ]
-            }
-        ],
-    )
-    _ = stream.get_json_schema()
-
     assert not adapter.called
 
 
@@ -718,40 +669,6 @@ def test_web_analytics_latest_state(common_params, mocker):
     assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
 
 
-def test_property_history_transform(common_params):
-    stream = ContactsPropertyHistory(**common_params)
-    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
-    records = [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
-        }
-    ]
-    assert [
-        {"vid": 1, "canonical-vid": 1, "portal-id": 1, "is-contact": True, "property": "hs_country", **version} for version in versions
-    ] == list(stream._transform(records=records))
-
-
-def test_contacts_membership_transform(common_params):
-    stream = ContactsListMemberships(**common_params)
-    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
-    memberships = [{"membership": 1}]
-    records = [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
-            "list-memberships": memberships,
-        }
-    ]
-    assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))
-
-
 @pytest.mark.parametrize(
     "stream_class, cursor_value, data_to_cast, expected_casted_data",
     [
@@ -768,6 +685,8 @@ def test_cast_record_fields_with_schema_if_needed(
     """
     Test that the stream cast record fields with stream json schema if needed
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
         data_field = stream.retriever.record_selector.extractor.field_path[0]
@@ -790,29 +709,27 @@ def test_cast_record_fields_with_schema_if_needed(
         }
     ]
 
-    is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
 
     if isinstance(stream_class, str):
         stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
     else:
-        stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+        stream_url = stream.url
 
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
     records = read_full_refresh(stream)
     record = records[0]
-    print(record)
     for casted_key, casted_value in expected_casted_data.items():
         assert record[casted_key] == casted_value
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
+    "stream_class, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
     [
         (
-            Deals,
+            "deals",
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "string")],
@@ -845,17 +762,36 @@ def test_cast_record_fields_with_schema_if_needed(
         ),
     ],
 )
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_cast_record_fields_if_needed(
-    stream, endpoint, cursor_value, fake_properties_list_response, requests_mock, common_params, data_to_cast, expected_casted_data
+    mock_get_custom_object_streams,
+    stream_class,
+    endpoint,
+    cursor_value,
+    fake_properties_list_response,
+    requests_mock,
+    common_params,
+    data_to_cast,
+    expected_casted_data,
+    custom_object_schema,
+    config,
 ):
     """
     Test that the stream cast record fields in properties key with properties endpoint response if needed
     """
-    stream = stream(**common_params)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    if isinstance(stream_class, str):
+        stream = find_stream(stream_class, config)
+        data_field = stream.retriever.record_selector.extractor.field_path[0]
+    else:
+        stream = stream_class(**common_params)
+        data_field = stream.data_field
+
     responses = [
         {
             "json": {
-                stream.data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "properties": data_to_cast} | cursor_value],
+                data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "properties": data_to_cast} | cursor_value],
             }
         }
     ]
@@ -870,9 +806,11 @@ def test_cast_record_fields_if_needed(
         }
     ]
 
-    is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
-    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    if isinstance(stream_class, str):
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+    else:
+        stream_url = stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)

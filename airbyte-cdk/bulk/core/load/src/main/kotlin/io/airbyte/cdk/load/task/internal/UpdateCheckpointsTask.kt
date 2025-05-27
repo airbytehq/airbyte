@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
@@ -20,16 +19,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : Task
-
 @Singleton
 @Secondary
-class DefaultUpdateCheckpointsTask(
+class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
-) : UpdateCheckpointsTask {
+) : Task {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -39,14 +35,14 @@ class DefaultUpdateCheckpointsTask(
         checkpointMessageQueue.consume().collect {
             when (it.value) {
                 is StreamCheckpointWrapped -> {
-                    val (_, stream, index, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with index $index" }
-                    checkpointManager.addStreamCheckpoint(stream, index, it.replace(message))
+                    val (stream, checkpointId, message) = it.value
+                    log.info { "Updating checkpoint for stream $stream with id $checkpointId" }
+                    checkpointManager.addStreamCheckpoint(stream, checkpointId, it.replace(message))
                 }
                 is GlobalCheckpointWrapped -> {
-                    val (_, streamIndexes, message) = it.value
-                    log.info { "Updating global checkpoint for streams $streamIndexes" }
-                    checkpointManager.addGlobalCheckpoint(streamIndexes, it.replace(message))
+                    val (streamCheckpointIds, message) = it.value
+                    log.info { "Updating global checkpoint for streams $streamCheckpointIds" }
+                    checkpointManager.addGlobalCheckpoint(streamCheckpointIds, it.replace(message))
                 }
             }
         }

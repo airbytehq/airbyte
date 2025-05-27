@@ -23,17 +23,17 @@ This page contains the setup guide and reference information for the [Airtable](
 #### For Airbyte Open Source:
 
 1. Go to https://airtable.com/create/tokens to create new token.
-   ![Generate new Token](../../.gitbook/assets/source/airtable/generate_new_token.png)
+   ![Generate new Token](/.gitbook/assets/source/airtable/generate_new_token.png)
 2. Add following scopes:
 
    - `data.records:read`
    - `data.recordComments:read`
    - `schema.bases:read`
 
-   ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
+   ![Add Scopes](/.gitbook/assets/source/airtable/add_scopes.png)
 
 3. Select required bases or allow access to all available and press the `Create Token` button.
-   ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
+   ![Add Bases](/.gitbook/assets/source/airtable/add_bases.png)
 4. Save token from the popup window.
 <!-- /env:oss -->
 
@@ -75,10 +75,10 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
 ## Supported Streams
 

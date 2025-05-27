@@ -53,10 +53,10 @@ class OpenStreamTaskTest {
 
         coEvery { syncManager.registerStartedStreamLoader(any(), any()) } returns Unit
 
-        val task = DefaultOpenStreamTask(writer, syncManager, openStreamQueue)
+        val task = OpenStreamTask(writer, syncManager, openStreamQueue)
 
         assertThrows(MyException::class) { task.execute() }
 
-        coVerify(exactly = 3) { syncManager.registerStartedStreamLoader(any(), any()) }
+        coVerify(exactly = 2) { syncManager.registerStartedStreamLoader(any(), any()) }
     }
 }

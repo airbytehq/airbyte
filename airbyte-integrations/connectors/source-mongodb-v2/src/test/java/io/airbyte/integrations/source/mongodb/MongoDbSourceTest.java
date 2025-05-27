@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -168,6 +169,7 @@ class MongoDbSourceTest {
     when(cursor.hasNext()).thenReturn(true, true, false);
     when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(aggregateIterable.maxTime(DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC, TimeUnit.SECONDS)).thenReturn(aggregateIterable);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);

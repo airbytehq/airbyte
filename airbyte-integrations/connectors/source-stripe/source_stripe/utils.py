@@ -7,12 +7,18 @@ from typing import Any, Mapping
 
 
 def safe_stream_state(stream_state: Mapping[str, Any], cursor_field: str) -> Mapping[str, Any]:
-    state = stream_state.get(cursor_field)
-    if isinstance(state, str):
+    result_state = {**stream_state}
+
+    if cursor_field not in result_state and "state" in stream_state:
+        result_state = stream_state["state"]
+
+    raw_value = result_state.get(cursor_field)
+
+    if isinstance(raw_value, str):
         try:
             # Convert to float first to ensure it's a valid number, then cast to int
-            numeric_state = int(float(state))
-            return {**stream_state, cursor_field: numeric_state}
+            result_state[cursor_field] = int(float(raw_value))
         except ValueError:
-            pass
-    return stream_state
+            pass  # Leave the original string value if conversion fails
+
+    return result_state

@@ -14,6 +14,11 @@ fun interface DestinationCleaner {
      * [IntegrationTest.isNamespaceOld] to filter down to namespaces which can be deleted.
      */
     fun cleanup()
+
+    fun compose(other: DestinationCleaner) = DestinationCleaner {
+        cleanup()
+        other.cleanup()
+    }
 }
 
 object NoopDestinationCleaner : DestinationCleaner {

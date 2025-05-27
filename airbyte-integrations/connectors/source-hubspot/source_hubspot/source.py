@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -20,53 +20,21 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Campaigns,
-    Companies,
-    CompaniesPropertyHistory,
     CompaniesWebAnalytics,
-    ContactLists,
     Contacts,
-    ContactsFormSubmissions,
-    ContactsListMemberships,
-    ContactsMergedAudit,
-    ContactsPropertyHistory,
     ContactsWebAnalytics,
     CustomObject,
-    DealPipelines,
-    Deals,
-    DealsArchived,
-    DealSplits,
-    DealsPropertyHistory,
     DealsWebAnalytics,
-    EmailEvents,
-    Engagements,
-    EngagementsCalls,
     EngagementsCallsWebAnalytics,
-    EngagementsEmails,
     EngagementsEmailsWebAnalytics,
-    EngagementsMeetings,
     EngagementsMeetingsWebAnalytics,
-    EngagementsNotes,
     EngagementsNotesWebAnalytics,
-    EngagementsTasks,
     EngagementsTasksWebAnalytics,
-    Forms,
-    FormSubmissions,
-    Goals,
     GoalsWebAnalytics,
-    Leads,
-    LineItems,
     LineItemsWebAnalytics,
-    Owners,
-    OwnersArchived,
-    Products,
     ProductsWebAnalytics,
-    SubscriptionChanges,
-    TicketPipelines,
-    Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
-    Workflows,
 )
 
 
@@ -77,12 +45,64 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 """
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
+    "campaigns": {"crm.lists.read"},
+    "companies": {"crm.objects.contacts.read", "crm.objects.companies.read"},
+    "companies_property_history": {"crm.objects.companies.read"},
+    "contact_lists": {"crm.lists.read"},
+    "contacts": {"crm.objects.contacts.read"},
+    "contacts_property_history": {"crm.objects.contacts.read"},
+    "deal_pipelines": {"crm.objects.contacts.read"},
+    "deal_splits": {"crm.objects.deals.read"},
+    "deals": {"contacts", "crm.objects.deals.read"},
+    "deals_property_history": {"crm.objects.deals.read"},
+    "email_events": {"content"},
     "email_subscriptions": {"content"},
+    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
+    "engagements_calls": {"crm.objects.contacts.read"},
+    "engagements_emails": {"crm.objects.contacts.read", "sales-email-read"},
+    "engagements_meetings": {"crm.objects.contacts.read"},
+    "engagements_notes": {"crm.objects.contacts.read"},
+    "engagements_tasks": {"crm.objects.contacts.read"},
     "marketing_emails": {"content"},
+    "deals_archived": {"contacts", "crm.objects.deals.read"},
+    "forms": {"forms"},
+    "form_submissions": {"forms"},
+    "goals": {"crm.objects.goals.read"},
+    "leads": {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"},
+    "line_items": {"e-commerce", "crm.objects.line_items.read"},
+    "owners": {"crm.objects.owners.read"},
+    "owners_archived": {"crm.objects.owners.read"},
+    "products": {"e-commerce"},
+    "subscription_changes": {"content"},
+    "ticket_pipelines": {
+        "media_bridge.read",
+        "tickets",
+        "crm.schemas.custom.read",
+        "e-commerce",
+        "timeline",
+        "contacts",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.deals.write",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.line_items.read",
+        "crm.objects.companies.write",
+    },
+    "tickets": {"tickets"},
+    "workflows": {"automation"},
 }
 
 
-properties_scopes = {}
+properties_scopes = {
+    "companies_property_history": {"crm.schemas.companies.read"},
+    "contacts_property_history": {"crm.schemas.contacts.read"},
+    "deals_property_history": {"crm.schemas.deals.read"},
+}
 
 
 def scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
@@ -93,7 +113,8 @@ def scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
     if isinstance(stream, BaseStream):
         return stream.scope_is_granted(granted_scopes)
     else:
-        return len(scopes.get(stream.name, set()).intersection(granted_scopes)) > 0
+        # The default value is scopes for custom objects streams
+        return len(scopes.get(stream.name, {"crm.schemas.custom.read", "crm.objects.custom.read"}).intersection(granted_scopes)) > 0
 
 
 def properties_scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
@@ -169,42 +190,8 @@ class SourceHubspot(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
+        # Temporarily using `ConcurrentDeclarativeSource.streams()` to validate granted scopes.
         streams = super().streams(config=config)
-        streams += [
-            Campaigns(**common_params),
-            Companies(**common_params),
-            ContactLists(**common_params),
-            Contacts(**common_params),
-            ContactsFormSubmissions(**common_params),
-            ContactsListMemberships(**common_params),
-            ContactsMergedAudit(**common_params),
-            DealPipelines(**common_params),
-            DealSplits(**common_params),
-            Deals(**common_params),
-            DealsArchived(**common_params),
-            EmailEvents(**common_params),
-            Engagements(**common_params),
-            EngagementsCalls(**common_params),
-            EngagementsEmails(**common_params),
-            EngagementsMeetings(**common_params),
-            EngagementsNotes(**common_params),
-            EngagementsTasks(**common_params),
-            Forms(**common_params),
-            FormSubmissions(**common_params),
-            Goals(**common_params),
-            Leads(**common_params),
-            LineItems(**common_params),
-            Owners(**common_params),
-            OwnersArchived(**common_params),
-            Products(**common_params),
-            ContactsPropertyHistory(**common_params),
-            CompaniesPropertyHistory(**common_params),
-            DealsPropertyHistory(**common_params),
-            SubscriptionChanges(**common_params),
-            Tickets(**common_params),
-            TicketPipelines(**common_params),
-            Workflows(**common_params),
-        ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
 
@@ -253,7 +240,6 @@ class SourceHubspot(YamlDeclarativeSource):
             available_streams = streams
 
         custom_object_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
-        available_streams.extend(custom_object_streams)
 
         if enable_experimental_streams:
             custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(
