@@ -298,6 +298,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.33 | 2025-05-27 | [60869](https://github.com/airbytehq/airbyte/pull/60869) | [ci] (source-file) fix vulnerabilities |
 | 0.5.32 | 2025-05-24 | [60421](https://github.com/airbytehq/airbyte/pull/60421) | Update dependencies |
 | 0.5.31 | 2025-05-10 | [59390](https://github.com/airbytehq/airbyte/pull/59390) | Update dependencies |
 | 0.5.30 | 2025-04-26 | [58890](https://github.com/airbytehq/airbyte/pull/58890) | Update dependencies |
