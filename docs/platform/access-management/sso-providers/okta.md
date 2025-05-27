@@ -20,7 +20,7 @@ The exact process differs between the Cloud or Self-Managed versions of Airbyte.
 ## Cloud with Teams add-on
 
 :::warning
-For security purposes, Airbyte disables existing [applications](/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
+For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
 :::
 
 Before you can proceed, you require your **Company Identifier** so you can properly fill in these values. Your contact at Airbyte gives this to you.
