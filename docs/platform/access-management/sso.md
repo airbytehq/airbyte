@@ -25,7 +25,7 @@ import DocCardList from '@theme/DocCardList';
 <TabItem value="cloud" label="Cloud">
 Once your contact at Airbyte informs you that you’re all set up, you can log into Airbyte using SSO. 
     
-1. Visit [https://cloud.airbyte.com/sso](https://cloud.airbyte.com/sso), or visit [https://cloud.airbyte.com](cloud.airbyte.com) and click **Continue with SSO**.
+1. Visit [Airbyte Cloud](https://cloud.airbyte.com) and click **Continue with SSO**.
 
 2. Specify your **Company identifier**, then click **Continue with SSO**. Airbyte forwards you to your IdP's login page (e.g. Okta login page). Log into your work account. Your IdP forwards you back to Airbyte Cloud, which logs you in.
 
