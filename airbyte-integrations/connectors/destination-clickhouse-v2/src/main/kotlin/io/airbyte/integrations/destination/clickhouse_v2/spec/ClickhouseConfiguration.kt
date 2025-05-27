@@ -12,6 +12,11 @@ data class ClickhouseConfiguration(
     val password: String,
 ): DestinationConfiguration() {
     val endpoint = "https://$hostname:$port"
+    val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
+
+    object Defaults {
+        const val DATABASE_NAME = "default"
+    }
 }
 
 @Singleton
