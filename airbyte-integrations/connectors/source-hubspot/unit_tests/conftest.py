@@ -112,11 +112,6 @@ def migrated_properties_list():
     ]
 
 
-# @pytest.fixture(name="api")
-# def api(some_credentials):
-#     return API(some_credentials)
-
-
 @pytest.fixture
 def http_mocker():
     return None
