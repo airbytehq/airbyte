@@ -1,4 +1,4 @@
-package io.airbyte.integration.destination.clickhousev2
+package io.airbyte.integration.destination.clickhouse.v2
 
 import io.airbyte.cdk.AirbyteDestinationRunner
 import io.airbyte.cdk.load.command.aws.AwsToolkitConstants
