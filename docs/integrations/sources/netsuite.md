@@ -1,5 +1,9 @@
 # Oracle Netsuite
 
+:::warning
+This Marketplace connector is community-maintained. Airbyte offers an Enterprise connector for Netsuite, which includes support and premium features better suited to larger organizations. See [Netsuite](../enterprise-connectors/source-netsuite) to learn more.
+:::
+
 One unified business management suite, encompassing ERP/Financials, CRM and ecommerce for more than 31,000 customers.
 
 This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html) and uses REST API to fetch the customers data.

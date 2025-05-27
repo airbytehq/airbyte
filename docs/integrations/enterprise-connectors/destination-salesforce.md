@@ -1,4 +1,4 @@
-# Salesforce Destination
+# Salesforce
 
 ## Overview
 

@@ -1,4 +1,4 @@
-# Source Workday
+# Workday
 
 Airbyte's [Workday](https://workday.com) enterprise source connector currently offers the following features:
 

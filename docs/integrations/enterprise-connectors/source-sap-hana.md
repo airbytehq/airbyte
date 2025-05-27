@@ -1,4 +1,4 @@
-# Source SAP HANA
+# SAP HANA
 
 Airbyte’s incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is currently in-development and will be available soon.
 

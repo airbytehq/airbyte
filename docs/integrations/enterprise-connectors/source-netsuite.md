@@ -1,4 +1,4 @@
-# Source Netsuite
+# Netsuite
 
 Airbyte’s incubating Netsuite enterprise source connector currently offers Full Refresh and cursosr-based Incremental syncs for streams.
 
