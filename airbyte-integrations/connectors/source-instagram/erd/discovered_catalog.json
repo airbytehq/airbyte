@@ -535,10 +535,6 @@
             "description": "The number of followers who are currently online.",
             "type": ["null", "object"]
           },
-          "views": {
-            "description": "The total number of views of the user.",
-            "type": ["null", "object"]
-          },
           "email_contacts": {
             "description": "The number of email contacts associated with the user's account.",
             "type": ["null", "integer"]
