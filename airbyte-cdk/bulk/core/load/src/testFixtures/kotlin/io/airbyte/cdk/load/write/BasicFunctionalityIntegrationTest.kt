@@ -253,6 +253,9 @@ abstract class BasicFunctionalityIntegrationTest(
      *
      * In contrast, file-based destinations where each sync creates a new file do _not_ have
      * retroactive schemas: writing a new file without a column has no effect on older files.
+     *
+     * If set to `false`, we don't even run the schema change tests, under the presumption that the
+     * destination doesn't have any interesting behavior in schema change scenarios.
      */
     val isStreamSchemaRetroactive: Boolean,
     val dedupBehavior: DedupBehavior?,
@@ -1502,6 +1505,7 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testAppendSchemaEvolution() {
         assumeTrue(verifyDataWriting)
+        assumeTrue(isStreamSchemaRetroactive)
         fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
                 randomizedNamespace,
@@ -1553,12 +1557,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 OutputRecord(
                     extractedAt = 1234,
                     generationId = 0,
-                    data =
-                        if (isStreamSchemaRetroactive)
-                        // the first sync's record has to_change modified to a string,
-                        // and to_drop is gone completely
-                        mapOf("id" to 42, "to_change" to "42")
-                        else mapOf("id" to 42, "to_drop" to "val1", "to_change" to 42),
+                    // the first sync's record has to_change modified to a string,
+                    // and to_drop is gone completely
+                    data = mapOf("id" to 42, "to_change" to "42"),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
@@ -1582,6 +1583,7 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testAppendJsonSchemaEvolution() {
         assumeTrue(verifyDataWriting)
+        assumeTrue(isStreamSchemaRetroactive)
         fun makeStream(schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1626,7 +1628,6 @@ abstract class BasicFunctionalityIntegrationTest(
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
-                // no need to branch based on isStreamSchemaRetroactive.
                 // the values are always strings, the only change is how the destination
                 // represents them.
                 OutputRecord(
