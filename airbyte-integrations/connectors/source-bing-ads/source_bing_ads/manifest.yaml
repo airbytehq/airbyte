@@ -118,7 +118,7 @@ definitions:
         type: RecordSelector
         record_filter:
           type: CustomRecordFilter
-          class_name: source_bing_ads.components.filters.DuplicatedRecordsFilter
+          class_name: source_bing_ads.components.DuplicatedRecordsFilter
         extractor:
           type: DpathExtractor
           field_path: ["Accounts"]
