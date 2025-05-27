@@ -11,8 +11,9 @@ import jsonschema
 import pendulum
 import requests
 
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
@@ -55,7 +56,10 @@ custom_reports_schema = {
 }
 
 
-class SourceGoogleSearchConsole(AbstractSource):
+class SourceGoogleSearchConsole(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
     @staticmethod
     def normalize_url(url):
         parse_result = urlparse(url)
@@ -172,22 +176,26 @@ class SourceGoogleSearchConsole(AbstractSource):
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
-        streams = [
-            Sites(**stream_config),
-            Sitemaps(**stream_config),
-            SearchAnalyticsByCountry(**stream_config),
-            SearchAnalyticsByDevice(**stream_config),
-            SearchAnalyticsByDate(**stream_config),
-            SearchAnalyticsByQuery(**stream_config),
-            SearchAnalyticsByPage(**stream_config),
-            SearchAnalyticsAllFields(**stream_config),
-            SearchAnalyticsKeywordPageReport(**stream_config),
-            SearchAnalyticsPageReport(**stream_config),
-            SearchAnalyticsSiteReportBySite(**stream_config),
-            SearchAnalyticsSiteReportByPage(**stream_config),
-            SearchAnalyticsKeywordSiteReportByPage(**stream_config),
-            SearchAnalyticsKeywordSiteReportBySite(**stream_config),
-        ]
+        streams = super().streams(config=config)
+
+        streams.extend(
+            [
+                Sites(**stream_config),
+                Sitemaps(**stream_config),
+                # SearchAnalyticsByCountry(**stream_config),
+                SearchAnalyticsByDevice(**stream_config),
+                SearchAnalyticsByDate(**stream_config),
+                SearchAnalyticsByQuery(**stream_config),
+                SearchAnalyticsByPage(**stream_config),
+                SearchAnalyticsAllFields(**stream_config),
+                SearchAnalyticsKeywordPageReport(**stream_config),
+                SearchAnalyticsPageReport(**stream_config),
+                SearchAnalyticsSiteReportBySite(**stream_config),
+                SearchAnalyticsSiteReportByPage(**stream_config),
+                SearchAnalyticsKeywordSiteReportByPage(**stream_config),
+                SearchAnalyticsKeywordSiteReportBySite(**stream_config),
+            ]
+        )
 
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
 
