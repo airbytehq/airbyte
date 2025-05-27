@@ -1,9 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 import "dotenv/config.js";
-const yaml = require("js-yaml");
-const fs = require("node:fs");
-const path = require("node:path");
 
 const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
@@ -189,6 +186,7 @@ const config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+    markpromptProjectKey: process.env.MARKPROMPT_PROJECT_KEY,
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),

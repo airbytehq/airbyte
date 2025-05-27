@@ -83,11 +83,33 @@ def test_streams(requests_mock, config):
     assert len(streams) == 32
 
 
+def test_streams_forbidden_returns_default_streams(requests_mock, config):
+    # 403 forbidden → no custom streams, should fall back to the 32 built-in ones
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={"status": "error", "message": "This access_token does not have proper permissions!"},
+        status_code=403,
+    )
+    streams = get_source(config).streams(config)
+    assert len(streams) == 32
+
+
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
     ok, message = get_source(config).check_connection(logger, config=config)
     assert ok == False
     assert "`authenticator_selection_path` is not found in the config" in message
+
+
+def test_streams_ok_with_one_custom_stream(requests_mock, config):
+    # 200 OK → one custom “cars” stream added to the 32 built-ins, total = 33
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={"results": [{"name": "cars", "fullyQualifiedName": "cars", "properties": {}}]},
+        status_code=200,
+    )
+    streams = get_source(config).streams(config)
+    assert len(streams) == 33
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
