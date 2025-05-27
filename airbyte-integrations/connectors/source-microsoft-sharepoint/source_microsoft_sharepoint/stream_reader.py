@@ -109,6 +109,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
     ROOT_PATH = [".", "/"]
     FILE_SIZE_LIMIT = 1_500_000_000
+    CHECK_SIZE_LIMIT = 8_000_000  # 8MB limit for checking operations
 
     def __init__(self):
         super().__init__()
@@ -481,20 +482,30 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
             headers = self._get_headers()
 
-            # Download the file
-            #  By using stream=True, the file content is streamed in chunks, which allows to process each chunk individually.
-            #  https://docs.python-requests.org/en/latest/user/quickstart/#raw-response-content
-            response = requests.get(file.download_url, headers=headers, stream=True)
-            response.raise_for_status()
+            # For check operations or previews, we avoid downloading large files
+            # and instead create a placeholder with metadata only
+            is_check_operation = hasattr(self, "_is_check_operation") and self._is_check_operation
+            if is_check_operation and file_size > self.CHECK_SIZE_LIMIT:
+                # Create an empty file with just metadata
+                with open(local_file_path, "wb") as local_file:
+                    local_file.write(b"")
+                logger.info(f"Created placeholder for large file {file.uri} (size: {file_size} bytes) during check operation")
+            else:
+                # Download the file
+                #  By using stream=True, the file content is streamed in chunks, which allows to process each chunk individually.
+                #  https://docs.python-requests.org/en/latest/user/quickstart/#raw-response-content
+                response = requests.get(file.download_url, headers=headers, stream=True)
+                response.raise_for_status()
 
-            # Write the file to the local directory
-            with open(local_file_path, "wb") as local_file:
-                for chunk in response.iter_content(chunk_size=10_485_760):
-                    if chunk:
-                        local_file.write(chunk)
-            logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
+                # Write the file to the local directory
+                with open(local_file_path, "wb") as local_file:
+                    for chunk in response.iter_content(chunk_size=10_485_760):
+                        if chunk:
+                            local_file.write(chunk)
+                logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
+            
             # Get the file size
-            file_size = getsize(local_file_path)
+            file_size = getsize(local_file_path) if not (is_check_operation and file_size > self.CHECK_SIZE_LIMIT) else file_size
 
             file_record_data = FileRecordData(
                 folder=file_paths[self.FILE_FOLDER],
@@ -517,3 +528,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             raise AirbyteTracedException(
                 f"There was an error while trying to download the file {file.uri}: {str(e)}", failure_type=FailureType.config_error
             )
+
+    # Add a method to flag this as a check operation
+    def mark_as_check(self) -> None:
+        """
+        Marks this stream reader as being used in a check operation,
+        which enables optimizations to reduce memory usage.
+        """
+        self._is_check_operation = True
