@@ -213,6 +213,30 @@ def test_dpath_schema_extractor(body, expected_records: List):
             False,
             True,
         ),
+        (
+            {"values": [{"formattedValue": "App Loading Milestone 1 (All) - 80th Percentile"}]},
+            [(0, "app_loading_milestone_1_all_80th_percentile", {"formattedValue": "App Loading Milestone 1 (All) - 80th Percentile"})],
+            False,
+            True,
+        ),
+        (
+            {"values": [{"formattedValue": "50th Percentile"}]},
+            [(0, "50th_percentile", {"formattedValue": "50th Percentile"})],
+            False,
+            True,
+        ),
+        (
+            {"values": [{"formattedValue": "Q3 2023"}]},
+            [(0, "q3_2023", {"formattedValue": "Q3 2023"})],
+            False,
+            True,
+        ),
+        (
+            {"values": [{"formattedValue": "Q 3 2023"}]},
+            [(0, "q_3_2023", {"formattedValue": "Q 3 2023"})],
+            False,
+            True,
+        ),
     ],
     ids=[
         "test_headers",
@@ -227,6 +251,10 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_consecutive_spaces_special_chars",
         "test_letter_number_pairs",
         "test_number_word_pairs",
+        "test_preserve_space_between_number_and_word",
+        "test_combine_adjacent_number_word_pair",
+        "test_combine_adjacent_letter_number_pair",
+        "test_preserve_space_in_letter_number_pair",
     ],
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion, experimental_names_conversion):

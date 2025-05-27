@@ -141,19 +141,25 @@ The Google Sheets connector offers two optional settings to customize how column
 
   - **Checks Performed**:
     1. **Removes leading or trailing spaces**:
-       - **With it enabled**: "EXAMPLE Domain " becomes "example_domain".
-       - **Without it**: "EXAMPLE Domain " becomes "example_domain_" (note the trailing underscore).
+      - **With it enabled**: "EXAMPLE Domain " becomes "example_domain".
+      - **Without it**: "EXAMPLE Domain " becomes "example_domain_" (note the trailing underscore).
     2. **Combines number-word pairs**:
-       - **With it enabled**: "50th Percentile" becomes "50th_percentile".
-       - **Without it**: "50th Percentile" becomes "50_th_percentile" (note the extra underscore).
+      - **With it enabled**: "50th Percentile" becomes "50th_percentile".
+      - **Without it**: "50th Percentile" becomes "50_th_percentile" (note the extra underscore).
     3. **Removes special characters**:
-       - **With it enabled**: "Example ID*" becomes "example_id".
-       - **Without it**: "Example ID*" becomes "example_id_" (note the trailing underscore).
+      - **With it enabled**: "Example ID*" becomes "example_id".
+      - **Without it**: "Example ID*" becomes "example_id_" (note the trailing underscore).
     4. **Combines letter-number pairs**:
-       - **With it enabled**: "Q3 2023" becomes "q3_2023".
-       - **Without it**: "Q3 2023" becomes "q_3_2023" (note the extra underscore).
+      - **With it enabled**: "Q3 2023" becomes "q3_2023".
+      - **Without it**: "Q3 2023" becomes "q_3_2023" (note the extra underscore).
+    5. **Preserves spaces between numbers and words as underscores**:
+      - **With it enabled**: "App Loading Milestone 1 (All)" becomes "app_loading_milestone_1_all".
+      - **Without it**: "App Loading Milestone 1 (All)" becomes "app_loading_milestone_1__all_" (note the missing underscore).
+    6. **Handles sequences of special characters and spaces correctly**:
+      - **With it enabled**: "Example (ID)" becomes "example_id", preserving the space as an underscore and removing the parentheses.
+      - **Without it**: "Example (ID)" might become "example__id_" if spaces are not handled properly.
 
-These options can be enabled in the Airbyte UI when setting up the Google Sheets destination connector.
+  These options can be enabled in the Airbyte UI when setting up the Google Sheets destination connector.
 
 ## Supported sync modes
 
@@ -213,7 +219,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.0 | 2025-05-27 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added optional experimental name conversion setting with enhanced sanitization for column names. |
+| 0.10.0 | 2025-05-28 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added optional experimental name conversion setting with enhanced sanitization for column names. |
 | 0.9.6 | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets |
 | 0.9.5 | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`|
 | 0.9.4 | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies |

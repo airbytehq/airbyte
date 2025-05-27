@@ -4,7 +4,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.10.0"
-=======
 name = "source-google-sheets"
 description = "Source implementation for Google Sheets."
 authors = [ "Airbyte <contact@airbyte.io>",]
