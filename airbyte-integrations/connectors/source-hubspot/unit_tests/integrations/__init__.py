@@ -8,7 +8,7 @@ import freezegun
 import pytz
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpResponse, HttpRequest, HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, find_template
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from source_hubspot import SourceHubspot
@@ -19,6 +19,24 @@ from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStr
 from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
+
+OBJECTS_WITH_DYNAMIC_SCHEMA = [
+    "calls",
+    "company",
+    "contact",
+    "deal",
+    "deal_split",
+    "emails",
+    "form",
+    "goal_targets",
+    "leads",
+    "line_item",
+    "meetings",
+    "notes",
+    "tasks",
+    "product",
+    "ticket",
+]
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
@@ -131,7 +149,7 @@ class HubspotTestCase:
 
     @classmethod
     def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
-        entities = entities or ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]
+        entities = entities or OBJECTS_WITH_DYNAMIC_SCHEMA
 
         # figure out which entities are already mocked
         existing = set()
@@ -148,10 +166,15 @@ class HubspotTestCase:
             if entity in existing:
                 continue  # skip if already mocked
 
-            http_mocker.get(
-                PropertiesRequestBuilder().for_entity(entity).build(),
-                response_builder.build()
-            )
+            http_mocker.get(PropertiesRequestBuilder().for_entity(entity).build(), response_builder.build())
+
+    @classmethod
+    def mock_custom_objects_streams(cls, http_mocker: HttpMocker):
+        # Mock CustomObjects streams
+        http_mocker.get(
+            HttpRequest("https://api.hubapi.com/crm/v3/schemas"),
+            HttpResponse("{}", 200),
+        )
 
     @classmethod
     def record_builder(cls, stream: str, record_cursor_path):

@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -35,8 +36,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.InputFile
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
@@ -56,6 +55,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -253,6 +253,8 @@ abstract class BasicFunctionalityIntegrationTest(
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    // Which medium to use as your input source for the test
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -263,6 +265,7 @@ abstract class BasicFunctionalityIntegrationTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
+        dataChannelMedium = dataChannelMedium,
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
@@ -382,14 +385,30 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                isFileBased = true,
+                includeFiles = true,
             )
-        val fileMessage =
-            DestinationFile.AirbyteRecordMessageFile(
-                fileUrl = "/tmp/test_file",
-                bytes = 1234L,
-                fileRelativePath = "path/to/file",
-                modified = 4321L,
-                sourceFileUrl = "file://path/to/source",
+
+        val sourcePath = "path/to/file"
+        // these must match the values hard-coded in DockerizedDestination
+        val stagingDir = "tmp"
+        val fileName = "test_file"
+        val fileContents = "123"
+
+        val fileReference =
+            AirbyteRecordMessageFileReference()
+                .withSourceFileRelativePath(sourcePath)
+                .withStagingFileUrl("/$stagingDir/$fileName")
+                .withFileSizeBytes(1234L)
+
+        val input =
+            InputRecord(
+                namespace = randomizedNamespace,
+                name = "test_stream_file",
+                data = """{"id": 5678}""",
+                emittedAtMs = 1234,
+                changes = mutableListOf(),
+                fileReference = fileReference,
             )
 
         val messages =
@@ -397,11 +416,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 updatedConfig,
                 stream,
                 listOf(
-                    InputFile(
-                        stream = stream,
-                        emittedAtMs = 1234,
-                        fileMessage = fileMessage,
-                    ),
+                    input,
                     InputStreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,
@@ -435,7 +450,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
-        assertEquals(mapOf("path/to/file" to "123"), fileContent)
+        assertEquals(fileContents, fileContent[sourcePath])
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
