@@ -1,7 +1,7 @@
 # Oracle DB
 
 :::warning
-This Marketplace connector is community-maintained. Airbyte offers an Enterprise connector for Oracle, which includes support and premium features better suited to larger organizations. See [Oracle](../enterprise-connectors/source-oracle) to learn more.
+This Marketplace connector is community-maintained. Airbyte offers an Enterprise connector for Oracle, which includes support and premium features better suited to larger organizations. See [Oracle](../enterprise-connectors/source-oracle-enterprise) to learn more.
 :::
 
 ## Features
