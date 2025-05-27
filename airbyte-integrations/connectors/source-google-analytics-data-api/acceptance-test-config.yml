@@ -51,3 +51,4 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+          cursor_format: "%Y-%m-%d"

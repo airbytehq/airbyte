@@ -17,7 +17,7 @@ include = "source_google_analytics_data_api"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = { version = "6.52.0.dev0", allow-prereleases = true }
+airbyte-cdk = { version = "6.52.0.dev1", allow-prereleases = true }
 
 [tool.poetry.scripts]
 source-google-analytics-data-api = "source_google_analytics_data_api.run:run"
