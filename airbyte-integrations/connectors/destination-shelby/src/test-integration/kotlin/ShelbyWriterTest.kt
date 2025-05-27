@@ -63,17 +63,18 @@ class ShelbyWriterTest(
     fun record(id: Int) = InputRecord(
         namespace = randomizedNamespace,
         name = "test_stream",
-        data = """{"id": $id, "undeclared": "asdf"}""",
+        data = """{"id": $id, "text": "let's make this a bigger to have things sliced"}""",
         emittedAtMs = 1234,
         changes = mutableListOf()
     )
+
     @Test
     fun testActivationWrite() {
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
                 Append,
-                ObjectType(linkedMapOf("id" to intType)),
+                ObjectType(linkedMapOf("id" to intType, "text" to stringType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,

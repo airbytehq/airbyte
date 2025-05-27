@@ -7,5 +7,11 @@ import jakarta.inject.Singleton
 @Factory
 class ShelbyBeanFactory {
     @Singleton
+    fun check() = ShelbyChecker()
+
+    @Singleton
+    fun discover() = ShelbyDiscoverer()
+
+    @Singleton
     fun getConfig(config: DestinationConfiguration) = config as ShelbyConfiguration
 }

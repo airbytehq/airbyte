@@ -9,12 +9,12 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf()
+    toolkits = listOf("load-csv", "load-object-storage")
     cdk = "local"
 }
 
 application {
-    mainClass = "io.airbyte.integrations.destination.mssql.v2.MSSQLDestination"
+    mainClass = "io.airbyte.integrations.destination.shelby.ShelbyDestination"
 
     applicationDefaultJvmArgs = listOf(
         "-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0",
