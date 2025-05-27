@@ -21,7 +21,7 @@ class TestLeadsStream(HubspotTestCase):
     CURSOR_FIELD = "updatedAt"
     STREAM_NAME = "leads"
     OBJECT_TYPE = "leads"
-    ASSOCIATIONS = ["contacts", "companies"]
+    ASSOCIATIONS = ["companies", "contacts"]
 
     @property
     def response_builder(self):
@@ -112,6 +112,7 @@ class TestLeadsStream(HubspotTestCase):
     def test_given_missing_scopes_error_when_read_then_stop_sync(self, http_mocker: HttpMocker):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, [])
+        self.mock_custom_objects_streams(http_mocker)
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh, expecting_exception=True)
 
     @HttpMocker()
@@ -139,4 +140,4 @@ class TestLeadsStream(HubspotTestCase):
         self._set_up_requests(http_mocker)
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental)
-        assert len(output.state_messages) == 1
+        assert len(output.state_messages) == 2
