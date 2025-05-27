@@ -35,7 +35,7 @@ application {
 
 dependencies {
 
-    implementation 'com.clickhouse:clickhouse-client:0.8.6'
+    implementation 'com.clickhouse:client-v2:0.8.6'
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestImplementation 'org.testcontainers:clickhouse:1.19.0'
