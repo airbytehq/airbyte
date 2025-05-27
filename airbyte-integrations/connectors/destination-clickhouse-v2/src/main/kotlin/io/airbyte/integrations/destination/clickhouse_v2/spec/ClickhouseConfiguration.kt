@@ -5,14 +5,24 @@ import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import jakarta.inject.Singleton
 
 data class ClickhouseConfiguration(
-    val test: String
+    val hostname: String,
+    val port: String,
+    val database: String,
+    val username: String,
+    val password: String,
 ): DestinationConfiguration() {
-    override val numOpenStreamWorkers: Int = 3
+    val endpoint = "https://$hostname:$port"
 }
 
 @Singleton
 class ClickhouseConfigurationFactory :
     DestinationConfigurationFactory<ClickHouseSpecification, ClickhouseConfiguration> {
     override fun makeWithoutExceptionHandling(pojo: ClickHouseSpecification): ClickhouseConfiguration =
-        ClickhouseConfiguration("test")
+        ClickhouseConfiguration(
+            pojo.hostname,
+            pojo.port,
+            pojo.database,
+            pojo.username,
+            pojo.password,
+        )
 }
