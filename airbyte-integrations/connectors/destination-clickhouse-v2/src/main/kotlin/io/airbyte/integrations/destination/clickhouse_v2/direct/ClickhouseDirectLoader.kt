@@ -1,4 +1,4 @@
-package io.airbyte.integration.destination.clickhouse.v2.direct
+package io.airbyte.integrations.destination.clickhouse_v2.direct
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.data.ClickHouseFormat

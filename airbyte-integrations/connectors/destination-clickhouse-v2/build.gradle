@@ -19,7 +19,7 @@ java {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestinationKt'
+    mainClass = 'io.airbyte.integrations.destination.clickhouse_v2.ClickhouseV2DestinationKt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
                                  '-XX:GCLockerRetryAllocationCount=100',
