@@ -1431,6 +1431,7 @@ streams:
   - $ref: "#/definitions/streams/payout_balance_transactions"
   - $ref: "#/definitions/streams/setup_attempts"
   - $ref: "#/definitions/streams/transfer_reversals"
+  - $ref: "#/definitions/streams/subscription_items"
 
   ## These streams are state condition streams with partition behavior:
   # - No State: Runs the partition stream that shares the same parent state condition stream.
@@ -1444,8 +1445,6 @@ streams:
   - $ref: "#/definitions/streams/application_fees_refunds"
   - $ref: "#/definitions/streams/bank_accounts"
   #  - $ref: "#/definitions/streams/invoice_line_items" - Rollback to the Python version due to memory leak issue: https://github.com/airbytehq/oncall/issues/7876
-  #  - $ref: "#/definitions/streams/subscription_items" - Rollback to the Python version due to memory leak issue: https://github.com/airbytehq/oncall/issues/7876
-
   # These streams are base incremental partition streams with state condition streams as parents using lazy read logic:
   #  - $ref: "#/definitions/streams/usage_records"
 
