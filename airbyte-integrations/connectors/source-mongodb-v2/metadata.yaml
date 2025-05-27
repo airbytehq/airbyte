@@ -76,7 +76,7 @@ data:
           3. Add any additional databases you want to sync
           4. Save the configuration and run a sync
 
-          For more information, please refer to the [MongoDB v2 documentation](https://docs.airbyte.com/integrations/sources/mongodb-v2).
+          For more information, please refer to the [MongoDB v2 documentation](https://docs.airbyte.com/integrations/sources/mongodb-v2) and the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).
           "
         upgradeDeadline: "2025-08-31"
       1.0.0:
