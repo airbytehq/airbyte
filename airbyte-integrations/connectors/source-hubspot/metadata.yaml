@@ -1,4 +1,10 @@
 data:
+  resourceRequirements:
+    jobSpecific:
+      - jobType: discover_schema
+	      resourceRequirements:
+		      memory_limit: 6Gi
+		      memory_request: 6Gi
   ab_internal:
     ql: 400
     sl: 300
