@@ -7,11 +7,10 @@ import logging
 from datetime import timedelta
 from urllib.parse import urlencode
 
-import mock
 import pytest
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -101,14 +100,15 @@ def test_check_credential_title_exception(config):
     assert "`authenticator_selection_path` is not found in the config" in message
 
 
-def test_streams_ok_with_one_custom_stream(requests_mock, config):
+def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_schema_requests):
     # 200 OK → one custom “cars” stream added to the 32 built-ins, total = 33
-    requests_mock.get(
+    adapter = requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={"results": [{"name": "cars", "fullyQualifiedName": "cars", "properties": {}}]},
         status_code=200,
     )
-    streams = get_source(config).streams(config)
+    streams = discover(get_source(config), config).catalog.catalog.streams
+    assert adapter.called
     assert len(streams) == 33
 
 

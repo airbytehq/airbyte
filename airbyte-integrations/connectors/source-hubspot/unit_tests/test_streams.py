@@ -679,7 +679,8 @@ def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, meth
     output = read(source_hubspot, config=config, catalog=catalog, state=state)
     assert output.errors[0].trace.error.message == (
         "Access denied (403). The authenticated user does not have permissions to access the resource. "
-        f"Verify your scopes: {scopes} to access stream {stream}. See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
+        f"Verify your scopes: {scopes} to access stream {stream}. "
+        f"See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
     )
 
 
@@ -689,3 +690,53 @@ def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_r
     source_hubspot = get_source(config)
     output = discover(source_hubspot, config=config)
     assert output.catalog
+
+
+def test_read_catalog_with_missing_scopes(config, requests_mock, mock_dynamic_schema_requests):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.get("https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", json={}, status_code=403)
+    requests_mock.get("https://api.hubapi.com/email/public/v1/subscriptions", json={}, status_code=403)
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "marketing_emails", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                },
+                {
+                    "stream": {"name": "email_subscriptions", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                },
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "marketing_emails",
+            {},
+        )
+        .with_stream_state(
+            "email_subscriptions",
+            {},
+        )
+        .build()
+    )
+    source_hubspot = get_source(config)
+    output = read(source_hubspot, config=config, catalog=catalog, state=state)
+    assert output.errors
+    assert not output.records
+    error_messages = [error.trace.error.message for error in output.errors]
+    assert error_messages
+    assert (
+        "Access denied (403). The authenticated user does not have permissions to access the resource. "
+        "Verify your scopes: content to access stream email_subscriptions. See details: "
+        "https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
+    ) in error_messages
+    assert (
+        "Access denied (403). The authenticated user does not have permissions to access the resource. "
+        "Verify your scopes: content to access stream marketing_emails. See details: "
+        "https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
+    ) in error_messages
