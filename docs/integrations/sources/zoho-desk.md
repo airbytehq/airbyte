@@ -57,6 +57,7 @@ This directory contains the manifest-only connector for source-zoho-desk
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-05-24 | [60768](https://github.com/airbytehq/airbyte/pull/60768) | Update dependencies |
 | 0.0.19 | 2025-05-10 | [59923](https://github.com/airbytehq/airbyte/pull/59923) | Update dependencies |
 | 0.0.18 | 2025-05-04 | [59543](https://github.com/airbytehq/airbyte/pull/59543) | Update dependencies |
 | 0.0.17 | 2025-04-26 | [58031](https://github.com/airbytehq/airbyte/pull/58031) | Update dependencies |

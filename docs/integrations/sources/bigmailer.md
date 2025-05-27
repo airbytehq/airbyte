@@ -28,6 +28,7 @@ An Airbyte connector for [BigMailer](https://bigmailer.com) would facilitate sea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2025-05-24 | [60718](https://github.com/airbytehq/airbyte/pull/60718) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [59905](https://github.com/airbytehq/airbyte/pull/59905) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [59305](https://github.com/airbytehq/airbyte/pull/59305) | Update dependencies |
 | 0.0.21 | 2025-04-26 | [58692](https://github.com/airbytehq/airbyte/pull/58692) | Update dependencies |

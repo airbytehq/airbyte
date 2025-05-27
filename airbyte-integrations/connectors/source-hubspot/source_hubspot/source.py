@@ -113,7 +113,8 @@ def scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
     if isinstance(stream, BaseStream):
         return stream.scope_is_granted(granted_scopes)
     else:
-        return len(scopes.get(stream.name, set()).intersection(granted_scopes)) > 0
+        # The default value is scopes for custom objects streams
+        return len(scopes.get(stream.name, {"crm.schemas.custom.read", "crm.objects.custom.read"}).intersection(granted_scopes)) > 0
 
 
 def properties_scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
@@ -239,7 +240,6 @@ class SourceHubspot(YamlDeclarativeSource):
             available_streams = streams
 
         custom_object_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
-        available_streams.extend(custom_object_streams)
 
         if enable_experimental_streams:
             custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(
