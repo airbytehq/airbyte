@@ -30,6 +30,7 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-05-24 | [60746](https://github.com/airbytehq/airbyte/pull/60746) | Update dependencies |
 | 0.0.24 | 2025-05-10 | [60007](https://github.com/airbytehq/airbyte/pull/60007) | Update dependencies |
 | 0.0.23 | 2025-05-04 | [59552](https://github.com/airbytehq/airbyte/pull/59552) | Update dependencies |
 | 0.0.22 | 2025-04-26 | [58920](https://github.com/airbytehq/airbyte/pull/58920) | Update dependencies |
