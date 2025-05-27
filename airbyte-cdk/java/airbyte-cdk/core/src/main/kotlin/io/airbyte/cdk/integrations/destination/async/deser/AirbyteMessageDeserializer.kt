@@ -79,13 +79,23 @@ class AirbyteMessageDeserializer(
                     partial.record?.meta,
                 )
             // store serialized json & meta
-            partial.withSerialized(Jsons.serialize(transformedData.first))
+            // partial.withSerialized(Jsons.serialize(transformedData.first))
             partial.record?.meta = transformedData.second
             // The connector doesn't need to be able to access to the record value. We can serialize
             // it here and
             // drop the json
             // object. Having this data stored as a string is slightly more optimal for the memory
             // usage.
+            partial.data = listOf(
+                transformedData.first!!.get("added_to_cart_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("created_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("id").toString().replace("null", ""),
+                transformedData.first!!.get("product_id").toString().replace("null", ""),
+                transformedData.first!!.get("purchased_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("returned_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("updated_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("user_id").toString().replace("null", ""),
+            )
             partial.record?.data = null
         } else if (AirbyteMessage.Type.STATE == msgType) {
             partial.withSerialized(message)
