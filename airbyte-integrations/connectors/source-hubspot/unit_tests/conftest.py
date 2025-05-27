@@ -158,6 +158,13 @@ def mock_dynamic_schema_requests(requests_mock):
 
 
 def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
+    # Mock CustomObjects streams
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={},
+        status_code=200,
+    )
+
     for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
         if object_name in object_to_skip:
             continue

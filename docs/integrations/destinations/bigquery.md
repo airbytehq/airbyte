@@ -213,6 +213,7 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.0 | 2025-05-27 | [60922](https://github.com/airbytehq/airbyte/pull/60922) | Promoting release candidate 2.11.0-rc.7 to a main version. |
 | 2.11.0-rc.7 | 2025-05-22 | [60865](https://github.com/airbytehq/airbyte/pull/60865)   | Add a random element to the check sync namespace                                                                                                                                  |
 | 2.11.0-rc.6 | 2025-05-22 | [60859](https://github.com/airbytehq/airbyte/pull/60859)   | Improve bigquery quota usage in standard inserts for streams with heavy load                                                                                                      |
 | 2.11.0-rc.5 | 2025-05-21 | [60841](https://github.com/airbytehq/airbyte/pull/60841)   | Improve behavior in syncs with many state messages                                                                                                                                |
