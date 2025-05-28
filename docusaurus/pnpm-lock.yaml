@@ -252,6 +252,9 @@ importers:
       '@mdx-js/react':
         specifier: ^3.0.0
         version: 3.0.0(@types/react@18.2.46)(react@18.2.0)
+      '@saucelabs/theme-github-codeblock':
+        specifier: ^0.3.0
+        version: 0.3.0
       async:
         specifier: 2.6.4
         version: 2.6.4
@@ -2852,6 +2855,9 @@ packages:
     resolution: {integrity: sha512-OZSyhzU6vTdW3eV/mz5i6hQwQUhkRs7xwY2d1aqPvTdMe0+2cY7Fwp45PAiwYLEj73i9ro2FxF9qC4DvHGSCgQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0
+
+  '@saucelabs/theme-github-codeblock@0.3.0':
+    resolution: {integrity: sha512-+8xWxBfN+I8StJ0QXERMbGf+BHwRXHWV3mFl9uDayXERiZ/rR93d0nAS3s9s/rKjqh/YSm/4dThEkBNBLnGs4Q==}
 
   '@segment/snippet@4.16.2':
     resolution: {integrity: sha512-2fgsrt4U+vKv14ohOAsViCEzeZotaawF2Il7YUbmYVrhPn8Hq7xuGznHKRdZeoxScQ87X36xDX2Fzh5bAYRN7g==}
@@ -11547,6 +11553,8 @@ snapshots:
   '@react-types/shared@3.25.0(react@18.2.0)':
     dependencies:
       react: 18.2.0
+
+  '@saucelabs/theme-github-codeblock@0.3.0': {}
 
   '@segment/snippet@4.16.2':
     dependencies:

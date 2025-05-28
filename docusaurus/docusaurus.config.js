@@ -18,7 +18,10 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ["@docusaurus/theme-mermaid"],
+  themes: [
+    "@docusaurus/theme-mermaid",
+    "@saucelabs/theme-github-codeblock",
+  ],
   title: "Airbyte Docs",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
