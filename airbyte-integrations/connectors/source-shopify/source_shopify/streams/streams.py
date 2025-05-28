@@ -4,6 +4,7 @@
 
 
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+import logging
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -86,24 +87,26 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
+    initial_limit = 250
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
+    def __init__(self, config: Mapping[str, Any]):
+        self._current_limit = self.initial_limit
+        self._error_handler = LimitReducingErrorHandler(
+            stream=self,
+            max_retries=5,
+            error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors("orders"),
+        )
+        super().__init__(config)
+
+    def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params["limit"] = self._current_limit
         if not next_page_token:
             params["status"] = "any"
         return params
 
-    def get_error_handler(self) -> Optional[ErrorHandler]:
-        known_errors = ShopifyNonRetryableErrors(self.name)
-        error_mapping = DEFAULT_ERROR_MAPPING | known_errors
-        return LimitReducingErrorHandler(
-            stream=self,
-            logger=self.logger,
-            max_retries=5,
-            error_mapping=error_mapping
-        )
+    def get_error_handler(self):
+        return self._error_handler
 
 
 class Disputes(IncrementalShopifyStream):

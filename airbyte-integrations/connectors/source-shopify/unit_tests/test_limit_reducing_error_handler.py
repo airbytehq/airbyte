@@ -5,10 +5,6 @@
 import pytest
 import requests
 from source_shopify.streams.streams import OrderRefunds, Orders
-from source_shopify.utils import LimitReducingErrorHandler
-
-from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
-
 
 # Mock data for Orders stream with pagination via Link headers
 ORDERS_PAGE_1 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(1, 126)]}  # 125 orders
@@ -19,13 +15,13 @@ ORDERS_PAGE_3 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(251, 
 ORDERS_WITH_REFUNDS_PAGE_1 = {
     "orders": [
         {"id": i, "name": f"Order {i}", "refunds": [{"id": i * 10, "created_at": "2023-01-01T00:00:00Z"}]}
-        for i in range(1, 126)  # 125 orders, each with 1 refund
+        for i in range(1, 126)
     ]
 }
 ORDERS_WITH_REFUNDS_PAGE_2 = {
     "orders": [
         {"id": i, "name": f"Order {i}", "refunds": [{"id": i * 10, "created_at": "2023-01-02T00:00:00Z"}]}
-        for i in range(126, 251)  # 125 orders, each with 1 refund
+        for i in range(126, 251)
     ]
 }
 
@@ -87,10 +83,6 @@ class TestOrdersLimitReducingErrorHandler:
         config = {"shop": "test-shop", "authenticator": None}
         stream = Orders(config)
 
-        # Mock the error handler
-        default_handler = HttpStatusErrorHandler(logger=stream.logger, max_retries=5)
-        stream.get_error_handler = lambda: LimitReducingErrorHandler(stream=stream, default_handler=default_handler)
-
         # Read records
         records = list(stream.read_records(sync_mode="full_refresh"))
 
@@ -98,6 +90,11 @@ class TestOrdersLimitReducingErrorHandler:
         assert len(records) == 375  # Total orders: 125 + 125 + 125
         assert records[0]["id"] == 1
         assert records[-1]["id"] == 375
+
+        # Assert that a request with the reduced limit was actually made
+        assert any(
+            "limit=125" in req.url for req in requests_mock.request_history
+        ), "No request was made with the reduced limit (limit=125)"
 
 
 class TestOrderRefundsLimitReducingErrorHandler:
@@ -145,10 +142,6 @@ class TestOrderRefundsLimitReducingErrorHandler:
         parent_stream = Orders(config)
         stream = OrderRefunds(config)
 
-        # Mock the error handler for the parent stream
-        default_handler = HttpStatusErrorHandler(logger=parent_stream.logger, max_retries=5)
-        parent_stream.get_error_handler = lambda: LimitReducingErrorHandler(stream=parent_stream, default_handler=default_handler)
-
         # Read records
         records = []
         for slice_ in stream.stream_slices(sync_mode="full_refresh"):
@@ -158,3 +151,8 @@ class TestOrderRefundsLimitReducingErrorHandler:
         assert len(records) == 250  # Total refunds: 125 + 125
         assert records[0]["id"] == 10  # First refund ID
         assert records[-1]["id"] == 2500  # Last refund ID
+
+        # Assert that a request with the reduced limit was actually made
+        assert any(
+            "limit=125" in req.url for req in requests_mock.request_history
+        ), "No request was made with the reduced limit (limit=125)"

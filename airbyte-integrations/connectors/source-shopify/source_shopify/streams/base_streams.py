@@ -45,7 +45,6 @@ class ShopifyStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
-        self._current_limit = self.limit  # Dynamic limit initialized to default
 
     @property
     @abstractmethod
@@ -74,37 +73,24 @@ class ShopifyStream(HttpStream, ABC):
             return None
 
     def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"limit": self._current_limit}
+        params = {"limit": self.limit}
         if next_page_token:
-            temp_params = dict(next_page_token)
-            temp_params.pop("limit", None)
-            params.update(temp_params)
+            params.update(**next_page_token)
         else:
             params["order"] = f"{self.order_field} asc"
-            stream_state = kwargs.get("stream_state")
-            if stream_state is not None:
-                params[self.filter_field] = stream_state.get(self.filter_field, self.default_filter_field_value)
-            else:
-                params[self.filter_field] = self.default_filter_field_value
+            params[self.filter_field] = self.default_filter_field_value
         return params
 
+    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == requests.codes.OK:
-            self._current_limit = self.limit
+        if response.status_code is requests.codes.OK:
             try:
                 json_response = response.json()
-                records = json_response.get(self.data_field, []) if self.data_field else json_response
+                records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
                 yield from self.produce_records(records)
-            except requests.exceptions.JSONDecodeError as e:
-                error_msg = (
-                    f"Failed to decode JSON from response (status code: {response.status_code}, "
-                    f"content length: {len(response.content)}). JSONDecodeError at position {e.pos}: {e.msg}"
-                )
-                self.logger.warning(error_msg)
+            except RequestException as e:
+                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
                 yield {}
-        else:
-            self.logger.warning(f"Non-OK response: {response.status_code}")
-            yield from []
 
     def produce_records(
         self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None
