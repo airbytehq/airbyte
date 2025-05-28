@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
+import io.airbyte.cdk.load.data.csv.CsvValueProcessor
+import io.airbyte.cdk.load.data.csv.DefaultCsvValueProcessor
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
 import io.airbyte.cdk.load.data.withAirbyteMeta
@@ -55,7 +57,7 @@ class DefaultObjectStorageFormattingWriterFactory(
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
         // TODO: FileWriter
 
-        return when (formatConfigProvider.objectStorageFormatConfiguration) {
+        return when (val config = formatConfigProvider.objectStorageFormatConfiguration) {
             is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
@@ -78,7 +80,8 @@ class DefaultObjectStorageFormattingWriterFactory(
                     stream,
                     outputStream,
                     flatten,
-                    extractedAtAsTimestampWithTimezone = false
+                    extractedAtAsTimestampWithTimezone = false,
+                    config.processor
                 )
         }
     }
@@ -115,6 +118,7 @@ class CSVFormattingWriter(
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
     private val extractedAtAsTimestampWithTimezone: Boolean,
+    private val csvValueProcessor: CsvValueProcessor = DefaultCsvValueProcessor(),
 ) : ObjectStorageFormattingWriter {
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
@@ -128,7 +132,7 @@ class CSVFormattingWriter(
                     rootLevelFlattening,
                     extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone
                 )
-                .toCsvRecord(finalSchema)
+                .toCsvRecord(finalSchema, csvValueProcessor)
         )
     }
 
