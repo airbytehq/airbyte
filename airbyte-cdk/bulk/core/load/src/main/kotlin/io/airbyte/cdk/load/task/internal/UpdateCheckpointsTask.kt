@@ -49,6 +49,9 @@ class UpdateCheckpointsTask(
                     checkpointManager.addGlobalCheckpoint(checkpointKey, it.replace(message))
                 }
             }
+            // If its corresponding data was processed before this checkpoint was added,
+            // then it's possible it's already data-sufficient.
+            checkpointManager.flushReadyCheckpointMessages()
         }
         syncManager.markCheckpointsProcessed()
         log.info { "All checkpoints (state) updated" }
