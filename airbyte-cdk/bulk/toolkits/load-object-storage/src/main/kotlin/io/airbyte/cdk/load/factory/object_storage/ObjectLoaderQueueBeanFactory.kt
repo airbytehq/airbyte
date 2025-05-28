@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.write.LoadStrategy
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -99,12 +98,10 @@ class ObjectLoaderQueueBeanFactory(
     @Singleton
     @Named("recordQueue")
     fun recordQueue(
-        loadStrategy: LoadStrategy? = null,
+        @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
         )
     }
 
@@ -112,12 +109,10 @@ class ObjectLoaderQueueBeanFactory(
     @Singleton
     @Named("fileQueue")
     fun fileQueue(
-        loadStrategy: LoadStrategy? = null,
+        @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
         )
     }
 

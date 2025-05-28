@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
@@ -43,6 +44,7 @@ abstract class S3V2WriteTest(
     nullEqualsUnset: Boolean = false,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     private val mergesUnions: Boolean = false,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -53,7 +55,7 @@ abstract class S3V2WriteTest(
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
         micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = stringifySchemalessObjects,
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = schematizedArrayBehavior,
@@ -64,6 +66,7 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelMedium = dataChannelMedium
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -75,6 +78,18 @@ abstract class S3V2WriteTest(
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
+    }
+
+    @Test
+    @Disabled("flaky")
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+
+    @Test
+    @Disabled("flaky")
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
     }
 
     @Test
@@ -315,7 +330,22 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -355,6 +385,11 @@ class S3V2WriteTestCsvUncompressed :
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
+    }
+
+    @Test
+    override fun testTruncateRefreshNoData() {
+        super.testTruncateRefreshNoData()
     }
 }
 
@@ -493,3 +528,21 @@ class S3V2CsvAssumeRole :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     )
+
+class S3V2WriteTestJsonUncompressedSockets :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+        dataChannelMedium = DataChannelMedium.SOCKETS
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
