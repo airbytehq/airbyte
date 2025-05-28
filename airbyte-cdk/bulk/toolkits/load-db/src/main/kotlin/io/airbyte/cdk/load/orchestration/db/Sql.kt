@@ -111,5 +111,7 @@ data class Sql(val transactions: List<List<String>>) {
                     .filter { it.isNotEmpty() }
             )
         }
+
+        fun empty() = Sql(emptyList())
     }
 }
