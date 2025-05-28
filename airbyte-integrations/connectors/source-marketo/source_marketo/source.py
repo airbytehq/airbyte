@@ -370,8 +370,8 @@ class Leads(MarketoExportBase):
 
         available_fields = set()
         result = resp.json().get("result", [])
-        for x in result:
-            rest = x.get("rest")
+        for describe_record in result:
+            rest = describe_record.get("rest")
             if rest and "name" in rest:
                 available_fields.add(rest["name"])
             else:
