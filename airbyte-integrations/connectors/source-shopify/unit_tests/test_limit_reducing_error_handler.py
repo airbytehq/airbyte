@@ -3,7 +3,6 @@
 #
 
 import pytest
-import requests
 from source_shopify.streams.streams import OrderRefunds, Orders
 
 

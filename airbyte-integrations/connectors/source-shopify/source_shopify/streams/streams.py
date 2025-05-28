@@ -91,9 +91,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
     initial_limit = 250
 
     def __init__(self, config: Mapping[str, Any]):
-        self._current_limit = self.initial_limit
         self._error_handler = LimitReducingErrorHandler(
-            stream=self,
             max_retries=5,
             error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors("orders"),
         )
@@ -101,7 +99,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
     def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params["limit"] = self._current_limit
+        params["limit"] = self.initial_limit  # Always start with the default limit; error handler will mutate on retry
         if not next_page_token:
             params["status"] = "any"
         return params
