@@ -139,6 +139,22 @@ class TestSuiteReportStream(TestReportStream):
         day = request_start_date.Day
         assert pendulum.DateTime(year, month, day, tzinfo=pendulum.UTC) == pendulum.parse(provided_state)
 
+    def test_incremental_read_with_state_and_no_start_date_returns_records_once(self):
+        """
+        Test that incremental read with state and no start date in config returns records only once.
+        We observed that if the start date is not provided in the config, and we don't parse correctly the account_id
+        from the state, the incremental read returns records multiple times as we yield the default_time_periods
+        for no start date scenario.
+        """
+        state = self._state(self.state_file, self.stream_name)
+        config = deepcopy(self._config)
+        del config["reports_start_date"]  # Simulate no start date in config
+        output, service_call_mock = self.read_stream(self.stream_name, SyncMode.incremental, config, self.incremental_report_file, state)
+        if not self.second_read_records_number:
+            assert len(output.records) == self.records_number
+        else:
+            assert len(output.records) == self.second_read_records_number
+
     @freeze_time("2024-05-06")
     def test_incremental_read_with_state_returns_records_after_migration(self):
         """
@@ -330,5 +346,3 @@ class TestSuiteReportStream(TestReportStream):
         first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+0000"
         first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+0000"
         assert output.most_recent_state.stream_state.__dict__ == first_read_state
-
-    # todo: add test for dedup, two user that shared an account; only records for that shared account once
