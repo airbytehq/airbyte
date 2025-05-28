@@ -78,6 +78,7 @@ jobs:
     needs: call-connector-ci-tests
     runs-on: ubuntu-24.04
     if: >
+      always() &&
       inputs.comment-id &&
       (
         github.event_name == 'workflow_dispatch' ||
