@@ -33,10 +33,10 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          # In order to work correctly on forks, `repository` must be set if `ref` is set:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history
+          fetch-depth: 0
 
       - name: Add upstream remote (forks only)
         # This step only runs from forks.
@@ -93,7 +93,6 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
-          # In order to work correctly on forks, `repository` must be set if `ref` is set:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
@@ -188,6 +187,8 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Python deps
@@ -287,6 +288,8 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Java deps
