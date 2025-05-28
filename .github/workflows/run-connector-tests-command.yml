@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       github.event_name == 'workflow_dispatch' ||
-       (github.event_name == 'push' &&
+      (github.event_name == 'push' &&
         github.repository != 'airbytehq/airbyte' &&
         vars.GCP_PROJECT_ID != ''
        )
