@@ -80,7 +80,7 @@ class PipelineEventBookkeepingRouter(
                 val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
                 PipelineMessage(
-                    mapOf(manager.getCurrentCheckpointId() to 1),
+                    mapOf(manager.inferNextCheckpointKey().checkpointId to 1),
                     StreamKey(stream.descriptor),
                     record,
                     postProcessingCallback
@@ -100,7 +100,7 @@ class PipelineEventBookkeepingRouter(
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
                 val index = manager.incrementReadCount()
-                val checkpointId = manager.getCurrentCheckpointId()
+                val checkpointId = manager.inferNextCheckpointKey().checkpointId
                 fileTransferQueue.publish(
                     FileTransferQueueRecord(stream, message, index, checkpointId)
                 )
@@ -123,13 +123,13 @@ class PipelineEventBookkeepingRouter(
             is StreamCheckpoint -> {
                 val stream = checkpoint.checkpoint.stream
                 val manager = syncManager.getStreamManager(stream)
-                val checkpointId = manager.getCurrentCheckpointId()
+                val checkpointKey = manager.inferNextCheckpointKey()
                 val (_, countSinceLast) = manager.markCheckpoint()
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
                 checkpointQueue.publish(
                     reservation.replace(
-                        StreamCheckpointWrapped(stream, checkpointId, messageWithCount)
+                        StreamCheckpointWrapped(stream, checkpointKey, messageWithCount)
                     )
                 )
             }
@@ -139,19 +139,30 @@ class PipelineEventBookkeepingRouter(
              * the destination stats.
              */
             is GlobalCheckpoint -> {
-                val streamWithIndexAndCount =
+                val streamWithKeyAndCount =
                     catalog.streams.map { stream ->
                         val manager = syncManager.getStreamManager(stream.descriptor)
-                        val checkpointId = manager.getCurrentCheckpointId()
+                        val checkpointKey = manager.inferNextCheckpointKey()
                         val (_, countSinceLast) = manager.markCheckpoint()
-                        Triple(stream, checkpointId, countSinceLast)
+                        Pair(checkpointKey, countSinceLast)
                     }
-                val totalCount = streamWithIndexAndCount.sumOf { it.third }
+                val singleKey =
+                    streamWithKeyAndCount
+                        .map { (key, _) -> key }
+                        .toSet()
+                        .let {
+                            if (it.size != 1) {
+                                throw IllegalStateException(
+                                    "For global state, all streams should have the same inferred key: $it"
+                                )
+                            }
+                            it.first()
+                        }
+                val totalCount = streamWithKeyAndCount.sumOf { (_, count) -> count }
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCount))
-                val streamIndexes = streamWithIndexAndCount.map { it.first.descriptor to it.second }
                 checkpointQueue.publish(
-                    reservation.replace(GlobalCheckpointWrapped(streamIndexes, messageWithCount))
+                    reservation.replace(GlobalCheckpointWrapped(singleKey, messageWithCount))
                 )
             }
         }
