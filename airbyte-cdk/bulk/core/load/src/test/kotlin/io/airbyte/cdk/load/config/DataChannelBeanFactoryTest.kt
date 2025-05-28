@@ -10,6 +10,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class DataChannelBeanFactoryTest {
     @Test
@@ -96,5 +97,17 @@ class DataChannelBeanFactoryTest {
         val checkpointKeyRequired =
             DataChannelBeanFactory().requireCheckpointIdOnRecord(DataChannelMedium.SOCKETS)
         assertTrue(checkpointKeyRequired)
+    }
+
+    @Test
+    fun `protobuf only allowed for sockets`() {
+        assertThrows<IllegalStateException> {
+            DataChannelBeanFactory()
+                .dataChannelReader(
+                    dataChannelFormat = DataChannelFormat.PROTOBUF,
+                    dataChannelMedium = DataChannelMedium.STDIO,
+                    destinationMessageFactory = mockk(relaxed = true),
+                )
+        }
     }
 }
