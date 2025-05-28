@@ -156,6 +156,58 @@
           }
         }
       }
+    },
+    "files": {
+      "description": "List of files changed in the commit.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "Name of the file."
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the file in the commit.",
+            "enum": [
+              "added",
+              "removed",
+              "modified",
+              "renamed"
+            ]
+          },
+          "additions": {
+            "type": "integer",
+            "description": "Number of lines added."
+          },
+          "deletions": {
+            "type": "integer",
+            "description": "Number of lines deleted."
+          },
+          "changes": {
+            "type": "integer",
+            "description": "Total number of changes."
+          },
+          "blob_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the blob resource."
+          }
+        },
+        "required": [
+          "filename",
+          "status",
+          "additions",
+          "deletions",
+          "changes"
+        ]
+      }
     }
-  }
+  },
+  "required": [
+    "sha",
+    "commit",
+    "files"
+  ]
 }
