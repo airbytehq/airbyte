@@ -106,11 +106,11 @@ class MongoDbDebeziumStateUtilTest {
 
   @Test
   void testOffsetDataFormat() {
-    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState(DATABASE, RESUME_TOKEN);
+    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState("test_server_id", RESUME_TOKEN);
 
     assertNotNull(offsetState);
-    assertEquals("[\"" + DATABASE + "\",{\""
-        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + DATABASE + "\"}]", offsetState.fieldNames().next());
+    assertEquals("[\"" + "test-server-id" + "\",{\""
+        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + "test-server-id" + "\"}]", offsetState.fieldNames().next());
   }
 
   @Test
@@ -126,12 +126,13 @@ class MongoDbDebeziumStateUtilTest {
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
-        Filters.in("ns.coll", List.of("test-collection"))));
-    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
-
-    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, DATABASE, CONFIGURED_CATALOG));
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", List.of("test-collection")))))));
+    when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(CONFIGURED_CATALOG.getStreams())));
   }
 
   @Test
@@ -148,12 +149,13 @@ class MongoDbDebeziumStateUtilTest {
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
-        Filters.in("ns.coll", List.of("test-collection"))));
-    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
-
-    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, DATABASE, CONFIGURED_CATALOG));
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", List.of("test-collection")))))));
+    when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(CONFIGURED_CATALOG.getStreams())));
   }
 
 }

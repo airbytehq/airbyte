@@ -80,47 +80,17 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
   }
 
   /**
-   * Test whether the retrieved saved offset resume token value is valid. A valid resume token is one
-   * that can be used to resume a change event stream in MongoDB.
+   * Tests whether the provided saved offset resume token is valid for resuming a MongoDB change event
+   * stream.
    *
    * @param savedOffset The resume token from the saved offset.
-   * @param mongoClient The {@link MongoClient} used to validate the saved offset.
-   *
-   * @return {@code true} if the saved offset value is valid Otherwise, {@code false} is returned to
-   *         indicate that an initial snapshot should be performed.
+   * @param mongoClient The MongoClient used to validate the saved offset.
+   * @param databaseNames The list of database names to check.
+   * @param streamsByDatabase The list of lists of ConfiguredAirbyteStream objects, grouped by
+   *        database.
+   * @return {@code true} if the saved offset value is valid; otherwise, {@code false} to indicate
+   *         that an initial snapshot should be performed.
    */
-  public boolean isValidResumeToken(final BsonDocument savedOffset,
-                                    final MongoClient mongoClient,
-                                    final String databaseName,
-                                    final ConfiguredAirbyteCatalog catalog) {
-    if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
-      return true;
-    }
-
-    // Scope the change stream to the collections & database of interest - this mirrors the logic while
-    // getting the most recent resume token.
-    final List<String> collectionsList = catalog.getStreams().stream()
-        .map(s -> s.getStream().getName())
-        .toList();
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
-        Filters.in("ns.coll", collectionsList)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
-
-    // Attempt to start the stream after the saved offset.
-    eventStream.resumeAfter(savedOffset);
-    try (final var ignored = eventStream.cursor()) {
-      LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
-          + "up-to-date streams.",
-          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
-      return true;
-    } catch (final MongoCommandException | MongoChangeStreamException e) {
-      LOGGER.info("Exception : {}", e.getMessage());
-      LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
-          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
-      return false;
-    }
-  }
-
   public boolean isValidResumeToken(final BsonDocument savedOffset,
                                     final MongoClient mongoClient,
                                     final List<String> databaseNames,
