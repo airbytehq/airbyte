@@ -98,6 +98,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
+        id: checkout
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
@@ -165,6 +166,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          commit: ${{ steps.checkout.outputs.commit }}
           large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
@@ -192,6 +194,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
+        id: checkout
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
@@ -268,6 +271,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          commit: ${{ steps.checkout.outputs.commit }}
           large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
