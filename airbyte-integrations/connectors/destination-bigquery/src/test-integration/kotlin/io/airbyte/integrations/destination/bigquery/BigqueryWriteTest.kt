@@ -4,19 +4,11 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestinationFactory
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
-import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
@@ -29,11 +21,9 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.STANDARD_INSERT_CONFIG
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
-import kotlin.test.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 
 abstract class BigqueryWriteTest(
     configContents: String,
@@ -41,6 +31,7 @@ abstract class BigqueryWriteTest(
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
     preserveUndeclaredFields: Boolean,
+    commitDataIncrementallyToEmptyDestination: Boolean,
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
@@ -60,6 +51,7 @@ abstract class BigqueryWriteTest(
         preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = false,
+        commitDataIncrementallyToEmptyDestination = commitDataIncrementallyToEmptyDestination,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
@@ -75,22 +67,41 @@ abstract class BigqueryRawTablesWriteTest(
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
         preserveUndeclaredFields = true,
+        commitDataIncrementallyToEmptyDestination = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
     )
 
-abstract class BigqueryTDWriteTest(configContents: String) :
+abstract class BigqueryDirectLoadWriteTest(
+    configContents: String,
+    cdcDeletionMode: CdcDeletionMode,
+) :
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
         ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
+            .compose(TimeWithTimezoneMapper)
             .compose(RootLevelTimestampsToUtcMapper)
-            .compose(TypingDedupingMetaChangeMapper)
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
-        dedupBehavior = DedupBehavior(),
+        commitDataIncrementallyToEmptyDestination = true,
+        dedupBehavior =
+            DedupBehavior(
+                cdcDeletionMode =
+                    when (cdcDeletionMode) {
+                        // medium confidence: the CDK might eventually add other deletion modes,
+                        // which this destination won't immediately support,
+                        // so we should have separate enums.
+                        // otherwise the new enum values would show up in the spec, which we don't
+                        // want.
+                        CdcDeletionMode.HARD_DELETE ->
+                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.HARD_DELETE
+                        CdcDeletionMode.SOFT_DELETE ->
+                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.SOFT_DELETE
+                    }
+            ),
         nullEqualsUnset = true,
         StronglyTyped(
             convertAllValuesToString = true,
@@ -98,178 +109,11 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
             numberCanBeLarge = false,
-            timeWithTimezoneBehavior = SimpleValueBehavior.PASS_THROUGH,
+            timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
-    ) {
-    private val oldCdkDestinationFactory =
-        DockerizedDestinationFactory("airbyte/destination-bigquery", "2.10.2")
+    )
 
-    @Test
-    open fun testAppendCdkMigration() {
-        val stream =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-            )
-        // Run a sync on the old CDK
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 1234,
-                ),
-            ),
-            destinationProcessFactory = oldCdkDestinationFactory,
-        )
-        // Grab the loaded_at value from this sync
-        val firstSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream).first().loadedAt!!
-
-        // Run a sync with the current destination
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 5678,
-                ),
-            ),
-        )
-        val secondSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream)
-                .map { it.loadedAt!! }
-                .toSet()
-        // verify that we didn't execute a soft reset
-        assertAll(
-            {
-                assertEquals(
-                    2,
-                    secondSyncLoadedAt.size,
-                    "Expected two unique values for loaded_at after two syncs. If there is only 1 value, then we likely executed a soft reset.",
-                )
-            },
-            {
-                assertTrue(
-                    secondSyncLoadedAt.contains(firstSyncLoadedAt),
-                    "Expected the first sync's loaded_at value to exist after the second sync. If this is not true, then we likely executed a soft reset.",
-                )
-            },
-        )
-
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1234,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-                OutputRecord(
-                    extractedAt = 5678,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-            ),
-            stream,
-            listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-
-    @Test
-    open fun testDedupCdkMigration() {
-        val stream =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-            )
-        // Run a sync on the old CDK
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 1234,
-                ),
-            ),
-            destinationProcessFactory = oldCdkDestinationFactory,
-        )
-        // Grab the loaded_at value from this sync
-        val firstSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream).first().loadedAt!!
-
-        // Run a sync with the current destination
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 5678,
-                ),
-            ),
-        )
-        val secondSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream)
-                .map { it.loadedAt!! }
-                .toSet()
-        // verify that we didn't execute a soft reset
-        assertAll(
-            {
-                assertEquals(
-                    2,
-                    secondSyncLoadedAt.size,
-                    "Expected two unique values for loaded_at after two syncs. If there is only 1 value, then we likely executed a soft reset.",
-                )
-            },
-            {
-                assertTrue(
-                    secondSyncLoadedAt.contains(firstSyncLoadedAt),
-                    "Expected the first sync's loaded_at value to exist after the second sync. If this is not true, then we likely executed a soft reset.",
-                )
-            },
-        )
-
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 5678,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-            ),
-            stream,
-            listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-}
-
-class StandardInsertRawOverrideDisableTd :
+class StandardInsertRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = STANDARD_INSERT_CONFIG,
@@ -288,7 +132,10 @@ class StandardInsertRawOverrideDisableTd :
 }
 
 class StandardInsertRawOverride :
-    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
+        CdcDeletionMode.HARD_DELETE,
+    ) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -299,14 +146,32 @@ class StandardInsertRawOverride :
     }
 }
 
-class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
+class StandardInsert :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertConfig,
+        CdcDeletionMode.HARD_DELETE,
+    ) {
+    @Test
+    override fun testAppendJsonSchemaEvolution() {
+        super.testAppendJsonSchemaEvolution()
+    }
+}
+
+class StandardInsertCdcSoftDeletes :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+            cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
+        ),
+        CdcDeletionMode.SOFT_DELETE
+    ) {
     @Test
     override fun testDedup() {
         super.testDedup()
     }
 }
 
-class GcsRawOverrideDisableTd :
+class GcsRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
@@ -321,11 +186,12 @@ class GcsRawOverrideDisableTd :
 }
 
 class GcsRawOverride :
-    BigqueryTDWriteTest(
+    BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
         ),
+        CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -334,8 +200,9 @@ class GcsRawOverride :
 }
 
 class Gcs :
-    BigqueryTDWriteTest(
-        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
+        CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
     override fun testBasicWrite() {

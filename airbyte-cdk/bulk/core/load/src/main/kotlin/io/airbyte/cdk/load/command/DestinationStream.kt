@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 /**
@@ -95,11 +96,14 @@ data class DestinationStream(
         shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
 }
 
+val log = KotlinLogging.logger {}
+
 @Singleton
 class DestinationStreamFactory(
     private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
 ) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
+        log.error { "$stream" }
         return DestinationStream(
             descriptor =
                 DestinationStream.Descriptor(
@@ -114,8 +118,8 @@ class DestinationStreamFactory(
                     DestinationSyncMode.APPEND_DEDUP ->
                         Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
                 },
-            generationId = stream.generationId,
-            minimumGenerationId = stream.minimumGenerationId,
+            generationId = stream.generationId ?: 0,
+            minimumGenerationId = stream.minimumGenerationId ?: 0,
             syncId = stream.syncId,
             schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
             isFileBased = stream.stream.isFileBased ?: false,
