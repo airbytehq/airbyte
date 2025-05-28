@@ -25,7 +25,6 @@ on:
   push:
 
 jobs:
-
   call-connector-ci-tests:
     # Run always for 'workflow_dipatch' events.
     # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
