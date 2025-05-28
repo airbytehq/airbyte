@@ -367,22 +367,13 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
                 "displayName": "Email",
                 "dataType": "string",
                 "rest": {"name": "email", "readOnly": False},
-                "soap": {"name": "Email", "readOnly": False}
+                "soap": {"name": "Email", "readOnly": False},
             },
-            {
-                "id": 2,
-                "displayName": "Phone",
-                "dataType": "string",
-                "rest": {"name": "phone", "readOnly": False}
-            },
-            {
-                "id": 3,
-                "displayName": "Legacy Field",
-                "dataType": "string",
-                "soap": {"name": "LegacyField", "readOnly": False}
-            }
-        ]
+            {"id": 2, "displayName": "Phone", "dataType": "string", "rest": {"name": "phone", "readOnly": False}},
+            {"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}},
+        ],
     }
+
     # Patch the schema to include all possible fields
     class DummyLeads(Leads):
         def get_json_schema(self):
@@ -406,14 +397,7 @@ def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, cap
     describe_json_no_rest = {
         "requestId": "def456",
         "success": True,
-        "result": [
-            {
-                "id": 3,
-                "displayName": "Legacy Field",
-                "dataType": "string",
-                "soap": {"name": "LegacyField", "readOnly": False}
-            }
-        ]
+        "result": [{"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}}],
     }
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
