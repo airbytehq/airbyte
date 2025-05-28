@@ -13,15 +13,6 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
-class BigQueryObjectStorageFormattingWriter(
-    private val csvFormattingWriter: CSVFormattingWriter,
-) : ObjectStorageFormattingWriter by csvFormattingWriter {
-
-    override fun accept(record: DestinationRecordRaw) {
-        csvFormattingWriter.accept(record)
-    }
-}
-
 @Singleton
 class BigQueryObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
@@ -31,13 +22,11 @@ class BigQueryObjectStorageFormattingWriterFactory(
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
-        return BigQueryObjectStorageFormattingWriter(
-            CSVFormattingWriter(
+        return CSVFormattingWriter(
                 stream,
                 outputStream,
                 rootLevelFlattening = flatten,
                 extractedAtAsTimestampWithTimezone = true,
-            ),
         )
     }
 }
