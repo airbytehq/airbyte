@@ -74,7 +74,7 @@ class ForwardFileRecordTaskTest {
             )
         task.handleEvent(input)
 
-        coVerify { outputQueue.publish(PipelineEndOfStream(input.stream), 1) }
+        coVerify { outputQueue.publish(PipelineEndOfStream(input.stream), 0) }
     }
 
     @Test
@@ -142,7 +142,7 @@ class ForwardFileRecordTaskTest {
                 context.parentRecord!!,
             )
 
-        coVerify(exactly = 1) { outputQueue.publish(expectedOutput, 1) }
+        coVerify(exactly = 1) { outputQueue.publish(expectedOutput, 0) }
     }
 
     object Fixtures {
@@ -180,8 +180,8 @@ class ForwardFileRecordTaskTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = message,
-                serialized = "",
                 schema = schema,
+                serializedSizeBytes = 0L
             )
     }
 }

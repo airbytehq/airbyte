@@ -72,8 +72,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = recordSchema
+                schema = recordSchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -126,8 +126,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = recordSchema
+                schema = recordSchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -180,8 +180,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = recordSchema
+                schema = recordSchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -239,8 +239,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = recordSchema
+                schema = recordSchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -290,8 +290,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = streamWithEmptySchema,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = emptySchema
+                schema = emptySchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -381,8 +381,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = streamWithComplexSchema,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = complexSchema
+                schema = complexSchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -427,8 +427,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = airbyteMessage,
-                serialized = airbyteMessage.serializeToString(),
-                schema = recordSchema
+                schema = recordSchema,
+                airbyteMessage.serializeToString().length.toLong()
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()

@@ -99,7 +99,8 @@ Note: parsing CSV in the Connector Builder requires the use of custom components
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.8 | 2025-05-14 | [58982](https://github.com/airbytehq/airbyte/pull/58982) | Added messages stream |
+| 1.3.9 | 2025-05-28 | [58982](https://github.com/airbytehq/airbyte/pull/58982) | Added messages stream |
+| 1.3.8 | 2025-05-25 | [60199](https://github.com/airbytehq/airbyte/pull/60199) | Update dependencies |
 | 1.3.7 | 2025-05-04 | [58982](https://github.com/airbytehq/airbyte/pull/58982) | Update dependencies |
 | 1.3.6 | 2025-04-19 | [58405](https://github.com/airbytehq/airbyte/pull/58405) | Update dependencies |
 | 1.3.5 | 2025-04-12 | [57952](https://github.com/airbytehq/airbyte/pull/57952) | Update dependencies |
