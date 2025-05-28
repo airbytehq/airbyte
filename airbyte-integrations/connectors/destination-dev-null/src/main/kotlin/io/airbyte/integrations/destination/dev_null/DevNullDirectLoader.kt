@@ -16,7 +16,7 @@ import kotlin.random.Random
 abstract class DevNullDirectLoader(
     private val config: DevNullConfiguration,
 ) : DirectLoader {
-    private var recordCount: Long = 0L
+    private var recordCount: Long = 100L
 
     abstract fun acceptInner(record: DestinationRecordRaw)
 
