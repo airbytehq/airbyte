@@ -326,6 +326,7 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
 @pytest.mark.parametrize(
     "error_response",
     [
+        {"json": {}, "status_code": 401},
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},
