@@ -430,7 +430,7 @@ definitions:
           http_method: GET
           request_parameters:
             q: owner
-            count: "500"
+            count: 500
           request_headers:
             LinkedIn-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -454,8 +454,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: '{{ response.get("paging", {}).get("start", {}) + response.get("paging", {}).get("count", {}) }}'
+            stop_condition: '{{ response.get("paging", {}).get("total", {}) == 0 }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -481,7 +482,7 @@ definitions:
           http_method: GET
           request_parameters:
             q: owner
-            count: "500"
+            count: 500
           request_headers:
             LinkedIn-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -505,8 +506,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: '{{ response.get("paging", {}).get("start", {}) + response.get("paging", {}).get("count", {}) }}'
+            stop_condition: '{{ response.get("paging", {}).get("total", {}) == 0 }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
