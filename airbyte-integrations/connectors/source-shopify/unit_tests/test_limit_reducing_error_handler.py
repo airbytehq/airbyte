@@ -6,6 +6,7 @@ import pytest
 import requests
 from source_shopify.streams.streams import OrderRefunds, Orders
 
+
 # Mock data for Orders stream with pagination via Link headers
 ORDERS_PAGE_1 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(1, 126)]}  # 125 orders
 ORDERS_PAGE_2 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(126, 251)]}  # 125 orders
@@ -13,16 +14,10 @@ ORDERS_PAGE_3 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(251, 
 
 # Mock data for Orders with nested refunds and pagination via Link headers
 ORDERS_WITH_REFUNDS_PAGE_1 = {
-    "orders": [
-        {"id": i, "name": f"Order {i}", "refunds": [{"id": i * 10, "created_at": "2023-01-01T00:00:00Z"}]}
-        for i in range(1, 126)
-    ]
+    "orders": [{"id": i, "name": f"Order {i}", "refunds": [{"id": i * 10, "created_at": "2023-01-01T00:00:00Z"}]} for i in range(1, 126)]
 }
 ORDERS_WITH_REFUNDS_PAGE_2 = {
-    "orders": [
-        {"id": i, "name": f"Order {i}", "refunds": [{"id": i * 10, "created_at": "2023-01-02T00:00:00Z"}]}
-        for i in range(126, 251)
-    ]
+    "orders": [{"id": i, "name": f"Order {i}", "refunds": [{"id": i * 10, "created_at": "2023-01-02T00:00:00Z"}]} for i in range(126, 251)]
 }
 
 

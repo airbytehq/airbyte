@@ -3,8 +3,8 @@
 #
 
 
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import logging
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -33,10 +33,11 @@ from source_shopify.shopify_graphql.bulk.query import (
     Transaction,
 )
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (

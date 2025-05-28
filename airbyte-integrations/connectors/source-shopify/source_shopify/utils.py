@@ -332,6 +332,7 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
     Error handler that halves the page size (limit) on each 500 error, down to 1.
     Resets to the initial limit on a 200 response.
     """
+
     def __init__(self, stream, max_retries: int, error_mapping: dict):
         super().__init__(logger=None, max_retries=max_retries, error_mapping=error_mapping)
         self.stream = stream
