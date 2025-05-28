@@ -29,15 +29,15 @@ jobs:
 
   debug-connector-ci-outputs:
     name: "🛠️ Debug Connector-CI Outputs"
-    needs: call-connector-ci-tests
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.repository != 'airbytehq/airbyte' && vars.GCP_PROJECT_ID != '') }}
     steps:
       - name: Dump all reusable-workflow outputs
         run: |
           echo "github.event_name   = |${{ github.event_name }}|"
           echo "github.repository   = |${{ github.repository }}|"
           echo "vars.GCP_PROJECT_ID = |${{ vars.GCP_PROJECT_ID }}|"
+          echo "condition = |${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.repository != 'airbytehq/airbyte' && vars.GCP_PROJECT_ID != '') }}|"
 
       - name: Skip-me
         if: >
@@ -48,18 +48,18 @@ jobs:
         run: |
           echo "This should not run."
 
-  call-connector-ci-tests:
-    # Run always for 'workflow_dipatch' events.
-    # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
-    if: >
-      ${{ github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' &&
-       github.repository != 'airbytehq/airbyte' &&
-       vars.GCP_PROJECT_ID != '') }}
-    uses: ./.github/workflows/connector-ci-tests.yml
-    with:
-      repo: "${{ inputs.repo || github.repository }}"
-      gitref: "${{ inputs.gitref || github.ref_name }}"
-      comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
-      pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
-    secrets: inherit
+  # call-connector-ci-tests:
+  #   # Run always for 'workflow_dipatch' events.
+  #   # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
+  #   if: >
+  #     ${{ github.event_name == 'workflow_dispatch' ||
+  #     (github.event_name == 'push' &&
+  #      github.repository != 'airbytehq/airbyte' &&
+  #      vars.GCP_PROJECT_ID != '') }}
+  #   uses: ./.github/workflows/connector-ci-tests.yml
+  #   with:
+  #     repo: "${{ inputs.repo || github.repository }}"
+  #     gitref: "${{ inputs.gitref || github.ref_name }}"
+  #     comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
+  #     pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
+  #   secrets: inherit
