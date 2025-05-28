@@ -34,6 +34,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # In order to work correctly on forks, `repository` must be set if `ref` is set:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
 
       - name: Add upstream remote (forks only)
         # This step only runs from forks.
@@ -92,8 +95,6 @@ jobs:
         with:
           # In order to work correctly on forks, `repository` must be set if `ref` is set:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
-          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
-          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
