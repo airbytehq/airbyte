@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -70,7 +71,7 @@ interface PerformanceTestScenario {
      * This would be where records are emitted to the destination. How, is up to the scenario to
      * define.
      */
-    fun send(destination: DestinationProcess)
+    suspend fun send(destination: DestinationProcess)
 
     /**
      * Returns the expectations from the test scenario: how many records were emitted, how many
@@ -114,7 +115,8 @@ abstract class BasicPerformanceTest(
     namespaceOverride: String? = null,
     val numFilesForFileTransfer: Int = 5,
     val fileSizeMbForFileTransfer: Int = 10,
-    val numStreamsForMultiStream: Int = 4
+    val numStreamsForMultiStream: Int = 4,
+    val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -336,7 +338,7 @@ abstract class BasicPerformanceTest(
                     recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
                     numStreams = numStreamsForMultiStream,
                     streamNamePrefix = testInfo.testMethod.get().name,
-                )
+                ),
         )
     }
 
@@ -399,6 +401,7 @@ abstract class BasicPerformanceTest(
                 testScenario.catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
                 micronautProperties = micronautProperties + fileTransferProperty,
+                dataChannelMedium = dataChannelMedium
             )
 
         val duration =

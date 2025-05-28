@@ -269,12 +269,6 @@ const understandingAirbyte = {
   ],
 };
 
-const airbyteEmbedded = {
-  type: "doc",
-  label: "Getting Started",
-  id: "embedded-setup/README"
-}
-
 module.exports = {
   platform: [
     {
@@ -373,6 +367,7 @@ module.exports = {
             "enterprise-setup/implementation-guide",
             "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
+            "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",
             "enterprise-setup/upgrade-service-account",
             "enterprise-setup/upgrading-from-community",
@@ -509,8 +504,6 @@ module.exports = {
             "developer-guides/licenses/examples",
           ],
         },
-        sectionHeader("Airbyte Embedded"),
-        airbyteEmbedded,
         sectionHeader("Community"),
         contributeToAirbyte,
         "community/getting-support",
