@@ -145,6 +145,230 @@ definitions:
               - parsed_account_id
             value: "{{ record.Id | string }}"
             value_type: string
+  account_performance_report_daily_stream:
+    type: DeclarativeStream
+    name: account_performance_report_daily_lowcode
+    primary_key:
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/account_performance_report'
+    retriever:
+      $ref: '#/definitions/basic_async_retriever'
+      creation_requester:
+        $ref: '#/definitions/basic_async_retriever/creation_requester'
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AccountPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AccountPerformanceReportRequest
+            Aggregation: Daily
+            Columns:
+              - AccountId
+              - TimePeriod
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Network
+              - DeliveredMatchType
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - AccountName
+              - AccountNumber
+              - PhoneImpressions
+              - PhoneCalls
+              - Clicks
+              - Ctr
+              - Spend
+              - Impressions
+              - CostPerConversion
+              - Ptr
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - Conversions
+              - ConversionsQualified
+              - ConversionRate
+              - LowQualityClicks
+              - LowQualityClicksPercent
+              - LowQualityImpressions
+              - LowQualitySophisticatedClicks
+              - LowQualityConversions
+              - LowQualityConversionRate
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              ReportTimeZone: "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: |
+              {{ record.get('AccountId') | int if record.get('AccountId') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - PhoneImpressions
+            value: |
+              {{ record.get('PhoneImpressions') | int if record.get('PhoneImpressions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - PhoneCalls
+            value: |
+              {{ record.get('PhoneCalls') | int if record.get('PhoneCalls') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Clicks
+            value: |
+              {{ record.get('Clicks') | int if record.get('Clicks') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Ctr
+            value: |
+              {{ record.get('Ctr') | replace('%', '') | float if record.get('Ctr') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Spend
+            value: |
+              {{ record.get('Spend') | float if record.get('Spend') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Impressions
+            value: |
+              {{ record.get('Impressions') | int if record.get('Impressions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CostPerConversion
+            value: |
+              {{ record.get('CostPerConversion') | float if record.get('CostPerConversion') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Ptr
+            value: |
+              {{ record.get('Ptr') | replace('%', '') | float if record.get('Ptr') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Assists
+            value: |
+              {{ record.get('Assists') | int if record.get('Assists') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ReturnOnAdSpend
+            value: |
+              {{ record.get('ReturnOnAdSpend') | float if record.get('ReturnOnAdSpend') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CostPerAssist
+            value: |
+              {{ record.get('CostPerAssist') | float if record.get('CostPerAssist') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AverageCpc
+            value: |
+              {{ record.get('AverageCpc') | float if record.get('AverageCpc') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AveragePosition
+            value: |
+              {{ record.get('AveragePosition') | float if record.get('AveragePosition') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AverageCpm
+            value: |
+              {{ record.get('AverageCpm') | float if record.get('AverageCpm') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Conversions
+            value: |
+              {{ record.get('Conversions') | float if record.get('Conversions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ConversionsQualified
+            value: |
+              {{ record.get('ConversionsQualified') | float if record.get('ConversionsQualified') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ConversionRate
+            value: |
+              {{ record.get('ConversionRate') | replace('%', '') | float if record.get('ConversionRate') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityClicks
+            value: |
+              {{ record.get('LowQualityClicks') | int if record.get('LowQualityClicks') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityClicksPercent
+            value: |
+              {{ record.get('LowQualityClicksPercent') | replace('%', '') | float if record.get('LowQualityClicksPercent') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityImpressions
+            value: |
+              {{ record.get('LowQualityImpressions') | int if record.get('LowQualityImpressions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualitySophisticatedClicks
+            value: |
+              {{ record.get('LowQualitySophisticatedClicks') | int if record.get('LowQualitySophisticatedClicks') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityConversions
+            value: |
+              {{ record.get('LowQualityConversions') | int if record.get('LowQualityConversions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityConversionRate
+            value: |
+              {{ record.get('LowQualityConversionRate') | replace('%', '') | float if record.get('LowQualityConversionRate') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Revenue
+            value: |
+              {{ record.get('Revenue') | replace(',', '') | float if record.get('Revenue') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - RevenuePerConversion
+            value: |
+              {{ record.get('RevenuePerConversion') | replace(',', '') | float if record.get('RevenuePerConversion') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - RevenuePerAssist
+            value: |
+              {{ record.get('RevenuePerAssist') | replace(',', '') | float if record.get('RevenuePerAssist') | default('') | trim else none }}
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
@@ -902,6 +1126,7 @@ definitions:
           {{ record.get('ViewThroughConversionsQualified') | float if record.get('ViewThroughConversionsQualified') | default('') | trim else none }}
 streams:
   - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/account_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_hourly_stream"
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
@@ -1149,6 +1374,201 @@ schemas:
                   type:
                     - "null"
                     - string
+  account_performance_report:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: Unique identifier for the Bing Ads account
+        type:
+        - 'null'
+        - integer
+      TimePeriod:
+        description: Time period for the report
+        type:
+        - 'null'
+        - string
+        format: date
+      CurrencyCode:
+        description: Currency code used for reporting
+        type:
+        - 'null'
+        - string
+      AdDistribution:
+        description: Type of ad distribution (search, content, both)
+        type:
+        - 'null'
+        - string
+      DeviceType:
+        description: Type of device used
+        type:
+        - 'null'
+        - string
+      Network:
+        description: Type of network (search, audience)
+        type:
+        - 'null'
+        - string
+      DeliveredMatchType:
+        description: Type of match in ad delivery
+        type:
+        - 'null'
+        - string
+      DeviceOS:
+        description: Operating system of the device
+        type:
+        - 'null'
+        - string
+      TopVsOther:
+        description: Performance comparison between top and other ad positions
+        type:
+        - 'null'
+        - string
+      BidMatchType:
+        description: Type of bidding match (exact, phrase, broad)
+        type:
+        - 'null'
+        - string
+      AccountName:
+        description: Name of the Bing Ads account
+        type:
+        - 'null'
+        - string
+      AccountNumber:
+        description: Numeric account number
+        type:
+        - 'null'
+        - string
+      PhoneImpressions:
+        description: Number of ad impressions on phone devices
+        type:
+        - 'null'
+        - integer
+      PhoneCalls:
+        description: Number of phone calls generated
+        type:
+        - 'null'
+        - integer
+      Clicks:
+        description: Total number of clicks
+        type:
+        - 'null'
+        - integer
+      Ctr:
+        description: Click-through rate
+        type:
+        - 'null'
+        - number
+      Spend:
+        description: Total spend on ad campaigns
+        type:
+        - 'null'
+        - number
+      Impressions:
+        description: Total number of ad impressions
+        type:
+        - 'null'
+        - integer
+      CostPerConversion:
+        description: Cost per conversion
+        type:
+        - 'null'
+        - number
+      Ptr:
+        description: Phone-through rate
+        type:
+        - 'null'
+        - number
+      Assists:
+        description: Number of assist conversions
+        type:
+        - 'null'
+        - integer
+      ReturnOnAdSpend:
+        description: Return on ad spend
+        type:
+        - 'null'
+        - number
+      CostPerAssist:
+        description: Cost per assist conversion
+        type:
+        - 'null'
+        - number
+      AverageCpc:
+        description: Average cost per click
+        type:
+        - 'null'
+        - number
+      AveragePosition:
+        description: Average ad position
+        type:
+        - 'null'
+        - number
+      AverageCpm:
+        description: Average cost per thousand impressions
+        type:
+        - 'null'
+        - number
+      Conversions:
+        description: Total number of conversions
+        type:
+        - 'null'
+        - number
+      ConversionsQualified:
+        description: Number of qualified conversions
+        type:
+        - 'null'
+        - number
+      ConversionRate:
+        description: Percentage of conversions from clicks
+        type:
+        - 'null'
+        - number
+      LowQualityClicks:
+        description: Number of low-quality clicks
+        type:
+        - 'null'
+        - integer
+      LowQualityClicksPercent:
+        description: Percentage of low-quality clicks
+        type:
+        - 'null'
+        - number
+      LowQualityImpressions:
+        description: Number of low-quality impressions
+        type:
+        - 'null'
+        - integer
+      LowQualitySophisticatedClicks:
+        description: Number of sophisticated low-quality clicks
+        type:
+        - 'null'
+        - integer
+      LowQualityConversions:
+        description: Total number of low-quality conversions
+        type:
+        - 'null'
+        - integer
+      LowQualityConversionRate:
+        description: Conversion rate for low-quality clicks
+        type:
+        - 'null'
+        - number
+      Revenue:
+        description: Total revenue generated
+        type:
+        - 'null'
+        - number
+      RevenuePerConversion:
+        description: Revenue per conversion
+        type:
+        - 'null'
+        - number
+      RevenuePerAssist:
+        description: Revenue per assist conversion
+        type:
+        - 'null'
+        - number
   ad_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
