@@ -9,17 +9,14 @@ from base_test import BaseTest
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from config_builder import ConfigBuilder
 from freezegun import freeze_time
+from source_bing_ads.source import SourceBingAds
 
+from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.models import SyncMode
 
 
-# TODO: Remove this list when all streams are migrated to the manifest
-MIGRATED_STREAMS = [
-    "ad_performance_report_hourly",
-    "ad_performance_report_daily",
-    "ad_performance_report_weekly",
-    "ad_performance_report_monthly",
-]
+SOURCE_BING_ADS = resolve_manifest(source=SourceBingAds(None, None, None)).record.data["manifest"]
+MANIFEST_STREAMS = [stream["name"] for stream in SOURCE_BING_ADS["streams"]]
 
 SECOND_READ_FREEZE_TIME = "2024-05-08"
 
@@ -78,6 +75,7 @@ class TestSuiteReportStream(TestReportStream):
 
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file(self):
+        assert SOURCE_BING_ADS
         self.mock_report_apis()
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
@@ -103,7 +101,7 @@ class TestSuiteReportStream(TestReportStream):
         """
         We validate the state cursor is set to the value of the latest record read.
         """
-        if self.stream_name not in MIGRATED_STREAMS:
+        if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping test_incremental_read_returns_records for NOT migrated to manifest stream: {self.stream_name}")
         if not self.report_file_with_records_further_start_date or not self.first_read_state_for_records_further_start_date:
             assert False, "test_incremental_read_returns_records_further_config_start_date is not correctly set"
@@ -114,7 +112,7 @@ class TestSuiteReportStream(TestReportStream):
 
     @freeze_time("2024-05-06")
     def test_incremental_read_with_state_returns_records(self):
-        if self.stream_name in MIGRATED_STREAMS:
+        if self.stream_name in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for migrated to manifest stream: : {self.stream_name}")
         self.mock_report_apis()
         state = self._state(self.state_file, self.stream_name)
@@ -146,7 +144,7 @@ class TestSuiteReportStream(TestReportStream):
         from the state, the incremental read returns records multiple times as we yield the default_time_periods
         for no start date scenario.
         """
-        if self.stream_name in MIGRATED_STREAMS:
+        if self.stream_name in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for migrated to manifest stream: : {self.stream_name}")
         state = self._state(self.state_file, self.stream_name)
         config = deepcopy(self._config)
@@ -165,7 +163,7 @@ class TestSuiteReportStream(TestReportStream):
         from the state, the incremental read returns records multiple times as we yield the default_time_periods
         for no start date scenario.
         """
-        if self.stream_name not in MIGRATED_STREAMS:
+        if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         self.mock_report_apis()
         state = self._state(self.state_file_legacy, self.stream_name)
@@ -184,7 +182,7 @@ class TestSuiteReportStream(TestReportStream):
         """
         For this test the records are all with TimePeriod behind the config start date and the state TimePeriod cursor.
         """
-        if self.stream_name not in MIGRATED_STREAMS:
+        if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         self.mock_report_apis()
         state = self._state(self.state_file_after_migration, self.stream_name)
@@ -218,7 +216,7 @@ class TestSuiteReportStream(TestReportStream):
         So we validate that the cursor in the output.most_recent_state is moved to the value of the latest record read.
         The state format before migration IS NOT involved in this test.
         """
-        if self.stream_name not in MIGRATED_STREAMS:
+        if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: : {self.stream_name}")
         self.mock_report_apis()
         provided_state = self._state(self.state_file_after_migration_with_cursor_further_config_start_date, self.stream_name)
@@ -287,7 +285,7 @@ class TestSuiteReportStream(TestReportStream):
         Also, the state is migrated to the new format, so we can validate that the partition is correctly set.
         The state format before migration (legacy) IS involved in this test.
         """
-        if self.stream_name not in MIGRATED_STREAMS:
+        if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         self.mock_report_apis()
         provided_state = self._state(self.state_file_legacy, self.stream_name)
@@ -351,7 +349,7 @@ class TestSuiteReportStream(TestReportStream):
         If the field reports_start_date is blank, Airbyte will replicate all data from previous and current calendar years.
         This test is to validate that the stream will return all records from the first day of the year 2023 (CustomDateRangeStart in mocked body).
         """
-        if self.stream_name not in MIGRATED_STREAMS:
+        if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         self.mock_report_apis()
         # here we mock the report start date to be the first day of the year 2023
