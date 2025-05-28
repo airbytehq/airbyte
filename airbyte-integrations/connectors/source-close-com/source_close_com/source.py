@@ -17,6 +17,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
+logger = logging.getLogger("airbyte")
+
 
 class CloseComStream(HttpStream, ABC):
     url_base: str = "https://api.close.com/api/v1/"
@@ -91,6 +93,26 @@ class CloseComStream(HttpStream, ABC):
         return backoff_time
 
 
+def get_data_type(data: Mapping[str, Any]) -> Mapping[str, Any]:
+    # Full list of data types here: https://developer.close.com/resources/custom-fields/
+    data_type = data.get("type")
+    match data_type:
+        case "text" | "choices" | "textarea":
+            return {"type": ["null", "string"]}
+        case "number":
+            return {"type": ["null", "number"]}
+        case "date":
+            return {"type": ["null", "string"], "format": "date"}
+        case "datetime":
+            return {"type": ["null", "string"], "format": "date-time"}
+        case "user" | "custom_object":
+            return {"type": ["null", "string", "number"]}
+        case "hidden":
+            return {"type": ["null", "string", "number", "boolean"]}
+        case _:
+            return {"type": ["string"]}
+
+
 class CloseComStreamCustomFields(CloseComStream):
     """Class to get custom fields for close objects that support them."""
 
@@ -101,7 +123,8 @@ class CloseComStreamCustomFields(CloseComStream):
         )
         resp.raise_for_status()
         resp_json: Mapping[str, Any] = resp.json()["data"]
-        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean", "array"]} for data in resp_json}
+        logger.info(f"CUSTOM FIELD SCHEMA -> {resp_json}")
+        return {f"custom.{data['id']}": get_data_type(data) for data in resp_json}
 
     def get_json_schema(self):
         """Override default get_json_schema method to add custom fields to schema."""
@@ -128,14 +151,10 @@ class IncrementalCloseComStream(CloseComStream):
         latest_value = latest_record.get(self.cursor_field)
         current_value = current_stream_state.get(self.cursor_field)
         max_value = max(filter(None, [latest_value, current_value]), default=None)
-        
+
         return {self.cursor_field: max_value} if max_value is not None else {}
-    
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        **kwargs
-    ) -> MutableMapping[str, Any]:
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["_order_by"] = self.cursor_field
         params[f"{self.cursor_field}__gte"] = stream_state.get(self.cursor_field, self.start_date)
@@ -263,7 +282,7 @@ class CustomActivitiesInstances(CloseComActivitiesStream, IncrementalCloseComStr
         )
         resp.raise_for_status()
         resp_json: Mapping[str, Any] = resp.json()["data"]
-        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean", "array"]} for data in resp_json}
+        return {f"custom.{data['id']}": get_data_type(data) for data in resp_json}
 
 
 class Events(IncrementalCloseComStream):
@@ -288,12 +307,8 @@ class Leads(IncrementalCloseComStreamCustomFields):
 
     def path(self, **kwargs) -> str:
         return "lead"
-    
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        **kwargs
-    ) -> MutableMapping[str, Any]:
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         # Leads object uses advanced filtering with a "query" param, so we need to replace the default params
@@ -722,9 +737,7 @@ class SourceCloseCom(AbstractSource):
         authenticator = Base64HttpAuthenticator(auth=(config["api_key"], ""))
         args = {
             "authenticator": authenticator,
-            "start_date": config.get(
-                "start_date", (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
-            )
+            "start_date": config.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
         }
         return [
             CreatedActivities(**args),
