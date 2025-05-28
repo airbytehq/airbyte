@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfiguration
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfigurationProvider
+import io.airbyte.cdk.load.data.csv.CsvValueProcessor
+import io.airbyte.cdk.load.data.csv.DefaultCsvValueProcessor
 import io.airbyte.cdk.load.file.parquet.ParquetWriterConfiguration
 import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
 
@@ -107,7 +109,8 @@ data class JsonFormatConfiguration(
 
 data class CSVFormatConfiguration(
     override val extension: String = "csv",
-    override val rootLevelFlattening: Boolean = false
+    override val rootLevelFlattening: Boolean = false,
+    val processor: CsvValueProcessor = DefaultCsvValueProcessor(),
 ) : ObjectStorageFormatConfiguration {}
 
 data class AvroFormatConfiguration(
