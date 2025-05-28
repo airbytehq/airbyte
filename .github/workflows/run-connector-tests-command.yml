@@ -41,8 +41,11 @@ jobs:
     steps:
       - name: Get job variables
         id: job-vars
+        # Create the job run variables.
+        # We intentionally ignore `inputs.repo` because the check run will be run on the
+        # current repository, not the one with the commit being tested.
         run: |
-          echo "run-url=https://github.com/${{ inputs.repo || github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Append start comment
         uses: peter-evans/create-or-update-comment@v4
@@ -52,7 +55,11 @@ jobs:
           issue-number: ${{ inputs.pr }}
           reactions: "+1"
           body: |
-            > Connector CI Tests job started... [Check job output.](${{ steps.job-vars.outputs.run-url }})
+            > **Connector CI Tests Started**
+            >
+            > These tests will leverage Airbyte's integration test credentials.
+            >
+            > [Check job output.](${{ steps.job-vars.outputs.run-url }})
 
   call-connector-ci-tests:
     # Run always for 'workflow_dispatch' events.
