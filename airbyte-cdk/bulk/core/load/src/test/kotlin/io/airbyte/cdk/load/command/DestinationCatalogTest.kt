@@ -25,22 +25,26 @@ class DestinationCatalogTest {
                             .withMinimumGenerationId(34)
                             .withGenerationId(56)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withIncludeFiles(false)
                             .withStream(
                                 AirbyteStream()
                                     .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                     .withNamespace("namespace1")
                                     .withName("name1")
+                                    .withIsFileBased(false)
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncId(12)
                             .withMinimumGenerationId(34)
                             .withGenerationId(56)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+                            .withIncludeFiles(true)
                             .withStream(
                                 AirbyteStream()
                                     .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                     .withNamespace("namespace2")
                                     .withName("name2")
+                                    .withIsFileBased(true)
                             )
                             .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                             .withCursorField(listOf("cursor")),
@@ -49,12 +53,29 @@ class DestinationCatalogTest {
                             .withMinimumGenerationId(34)
                             .withGenerationId(56)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withIncludeFiles(false)
                             .withStream(
                                 AirbyteStream()
                                     .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                     .withNamespace("namespace3")
                                     .withName("name3")
+                                    .withIsFileBased(false)
                             ),
+                        ConfiguredAirbyteStream()
+                            .withSyncId(12)
+                            .withMinimumGenerationId(34)
+                            .withGenerationId(56)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+                            .withIncludeFiles(false)
+                            .withStream(
+                                AirbyteStream()
+                                    .withJsonSchema("""{"type": "object"}""".deserializeToNode())
+                                    .withNamespace("namespace4")
+                                    .withName("name4")
+                                    .withIsFileBased(true)
+                            )
+                            .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
+                            .withCursorField(listOf("cursor")),
                     ),
                 )
 
@@ -62,8 +83,9 @@ class DestinationCatalogTest {
             DestinationStreamFactory(
                 JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT)
             )
-        val catalogFactory = DefaultDestinationCatalogFactory(originalCatalog, streamFactory)
-        val destinationCatalog = catalogFactory.make()
+        val catalogFactory = DefaultDestinationCatalogFactory()
+        val destinationCatalog =
+            catalogFactory.getDestinationCatalog(originalCatalog, streamFactory, "write")
         assertEquals(originalCatalog, destinationCatalog.asProtocolObject())
     }
 }

@@ -29,6 +29,7 @@ class FolderNotFoundException(Exception):
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
     download_url: str
+    created_at: datetime
 
 
 def filter_http_urls(files, logger):

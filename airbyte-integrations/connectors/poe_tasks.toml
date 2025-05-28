@@ -1,0 +1,5 @@
+# Any connector that doesn't have a `poe_tasks.toml` file will be assumed
+# to be a manifest-only connector. This is the most common connector type.
+include = [
+    "${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml",
+]

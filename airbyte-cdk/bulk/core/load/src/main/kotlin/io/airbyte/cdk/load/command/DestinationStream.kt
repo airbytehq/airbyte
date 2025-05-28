@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.command
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -28,6 +29,10 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
+    // whether the stream corresponds to a series of files and their metadata
+    val isFileBased: Boolean = false,
+    // whether we will move the file (in addition to the metadata)
+    val includeFiles: Boolean = false,
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -37,7 +42,9 @@ data class DestinationStream(
                 }
             }
 
-        fun toPrettyString() = "$namespace.$name"
+        fun toPrettyString(): String {
+            return if (namespace == null) name else "$namespace.$name"
+        }
     }
 
     /**
@@ -59,10 +66,12 @@ data class DestinationStream(
                     .withNamespace(descriptor.namespace)
                     .withName(descriptor.name)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
+                    .withIsFileBased(isFileBased)
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
+            .withIncludeFiles(includeFiles)
             .apply {
                 when (importType) {
                     is Append -> {
@@ -111,6 +120,8 @@ class DestinationStreamFactory(
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
             schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
+            isFileBased = stream.stream.isFileBased ?: false,
+            includeFiles = stream.includeFiles ?: false,
         )
     }
 }
@@ -128,6 +139,9 @@ data class Dedupe(
     /**
      * theoretically, the path to the cursor. In practice, most destinations only support cursors at
      * the root level, i.e. `listOf(cursorField)`.
+     *
+     * If this is set to an empty list, then the destination should use
+     * [DestinationRecord.message.record.emittedAt] as the cursor.
      */
     val cursor: List<String>,
 ) : ImportType

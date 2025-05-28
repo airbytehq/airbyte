@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 200
-    sl: 200
+    sl: 100
   allowedHosts:
     hosts:
       - api.surveymonkey.com
@@ -28,7 +28,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-surveymonkey
-  supportLevel: certified
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code

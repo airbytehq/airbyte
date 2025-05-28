@@ -1,9 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const {
-  parseMarkdownContentTitle,
-  parseMarkdownFile,
-} = require("@docusaurus/utils");
+
+const REGISTRY_CACHE_PATH = path.join(
+  __dirname,
+  "src",
+  "data",
+  "connector_registry_slim.json",
+);
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -68,28 +71,91 @@ function getFilenamesInDir(prefix, dir, excludes) {
     });
 }
 
-function getSourceConnectors() {
-  return getFilenamesInDir("sources/", sourcesDocs, [
-    "readme",
-    "postgres",
-    "mongodb-v2",
-    "mssql",
-    "mysql",
-  ]);
+function loadConnectorRegistry() {
+  try {
+    if (fs.existsSync(REGISTRY_CACHE_PATH)) {
+      const data = fs.readFileSync(REGISTRY_CACHE_PATH, "utf8");
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.warn("Error loading connector registry data:", error.message);
+  }
+  return [];
 }
 
-function getDestinationConnectors() {
-  return getFilenamesInDir("destinations/", destinationDocs, [
-    "readme",
-    "s3",
-    "postgres",
-  ]);
+function addSupportLevelToConnectors(connectors, registry) {
+  return connectors.map((item) => {
+    // Get the ID from either doc-type or category-type items
+    const id = item.type === "doc" ? item.id : item.link && item.link.id;
+
+    if (!id) {
+      return item;
+    }
+
+    let connectorInfo = registry.find((record) => record.docUrl.includes(id));
+
+    if (connectorInfo) {
+      return {
+        ...item,
+        customProps: {
+          ...item.customProps,
+          supportLevel: connectorInfo.supportLevel,
+        },
+      };
+    }
+
+    return item;
+  });
 }
 
-function getEnterpriseConnectors() {
-  return getFilenamesInDir("enterprise-connectors/", enterpriseConnectorDocs, [
-    "readme",
-  ]);
+function groupConnectorsBySupportLevel(connectors) {
+  const grouped = connectors.reduce(
+    (acc, item) => {
+      const supportLevel = item.customProps?.supportLevel || "community";
+      if (acc[supportLevel]) {
+        acc[supportLevel].push(item);
+      } else {
+        acc.community.push(item);
+      }
+      return acc;
+    },
+    { certified: [], community: [], enterprise: [] },
+  );
+
+  // Create categories for each support level
+  const categories = [];
+
+  if (grouped.certified.length > 0) {
+    categories.push({
+      type: "category",
+      label: "Airbyte",
+      collapsible: true,
+      collapsed: true,
+      items: grouped.certified.sort((a, b) => a.label.localeCompare(b.label)),
+    });
+  }
+
+  if (grouped.community.length > 0) {
+    categories.push({
+      type: "category",
+      label: "Marketplace",
+      collapsible: true,
+      collapsed: true,
+      items: grouped.community.sort((a, b) => a.label.localeCompare(b.label)),
+    });
+  }
+
+  if (grouped.enterprise.length > 0) {
+    categories.push({
+      type: "category",
+      label: "Enterprise",
+      collapsible: true,
+      collapsed: true,
+      items: grouped.enterprise.sort((a, b) => a.label.localeCompare(b.label)),
+    });
+  }
+
+  return categories;
 }
 
 const sourcePostgres = {
@@ -165,6 +231,41 @@ const sourceMssql = {
     },
   ],
 };
+function getSourceConnectors(registry) {
+  const sources = getFilenamesInDir("sources/", sourcesDocs, [
+    "readme",
+    "postgres",
+    "mongodb-v2",
+    "mssql",
+    "mysql",
+  ]);
+
+  const specialSources = [
+    sourcePostgres,
+    sourceMongoDB,
+    sourceMysql,
+    sourceMssql,
+  ];
+  const enterpriseSources = getFilenamesInDir(
+    "enterprise-connectors/",
+    enterpriseConnectorDocs,
+    ["readme"],
+  );
+  const enterpriseSourcesWithSupportLevel = enterpriseSources
+    .filter((item) => item.id.includes("source"))
+    .map((item) => {
+      return {
+        ...item,
+        customProps: { ...item.customProps, supportLevel: "enterprise" },
+      };
+    });
+  const sourcesWithSupportLevel = addSupportLevelToConnectors(
+    [...specialSources, ...sources],
+    registry,
+  );
+
+  return [...sourcesWithSupportLevel, ...enterpriseSourcesWithSupportLevel];
+}
 
 const destinationS3 = {
   type: "category",
@@ -203,73 +304,120 @@ const destinationPostgres = {
   ],
 };
 
-const connectorCatalog = {
+// Mssql destination is on the connector registry as mssql-v2, so we need to manually create the sidebar item
+const destinationMsSql = {
   type: "category",
-  label: "Connectors",
-  collapsible: false,
+  label: "MS SQL Server (MSSQL)",
   link: {
     type: "doc",
-    id: "README",
+    id: "destinations/mssql",
+  },
+  customProps: {
+    supportLevel: "certified",
   },
   items: [
     {
-      type: "category",
-      label: "Sources",
-      link: {
-        type: "doc",
-        id: "sources/README",
-      },
-      items: [
-        sourcePostgres,
-        sourceMongoDB,
-        sourceMysql,
-        sourceMssql,
-        ...getSourceConnectors(),
-      ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || "";
-        const labelB = itemB?.label || "";
-        return labelA.localeCompare(labelB);
-      }),
-    },
-    {
-      type: "category",
-      label: "Destinations",
-      link: {
-        type: "doc",
-        id: "destinations/README",
-      },
-      items: [
-        destinationS3,
-        destinationPostgres,
-        ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || "";
-        const labelB = itemB?.label || "";
-        return labelA.localeCompare(labelB);
-      }),
-    },
-    {
-      type: "category",
-      label: "Enterprise Connectors",
-      link: {
-        type: "doc",
-        id: "enterprise-connectors/README",
-      },
-      items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
-        const labelA = itemA?.label || "";
-        const labelB = itemB?.label || "";
-        return labelA.localeCompare(labelB);
-      }),
-    },
-    "connector-support-levels",
-    {
       type: "doc",
-      id: "custom-connectors",
+      label: "Migration Guide",
+      id: "destinations/mssql-migrations",
     },
-    "locating-files-local-destination",
   ],
 };
 
+function getDestinationConnectors(registry) {
+  const specialDestinationConnectors = [destinationS3, destinationPostgres];
+  const destinations = getFilenamesInDir("destinations/", destinationDocs, [
+    "s3",
+    "postgres",
+    "mssql",
+    "readme",
+  ]);
+  const destinationsWithSupportLevel = addSupportLevelToConnectors(
+    [...specialDestinationConnectors, ...destinations],
+    registry,
+  );
+
+  const enterpriseDestinations = getFilenamesInDir(
+    "enterprise-connectors/",
+    enterpriseConnectorDocs,
+    ["readme"],
+  );
+  const enterpriseDestinationsWithSupportLevel = enterpriseDestinations
+    .filter((item) => item.id.includes("destination"))
+    .map((item) => {
+      return {
+        ...item,
+        customProps: {
+          ...item.customProps,
+          supportLevel: "enterprise",
+        },
+      };
+    });
+
+  return [
+    ...destinationsWithSupportLevel,
+    ...enterpriseDestinationsWithSupportLevel,
+    destinationMsSql,
+  ];
+}
+
+function buildConnectorSidebar() {
+  const registry = loadConnectorRegistry();
+
+  const sourcesWithSupportLevel = getSourceConnectors(registry);
+
+  const destinationConnectors = getDestinationConnectors(registry);
+
+  const sourcesBySupportLevel = groupConnectorsBySupportLevel(
+    sourcesWithSupportLevel,
+  );
+  const destinationsBySupportLevel = groupConnectorsBySupportLevel(
+    destinationConnectors,
+  );
+
+  return {
+    type: "category",
+    label: "Connectors",
+    collapsible: false,
+    link: {
+      type: "doc",
+      id: "README",
+    },
+    items: [
+      {
+        type: "category",
+        label: "Sources",
+        link: {
+          type: "doc",
+          id: "sources/README",
+        },
+        collapsible: true,
+        collapsed: false,
+        items: sourcesBySupportLevel,
+      },
+      {
+        type: "category",
+        label: "Destinations",
+        link: {
+          type: "doc",
+          id: "destinations/README",
+        },
+        collapsible: true,
+        collapsed: false,
+        items: destinationsBySupportLevel,
+      },
+      "connector-support-levels",
+      {
+        type: "doc",
+        id: "custom-connectors",
+      },
+      "locating-files-local-destination",
+    ],
+  };
+}
+
+const connectorSidebar = buildConnectorSidebar();
+
 module.exports = {
-  connectors: [connectorCatalog],
+  connectors: [connectorSidebar],
 };
