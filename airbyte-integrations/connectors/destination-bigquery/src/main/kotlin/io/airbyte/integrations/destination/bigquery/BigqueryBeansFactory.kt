@@ -10,22 +10,32 @@ import com.google.cloud.bigquery.BigQueryOptions
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations.DefaultDirectLoadTableTempTableNameMigration
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.NoopTypingDedupingSqlGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingFinalTableOperations
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingWriter
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
+import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDatabaseHandler
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDatabaseInitialStatusGatherer
-import io.airbyte.integrations.destination.bigquery.write.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadTableExistenceChecker
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -64,21 +74,71 @@ class BigqueryBeansFactory {
         bigquery: BigQuery,
         config: BigqueryConfiguration,
         names: TableCatalog,
-        streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
-    ): TypingDedupingWriter {
+        // micronaut will only instantiate a single instance of StreamStateStore,
+        // so accept it as a * generic and cast as needed.
+        // we use a different type depending on whether we're in legacy raw tables vs
+        // direct-load tables mode.
+        streamStateStore: StreamStateStore<*>,
+    ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
-        return TypingDedupingWriter(
-            names,
-            BigqueryDatabaseInitialStatusGatherer(bigquery),
-            destinationHandler,
-            BigqueryRawTableOperations(bigquery),
-            TypingDedupingFinalTableOperations(
-                BigQuerySqlGenerator(config.projectId, config.datasetLocation.region),
+        if (config.legacyRawTablesOnly) {
+            // force smart cast
+            @Suppress("UNCHECKED_CAST")
+            streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>
+            return TypingDedupingWriter(
+                names,
+                BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
                 destinationHandler,
-            ),
-            disableTypeDedupe = config.disableTypingDeduping,
-            streamStateStore,
-        )
+                BigqueryRawTableOperations(bigquery),
+                TypingDedupingFinalTableOperations(
+                    NoopTypingDedupingSqlGenerator,
+                    destinationHandler,
+                ),
+                disableTypeDedupe = true,
+                streamStateStore = streamStateStore,
+            )
+        } else {
+            val sqlTableOperations =
+                BigqueryDirectLoadSqlTableOperations(
+                    DefaultDirectLoadTableSqlOperations(
+                        BigqueryDirectLoadSqlGenerator(
+                            projectId = config.projectId,
+                            cdcDeletionMode = config.cdcDeletionMode,
+                        ),
+                        destinationHandler,
+                    ),
+                    bigquery,
+                )
+            // force smart cast
+            @Suppress("UNCHECKED_CAST")
+            streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
+            return DirectLoadTableWriter(
+                internalNamespace = config.internalTableDataset,
+                names = names,
+                stateGatherer =
+                    BigqueryDirectLoadDatabaseInitialStatusGatherer(
+                        bigquery,
+                        internalTableDataset = config.internalTableDataset,
+                    ),
+                destinationHandler = destinationHandler,
+                nativeTableOperations =
+                    BigqueryDirectLoadNativeTableOperations(
+                        bigquery,
+                        sqlTableOperations,
+                        destinationHandler,
+                        projectId = config.projectId,
+                        internalTableDataset = config.internalTableDataset,
+                    ),
+                sqlTableOperations = sqlTableOperations,
+                streamStateStore = streamStateStore,
+                directLoadTableTempTableNameMigration =
+                    DefaultDirectLoadTableTempTableNameMigration(
+                        internalNamespace = config.internalTableDataset,
+                        BigqueryDirectLoadTableExistenceChecker(bigquery),
+                        sqlTableOperations,
+                    ),
+            )
+        }
     }
 
     @Singleton

@@ -41,7 +41,7 @@ data class BigqueryBulkLoadConfiguration(
     ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream> {
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
-        CSVFormatConfiguration()
+        CSVFormatConfiguration(rootLevelFlattening = !bigQueryConfiguration.legacyRawTablesOnly)
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration()
     override val s3BucketConfiguration: S3BucketConfiguration
