@@ -182,7 +182,6 @@ definitions:
             - type: ParentStreamConfig
               parent_key: Id
               partition_field: account_id
-              deduplicate: true
               stream:
                 $ref: "#/definitions/accounts_stream"
               extra_fields:
