@@ -124,8 +124,7 @@ class GlueWriteTest :
             stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """
                         {
                           "id": 1,

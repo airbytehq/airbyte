@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import java.util.concurrent.TimeUnit
 
 /**
@@ -33,16 +32,12 @@ class BigQueryRecordFormatter {
                 }
                 Meta.COLUMN_NAME_AB_META -> {
                     // TODO this is a hack for T+D, we should remove it for direct-load tables
-                    //   we're completely ignoring the enrichedRecord's meta value, because that
+                    //   we're using sourceMeta instead of airbyteMeta, because the latter
                     //   includes changes in-connector type coercion
                     //   and for raw tables, we only want changes that originated from the source
-                    if (record.rawData.record.meta == null) {
-                        record.rawData.record.meta = AirbyteRecordMessageMeta()
-                        record.rawData.record.meta.changes = emptyList()
-                    }
-                    record.rawData.record.meta.additionalProperties["sync_id"] =
-                        record.stream.syncId
-                    outputRecord[key] = record.rawData.record.meta.serializeToString()
+                    val protocolMeta = enrichedRecord.sourceMeta.asProtocolObject()
+                    protocolMeta.additionalProperties["sync_id"] = record.stream.syncId
+                    outputRecord[key] = protocolMeta.serializeToString()
                     // TODO we should do this for direct-load tables
                     // val serializedAirbyteMeta = (value.abValue as
                     // ObjectValue).serializeToString()
@@ -55,7 +50,7 @@ class BigQueryRecordFormatter {
             }
         }
 
-        outputRecord[Meta.COLUMN_NAME_DATA] = record.asRawJson().serializeToString()
+        outputRecord[Meta.COLUMN_NAME_DATA] = record.asJsonRecord().serializeToString()
 
         return outputRecord.serializeToString()
     }

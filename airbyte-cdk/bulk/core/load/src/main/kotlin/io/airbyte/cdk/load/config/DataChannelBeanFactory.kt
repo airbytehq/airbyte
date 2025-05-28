@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.DataChannelReader
 import io.airbyte.cdk.load.file.JSONLDataChannelReader
+import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationMessageFactory
@@ -158,10 +159,17 @@ class DataChannelBeanFactory {
     @Singleton
     fun dataChannelReader(
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
-        destinationMessageFactory: DestinationMessageFactory
+        destinationMessageFactory: DestinationMessageFactory,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ) =
         when (dataChannelFormat) {
             DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
+            DataChannelFormat.PROTOBUF -> {
+                check(dataChannelMedium == DataChannelMedium.SOCKETS) {
+                    "PROTOBUF data channel format is only supported for SOCKETS medium."
+                }
+                ProtobufDataChannelReader(destinationMessageFactory)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported data channel format: $dataChannelFormat"
