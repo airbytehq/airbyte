@@ -29,7 +29,7 @@ jobs:
     name: "Post Start Comment"
     runs-on: ubuntu-24.04
     if: >
-      inputs.comment-id &&
+      inputs.comment-id != '' &&
       (
         github.event_name == 'workflow_dispatch' ||
         (
