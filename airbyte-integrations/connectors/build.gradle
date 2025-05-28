@@ -1,6 +1,8 @@
 plugins {
     id 'base'
     id 'ru.vyarus.use-python' version '2.3.0'
+    id "io.airbyte.gradle.docker" version "0.63.0" apply false
+    id 'com.github.eirnym.js2p' version "1.0" apply false
 }
 
 // Pyenv support.
@@ -80,8 +82,8 @@ allprojects {
         return task
     }
 
-    // Build connector image as part of 'assemble' task.
-    // This is required for local 'integrationTest' execution.
+    // This allows us to slowly migrate connectors between dagger and the new plugins.
+    // This can be deleted once we no longer use Dagger.
     def buildConnectorImage = airbyteCIConnectorsTask(
             'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
     buildConnectorImage.configure {
@@ -90,9 +92,14 @@ allprojects {
         // Ensure that all files exist beforehand.
         dependsOn tasks.matching { it.name == 'generate' }
     }
-    tasks.named('assemble').configure {
-        // We may revisit the dependency on assemble but the dependency should always be on a base task.
-        dependsOn buildConnectorImage
+
+    afterEvaluate { Project p ->
+        if (!plugins.hasPlugin('airbyte-connector-docker-convention')) {
+            tasks.named('assemble').configure {
+                // We may revisit the dependency on assemble but the dependency should always be on a base task.
+                dependsOn buildConnectorImage
+            }
+        }
     }
 
     // Convenience tasks for local airbyte-ci execution.

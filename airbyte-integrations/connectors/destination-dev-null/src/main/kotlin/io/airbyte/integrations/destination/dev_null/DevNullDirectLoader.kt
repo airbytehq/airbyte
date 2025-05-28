@@ -12,7 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.random.Random
 
-/** Wraps the configured operation in logic that acks all state so far every N records. */
+/** Wraps the configured operation in logic that acks all state so far every N records */
 abstract class DevNullDirectLoader(
     private val config: DevNullConfiguration,
 ) : DirectLoader {
@@ -34,7 +34,7 @@ abstract class DevNullDirectLoader(
     }
 
     override fun close() {
-        /* do nothing */
+        /* do even more nothing */
     }
 }
 

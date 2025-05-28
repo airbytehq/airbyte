@@ -16,6 +16,8 @@ Connector Builder
 abctl
 Low-Code CDK
 Connection Timeline
+Embedded
+Airbyte Embedded
 
 #
 # Common terms Airbyte uses
@@ -34,6 +36,7 @@ Datadog
 Python
 MarkDownLint
 markdownlint-cli2
+JavaScript
 
 # Common acronyms and initialisms that don't need definitions
 
