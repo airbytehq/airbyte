@@ -159,7 +159,7 @@ class SourceBingAds(YamlDeclarativeSource):
             AdGroupLabels(client, config),
             AppInstallAds(client, config),
             AppInstallAdLabels(client, config),
-            Ads(client, config),
+            # Ads(client, config),
             Budget(client, config),
             BudgetSummaryReport(client, config),
             Labels(client, config),
