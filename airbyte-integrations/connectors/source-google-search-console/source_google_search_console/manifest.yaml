@@ -8,6 +8,37 @@ check:
     - sitemaps
 
 definitions:
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config.get('authorization', {}).get('client_id') }}"
+    client_secret: "{{ config.get('authorization', {}).get('client_secret') }}"
+    refresh_token: "{{ config.get('authorization', {}).get('refresh_token') }}"
+    token_refresh_endpoint: "https://oauth2.googleapis.com/token"
+
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      type: JwtAuthenticator
+      secret_key: "{{ json_loads(config.get('authorization', {}).get('service_account_info', '{}')).get('private_key') }}"
+      algorithm: "RS256"
+      token_duration: 3600
+      jwt_payload:
+        aud: "{{ json_loads(config.get('authorization', {}).get('service_account_info', '{}')).get('token_uri') }}"
+        iss: "{{ json_loads(config.get('authorization', {}).get('service_account_info', '{}')).get('client_email') }}"
+      additional_jwt_payload:
+        scope: "https://www.googleapis.com/auth/webmasters.readonly"
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["authorization", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
+
   search_analytics_by_country_stream:
     type: DeclarativeStream
     name: search_analytics_by_country
@@ -23,6 +54,7 @@ definitions:
         url_base: https://www.googleapis.com/webmasters/v3
         path: "/sites/{{stream_partition.get('site_url')}}/searchAnalytics/query"
         http_method: POST
+        authenticator: "#/definitions/selective_authenticator"
         paginator:
           type: DefaultPaginator
           page_size_option:
@@ -85,12 +117,8 @@ definitions:
       - type: CustomTransformation
         class_name: source_google_search_console.components.GoogleSearchConsoleInjectTransformedSiteUrlAndDimensions
         dimensions:
-          - web
-          - news
-          - image
-          - video
-          - discover
-          - googleNews
+          - date
+          - country
       - type: AddFields
         fields:
           - path:
