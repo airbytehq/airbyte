@@ -34,17 +34,17 @@ class HourlyReportsTest(TestSuiteReportStream):
 
 class HourlyReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
     first_read_state = get_state_after_migration(
-        time_period=f"{TestSuiteReportStream.start_date}T00:00:00+0000", account_id=TestSuiteReportStream.account_id
+        time_period=f"{TestSuiteReportStream.start_date}T00:00:00+00:00", account_id=TestSuiteReportStream.account_id
     )
     first_read_state_for_records_further_start_date = get_state_after_migration(
-        time_period=f"2024-05-06T01:00:00+0000", account_id=TestSuiteReportStream.account_id
+        time_period=f"2024-05-06T01:00:00+00:00", account_id=TestSuiteReportStream.account_id
     )
     second_read_state = SECOND_STATE
     second_read_state_for_records_before_start_date = get_state_after_migration(
-        time_period=f"{TestSuiteReportStream.start_date}T00:00:00+0000", account_id=TestSuiteReportStream.account_id
+        time_period=f"{TestSuiteReportStream.start_date}T00:00:00+00:00", account_id=TestSuiteReportStream.account_id
     )
     second_read_state_for_records_further_start_date = get_state_after_migration(
-        time_period="2024-05-07T01:00:00+0000", account_id=TestSuiteReportStream.account_id
+        time_period="2024-05-07T01:00:00+00:00", account_id=TestSuiteReportStream.account_id
     )
     report_file_with_records_further_start_date = "ad_performance_report_hourly_with_records_further_config_start_date"
     state_file_legacy = "hourly_reports_state_legacy"

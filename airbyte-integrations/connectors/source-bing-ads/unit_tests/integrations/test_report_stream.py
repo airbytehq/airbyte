@@ -146,10 +146,34 @@ class TestSuiteReportStream(TestReportStream):
         from the state, the incremental read returns records multiple times as we yield the default_time_periods
         for no start date scenario.
         """
+        if self.stream_name in MIGRATED_STREAMS:
+            self.skipTest(f"Skipping for migrated to manifest stream: : {self.stream_name}")
         state = self._state(self.state_file, self.stream_name)
         config = deepcopy(self._config)
         del config["reports_start_date"]  # Simulate no start date in config
         output, service_call_mock = self.read_stream(self.stream_name, SyncMode.incremental, config, self.incremental_report_file, state)
+        if not self.second_read_records_number:
+            assert len(output.records) == self.records_number
+        else:
+            assert len(output.records) == self.second_read_records_number
+
+    @freeze_time(SECOND_READ_FREEZE_TIME)
+    def test_incremental_read_with_state_and_no_start_date_returns_records_once_after_migration(self):
+        """
+        Test that incremental read with state and no start date in config returns records only once.
+        We observed that if the start date is not provided in the config, and we don't parse correctly the account_id
+        from the state, the incremental read returns records multiple times as we yield the default_time_periods
+        for no start date scenario.
+        """
+        if self.stream_name not in MIGRATED_STREAMS:
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        self.mock_report_apis()
+        state = self._state(self.state_file_legacy, self.stream_name)
+        config = deepcopy(self._config)
+        del config["reports_start_date"]  # Simulate no start date in config
+        output, service_call_mock = self.read_stream(
+            self.stream_name, SyncMode.incremental, config, self.incremental_report_file_with_records_further_cursor, state
+        )
         if not self.second_read_records_number:
             assert len(output.records) == self.records_number
         else:
@@ -251,7 +275,7 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = provided_state[0].stream.stream_state.state[self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"
+        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
 
     @freeze_time(SECOND_READ_FREEZE_TIME)
     def test_incremental_read_with_legacy_state_returns_records_after_migration_with_records_further_state_cursor(self):
@@ -319,7 +343,7 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"
+        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
 
     @freeze_time("2024-05-06")
     def test_no_config_start_date(self):
@@ -343,6 +367,6 @@ class TestSuiteReportStream(TestReportStream):
         first_read_state = deepcopy(self.first_read_state)
         # this corresponds to the last read record as we don't have started_date in the config
         # the self.first_read_state is set using the config start date so it is not correct for this test
-        first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+0000"
-        first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+0000"
+        first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
+        first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
         assert output.most_recent_state.stream_state.__dict__ == first_read_state
