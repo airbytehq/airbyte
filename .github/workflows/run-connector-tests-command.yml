@@ -26,42 +26,6 @@ on:
 
 jobs:
 
-
-  debug-connector-ci-outputs:
-    name: "🛠️ Debug Connector-CI Outputs"
-    runs-on: ubuntu-latest
-    # if: >
-    #   github.event_name == 'workflow_dispatch' ||
-    #   (github.event_name == 'push' &&
-    #     github.repository != 'airbytehq/airbyte' &&
-    #     vars.GCP_PROJECT_ID != ''
-    #    )
-    steps:
-      - name: Dump all reusable-workflow outputs
-        run: |
-          echo "github.event_name   = |${{ github.event_name }}|"
-          echo "github.repository   = |${{ github.repository }}|"
-          echo "vars.GCP_PROJECT_ID = |${{ vars.GCP_PROJECT_ID }}|"
-          echo "condition = |${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.repository != 'airbytehq/airbyte' && vars.GCP_PROJECT_ID != '') }}|"
-
-      - name: Skip-me
-        if: >
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' &&
-          github.repository != 'airbytehq/airbyte' &&
-          vars.GCP_PROJECT_ID != '')
-        run: |
-          echo "This should not run."
-
-      - name: Skip-me (2)
-        if: >
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' &&
-           github.repository != 'airbytehq/airbyte' &&
-           vars.GCP_PROJECT_ID != '')
-        run: |
-          echo "This should not run."
-
   call-connector-ci-tests:
     # Run always for 'workflow_dipatch' events.
     # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
