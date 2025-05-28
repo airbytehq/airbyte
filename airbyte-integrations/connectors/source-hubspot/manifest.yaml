@@ -2153,9 +2153,15 @@ dynamic_streams:
                 error_message: >-
                   HubSpot server error (5xx). Retrying with exponential backoff...
               - type: HttpResponseFilter
-                action: FAIL
+                action: RETRY
                 http_codes:
                   - 401
+                error_message: >-
+                  Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+              # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
                   - 530
                 error_message: >-
                   The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
