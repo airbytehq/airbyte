@@ -25,6 +25,20 @@ on:
   push:
 
 jobs:
+
+
+  debug-connector-ci-outputs:
+    name: "🛠️ Debug Connector-CI Outputs"
+    needs: call-connector-ci-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Dump all reusable-workflow outputs
+        run: |
+          echo "github.event_name   = |${{ github.event_name }}|"
+          echo "github.repository   = |${{ github.repository }}|"
+          echo "vars.GCP_PROJECT_ID = |${{ vars.GCP_PROJECT_ID }}|"
+
   call-connector-ci-tests:
     # Run always for 'workflow_dipatch' events.
     # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
