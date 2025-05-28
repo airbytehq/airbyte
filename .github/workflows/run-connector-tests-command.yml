@@ -30,12 +30,12 @@ jobs:
   debug-connector-ci-outputs:
     name: "🛠️ Debug Connector-CI Outputs"
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' &&
-        github.repository != 'airbytehq/airbyte' &&
-        vars.GCP_PROJECT_ID != ''
-       )
+    # if: >
+    #   github.event_name == 'workflow_dispatch' ||
+    #   (github.event_name == 'push' &&
+    #     github.repository != 'airbytehq/airbyte' &&
+    #     vars.GCP_PROJECT_ID != ''
+    #    )
     steps:
       - name: Dump all reusable-workflow outputs
         run: |
@@ -46,10 +46,11 @@ jobs:
 
       - name: Skip-me
         if: >
-          ${{ github.event_name == 'workflow_dispatch' ||
-           (github.event_name == 'push' &&
-           github.repository != 'airbytehq/airbyte' &&
-           vars.GCP_PROJECT_ID != '') }}
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' &&
+            github.repository != 'airbytehq/airbyte' &&
+            vars.GCP_PROJECT_ID != ''
+          )
         run: |
           echo "This should not run."
 
