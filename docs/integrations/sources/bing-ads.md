@@ -261,7 +261,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.9.3 | 2025-05-26 | [60909](https://github.com/airbytehq/airbyte/pull/60909) | Remove account records if duplicated caused by predicate |
+| 2.9.4 | 2025-05-29 | [60909](https://github.com/airbytehq/airbyte/pull/60909) | Remove account records if duplicated caused by predicate |
 | 2.9.3 | 2025-05-28 | [60929](https://github.com/airbytehq/airbyte/pull/60929) | Fix duplicated slices/jobs when reports_start_date is not set |
 | 2.9.2 | 2025-05-22 | [60832](https://github.com/airbytehq/airbyte/pull/60832) | Fix handling of account_names predicate in declarative stream |
 | 2.9.1 | 2025-05-10 | [54233](https://github.com/airbytehq/airbyte/pull/54233) | Update dependencies |
