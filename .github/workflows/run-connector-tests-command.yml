@@ -26,12 +26,15 @@ on:
 
 jobs:
   call-connector-ci-tests:
-    # Run always for 'workflow_dipatch' events.
+    # Run always for 'workflow_dispatch' events.
     # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
     if: >
-      ${{ github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && github.repository != 'airbytehq/airbyte' &&
-      (vars.GCP_PROJECT_ID != '')) }}
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'push' &&
+        github.repository != 'airbytehq/airbyte' &&
+        vars.GCP_PROJECT_ID != ''
+      )
     uses: ./.github/workflows/connector-ci-tests.yml
     with:
       repo: "${{ inputs.repo || github.repository }}"
