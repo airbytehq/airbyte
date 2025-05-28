@@ -74,7 +74,7 @@ jobs:
     secrets: inherit
 
   post-end-comment:
-    name: "Post End Comment"
+    name: "Post Completion Comment"
     needs: call-connector-ci-tests
     runs-on: ubuntu-24.04
     if: >
