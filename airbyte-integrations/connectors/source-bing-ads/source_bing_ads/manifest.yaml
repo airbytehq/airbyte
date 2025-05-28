@@ -222,6 +222,10 @@ definitions:
             value: "{{ record.get('BidStrategyId')|int if record.get('BidStrategyId') is not none else none }}"
           - type: AddedFieldDefinition
             path:
+              - ForwardCompatibilityMap
+            value: "{{ record.get('ForwardCompatibilityMap') if record.get('ForwardCompatibilityMap') and record.get('ForwardCompatibilityMap') | length > 0 else none }}"
+          - type: AddedFieldDefinition
+            path:
               - Languages
             value: |
               {% set languages = [] %}
@@ -250,7 +254,6 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - SettingContent
-
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/campaigns_stream"
