@@ -176,8 +176,8 @@ jobs:
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
           sudo tailscale up \
-            --authkey ${{ secrets.TAILSCALE_AUTHKEY }} \
-            --hostname ci-runner-${{ github.run_id }} \
+            --authkey=${{ secrets.TAILSCALE_AUTHKEY }} \
+            --hostname=ci-runner-${{ github.run_id }} \
             --ssh \
             --advertise-tags=tag:ci \
             --accept-routes=false \
