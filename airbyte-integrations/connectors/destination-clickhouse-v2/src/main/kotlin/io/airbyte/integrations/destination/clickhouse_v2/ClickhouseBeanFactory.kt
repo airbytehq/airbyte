@@ -1,19 +1,59 @@
 package io.airbyte.integrations.destination.clickhouse_v2
 
 import com.clickhouse.client.api.Client
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations.DefaultDirectLoadTableTempTableNameMigration
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickHouseSpecification
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseWriter
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 @Factory
 class ClickhouseBeanFactory {
     @Singleton
-    fun destinationWriter(): DestinationWriter {
-        return ClickhouseWriter()
+    fun destinationWriter(clickhouseClient: Client,
+                          names: TableCatalog
+    ): DestinationWriter {
+        val destinationHandler = ClickhouseDatabaseHandler(clickhouseClient)
+
+        val test =  ClickhouseWriter(
+            DefaultDirectLoadTableSqlOperations(
+                ClickhouseDirectLoadSqlGenerator(""),
+                destinationHandler
+            )
+        )
+
+        return DirectLoadTableWriter(
+            internalNamespace = "_internal",
+            names = names,
+            stateGatherer =
+            ClickhouseDirectLoadDatabaseInitialStatusGatherer(
+                clickhouseClient,
+            ),
+            destinationHandler = destinationHandler,
+            nativeTableOperations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                sqlTableOperations,
+                destinationHandler,
+                projectId = config.projectId,
+                internalTableDataset = config.internalTableDataset,
+            ),
+            sqlTableOperations = sqlTableOperations,
+            streamStateStore = streamStateStore,
+            directLoadTableTempTableNameMigration =
+            DefaultDirectLoadTableTempTableNameMigration(
+                internalNamespace = config.internalTableDataset,
+                BigqueryDirectLoadTableExistenceChecker(bigquery),
+                sqlTableOperations,
+            ),
+        )
     }
 
     @Singleton
