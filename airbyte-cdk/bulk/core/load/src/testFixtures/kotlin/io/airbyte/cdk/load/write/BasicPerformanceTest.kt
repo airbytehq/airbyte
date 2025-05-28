@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -70,7 +71,7 @@ interface PerformanceTestScenario {
      * This would be where records are emitted to the destination. How, is up to the scenario to
      * define.
      */
-    fun send(destination: DestinationProcess)
+    suspend fun send(destination: DestinationProcess)
 
     /**
      * Returns the expectations from the test scenario: how many records were emitted, how many
@@ -113,8 +114,9 @@ abstract class BasicPerformanceTest(
     val micronautProperties: Map<Property, String> = emptyMap(),
     namespaceOverride: String? = null,
     val numFilesForFileTransfer: Int = 5,
-    val fileSizeMbForFileTransfer: Int = 1024,
-    val numStreamsForMultiStream: Int = 4
+    val fileSizeMbForFileTransfer: Int = 10,
+    val numStreamsForMultiStream: Int = 4,
+    val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -289,19 +291,38 @@ abstract class BasicPerformanceTest(
 
     @Test
     @Disabled("Opt-in")
-    open fun testFileTransfer() {
+    open fun testFileTransferOld() {
         val scenario =
             SingleStreamFileTransfer(
                 randomizedNamespace = randomizedNamespace,
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
-                fileSizeMb = fileSizeMbForFileTransfer,
+                fileSizeMb = 10,
                 stagingDirectory = Path.of("/tmp")
             )
         scenario.setup()
         runSync(
             testScenario = scenario,
             useFileTransfer = true,
+            validation = null,
+        )
+    }
+
+    @Test
+    @Disabled("Opt-in")
+    open fun testFileTransferNew() {
+        val scenario =
+            SingleStreamFileAndMetadataTransfer(
+                randomizedNamespace = randomizedNamespace,
+                streamName = testInfo.testMethod.get().name,
+                numFiles = numFilesForFileTransfer,
+                fileSizeMb = 10,
+                stagingDirectory = Path.of("/tmp")
+            )
+        scenario.setup()
+        runSync(
+            testScenario = scenario,
+            useFileTransfer = false,
             validation = null,
         )
     }
@@ -317,7 +338,7 @@ abstract class BasicPerformanceTest(
                     recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
                     numStreams = numStreamsForMultiStream,
                     streamNamePrefix = testInfo.testMethod.get().name,
-                )
+                ),
         )
     }
 
@@ -380,6 +401,7 @@ abstract class BasicPerformanceTest(
                 testScenario.catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
                 micronautProperties = micronautProperties + fileTransferProperty,
+                dataChannelMedium = dataChannelMedium
             )
 
         val duration =

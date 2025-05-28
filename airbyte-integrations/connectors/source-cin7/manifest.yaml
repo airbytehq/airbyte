@@ -1,4 +1,4 @@
-version: 6.41.5
+version: 6.44.0
 
 type: DeclarativeSource
 
@@ -817,6 +817,46 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sales"
+    product_availability:
+      type: DeclarativeStream
+      name: product_availability
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: ref/productavailability
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ProductAvailabilityList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_availability"
   base_requester:
     type: HttpRequester
     url_base: https://inventory.dearsystems.com/externalapi/v2/
@@ -841,6 +881,7 @@ streams:
   - $ref: "#/definitions/streams/purchases"
   - $ref: "#/definitions/streams/leads"
   - $ref: "#/definitions/streams/sales"
+  - $ref: "#/definitions/streams/product_availability"
 
 spec:
   type: Spec
@@ -885,14 +926,15 @@ metadata:
     purchases: true
     leads: true
     sales: true
+    product_availability: true
   testedStreams:
     bank_accounts:
-      hasRecords: true
       streamHash: 526e86a80a76e0c6a16f2ea29d6c340e97bca755
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     attribute_sets:
       hasRecords: true
       streamHash: f0c7f8b8ebb4a0baf37f1a3bd8fed8c4b95d81fb
@@ -922,12 +964,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     customers:
+      hasRecords: true
       streamHash: 6296df9b787332829b7ef937890a192ab2327064
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     deals:
       hasRecords: true
       streamHash: ccd5ea21059bad7b3de4f188f7817a4a52545f61
@@ -943,40 +985,40 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: 6ebd8ea38c0ff2575ce639ed1dd3654aa3a2c1af
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchase_list:
+      hasRecords: true
       streamHash: 889dfe3ec1409384b9b2c23f548b9f14ef4fabe6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     suppliers:
+      hasRecords: true
       streamHash: b6948438c56ffd417cc6279a0f40b0a6e0310c7e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     opportunities:
+      hasRecords: true
       streamHash: c8b7271dc29ef8af200b13b4fb48fc8309e8d450
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sale_list:
+      hasRecords: true
       streamHash: 0ead96cb1f1327398c16fa24550389c199436480
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     taxes:
       hasRecords: true
       streamHash: 35da8fd56fd121f5a8a55b369eaef5ba42ea5f60
@@ -992,19 +1034,19 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     product_family:
+      hasRecords: true
       streamHash: 10b0b2e569ee4e0ffe3d23d913e5fe5783e95b3f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchases:
+      hasRecords: true
       streamHash: b38345c9d8496a2260cc444e2f1a142b52861043
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads:
       hasRecords: true
       streamHash: 5acfccfb598e660c7e119ff3e7031ce00962a760
@@ -1013,7 +1055,14 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     sales:
+      hasRecords: true
       streamHash: 6f22d78e9dde6d13bfdec222f81ab3b34e2bb092
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_availability:
+      streamHash: 26874607998c5f536bd05d4cd6464a50f915a23b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -5232,6 +5281,51 @@ schemas:
       Type:
         type:
           - string
+          - "null"
+    required:
+      - ID
+  product_availability:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Allocated:
+        type:
+          - number
+          - "null"
+      Available:
+        type:
+          - number
+          - "null"
+      ID:
+        type: string
+      InTransit:
+        type:
+          - number
+          - "null"
+      Location:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      OnHand:
+        type:
+          - number
+          - "null"
+      OnOrder:
+        type:
+          - number
+          - "null"
+      SKU:
+        type:
+          - string
+          - "null"
+      StockOnHand:
+        type:
+          - number
           - "null"
     required:
       - ID

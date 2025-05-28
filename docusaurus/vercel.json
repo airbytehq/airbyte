@@ -1,0 +1,465 @@
+{
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/api-documentation",
+      "destination": "/platform/api-documentation",
+      "statusCode": 301
+    },
+    {
+      "source": "/terraform-documentation",
+      "destination": "/platform/terraform-documentation",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/configuring-airbyte-db",
+      "destination": "/platform/deploying-airbyte/integrations/database",
+      "statusCode": 301
+    },
+    {
+      "source": "/upgrading-airbyte",
+      "destination": "/platform/operator-guides/upgrading-airbyte",
+      "statusCode": 301
+    },
+    {
+      "source": "/catalog",
+      "destination": "/platform/understanding-airbyte/airbyte-protocol",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/sources/appstore-singer",
+      "destination": "/integrations/sources/appstore",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/config-based",
+      "destination": "/platform/connector-development/config-based/low-code-cdk-overview",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/changelog",
+      "destination": "/release_notes",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/config-based/understanding-the-yaml-file/stream-slicers",
+      "destination": "/platform/connector-development/config-based/understanding-the-yaml-file/partition-router",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/dbt-cloud-integration",
+      "destination": "/platform/cloud/managing-airbyte-cloud/dbt-cloud-integration",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/managing-airbyte-cloud/review-sync-history",
+      "destination": "/platform/cloud/managing-airbyte-cloud/review-connection-timeline",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/managing-airbyte-cloud/review-connection-state",
+      "destination": "/platform/cloud/managing-airbyte-cloud/manage-connection-state",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/managing-airbyte-cloud/edit-stream-configuration",
+      "destination": "/platform/cloud/managing-airbyte-cloud/configuring-connections",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/managing-airbyte-cloud/manage-schema-changes",
+      "destination": "/platform/using-airbyte/schema-change-management",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/product-support-levels",
+      "destination": "/integrations/connector-support-levels",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/product-release-stages",
+      "destination": "/integrations/connector-support-levels",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/code-of-conduct",
+      "destination": "/platform/community/code-of-conduct",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/slack-code-of-conduct",
+      "destination": "/platform/community/code-of-conduct",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/self-managed",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/airbyte-pro",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/airbyte-enterprise",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/self-managed/implementation-guide",
+      "destination": "/platform/enterprise-setup/implementation-guide",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/security",
+      "destination": "/platform/operating-airbyte/security",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/securing-airbyte",
+      "destination": "/platform/operating-airbyte/security",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/security",
+      "destination": "/platform/operating-airbyte/security",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/getting-started-with-airbyte-cloud",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/quickstart/deploy-airbyte",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/category/getting-started",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/category/release-notes",
+      "destination": "/release_notes",
+      "statusCode": 301
+    },
+    {
+      "source": "/category/airbyte-open-source-quick-start",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/quickstart/add-a-source",
+      "destination": "/platform/using-airbyte/getting-started/add-a-source",
+      "statusCode": 301
+    },
+    {
+      "source": "/quickstart/add-a-destination",
+      "destination": "/platform/using-airbyte/getting-started/add-a-destination",
+      "statusCode": 301
+    },
+    {
+      "source": "/quickstart/set-up-a-connection",
+      "destination": "/platform/using-airbyte/getting-started/set-up-a-connection",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/core-concepts",
+      "destination": "/platform/using-airbyte/core-concepts",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/namespaces",
+      "destination": "/platform/using-airbyte/core-concepts/namespaces",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/connections",
+      "destination": "/platform/using-airbyte/core-concepts/sync-modes",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/connections/full-refresh-overwrite",
+      "destination": "/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/connections/full-refresh-append",
+      "destination": "/platform//using-airbyte/core-concepts/sync-modes/full-refresh-append",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/connections/incremental-append",
+      "destination": "/platform/using-airbyte/core-concepts/sync-modes/incremental-append",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/connections/incremental-append-deduped",
+      "destination": "/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/typing-deduping",
+      "destination": "/platform/using-airbyte/core-concepts/typing-deduping",
+      "statusCode": 301
+    },
+    {
+      "source": "/troubleshooting",
+      "destination": "/platform/community/getting-support",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/contact-support",
+      "destination": "/platform/community/getting-support",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
+      "destination": "/platform/using-airbyte/workspaces",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/locating-files-local-destination",
+      "destination": "/integrations/locating-files-local-destination",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/reset",
+      "destination": "/platform/operator-guides/clear",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/self-managed/sso",
+      "destination": "/platform/access-management/sso",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/sso",
+      "destination": "/platform/access-management/sso",
+      "statusCode": 301
+    },
+    {
+      "source": "/pyairbyte",
+      "destination": "/platform/using-airbyte/pyairbyte/getting-started",
+      "statusCode": 301
+    },
+    {
+      "source": "/telemetry",
+      "destination": "/platform/operator-guides/telemetry",
+      "statusCode": 301
+    },
+    {
+      "source": "/deploying-airbyte/quickstart",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/connector-builder-ui/compatibility-guide",
+      "destination": "/platform/connector-development/connector-builder-ui/overview",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/destinations/iceberg",
+      "destination": "/integrations/destinations/s3-data-lake",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/destinations/s3-glue",
+      "destination": "/integrations/destinations/s3-data-lake",
+      "statusCode": 301
+    },
+    {
+      "source": "/getting-started",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/getting-started",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/connections",
+      "destination": "/platform/using-airbyte/getting-started/set-up-a-connection",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/licenses",
+      "destination": "/platform/developer-guides/licenses",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/licenses/",
+      "destination": "/platform/developer-guides/licenses",
+      "statusCode": 301
+    },
+    {
+      "source": "/using-airbyte/getting-started",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/licenses/:path*",
+      "destination": "/platform/developer-guides/licenses/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/tutorials/cdk-tutorial-python-http",
+      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/tutorials/cdk-tutorial-python-http/",
+      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/tutorials/cdk-tutorial-python-http/:path*",
+      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
+      "statusCode": 301
+    },
+    {
+      "source": "/access-management/:path*",
+      "destination": "/platform/access-management/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/:path*",
+      "destination": "/platform/cloud/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/:path*",
+      "destination": "/platform/community/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development",
+      "destination": "/platform/connector-development",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/",
+      "destination": "/platform/connector-development",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/:path*",
+      "destination": "/platform/connector-development/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/contributing-to-airbyte",
+      "destination": "/platform/contributing-to-airbyte",
+      "statusCode": 301
+    },
+    {
+      "source": "/contributing-to-airbyte/",
+      "destination": "/platform/contributing-to-airbyte",
+      "statusCode": 301
+    },
+    {
+      "source": "/contributing-to-airbyte/:path*",
+      "destination": "/platform/contributing-to-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/deploying-airbyte/:path*",
+      "destination": "/platform/deploying-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/developer-guides",
+      "destination": "/platform/developer-guides/licenses",
+      "statusCode": 301
+    },
+    {
+      "source": "/developer-guides/",
+      "destination": "/platform/developer-guides/licenses",
+      "statusCode": 301
+    },
+    {
+      "source": "/developer-guides/:path*",
+      "destination": "/platform/developer-guides/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-setup",
+      "destination": "/platform/embedded-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-setup/",
+      "destination": "/platform/embedded-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-setup/:path*",
+      "destination": "/platform/embedded-setup/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/:path*",
+      "destination": "/platform/enterprise-setup/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/managing-airbyte/:path*",
+      "destination": "/platform/managing-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/operating-airbyte/:path*",
+      "destination": "/platform/operating-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/:path*",
+      "destination": "/platform/operator-guides/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/:path*",
+      "destination": "/platform/understanding-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/using-airbyte/:path*",
+      "destination": "/platform/using-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-specification-reference#airbyte-modifications-to-jsonschema",
+      "destination": "/platform/connector-development/connector-specification-reference#airbyte-modifications-to-jsonschema",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-specification-reference",
+      "destination": "/platform/connector-development/connector-specification-reference",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors",
+      "destination": "/integrations",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/next/embedded-setup",
+      "destination": "/embedded",
+      "statusCode": 301
+    }
+  ]
+}

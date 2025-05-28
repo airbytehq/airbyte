@@ -64,6 +64,9 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.20 | 2025-05-10 | [60050](https://github.com/airbytehq/airbyte/pull/60050) | Update dependencies |
+| 0.3.19 | 2025-05-03 | [59385](https://github.com/airbytehq/airbyte/pull/59385) | Update dependencies |
+| 0.3.18 | 2025-04-26 | [58315](https://github.com/airbytehq/airbyte/pull/58315) | Update dependencies |
 | 0.3.17 | 2025-04-12 | [57234](https://github.com/airbytehq/airbyte/pull/57234) | Update dependencies |
 | 0.3.16 | 2025-03-29 | [56490](https://github.com/airbytehq/airbyte/pull/56490) | Update dependencies |
 | 0.3.15 | 2025-03-22 | [55913](https://github.com/airbytehq/airbyte/pull/55913) | Update dependencies |

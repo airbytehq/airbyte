@@ -33,7 +33,7 @@ for the affected streams, follow the steps below:
 4. Select **Save connection**.
 
 This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, 
-trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 4.0.0
 
@@ -117,7 +117,7 @@ for the affected streams, follow the steps below:
 4. Select **Save connection**.
 
 This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, 
-trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 1.0.0
 
@@ -149,4 +149,4 @@ for the affected streams, follow the steps below:
 4. Select **Save connection**.
 
 This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds, 
-trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).

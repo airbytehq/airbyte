@@ -32,31 +32,31 @@ access to the database.
 1. Log in to the MongoDB Atlas dashboard.
 2. From the dashboard, click on "Database Access" under "Security"
 
-![Security Database Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
+![Security Database Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
 
 3. Click on the "+ ADD NEW DATABASE USER" button.
 
-![Add New Database User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
+![Add New Database User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
 
 4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-![Authentication Method](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
+![Authentication Method](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
 5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
 
-![Username and Password](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
+![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
 6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
 
-![Database User Privileges](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
 7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
-![Restrict Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
+![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
 8. Click on "Add User" at the bottom to save the user.
 
-![Add User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
+![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
 ##### Self Hosted
 
@@ -112,15 +112,15 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
-![Connect to Source Cluster](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
+![Connect to Source Cluster](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
 3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Shell Connect](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
 4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog, removing/avoiding the quotation marks.
 
-![Copy Connection String](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
+![Copy Connection String](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
 ##### Self Hosted Cluster
 
@@ -199,7 +199,10 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.5.16  | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973)      | Update logging configuration.                                                                             |
+| 1.5.19  | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311) | Migrate to new Gradle flow                                                                                |
+| 1.5.18  | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies.                                                                      |
+| 1.5.17  | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery                                                                  |
+| 1.5.16  | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973) | Update logging configuration.                                                                             |
 | 1.5.15  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors                                              |
 | 1.5.14  | 2025-01-10 | [51491](https://github.com/airbytehq/airbyte/pull/51491) | Use a non root base image                                                                                 |
 | 1.5.13  | 2024-12-18 | [49868](https://github.com/airbytehq/airbyte/pull/49868) | Use a base image: airbyte/java-connector-base:1.0.0                                                       |

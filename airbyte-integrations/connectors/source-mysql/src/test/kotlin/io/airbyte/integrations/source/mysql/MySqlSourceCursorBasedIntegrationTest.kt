@@ -68,7 +68,7 @@ class MySqlSourceCursorBasedIntegrationTest {
             connection.createStatement().use { stmt: Statement ->
                 stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (3, 'baz-ignore')")
                 stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (13, 'baz-ignore')")
-                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (30, 'baz')")
+                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (712000, 'baz')")
             }
         }
 
@@ -77,6 +77,9 @@ class MySqlSourceCursorBasedIntegrationTest {
             CliRunner.source("read", config, getConfiguredCatalog(), run2InputState).run()
         val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
         assertEquals(1, recordMessageFromRun2.size)
+        val lastStateMessageFromRun2 = run2.states().last()
+        val lastStreamStateFromRun2 = lastStateMessageFromRun2.stream.streamState
+        assertEquals("712000", lastStreamStateFromRun2.get("cursor").textValue())
     }
 
     @Test
@@ -225,7 +228,9 @@ class MySqlSourceCursorBasedIntegrationTest {
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute("CREATE TABLE test.$tableName(k INT PRIMARY KEY, v VARCHAR(80))")
+                    stmt.execute(
+                        "CREATE TABLE test.$tableName(k bigint unsigned PRIMARY KEY, v VARCHAR(80))"
+                    )
                 }
             }
         }

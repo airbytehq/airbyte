@@ -102,7 +102,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 ### <a name="limitations"></a>Limitations
 
-Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync will fail.
+Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync may fail or, in some cases, data will be truncated to comply with limits.
 
 **Maximum of 10 Million Cells**
 
@@ -111,7 +111,7 @@ If you already have reached the 10 million limit, it will not allow you to add m
 
 **Maximum of 50,000 characters per cell**
 
-There can be at most 50,000 characters per cell. Do not use Google Sheets if you have fields with long text in your source.
+There can be at most 50,000 characters in a single cell. Airbyte will automatically truncate any value exceeding this limit, appending `...[TRUNCATED]` to the end of the value. Do not use Google Sheets if you have fields with long text in your source.
 
 **Maximum of 18,278 Columns**
 
@@ -120,8 +120,6 @@ There can be at most 18,278 columns in Google Sheets in a worksheet.
 **Maximum of 200 Worksheets in a Spreadsheet**
 
 You cannot create more than 200 worksheets within single spreadsheet.
-
-Syncs will fail if any of these limits are reached.
 
 #### Note:
 
@@ -185,6 +183,8 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.3.5 | 2025-04-30 | [59647](https://github.com/airbytehq/airbyte/pull/59647) | Truncate cell values exceeding 50,000 characters with warning |
+| 0.3.4 | 2025-04-26 | [58280](https://github.com/airbytehq/airbyte/pull/58280) | Update dependencies |
 | 0.3.3 | 2025-04-12 | [57636](https://github.com/airbytehq/airbyte/pull/57636) | Update dependencies |
 | 0.3.2 | 2025-04-05 | [57166](https://github.com/airbytehq/airbyte/pull/57166) | Update dependencies |
 | 0.3.1 | 2025-03-29 | [56600](https://github.com/airbytehq/airbyte/pull/56600) | Update dependencies |
