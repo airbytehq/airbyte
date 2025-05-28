@@ -336,7 +336,7 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
     def __init__(self, max_retries: int, error_mapping: dict):
         super().__init__(logger=None, max_retries=max_retries, error_mapping=error_mapping)
 
-    def interpret_response(self, response_or_exception):
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             response = response_or_exception
             if response.status_code == 500:
