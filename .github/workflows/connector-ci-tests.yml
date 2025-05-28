@@ -25,6 +25,13 @@ on:
         required: false
         description: "The pull request number, if applicable. Unused as of now."
 
+permissions:
+  # Allow the workflow to read contents
+  # and to read/write checks and PR comments.
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   generate-matrix:
     name: Generate Connector Matrix
