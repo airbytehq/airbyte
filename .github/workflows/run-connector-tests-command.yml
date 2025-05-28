@@ -55,10 +55,10 @@ jobs:
 
       - name: Skip-me (2)
         if: >
-          ${{ github.event_name == 'workflow_dispatch' ||
+          github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' &&
            github.repository != 'airbytehq/airbyte' &&
-           vars.GCP_PROJECT_ID != '') }}
+           vars.GCP_PROJECT_ID != '')
         run: |
           echo "This should not run."
 
