@@ -13,6 +13,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
+from source_google_search_console.source import SourceGoogleSearchConsole
 
 
 logger = logging.getLogger("airbyte_logger")
@@ -59,7 +60,7 @@ class MigrateCustomReports:
         return False
 
     @classmethod
-    def transform_to_array(cls, config: Mapping[str, Any], source: Source = None) -> Mapping[str, Any]:
+    def transform_to_array(cls, config: Mapping[str, Any], source: SourceGoogleSearchConsole = None) -> Mapping[str, Any]:
         # assign old values to new property that will be used within the new version
         config[cls.migrate_to_key] = config[cls.migrate_from_key]
         # transfom `json_str` to `list` of objects

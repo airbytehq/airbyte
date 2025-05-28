@@ -57,7 +57,8 @@ custom_reports_schema = {
 
 
 class SourceGoogleSearchConsole(YamlDeclarativeSource):
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, config_path: Optional[str] = None, **kwargs):
+        if not config_path
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @staticmethod
