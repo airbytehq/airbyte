@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.bigquery.typing_deduping
+package io.airbyte.integrations.destination.bigquery.write.typing_deduping
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
@@ -21,12 +21,58 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import kotlin.math.min
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
 class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocation: String) :
     DatabaseHandler {
+    /**
+     * Some statements (e.g. ALTER TABLE) have strict rate limits. Bigquery recommends retrying
+     * these statements with exponential backoff, and the SDK doesn't do it automatically. So this
+     * function implements a basic retry loop.
+     *
+     * Technically, [statement] can contain multiple semicolon-separated statements. That's probably
+     * not a great idea (it's hard to reason about retrying partially-successful statements), so
+     * maybe don't do that. Just call this function multiple times.
+     */
+    suspend fun executeWithRetries(
+        statement: String,
+        initialDelay: Long = 1000,
+        numAttempts: Int = 5,
+        maxDelay: Long = 60,
+    ) {
+        var delay = initialDelay
+        for (attemptNumber in 1..numAttempts) {
+            try {
+                execute(Sql.of(statement))
+                return
+            } catch (e: Exception) {
+                // you might think that `e.isRetryable` would be useful here,
+                // and you would be wrong - presumably the SDK treats all 403 errors as
+                // nonretryable.
+                // instead, we hardcode handling for the rate-limit error... which requires matching
+                // against a specific magic string >.>
+                if (
+                    e is BigQueryException && e.code == 403 && e.error.reason == "rateLimitExceeded"
+                ) {
+                    logger.warn(e) {
+                        "Rate limit exceeded while executing SQL (attempt $attemptNumber/$numAttempts). Sleeping ${delay}ms and retrying."
+                    }
+                    val withJitter = delay + 1000 * Math.random()
+                    delay(withJitter.toLong())
+                    delay = min(delay * 2, maxDelay)
+                } else {
+                    logger.error(e) {
+                        "Caught exception while executing SQL (attempt $attemptNumber/$numAttempts). Not retrying."
+                    }
+                    throw e
+                }
+            }
+        }
+    }
+
     @Throws(InterruptedException::class)
     override fun execute(sql: Sql) {
         val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION")
