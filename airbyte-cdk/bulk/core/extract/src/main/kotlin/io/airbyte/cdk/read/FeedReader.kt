@@ -8,6 +8,7 @@ import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.toKotlinDuration
@@ -35,6 +36,7 @@ class FeedReader(
 ) {
     private val log = KotlinLogging.logger {}
 
+    private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
         FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory)
 
@@ -293,9 +295,9 @@ class FeedReader(
                         "processing result (success = ${pendingResult.isSuccess}) from reading " +
                             label(pendingPartitionReaderID)
                     }
-                    val (opaqueStateValue: OpaqueStateValue, numRecords: Long) =
+                    val (opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?) =
                         pendingResult.getOrThrow()
-                    root.stateManager.scoped(feed).set(opaqueStateValue, numRecords)
+                    root.stateManager.scoped(feed).set(opaqueStateValue, numRecords, partitionId, stateId.getAndIncrement())
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"
                     }
@@ -323,7 +325,7 @@ class FeedReader(
                     ?: return // No output socket available, skip checkpoint.
 
             val boostedOutputConsumer =
-                boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.s)
+                boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.s, emptyMap())
             val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
             if (stateMessages.isEmpty()) {
                 return

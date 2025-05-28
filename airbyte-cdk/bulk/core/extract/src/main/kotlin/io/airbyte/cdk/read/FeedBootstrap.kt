@@ -80,9 +80,9 @@ sealed class FeedBootstrap<T : Feed>(
         val outputer: OutputConsumer = boostedOutputConsumer ?: outputConsumer
 
 
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
+        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, partitionId: String?) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData)
+                acceptWithoutChanges(recordData, partitionId)
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -95,7 +95,7 @@ sealed class FeedBootstrap<T : Feed>(
             }
         }
 
-        private fun acceptWithoutChanges(recordData: ObjectNode) {
+        private fun acceptWithoutChanges(recordData: ObjectNode, partitionId: String?) {
             synchronized(this) {
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
@@ -252,7 +252,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, partitionId: String? = null)
 }
 
 /**

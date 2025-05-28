@@ -153,6 +153,7 @@ interface PartitionReader {
 data class PartitionReadCheckpoint(
     val opaqueStateValue: OpaqueStateValue,
     val numRecords: Long,
+    val partitionId: String,
 )
 
 /** A [PartitionReader] with no time limit for its execution. */

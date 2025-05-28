@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -262,7 +263,7 @@ private class RecordTemplate(
     val suffix: ByteArray,
 ) {
     companion object {
-        fun create(stream: String, namespace: String?, emittedAt: Instant): RecordTemplate {
+        fun create(stream: String, namespace: String?, emittedAt: Instant, additionalProperties: Map<String, String> = emptyMap(),): RecordTemplate {
             // Generate a dummy AirbyteRecordMessage instance for the given args
             // using an empty object (i.e. '{}') for the "data" field value.
             val recordMessage =
@@ -271,6 +272,10 @@ private class RecordTemplate(
                     .withNamespace(namespace)
                     .withEmittedAt(emittedAt.toEpochMilli())
                     .withData(Jsons.objectNode())
+
+            for (additionalProperty in additionalProperties) {
+                recordMessage.withAdditionalProperty(additionalProperty.key, additionalProperty.value)
+            }
             // Generate the corresponding dummy AirbyteMessage instance.
             val airbyteMessage =
                 AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(recordMessage)
@@ -305,16 +310,18 @@ class BoostedOutputConsumerFactory(
     val bufferByteSizeThresholdForFlush: Int,
 ) {
 
-    fun boostedOutputConsumer(socket: SocketWrapper): BoostedOutputConsumer {
-        return BoostedOutputConsumer(socket, clock, bufferByteSizeThresholdForFlush) // TEMP
+    fun boostedOutputConsumer(socket: SocketWrapper, additionalProperties: Map<String, String>): BoostedOutputConsumer {
+        return BoostedOutputConsumer(socket, clock, bufferByteSizeThresholdForFlush, additionalProperties) // TEMP
     }
 }
 
 class BoostedOutputConsumer(
-    val socket: SocketWrapper,
+    private val socket: SocketWrapper,
     clock: Clock,
     val bufferByteSizeThresholdForFlush: Int,
+    private val additionalProperties: Map<String, String>,
 ) : OutputConsumer(clock) {
+    private val log = KotlinLogging.logger {}
     private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(buffer)
@@ -399,6 +406,7 @@ class BoostedOutputConsumer(
             // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
             buffer.write(template.prefix)
             // Serialize the record data ObjectNode to JSON, writing it to the buffer.
+
             Jsons.writeTree(jsonGenerator, record.data)
             jsonGenerator.flush()
             // If the record has a AirbyteRecordMessageMeta instance set,
@@ -430,7 +438,7 @@ class BoostedOutputConsumer(
                 namespacedTemplates.getOrPut(namespace) { StreamToTemplateMap() }
             }
         return streamToTemplateMap.getOrPut(stream) {
-            RecordTemplate.create(stream, namespace, recordEmittedAt)
+            RecordTemplate.create(stream, namespace, recordEmittedAt, additionalProperties,)
         }
     }
 

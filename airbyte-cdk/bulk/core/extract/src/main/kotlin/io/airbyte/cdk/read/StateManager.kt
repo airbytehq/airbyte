@@ -71,6 +71,8 @@ class StateManager(
         fun set(
             state: OpaqueStateValue,
             numRecords: Long,
+            partitionId: String?,
+            id: Int,
         )
 
         /** Resets the current state value in the [StateManager] for this [feed] to zero. */
@@ -96,6 +98,8 @@ class StateManager(
         private var currentStateValue: OpaqueStateValue? = initialState
         private var pendingStateValue: OpaqueStateValue? = null
         private var pendingNumRecords: Long = 0L
+        private var partitionId: String? = null
+        private var id: Int = 0 // TEMP
 
         @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
 
@@ -103,9 +107,14 @@ class StateManager(
         override fun set(
             state: OpaqueStateValue,
             numRecords: Long,
+            partitionId: String?,
+            id: Int
         ) {
             pendingStateValue = state
             pendingNumRecords += numRecords
+            this.partitionId = partitionId
+            this.id = id
+
         }
 
         @Synchronized
@@ -113,6 +122,8 @@ class StateManager(
             currentStateValue = null
             pendingStateValue = null
             pendingNumRecords = 0L
+            partitionId = null
+            id = 0
         }
 
         /**
@@ -134,7 +145,7 @@ class StateManager(
             // This means that there is nothing worth checkpointing for this particular feed.
             // In that case, exit early with the current state value.
             val freshStateValue: OpaqueStateValue =
-                pendingStateValue ?: return Stale(currentStateValue)
+                pendingStateValue ?: return Stale(currentStateValue, partitionId, id)
             // This point is reached in the case where there is a pending state value.
             // This means that set() HAS been called since the last call to takeForCheckpoint().
             //
@@ -146,9 +157,15 @@ class StateManager(
             // Reset the pending state, which will be overwritten by the next call to set().
             pendingStateValue = null
             pendingNumRecords = 0L
+
+            val currentPartitionId: String? = partitionId
+            partitionId = null
+
+            val currentId: Int = id
+            id = 0
             // Return the latest state value as well as the total number of records seen since the
             // last call to takeForCheckpoint().
-            return Fresh(freshStateValue, freshNumRecords)
+            return Fresh(freshStateValue, freshNumRecords, currentPartitionId, currentId)
         }
     }
 
@@ -156,6 +173,8 @@ class StateManager(
     private sealed interface StateForCheckpoint {
         val opaqueStateValue: OpaqueStateValue?
         val numRecords: Long
+        val partitionId: String?
+        val id: Int
     }
 
     /**
@@ -165,6 +184,8 @@ class StateManager(
     private data class Fresh(
         override val opaqueStateValue: OpaqueStateValue,
         override val numRecords: Long,
+        override val partitionId: String?,
+        override val id: Int,
     ) : StateForCheckpoint
 
     /**
@@ -173,6 +194,8 @@ class StateManager(
      */
     private data class Stale(
         override val opaqueStateValue: OpaqueStateValue?,
+        override val partitionId: String?,
+        override val id: Int,
     ) : StateForCheckpoint {
         override val numRecords: Long
             get() = 0L
@@ -248,6 +271,7 @@ class StateManager(
                     .withStreamState(
                         streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
                     )
+
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(airbyteStreamState)
@@ -255,6 +279,12 @@ class StateManager(
                     AirbyteStateStats()
                         .withRecordCount(streamStateForCheckpoint.numRecords.toDouble())
                 )
+                .withAdditionalProperty("id", streamStateForCheckpoint.id).let { message ->
+                    streamStateForCheckpoint.partitionId?.let {
+                        message.withAdditionalProperty("partition_id", it)
+                    }
+                    message
+                }
         }
     }
 }
