@@ -159,7 +159,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         if stream_state and account_id:
             # we've observed that account_id is being passed as an integer upstream, so we convert it to string
-            parsed_account_id = str(account_id) if account_id else account_id
+            parsed_account_id = str(account_id)
             if stream_state.get(parsed_account_id, {}).get(self.cursor_field):
                 return pendulum.parse(stream_state[parsed_account_id][self.cursor_field])
 
