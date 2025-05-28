@@ -7,12 +7,15 @@ import enum
 import logging
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, Final, List, Mapping, Optional
-
+from typing import Any, Callable, Dict, Final, List, Mapping, Optional, Union
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+import logging
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -323,3 +326,45 @@ class EagerlyCachedStreamState:
             return func(*args, **kwargs)
 
         return decorator
+
+class LimitReducingErrorHandler(HttpStatusErrorHandler):
+    def __init__(self, logger: logging.Logger, max_retries: int, error_mapping: dict, initial_limit: int):
+        print("[DEBUG] utils.py - LimitReducingErrorHandler.__init__ called")
+        super().__init__(logger=logger, max_retries=max_retries, error_mapping=error_mapping)
+        self.logger = logger
+        self.current_limit = initial_limit  # Manage current_limit here
+        self.initial_limit = initial_limit
+        self.retry_count = 0
+        print(f"[DEBUG] utils.py - LimitReducingErrorHandler.__init__ initialized with initial_limit={self.initial_limit}, max_retries={max_retries}")
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response called with response_or_exception={response_or_exception}")
+        if isinstance(response_or_exception, requests.Response):
+            response = response_or_exception
+            print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response response status code: {response.status_code}")
+            if response.status_code == 500:
+                print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response handling 500 error. Current limit: {self.current_limit}")
+                if self.current_limit > 1 and self.retry_count < self.max_retries:
+                    self.retry_count += 1
+                    new_limit = max(1, self.current_limit // 2)
+                    self.current_limit = new_limit
+                    print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response reduced limit to {new_limit}, retry attempt {self.retry_count}/{self.max_retries}")
+                    self.logger.info(f"Server error 500: Reduced limit to {new_limit}, preparing retry")
+                    return ErrorResolution(
+                        response_action=ResponseAction.RETRY,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Server error 500: Reduced limit to {new_limit}"
+                    )
+                print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response persistent 500 error or max retries reached")
+                self.retry_count = 0
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.transient_error,
+                    error_message="Persistent 500 error or max retries exceeded"
+                )
+            elif response.status_code == 200:
+                print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response resetting current limit to initial limit: {self.initial_limit}")
+                self.current_limit = self.initial_limit
+                self.retry_count = 0
+        print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response delegating to parent class")
+        return super().interpret_response(response_or_exception)
