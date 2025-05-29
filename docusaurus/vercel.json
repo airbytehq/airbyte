@@ -297,6 +297,11 @@
       "statusCode": 301
     },
     {
+      "source": "/using-airbyte/getting-started",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
       "source": "/project-overview/licenses/:path*",
       "destination": "/platform/developer-guides/licenses/:path*",
       "statusCode": 301

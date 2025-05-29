@@ -155,13 +155,13 @@ class FileChunkTaskTest<T> {
 
         val input =
             PipelineMessage(
-                checkpointCounts = mapOf(CheckpointId(1) to 2),
+                checkpointCounts = mapOf(CheckpointId("1") to 2),
                 key = key,
                 value = record,
                 postProcessingCallback = {},
                 context =
                     PipelineContext(
-                        mapOf(CheckpointId(1) to 2),
+                        mapOf(CheckpointId("1") to 2),
                         record,
                     )
             )

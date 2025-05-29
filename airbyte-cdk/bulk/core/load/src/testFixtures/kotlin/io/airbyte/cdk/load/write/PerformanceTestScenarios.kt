@@ -13,6 +13,8 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
+import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.cdk.load.util.CloseableCoroutine
 import io.airbyte.cdk.load.util.serializeToString
@@ -88,6 +90,7 @@ class SingleStreamInsert(
         stream: DestinationStream,
         private val destination: DestinationProcess,
         private val recordBufferSize: Long = 1,
+        private val checkpointId: CheckpointId? = null,
     ) : CloseableCoroutine {
         private val baseRecord = run {
             val data = (listOf(indexColumn) + columns).associate { Pair(it.name, it.sample) }
@@ -96,6 +99,7 @@ class SingleStreamInsert(
                 name = stream.descriptor.name,
                 data = Jsons.serialize(data),
                 emittedAtMs = System.currentTimeMillis(),
+                checkpointId = checkpointId
             )
         }
         private val messageParts =
@@ -140,6 +144,7 @@ class SingleStreamInsert(
                 stream = stream,
                 destination = destination,
                 recordBufferSize = 10,
+                checkpointId = checkpointKeyForMedium(destination.dataChannelMedium)?.checkpointId,
             )
             .use { writer ->
                 (1..recordsToInsert).forEach {
@@ -332,6 +337,12 @@ class SingleStreamFileAndMetadataTransfer(
                             .withFileReference(file)
                             .withData(Jsons.deserialize(dataStr))
                     )
+                    .also {
+                        checkpointKeyForMedium(destination.dataChannelMedium)?.let { checkpointKey
+                            ->
+                            it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointKey.checkpointId
+                        }
+                    }
 
             destination.sendMessage(msg)
         }
@@ -396,6 +407,8 @@ class MultiStreamInsert(
                                 (listOf(idColumn) + columns).associate { Pair(it.name, it.sample) }
                             ),
                         emittedAtMs = System.currentTimeMillis(),
+                        checkpointId =
+                            checkpointKeyForMedium(destination.dataChannelMedium)?.checkpointId
                     )
                     .asProtocolMessage()
             val jsonString = inputRecord.serializeToString()

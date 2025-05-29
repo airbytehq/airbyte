@@ -76,7 +76,7 @@ class DefaultDestinationCatalogFactory {
                     DestinationStream(
                         descriptor =
                             DestinationStream.Descriptor(
-                                CHECK_STREAM_NAMESPACE,
+                                "${CHECK_STREAM_NAMESPACE}_$date$random",
                                 "test$date$random"
                             ),
                         importType = Append,

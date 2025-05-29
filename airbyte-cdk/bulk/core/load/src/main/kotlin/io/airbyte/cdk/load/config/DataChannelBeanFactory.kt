@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.file.DataChannelReader
 import io.airbyte.cdk.load.file.JSONLDataChannelReader
 import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MultiProducerChannel
@@ -85,18 +86,42 @@ class DataChannelBeanFactory {
     fun numInputPartitions(
         loadStrategy: LoadStrategy? = null,
         @Named("isFileTransfer") isFileTransfer: Boolean = false,
-        dataChannelMedium: DataChannelMedium
+        dataChannelMedium: DataChannelMedium,
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
                 if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
             }
             DataChannelMedium.SOCKETS -> {
-                // For the first cut we'll limit ourselves to 1
-                1
+                dataChannelSocketPaths.size
             }
         }
     }
+
+    @Singleton
+    @Named("numDataChannels")
+    fun numDataChannels(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Named("numInputPartitions") numInputPartitions: Int
+    ): Int {
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> 1
+            DataChannelMedium.SOCKETS -> numInputPartitions
+        }
+    }
+
+    /**
+     * Because sockets uses multiple threads, state must be kept coherent by
+     * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
+     * `additionalProperties['partition_id']`)
+     * - ordering AirbyteStateMessages by CheckpointIndex (from `additionalProperties['id']`)
+     */
+    @Singleton
+    @Named("requireCheckpointIdOnRecordAndKeyOnState")
+    fun requireCheckpointIdOnRecord(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKETS
 
     /**
      * PRIVATE: Do not use outside this factory.
@@ -133,10 +158,10 @@ class DataChannelBeanFactory {
     @Singleton
     fun dataChannelReader(
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
-        catalog: DestinationCatalog
+        destinationMessageFactory: DestinationMessageFactory
     ) =
         when (dataChannelFormat) {
-            DataChannelFormat.JSONL -> JSONLDataChannelReader(catalog)
+            DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported data channel format: $dataChannelFormat"
@@ -157,7 +182,6 @@ class DataChannelBeanFactory {
         dataChannelMedium: DataChannelMedium,
         dataChannelReader: DataChannelReader,
         pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
-        @Named("numInputPartitions") numInputPartitions: Int,
         @Named("dataChannelSocketPaths") socketPaths: List<String>,
         @Value("\${airbyte.destination.core.data-channel.socket-buffer-size-bytes}")
         bufferSizeBytes: Int,
@@ -172,23 +196,20 @@ class DataChannelBeanFactory {
                 return pipelineInputQueue.asOrderedFlows()
             }
             DataChannelMedium.SOCKETS -> {
-                check(socketPaths.size == numInputPartitions) {
-                    "Socket paths size (${socketPaths.size}) does not match number of input partitions ($numInputPartitions)"
-                }
                 socketPaths
                     .map { path ->
                         val socket =
                             ClientSocket(
                                 path,
                                 bufferSizeBytes,
-                                socketConnectionTimeoutMs,
+                                connectTimeoutMs = socketConnectionTimeoutMs,
                             )
                         SocketInputFlow(
                             catalog,
                             socket,
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
-                            queueMemoryManager
+                            queueMemoryManager,
                         )
                     }
                     .toTypedArray()

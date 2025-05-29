@@ -14,7 +14,7 @@ import java.nio.channels.ServerSocketChannel
 
 /** Used by the non-dockerized destination to write to a local unix domain socket for testing. */
 class ServerSocketWriterOutputStream(
-    private val socketPath: String,
+    val socketPath: String,
 ) : OutputStream() {
     private val log = KotlinLogging.logger {}
 
