@@ -19,21 +19,21 @@ class ClickhouseChecker(
     val tableName = "_airbyte_check_table_${clock.millis()}"
 
     override fun check(config: ClickhouseConfiguration) {
-        // val client = ClickhouseBeanFactory().clickhouseClient(config)
-//
-        // client.execute("CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test, UInt8)")
-        //     .get(10, TimeUnit.SECONDS)
-//
-        // val insert = client.insert(tableName, TEST_DATA.byteInputStream(), ClickHouseFormat.JSONEachRow)
-        //     .get(10, TimeUnit.SECONDS)
-//
-        // assert(insert.writtenRows == 1L) { "Failed to insert rows into check table. Actual written: $insert.writtenRows" }
+         val client = ClickhouseBeanFactory().clickhouseClient(config)
+
+         client.execute("CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test UInt8) ENGINE = MergeTree ORDER BY ()")
+             .get(10, TimeUnit.SECONDS)
+
+         val insert = client.insert(tableName, TEST_DATA.byteInputStream(), ClickHouseFormat.JSONEachRow)
+             .get(10, TimeUnit.SECONDS)
+
+         assert(insert.writtenRows == 1L) { "Failed to insert expected rows into check table. Actual written: $insert.writtenRows" }
     }
 
     override fun cleanup(config: ClickhouseConfiguration) {
-        // val client = ClickhouseBeanFactory().clickhouseClient(config)
-//
-        // client.execute("DROP TABLE IF EXISTS ${config.database}.$tableName").get(10, TimeUnit.SECONDS)
+         val client = ClickhouseBeanFactory().clickhouseClient(config)
+
+         client.execute("DROP TABLE IF EXISTS ${config.database}.$tableName").get(10, TimeUnit.SECONDS)
     }
 
     object Constants {
