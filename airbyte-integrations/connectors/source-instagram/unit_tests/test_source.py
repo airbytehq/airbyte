@@ -24,7 +24,7 @@ GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, sta
     "base_requester"
 ]["url_base"]
 
-account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
+account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cname%2Cinstagram_business_account%7Bid%7D"
 
 
 account_url_response = {
