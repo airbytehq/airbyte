@@ -42,6 +42,8 @@ class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
         // val table = clickhouseClient.query("SELECT count(1) FROM ${tableName.name}").get()
         //     .inputStream.
         // TODO: This needs to be updated.
-        return DirectLoadTableStatus(isEmpty = true)
+//        return DirectLoadTableStatus(isEmpty = true)
+        return null
     }
+
 }
