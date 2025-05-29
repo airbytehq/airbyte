@@ -43,6 +43,7 @@ class StreamManager(
     private val streamResult = CompletableDeferred<StreamResult>()
 
     private val recordCount = AtomicLong(0)
+    private val byteCount = AtomicLong(0)
 
     private val markedEndOfStream = AtomicBoolean(false)
     private val receivedComplete = AtomicBoolean(false)
@@ -69,8 +70,20 @@ class StreamManager(
         return recordCount.getAndIncrement()
     }
 
+    fun incrementByteCount(bytes: Long): Long {
+        if (markedEndOfStream.get()) {
+            throw IllegalStateException("Stream is closed for reading")
+        }
+
+        return byteCount.getAndAdd(bytes)
+    }
+
     fun readCount(): Long {
         return recordCount.get()
+    }
+
+    fun byteCount(): Long {
+        return byteCount.get()
     }
 
     /**

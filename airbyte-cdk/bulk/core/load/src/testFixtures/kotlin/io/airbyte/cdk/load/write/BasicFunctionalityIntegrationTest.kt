@@ -57,6 +57,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -326,7 +327,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     stateMessages.size,
                     "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
                 )
-                assertEquals(
+
+                val asProtocolMessage =
                     StreamCheckpoint(
                             streamName = "test_stream",
                             streamNamespace = randomizedNamespace,
@@ -334,8 +336,15 @@ abstract class BasicFunctionalityIntegrationTest(
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
+                            totalRecords = 1L,
+                            totalBytes = 234L
                         )
-                        .asProtocolMessage(),
+                        .asProtocolMessage()
+                assertEquals(
+                    Jsons.readValue(
+                        Jsons.writeValueAsBytes(asProtocolMessage),
+                        AirbyteMessage::class.java
+                    ),
                     stateMessages.first(),
                 )
             },
