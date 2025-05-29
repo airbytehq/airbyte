@@ -83,8 +83,6 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           git_branch: ${{ steps.job-vars.outputs.branch }}
           git_revision: ${{ steps.job-vars.outputs.commit_id }}
-          # Unit and integration tests are moved to the new connector-ci workflows,
-          # along with pre-release checks (qa_checks, version_inc_check)
           subcommand: "connectors --modified test --only-step=acceptance"
 
       - name: Append success comment
