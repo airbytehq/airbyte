@@ -496,3 +496,37 @@ def test_extractor_supports_associations_list_interpolation(config, associations
         evaluated_associations_list = extractor._associations_list
 
     assert evaluated_associations_list == ["contacts", "deals", "tickets"]
+
+
+@pytest.mark.parametrize(
+    "original_value,field_schema,expected_value",
+    [
+        pytest.param("", {"type": ["null", "number"]}, None, id="test_empty_string_is_none_for_non_string_types"),
+        pytest.param(
+            "1748246523456",
+            {"type": ["null", "date-time"], "format": "date-time"},
+            "2025-05-26T08:02:03+00:00",
+            id="test_convert_millisecond_timestamp_to_seconds",
+        ),
+        pytest.param(
+            "1748246523456.0",
+            {"type": ["null", "date-time"], "format": "date-time"},
+            "2025-05-26T08:02:03+00:00",
+            id="test_overflow_error_float_returns_correct_date_time",
+        ),
+        pytest.param(
+            "174824652345600.0",
+            {"type": ["null", "date-time"], "format": "date-time"},
+            "174824652345600.0",
+            id="test_unparsable_overflow_error_returns_original_value",
+        ),
+    ],
+)
+def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
+    entity_schema_normalization = components_module.EntitySchemaNormalization()
+
+    transform_function = entity_schema_normalization.get_transform_function()
+
+    normalized_value = transform_function(original_value=original_value, field_schema=field_schema)
+
+    assert normalized_value == expected_value

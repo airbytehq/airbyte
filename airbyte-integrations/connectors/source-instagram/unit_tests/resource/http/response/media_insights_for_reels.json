@@ -83,6 +83,18 @@
       "title": "Shares",
       "description": "The number of shares of your reel.",
       "id": "84386203808767123/insights/shares/lifetime"
+    },
+    {
+      "name": "views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 2006
+        }
+      ],
+      "title": "Views",
+      "description": "The number of times your reel was viewed.",
+      "id": "84386203808767123/insights/views/lifetime"
     }
   ]
 }

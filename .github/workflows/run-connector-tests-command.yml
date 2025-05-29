@@ -72,7 +72,7 @@ jobs:
         github.repository != 'airbytehq/airbyte' &&
         vars.GCP_PROJECT_ID != ''
       )
-    uses: ./.github/workflows/connector-ci-tests.yml
+    uses: ./.github/workflows/connector-ci-checks.yml
     with:
       repo: "${{ inputs.repo || github.repository }}"
       gitref: "${{ inputs.gitref || github.ref_name }}"

@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   detect-changes:
-    name: Detect changes in connector base image Dockerfiles
+    name: Detect Changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
