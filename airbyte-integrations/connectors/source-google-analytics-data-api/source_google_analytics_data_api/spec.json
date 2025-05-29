@@ -85,7 +85,8 @@
           "type": "string",
           "pattern": "^[0-9]*$"
         },
-        "examples": [["1738294", "5729978930"]]
+        "examples": [["1738294", "5729978930"]],
+        "uniqueItems": true
       },
       "date_ranges_start_date": {
         "type": "string",
@@ -2236,19 +2237,29 @@
         "default": 1,
         "order": 5
       },
+      "lookback_window": {
+        "type": "integer",
+        "title": "Lookback window (Days)",
+        "description": "Since attribution changes after the event date, and Google Analytics has a data processing latency, we should specify how many days in the past we should refresh the data in every run. So if you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days.",
+        "examples": [2, 3, 4, 7, 14, 28],
+        "minimum": 2,
+        "maximum": 60,
+        "default": 2,
+        "order": 6
+      },
       "keep_empty_rows": {
         "type": "boolean",
         "title": "Keep Empty Rows",
         "description": "If false, each row with all metrics equal to 0 will not be returned. If true, these rows will be returned if they are not separately removed by a filter. More information is available in <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body\">the documentation</a>.",
         "default": false,
-        "order": 6
+        "order": 7
       },
       "convert_conversions_event": {
         "type": "boolean",
         "title": "Convert `conversions:*` Metrics to Float",
         "description": "Enables conversion of `conversions:*` event metrics from integers to floats. This is beneficial for preventing data rounding when the API returns float values for any `conversions:*` fields.",
         "default": false,
-        "order": 7
+        "order": 8
       }
     }
   },

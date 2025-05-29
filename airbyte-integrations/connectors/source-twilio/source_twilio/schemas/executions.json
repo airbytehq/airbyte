@@ -5,44 +5,61 @@
   "additionalProperties": true,
   "properties": {
     "sid": {
+      "description": "The unique identifier for the execution.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the execution.",
       "type": ["null", "string"]
     },
     "flow_sid": {
+      "description": "The unique identifier for the flow associated with the execution.",
       "type": ["null", "string"]
     },
     "contact_sid": {
+      "description": "The unique identifier for the contact associated with the execution.",
       "type": ["null", "string"]
     },
     "contact_channel_address": {
+      "description": "The contact channel address where the execution is targeted.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the execution process.",
       "type": ["null", "string"]
     },
     "context": {
+      "description": "Additional context or data related to the execution.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "date_created": {
+      "description": "The date and time when the execution was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_updated": {
+      "description": "The date and time when the execution was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "The URL endpoint for accessing detailed information about the execution.",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains related hypermedia links associated with the executions data.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "execution_context": { "type": ["null", "string"] },
-        "steps": { "type": ["null", "string"] }
+        "execution_context": {
+          "description": "Link to the execution context data.",
+          "type": ["null", "string"]
+        },
+        "steps": {
+          "description": "Link to the steps involved in the execution.",
+          "type": ["null", "string"]
+        }
       }
     }
   }

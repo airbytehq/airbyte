@@ -22,6 +22,7 @@ from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFin
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
@@ -42,7 +43,7 @@ This module contains adapters to help enabling concurrency on File-based Stream 
 """
 
 
-@deprecated("This class is experimental. Use at your own risk.")
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBasedStream):
     @classmethod
     def create_from_stream(
@@ -127,6 +128,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         return self._legacy_stream.supports_incremental
 
     @property
+    @deprecated(version="3.7.0")
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._legacy_stream.availability_strategy
 

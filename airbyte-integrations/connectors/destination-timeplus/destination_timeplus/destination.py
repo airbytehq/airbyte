@@ -3,10 +3,10 @@
 #
 
 
+import logging
 from logging import getLogger
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -114,7 +114,10 @@ class DestinationTimeplus(Destination):
                 if t != "null":
                     type_def = {"type": t}
                     if t == "array":
-                        type_def["items"] = v["items"]
+                        if "items" in v:
+                            type_def["items"] = v["items"]
+                        else:
+                            type_def["type"] = "string"
                     return DestinationTimeplus.type_mapping(type_def)
         if airbyte_type == "number":
             return "float"
@@ -129,7 +132,7 @@ class DestinationTimeplus(Destination):
         else:
             return "string"
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -144,8 +147,6 @@ class DestinationTimeplus(Destination):
         try:
             endpoint = config["endpoint"]
             apikey = config["apikey"]
-            if not endpoint.startswith("http"):
-                return AirbyteConnectionStatus(status=Status.FAILED, message="Endpoint must start with http or https")
             if len(apikey) != 60:
                 return AirbyteConnectionStatus(status=Status.FAILED, message="API Key must be 60 characters")
             if endpoint[-1] == "/":

@@ -3,6 +3,7 @@
 #
 import datetime
 
+import asyncclick as click
 import pytest
 import requests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -26,7 +27,11 @@ def latest_cdk_version():
 def python_connector_with_setup_not_latest_cdk(all_connectors):
     for connector in all_connectors:
         if (
-            connector.metadata.get("connectorBuildOptions", {}).get("baseImage", False)
+            connector.metadata.get("connectorBuildOptions", False)
+            # We want to select a connector with a base image version >= 2.0.0 to use Python 3.10
+            and not connector.metadata.get("connectorBuildOptions", {})
+            .get("baseImage", "")
+            .startswith("docker.io/airbyte/python-connector-base:1.")
             and connector.language == "python"
             and connector.code_directory.joinpath("setup.py").exists()
         ):
@@ -41,9 +46,10 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
         connector=python_connector_with_setup_not_latest_cdk,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
-        use_remote_secrets=False,
         pipeline_start_timestamp=datetime.datetime.now().isoformat(),
     )
     context.dagger_client = dagger_client

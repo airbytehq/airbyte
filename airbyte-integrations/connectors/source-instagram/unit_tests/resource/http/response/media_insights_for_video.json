@@ -1,0 +1,112 @@
+{
+  "data": [
+    {
+      "name": "impressions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 12000
+        }
+      ],
+      "title": "Impressions",
+      "description": "The number of times your video was displayed.",
+      "id": "09894619573775123/insights/impressions/lifetime"
+    },
+    {
+      "name": "reach",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 9500
+        }
+      ],
+      "title": "Reach",
+      "description": "The number of unique accounts that viewed your video.",
+      "id": "09894619573775123/insights/reach/lifetime"
+    },
+    {
+      "name": "saved",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 300
+        }
+      ],
+      "title": "Saves",
+      "description": "The number of saves of your video.",
+      "id": "09894619573775123/insights/saved/lifetime"
+    },
+    {
+      "name": "video_views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 7000
+        }
+      ],
+      "title": "Video Views",
+      "description": "The number of times your video was viewed.",
+      "id": "09894619573775123/insights/video_views/lifetime"
+    },
+    {
+      "name": "likes",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 150
+        }
+      ],
+      "title": "Likes",
+      "description": "The number of likes on your video.",
+      "id": "09894619573775123/insights/likes/lifetime"
+    },
+    {
+      "name": "comments",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 50
+        }
+      ],
+      "title": "Comments",
+      "description": "The number of comments on your video.",
+      "id": "09894619573775123/insights/comments/lifetime"
+    },
+    {
+      "name": "shares",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 25
+        }
+      ],
+      "title": "Shares",
+      "description": "The number of shares of your video.",
+      "id": "09894619573775123/insights/shares/lifetime"
+    },
+    {
+      "name": "follows",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 53
+        }
+      ],
+      "title": "Follows title",
+      "description": "Follows description.",
+      "id": "09894619573775123/insights/follows/lifetime"
+    },
+    {
+      "name": "profile_visits",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 9
+        }
+      ],
+      "title": "Profile visits title",
+      "description": "Profile visits description.",
+      "id": "09894619573775123/insights/profile_visits/lifetime"
+    }
+  ]
+}

@@ -103,7 +103,7 @@ def test_campaigns_request_params(mocked_client, config):
     request_params = campaigns.request_params(stream_slice={"account_id": "account_id"})
     assert request_params == {
         "AccountId": "account_id",
-        "CampaignType": "Audience DynamicSearchAds Search Shopping",
+        "CampaignType": "Audience DynamicSearchAds Search Shopping PerformanceMax",
         "ReturnAdditionalFields": "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting",
     }
 
@@ -176,7 +176,16 @@ def test_ads_stream_slices(mocked_client, config):
 @pytest.mark.parametrize(
     ("stream", "stream_slice"),
     (
-        (Accounts, {"predicates": {"Predicate": [{"Field": "UserId", "Operator": "Equals", "Value": "131313131"},]}}),
+        (
+            Accounts,
+            {
+                "predicates": {
+                    "Predicate": [
+                        {"Field": "UserId", "Operator": "Equals", "Value": "131313131"},
+                    ]
+                }
+            },
+        ),
         (AdGroups, {"campaign_id": "campaign_id"}),
         (Ads, {"ad_group_id": "ad_group_id"}),
         (Campaigns, {"account_id": "account_id"}),

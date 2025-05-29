@@ -4,23 +4,29 @@
   "type": "object",
   "properties": {
     "amount": {
+      "description": "The amount of the authorization.",
       "type": ["null", "integer"]
     },
     "amount_details": {
+      "description": "Details about the authorization amount.",
       "type": ["null", "object"],
       "properties": {
         "atm_fee": {
+          "description": "The ATM fee included in the authorization amount.",
           "type": ["null", "integer"]
         }
       }
     },
     "approved": {
+      "description": "Indicates if the authorization is approved.",
       "type": ["null", "boolean"]
     },
     "authorization_method": {
+      "description": "The method used for authorization.",
       "type": ["null", "string"]
     },
     "balance_transactions": {
+      "description": "Balance transactions associated with the authorization.",
       "items": {
         "type": ["null", "object"],
         "$ref": "balance_transactions.json"
@@ -28,239 +34,309 @@
       "type": ["null", "array"]
     },
     "card": {
+      "description": "The card used for the authorization.",
       "$ref": "card.json"
     },
     "cardholder": {
+      "description": "Details about the cardholder.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp for when the authorization was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp for when the authorization was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the authorization.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the authorization.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the authorization is in live mode.",
       "type": ["null", "boolean"]
     },
     "merchant_amount": {
+      "description": "The amount in merchant's currency.",
       "type": ["null", "integer"]
     },
     "merchant_currency": {
+      "description": "The currency used by the merchant.",
       "type": ["null", "string"]
     },
     "merchant_data": {
+      "description": "Data about the merchant.",
       "type": ["null", "object"],
       "properties": {
         "category": {
+          "description": "The category of the merchant.",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "City where the merchant is located.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "Country where the merchant is located.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the merchant.",
           "type": ["null", "string"]
         },
         "network_id": {
+          "description": "Network ID of the merchant.",
           "type": ["null", "string"]
         },
         "postal_code": {
+          "description": "Postal code of the merchant.",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State where the merchant is located.",
           "type": ["null", "string"]
         }
       }
     },
     "metadata": {
+      "description": "Additional metadata related to the authorization.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "object": {
+      "description": "Type of object, in this case, always 'authorization'.",
       "type": ["null", "string"]
     },
     "pending_request": {
+      "description": "Details of a pending request for authorization.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
+          "description": "The amount requested in the pending request.",
           "type": ["null", "integer"]
         },
         "amount_details": {
+          "description": "Details about the amount in the pending request.",
           "type": ["null", "object"],
           "properties": {
             "atm_fee": {
+              "description": "The ATM fee included in the pending request amount.",
               "type": ["null", "integer"]
             }
           }
         },
         "currency": {
+          "description": "The currency of the pending request.",
           "type": ["null", "string"]
         },
         "is_amount_controllable": {
+          "description": "Indicates if the amount in the pending request is controllable.",
           "type": ["null", "boolean"]
         },
         "merchant_amount": {
+          "description": "The amount in merchant's currency for the pending request.",
           "type": ["null", "integer"]
         },
         "merchant_currency": {
+          "description": "The currency used by the merchant for the pending request.",
           "type": ["null", "string"]
         }
       }
     },
     "request_history": {
+      "description": "History of previous authorization requests.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "amount": {
+            "description": "The amount of the authorization request.",
             "type": ["null", "integer"]
           },
           "amount_details": {
+            "description": "Details about the authorization request amount.",
             "type": ["null", "object"],
             "properties": {
               "atm_fee": {
+                "description": "The ATM fee included in the authorization request amount.",
                 "type": ["null", "integer"]
               }
             }
           },
           "approved": {
+            "description": "Indicates if the authorization request was approved.",
             "type": ["null", "boolean"]
           },
           "created": {
+            "description": "Timestamp for when the authorization request was created.",
             "type": ["null", "integer"]
           },
           "currency": {
+            "description": "The currency of the authorization request.",
             "type": ["null", "string"]
           },
           "merchant_amount": {
+            "description": "The amount in merchant's currency for the authorization request.",
             "type": ["null", "integer"]
           },
           "merchant_currency": {
+            "description": "The currency used by the merchant for the authorization request.",
             "type": ["null", "string"]
           },
           "reason": {
+            "description": "Reason for the authorization request.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "status": {
+      "description": "Status of the authorization.",
       "type": ["null", "string"]
     },
     "transactions": {
+      "description": "Transactions related to the authorization.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "amount": {
+            "description": "The amount of the transaction.",
             "type": ["null", "integer"]
           },
           "amount_details": {
+            "description": "Details about the transaction amount.",
             "type": ["null", "object"],
             "properties": {
               "atm_fee": {
+                "description": "The ATM fee included in the transaction amount.",
                 "type": ["null", "integer"]
               }
             }
           },
           "authorization": {
+            "description": "The authorization for the transaction.",
             "type": ["null", "string"]
           },
           "balance_transaction": {
+            "description": "Balance transaction associated with the transaction.",
             "type": ["null", "string"]
           },
           "card": {
+            "description": "The card used for the transaction.",
             "type": ["null", "string"]
           },
           "cardholder": {
+            "description": "Details about the cardholder for the transaction.",
             "type": ["null", "string"]
           },
           "created": {
+            "description": "Timestamp for when the transaction was created.",
             "type": ["null", "integer"]
           },
           "currency": {
+            "description": "The currency of the transaction.",
             "type": ["null", "string"]
           },
           "dispute": {
+            "description": "Any dispute related to the transaction.",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "The unique identifier for the transaction.",
             "type": ["null", "string"]
           },
           "livemode": {
+            "description": "Indicates if the transaction is in live mode.",
             "type": ["null", "boolean"]
           },
           "merchant_amount": {
+            "description": "The amount in merchant's currency for the transaction.",
             "type": ["null", "integer"]
           },
           "merchant_currency": {
+            "description": "The currency used by the merchant for the transaction.",
             "type": ["null", "string"]
           },
           "merchant_data": {
+            "description": "Data about the merchant for the transaction.",
             "type": ["null", "object"],
             "properties": {
               "category": {
+                "description": "The category of the merchant for the transaction.",
                 "type": ["null", "string"]
               },
               "city": {
+                "description": "City where the merchant is located for the transaction.",
                 "type": ["null", "string"]
               },
               "country": {
+                "description": "Country where the merchant is located for the transaction.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "Name of the merchant for the transaction.",
                 "type": ["null", "string"]
               },
               "network_id": {
+                "description": "Network ID of the merchant for the transaction.",
                 "type": ["null", "string"]
               },
               "postal_code": {
+                "description": "Postal code of the merchant for the transaction.",
                 "type": ["null", "string"]
               },
               "state": {
+                "description": "State where the merchant is located for the transaction.",
                 "type": ["null", "string"]
               }
             }
           },
           "metadata": {
+            "description": "Additional metadata related to the transaction.",
             "type": ["null", "object"],
             "additionalProperties": true
           },
           "object": {
+            "description": "Type of object, in this case, always 'transaction'.",
             "type": ["null", "string"]
           },
           "purchase_details": {
+            "description": "Details about the purchase made in the transaction.",
             "$ref": "issuing_transaction_purchase_details.json"
           }
         }
       }
     },
     "verification_data": {
+      "description": "Data related to verification of the authorization.",
       "type": ["null", "object"],
       "properties": {
         "address_line1_check": {
+          "description": "Result of address line 1 check during verification.",
           "type": ["null", "string"]
         },
         "address_postal_code_check": {
+          "description": "Result of postal code check during verification.",
           "type": ["null", "string"]
         },
         "cvc_check": {
+          "description": "Result of CVC check during verification.",
           "type": ["null", "string"]
         },
         "expiry_check": {
+          "description": "Result of expiry check during verification.",
           "type": ["null", "string"]
         }
       }
     },
     "wallet": {
+      "description": "Information about the wallet used for the authorization.",
       "type": ["null", "string"]
     }
   }

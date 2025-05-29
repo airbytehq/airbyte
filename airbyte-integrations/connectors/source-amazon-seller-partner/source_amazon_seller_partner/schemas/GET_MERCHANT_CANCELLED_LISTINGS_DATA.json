@@ -4,48 +4,178 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "item-name": { "type": ["null", "string"] },
-    "item-description": { "type": ["null", "string"] },
-    "seller-sku": { "type": ["null", "string"] },
-    "price": { "type": ["null", "string"] },
-    "quantity": { "type": ["null", "string"] },
-    "image-url": { "type": ["null", "string"] },
-    "item-is-marketplace": { "type": ["null", "string"] },
-    "product-id-type": { "type": ["null", "string"] },
-    "zshop-shipping-fee": { "type": ["null", "string"] },
-    "item-note": { "type": ["null", "string"] },
-    "item-condition": { "type": ["null", "string"] },
-    "zshop-category1": { "type": ["null", "string"] },
-    "zshop-browse-path": { "type": ["null", "string"] },
-    "zshop-storefront-feature": { "type": ["null", "string"] },
-    "asin1": { "type": ["null", "string"] },
-    "asin2": { "type": ["null", "string"] },
-    "asin3": { "type": ["null", "string"] },
-    "will-ship-internationally": { "type": ["null", "string"] },
-    "expedited-shipping": { "type": ["null", "string"] },
-    "zshop-boldface": { "type": ["null", "string"] },
-    "product-id": { "type": ["null", "string"] },
-    "add-delete": { "type": ["null", "string"] },
-    "Business Price": { "type": ["null", "string"] },
-    "Quantity Price Type": { "type": ["null", "string"] },
-    "Quantity Lower Bound 1": { "type": ["null", "string"] },
-    "Quantity Price 1": { "type": ["null", "string"] },
-    "Quantity Lower Bound 2": { "type": ["null", "string"] },
-    "Quantity Price 2": { "type": ["null", "string"] },
-    "Quantity Lower Bound 3": { "type": ["null", "string"] },
-    "Quantity Price 3": { "type": ["null", "string"] },
-    "Quantity Lower Bound 4": { "type": ["null", "string"] },
-    "Quantity Price 4": { "type": ["null", "string"] },
-    "Quantity Lower Bound 5": { "type": ["null", "string"] },
-    "Quantity Price 5": { "type": ["null", "string"] },
-    "merchant-shipping-group": { "type": ["null", "string"] },
-    "Progressive Price Type": { "type": ["null", "string"] },
-    "Progressive Lower Bound 1": { "type": ["null", "string"] },
-    "Progressive Price 1": { "type": ["null", "string"] },
-    "Progressive Lower Bound 2": { "type": ["null", "string"] },
-    "Progressive Price 2": { "type": ["null", "string"] },
-    "Progressive Lower Bound 3": { "type": ["null", "string"] },
-    "Progressive Price 3": { "type": ["null", "string"] },
-    "dataEndTime": { "type": ["null", "string"], "format": "date" }
+    "item-name": {
+      "description": "Name of the item",
+      "type": ["null", "string"]
+    },
+    "item-description": {
+      "description": "Description of the item",
+      "type": ["null", "string"]
+    },
+    "seller-sku": {
+      "description": "Seller Stock Keeping Unit",
+      "type": ["null", "string"]
+    },
+    "price": {
+      "description": "The price of the product",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "The quantity available for the listing",
+      "type": ["null", "string"]
+    },
+    "image-url": {
+      "description": "URL of the product image",
+      "type": ["null", "string"]
+    },
+    "item-is-marketplace": {
+      "description": "Indicates if the item is sold on the marketplace",
+      "type": ["null", "string"]
+    },
+    "product-id-type": {
+      "description": "Type of product identifier used",
+      "type": ["null", "string"]
+    },
+    "zshop-shipping-fee": {
+      "description": "Shipping fee set in the Zshop",
+      "type": ["null", "string"]
+    },
+    "item-note": {
+      "description": "Additional notes or comments about the item",
+      "type": ["null", "string"]
+    },
+    "item-condition": {
+      "description": "Condition of the item",
+      "type": ["null", "string"]
+    },
+    "zshop-category1": {
+      "description": "Category of the item in Zshop",
+      "type": ["null", "string"]
+    },
+    "zshop-browse-path": {
+      "description": "Browse path in the Zshop",
+      "type": ["null", "string"]
+    },
+    "zshop-storefront-feature": {
+      "description": "Indicates if the item has a featured storefront in Zshop",
+      "type": ["null", "string"]
+    },
+    "asin1": {
+      "description": "Unique Amazon Standard Identification Number for a product 1",
+      "type": ["null", "string"]
+    },
+    "asin2": {
+      "description": "Unique Amazon Standard Identification Number for a product 2",
+      "type": ["null", "string"]
+    },
+    "asin3": {
+      "description": "Unique Amazon Standard Identification Number for a product 3",
+      "type": ["null", "string"]
+    },
+    "will-ship-internationally": {
+      "description": "Indicates if the item will be shipped internationally",
+      "type": ["null", "string"]
+    },
+    "expedited-shipping": {
+      "description": "Indicates if expedited shipping is available",
+      "type": ["null", "string"]
+    },
+    "zshop-boldface": {
+      "description": "Indicates if the item is highlighted as bold in the storefront",
+      "type": ["null", "string"]
+    },
+    "product-id": {
+      "description": "Unique product identifier",
+      "type": ["null", "string"]
+    },
+    "add-delete": {
+      "description": "Indicates whether to add or remove a listing",
+      "type": ["null", "string"]
+    },
+    "Business Price": {
+      "description": "The price set for business customers",
+      "type": ["null", "string"]
+    },
+    "Quantity Price Type": {
+      "description": "The type of pricing method used for quantity pricing",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 1": {
+      "description": "The minimum quantity threshold for applying quantity pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 1": {
+      "description": "The price set for products when quantity falls into tier 1",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 2": {
+      "description": "The minimum quantity threshold for applying quantity pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 2": {
+      "description": "The price set for products when quantity falls into tier 2",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 3": {
+      "description": "The minimum quantity threshold for applying quantity pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 3": {
+      "description": "The price set for products when quantity falls into tier 3",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 4": {
+      "description": "The minimum quantity threshold for applying quantity pricing tier 4",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 4": {
+      "description": "The price set for products when quantity falls into tier 4",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 5": {
+      "description": "The minimum quantity threshold for applying quantity pricing tier 5",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 5": {
+      "description": "The price set for products when quantity falls into tier 5",
+      "type": ["null", "string"]
+    },
+    "merchant-shipping-group": {
+      "description": "Grouping of items for shipping purposes",
+      "type": ["null", "string"]
+    },
+    "Progressive Price Type": {
+      "description": "The type of pricing method used for progressive pricing",
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 1": {
+      "description": "The lower threshold for applying progressive pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Progressive Price 1": {
+      "description": "The price set for products falling into progressive pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 2": {
+      "description": "The lower threshold for applying progressive pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Progressive Price 2": {
+      "description": "The price set for products falling into progressive pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 3": {
+      "description": "The lower threshold for applying progressive pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "Progressive Price 3": {
+      "description": "The price set for products falling into progressive pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

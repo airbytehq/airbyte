@@ -4,230 +4,299 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the transaction.",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The ID of the customer associated with the transaction.",
       "type": ["string", "null"]
     },
     "subscription_id": {
+      "description": "ID of the subscription related to the transaction.",
       "type": ["string", "null"]
     },
     "gateway_account_id": {
+      "description": "ID of the gateway account used in the transaction.",
       "type": ["string", "null"]
     },
     "payment_source_id": {
+      "description": "ID of the payment source used in the transaction.",
       "type": ["string", "null"]
     },
     "payment_method": {
+      "description": "Payment method used in the transaction.",
       "type": ["string", "null"]
     },
     "refrence_number": {
+      "description": "Reference number of the transaction.",
       "type": ["string", "null"]
     },
     "gateway": {
+      "description": "The payment gateway used in the transaction.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "Type of the transaction.",
       "type": ["string", "null"]
     },
     "date": {
+      "description": "Date of the transaction.",
       "type": ["integer", "null"]
     },
     "settled_at": {
+      "description": "Date when the transaction was settled.",
       "type": ["integer", "null"]
     },
     "exchange_rate": {
+      "description": "Exchange rate used in the transaction.",
       "type": ["number", "null"]
     },
     "currency_code": {
+      "description": "The currency code of the transaction.",
       "type": ["string", "null"]
     },
     "amount": {
+      "description": "The total amount of the transaction.",
       "type": ["integer", "null"]
     },
     "id_at_gateway": {
+      "description": "Transaction ID assigned by the gateway.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Status of the transaction.",
       "type": ["string", "null"]
     },
     "fraud_flag": {
+      "description": "Flag indicating if the transaction is flagged for fraud.",
       "type": ["string", "null"]
     },
     "initiator_type": {
+      "description": "Type of initiator involved in the transaction.",
       "type": ["string", "null"]
     },
     "three_d_secure": {
+      "description": "Flag indicating if 3D secure was used in the transaction.",
       "type": ["boolean", "null"]
     },
     "authorization_reason": {
+      "description": "Reason for authorization of the transaction.",
       "type": ["string", "null"]
     },
     "error_code": {
+      "description": "Error code associated with the transaction.",
       "type": ["string", "null"]
     },
     "voided_at": {
+      "description": "Date when the transaction was voided.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "Resource version of the transaction.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Date when the transaction was last updated.",
       "type": ["integer", "null"]
     },
     "fraud_reason": {
+      "description": "Reason for flagging the transaction as fraud.",
       "type": ["string", "null"]
     },
     "amount_unused": {
+      "description": "The amount in the transaction that remains unused.",
       "type": ["integer", "null"]
     },
     "masked_card_number": {
+      "description": "Masked card number used in the transaction.",
       "type": ["string", "null"]
     },
     "reference_transaction_id": {
+      "description": "ID of the reference transaction.",
       "type": ["string", "null"]
     },
     "refunded_txn_id": {
+      "description": "ID of the refunded transaction.",
       "type": ["string", "null"]
     },
     "reference_authorization_id": {
+      "description": "Reference authorization ID of the transaction.",
       "type": ["string", "null"]
     },
     "amount_capturable": {
+      "description": "The remaining amount that can be captured in the transaction.",
       "type": ["integer", "null"]
     },
     "reversal_transaction_id": {
+      "description": "ID of the reversal transaction, if any.",
       "type": ["string", "null"]
     },
     "deleted": {
+      "description": "Flag indicating if the transaction is deleted.",
       "type": ["boolean", "null"]
     },
     "iin": {
+      "description": "Bank identification number of the transaction.",
       "type": ["string", "null"]
     },
     "last4": {
+      "description": "Last 4 digits of the card used in the transaction.",
       "type": ["string", "null"]
     },
     "merchant_reference_id": {
+      "description": "Merchant reference ID of the transaction.",
       "type": ["string", "null"]
     },
     "base_currency_code": {
+      "description": "The base currency code of the transaction.",
       "type": ["string", "null"]
     },
     "business_entity_id": {
+      "description": "The ID of the business entity related to the transaction.",
       "type": ["string", "null"]
     },
     "object": {
+      "description": "Type of object representing the transaction.",
       "type": ["string", "null"]
     },
     "error_text": {
+      "description": "Error message text of the transaction.",
       "type": ["string", "null"]
     },
     "error_detail": {
+      "description": "Detailed error information related to the transaction.",
       "type": ["string", "null"]
     },
     "payment_method_details": {
+      "description": "Details of the payment method used in the transaction.",
       "type": ["string", "null"]
     },
     "reference_number": {
+      "description": "Reference number associated with the transaction.",
       "type": ["string", "null"]
     },
     "linked_invoices": {
+      "description": "Linked invoices associated with the transaction.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "invoice_id": {
+            "description": "ID of the linked invoice.",
             "type": ["string", "null"]
           },
           "applied_amount": {
+            "description": "Amount applied from the linked invoice.",
             "type": ["integer", "null"]
           },
           "applied_at": {
+            "description": "Date when the invoice amount was applied.",
             "type": ["integer", "null"]
           },
           "invoice_date": {
+            "description": "Date of the linked invoice.",
             "type": ["integer", "null"]
           },
           "invoice_total": {
+            "description": "Total amount of the linked invoice.",
             "type": ["integer", "null"]
           },
           "invoice_status": {
+            "description": "Status of the linked invoice.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "linked_credit_notes": {
+      "description": "Linked credit notes associated with the transaction.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "cn_id": {
+            "description": "ID of the linked credit note.",
             "type": ["string", "null"]
           },
           "applied_amount": {
+            "description": "Amount applied from the credit note.",
             "type": ["integer", "null"]
           },
           "applied_at": {
+            "description": "Date when the credit note was applied.",
             "type": ["integer", "null"]
           },
           "cn_reason_code": {
+            "description": "Reason code for the credit note.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "cn_create_reason_code": {
+      "description": "Reason code for creating a credit note.",
       "type": ["string", "null"]
     },
     "cn_date": {
+      "description": "Date of the credit note.",
       "type": ["integer", "null"]
     },
     "cn_total": {
+      "description": "Total amount of the credit note.",
       "type": ["integer", "null"]
     },
     "cn_status": {
+      "description": "Status of the credit note.",
       "type": ["string", "null"]
     },
     "cn_reference_invoice_id": {
+      "description": "ID of the invoice referenced in the credit note.",
       "type": ["string", "null"]
     },
     "linked_refunds": {
+      "description": "Linked refunds associated with the transaction.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "txn_id": {
+            "description": "ID of the refunded transaction.",
             "type": ["string", "null"]
           },
           "txn_status": {
+            "description": "Status of the refunded transaction.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "txn_date": {
+      "description": "Date of the transaction.",
       "type": ["integer", "null"]
     },
     "txn_amount": {
+      "description": "Amount of the transaction.",
       "type": ["integer", "null"]
     },
     "linked_payments": {
+      "description": "Linked payments associated with the transaction.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "ID of the linked payment.",
             "type": ["string", "null"]
           },
           "status": {
+            "description": "Status of the linked payment.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "custom_fields": {
+      "description": "Custom fields associated with the transaction.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

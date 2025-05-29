@@ -3,17 +3,17 @@
 #
 
 
+import logging
 from abc import ABC
 from base64 import b64encode
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -91,10 +91,12 @@ class CloseComStreamCustomFields(CloseComStream):
 
     def get_custom_field_schema(self) -> Mapping[str, Any]:
         """Get custom field schema if it exists."""
-        resp = requests.request("GET", url=f"{self.url_base}/custom_field/{self.path()}/", headers=self.authenticator.get_auth_header())
+        resp = requests.request(
+            "GET", url=f"{self.url_base}/custom_field/{self.path()}/", headers=self.config["authenticator"].get_auth_header()
+        )
         resp.raise_for_status()
         resp_json: Mapping[str, Any] = resp.json()["data"]
-        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean"]} for data in resp_json}
+        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean", "array"]} for data in resp_json}
 
     def get_json_schema(self):
         """Override default get_json_schema method to add custom fields to schema."""
@@ -687,7 +689,7 @@ class Base64HttpAuthenticator(TokenAuthenticator):
 
 
 class SourceCloseCom(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = Base64HttpAuthenticator(auth=(config["api_key"], "")).get_auth_header()
             url = "https://api.close.com/api/v1/me"

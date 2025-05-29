@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.async.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import java.util.Objects
 
 class PartialAirbyteMessage {
@@ -25,6 +26,12 @@ class PartialAirbyteMessage {
     @set:JsonProperty("state")
     @JsonProperty("state")
     var state: PartialAirbyteStateMessage? = null
+
+    @get:JsonProperty("trace")
+    @set:JsonProperty("trace")
+    @JsonProperty("trace")
+    // These messages don't contain arbitrary blobs, so just directly reference the protocol struct.
+    var trace: AirbyteTraceMessage? = null
 
     /**
      * For record messages, this stores the serialized data blob (i.e.

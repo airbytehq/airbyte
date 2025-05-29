@@ -3,16 +3,15 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.20.6'
+    cdkVersionRequired = '0.45.0'
     features = ['db-destinations']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.dev_null.DevNullDestination'
+    mainClass = 'io.airbyte.integrations.destination.dev_null.TestingDestinations'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation project(':airbyte-integrations:connectors:destination-e2e-test')
 }

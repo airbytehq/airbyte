@@ -35,4 +35,3 @@ _your licenses_ are all the licenses granted to you for the software under these
 _use_ means anything you do with the software requiring one of your licenses.
 
 _trademark_ means trademarks, service marks, and similar rights.
-

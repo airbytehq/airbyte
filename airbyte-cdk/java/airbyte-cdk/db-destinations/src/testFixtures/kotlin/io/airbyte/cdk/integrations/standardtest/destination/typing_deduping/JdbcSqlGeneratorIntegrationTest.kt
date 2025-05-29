@@ -7,12 +7,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
@@ -29,22 +31,14 @@ import org.jooq.impl.SQLDataType
 abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> :
     BaseSqlGeneratorIntegrationTest<DestinationState>() {
     protected abstract val database: JdbcDatabase
-        get
-
     protected abstract val structType: DataType<*>
-        get
-
     private val timestampWithTimeZoneType: DataType<*>
         // TODO - can we move this class into db_destinations/testFixtures?
-        get() = sqlGenerator!!.toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
-
-    abstract override val sqlGenerator: JdbcSqlGenerator?
-        get
-
+        get() = sqlGenerator.toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
+    abstract override val sqlGenerator: JdbcSqlGenerator
     protected abstract val sqlDialect: SQLDialect?
-        get
 
-    private val dslContext: DSLContext
+    val dslContext: DSLContext
         get() = DSL.using(sqlDialect)
 
     /**
@@ -58,69 +52,65 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     private fun insertRecords(
         tableName: Name,
         columnNames: List<String>,
-        records: List<JsonNode>?,
+        records: List<JsonNode>,
         vararg columnsToParseJson: String
     ) {
         var insert =
             dslContext.insertInto(
                 DSL.table(tableName),
-                columnNames
-                    .stream()
-                    .map { columnName: String? -> DSL.field(DSL.quotedName(columnName)) }
-                    .toList()
+                columnNames.map { columnName: String -> DSL.field(DSL.quotedName(columnName)) }
             )
-        for (record in records!!) {
+        for (record in records) {
             insert =
                 insert.values(
-                    columnNames
-                        .stream()
-                        .map { fieldName: String ->
-                            // Convert this field to a string. Pretty naive implementation.
-                            val column = record[fieldName]
-                            val columnAsString =
-                                if (column == null) {
-                                    null
-                                } else if (column.isTextual) {
-                                    column.asText()
-                                } else {
-                                    column.toString()
-                                }
-                            if (Arrays.asList(*columnsToParseJson).contains(fieldName)) {
-                                return@map toJsonValue(columnAsString)
+                    columnNames.map { fieldName: String ->
+                        // Convert this field to a string. Pretty naive implementation.
+                        val column = record[fieldName]
+                        val columnAsString =
+                            if (column == null) {
+                                null
+                            } else if (column.isTextual) {
+                                column.asText()
                             } else {
-                                return@map DSL.`val`(columnAsString)
+                                column.toString()
                             }
+                        if (Arrays.asList(*columnsToParseJson).contains(fieldName)) {
+                            return@map toJsonValue(columnAsString)
+                        } else {
+                            return@map DSL.`val`(columnAsString)
                         }
-                        .toList()
+                    }
                 )
         }
         database.execute(insert.getSQL(ParamType.INLINED))
     }
 
     @Throws(Exception::class)
-    override fun createNamespace(namespace: String?) {
+    override fun createNamespace(namespace: String) {
         database.execute(dslContext.createSchemaIfNotExists(namespace).getSQL(ParamType.INLINED))
     }
 
     @Throws(Exception::class)
-    override fun createRawTable(streamId: StreamId?) {
-        database.execute(
+    override fun createRawTable(streamId: StreamId) {
+        val columns =
             dslContext
-                .createTable(DSL.name(streamId!!.rawNamespace, streamId.rawName))
+                .createTable(DSL.name(streamId.rawNamespace, streamId.rawName))
                 .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
                 .column(COLUMN_NAME_AB_EXTRACTED_AT, timestampWithTimeZoneType.nullable(false))
                 .column(COLUMN_NAME_AB_LOADED_AT, timestampWithTimeZoneType)
                 .column(COLUMN_NAME_DATA, structType.nullable(false))
                 .column(COLUMN_NAME_AB_META, structType.nullable(true))
-                .getSQL(ParamType.INLINED)
-        )
+        if (sqlGenerator.columns == DestinationColumns.V2_WITH_GENERATION) {
+            columns.column(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, SQLDataType.BIGINT)
+        }
+        database.execute(columns.getSQL(ParamType.INLINED))
     }
 
     @Throws(Exception::class)
-    override fun createV1RawTable(v1RawTable: StreamId?) {
+    override fun createV1RawTable(v1RawTable: StreamId) {
         database.execute(
             dslContext
-                .createTable(DSL.name(v1RawTable!!.rawNamespace, v1RawTable.rawName))
+                .createTable(DSL.name(v1RawTable.rawNamespace, v1RawTable.rawName))
                 .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
                 .column(COLUMN_NAME_EMITTED_AT, timestampWithTimeZoneType.nullable(false))
                 .column(COLUMN_NAME_DATA, structType.nullable(false))
@@ -129,10 +119,10 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    public override fun insertRawTableRecords(streamId: StreamId?, records: List<JsonNode>?) {
+    public override fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>) {
         insertRecords(
-            DSL.name(streamId!!.rawNamespace, streamId.rawName),
-            JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+            DSL.name(streamId.rawNamespace, streamId.rawName),
+            sqlGenerator.columns.rawColumns,
             records,
             COLUMN_NAME_DATA,
             COLUMN_NAME_AB_META
@@ -140,9 +130,9 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    override fun insertV1RawTableRecords(streamId: StreamId?, records: List<JsonNode>?) {
+    override fun insertV1RawTableRecords(streamId: StreamId, records: List<JsonNode>) {
         insertRecords(
-            DSL.name(streamId!!.rawNamespace, streamId.rawName),
+            DSL.name(streamId.rawNamespace, streamId.rawName),
             LEGACY_RAW_TABLE_COLUMNS,
             records,
             COLUMN_NAME_DATA
@@ -152,14 +142,19 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Throws(Exception::class)
     override fun insertFinalTableRecords(
         includeCdcDeletedAt: Boolean,
-        streamId: StreamId?,
+        streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>?
+        records: List<JsonNode>,
+        generationId: Long,
     ) {
         val columnNames =
-            if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
+            (if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES)
+                .toMutableList()
+        if (sqlGenerator.columns == DestinationColumns.V2_WITH_GENERATION) {
+            columnNames += COLUMN_NAME_AB_GENERATION_ID
+        }
         insertRecords(
-            DSL.name(streamId!!.finalNamespace, streamId.finalName + suffix),
+            DSL.name(streamId.finalNamespace, streamId.finalName + suffix),
             columnNames,
             records,
             COLUMN_NAME_AB_META,
@@ -170,7 +165,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    override fun dumpRawTableRecords(streamId: StreamId?): List<JsonNode> {
+    override fun dumpRawTableRecords(streamId: StreamId): List<JsonNode> {
         return database.queryJsons(
             dslContext
                 .selectFrom(DSL.name(streamId!!.rawNamespace, streamId.rawName))
@@ -179,7 +174,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    override fun dumpFinalTableRecords(streamId: StreamId?, suffix: String?): List<JsonNode> {
+    override fun dumpFinalTableRecords(streamId: StreamId, suffix: String?): List<JsonNode> {
         return database.queryJsons(
             dslContext
                 .selectFrom(DSL.name(streamId!!.finalNamespace, streamId.finalName + suffix))
@@ -188,7 +183,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    override fun teardownNamespace(namespace: String?) {
+    override fun teardownNamespace(namespace: String) {
         database.execute(dslContext.dropSchema(namespace).cascade().getSQL(ParamType.INLINED))
     }
 }

@@ -1,0 +1,18 @@
+[
+  {
+    "code": "BR",
+    "type": "country",
+    "_links": {
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones/5/locations"
+        }
+      ],
+      "describes": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones/5"
+        }
+      ]
+    }
+  }
+]

@@ -91,13 +91,32 @@ class TestBaseInsightsStream:
             "test2",
         ]
 
+    def test_init_statuses(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            fields=["account_id", "account_currency"],
+            filter_statuses=["ACTIVE", "ARCHIVED"]
+        )
+
+        assert stream.request_params()["filtering"] == [
+            {'field': 'ad.effective_status',
+             'operator': 'IN',
+             'value': ['ACTIVE', 'ARCHIVED']}
+        ]
+
     def test_read_records_all(self, mocker, api, some_config):
         """1. yield all from mock
         2. if read slice 2, 3 state not changed
             if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=InsightAsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -124,8 +143,11 @@ class TestBaseInsightsStream:
         2. if read slice 2, 3 state not changed
             if read slice 2, 3, 1 state changed to 3
         """
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+
         job = mocker.Mock(spec=AsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -146,6 +168,38 @@ class TestBaseInsightsStream:
         )
 
         assert len(records) == 3
+
+    def test_read_records_add_account_id(self, mocker, api, some_config):
+        rec_without_account = mocker.Mock()
+        rec_without_account.export_all_data.return_value = {}
+
+        rec_with_account = mocker.Mock()
+        rec_with_account.export_all_data.return_value = {"account_id": "some_account_id"}
+
+        job = mocker.Mock(spec=AsyncJob)
+        job.get_result.return_value = [rec_without_account, rec_with_account]
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={
+                    "insight_job": job,
+                    "account_id": some_config["account_ids"][0],
+                },
+            )
+        )
+
+        assert len(records) == 2
+        for record in records:
+            assert record.get("account_id")
 
     @pytest.mark.parametrize(
         "state,result_state",
@@ -544,3 +598,173 @@ class TestBaseInsightsStream:
         )
         stream.state = state
         assert stream._get_start_date().get("unknown_account").to_date_string() == expected_start_date
+
+    @pytest.mark.parametrize(
+        "breakdowns, record, expected_record",
+        (
+                (
+                        ["body_asset", ],
+                        {"body_asset": {"id": "871246182", "text": "Some text"}},
+                        {"body_asset": {"id": "871246182", "text": "Some text"}, "body_asset_id": "871246182"}
+                ),
+                (
+                        ["call_to_action_asset",],
+                        {"call_to_action_asset": {"id": "871246182", "name": "Some name"}},
+                        {"call_to_action_asset": {"id": "871246182", "name": "Some name"}, "call_to_action_asset_id": "871246182"}
+                ),
+                (
+                        ["description_asset", ],
+                        {"description_asset": {"id": "871246182", "text": "Some text"}},
+                        {"description_asset": {"id": "871246182", "text": "Some text"}, "description_asset_id": "871246182"}
+                ),
+                (
+                        ["image_asset", ],
+                        {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}},
+                        {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}, "image_asset_id": "871246182"}
+                ),
+                (
+                        ["link_url_asset", ],
+                        {"link_url_asset": {"id": "871246182", "website_url": "website_url"}},
+                        {"link_url_asset": {"id": "871246182", "website_url": "website_url"}, "link_url_asset_id": "871246182"}
+                ),
+                (
+                        ["title_asset", ],
+                        {"title_asset": {"id": "871246182", "text": "Some text"}},
+                        {"title_asset": {"id": "871246182", "text": "Some text"}, "title_asset_id": "871246182"}
+                ),
+                (
+                        ["video_asset", ],
+                        {
+                            "video_asset": {
+                                "id": "871246182", "video_id": "video_id", "url": "url",
+                                "thumbnail_url": "thumbnail_url", "video_name": "video_name"
+                            }
+                        },
+                        {
+                            "video_asset": {
+                                "id": "871246182", "video_id": "video_id", "url": "url",
+                                "thumbnail_url": "thumbnail_url", "video_name": "video_name"
+                            },
+                            "video_asset_id": "871246182"
+                        }
+                ),
+                (
+                        ["body_asset", "country"],
+                        {"body_asset": {"id": "871246182", "text": "Some text"}, "country": "country", "dma": "dma"},
+                        {
+                            "body_asset": {"id": "871246182", "text": "Some text"},
+                            "country": "country", "dma": "dma", "body_asset_id": "871246182"
+                        }
+                ),
+        )
+    )
+    def test_transform_breakdowns(self, api, some_config, breakdowns, record, expected_record):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns,
+        )
+        assert stream._transform_breakdown(record) == expected_record
+
+    @pytest.mark.parametrize(
+        "breakdowns, expect_pks",
+        (
+                (
+                    ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
+                ),
+                (
+                    ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
+                ),
+                (
+                    ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
+                ),
+                (
+                    ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
+                ),
+                (
+                    ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
+                ),
+                (
+                    ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
+                ),
+                (
+                    ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
+                ),
+                (
+                        ["video_asset", "skan_conversion_id", "place_page_id"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
+                ),
+                (
+                        None,
+                        ["date_start", "account_id", "ad_id"]
+                ),
+        )
+    )
+    def test_primary_keys(self, api, some_config, breakdowns, expect_pks):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns
+        )
+        assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "breakdowns, expect_pks",
+        (
+                (
+                        ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
+                ),
+                (
+                        ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
+                ),
+                (
+                        ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
+                ),
+                (
+                        ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
+                ),
+                (
+                        ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
+                ),
+                (
+                        ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
+                ),
+                (
+                        ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
+                ),
+                (
+                        ["video_asset", "skan_conversion_id", "place_page_id"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
+                ),
+                (
+                        ["video_asset", "link_url_asset",  "skan_conversion_id", "place_page_id", "gender"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "link_url_asset_id", "skan_conversion_id", "place_page_id", "gender"]
+                ),
+        )
+    )
+    def test_object_pk_added_to_schema(self, api, some_config, breakdowns, expect_pks):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns
+        )
+        schema = stream.get_json_schema()
+        assert schema
+        assert stream.primary_key == expect_pks
+        for pk in expect_pks:
+            assert pk in schema["properties"]

@@ -65,7 +65,7 @@ Download the Airbyte repository and deploy it on the VM:
 2. Run the following command to get Airbyte running on your OCI VM instance using the installation script:
 
    ```bash
-   ./run-ab-platform.sh -b 
+   ./run-ab-platform.sh -b
    ```
 
 3. Open up a Browser and visit port 8000 - [http://localhost:8000/](http://localhost:8000/)

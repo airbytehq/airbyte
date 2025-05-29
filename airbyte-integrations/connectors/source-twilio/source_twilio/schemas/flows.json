@@ -4,37 +4,49 @@
   "additionalProperties": true,
   "properties": {
     "sid": {
+      "description": "Unique identifier for the flow.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "Unique identifier for the account associated with the flow.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "Date and time when the flow was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "Date and time when the flow was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name given to the flow.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the flow (e.g., active, inactive).",
       "type": ["string", "null"],
       "enum": ["published", "draft"]
     },
     "version": {
+      "description": "Version number of the flow.",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "URL endpoint for the flow.",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Represents links related to the flow data.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "steps": { "type": ["null", "string"] }
+        "steps": {
+          "description": "Link to the steps included in the flow.",
+          "type": ["null", "string"]
+        }
       }
     }
   }

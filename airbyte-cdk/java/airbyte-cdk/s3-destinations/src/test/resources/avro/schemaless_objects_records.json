@@ -1,0 +1,153 @@
+[
+  {
+    "object_without_schema": {
+      "arbitrary_key1": "value1",
+      "arbitrary_key2": 42,
+      "nested": {
+        "bool": true,
+        "array": [1, 2, 3]
+      }
+    },
+    "object_with_schema": {
+      "integer_type_field": 100,
+      "string_type_field": "Hello, world!",
+      "nested_schemaless_object": {
+        "random_key": "random_value",
+        "nested_array": [true, null, "string", 3.14]
+      },
+      "nested_array_of_schemaless_objects": [
+        {
+          "id": 1,
+          "name": "Object 1"
+        },
+        {
+          "boolean_field": true,
+          "number_field": 3.14
+        }
+      ],
+      "union_of_schemaless_object_and_number": {
+        "arbitrary_key": "This is an object",
+        "nested": {
+          "number": 42
+        }
+      },
+      "union_of_schema_object_and_number": {
+        "integer_type_field": 200,
+        "string_type_field": "Schema object option"
+      },
+      "array_of_union_of_schema_object_and_integer": [
+        42,
+        {
+          "schemaless_field1": "value1",
+          "schemaless_field2": [1, 2, 3]
+        }
+      ]
+    }
+  },
+  {
+    "object_without_schema": {
+      "some_array": [1, "two", 3.0, true],
+      "some_object": {
+        "nested_key": "nested_value"
+      }
+    },
+    "object_with_schema": {
+      "integer_type_field": 200,
+      "string_type_field": "Another string",
+      "nested_schemaless_object": {
+        "array_field": [1, 2, 3],
+        "object_field": {
+          "key": "value"
+        }
+      },
+      "nested_array_of_schemaless_objects": [
+        {
+          "array_field": [4, 5, 6],
+          "boolean_field": false
+        },
+        {
+          "string_field": "Hello",
+          "number_field": 2.718
+        }
+      ],
+      "union_of_schemaless_object_and_number": 3.14159,
+      "union_of_schema_object_and_number": 42,
+      "array_of_union_of_schema_object_and_integer": [
+        101,
+        {
+          "arbitrary_key": "arbitrary_value",
+          "nested_object": {
+            "nested_key": "nested_value"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "object_without_schema": {
+      "mixed_types": {
+        "string": "value",
+        "number": 42,
+        "boolean": false,
+        "null_value": null,
+        "array": [1, "two", 3.0, true, null],
+        "nested_object": {
+          "key": "value"
+        }
+      }
+    },
+    "object_with_schema": {
+      "integer_type_field": 300,
+      "string_type_field": "Yet another string",
+      "nested_schemaless_object": {
+        "date": "2024-07-29",
+        "complex_nested": {
+          "array": [1, 2, 3],
+          "object": {
+            "key": "value"
+          }
+        }
+      },
+      "nested_array_of_schemaless_objects": [
+        {
+          "mixed_types": [1, "two", true, null, { "key": "value" }]
+        },
+        {
+          "date_time": "2024-07-29T12:34:56Z",
+          "coordinates": {
+            "x": 10,
+            "y": 20
+          }
+        }
+      ],
+      "union_of_schemaless_object_and_number": {
+        "complex_structure": {
+          "array": [1, 2, 3],
+          "object": {
+            "nested": {
+              "deeply_nested": {
+                "value": "very deep"
+              }
+            }
+          }
+        }
+      },
+      "union_of_schema_object_and_number": {
+        "integer_type_field": 400,
+        "string_type_field": "Union schema object"
+      },
+      "array_of_union_of_schema_object_and_integer": [
+        555,
+        {
+          "complex_field": {
+            "array": [4, 5, 6],
+            "object": {
+              "key": "value"
+            },
+            "boolean": true
+          }
+        }
+      ]
+    }
+  }
+]

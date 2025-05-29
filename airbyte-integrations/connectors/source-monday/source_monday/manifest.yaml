@@ -28,6 +28,8 @@ definitions:
           response_filters:
             - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
               action: RETRY
+            - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
+              action: RETRY
           backoff_strategies:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60

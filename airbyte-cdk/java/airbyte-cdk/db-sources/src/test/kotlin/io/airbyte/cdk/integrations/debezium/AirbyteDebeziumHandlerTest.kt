@@ -10,7 +10,6 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.List
 import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -21,7 +20,7 @@ class AirbyteDebeziumHandlerTest {
         val catalog =
             AirbyteCatalog()
                 .withStreams(
-                    List.of(
+                    listOf(
                         CatalogHelpers.createAirbyteStream(
                                 "MODELS_STREAM_NAME",
                                 "MODELS_SCHEMA",
@@ -32,7 +31,7 @@ class AirbyteDebeziumHandlerTest {
                             .withSupportedSyncModes(
                                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                             )
-                            .withSourceDefinedPrimaryKey(List.of(listOf("COL_ID")))
+                            .withSourceDefinedPrimaryKey(listOf(listOf("COL_ID")))
                     )
                 )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
@@ -51,7 +50,7 @@ class AirbyteDebeziumHandlerTest {
         val catalog =
             AirbyteCatalog()
                 .withStreams(
-                    List.of(
+                    listOf(
                         CatalogHelpers.createAirbyteStream(
                                 "MODELS_STREAM_NAME",
                                 "MODELS_SCHEMA",
@@ -62,7 +61,7 @@ class AirbyteDebeziumHandlerTest {
                             .withSupportedSyncModes(
                                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                             )
-                            .withSourceDefinedPrimaryKey(List.of(listOf("COL_ID")))
+                            .withSourceDefinedPrimaryKey(listOf(listOf("COL_ID")))
                     )
                 )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)

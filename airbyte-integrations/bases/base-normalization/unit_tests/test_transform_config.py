@@ -154,8 +154,8 @@ class TestTransformConfig:
 
         actual_keyfile = actual_output["keyfile_json"]
         expected_keyfile = {"type": "service_account-json"}
-        assert expected_output == actual_output
-        assert expected_keyfile == actual_keyfile
+        assert actual_output == expected_output
+        assert actual_keyfile == expected_keyfile
         assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_bigquery_no_credentials(self):
@@ -172,7 +172,7 @@ class TestTransformConfig:
             "threads": 8,
         }
 
-        assert expected_output == actual_output
+        assert actual_output == expected_output
         assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_bigquery_with_embedded_project_id(self):
@@ -189,7 +189,7 @@ class TestTransformConfig:
             "threads": 8,
         }
 
-        assert expected_output == actual_output
+        assert actual_output == expected_output
         assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_bigquery_with_embedded_mismatched_project_id(self):
@@ -232,7 +232,7 @@ class TestTransformConfig:
             "user": "a user",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "public"
 
     def test_transform_postgres_ssh(self):
@@ -265,7 +265,7 @@ class TestTransformConfig:
             "user": "a user",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "public"
 
     def test_transform_snowflake(self):
@@ -298,7 +298,7 @@ class TestTransformConfig:
             "warehouse": "AIRBYTE_WAREHOUSE",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     def test_transform_snowflake_oauth(self):
@@ -341,7 +341,7 @@ class TestTransformConfig:
             "token": "AIRBYTE_REFRESH_TOKEN",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     def test_transform_snowflake_key_pair(self):
@@ -379,7 +379,7 @@ class TestTransformConfig:
             "private_key_passphrase": "AIRBYTE_PRIVATE_KEY_PASSWORD",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     def test_transform_mysql(self):
@@ -404,7 +404,7 @@ class TestTransformConfig:
             "password": "password1234",
         }
 
-        assert expected == actual
+        assert actual == expected
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
 
@@ -430,7 +430,7 @@ class TestTransformConfig:
             "password": "password1234",
         }
 
-        assert expected == actual
+        assert actual == expected
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
 
@@ -450,7 +450,7 @@ class TestTransformConfig:
             "secure": True,
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "default"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
@@ -477,7 +477,7 @@ class TestTransformConfig:
         }
         actual = TransformConfig().transform(DestinationType.POSTGRES, input)
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual["normalize"]["outputs"]["prod"]) == "public"
 
     def test_transform_tidb(self):
@@ -502,7 +502,7 @@ class TestTransformConfig:
             "password": "password1234",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "ti_db"
 
     def test_transform_duckdb_schema(self):
@@ -519,7 +519,7 @@ class TestTransformConfig:
             "schema": "quackqauck",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_path(actual) == "/local/testing.duckdb"
 
     def test_transform_duckdb_no_schema(self):
@@ -535,7 +535,7 @@ class TestTransformConfig:
             "schema": "main",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_path(actual) == "/local/testing.duckdb"
 
     def get_base_config(self):

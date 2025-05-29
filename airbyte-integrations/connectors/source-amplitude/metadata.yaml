@@ -7,23 +7,23 @@ data:
       - amplitude.com
       - analytics.eu.amplitude.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.6.8
   dockerRepository: airbyte/source-amplitude
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   githubIssueLabel: source-amplitude
   icon: amplitude.svg
   license: MIT
-  maxSecondsBetweenMessages: 2592000
+  maxSecondsBetweenMessages: 86400
   name: Amplitude
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-amplitude
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -35,8 +35,29 @@ data:
       - active_users
       - annotations
       - cohorts
+      - events_list
   supportLevel: certified
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amplitude_config_dev_null
+          id: 1dbb29a0-973a-49e5-bae3-546e311fd90a
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMPLITUDE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMPLITUDE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

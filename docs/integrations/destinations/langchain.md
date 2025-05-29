@@ -6,11 +6,12 @@ The vector db destination destination has been split into separate destinations 
 Please use the respective destination for the vector database you want to use to ensure you receive updates and support.
 
 To following databases are supported:
-* [Pinecone](https://docs.airbyte.com/integrations/destinations/pinecone)
-* [Weaviate](https://docs.airbyte.com/integrations/destinations/weaviate)
-* [Milvus](https://docs.airbyte.com/integrations/destinations/milvus)
-* [Chroma](https://docs.airbyte.com/integrations/destinations/chroma)
-* [Qdrant](https://docs.airbyte.com/integrations/destinations/qdrant)
+
+- [Pinecone](https://docs.airbyte.com/integrations/destinations/pinecone)
+- [Weaviate](https://docs.airbyte.com/integrations/destinations/weaviate)
+- [Milvus](https://docs.airbyte.com/integrations/destinations/milvus)
+- [Chroma](https://docs.airbyte.com/integrations/destinations/chroma)
+- [Qdrant](https://docs.airbyte.com/integrations/destinations/qdrant)
 :::
 
 ## Overview
@@ -18,9 +19,10 @@ To following databases are supported:
 This destination prepares data to be used by [Langchain](https://langchain.com/) to retrieve relevant context for question answering use cases.
 
 There are three parts to this:
-* Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-* Embedding - convert the text into a vector representation using a pre-trained model (currently only OpenAI `text-embedding-ada-002` is supported)
-* Indexing - store the vectors in a vector database for similarity search
+
+- Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
+- Embedding - convert the text into a vector representation using a pre-trained model (currently only OpenAI `text-embedding-ada-002` is supported)
+- Indexing - store the vectors in a vector database for similarity search
 
 ### Processing
 
@@ -72,6 +74,7 @@ For Pinecone pods of type starter, only up to 10,000 chunks can be indexed. For 
 :::
 
 <!-- env:oss -->
+
 #### Chroma vector store
 
 The [Chroma vector store](https://trychroma.com) is running the Chroma embedding database as persistent client and stores the vectors in a local file.
@@ -104,7 +107,6 @@ Chroma is meant to be used on a local workstation and won't work on Kubernetes.
 Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 
 :::
-
 
 #### DocArrayHnswSearch vector store
 
@@ -146,20 +148,26 @@ DocArrayHnswSearch is meant to be used on a local workstation and won't work on 
 Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 
 :::
+
 <!-- /env:oss -->
 
-## CHANGELOG
+## Changelog
 
-| Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
-|:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.2   | 2023-11-13 | [#32455](https://github.com/airbytehq/airbyte/pull/32455)     | Fix build  | 
-| 0.1.1   | 2023-09-01 | [#30282](https://github.com/airbytehq/airbyte/pull/30282)     | Use embedders from CDK  | 
-| 0.1.0   | 2023-09-01 | [#30080](https://github.com/airbytehq/airbyte/pull/30080)     | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade.  | 
-| 0.0.8   | 2023-08-21 | [#29515](https://github.com/airbytehq/airbyte/pull/29515)     | Clean up generated schema spec  |
-| 0.0.7   | 2023-08-18 | [#29513](https://github.com/airbytehq/airbyte/pull/29513)     | Fix for starter pods  |
-| 0.0.6   | 2023-08-02 | [#28977](https://github.com/airbytehq/airbyte/pull/28977)     | Validate pinecone index dimensions during check  |
-| 0.0.5   | 2023-07-25 | [#28605](https://github.com/airbytehq/airbyte/pull/28605)     | Add Chroma support  |
-| 0.0.4   | 2023-07-21 | [#28556](https://github.com/airbytehq/airbyte/pull/28556)     | Correctly dedupe records with composite and nested primary keys  |
-| 0.0.3   | 2023-07-20 | [#28509](https://github.com/airbytehq/airbyte/pull/28509)     | Change the base image to python:3.9-slim to fix build  |
-| 0.0.2   | 2023-07-18 | [#26184](https://github.com/airbytehq/airbyte/pull/28398)     | Adjust python dependencies and release on cloud  |
-| 0.0.1   | 2023-07-12 | [#26184](https://github.com/airbytehq/airbyte/pull/26184)     | Initial release  |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                                                                                                                      |
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.2   | 2023-11-13 | [#32455](https://github.com/airbytehq/airbyte/pull/32455) | Fix build                                                                                                                    |
+| 0.1.1   | 2023-09-01 | [#30282](https://github.com/airbytehq/airbyte/pull/30282) | Use embedders from CDK                                                                                                       |
+| 0.1.0   | 2023-09-01 | [#30080](https://github.com/airbytehq/airbyte/pull/30080) | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade. |
+| 0.0.8   | 2023-08-21 | [#29515](https://github.com/airbytehq/airbyte/pull/29515) | Clean up generated schema spec                                                                                               |
+| 0.0.7   | 2023-08-18 | [#29513](https://github.com/airbytehq/airbyte/pull/29513) | Fix for starter pods                                                                                                         |
+| 0.0.6   | 2023-08-02 | [#28977](https://github.com/airbytehq/airbyte/pull/28977) | Validate pinecone index dimensions during check                                                                              |
+| 0.0.5   | 2023-07-25 | [#28605](https://github.com/airbytehq/airbyte/pull/28605) | Add Chroma support                                                                                                           |
+| 0.0.4   | 2023-07-21 | [#28556](https://github.com/airbytehq/airbyte/pull/28556) | Correctly dedupe records with composite and nested primary keys                                                              |
+| 0.0.3   | 2023-07-20 | [#28509](https://github.com/airbytehq/airbyte/pull/28509) | Change the base image to python:3.9-slim to fix build                                                                        |
+| 0.0.2   | 2023-07-18 | [#26184](https://github.com/airbytehq/airbyte/pull/28398) | Adjust python dependencies and release on cloud                                                                              |
+| 0.0.1   | 2023-07-12 | [#26184](https://github.com/airbytehq/airbyte/pull/26184) | Initial release                                                                                                              |
+
+</details>

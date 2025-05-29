@@ -1,0 +1,84 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "dimensions": {
+          "stat_time_hour": "2024-01-01 09:00:00",
+          "adgroup_id": "advertiser_id"
+        },
+        "metrics": {
+          "cpm": "4.18",
+          "impressions": "4787",
+          "video_watched_6s": 120,
+          "profile_visits": 0,
+          "average_video_play_per_user": 1.54,
+          "shares": 0,
+          "app_install": 0,
+          "clicks_on_music_disc": 0,
+          "likes": 18,
+          "cpc": "0.42",
+          "real_time_app_install": 0,
+          "average_video_play": 1.42,
+          "cash_spend": "20.00",
+          "reach": "3938",
+          "real_time_app_install_cost": 0,
+          "video_play_actions": 4253,
+          "video_views_p75": 100,
+          "video_views_p100": 70,
+          "video_watched_2s": 471,
+          "comments": 0,
+          "cost_per_1000_reached": "5.08",
+          "follows": 0,
+          "spend": "20.00",
+          "ctr": "1.00",
+          "video_views_p25": 328,
+          "frequency": "1.22",
+          "video_views_p50": 144,
+          "voucher_spend": "0.00",
+          "clicks": "48"
+        },
+        "advertiser_id": 872746382648
+      },
+      {
+        "dimensions": {
+          "stat_time_hour": "2024-01-01 10:00:00",
+          "advertiser_id": "11111111"
+        },
+        "metrics": {
+          "cpm": "4.18",
+          "impressions": "4787",
+          "video_watched_6s": 120,
+          "profile_visits": 0,
+          "average_video_play_per_user": 1.54,
+          "shares": 0,
+          "app_install": 0,
+          "clicks_on_music_disc": 0,
+          "likes": 18,
+          "cpc": "0.42",
+          "real_time_app_install": 0,
+          "average_video_play": 1.42,
+          "cash_spend": "20.00",
+          "reach": "3938",
+          "real_time_app_install_cost": 0,
+          "video_play_actions": 4253,
+          "video_views_p75": 100,
+          "video_views_p100": 70,
+          "video_watched_2s": 471,
+          "comments": 0,
+          "cost_per_1000_reached": "5.08",
+          "follows": 0,
+          "spend": "20.00",
+          "ctr": "1.00",
+          "video_views_p25": 328,
+          "frequency": "1.22",
+          "video_views_p50": 144,
+          "voucher_spend": "0.00",
+          "clicks": "48"
+        },
+        "advertiser_id": 872746382648
+      }
+    ]
+  }
+}

@@ -2,31 +2,60 @@ data:
   allowedHosts:
     hosts:
       - api.xero.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-xero
+  releases:
+    breakingChanges:
+      2.0.0:
+        upgradeDeadline: "2024-06-30"
+        message:
+          The authorization method was changed to support both OAuth strategy and Access Token. Due to changes in authorization, users will need to choose their preferred authentication method, and insert either the Client ID and Client Secret, or the access token within source Xero and reset source configuration. For more information, see our migration documentation for source Xero.
+          Important - The authentication scheme now can use either the access_token or OAuth strategy (client_credentials) from this version.
+      1.0.0:
+        upgradeDeadline: "2024-06-30"
+        message:
+          The source Xero connector is being migrated from the Python CDK to our declarative low-code CDK. The authorization method was changed from OAuth 2.0 to Access Token. Due to changes in authorization, users will need to generate an access token within source Xero and reset source configuration. For more information, see our migration documentation for source Xero.
+          Important - The authentication scheme is using access_token instead of Oauth 2.0 from this version.
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 0.2.5
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
   license: MIT
   name: Xero
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-xero
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
+  releaseDate: 2021-11-11
   releaseStage: beta
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 300
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # Disabling acceptance tests
+    # No/Low Airbyte Cloud Usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE-XERO__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

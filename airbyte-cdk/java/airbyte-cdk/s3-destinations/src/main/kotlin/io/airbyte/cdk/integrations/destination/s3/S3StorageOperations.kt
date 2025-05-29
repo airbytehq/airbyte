@@ -29,9 +29,10 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
+import kotlin.Comparator
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.StringUtils
-import org.apache.logging.log4j.util.Strings
 import org.joda.time.DateTime
 
 private val logger = KotlinLogging.logger {}
@@ -44,15 +45,16 @@ open class S3StorageOperations(
     private val s3FilenameTemplateManager: S3FilenameTemplateManager = S3FilenameTemplateManager()
 
     private val partCounts: ConcurrentMap<String, AtomicInteger> = ConcurrentHashMap()
+    private val objectNameByPrefix: ConcurrentMap<String, Set<String>> = ConcurrentHashMap()
 
     override fun getBucketObjectPath(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         writeDatetime: DateTime,
         customFormat: String
     ): String {
         val namespaceStr: String =
-            nameTransformer.getNamespace(if (Strings.isNotBlank(namespace)) namespace else "")
+            nameTransformer.getNamespace(if (!namespace.isNullOrBlank()) namespace else "")
         val streamNameStr: String = nameTransformer.getIdentifier(streamName)
         return nameTransformer.applyDefaultCase(
             customFormat
@@ -114,8 +116,9 @@ open class S3StorageOperations(
 
     override fun uploadRecordsToBucket(
         recordsData: SerializableBuffer,
-        namespace: String,
-        objectPath: String
+        namespace: String?,
+        objectPath: String,
+        generationId: Long,
     ): String {
         val exceptionsThrown: MutableList<Exception> = ArrayList()
         while (exceptionsThrown.size < UPLOAD_RETRY_LIMIT) {
@@ -128,7 +131,7 @@ open class S3StorageOperations(
             }
 
             try {
-                val fileName: String = loadDataIntoBucket(objectPath, recordsData)
+                val fileName: String = loadDataIntoBucket(objectPath, recordsData, generationId)
                 logger.info {
                     "Successfully loaded records to stage $objectPath with ${exceptionsThrown.size} re-attempt(s)"
                 }
@@ -143,15 +146,13 @@ open class S3StorageOperations(
         // issue reduces risk of misidentifying errors or reporting a transient error.
         val areAllExceptionsAuthExceptions: Boolean =
             exceptionsThrown
-                .stream()
-                .filter { e: Exception -> e is AmazonS3Exception }
+                .filterIsInstance<AmazonS3Exception>()
                 .map { s3e: Exception -> (s3e as AmazonS3Exception).statusCode }
-                .filter { o: Int? ->
+                .count { o: Int ->
                     ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(
                         o,
                     )
-                }
-                .count() == exceptionsThrown.size.toLong()
+                } == exceptionsThrown.size
         if (areAllExceptionsAuthExceptions) {
             throw ConfigErrorException(exceptionsThrown[0].message!!, exceptionsThrown[0])
         } else {
@@ -167,30 +168,48 @@ open class S3StorageOperations(
      * @return the uploaded filename, which is different from the serialized buffer filename
      * </extension></partId>
      */
+    @VisibleForTesting
+    fun getFileName(
+        objectPath: String,
+        recordsData: SerializableBuffer,
+    ): String {
+        var fullObjectKey: String
+        do {
+            val partId: String = getPartId(objectPath)
+            val fileExtension: String = getExtension(recordsData.filename)
+            fullObjectKey =
+                if (!s3Config.fileNamePattern.isNullOrBlank()) {
+                    s3FilenameTemplateManager.applyPatternToFilename(
+                        S3FilenameTemplateParameterObject.builder()
+                            .partId(partId)
+                            .recordsData(recordsData)
+                            .objectPath(objectPath)
+                            .fileExtension(fileExtension)
+                            .fileNamePattern(s3Config.fileNamePattern)
+                            .build(),
+                    )
+                } else {
+                    objectPath + partId + fileExtension
+                }
+        } while (objectNameByPrefix.getValue(objectPath).contains(fullObjectKey))
+        return fullObjectKey
+    }
     @Throws(IOException::class)
-    private fun loadDataIntoBucket(objectPath: String, recordsData: SerializableBuffer): String {
+    private fun loadDataIntoBucket(
+        objectPath: String,
+        recordsData: SerializableBuffer,
+        generationId: Long
+    ): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
         val bucket: String? = s3Config.bucketName
-        val partId: String = getPartId(objectPath)
-        val fileExtension: String = getExtension(recordsData.filename)
-        val fullObjectKey: String =
-            if (StringUtils.isNotBlank(s3Config.fileNamePattern)) {
-                s3FilenameTemplateManager.applyPatternToFilename(
-                    S3FilenameTemplateParameterObject.builder()
-                        .partId(partId)
-                        .recordsData(recordsData)
-                        .objectPath(objectPath)
-                        .fileExtension(fileExtension)
-                        .fileNamePattern(s3Config.fileNamePattern)
-                        .build(),
-                )
-            } else {
-                objectPath + partId + fileExtension
-            }
+        val fullObjectKey: String = getFileName(objectPath, recordsData)
         val metadata: MutableMap<String, String> = HashMap()
         for (blobDecorator: BlobDecorator in blobDecorators) {
             blobDecorator.updateMetadata(metadata, getMetadataMapping())
         }
+        // Note when looking in the S3 object, the metadata is appended with x-amz-meta-
+        // and when retrieving, sdk takes care of removing the prefix
+        metadata[GENERATION_ID_USER_META_KEY] = generationId.toString()
         val uploadManager: StreamTransferManager =
             StreamTransferManagerFactory.create(
                     bucket,
@@ -256,31 +275,14 @@ open class S3StorageOperations(
             ) {
                 AtomicInteger(0)
             }
-
-        if (partCount.get() == 0) {
-            var objects: ObjectListing?
-            var objectCount = 0
-
-            val bucket: String? = s3Config.bucketName
-            objects = s3Client.listObjects(bucket, objectPath)
-
-            if (objects != null) {
-                objectCount += objects.objectSummaries.size
-                while (objects != null && objects.nextMarker != null) {
-                    objects =
-                        s3Client.listObjects(
-                            ListObjectsRequest()
-                                .withBucketName(bucket)
-                                .withPrefix(objectPath)
-                                .withMarker(objects.nextMarker),
-                        )
-                    if (objects != null) {
-                        objectCount += objects.objectSummaries.size
-                    }
-                }
+        objectNameByPrefix.computeIfAbsent(
+            objectPath,
+        ) {
+            var objectList: Set<String> = setOf()
+            forObjectsByPage(objectPath) { objectSummaries ->
+                objectList = objectList + objectSummaries.map { it.key }
             }
-
-            partCount.set(objectCount)
+            objectList
         }
 
         return partCount.getAndIncrement().toString()
@@ -290,13 +292,12 @@ open class S3StorageOperations(
         cleanUpBucketObject(objectPath, listOf())
     }
 
-    override fun cleanUpBucketObject(
-        namespace: String,
-        streamName: String,
+    private fun forObjectsByPage(
         objectPath: String,
-        pathFormat: String
+        maxKeysPerPage: Int = 1000,
+        pageConsumer: (List<S3ObjectSummary>) -> Unit
     ) {
-        val bucket: String? = s3Config.bucketName
+        val bucket: String = s3Config.bucketName!!
         var objects: ObjectListing =
             s3Client.listObjects(
                 ListObjectsRequest()
@@ -305,14 +306,32 @@ open class S3StorageOperations(
                         objectPath,
                     ) // pathFormat may use subdirectories under the objectPath to organize files
                     // so we need to recursively list them and filter files matching the pathFormat
-                    .withDelimiter(""),
+                    .withDelimiter("")
+                    .withMaxKeys(maxKeysPerPage),
             )
+        while (objects.objectSummaries.size > 0) {
+            pageConsumer(objects.objectSummaries)
+            if (objects.isTruncated) {
+                logger.info { "Retrieving next page of objects with maxSize: ${objects.maxKeys}" }
+                objects = s3Client.listNextBatchOfObjects(objects)
+            } else {
+                break
+            }
+        }
+    }
+
+    override fun cleanUpBucketObject(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String
+    ) {
+        val bucket: String = s3Config.bucketName!!
         val regexFormat: Pattern =
             Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
-        while (objects.objectSummaries.size > 0) {
+        forObjectsByPage(objectPath) { objectSummaries ->
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
-                objects.objectSummaries
-                    .stream()
+                objectSummaries
                     .filter { obj: S3ObjectSummary ->
                         regexFormat
                             .matcher(
@@ -325,17 +344,82 @@ open class S3StorageOperations(
                             obj.key,
                         )
                     }
-                    .toList()
+
             cleanUpObjects(bucket, keysToDelete)
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects matching $regexFormat were deleted)..."
             }
-            if (objects.isTruncated) {
-                objects = s3Client.listNextBatchOfObjects(objects)
-            } else {
-                break
+        }
+    }
+
+    override fun getStageGeneration(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String
+    ): Long? {
+        return getStageGenerationInternal(namespace, streamName, objectPath, pathFormat)
+    }
+
+    // Intentionally public for using smaller page size in Integration Tests
+    fun getStageGenerationInternal(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String,
+        maxKeysPerPage: Int = 1000
+    ): Long? {
+        val bucket: String = s3Config.bucketName!!
+        val regexFormat: Pattern =
+            Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
+        val descendingComparator: Comparator<S3ObjectSummary> =
+            Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time }.reversed()
+        var lastModifiedObject: S3ObjectSummary? = null
+
+        // We could be retrieving multiple pages of results based on when the last sync ran spanning
+        // across multiple
+        // date boundaries of object path format patterns.
+        // Maintaining a local maxima across pages and sorting at the end to get global maxima
+        // of last modified object to retrieve the object metadata header.
+        // Note: This logic will fall apart if the path format is changed between syncs
+        forObjectsByPage(objectPath, maxKeysPerPage) { objectSummaries ->
+            val matchedObjects =
+                objectSummaries
+                    .filter { obj: S3ObjectSummary -> regexFormat.matcher(obj.key).matches() }
+                    .sortedWith(descendingComparator)
+            if (matchedObjects.isNotEmpty()) {
+                val localMaximaLastModified: S3ObjectSummary = matchedObjects.first()
+                if (
+                    lastModifiedObject == null ||
+                        descendingComparator.compare(lastModifiedObject, localMaximaLastModified) >
+                            0
+                ) {
+                    lastModifiedObject = localMaximaLastModified
+                }
             }
         }
+
+        if (lastModifiedObject == null) {
+            // Nothing to retrieve, fallback to null genId behavior
+            return null
+        }
+        // If genId is missing or not parseable we return null
+        return getGenerationIdFromMetadata(bucket, lastModifiedObject!!.key).getOrNull()
+    }
+
+    private fun getGenerationIdFromMetadata(bucket: String, key: String): Optional<Long> {
+        val objectMetadata = s3Client.getObjectMetadata(bucket, key)
+        try {
+            val generationId = objectMetadata.getUserMetaDataOf(GENERATION_ID_USER_META_KEY)
+            if (!generationId.isNullOrBlank()) {
+                return Optional.of(generationId.toLong())
+            }
+        } catch (nfe: NumberFormatException) {
+            logger.warn {
+                "$GENERATION_ID_USER_META_KEY object metadata found in object $key is not a number"
+            }
+        }
+        return Optional.empty<Long>()
     }
 
     fun getRegexFormat(namespace: String?, streamName: String, pathFormat: String): String {
@@ -365,7 +449,6 @@ open class S3StorageOperations(
         while (objects.objectSummaries.size > 0) {
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
                 objects.objectSummaries
-                    .stream()
                     .filter { obj: S3ObjectSummary ->
                         stagedFiles.isEmpty() ||
                             stagedFiles.contains(
@@ -377,7 +460,7 @@ open class S3StorageOperations(
                             obj.key,
                         )
                     }
-                    .toList()
+
             cleanUpObjects(bucket, keysToDelete)
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects were deleted)..."
@@ -390,14 +473,103 @@ open class S3StorageOperations(
         }
     }
 
+    override fun listExistingObjects(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String,
+        currentGenerationId: Long?
+    ): List<String> {
+        val regexFormat: Pattern =
+            Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
+        var keys = listOf<S3ObjectSummary>()
+
+        forObjectsByPage(objectPath) { objectSummaries ->
+            keys =
+                keys +
+                    objectSummaries.filter { obj: S3ObjectSummary ->
+                        regexFormat
+                            .matcher(
+                                obj.key,
+                            )
+                            .matches()
+                    }
+        }
+
+        if (currentGenerationId != null) {
+            keys = filterObjectsByGenerationLessThan(keys, currentGenerationId)
+        }
+
+        return keys.map { obj: S3ObjectSummary -> obj.key }
+    }
+
+    private fun filterObjectsByGenerationLessThan(
+        keyList: List<S3ObjectSummary>,
+        maxGenerationId: Long
+    ): List<S3ObjectSummary> {
+        val bucket = s3Config.bucketName!!
+        // Sort the list by lastModified first
+        val sortedList =
+            keyList.sortedWith(
+                Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time }
+            )
+        if (sortedList.isEmpty()) return listOf()
+
+        var low = 0
+        var high = sortedList.size - 1
+
+        // For comparison purposes we can assume that anything with null genId is to be provided in
+        // the sliced list
+        val lowGenId = getGenerationIdFromMetadata(bucket, sortedList[low].key).getOrDefault(-1L)
+        val highGenId = getGenerationIdFromMetadata(bucket, sortedList[high].key).getOrDefault(-1L)
+
+        // We have data to filter from previous generations only if highestGenId is equal to
+        // provided
+        // genId and lowGenId is less that the provided genId
+        if (highGenId == maxGenerationId) {
+            if (lowGenId < maxGenerationId) {
+                logger.info { "Filtering files from previous generation" }
+                // modified binary search to find the index where low crosses high and use the
+                // inclusive
+                // index as
+                // the point to slice
+                while (low <= high) {
+                    // right shift by 1 is midpoint between 2 integers
+                    val mid = (low + high).ushr(1)
+                    val genIdToFind =
+                        getGenerationIdFromMetadata(bucket, sortedList[mid].key).getOrDefault(-1L)
+                    if (genIdToFind < maxGenerationId) {
+                        low = mid + 1
+                    } else {
+                        high = mid - 1
+                    }
+                }
+                // high shouldn't overflow because we already guard by checking
+                // if the object at high has same genId as provided
+                return keyList.subList(0, high + 1)
+            } else {
+                // Skip all since lowGenId is also of current generation
+                // There is already a guard in the caller but don't assume that here.
+                return listOf()
+            }
+        }
+
+        return keyList
+    }
+
+    override fun cleanUpObjects(keysToDelete: List<String>) {
+        val bucket: String? = s3Config.bucketName
+        cleanUpObjects(bucket, keysToDelete.map { DeleteObjectsRequest.KeyVersion(it) })
+    }
+
     protected open fun cleanUpObjects(
         bucket: String?,
         keysToDelete: List<DeleteObjectsRequest.KeyVersion>
     ) {
         if (keysToDelete.isNotEmpty()) {
             logger.info {
-                "Deleting objects ${keysToDelete.stream().map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
-                .toList().joinToString(separator = ", ")}"
+                "Deleting objects ${keysToDelete.map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
+                .joinToString(separator = ", ")}"
             }
             s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
         }
@@ -416,7 +588,7 @@ open class S3StorageOperations(
         )
     }
 
-    fun uploadManifest(bucketName: String, manifestFilePath: String, manifestContents: String) {
+    fun uploadManifest(manifestFilePath: String, manifestContents: String) {
         s3Client.putObject(s3Config.bucketName, manifestFilePath, manifestContents)
     }
 
@@ -439,6 +611,7 @@ open class S3StorageOperations(
         private const val FORMAT_VARIABLE_EPOCH: String = "\${EPOCH}"
         private const val FORMAT_VARIABLE_UUID: String = "\${UUID}"
         private const val GZ_FILE_EXTENSION: String = "gz"
+        private const val GENERATION_ID_USER_META_KEY = "ab-generation-id"
         @VisibleForTesting
         @JvmStatic
         fun getFilename(fullPath: String): String {

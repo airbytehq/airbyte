@@ -8,7 +8,7 @@ data:
   icon: dynamodb.svg
   license: MIT
   name: DynamoDB
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +21,13 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-DYNAMODB__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

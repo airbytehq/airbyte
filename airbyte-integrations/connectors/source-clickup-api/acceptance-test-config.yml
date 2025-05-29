@@ -2,7 +2,11 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
-        empty_streams: []
+        empty_streams:
+          - name: space
+          - name: folder
+          - name: list
+          - name: task
   connection:
     tests:
       - config_path: secrets/config.json
@@ -24,8 +28,10 @@ acceptance_tests:
               bypass_reason: ignore changing value in full_refresh of acceptance-tests
   spec:
     tests:
-      - spec_path: source_clickup_api/spec.yaml
+      - spec_path: manifest.yaml
         timeout_seconds: 1200
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.12 # All the parent Ids are now taken from responses itself
   incremental:
     bypass_reason: "Incremental syncs are not supported on this connector."
 connector_image: airbyte/source-clickup-api:dev

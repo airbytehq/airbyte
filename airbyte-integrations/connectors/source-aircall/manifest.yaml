@@ -1,0 +1,1099 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - calls
+    - company
+    - contacts
+    - numbers
+    - tags
+    - user_availability
+    - users
+    - teams
+    - webhooks
+
+definitions:
+  streams:
+    calls:
+      type: DeclarativeStream
+      name: calls
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calls
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    company:
+      type: DeclarativeStream
+      name: company
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - company
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    numbers:
+      type: DeclarativeStream
+      name: numbers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /numbers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - numbers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/numbers"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    user_availability:
+      type: DeclarativeStream
+      name: user_availability
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/availabilities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_availability"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teams
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.aircall.io/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config["api_id"] }}'
+      password: '{{ config["api_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/company"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/numbers"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/user_availability"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_id
+      - api_token
+      - start_date
+    properties:
+      api_id:
+        type: string
+        description: >-
+          App ID found at settings
+          https://dashboard.aircall.io/integrations/api-keys
+        title: API ID
+        airbyte_secret: true
+        order: 0
+      api_token:
+        type: string
+        description: >-
+          App token found at settings (Ref-
+          https://dashboard.aircall.io/integrations/api-keys)
+        title: API Token
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          Date time filter for incremental filter, Specify which date to extract
+          from.
+        title: Date-From Filter
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+          - "2022-03-01T00:00:00.000Z"
+        format: date-time
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    calls: false
+    company: false
+    contacts: false
+    numbers: false
+    tags: false
+    user_availability: false
+    users: false
+    teams: false
+    webhooks: false
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  calls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      answered_at:
+        type:
+          - "null"
+          - number
+      archived:
+        type:
+          - "null"
+          - boolean
+      asset:
+        type:
+          - "null"
+          - string
+      assigned_to:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            content:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - number
+            posted_at:
+              type:
+                - "null"
+                - number
+            posted_by:
+              type:
+                - "null"
+                - object
+              properties:
+                availability_status:
+                  type:
+                    - "null"
+                    - string
+                available:
+                  type:
+                    - "null"
+                    - boolean
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                direct_link:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - number
+                name:
+                  type:
+                    - "null"
+                    - string
+      contact:
+        type:
+          - "null"
+          - string
+      cost:
+        type:
+          - "null"
+          - string
+      country_code_a2:
+        type:
+          - "null"
+          - string
+      direct_link:
+        type:
+          - "null"
+          - string
+      direction:
+        type:
+          - "null"
+          - string
+      duration:
+        type:
+          - "null"
+          - number
+      ended_at:
+        type:
+          - "null"
+          - number
+      id:
+        type:
+          - "null"
+          - number
+      missed_call_reason:
+        type:
+          - "null"
+          - string
+      number:
+        type:
+          - "null"
+          - object
+        properties:
+          availability_status:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          digits:
+            type:
+              - "null"
+              - string
+          direct_link:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - number
+          is_ivr:
+            type:
+              - "null"
+              - boolean
+          live_recording_activated:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          open:
+            type:
+              - "null"
+              - boolean
+          priority:
+            type:
+              - "null"
+              - string
+          time_zone:
+            type:
+              - "null"
+              - string
+      pricing_type:
+        type:
+          - "null"
+          - string
+      raw_digits:
+        type:
+          - "null"
+          - string
+      recording:
+        type:
+          - "null"
+          - string
+      started_at:
+        type:
+          - "null"
+          - number
+      status:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            created_at:
+              type:
+                - "null"
+                - number
+            id:
+              type:
+                - "null"
+                - number
+            name:
+              type:
+                - "null"
+                - string
+            tagged_by:
+              type:
+                - "null"
+                - object
+              properties:
+                availability_status:
+                  type:
+                    - "null"
+                    - string
+                available:
+                  type:
+                    - "null"
+                    - boolean
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                direct_link:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - number
+                name:
+                  type:
+                    - "null"
+                    - string
+      teams:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            created_at:
+              type:
+                - "null"
+                - string
+            direct_link:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - number
+            name:
+              type:
+                - "null"
+                - string
+      transferred_by:
+        type:
+          - "null"
+          - string
+      transferred_to:
+        type:
+          - "null"
+          - string
+      user:
+        type:
+          - "null"
+          - object
+        properties:
+          availability_status:
+            type:
+              - "null"
+              - string
+          available:
+            type:
+              - "null"
+              - boolean
+          created_at:
+            type:
+              - "null"
+              - string
+          direct_link:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - number
+          language:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          time_zone:
+            type:
+              - "null"
+              - string
+      voicemail:
+        type:
+          - "null"
+          - string
+    title: Calls Schema
+  company:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+      numbers_count:
+        type:
+          - "null"
+          - number
+      users_count:
+        type:
+          - "null"
+          - number
+    title: Company schema
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      company_name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - number
+      direct_link:
+        type:
+          - "null"
+          - string
+      emails:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - number
+            label:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - number
+      information:
+        type:
+          - "null"
+          - string
+      is_shared:
+        type:
+          - "null"
+          - boolean
+      last_name:
+        type:
+          - "null"
+          - string
+      phone_numbers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - number
+            label:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      updated_at:
+        type:
+          - "null"
+          - number
+    title: Contacts Schema
+  numbers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      availability_status:
+        type:
+          - "null"
+          - string
+      available:
+        type:
+          - "null"
+          - boolean
+      country:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      digits:
+        type:
+          - "null"
+          - string
+      direct_link:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - number
+      is_ivr:
+        type:
+          - "null"
+          - boolean
+      language:
+        type:
+          - "null"
+          - string
+      live_recording_activated:
+        type:
+          - "null"
+          - boolean
+      messages:
+        type:
+          - "null"
+          - object
+        properties:
+          after_hours:
+            type:
+              - "null"
+              - string
+          callback_later:
+            type:
+              - "null"
+              - string
+          closed:
+            type:
+              - "null"
+              - string
+          ivr:
+            type:
+              - "null"
+              - string
+          ringing_tone:
+            type:
+              - "null"
+              - string
+          unanswered_call:
+            type:
+              - "null"
+              - string
+          voicemail:
+            type:
+              - "null"
+              - string
+          waiting:
+            type:
+              - "null"
+              - string
+          welcome:
+            type:
+              - "null"
+              - string
+      name:
+        type:
+          - "null"
+          - string
+      open:
+        type:
+          - "null"
+          - boolean
+      priority:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      wrap_up_time:
+        type:
+          - "null"
+          - number
+    title: Numbers Schema
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      color:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - number
+      name:
+        type:
+          - "null"
+          - string
+    title: Tags Schema
+  user_availability:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      availability_status:
+        type:
+          - "null"
+          - string
+      available:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+      direct_link:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - number
+      language:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      wrap_up_time:
+        type:
+          - "null"
+          - number
+    title: Users
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      direct_link:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - number
+      name:
+        type:
+          - "null"
+          - string
+      users:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            created_at:
+              type:
+                - "null"
+                - string
+            direct_link:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - number
+            name:
+              type:
+                - "null"
+                - string
+            time_zone:
+              type:
+                - "null"
+                - string
+    title: Teams
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      direct_link:
+        type:
+          - "null"
+          - string
+      events:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      id:
+        type:
+          - "null"
+          - number
+      token:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+    title: Webhooks Schema

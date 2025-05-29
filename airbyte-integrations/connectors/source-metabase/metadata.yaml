@@ -6,18 +6,18 @@ data:
     hosts:
       - "*"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.1.1
   dockerRepository: airbyte/source-metabase
   documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   githubIssueLabel: source-metabase
   icon: metabase.svg
   license: MIT
   name: Metabase
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -25,7 +25,12 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "The `dashboard` stream's endpoint has been updated due to the previous endpoint being deprecated by the service. The new version no longer returns the `creator` field. After upgrading, please reset the schema for the stream. Additionally, the destination may require updating to handle the updated schema."
+        message:
+          "The `dashboard` stream's endpoint has been updated due to the previous
+          endpoint being deprecated by the service. The new version no longer returns
+          the `creator` field. After upgrading, please reset the schema for the stream.
+          Additionally, the destination may require updating to handle the updated
+          schema."
         upgradeDeadline: "2024-04-01"
         scopedImpact:
           - scopeType: stream
@@ -33,10 +38,23 @@ data:
   releaseStage: beta
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-metabase
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: metabase_config_dev_null
+          id: 59057cfd-250a-45b8-a2d5-a0ad74353d27
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-METABASE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

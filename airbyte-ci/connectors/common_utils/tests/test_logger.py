@@ -19,8 +19,8 @@ def check_output(msg: str, expected_line_number: int, expected_log_level: str):
     date_time, log_level, line_number, msg = m.groups()
 
     assert int(line_number) == expected_line_number
-    assert expected_log_level == log_level
-    assert expected_log_level == log_level
+    assert log_level == expected_log_level
+    assert log_level == expected_log_level
     dt = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S.%f")
     now = datetime.now()
     delta = timedelta(seconds=1)

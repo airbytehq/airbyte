@@ -20,7 +20,7 @@ open class FeatureFlagsWrapper(private val wrapped: FeatureFlags) : FeatureFlags
         return wrapped.applyFieldSelection()
     }
 
-    override fun fieldSelectionWorkspaces(): String? {
+    override fun fieldSelectionWorkspaces(): String {
         return wrapped.fieldSelectionWorkspaces()
     }
 

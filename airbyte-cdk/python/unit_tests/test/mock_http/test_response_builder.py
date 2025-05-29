@@ -46,9 +46,7 @@ def _any_record_builder() -> RecordBuilder:
 
 
 def _response_builder(
-    response_template: Dict[str, Any],
-    records_path: Union[FieldPath, NestedPath],
-    pagination_strategy: Optional[PaginationStrategy] = None
+    response_template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy] = None
 ) -> HttpResponseBuilder:
     return create_response_builder(deepcopy(response_template), records_path, pagination_strategy=pagination_strategy)
 
@@ -64,7 +62,9 @@ class RecordBuilderTest(TestCase):
         assert record[_ID_FIELD] == "another id"
 
     def test_given_nested_id_when_build_then_set_id(self) -> None:
-        builder = _record_builder({_RECORDS_FIELD: [{"nested": {_ID_FIELD: "id"}}]}, FieldPath(_RECORDS_FIELD), NestedPath(["nested", _ID_FIELD]))
+        builder = _record_builder(
+            {_RECORDS_FIELD: [{"nested": {_ID_FIELD: "id"}}]}, FieldPath(_RECORDS_FIELD), NestedPath(["nested", _ID_FIELD])
+        )
         record = builder.with_id("another id").build()
         assert record["nested"][_ID_FIELD] == "another id"
 
@@ -79,9 +79,7 @@ class RecordBuilderTest(TestCase):
 
     def test_given_with_cursor_when_build_then_set_id(self) -> None:
         builder = _record_builder(
-            {_RECORDS_FIELD: [{_CURSOR_FIELD: "a cursor"}]},
-            FieldPath(_RECORDS_FIELD),
-            record_cursor_path=FieldPath(_CURSOR_FIELD)
+            {_RECORDS_FIELD: [{_CURSOR_FIELD: "a cursor"}]}, FieldPath(_RECORDS_FIELD), record_cursor_path=FieldPath(_CURSOR_FIELD)
         )
         record = builder.with_cursor("another cursor").build()
         assert record[_CURSOR_FIELD] == "another cursor"
@@ -90,7 +88,7 @@ class RecordBuilderTest(TestCase):
         builder = _record_builder(
             {_RECORDS_FIELD: [{"nested": {_CURSOR_FIELD: "a cursor"}}]},
             FieldPath(_RECORDS_FIELD),
-            record_cursor_path=NestedPath(["nested", _CURSOR_FIELD])
+            record_cursor_path=NestedPath(["nested", _CURSOR_FIELD]),
         )
         record = builder.with_cursor("another cursor").build()
         assert record["nested"][_CURSOR_FIELD] == "another cursor"
@@ -115,7 +113,7 @@ class RecordBuilderTest(TestCase):
             _record_builder(
                 {_RECORDS_FIELD: [{"record without cursor": "should fail"}]},
                 FieldPath(_RECORDS_FIELD),
-                record_cursor_path=FieldPath(_ID_FIELD)
+                record_cursor_path=FieldPath(_ID_FIELD),
             )
 
 
@@ -150,7 +148,7 @@ class HttpResponseBuilderTest(TestCase):
         builder = _response_builder(
             {"has_more_pages": False} | _SOME_RECORDS,
             FieldPath(_RECORDS_FIELD),
-            pagination_strategy=FieldUpdatePaginationStrategy(FieldPath("has_more_pages"), "yes more page")
+            pagination_strategy=FieldUpdatePaginationStrategy(FieldPath("has_more_pages"), "yes more page"),
         )
 
         response = builder.with_pagination().build()

@@ -1,0 +1,1721 @@
+version: 0.35.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - people
+streams:
+  - type: DeclarativeStream
+    name: people
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/people
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          page_size: 100
+          stop_condition: '{{ response.data.next_url == "null" }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          employee_number:
+            description: Unique employee identification number
+            type:
+              - string
+              - "null"
+          country:
+            description: Country where the person is located
+            type:
+              - string
+              - "null"
+          labor_groups:
+            description: Labor groups the person belongs to
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          is_admin:
+            description: Flag indicating if the person is an admin user
+            type:
+              - boolean
+              - "null"
+          object:
+            description: Represents an individual person's data
+            type:
+              - string
+              - "null"
+          street1:
+            description: First line of the person's address
+            type:
+              - string
+              - "null"
+          company:
+            description: Company information associated with the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          department:
+            description: Department the person belongs to
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          subordinates:
+            description: Subordinates reporting to the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          location:
+            description: Location details of the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          work_phone:
+            description: Work phone number of the person
+            type:
+              - string
+              - "null"
+          middle_name:
+            description: Middle name of the person
+            type:
+              - string
+              - "null"
+          custom_field_values:
+            description: Custom field values for the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          postal_code:
+            description: Postal code of the person's address
+            type:
+              - string
+              - "null"
+          employments:
+            description: Employment history of the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          manager:
+            description: Manager of the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          banks:
+            description: Bank account details for the person
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          date_of_birth:
+            description: Date of birth of the person
+            type:
+              - string
+              - "null"
+          status:
+            description: Status of the person (active, inactive, etc.)
+            type:
+              - string
+              - "null"
+          federal_filing_status:
+            description: Federal filing status for tax purposes
+            type:
+              - string
+              - "null"
+          gender:
+            description: Gender of the person
+            type:
+              - string
+              - "null"
+          personal_email:
+            description: Personal email address of the person
+            type:
+              - string
+              - "null"
+          personal_phone:
+            description: Personal phone number of the person
+            type:
+              - string
+              - "null"
+          personal_pronoun:
+            description: Preferred personal pronoun of the person
+            type:
+              - string
+              - "null"
+          photo_thumbnail_url:
+            description: URL to the thumbnail version of the person's photo
+            type:
+              - string
+              - "null"
+          photo_url:
+            description: URL to the full version of the person's photo
+            type:
+              - string
+              - "null"
+          social_security_number:
+            description: Social security number of the person
+            type:
+              - string
+              - "null"
+          is_full_admin:
+            description: Flag indicating if the person is a full admin user
+            type:
+              - boolean
+              - "null"
+          last_name:
+            description: Last name of the person
+            type:
+              - string
+              - "null"
+          first_name:
+            description: First name of the person
+            type:
+              - string
+              - "null"
+          state:
+            description: State or region where the person is located
+            type:
+              - string
+              - "null"
+          title:
+            description: Job title of the person
+            type:
+              - string
+              - "null"
+          url:
+            description: URL endpoint for accessing the person's details
+            type:
+              - string
+              - "null"
+          street2:
+            description: Second line of the person's address
+            type:
+              - string
+              - "null"
+          work_email:
+            description: Work email address of the person
+            type:
+              - string
+              - "null"
+          preferred_name:
+            description: Preferred name used by the person
+            type:
+              - string
+              - "null"
+          id:
+            description: Unique identifier for the person
+            type:
+              - string
+              - "null"
+          type:
+            description: Type of person (employee, contractor, etc.)
+            type:
+              - string
+              - "null"
+          city:
+            description: City where the person is located
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: employments
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/employments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          person:
+            description: Represents the information of an employee
+            type: object
+            properties:
+              url:
+                description: URL to fetch detailed information about the person
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Type of object (e.g., person)
+                type:
+                  - string
+                  - "null"
+              ref_object:
+                description: Reference to the person associated with this employment
+                type:
+                  - string
+                  - "null"
+          hire_date:
+            description: Date on which the employee was hired for this employment
+            type:
+              - string
+              - "null"
+          amount_type:
+            description:
+              Type of amount associated with employment data (e.g., hourly,
+              monthly)
+            type:
+              - string
+              - "null"
+          annual_salary:
+            description: The annual salary of the employee in this employment
+            type:
+              - string
+              - "null"
+          comp_type:
+            description:
+              Type of compensation for the employment (e.g., salary, hourly
+              wage)
+            type:
+              - string
+              - "null"
+          pay_rate:
+            description: Rate of pay for the employee in this employment
+            type:
+              - string
+              - "null"
+          employment_type:
+            description: Main type of employment of the employee (e.g., permanent, temporary)
+            type:
+              - string
+              - "null"
+          object:
+            description: Type of object (e.g., employment)
+            type:
+              - string
+              - "null"
+          is_active:
+            description: Flag indicating if the employment record is currently active
+            type:
+              - boolean
+              - "null"
+          is_flsa_exempt:
+            description:
+              Flag indicating if the employee is exempt from Fair Labor Standards
+              Act (FLSA)
+            type:
+              - string
+              - "null"
+          termination_type:
+            description: Type of termination for this employment (e.g., voluntary, involuntary)
+            type:
+              - string
+              - "null"
+          termination_date:
+            description: Date on which the employment was terminated
+            type:
+              - string
+              - "null"
+          url:
+            description: URL to fetch detailed information about this employment record
+            type:
+              - string
+              - "null"
+          id:
+            description: Unique identifier for the employment record
+            type:
+              - string
+              - "null"
+          working_hours_per_week:
+            description: Number of working hours per week for the employee
+            type:
+              - string
+              - "null"
+          employment_sub_type:
+            description: Subtype of the employment type (e.g., full-time, part-time)
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: departments
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/departments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the department
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the department
+            type:
+              - string
+              - "null"
+          labor_group:
+            description: The labor group associated with the department
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          people:
+            description: The people associated with the department
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          company:
+            description: The company to which the department belongs
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          url:
+            description: The URL for accessing more details about the department
+            type:
+              - string
+              - "null"
+          object:
+            description: The type of object, in this case, department
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: locations
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/locations
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the location.
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the location.
+            type:
+              - string
+              - "null"
+          city:
+            description: The city where the location is situated.
+            type:
+              - string
+              - "null"
+          labor_group:
+            description: Details related to the labor group at the location
+            type: object
+            properties:
+              ref_object:
+                description: Reference to another object related to the labor group.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Defines the labor group object.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL linking to additional information about the labor group.
+                type:
+                  - string
+                  - "null"
+          zip:
+            description: The ZIP or postal code of the location.
+            type:
+              - string
+              - "null"
+          people:
+            description: Data regarding the people associated with the location
+            type: object
+            properties:
+              ref_object:
+                description:
+                  Reference to another object related to the people at the
+                  location.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Defines the people object.
+                type:
+                  - string
+                  - "null"
+              url:
+                description:
+                  URL linking to additional information about the people
+                  at the location.
+                type:
+                  - string
+                  - "null"
+          url:
+            description: URL linking to additional information about the location.
+            type:
+              - string
+              - "null"
+          street1:
+            description: First line of the street address for the location.
+            type:
+              - string
+              - "null"
+          street2:
+            description: Second line of the street address for the location.
+            type:
+              - string
+              - "null"
+          object:
+            description: Defines the location object.
+            type:
+              - string
+              - "null"
+          phone:
+            description: Contact phone number for the location.
+            type:
+              - string
+              - "null"
+          state:
+            description: The state or region where the location is situated.
+            type:
+              - string
+              - "null"
+          country:
+            description: The country where the location is located.
+            type:
+              - string
+              - "null"
+          company:
+            description: Information about the company at the location
+            type: object
+            properties:
+              ref_object:
+                description: Reference to another object related to the company.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Defines the company object.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL linking to additional information about the company.
+                type:
+                  - string
+                  - "null"
+  - type: DeclarativeStream
+    name: labor_groups
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/labor_groups
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the labor group
+            type:
+              - string
+              - "null"
+          code:
+            description: Unique code assigned to the labor group
+            type:
+              - string
+              - "null"
+          name:
+            description: Name of the labor group
+            type:
+              - string
+              - "null"
+          url:
+            description: URL to fetch labor group details
+            type:
+              - string
+              - "null"
+          object:
+            description: Object representing the labor group
+            type:
+              - string
+              - "null"
+          labor_group_type:
+            description: Type of labor group.
+            type: object
+            properties:
+              ref_object:
+                description: Reference object linked to the labor group type
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Object representing the labor group type
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL to fetch the labor group type details
+                type:
+                  - string
+                  - "null"
+          assigned_members:
+            description: Members assigned to this labor group.
+            type: object
+            properties:
+              url:
+                description: URL to fetch assigned members data
+                type:
+                  - string
+                  - "null"
+              next_url:
+                description: URL to fetch the next set of assigned members data
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Object representing the assigned members
+                type:
+                  - string
+                  - "null"
+              data:
+                description: Data related to assigned members.
+                type:
+                  - array
+                  - "null"
+                items:
+                  description: Details about a specific assigned member.
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    url:
+                      description: URL link associated with the member.
+                      type:
+                        - string
+                        - "null"
+                    is_primary:
+                      description:
+                        Indicates if the member is the primary member of
+                        the labor group
+                      type:
+                        - boolean
+                        - "null"
+                    object:
+                      description: Object metadata.
+                      type:
+                        - string
+                        - "null"
+                    ref_object:
+                      description: Reference to another object.
+                      type:
+                        - string
+                        - "null"
+  - type: DeclarativeStream
+    name: labor_group_types
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/labor_group_types
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the labor group type.
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the labor group type.
+            type:
+              - string
+              - "null"
+          url:
+            description: The URL for retrieving more details about the labor group type.
+            type:
+              - string
+              - "null"
+          company:
+            description:
+              The details of the company associated with the labor group
+              type.
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          labor_groups:
+            description: The related labor groups associated with this labor group type.
+            type: object
+            properties:
+              ref_object:
+                type:
+                  - string
+                  - "null"
+              object:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          object:
+            description: The type of object, in this case, labor group type.
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: custom_fields
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/custom_fields
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the custom field.
+            type:
+              - string
+              - "null"
+          can_manager_view_field:
+            description:
+              Indicates whether a manager is allowed to view this custom
+              field.
+            type:
+              - boolean
+              - "null"
+          custom_field_values:
+            description: Values associated with the custom field.
+            type: object
+            properties:
+              ref_object:
+                description: Reference to the object representing the custom field values.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Type of object representing the custom field values.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL linking to the custom field values.
+                type:
+                  - string
+                  - "null"
+          person_during_onboarding:
+            description: Person information during the onboarding process.
+            type:
+              - boolean
+              - "null"
+          name:
+            description: Name or label of the custom field.
+            type:
+              - string
+              - "null"
+          is_field_completer_person:
+            description:
+              Indicates whether this field is meant to be completed by a
+              person.
+            type:
+              - boolean
+              - "null"
+          url:
+            description: URL linking to the custom field information.
+            type:
+              - string
+              - "null"
+          is_sensitive:
+            description: Indicates whether the information in this field is sensitive.
+            type:
+              - boolean
+              - "null"
+          is_field_required:
+            description: Indicates whether this field is required to be filled.
+            type:
+              - boolean
+              - "null"
+          object:
+            description: Type of object representing the custom field.
+            type:
+              - string
+              - "null"
+          can_person_view_field:
+            description: Indicates whether a person is allowed to view this custom field.
+            type:
+              - boolean
+              - "null"
+          can_person_edit_field:
+            description: Indicates whether a person is allowed to edit this custom field.
+            type:
+              - boolean
+              - "null"
+          company:
+            description:
+              Information related to the company associated with the custom
+              field.
+            type: object
+            properties:
+              ref_object:
+                description: Reference to the object representing the company.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Type of object representing the company.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL linking to the company information.
+                type:
+                  - string
+                  - "null"
+          company_during_hiring:
+            description: Company information during the hiring process.
+            type:
+              - boolean
+              - "null"
+          custom_field_type:
+            description: Type of the custom field.
+            type:
+              - string
+              - "null"
+          help_url:
+            description: URL linking to additional help related to the custom field.
+            type:
+              - "null"
+              - string
+          help_text:
+            description: Text providing help or guidance related to the custom field.
+            type:
+              - string
+              - "null"
+          help_url_media:
+            description: Media content such as images or videos providing help or guidance.
+            type:
+              - "null"
+              - string
+          media_file_type:
+            description: Type of media file associated with the custom field.
+            type:
+              - "null"
+  - type: DeclarativeStream
+    name: custom_field_values
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: core/custom_field_values
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the custom field value
+            type:
+              - string
+              - "null"
+          url:
+            description: URL for the custom field value
+            type:
+              - string
+              - "null"
+          object:
+            description: Object type of the custom field value
+            type:
+              - string
+              - "null"
+          value:
+            description: The actual value of the custom field
+            type:
+              - "null"
+              - string
+              - boolean
+          custom_field:
+            description: Details about the custom field
+            type: object
+            properties:
+              ref_object:
+                description: Reference to another object
+                type:
+                  - string
+                  - "null"
+              object:
+                description: The type of object
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL for the custom field
+                type:
+                  - string
+                  - "null"
+          person:
+            description: Details about the person associated with the custom field value
+            type: object
+            properties:
+              ref_object:
+                description: Reference to another person object
+                type:
+                  - string
+                  - "null"
+              object:
+                description: The type of person object
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL for the person
+                type:
+                  - string
+                  - "null"
+  - type: DeclarativeStream
+    name: vacation_requests
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: time_off/vacation_requests
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          status:
+            description: Status of the vacation request (approved, pending, denied).
+            type:
+              - string
+              - "null"
+          vacation_type:
+            description: Type of vacation requested (e.g., sick leave, annual leave)
+            type: object
+            properties:
+              url:
+                description: URL linking to the vacation type details.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Indicator for the object type.
+                type:
+                  - string
+                  - "null"
+              ref_object:
+                description: Reference to the vacation type object.
+                type:
+                  - string
+                  - "null"
+          end_date:
+            description: The end date of the vacation period.
+            type:
+              - string
+              - "null"
+          creator:
+            description: Details of the user who created the vacation request
+            type: object
+            properties:
+              url:
+                description: URL linking to the creator's details.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Indicator for the object type.
+                type:
+                  - string
+                  - "null"
+              ref_object:
+                description: Reference to the creator object.
+                type:
+                  - string
+                  - "null"
+          url:
+            description: URL linking to the vacation request details.
+            type:
+              - string
+              - "null"
+          object:
+            description: Indicator for the object type.
+            type:
+              - string
+              - "null"
+          start_date:
+            description: The start date of the vacation period.
+            type:
+              - string
+              - "null"
+          hours:
+            description: Number of hours requested for vacation.
+            type:
+              - string
+              - "null"
+          approved_date:
+            description: The date when the vacation request was approved.
+            type:
+              - string
+              - "null"
+          reason:
+            description: Reason provided for the vacation request.
+            type:
+              - string
+              - "null"
+          person:
+            description: Details of the person requesting vacation
+            type: object
+            properties:
+              url:
+                description: URL linking to the person's details.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Indicator for the object type.
+                type:
+                  - string
+                  - "null"
+              ref_object:
+                description: Reference to the person object.
+                type:
+                  - string
+                  - "null"
+          created_date:
+            description: The date when the vacation request was created.
+            type:
+              - string
+              - "null"
+          deny_reason:
+            description: Reason for denying the vacation request.
+            type:
+              - string
+              - "null"
+          id:
+            description: Unique identifier for the vacation request.
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: vacation_types
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: time_off/vacation_types
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          status:
+            description: Status of the vacation type
+            type:
+              - string
+              - "null"
+          name:
+            description: Name of the vacation type
+            type:
+              - string
+              - "null"
+          url:
+            description: URL linking to the vacation type details
+            type:
+              - string
+              - "null"
+          counts_as:
+            description: How this vacation type counts in the system
+            type:
+              - string
+              - "null"
+          company:
+            description: Details about the company associated with the vacation type
+            type: object
+            properties:
+              url:
+                description: URL linking to the company information
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Company object details
+                type:
+                  - string
+                  - "null"
+              ref_object:
+                description: Reference to the company object
+                type:
+                  - string
+                  - "null"
+          object:
+            description: Object details related to the vacation type
+            type:
+              - string
+              - "null"
+          vacation_requests:
+            description: Vacation requests associated with this vacation type
+            type: object
+            properties:
+              url:
+                description: URL linking to the vacation requests associated
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Vacation requests object details
+                type:
+                  - string
+                  - "null"
+              ref_object:
+                description: Reference to the vacation requests object
+                type:
+                  - string
+                  - "null"
+          count_as:
+            description: How this vacation type is counted as
+            type:
+              - string
+              - "null"
+          id:
+            description: Unique identifier for the vacation type
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: time_durations
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.zenefits.com/
+        path: time_attendance/time_durations
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Content-Type: application/json
+          Accept: application/json
+        request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          type: RequestOption
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.next_url }}"
+          stop_condition: '{{ response.data.next_url == "null" }}'
+          page_size: 100
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          is_overnight:
+            description:
+              Flag indicating if the time duration spans across multiple
+              days.
+            type:
+              - boolean
+              - "null"
+          is_approved:
+            description: Flag indicating whether the time duration is approved.
+            type:
+              - boolean
+              - "null"
+          object:
+            description: Type of the time duration object.
+            type:
+              - string
+              - "null"
+          end:
+            description: End date and time of the time duration.
+            type:
+              - string
+              - "null"
+            format: date-time
+          person:
+            description: Details of the person for whom the time duration is being fetched
+            type: object
+            properties:
+              ref_object:
+                description: Reference object for the person.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Type of the person object associated with the time duration.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL to fetch more details about the person.
+                type:
+                  - string
+                  - "null"
+          url:
+            description: URL to access the details of the time duration.
+            type:
+              - string
+              - "null"
+          approver:
+            description: Details of the user who approved the time duration
+            type: object
+            properties:
+              ref_object:
+                description: Reference object for the approver.
+                type:
+                  - string
+                  - "null"
+              object:
+                description: Type of the approver object.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL to fetch more details about the approver.
+                type:
+                  - string
+                  - "null"
+          labor_group_ids:
+            description: IDs of labor groups associated with the time duration.
+            type:
+              - string
+              - "null"
+          hours:
+            description: The total number of hours worked during the time duration.
+            type:
+              - string
+              - "null"
+          start:
+            description: Start date and time of the time duration.
+            type:
+              - string
+              - "null"
+          state:
+            description: State of the time duration (e.g., pending, approved, rejected).
+            type:
+              - string
+              - "null"
+          approved_datetime:
+            description: The date and time the time duration was approved.
+            type:
+              - string
+              - "null"
+          valid_status:
+            description: Status indicating the validity of the time duration data.
+            type:
+              - string
+              - "null"
+          date:
+            description: The date for which the time duration is recorded.
+            type:
+              - string
+              - "null"
+          activity:
+            description: The type of activity or task performed during the time duration.
+            type:
+              - string
+              - "null"
+          id:
+            description: Unique identifier for the time duration record.
+            type:
+              - string
+              - "null"
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.io/integrations/sources/zenefits
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Zenefits Spec
+    type: object
+    required:
+      - token
+    additionalProperties: true
+    properties:
+      token:
+        title: token
+        type: string
+        description:
+          Use Sync with Zenefits button on the link given on the readme
+          file, and get the token to access the api
+        airbyte_secret: true

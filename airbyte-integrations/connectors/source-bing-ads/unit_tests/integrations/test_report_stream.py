@@ -25,7 +25,7 @@ class TestReportStream(BaseTest):
     def _download_file(self, file: Optional[str] = None) -> Path:
         """
         Returns path to temporary file of downloaded data that will be use in read.
-        Base file should be named as {file_name}.cvs in resource/response folder.
+        Base file should be named as {file_name}.csv in resource/response folder.
         """
         if file:
             path_to_tmp_file = Path(__file__).parent.parent / f"resource/response/{file}.csv"
@@ -70,7 +70,7 @@ class TestSuiteReportStream(TestReportStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
-        assert output.most_recent_state.stream_state == self.first_read_state
+        assert dict(output.most_recent_state.stream_state) == self.first_read_state
 
     @HttpMocker()
     def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
@@ -84,7 +84,7 @@ class TestSuiteReportStream(TestReportStream):
         else:
             assert len(output.records) == self.second_read_records_number
 
-        actual_cursor = output.most_recent_state.stream_state.dict().get(self.account_id)
+        actual_cursor = dict(output.most_recent_state.stream_state).get(self.account_id)
         expected_cursor = self.second_read_state.get(self.account_id)
         assert actual_cursor == expected_cursor
 

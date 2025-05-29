@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.0.13"
+name = "source-hardcoded-records"
+description = "Source implementation for hardcoded recprds."
+authors = [ "Airbyte <evan@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/hardcoded-records"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_hardcoded_records"
+
+[tool.poetry.dependencies]
+python = "^3.10,<4.0"
+airbyte-cdk = "*"
+
+[tool.poetry.scripts]
+source-hardcoded-records = "source_hardcoded_records.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+pytest = "^6.2"

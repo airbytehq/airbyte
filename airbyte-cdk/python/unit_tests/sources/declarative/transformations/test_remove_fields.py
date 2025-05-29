@@ -6,7 +6,7 @@ from typing import Any, List, Mapping
 
 import pytest
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
-from airbyte_cdk.sources.declarative.types import FieldPointer
+from airbyte_cdk.sources.types import FieldPointer
 
 
 @pytest.mark.parametrize(
@@ -85,4 +85,5 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
 )
 def test_remove_fields(input_record: Mapping[str, Any], field_pointers: List[FieldPointer], condition: str, expected: Mapping[str, Any]):
     transformation = RemoveFields(field_pointers=field_pointers, condition=condition, parameters={})
-    assert transformation.transform(input_record) == expected
+    transformation.transform(input_record)
+    assert input_record == expected

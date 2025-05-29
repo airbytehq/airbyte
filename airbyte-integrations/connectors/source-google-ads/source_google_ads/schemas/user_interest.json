@@ -3,27 +3,34 @@
   "type": "object",
   "properties": {
     "user_interest.availabilities": {
+      "description": "List of availabilities for the user interest.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "user_interest.launched_to_all": {
+      "description": "Indicates if this user interest is launched to all users.",
       "type": ["null", "boolean"]
     },
     "user_interest.name": {
+      "description": "Name of the user interest.",
       "type": ["null", "string"]
     },
     "user_interest.resource_name": {
+      "description": "Resource name of the user interest.",
       "type": ["null", "string"]
     },
     "user_interest.taxonomy_type": {
+      "description": "Type of taxonomy associated with the user interest.",
       "type": ["null", "string"]
     },
     "user_interest.user_interest_id": {
+      "description": "Unique identifier for the user interest.",
       "type": ["null", "integer"]
     },
     "user_interest.user_interest_parent": {
+      "description": "Parent user interest if this interest is a subcategory.",
       "type": ["null", "string"]
     }
   }

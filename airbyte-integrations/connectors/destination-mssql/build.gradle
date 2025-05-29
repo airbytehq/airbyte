@@ -4,10 +4,12 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.30.2'
     features = [
             'db-sources', // required for tests
             'db-destinations',
+            's3-destinations',
+            'typing-deduping'
     ]
     useLocalCdk = false
 }
@@ -31,5 +33,5 @@ dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
 }

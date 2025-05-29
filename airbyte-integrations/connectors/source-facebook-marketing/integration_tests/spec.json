@@ -26,6 +26,65 @@
         "airbyte_secret": true,
         "type": "string"
       },
+      "credentials": {
+        "title": "Authentication",
+        "description": "Credentials for connecting to the Facebook Marketing API",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Authenticate via Facebook Marketing (Oauth)",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "Client",
+                "const": "Client",
+                "enum": ["Client"],
+                "type": "string"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Client ID for the Facebook Marketing API",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Client Secret for the Facebook Marketing API",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "The value of the generated access token. From your App\u2019s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["client_id", "client_secret", "auth_type"]
+          },
+          {
+            "title": "Service Account Key Authentication",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "Service",
+                "const": "Service",
+                "enum": ["Service"],
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "The value of the generated access token. From your App\u2019s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["access_token", "auth_type"]
+          }
+        ]
+      },
       "start_date": {
         "title": "Start Date",
         "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams.",
@@ -158,7 +217,6 @@
                   "adset_end",
                   "adset_id",
                   "adset_name",
-                  "adset_start",
                   "age_targeting",
                   "attribution_setting",
                   "auction_bid",
@@ -175,7 +233,6 @@
                   "catalog_segment_value_omni_purchase_roas",
                   "catalog_segment_value_website_purchase_roas",
                   "clicks",
-                  "conversion_lead_rate",
                   "conversion_rate_ranking",
                   "conversion_values",
                   "conversions",
@@ -186,7 +243,6 @@
                   "cost_per_action_type",
                   "cost_per_ad_click",
                   "cost_per_conversion",
-                  "cost_per_conversion_lead",
                   "cost_per_dda_countby_convs",
                   "cost_per_estimated_ad_recallers",
                   "cost_per_inline_link_click",
@@ -370,9 +426,10 @@
             },
             "time_increment": {
               "title": "Time Increment",
-              "description": "Time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. For example, if you set this value to 7, then all statistics will be reported as 7-day aggregates by starting from the start_date. If the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).",
+              "description": "Time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. For example, if you set this value to 7, then all statistics will be reported as 7-day aggregates by starting from the start_date. If the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only). The minimum allowed value for this field is 1, and the maximum is 89.",
               "default": 1,
-              "exclusiveMaximum": 90,
+              "maximum": 89,
+              "minimum": 1,
               "exclusiveMinimum": 0,
               "type": "integer"
             },
@@ -464,19 +521,21 @@
         "type": "string"
       }
     },
-    "required": ["account_ids", "access_token"]
+    "required": ["account_ids", "credentials"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": ["access_token"]
+            "path_in_connector_config": ["credentials", "access_token"]
           }
         }
       },
@@ -497,11 +556,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": ["client_id"]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": ["client_secret"]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }

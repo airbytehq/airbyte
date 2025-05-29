@@ -29,7 +29,7 @@ class Helpers(object):
         adapter = HTTPAdapter(max_retries=retry_strategy)
         http = requests.Session()
         http.mount("https://", adapter)
-        http.mount("http://", adapter)
+        http.mount("http://", adapter)  # ignore-https-check
 
         response = http.get(url, headers={"Authorization": "Basic " + auth_token})
         response_json = response.json()

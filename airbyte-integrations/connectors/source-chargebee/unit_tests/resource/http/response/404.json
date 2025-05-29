@@ -1,0 +1,7 @@
+{
+  "message": "Sorry, Resource not found.",
+  "api_error_code": "resource_not_found",
+  "error_code": "resource_not_found",
+  "error_msg": "Resource not found",
+  "http_status_code": 404
+}

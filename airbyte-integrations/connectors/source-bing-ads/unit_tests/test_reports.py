@@ -467,4 +467,3 @@ def test_hourly_reports(mocked_client, config, stream, response, records):
     with patch.object(stream, "send_request", return_value=_RowReport(file=Path(__file__).parent / response)):
         with open(Path(__file__).parent / records, "r") as file:
             assert list(stream_object.read_records(sync_mode=SyncMode.full_refresh, stream_slice={}, stream_state={})) == json.load(file)
-

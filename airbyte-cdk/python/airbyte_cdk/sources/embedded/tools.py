@@ -18,7 +18,7 @@ def get_defined_id(stream: AirbyteStream, data: Dict[str, Any]) -> Optional[str]
     primary_key = []
     for key in stream.source_defined_primary_key:
         try:
-            primary_key.append(str(dpath.util.get(data, key)))
+            primary_key.append(str(dpath.get(data, key)))
         except KeyError:
             primary_key.append("__not_found__")
     return "_".join(primary_key)

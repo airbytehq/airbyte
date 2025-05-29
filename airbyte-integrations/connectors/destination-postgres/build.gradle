@@ -3,9 +3,15 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.27.3'
+    cdkVersionRequired = '0.46.0'
     features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
     useLocalCdk = false
+}
+
+compileKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
 }
 
 application {
@@ -14,5 +20,5 @@ application {
 }
 
 dependencies {
-    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
+    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
 }

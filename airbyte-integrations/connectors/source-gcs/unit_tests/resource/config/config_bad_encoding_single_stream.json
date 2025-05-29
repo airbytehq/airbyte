@@ -1,0 +1,14 @@
+{
+  "bucket": "some-bucket",
+  "service_account": "{\"type\": \"service_account\"}",
+  "streams": [
+    {
+      "name": "stream_1",
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv",
+        "encoding": "utf16"
+      }
+    }
+  ]
+}

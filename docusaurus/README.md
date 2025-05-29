@@ -42,6 +42,7 @@ in [`sidebars.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/s
 We welcome documentation updates! If you'd like to contribute a change, please make sure to:
 
 - Run `pnpm build` and check that all build steps are successful.
+- Run `pnpm prettier . -w`.
 - Push your changes into a pull request, and follow the PR template instructions.
 
 When you make a pull request, Vercel will automatically build a test instance of the full docs site
@@ -54,8 +55,6 @@ periodically:
 
 - Running the build process will **check for broken links**, please read the output and address any
   broken links that you are able to do.
-- [This GitHub Action](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/doc-link-check.yml)
-  checks all links on Airbyte production docs site, and tells us if any of them are broken.
 
 > [!NOTE] Docusaurus links checker only checks _relative_ links, and assumes that absolute links are
 > fine. For that reason, if you're linking to another Airbyte documentation page, make it a relative

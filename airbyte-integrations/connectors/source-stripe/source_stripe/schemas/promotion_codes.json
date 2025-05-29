@@ -2,61 +2,151 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": ["null", "object"],
   "properties": {
-    "id": { "type": ["null", "string"] },
-    "code": { "type": ["null", "string"] },
+    "id": {
+      "description": "The unique identifier for the promotion code.",
+      "type": ["null", "string"]
+    },
+    "code": {
+      "description": "The unique code string associated with the promotion code.",
+      "type": ["null", "string"]
+    },
     "coupon": {
+      "description": "Information about the coupon associated with the promotion code.",
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "string"] },
-        "amount_off": { "type": ["null", "integer"] },
-        "currency": { "type": ["null", "string"] },
-        "duration": { "type": ["null", "string"] },
-        "duration_in_months": { "type": ["null", "integer"] },
+        "id": {
+          "description": "The unique identifier for the coupon.",
+          "type": ["null", "string"]
+        },
+        "amount_off": {
+          "description": "The amount which will be discounted from the total if the coupon is applied.",
+          "type": ["null", "integer"]
+        },
+        "currency": {
+          "description": "The currency in which the discount amount is specified.",
+          "type": ["null", "string"]
+        },
+        "duration": {
+          "description": "Indicates how long the discount will last (e.g, once, forever).",
+          "type": ["null", "string"]
+        },
+        "duration_in_months": {
+          "description": "Optional. The number of months the coupon will last.",
+          "type": ["null", "integer"]
+        },
         "metadata": {
+          "description": "Additional information attached to the coupon.",
           "type": ["null", "object"],
           "properties": {}
         },
-        "name": { "type": ["null", "string"] },
-        "percent_off": { "type": ["null", "number"] },
-        "object": { "type": ["null", "string"] },
+        "name": {
+          "description": "The name of the coupon.",
+          "type": ["null", "string"]
+        },
+        "percent_off": {
+          "description": "The percentage to be discounted if the coupon is applied.",
+          "type": ["null", "number"]
+        },
+        "object": {
+          "description": "Indicates the object type, typically 'coupon'.",
+          "type": ["null", "string"]
+        },
         "applies_to": {
+          "description": "Specifies any products to which the coupon can be applied.",
           "type": ["null", "object"],
           "properties": {
             "products": {
               "type": ["null", "array"],
-              "items": { "type": ["null", "string"] }
+              "items": {
+                "description": "Specify the list of product IDs to which the coupon applies.",
+                "type": ["null", "string"]
+              }
             }
           }
         },
-        "created": { "type": ["null", "integer"] },
-        "livemode": { "type": ["null", "boolean"] },
-        "max_redemptions": { "type": ["null", "integer"] },
-        "redeem_by": { "type": ["null", "integer"] },
-        "times_redeemed": { "type": ["null", "integer"] },
-        "valid": { "type": ["null", "boolean"] }
+        "created": {
+          "description": "The date and time when the coupon was created.",
+          "type": ["null", "integer"]
+        },
+        "livemode": {
+          "description": "Indicates if the coupon is in live mode or test mode.",
+          "type": ["null", "boolean"]
+        },
+        "max_redemptions": {
+          "description": "The maximum number of times the coupon can be redeemed.",
+          "type": ["null", "integer"]
+        },
+        "redeem_by": {
+          "description": "The last date and time when the coupon can be redeemed.",
+          "type": ["null", "integer"]
+        },
+        "times_redeemed": {
+          "description": "The number of times the coupon has been redeemed.",
+          "type": ["null", "integer"]
+        },
+        "valid": {
+          "description": "Indicates if the coupon is currently valid for use.",
+          "type": ["null", "boolean"]
+        }
       }
     },
     "metadata": {
+      "description": "Additional information attached to the promotion code.",
       "type": ["null", "object"],
       "properties": {}
     },
-    "object": { "type": ["null", "string"] },
-    "active": { "type": ["null", "boolean"] },
-    "created": { "type": ["null", "integer"] },
-    "updated": { "type": ["null", "integer"] },
-    "customer": { "type": ["null", "string"] },
-    "expires_at": { "type": ["null", "integer"] },
-    "livemode": { "type": ["null", "boolean"] },
-    "max_redemptions": { "type": ["null", "integer"] },
+    "object": {
+      "description": "Indicates the object type, typically 'promotion_code'.",
+      "type": ["null", "string"]
+    },
+    "active": {
+      "description": "Indicates if the promotion code is currently active.",
+      "type": ["null", "boolean"]
+    },
+    "created": {
+      "description": "The date and time when the promotion code was created.",
+      "type": ["null", "integer"]
+    },
+    "updated": {
+      "description": "The date and time when the promotion code was last updated.",
+      "type": ["null", "integer"]
+    },
+    "customer": {
+      "description": "The customer associated with the promotion code, if applicable.",
+      "type": ["null", "string"]
+    },
+    "expires_at": {
+      "description": "The date and time when the promotion code expires.",
+      "type": ["null", "integer"]
+    },
+    "livemode": {
+      "description": "Indicates if the promotion code is in live mode or test mode.",
+      "type": ["null", "boolean"]
+    },
+    "max_redemptions": {
+      "description": "The maximum number of times the promotion code can be redeemed.",
+      "type": ["null", "integer"]
+    },
     "restrictions": {
+      "description": "Any restrictions associated with the promotion code application.",
       "type": ["null", "object"],
       "properties": {
-        "first_time_transaction": { "type": ["null", "boolean"] },
-        "minimum_amount": { "type": ["null", "integer"] },
-        "minimum_amount_currency": { "type": ["null", "string"] }
+        "first_time_transaction": {
+          "description": "Indicates if the promotion code is applicable only for the first transaction.",
+          "type": ["null", "boolean"]
+        },
+        "minimum_amount": {
+          "description": "The minimum amount required for the promotion code to be valid.",
+          "type": ["null", "integer"]
+        },
+        "minimum_amount_currency": {
+          "description": "The currency in which the minimum amount is specified.",
+          "type": ["null", "string"]
+        }
       }
     },
     "times_redeemed": {
+      "description": "The number of times the promotion code has been redeemed.",
       "type": ["null", "integer"]
     }
   }

@@ -6,7 +6,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from pytest import fixture, raises
-from source_appsflyer import fields
+from source_appsflyer.fields import *
 from source_appsflyer.source import (
     DailyReport,
     GeoReport,
@@ -14,10 +14,10 @@ from source_appsflyer.source import (
     IncrementalAppsflyerStream,
     Installs,
     PartnersReport,
-    RetargetingConversions,
     RetargetingDailyReport,
     RetargetingGeoReport,
     RetargetingInAppEvents,
+    RetargetingInstalls,
     RetargetingPartnersReport,
     UninstallEvents,
 )
@@ -39,7 +39,7 @@ def patch_incremental_base_class(mocker):
         (RetargetingInAppEvents, "event_time"),
         (UninstallEvents, "event_time"),
         (Installs, "install_time"),
-        (RetargetingConversions, "install_time"),
+        (RetargetingInstalls, "install_time"),
         (PartnersReport, "date"),
         (DailyReport, "date"),
         (GeoReport, "date"),
@@ -57,11 +57,11 @@ def test_cursor_field(patch_incremental_base_class, mocker, class_, expected_cur
 @pytest.mark.parametrize(
     ("class_", "cursor_field", "date_only", "additional_fields", "retargeting", "currency"),
     [
-        (InAppEvents, "event_time", False, fields.raw_data.additional_fields, None, "preferred"),
-        (RetargetingInAppEvents, "event_time", False, fields.raw_data.additional_fields, True, "preferred"),
-        (UninstallEvents, "event_time", False, fields.uninstall_events.additional_fields, None, "preferred"),
-        (Installs, "install_time", False, fields.raw_data.additional_fields, None, "preferred"),
-        (RetargetingConversions, "install_time", False, fields.raw_data.additional_fields, True, "preferred"),
+        (InAppEvents, "event_time", False, additional_fields.raw_data, None, "preferred"),
+        (RetargetingInAppEvents, "event_time", False, additional_fields.raw_data, False, "preferred"),
+        (UninstallEvents, "event_time", False, additional_fields.uninstall_events, None, "preferred"),
+        (Installs, "install_time", False, additional_fields.raw_data, None, "preferred"),
+        (RetargetingInstalls, "install_time", False, additional_fields.raw_data, False, "preferred"),
         (PartnersReport, "date", True, None, None, None),
         (DailyReport, "date", True, None, None, None),
         (GeoReport, "date", True, None, None, None),
@@ -89,7 +89,6 @@ def test_request_params(mocker, class_, cursor_field, date_only, additional_fiel
     inputs["next_page_token"] = None
     inputs["stream_state"] = None
     expected_params = dict()
-    expected_params["api_token"] = "secret"
     expected_params["timezone"] = timezone
     expected_params["maximum_rows"] = 1_000_000
     expected_params["from"] = start.to_datetime_string()

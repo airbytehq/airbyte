@@ -1,0 +1,35 @@
+[
+  {
+    "slug": "standard",
+    "name": "Standard Rate",
+    "_links": {
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/taxes/classes"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "reduced-rate",
+    "name": "Reduced Rate",
+    "_links": {
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/taxes/classes"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "zero-rate",
+    "name": "Zero Rate",
+    "_links": {
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/taxes/classes"
+        }
+      ]
+    }
+  }
+]

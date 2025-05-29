@@ -10,45 +10,45 @@ This source can sync data for the [Zendesk Sell API](https://developer.zendesk.c
 
 This Source is capable of syncing the following core Streams:
 
-* Call Outcomes
-* Calls
-* Collaborations
-* Contacts
-* Deal Sources
-* Deal Unqualified Reason
-* Deals
-* Lead Conversions
-* Lead Sources
-* Lead Unqualified Reason
-* Leads
-* Loss Reasons
-* Notes
-* Orders
-* Pipelines
-* Products
-* Stages
-* Tags
-* Tasks
-* Text Messages
-* Users
-* Visit Outcomes
-* Visits
+- Call Outcomes
+- Calls
+- Collaborations
+- Contacts
+- Deal Sources
+- Deal Unqualified Reason
+- Deals
+- Lead Conversions
+- Lead Sources
+- Lead Unqualified Reason
+- Leads
+- Loss Reasons
+- Notes
+- Orders
+- Pipelines
+- Products
+- Stages
+- Tags
+- Tasks
+- Text Messages
+- Users
+- Visit Outcomes
+- Visits
 
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| :--------------- | :----------- | :---- |
+| `string`         | `string`     |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | Yes                  |       |
 
 ### Performance considerations
 
@@ -60,8 +60,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ### Requirements
 
-* Zendesk Sell API Token
-
+- Zendesk Sell API Token
 
 ### Setup guide
 
@@ -73,10 +72,28 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-27 | [17888](https://github.com/airbytehq/airbyte/pull/17888) | Initial Release |
-| 0.1.1 | 2023-08-30 | [29830](https://github.com/airbytehq/airbyte/pull/29830) | Change phone_number in Calls to string (bug in zendesk sell api documentation) |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 0.3.0 | 2024-08-22 | [44562](https://github.com/airbytehq/airbyte/pull/44562) | Refactor connector to manifest-only format |
+| 0.2.14 | 2024-08-17 | [44295](https://github.com/airbytehq/airbyte/pull/44295) | Update dependencies |
+| 0.2.13 | 2024-08-12 | [43802](https://github.com/airbytehq/airbyte/pull/43802) | Update dependencies |
+| 0.2.12 | 2024-08-10 | [43610](https://github.com/airbytehq/airbyte/pull/43610) | Update dependencies |
+| 0.2.11 | 2024-08-03 | [43162](https://github.com/airbytehq/airbyte/pull/43162) | Update dependencies |
+| 0.2.10 | 2024-07-27 | [42803](https://github.com/airbytehq/airbyte/pull/42803) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42148](https://github.com/airbytehq/airbyte/pull/42148) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41718](https://github.com/airbytehq/airbyte/pull/41718) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41544](https://github.com/airbytehq/airbyte/pull/41544) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41308](https://github.com/airbytehq/airbyte/pull/41308) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40983](https://github.com/airbytehq/airbyte/pull/40983) | Update dependencies |
+| 0.2.4 | 2024-06-25 | [40363](https://github.com/airbytehq/airbyte/pull/40363) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [40023](https://github.com/airbytehq/airbyte/pull/40023) | Update dependencies |
+| 0.2.2 | 2024-06-06 | [39258](https://github.com/airbytehq/airbyte/pull/39258) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.1 | 2024-05-20 | [38426](https://github.com/airbytehq/airbyte/pull/38426) | [autopull] base image + poetry + up_to_date |
 | 0.2.0 | 2023-10-23 | [31016](https://github.com/airbytehq/airbyte/pull/31016) | Migrated to Low Code CDK |
+| 0.1.1 | 2023-08-30 | [29830](https://github.com/airbytehq/airbyte/pull/29830) | Change phone_number in Calls to string (bug in zendesk sell api documentation) |
+| 0.1.0 | 2022-10-27 | [17888](https://github.com/airbytehq/airbyte/pull/17888) | Initial Release |
 
-
+</details>

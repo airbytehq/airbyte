@@ -1,0 +1,1662 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: A manifest only source for Canny. https://canny.io/
+
+check:
+  type: CheckStream
+  stream_names:
+    - boards
+
+definitions:
+  streams:
+    boards:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/boards/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - boards
+      name: boards
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/boards"
+    categories:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/categories/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: categories
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    changelog_entries:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/entries/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: changelog_entries
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/changelog_entries"
+    comments:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/comments/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - comments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: comments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+    companies:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/companies/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - companies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: companies
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    posts:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/posts/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - posts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: posts
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/posts"
+    status_changes:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/status_changes/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - statusChanges
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: status_changes
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/status_changes"
+    tags:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/tags/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: tags
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    users:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/users/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    votes:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /v1/votes/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - votes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      name: votes
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/votes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://canny.io/api
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: apiKey
+        inject_into: body_data
+
+streams:
+  - $ref: "#/definitions/streams/boards"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/changelog_entries"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/status_changes"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/votes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          You can find your secret API key in Your Canny Subdomain > Settings >
+          API
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    boards: true
+    categories: true
+    changelog_entries: true
+    comments: true
+    companies: true
+    posts: true
+    status_changes: true
+    tags: true
+    users: true
+    votes: true
+  testedStreams:
+    boards:
+      streamHash: 2e71f8a12eda6dad7102d1d4506932a80afee9d9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: 75743e47be618adae3d075a3f24d07bf5c5e1828
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    changelog_entries:
+      hasRecords: true
+      streamHash: f688a7a8bb4a2f04fdb598637bd73d74145d37a5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    comments:
+      streamHash: eca1f10c2b1f27d460c77a62035f915ab8d9bb6a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    companies:
+      streamHash: 4b83fa05b8f03882a54565dc03b1ec2b1b7e113e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    posts:
+      streamHash: 96fe34ee40aa24d3166325eb596b09f1a6cafe29
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    status_changes:
+      streamHash: e5fa34f828345ba43aae1dea865c05ddf9423add
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 2c902859ede6b950732aaab52cba3f8a8407bffb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 80792bc3e59add061b0343cf0631cbb8153904af
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    votes:
+      streamHash: 5fb5aac397b3a32fff31614d766879d5191ac8ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.canny.io/api-reference
+
+schemas:
+  boards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isPrivate:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      postCount:
+        type:
+          - number
+          - "null"
+      privateComments:
+        type:
+          - boolean
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      board:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postCount:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      postCount:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  changelog_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      labels:
+        type:
+          - array
+          - "null"
+      lastSaved:
+        type:
+          - string
+          - "null"
+      markdownDetails:
+        type:
+          - string
+          - "null"
+      plaintextDetails:
+        type:
+          - string
+          - "null"
+      posts:
+        type:
+          - array
+          - "null"
+      publishedAt:
+        type:
+          - string
+          - "null"
+      reactions:
+        type:
+          - object
+          - "null"
+        properties:
+          like:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isAdmin:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      board:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postCount:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      imageURLs:
+        type:
+          - array
+          - "null"
+      internal:
+        type:
+          - boolean
+          - "null"
+      likeCount:
+        type:
+          - number
+          - "null"
+      mentions:
+        type:
+          - array
+          - "null"
+      post:
+        type:
+          - object
+          - "null"
+        properties:
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              postCount:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          commentCount:
+            type:
+              - number
+              - "null"
+          details:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          imageURLs:
+            type:
+              - array
+              - "null"
+          jira:
+            type:
+              - object
+              - "null"
+            properties:
+              linkedIssueIDs:
+                type:
+                  - array
+                  - "null"
+              linkedIssues:
+                type:
+                  - array
+                  - "null"
+          score:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                postCount:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      private:
+        type:
+          - boolean
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          bool:
+            type:
+              - boolean
+              - "null"
+          monthlySpend:
+            type:
+              - number
+              - "null"
+          number:
+            type:
+              - number
+              - "null"
+          string:
+            type:
+              - string
+              - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      memberCount:
+        type:
+          - number
+          - "null"
+      monthlySpend:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          adminRole:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isAdmin:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      board:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postCount:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      by:
+        type:
+          - object
+          - "null"
+        properties:
+          adminRole:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isAdmin:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postCount:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      clickup:
+        type:
+          - object
+          - "null"
+        properties:
+          linkedTasks:
+            type:
+              - array
+              - "null"
+      commentCount:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - array
+          - "null"
+      details:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      imageURLs:
+        type:
+          - array
+          - "null"
+      jira:
+        type:
+          - object
+          - "null"
+        properties:
+          linkedIssueIDs:
+            type:
+              - array
+              - "null"
+          linkedIssues:
+            type:
+              - array
+              - "null"
+      mergeHistory:
+        type:
+          - array
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          adminRole:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isAdmin:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      score:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusChangedAt:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            postCount:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      title:
+        type:
+          - string
+          - "null"
+      totalMRR:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  status_changes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      changer:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      post:
+        type:
+          - object
+          - "null"
+        properties:
+          board:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              postCount:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              postCount:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          created:
+            type:
+              - string
+              - "null"
+          details:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          imageURLs:
+            type:
+              - array
+              - "null"
+          jira:
+            type:
+              - object
+              - "null"
+            properties:
+              linkedIssueIDs:
+                type:
+                  - array
+                  - "null"
+              linkedIssues:
+                type:
+                  - array
+                  - "null"
+          score:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                postCount:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      board:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postCount:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      postCount:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      alias:
+        type:
+          - string
+          - "null"
+      companies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            customFields:
+              type:
+                - object
+                - "null"
+              properties:
+                bool:
+                  type:
+                    - boolean
+                    - "null"
+                monthlySpend:
+                  type:
+                    - number
+                    - "null"
+                number:
+                  type:
+                    - number
+                    - "null"
+                string:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            monthlySpend:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      created:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isAdmin:
+        type:
+          - boolean
+          - "null"
+      lastActivity:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      userID:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  votes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      board:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postCount:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      by:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isAdmin:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      post:
+        type:
+          - object
+          - "null"
+        properties:
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              postCount:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          commentCount:
+            type:
+              - number
+              - "null"
+          details:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          imageURLs:
+            type:
+              - array
+              - "null"
+          jira:
+            type:
+              - object
+              - "null"
+            properties:
+              linkedIssueIDs:
+                type:
+                  - array
+                  - "null"
+              linkedIssues:
+                type:
+                  - array
+                  - "null"
+          score:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                postCount:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      votePriority:
+        type:
+          - string
+          - "null"
+      voter:
+        type:
+          - object
+          - "null"
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isAdmin:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+    required:
+      - id

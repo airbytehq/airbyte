@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.json.Jsons
@@ -17,7 +17,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumReader
 
 abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
-    S3AvroParquetDestinationAcceptanceTest(S3Format.AVRO) {
+    S3AvroParquetDestinationAcceptanceTest(FileUploadFormat.AVRO) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
@@ -39,12 +39,11 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
     @Throws(Exception::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater =
-            AvroRecordHelper.getFieldNameUpdater(streamName!!, namespace, streamSchema)
+        val nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
@@ -60,10 +59,11 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
                         S3DestinationAcceptanceTest.Companion.MAPPER.reader()
                     while (dataFileReader.hasNext()) {
                         val record = dataFileReader.next()
-                        val jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record)
+                        val jsonBytes =
+                            AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
                         jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord)
-                        jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord))
+                        jsonRecords.add(jsonRecord)
                     }
                 }
         }
@@ -75,11 +75,11 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
-    ): Map<String?, Set<Schema.Type?>?> {
+        streamName: String,
+        namespace: String
+    ): Map<String, Set<Schema.Type>> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
-        val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
+        val resultDataTypes: MutableMap<String, Set<Schema.Type>> = HashMap()
 
         for (objectSummary in objectSummaries) {
             val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)

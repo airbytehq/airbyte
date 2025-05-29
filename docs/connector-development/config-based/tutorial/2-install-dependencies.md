@@ -1,6 +1,5 @@
 # Step 2: Install dependencies
 
-
 ```bash
 cd ../../connectors/source-exchange-rates-tutorial
 poetry install

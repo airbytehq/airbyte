@@ -5,28 +5,33 @@ data:
   allowedHosts:
     hosts:
       - ${domain}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.4
   dockerRepository: airbyte/source-prestashop
   documentationUrl: https://docs.airbyte.com/integrations/sources/prestashop
   githubIssueLabel: source-prestashop
   icon: prestashop.svg
   license: MIT
   name: PrestaShop
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-prestashop
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-prestashop
   supportLevel: community
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

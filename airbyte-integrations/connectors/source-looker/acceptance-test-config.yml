@@ -3,7 +3,7 @@
 connector_image: airbyte/source-looker:dev
 tests:
   spec:
-    - spec_path: "source_looker/spec.json"
+    - spec_path: "source_looker/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

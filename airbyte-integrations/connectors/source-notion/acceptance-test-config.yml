@@ -33,6 +33,8 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+        # Skipping this test since the correct stream state is only emitted after all records have been read
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

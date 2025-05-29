@@ -6,13 +6,13 @@ When creating a pull request follow the naming conventions depending on the chan
 In general, the pull request title starts with an emoji with the connector you're doing the changes, eg (✨ Source E-Commerce: add new stream `Users`).
 Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
 
-| Pull Request Type | Emoji | Examples |
-| ----------------- | ----- | ---------|
-| New Connector (Source or Destination)  | 🎉 | 🎉 New Destination: Database                           |
-| Add a feature to an existing connector | ✨ | ✨ Source E-Commerce: add new stream `Users`           |
-| Fix a bug                              | 🐛 | 🐛 Source E-Commerce: fix start date parameter in spec |
-| Documentation (updates or new entries) | 📝 | 📝 Fix Database connector changelog                    |
-| It's a breaking change                 | 🚨 | 🚨🚨🐛 Source Kafka: fix a complex bug                  |
+| Pull Request Type                      | Emoji | Examples                                               |
+| -------------------------------------- | ----- | ------------------------------------------------------ |
+| New Connector (Source or Destination)  | 🎉    | 🎉 New Destination: Database                           |
+| Add a feature to an existing connector | ✨    | ✨ Source E-Commerce: add new stream `Users`           |
+| Fix a bug                              | 🐛    | 🐛 Source E-Commerce: fix start date parameter in spec |
+| Documentation (updates or new entries) | 📝    | 📝 Fix Database connector changelog                    |
+| It's a breaking change                 | 🚨    | 🚨🚨🐛 Source Kafka: fix a complex bug                 |
 
 For more information about [breaking changes](#breaking-changes-to-connectors). A maintainer will help and instruct about possible breaking changes.
 
@@ -43,7 +43,7 @@ When creating or updating connectors, we spend a lot of time manually transcribi
 Changes to connector behavior should always be accompanied by a version bump and a changelog entry. We use [semantic versioning](https://semver.org/) to version changes to connectors. Since connectors are a bit different from APIs, we have our own take on semantic versioning, focusing on maintaining the best user experience of using a connector.
 
 - Major: a version in which a change is made which requires manual intervention (update to config or configured catalog) for an existing connection to continue to succeed, or one in which data that was previously being synced will no longer be synced
-    - Note that a category of "user intervention" is a schema change in the destination, as users will be required to update downstream reports and tools. A change that leads to a different final table in the destination is a breaking change
+  - Note that a category of "user intervention" is a schema change in the destination, as users will be required to update downstream reports and tools. A change that leads to a different final table in the destination is a breaking change
 - Minor: a version that introduces user-facing functionality in a backwards compatible manner
 - Patch: a version that introduces backwards compatible bug fixes or performance improvements
 
@@ -52,7 +52,7 @@ Changes to connector behavior should always be accompanied by a version bump and
 Here are some examples of code changes and their respective version changes:
 
 | Change                                                                                        | Impact                                                                                                           | Version Change |
-|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------|
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------- |
 | Adding a required parameter to a connector's `spec`                                           | Users will have to add the new parameter to their `config`                                                       | Major          |
 | Changing a format of a parameter in a connector's `spec` from a single parameter to a `oneOf` | Users will have to edit their `config` to define their old parameter value in the `oneOf` format                 | Major          |
 | Removing a stream from a connector's `catalog`                                                | Data that was being synced will no longer be synced                                                              | Major          |

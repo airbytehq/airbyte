@@ -1,0 +1,1620 @@
+type: DeclarativeSource
+
+definitions:
+  authenticator:
+    class_name: source_zendesk_talk.components.ZendeskTalkAuthenticator
+    legacy_basic_auth:
+      type: BasicHttpAuthenticator
+      password: "{{ config['access_token'] }}"
+      username: "{{ config['email'] }}/token"
+    basic_auth:
+      type: BasicHttpAuthenticator
+      password: "{{ config['credentials']['api_token'] }}"
+      username: "{{ config['credentials']['email'] }}/token"
+    oauth:
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['access_token'] }}"
+  non_incremental_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestPath
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("next_page", {}) }}'
+      stop_condition: '{{ not response.get("next_page", {}) }}'
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/zendesk-talk
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Source Zendesk Talk Spec
+    required:
+      - start_date
+      - subdomain
+    properties:
+      subdomain:
+        type: string
+        order: 0
+        title: Subdomain
+        description: This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
+      credentials:
+        title: Authentication
+        type: object
+        order: 1
+        description: "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`."
+        oneOf:
+          - title: OAuth2.0
+            type: object
+            required:
+              - access_token
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              access_token:
+                type: string
+                title: Access Token
+                description: 'The value of the API token generated. See the <a href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a> for more information.'
+                airbyte_secret: true
+              client_id:
+                type: string
+                title: Client ID
+                description: "Client ID"
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: "Client Secret"
+                airbyte_secret: true
+          - title: API Token
+            type: object
+            required:
+              - email
+              - api_token
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+              email:
+                title: Email
+                type: string
+                description: "The user email for your Zendesk account."
+              api_token:
+                title: API Token
+                type: string
+                description: 'The value of the API token generated. See the <a href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a> for more information.'
+                airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start Date
+        format: "date-time"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        description: The date from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.
+        examples:
+          - "2020-10-15T00:00:00Z"
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          subdomain:
+            type: string
+            path_in_connector_config:
+              - subdomain
+
+check:
+  type: CheckStream
+  stream_names:
+    - account_overview
+
+streams:
+  - name: addresses
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: addresses
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - addresses
+            - "*"
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          zip:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          street:
+            type:
+              - "null"
+              - string
+          province:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          country_code:
+            type:
+              - "null"
+              - string
+          provider_reference:
+            type:
+              - "null"
+              - string
+  - name: agents_activity
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: /stats/agents_activity
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - agents_activity
+            - "*"
+      partition_router: []
+    primary_key: agent_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          via:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          agent_id:
+            type:
+              - "null"
+              - integer
+          call_status:
+            type:
+              - "null"
+              - string
+          away_time:
+            type:
+              - "null"
+              - integer
+          avatar_url:
+            type:
+              - "null"
+              - string
+          agent_state:
+            type:
+              - "null"
+              - string
+          online_time:
+            type:
+              - "null"
+              - integer
+          calls_denied:
+            type:
+              - "null"
+              - integer
+          calls_missed:
+            type:
+              - "null"
+              - integer
+          available_time:
+            type:
+              - "null"
+              - integer
+          calls_accepted:
+            type:
+              - "null"
+              - integer
+          total_hold_time:
+            type:
+              - "null"
+              - integer
+          total_talk_time:
+            type:
+              - "null"
+              - integer
+          average_hold_time:
+            type:
+              - "null"
+              - integer
+          average_talk_time:
+            type:
+              - "null"
+              - integer
+          calls_put_on_hold:
+            type:
+              - "null"
+              - integer
+          started_transfers:
+            type:
+              - "null"
+              - integer
+          accepted_transfers:
+            type:
+              - "null"
+              - integer
+          total_wrap_up_time:
+            type:
+              - "null"
+              - integer
+          total_call_duration:
+            type:
+              - "null"
+              - integer
+          transfers_only_time:
+            type:
+              - "null"
+              - integer
+          average_wrap_up_time:
+            type:
+              - "null"
+              - integer
+          started_third_party_conferences:
+            type:
+              - "null"
+              - integer
+          accepted_third_party_conferences:
+            type:
+              - "null"
+              - integer
+          forwarding_number:
+            type:
+              - "null"
+              - string
+  - name: agents_overview
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /stats/agents_overview
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - agents_overview
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "current_timestamp"
+            # the python implementation didn't normalize to utc, could cause transient problems
+            value: "{{ now_utc().strftime('%s') }}"
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          total_hold_time:
+            type:
+              - "null"
+              - integer
+          total_talk_time:
+            type:
+              - "null"
+              - integer
+          average_away_time:
+            type:
+              - "null"
+              - integer
+          average_hold_time:
+            type:
+              - "null"
+              - integer
+          average_talk_time:
+            type:
+              - "null"
+              - integer
+          total_calls_denied:
+            type:
+              - "null"
+              - integer
+          total_calls_missed:
+            type:
+              - "null"
+              - integer
+          total_wrap_up_time:
+            type:
+              - "null"
+              - integer
+          average_online_time:
+            type:
+              - "null"
+              - integer
+          average_calls_denied:
+            type:
+              - "null"
+              - integer
+          average_calls_missed:
+            type:
+              - "null"
+              - integer
+          average_wrap_up_time:
+            type:
+              - "null"
+              - integer
+          total_calls_accepted:
+            type:
+              - "null"
+              - integer
+          average_available_time:
+            type:
+              - "null"
+              - integer
+          average_calls_accepted:
+            type:
+              - "null"
+              - integer
+          total_calls_put_on_hold:
+            type:
+              - "null"
+              - integer
+          total_started_transfers:
+            type:
+              - "null"
+              - integer
+          total_accepted_transfers:
+            type:
+              - "null"
+              - integer
+          average_calls_put_on_hold:
+            type:
+              - "null"
+              - integer
+          average_started_transfers:
+            type:
+              - "null"
+              - integer
+          average_accepted_transfers:
+            type:
+              - "null"
+              - integer
+          average_transfers_only_time:
+            type:
+              - "null"
+              - integer
+          current_timestamp:
+            type: integer
+  - name: greeting_categories
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: /greeting_categories
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - greeting_categories
+            - "*"
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+  - name: greetings
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: /greetings
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - greetings
+            - "*"
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          default:
+            type:
+              - "null"
+              - boolean
+          ivr_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - integer
+          pending:
+            type:
+              - "null"
+              - boolean
+          audio_url:
+            type:
+              - "null"
+              - string
+          audio_name:
+            type:
+              - "null"
+              - string
+          category_id:
+            type:
+              - "null"
+              - integer
+          default_lang:
+            type:
+              - "null"
+              - boolean
+          has_sub_settings:
+            type:
+              - "null"
+              - boolean
+          phone_number_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - integer
+                - string
+          upload_id:
+            type:
+              - "null"
+              - integer
+  - name: phone_numbers
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: phone_numbers
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - phone_numbers
+            - "*"
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          number:
+            type:
+              - "null"
+              - string
+          external:
+            type:
+              - "null"
+              - boolean
+          location:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - integer
+          recorded:
+            type:
+              - "null"
+              - boolean
+          group_ids:
+            type:
+              - "null"
+              - array
+          line_type:
+            type:
+              - "null"
+              - string
+          toll_free:
+            type:
+              - "null"
+              - boolean
+          created_at:
+            type:
+              - "null"
+              - string
+          sms_enabled:
+            type:
+              - "null"
+              - boolean
+          capabilities:
+            type:
+              - "null"
+              - object
+            properties:
+              mms:
+                type:
+                  - "null"
+                  - boolean
+              sms:
+                type:
+                  - "null"
+                  - boolean
+              voice:
+                type:
+                  - "null"
+                  - boolean
+              emergency_address:
+                type:
+                  - "null"
+                  - boolean
+          country_code:
+            type:
+              - "null"
+              - string
+          greeting_ids:
+            type:
+              - "null"
+              - array
+          transcription:
+            type:
+              - "null"
+              - boolean
+          voice_enabled:
+            type:
+              - "null"
+              - boolean
+          display_number:
+            type:
+              - "null"
+              - string
+          outbound_enabled:
+            type:
+              - "null"
+              - boolean
+          default_greeting_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+          categorised_greetings:
+            type:
+              - "null"
+              - object
+          call_recording_consent:
+            type:
+              - "null"
+              - string
+          categorised_greetings_with_sub_settings:
+            type:
+              - "null"
+              - object
+          default_group_id:
+            type:
+              - "null"
+              - integer
+          failover_number:
+            type:
+              - "null"
+              - string
+          ivr_id:
+            type:
+              - "null"
+              - integer
+          nickname:
+            type:
+              - "null"
+              - string
+          token:
+            type:
+              - "null"
+              - string
+          schedule_id:
+            type:
+              - "null"
+              - integer
+          sms_group_id:
+            type:
+              - "null"
+              - integer
+  - name: call_legs
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ response.get("count", {}) <= 1 }}'
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        path: /stats/incremental/legs
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - legs
+            - "*"
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          type:
+            type:
+              - "null"
+              - string
+          call_id:
+            type:
+              - "null"
+              - integer
+          user_id:
+            type:
+              - "null"
+              - integer
+          agent_id:
+            type:
+              - "null"
+              - integer
+          duration:
+            type:
+              - "null"
+              - integer
+          hold_time:
+            type:
+              - "null"
+              - integer
+          talk_time:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: "date-time"
+          call_charge:
+            type:
+              - "null"
+              - string
+          wrap_up_time:
+            type:
+              - "null"
+              - integer
+          available_via:
+            type:
+              - "null"
+              - string
+          minutes_billed:
+            type:
+              - "null"
+              - integer
+          quality_issues:
+            type:
+              - "null"
+              - array
+          completion_status:
+            type:
+              - "null"
+              - string
+          conference_from:
+            type:
+              - "null"
+              - integer
+          conference_time:
+            type:
+              - "null"
+              - integer
+          conference_to:
+            type:
+              - "null"
+              - integer
+          consultation_from:
+            type:
+              - "null"
+              - integer
+          consultation_time:
+            type:
+              - "null"
+              - integer
+          consultation_to:
+            type:
+              - "null"
+              - integer
+          forwarded_to:
+            type:
+              - "null"
+              - string
+          transferred_from:
+            type:
+              - "null"
+              - integer
+          transferred_to:
+            type:
+              - "null"
+              - integer
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - name: calls
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ response.get("count", {}) <= 1 }}'
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        path: /stats/incremental/calls
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - calls
+            - "*"
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          callback:
+            type:
+              - boolean
+              - "null"
+          duration:
+            type:
+              - integer
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          hold_time:
+            type:
+              - integer
+              - "null"
+          talk_time:
+            type:
+              - integer
+              - "null"
+          voicemail:
+            type:
+              - boolean
+              - "null"
+          wait_time:
+            type:
+              - integer
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          overflowed:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: "date-time"
+          call_charge:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          wrap_up_time:
+            type:
+              - integer
+              - "null"
+          default_group:
+            type:
+              - boolean
+              - "null"
+          minutes_billed:
+            type:
+              - integer
+              - "null"
+          quality_issues:
+            type:
+              - array
+              - "null"
+          recording_time:
+            type:
+              - integer
+              - "null"
+          phone_number_id:
+            type:
+              - integer
+              - "null"
+          completion_status:
+            type:
+              - string
+              - "null"
+          consultation_time:
+            type:
+              - integer
+              - "null"
+          not_recording_time:
+            type:
+              - integer
+              - "null"
+          call_recording_consent:
+            type:
+              - string
+              - "null"
+          outside_business_hours:
+            type:
+              - boolean
+              - "null"
+          exceeded_queue_wait_time:
+            type:
+              - boolean
+              - "null"
+          customer_requested_voicemail:
+            type:
+              - boolean
+              - "null"
+          recording_control_interactions:
+            type:
+              - integer
+              - "null"
+          agent_id:
+            type:
+              - integer
+              - "null"
+          call_group_id:
+            type:
+              - integer
+              - "null"
+          call_recording_consent_action:
+            type:
+              - string
+              - "null"
+          call_recording_consent_keypress:
+            type:
+              - string
+              - "null"
+          callback_source:
+            type:
+              - string
+              - "null"
+          exceeded_queue_time:
+            type:
+              - boolean
+              - "null"
+          ivr_action:
+            type:
+              - string
+              - "null"
+          ivr_destination_group_name:
+            type:
+              - string
+              - "null"
+          ivr_hops:
+            type:
+              - integer
+              - "null"
+          ivr_routed_to:
+            type:
+              - string
+              - "null"
+          ivr_time_spent:
+            type:
+              - integer
+              - "null"
+          overflowed_to:
+            type:
+              - string
+              - "null"
+          ticket_id:
+            type:
+              - integer
+              - "null"
+          time_to_answer:
+            type:
+              - integer
+              - "null"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - name: current_queue_activity
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /stats/current_queue_activity
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - current_queue_activity
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "current_timestamp"
+            # the python implementation didn't normalize to utc, could cause transient problems
+            value: "{{ now_utc().strftime('%s') }}"
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          agents_online:
+            type:
+              - integer
+              - "null"
+          calls_waiting:
+            type:
+              - integer
+              - "null"
+          average_wait_time:
+            type:
+              - integer
+              - "null"
+          callbacks_waiting:
+            type:
+              - integer
+              - "null"
+          longest_wait_time:
+            type:
+              - integer
+              - "null"
+          embeddable_callbacks_waiting:
+            type:
+              - integer
+              - "null"
+          current_timestamp:
+            type: integer
+  - name: account_overview
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /stats/account_overview
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - account_overview
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "current_timestamp"
+            # the python implementation didn't normalize to utc, could cause transient problems
+            value: "{{ now_utc().strftime('%s') }}"
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          current_timestamp:
+            type: integer
+          total_calls:
+            type:
+              - integer
+              - "null"
+          total_hold_time:
+            type:
+              - integer
+              - "null"
+          total_voicemails:
+            type:
+              - integer
+              - "null"
+          average_hold_time:
+            type:
+              - integer
+              - "null"
+          max_calls_waiting:
+            type:
+              - integer
+              - "null"
+          total_wrap_up_time:
+            type:
+              - integer
+              - "null"
+          max_queue_wait_time:
+            type:
+              - integer
+              - "null"
+          total_call_duration:
+            type:
+              - integer
+              - "null"
+          total_inbound_calls:
+            type:
+              - integer
+              - "null"
+          average_wrap_up_time:
+            type:
+              - integer
+              - "null"
+          total_callback_calls:
+            type:
+              - integer
+              - "null"
+          total_outbound_calls:
+            type:
+              - integer
+              - "null"
+          average_call_duration:
+            type:
+              - integer
+              - "null"
+          average_time_to_answer:
+            type:
+              - integer
+              - "null"
+          average_queue_wait_time:
+            type:
+              - integer
+              - "null"
+          total_textback_requests:
+            type:
+              - integer
+              - "null"
+          average_callback_wait_time:
+            type:
+              - integer
+              - "null"
+          total_calls_abandoned_in_queue:
+            type:
+              - integer
+              - "null"
+          total_embeddable_callback_calls:
+            type:
+              - integer
+              - "null"
+          total_calls_outside_business_hours:
+            type:
+              - integer
+              - "null"
+          total_calls_with_requested_voicemail:
+            type:
+              - integer
+              - "null"
+          total_calls_with_exceeded_queue_wait_time:
+            type:
+              - integer
+              - "null"
+  - name: ivrs
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: /ivr
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - ivrs
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          menus:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                greeting_id:
+                  type:
+                    - integer
+                    - "null"
+                routes:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - integer
+                          - "null"
+                      action:
+                        type:
+                          - string
+                          - "null"
+                      greeting:
+                        type:
+                          - string
+                          - "null"
+                      options:
+                        type:
+                          - object
+                          - "null"
+                      keypress:
+                        type:
+                          - string
+                          - "null"
+                      option_text:
+                        type:
+                          - string
+                          - "null"
+                      overflow_options:
+                        type:
+                          - array
+                          - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
+          phone_number_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - integer
+          phone_number_names:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - integer
+  - name: ivr_menus
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: /ivr
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_zendesk_talk.components.IVRMenusRecordExtractor
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          ivr_id:
+            type:
+              - integer
+              - "null"
+          greeting_id:
+            type:
+              - "null"
+              - integer
+          default:
+            type:
+              - boolean
+              - "null"
+  - name: ivr_routes
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator: "#/definitions/non_incremental_paginator"
+      requester:
+        path: /ivr
+        type: HttpRequester
+        url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: "DefaultErrorHandler"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_zendesk_talk.components.IVRRoutesRecordExtractor
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: "http://json-schema.org/schema#"
+        properties:
+          action:
+            type:
+              - string
+              - "null"
+          greeting:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - integer
+              - "null"
+          ivr_id:
+            type:
+              - integer
+              - "null"
+          ivr_menu_id:
+            type:
+              - integer
+              - "null"
+          keypress:
+            type:
+              - string
+              - "null"
+          option_text:
+            type:
+              - string
+              - "null"
+          options:
+            type:
+              - object
+              - "null"
+          overflow_options:
+            type:
+              - array
+              - "null"
+version: 0.65.0

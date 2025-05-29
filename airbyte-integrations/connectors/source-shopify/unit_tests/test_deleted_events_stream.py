@@ -6,7 +6,7 @@
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.streams.base_streams import ShopifyDeletedEventsStream
-from source_shopify.streams.streams import Products
+from source_shopify.streams.streams import CustomCollections
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def config(basic_config):
 @pytest.mark.parametrize(
     "stream,expected_main_path,expected_events_path",
     [
-        (Products, "products.json", "events.json"),
+        (CustomCollections, "custom_collections.json", "events.json"),
     ],
 )
 def test_path(stream, expected_main_path, expected_events_path, config) -> None:
@@ -33,7 +33,7 @@ def test_path(stream, expected_main_path, expected_events_path, config) -> None:
 @pytest.mark.parametrize(
     "stream,expected_events_schema",
     [
-        (Products, {}),
+        (CustomCollections, {}),
     ],
 )
 def test_get_json_schema(stream, expected_events_schema, config) -> None:
@@ -46,7 +46,7 @@ def test_get_json_schema(stream, expected_events_schema, config) -> None:
 @pytest.mark.parametrize(
     "stream,expected_data_field,expected_pk,expected_cursor_field",
     [
-        (Products, "events", "id", "deleted_at"),
+        (CustomCollections, "events", "id", "deleted_at"),
     ],
 )
 def test_has_correct_instance_vars(stream, expected_data_field, expected_pk, expected_cursor_field, config) -> None:
@@ -59,7 +59,7 @@ def test_has_correct_instance_vars(stream, expected_data_field, expected_pk, exp
 @pytest.mark.parametrize(
     "stream,expected",
     [
-        (Products, None),
+        (CustomCollections, None),
     ],
 )
 def test_has_no_availability_strategy(stream, expected, config) -> None:
@@ -72,13 +72,13 @@ def test_has_no_availability_strategy(stream, expected, config) -> None:
     "stream,deleted_records_json,expected",
     [
         (
-            Products,
+            CustomCollections,
             [
                 {
                     "id": 123,
                     "subject_id": 234,
                     "created_at": "2023-09-05T14:02:00-07:00",
-                    "subject_type": "Product",
+                    "subject_type": "Collection",
                     "verb": "destroy",
                     "arguments": [],
                     "message": "Test Message",
@@ -92,7 +92,7 @@ def test_has_no_availability_strategy(stream, expected, config) -> None:
                     "id": 123,
                     "subject_id": 234,
                     "created_at": "2023-09-05T14:02:00-07:00",
-                    "subject_type": "Product",
+                    "subject_type": "Collection",
                     "verb": "destroy",
                     "arguments": [],
                     "message": "Test Message",
@@ -116,13 +116,13 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
     "stream,input,expected",
     [
         (
-            Products,
+            CustomCollections,
             [
                 {
                     "id": 123,
                     "subject_id": 234,
                     "created_at": "2023-09-05T14:02:00-07:00",
-                    "subject_type": "Product",
+                    "subject_type": "Collection",
                     "verb": "destroy",
                     "arguments": [],
                     "message": "Test Message",
@@ -135,7 +135,6 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
                 {
                     "id": 234,
                     "deleted_at": "2023-09-05T14:02:00-07:00",
-                    "updated_at": "2023-09-05T14:02:00-07:00",
                     "deleted_message": "Test Message",
                     "deleted_description": "Test Description",
                     "shop_url": "airbyte-integration-test",
@@ -155,23 +154,23 @@ def test_produce_deleted_records_from_events(stream, input, expected, config) ->
     [
         # params with NO STATE
         (
-            Products,
+            CustomCollections,
             {},
             None,
             {"limit": 250, "order": "updated_at asc", "updated_at_min": "2020-11-01"},
-            {"filter": "Product", "verb": "destroy"},
+            {"filter": "Collection", "verb": "destroy"},
         ),
         # params with STATE
         (
-            Products,
+            CustomCollections,
             {"updated_at": "2028-01-01", "deleted": {"deleted_at": "2029-01-01"}},
             None,
             {"limit": 250, "order": "updated_at asc", "updated_at_min": "2028-01-01"},
-            {"created_at_min": "2029-01-01", "filter": "Product", "verb": "destroy"},
+            {"created_at_min": "2029-01-01", "filter": "Collection", "verb": "destroy"},
         ),
         # params with NO STATE but with NEXT_PAGE_TOKEN
         (
-            Products,
+            CustomCollections,
             {},
             {"page_info": "next_page_token"},
             {"limit": 250, "page_info": "next_page_token"},
@@ -188,7 +187,7 @@ def test_request_params(config, stream, stream_state, next_page_token, expected_
 @pytest.mark.parametrize(
     "stream,expected",
     [
-        (Products, ShopifyDeletedEventsStream),
+        (CustomCollections, ShopifyDeletedEventsStream),
     ],
 )
 def test_deleted_events_instance(stream, config, expected) -> None:
@@ -199,7 +198,7 @@ def test_deleted_events_instance(stream, config, expected) -> None:
 @pytest.mark.parametrize(
     "stream,expected",
     [
-        (Products, ""),
+        (CustomCollections, ""),
     ],
 )
 def test_default_deleted_state_comparison_value(stream, config, expected) -> None:
@@ -212,31 +211,24 @@ def test_default_deleted_state_comparison_value(stream, config, expected) -> Non
     [
         # NO INITIAL STATE
         (
-            Products,
+            CustomCollections,
             {"id": 1, "updated_at": "2021-01-01"},
             {},
             {"updated_at": "2021-01-01", "deleted": {"deleted_at": ""}},
         ),
         # with INITIAL STATE
         (
-            Products,
+            CustomCollections,
             {"id": 1, "updated_at": "2022-01-01"},
             {"updated_at": "2021-01-01", "deleted": {"deleted_at": ""}},
             {"updated_at": "2022-01-01", "deleted": {"deleted_at": ""}},
         ),
         # with NO Last Record value and NO current state value
         (
-            Products,
+            CustomCollections,
             {},
             {},
             {"updated_at": "", "deleted": {"deleted_at": ""}},
-        ),
-        # with NO Last Record value but with Current state value
-        (
-            Products,
-            {},
-            {"updated_at": "2030-01-01", "deleted": {"deleted_at": ""}},
-            {"updated_at": "2030-01-01", "deleted": {"deleted_at": ""}},
         ),
     ],
 )

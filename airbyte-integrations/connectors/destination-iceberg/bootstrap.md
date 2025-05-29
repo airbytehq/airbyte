@@ -9,4 +9,3 @@ Spark, Trino, PrestoDB, Flink, Hive and Impala using a high-performance table fo
 
 The Iceberg reference
 documents: [https://iceberg.apache.org/docs/latest/api/](https://iceberg.apache.org/docs/latest/api/)
-

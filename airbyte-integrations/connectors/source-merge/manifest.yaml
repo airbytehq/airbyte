@@ -1,0 +1,1707 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - account_details
+    - activities
+    - applications
+    - attachments
+    - candidates
+    - departments
+    - eeocs
+    - interviews
+    - jobs
+    - offers
+    - offices
+    - sync_status
+    - users
+
+definitions:
+  streams:
+    account_details:
+      type: DeclarativeStream
+      name: account_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account-details
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_details"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    applications:
+      type: DeclarativeStream
+      name: applications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /applications
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/applications"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attachments
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
+    candidates:
+      type: DeclarativeStream
+      name: candidates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /candidates
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidates"
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /departments
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departments"
+    eeocs:
+      type: DeclarativeStream
+      name: eeocs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /eeocs
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/eeocs"
+    interviews:
+      type: DeclarativeStream
+      name: interviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /interviews
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviews"
+    job_interview_stages:
+      type: DeclarativeStream
+      name: job_interview_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /job-interview-stages
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_interview_stages"
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /jobs
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/jobs"
+    offers:
+      type: DeclarativeStream
+      name: offers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /offers
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offers"
+    offices:
+      type: DeclarativeStream
+      name: offices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /offices
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offices"
+    sync_status:
+      type: DeclarativeStream
+      name: sync_status
+      primary_key:
+        - model_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sync-status
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sync_status"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_headers:
+            X-Account-Token: "{{ config['account_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.merge.dev/api/ats/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/account_details"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/applications"
+  - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/eeocs"
+  - $ref: "#/definitions/streams/interviews"
+  - $ref: "#/definitions/streams/job_interview_stages"
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/offers"
+  - $ref: "#/definitions/streams/offices"
+  - $ref: "#/definitions/streams/sync_status"
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_token
+      - api_token
+      - start_date
+    properties:
+      account_token:
+        type: string
+        description: >-
+          Link your other integrations with account credentials on accounts
+          section to get account token (ref -
+          https://app.merge.dev/linked-accounts/accounts)
+        title: Account Token
+        airbyte_secret: true
+        order: 0
+      api_token:
+        type: string
+        description: API token can be seen at  https://app.merge.dev/keys
+        title: Api token
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          Date time filter for incremental filter, Specify which date to extract
+          from.
+        title: Date-From Filter
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+          - "2022-03-01T00:00:00.000Z"
+        format: date-time
+        order: 2
+    additionalProperties: true
+
+schemas:
+  account_details:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - "null"
+          - string
+      end_user_email_address:
+        type:
+          - "null"
+          - string
+      end_user_organization_name:
+        type:
+          - "null"
+          - string
+      end_user_origin_id:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      integration:
+        type:
+          - "null"
+          - string
+      integration_slug:
+        type:
+          - "null"
+          - string
+      is_duplicate: {}
+      status:
+        type:
+          - "null"
+          - string
+      webhook_listener_url:
+        type:
+          - "null"
+          - string
+    title: Account Details
+  activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      activity_type:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      remote_created_at:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      subject:
+        type:
+          - "null"
+          - string
+      user:
+        type:
+          - "null"
+          - string
+      visibility:
+        type:
+          - "null"
+          - string
+    title: Activities Schema
+  applications:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      applied_at:
+        type:
+          - "null"
+          - string
+      candidate:
+        type:
+          - "null"
+          - string
+      credited_to:
+        type:
+          - "null"
+          - string
+      current_stage:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      job:
+        type:
+          - "null"
+          - string
+      reject_reason:
+        type:
+          - "null"
+          - string
+      rejected_at:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      source:
+        type:
+          - "null"
+          - string
+    title: Applications Schema
+  attachments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attachment_type:
+        type:
+          - "null"
+          - string
+      candidate:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      file_name:
+        type:
+          - "null"
+          - string
+      file_url:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type: array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+    title: Attachments Schema
+  candidates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      applications:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      attachments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      can_email:
+        type:
+          - "null"
+          - boolean
+      company:
+        type:
+          - "null"
+          - string
+      email_addresses:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email_address_type:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      is_private:
+        type:
+          - "null"
+          - boolean
+      last_interaction_at:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      locations:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      phone_numbers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            phone_number_type:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      remote_created_at:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_updated_at:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      title:
+        type:
+          - "null"
+          - string
+      urls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            url_type:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+    title: Candidates Schema
+  departments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+    title: Departments Schema
+    additionalProperties: true
+  eeocs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      candidate:
+        type:
+          - "null"
+          - string
+      disability_status:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      gender:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      race:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      submitted_at:
+        type:
+          - "null"
+          - string
+      veteran_status:
+        type:
+          - "null"
+          - string
+    title: Eeocs Schema
+  interviews:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      application:
+        type:
+          - "null"
+          - string
+      end_at:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      interviewers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      job_interview_stage:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      organizer:
+        type:
+          - "null"
+          - string
+      remote_created_at:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_updated_at:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      start_at:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+    title: Interviews Schema
+  job_interview_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      job:
+        type:
+          - "null"
+          - string
+      modified_at:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+    title: Job-interview-stages Schema
+  jobs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      code:
+        type:
+          - "null"
+          - string
+      confidential:
+        type:
+          - "null"
+          - boolean
+      departments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      hiring_managers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      id:
+        type:
+          - "null"
+          - string
+      job_posting_urls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            url_type:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      name:
+        type:
+          - "null"
+          - string
+      offices:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      recruiters:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      remote_created_at:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_updated_at:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      status:
+        type:
+          - "null"
+          - string
+    title: Jobs Schema
+  offers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      application:
+        type:
+          - "null"
+          - string
+      closed_at:
+        type:
+          - "null"
+          - string
+      creator:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      remote_created_at:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+      sent_at:
+        type:
+          - "null"
+          - string
+      start_date:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+    title: Offers Schema
+  offices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+          organization_defined_targets:
+            type:
+              - "null"
+              - object
+            properties:
+              custom_key:
+                type:
+                  - "null"
+                  - string
+      id:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      remote_data:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            data:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            path:
+              type:
+                - "null"
+                - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+    title: Offices Schema
+  sync_status:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      is_initial_sync:
+        type:
+          - "null"
+          - boolean
+      last_sync_start:
+        type:
+          - "null"
+          - string
+      model_id:
+        type:
+          - "null"
+          - string
+      model_name:
+        type:
+          - "null"
+          - string
+      next_sync_start: {}
+      status:
+        type:
+          - "null"
+          - string
+    title: Sync-status Schema
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    field_mappings:
+      type:
+        - "null"
+        - object
+      properties:
+        linked_account_defined_targets:
+          type:
+            - "null"
+            - object
+          properties: {}
+        organization_defined_targets:
+          type:
+            - "null"
+            - object
+          properties: {}
+    properties:
+      access_role:
+        type:
+          - "null"
+          - string
+      disabled:
+        type:
+          - "null"
+          - boolean
+      email:
+        type:
+          - "null"
+          - string
+      field_mappings:
+        type:
+          - "null"
+          - object
+        properties:
+          linked_account_defined_targets: {}
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      modified_at:
+        type:
+          - "null"
+          - string
+      remote_created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      remote_data:
+        type:
+          - "null"
+          - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_was_deleted:
+        type:
+          - "null"
+          - boolean
+    title: Users Schema

@@ -4,35 +4,31 @@
 
 package io.airbyte.cdk.integrations.destination.async
 
-import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
-import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferEnqueue
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
-import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
-import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
-import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
+import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.stream.Collectors
-import kotlin.jvm.optionals.getOrNull
+import org.jetbrains.annotations.VisibleForTesting
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,26 +40,26 @@ private val logger = KotlinLogging.logger {}
  * memory limit governed by [GlobalMemoryManager]. Record writing is decoupled via [FlushWorkers].
  * See the other linked class for more detail.
  */
-class AsyncStreamConsumer
+open class AsyncStreamConsumer
 @VisibleForTesting
+@JvmOverloads
 constructor(
     outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
-    flusher: DestinationFlushFunction,
+    onFlush: DestinationFlushFunction,
     private val catalog: ConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val flushFailure: FlushFailure,
-    private val defaultNamespace: Optional<String>,
-    workerPool: ExecutorService,
-    private val dataTransformer: StreamAwareDataTransformer,
-    private val deserializationUtil: DeserializationUtil,
+    private val flushFailure: FlushFailure = FlushFailure(),
+    workerPool: ExecutorService = Executors.newFixedThreadPool(5),
+    private val airbyteMessageDeserializer: AirbyteMessageDeserializer =
+        AirbyteMessageDeserializer(),
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val flushWorkers: FlushWorkers =
         FlushWorkers(
             bufferManager.bufferDequeue,
-            flusher,
+            onFlush,
             outputRecordCollector,
             flushFailure,
             bufferManager.stateManager,
@@ -76,99 +72,12 @@ constructor(
 
     // Note that this map will only be populated for streams with nonzero records.
     private val recordCounts: ConcurrentMap<StreamDescriptor, AtomicLong> = ConcurrentHashMap()
+    private val terminalStatusesFromSource: ConcurrentMap<StreamDescriptor, AirbyteStreamStatus> =
+        ConcurrentHashMap()
 
     private var hasStarted = false
     private var hasClosed = false
     private var hasFailed = false
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        FlushFailure(),
-        defaultNamespace,
-    )
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        dataTransformer: StreamAwareDataTransformer,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        FlushFailure(),
-        defaultNamespace,
-        Executors.newFixedThreadPool(5),
-        dataTransformer,
-        DeserializationUtil(),
-    )
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        workerPool: ExecutorService,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        FlushFailure(),
-        defaultNamespace,
-        workerPool,
-        IdentityDataTransformer(),
-        DeserializationUtil(),
-    )
-
-    @VisibleForTesting
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        flushFailure: FlushFailure,
-        defaultNamespace: Optional<String>,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        flushFailure,
-        defaultNamespace,
-        Executors.newFixedThreadPool(5),
-        IdentityDataTransformer(),
-        DeserializationUtil(),
-    )
 
     @Throws(Exception::class)
     override fun start() {
@@ -183,7 +92,7 @@ constructor(
 
     @Throws(Exception::class)
     override fun accept(
-        messageString: String,
+        message: String,
         sizeInBytes: Int,
     ) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
@@ -193,23 +102,57 @@ constructor(
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-        val message =
-            deserializationUtil.deserializeAirbyteMessage(
-                messageString,
-                dataTransformer,
-            )
-        if (AirbyteMessage.Type.RECORD == message.type) {
-            if (Strings.isNullOrEmpty(message.record?.namespace)) {
-                message.record?.namespace = defaultNamespace.getOrNull()
+        val partialAirbyteMessage =
+            try {
+                airbyteMessageDeserializer.deserializeAirbyteMessage(
+                    message,
+                )
+            } catch (e: AirbyteMessageDeserializer.UnrecognizedAirbyteMessageTypeException) {
+                logger.warn { "Ignoring unrecognized message type: ${e.message}" }
+                return
             }
-            validateRecord(message)
 
-            message.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
+        when (partialAirbyteMessage.type) {
+            AirbyteMessage.Type.RECORD -> {
+                validateRecord(partialAirbyteMessage)
+
+                partialAirbyteMessage.record?.streamDescriptor?.let {
+                    getRecordCounter(it).incrementAndGet()
+
+                    if (terminalStatusesFromSource.containsKey(it)) {
+                        throw IllegalStateException(
+                            "Received a record message after a terminal stream status for stream ${it.namespace}.${it.name}"
+                        )
+                    }
+                }
+            }
+            AirbyteMessage.Type.TRACE -> {
+                // There are many types of trace messages, but we only care about stream status
+                // messages with status=COMPLETE or INCOMPLETE.
+                // INCOMPLETE is a slightly misleading name - it actually means "Stream has stopped
+                // due to an interruption or error", i.e. failure
+                partialAirbyteMessage.trace?.streamStatus?.let {
+                    val isTerminalStatus =
+                        it.status == AirbyteStreamStatus.COMPLETE ||
+                            it.status == AirbyteStreamStatus.INCOMPLETE
+                    if (isTerminalStatus) {
+                        val conflictsWithExistingStatus =
+                            terminalStatusesFromSource.containsKey(it.streamDescriptor) &&
+                                terminalStatusesFromSource[it.streamDescriptor] != it.status
+                        if (conflictsWithExistingStatus) {
+                            throw IllegalStateException(
+                                "Received conflicting stream statuses for stream ${it.streamDescriptor.namespace}.${it.streamDescriptor.name}"
+                            )
+                        }
+                        terminalStatusesFromSource[it.streamDescriptor] = it.status
+                    }
+                }
+            }
+            else -> {}
         }
         bufferEnqueue.addRecord(
-            message,
+            partialAirbyteMessage,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
-            defaultNamespace,
         )
     }
 
@@ -226,24 +169,55 @@ constructor(
 
         bufferManager.close()
 
+        val unsuccessfulStreams = ArrayList<StreamDescriptor>()
         val streamSyncSummaries =
-            streamNames
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { streamDescriptor: StreamDescriptor -> streamDescriptor },
-                        { streamDescriptor: StreamDescriptor ->
-                            StreamSyncSummary(
-                                Optional.of(getRecordCounter(streamDescriptor).get()),
-                            )
-                        },
-                    ),
-                )
+            streamNames.associate { streamDescriptor ->
+                // If we didn't receive a stream status message, assume failure.
+                // This is possible if e.g. the orchestrator crashes before sending us the message.
+                val terminalStatusFromSource =
+                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
+                if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
+                    unsuccessfulStreams.add(streamDescriptor)
+                }
+
+                if (bufferManager.defaultNamespace == null) {
+                    streamDescriptor
+                } else {
+                    StreamDescriptorUtils.withDefaultNamespace(
+                        streamDescriptor,
+                        bufferManager.defaultNamespace,
+                    )
+                } to
+                    StreamSyncSummary(
+                        getRecordCounter(streamDescriptor).get(),
+                        terminalStatusFromSource,
+                    )
+            }
         onClose.accept(hasFailed, streamSyncSummaries)
 
         // as this throws an exception, we need to be after all other close functions.
         propagateFlushWorkerExceptionIfPresent()
         logger.info { "${AsyncStreamConsumer::class.java} closed" }
+
+        // In principle, platform should detect this.
+        // However, as a backstop, the destination should still do this check.
+        // This handles e.g. platform bugs where we don't receive a stream status message.
+        // In this case, it would be misleading to mark the sync as successful, because e.g. we
+        // maybe didn't commit a truncate.
+        if (unsuccessfulStreams.isNotEmpty()) {
+            val unsuccessfulStreamsString =
+                unsuccessfulStreams.joinToString(", ") { "${it.namespace}.${it.name}" }
+            val internalMessageString =
+                "Some streams either received an INCOMPLETE stream status, or did not receive a stream status at all: $unsuccessfulStreamsString"
+            logger.info { internalMessageString }
+            // Throw as a "transient" error. This will tell platform to retry the sync,
+            // but won't trigger any alerting.
+            throw TransientErrorException(
+                displayMessage =
+                    "Some streams were unsuccessful due to a source error. See logs for details.",
+                internalMessage = internalMessageString,
+            )
+        }
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {

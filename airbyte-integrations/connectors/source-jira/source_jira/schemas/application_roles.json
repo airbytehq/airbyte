@@ -3,68 +3,85 @@
   "type": "object",
   "properties": {
     "key": {
-      "type": "string",
-      "description": "The key of the application role."
+      "description": "The key identifier of the application role.",
+      "type": "string"
     },
     "groups": {
+      "description": "The groups associated with the application role.",
       "uniqueItems": true,
       "type": "array",
-      "description": "The groups associated with the application role.",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "name": {
-      "type": "string",
-      "description": "The display name of the application role."
+      "description": "The display name of the application role.",
+      "type": "string"
     },
     "defaultGroups": {
+      "description": "The groups that are granted default access for this application role.",
       "uniqueItems": true,
       "type": "array",
-      "description": "The groups that are granted default access for this application role.",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "selectedByDefault": {
-      "type": "boolean",
-      "description": "Determines whether this application role should be selected by default on user creation."
+      "description": "Determines if this application role should be selected by default on user creation.",
+      "type": "boolean"
     },
-    "defined": { "type": "boolean", "description": "Deprecated." },
+    "defined": {
+      "description": "Deprecated.",
+      "type": "boolean"
+    },
     "numberOfSeats": {
-      "type": "integer",
-      "description": "The maximum count of users on your license."
+      "description": "The maximum count of users allowed on the license.",
+      "type": "integer"
     },
     "remainingSeats": {
-      "type": "integer",
-      "description": "The count of users remaining on your license."
+      "description": "The count of remaining user seats on the license.",
+      "type": "integer"
     },
     "userCount": {
-      "type": "integer",
-      "description": "The number of users counting against your license."
+      "description": "The total count of users that are counted against the license limit.",
+      "type": "integer"
     },
     "userCountDescription": {
-      "type": "string",
-      "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
+      "description": "Describes the type of users being counted against your license. For more information, refer to the provided link.",
+      "type": "string"
     },
-    "hasUnlimitedSeats": { "type": "boolean" },
+    "hasUnlimitedSeats": {
+      "description": "Indicates if the application role has unlimited user seats.",
+      "type": "boolean"
+    },
     "platform": {
-      "type": "boolean",
-      "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
+      "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+      "type": "boolean"
     },
     "groupDetails": {
-      "type": ["null", "array"],
-      "description": "Group Details",
-      "items": { "type": ["null", "object"] }
-    },
-    "defaultGroupsDetails": {
+      "description": "Details about the groups associated with the application role.",
       "type": ["null", "array"],
       "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "defaultGroupsDetails": {
+      "description": "Details of default groups assigned to application roles.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Information about a specific default group.",
         "type": ["null", "object"],
         "properties": {
           "groupId": {
+            "description": "The unique identifier of the group.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the group.",
             "type": ["null", "string"]
           },
           "self": {
+            "description": "The URL for accessing the group details.",
             "type": ["null", "string"]
           }
         }

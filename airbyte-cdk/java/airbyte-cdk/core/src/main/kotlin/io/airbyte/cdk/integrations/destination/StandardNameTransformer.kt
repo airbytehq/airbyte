@@ -8,7 +8,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
 import io.airbyte.commons.text.Names
 import io.airbyte.commons.util.MoreIterators
-import java.util.stream.Collectors
 
 open class StandardNameTransformer : NamingConventionTransformer {
     override fun getIdentifier(name: String): String {
@@ -21,12 +20,14 @@ open class StandardNameTransformer : NamingConventionTransformer {
     }
 
     // @Deprecated see https://github.com/airbytehq/airbyte/issues/35333
-    override fun getRawTableName(streamName: String): String {
-        return convertStreamName("_airbyte_raw_$streamName")
+    @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
+    override fun getRawTableName(name: String): String {
+        return convertStreamName("_airbyte_raw_$name")
     }
 
-    override fun getTmpTableName(streamName: String): String {
-        return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName)
+    @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
+    override fun getTmpTableName(name: String): String {
+        return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + name)
     }
 
     override fun getTmpTableName(streamName: String, randomSuffix: String): String {
@@ -72,10 +73,7 @@ open class StandardNameTransformer : NamingConventionTransformer {
                 return Jsons.jsonNode<Map<String, JsonNode>>(properties)
             } else if (root.isArray) {
                 return Jsons.jsonNode(
-                    MoreIterators.toList(root.elements())
-                        .stream()
-                        .map { root: JsonNode -> formatJsonPath(root) }
-                        .collect(Collectors.toList())
+                    MoreIterators.toList(root.elements()).map { r: JsonNode -> formatJsonPath(r) }
                 )
             } else {
                 return root

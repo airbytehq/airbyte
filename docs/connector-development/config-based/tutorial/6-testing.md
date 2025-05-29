@@ -35,7 +35,7 @@ airbyte-ci connectors --use-remote-secrets=false --name source-exchange-rates-tu
 
 ## Next steps:
 
-Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte).
+Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/operator-guides/using-custom-connectors).
 
 ## Read more:
 

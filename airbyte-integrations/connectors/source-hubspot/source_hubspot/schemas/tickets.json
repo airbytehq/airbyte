@@ -3,34 +3,44 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the ticket",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the ticket was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the ticket was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the ticket is archived or not",
       "type": ["null", "boolean"]
     },
     "contacts": {
+      "description": "Contacts associated with the ticket",
       "type": ["null", "array"],
       "items": {
+        "description": "Contact data",
         "type": ["null", "integer"]
       }
     },
     "companies": {
+      "description": "Companies associated with the ticket",
       "type": ["null", "array"],
       "items": {
+        "description": "Company data",
         "type": ["null", "string"]
       }
     },
     "deals": {
+      "description": "Deals associated with the ticket",
       "type": ["null", "array"],
       "items": {
+        "description": "Deal data",
         "type": ["null", "string"]
       }
     }

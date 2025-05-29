@@ -12,8 +12,9 @@ class PendoPythonStream(HttpStream, ABC):
     primary_key = None
     url_base = None
 
-    def __init__(self, url_base: str = "https://app.pendo.io/api/v1/", **kwargs):
+    def __init__(self, authenticator, url_base: str = "https://app.pendo.io/api/v1/", **kwargs):
         super().__init__(**kwargs)
+        self.authenticator = authenticator
         self.url_base = url_base
 
     def path(self, **kwargs) -> str:
@@ -221,9 +222,9 @@ class ReportResult(PendoPythonStream):
     primary_key = "reportId"
 
     def __init__(self, report: str, **kwargs):
-        super().__init__(**kwargs)
         self.report = report
         self.report_name = f"report_result_{report}"
+        super().__init__(**kwargs)
 
     @property
     def name(self):

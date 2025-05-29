@@ -17,7 +17,7 @@ data:
   icon: alloy-db.svg
   license: MIT
   name: AlloyDB for PostgreSQL
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

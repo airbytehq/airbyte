@@ -71,6 +71,27 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.1.0   | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854) | Initial commit |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0 | 2024-08-15 | [44097](https://github.com/airbytehq/airbyte/pull/44097) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-12 | [43817](https://github.com/airbytehq/airbyte/pull/43817) | Update dependencies |
+| 0.1.13 | 2024-08-03 | [43057](https://github.com/airbytehq/airbyte/pull/43057) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42767](https://github.com/airbytehq/airbyte/pull/42767) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42204](https://github.com/airbytehq/airbyte/pull/42204) | Update dependencies |
+| 0.1.10 | 2024-07-15 | [38930](https://github.com/airbytehq/airbyte/pull/38930) | Make compatible with builder |
+| 0.1.9 | 2024-07-13 | [41932](https://github.com/airbytehq/airbyte/pull/41932) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41349](https://github.com/airbytehq/airbyte/pull/41349) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41077](https://github.com/airbytehq/airbyte/pull/41077) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40946](https://github.com/airbytehq/airbyte/pull/40946) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40490](https://github.com/airbytehq/airbyte/pull/40490) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [39971](https://github.com/airbytehq/airbyte/pull/39971) | Update dependencies |
+| 0.1.3 | 2024-06-06 | [39216](https://github.com/airbytehq/airbyte/pull/39216) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.2 | 2024-05-21 | [38458](https://github.com/airbytehq/airbyte/pull/38458) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2024-05-21 | [38458](https://github.com/airbytehq/airbyte/pull/38458) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854)  | Initial commit |
+
+</details>

@@ -7,7 +7,7 @@ import re
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from datetime import datetime, timedelta
 
 from .streams import (
@@ -26,7 +26,7 @@ from .streams import (
 )
 
 
-class PendoAuthenticator(HttpAuthenticator):
+class PendoAuthenticator(AbstractHeaderAuthenticator):
     def __init__(self, token: str):
         self._token = token
 
@@ -41,7 +41,7 @@ class SourcePendoPython(AbstractSource):
         return url_base
 
     @staticmethod
-    def _get_authenticator(config: Mapping[str, Any]) -> HttpAuthenticator:
+    def _get_authenticator(config: Mapping[str, Any]) -> AbstractHeaderAuthenticator:
         token = config.get("api_key")
         return PendoAuthenticator(token)
 
@@ -49,7 +49,7 @@ class SourcePendoPython(AbstractSource):
         url = f"{self._url_base(config)}page"
         auth = SourcePendoPython._get_authenticator(config)
         try:
-            session = requests.get(url, headers=auth.get_auth_header())
+            session = requests.get(url, headers={auth.auth_header: auth.token})
             session.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
@@ -59,7 +59,7 @@ class SourcePendoPython(AbstractSource):
         url = f"{self._url_base(config)}report"
         auth = SourcePendoPython._get_authenticator(config)
         try:
-            session = requests.get(url, headers=auth.get_auth_header())
+            session = requests.get(url, headers={auth.auth_header: auth.token})
             body = session.json()
             return [obj["id"] for obj in body]
         except requests.exceptions.RequestException as e:

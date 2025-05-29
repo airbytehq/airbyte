@@ -5,7 +5,7 @@ test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_dixa/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

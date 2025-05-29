@@ -17,12 +17,13 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.normalization.NormalizationRunner
 import io.airbyte.workers.process.Metadata
 import io.airbyte.workers.process.ProcessFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 import org.apache.tools.ant.types.Commandline
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DbtTransformationRunner(
     private val processFactory: ProcessFactory,
@@ -122,12 +123,12 @@ class DbtTransformationRunner(
             this.process = process
             LineGobbler.gobble(
                 process.inputStream,
-                { msg: String? -> LOGGER.info(msg) },
+                { msg: String -> LOGGER.info(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
             LineGobbler.gobble(
                 process.errorStream,
-                { msg: String? -> LOGGER.error(msg) },
+                { msg: String -> LOGGER.error(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
 
@@ -157,7 +158,7 @@ class DbtTransformationRunner(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DbtTransformationRunner::class.java)
+
         private const val DBT_ENTRYPOINT_SH = "entrypoint.sh"
         private val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
             MdcScope.Builder()

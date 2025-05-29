@@ -56,4 +56,3 @@ class Pilot(Employee):
 Generators are basically iterators over arbitrary source data. They are handy because their syntax is extremely concise and feel just like any other list or collection when working with them in code.
 
 If you see `yield` anywhere in the code -- that's a generator at work.
-

@@ -9,12 +9,12 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_protocol.models import ConnectorSpecification, SyncMode
 from requests import HTTPError
 
 
@@ -23,10 +23,12 @@ class FixtureAvailabilityStrategy(HttpAvailabilityStrategy):
     Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
     """
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError
+    ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
-                                      "Please make sure your integration has read access for the resources you are trying to sync"
+            "Please make sure your integration has read access for the resources you are trying to sync"
         }
         return reasons_for_codes
 
@@ -55,7 +57,9 @@ class IntegrationStream(HttpStream, ABC):
         has_more = response.json().get("has_more")
         if has_more:
             self.current_page += 1
-            return {"next_page": self.current_page}
+            return {"page": self.current_page}
+        else:
+            return None
 
 
 class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin, ABC):
@@ -92,28 +96,16 @@ class Users(IntegrationStream):
             "type": "object",
             "additionalProperties": True,
             "properties": {
-                "type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                }
-            }
+                "type": {"type": "string"},
+                "id": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"},
+            },
         }
 
 
 class Planets(IncrementalIntegrationStream):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._state: MutableMapping[str, Any] = {}
@@ -127,20 +119,11 @@ class Planets(IncrementalIntegrationStream):
             "type": "object",
             "additionalProperties": True,
             "properties": {
-                "type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
+                "type": {"type": "string"},
+                "id": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+                "name": {"type": "string"},
+            },
         }
 
     def request_params(
@@ -149,10 +132,7 @@ class Planets(IncrementalIntegrationStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        return {
-            "start_date": stream_slice.get("start_date"),
-            "end_date": stream_slice.get("end_date")
-        }
+        return {"start_date": stream_slice.get("start_date"), "end_date": stream_slice.get("end_date")}
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -168,7 +148,10 @@ class Planets(IncrementalIntegrationStream):
         while start_date < end_date:
             end_date_slice = min(start_date.add(days=7), end_date)
 
-            date_slice = {"start_date": start_date.strftime("%Y-%m-%dT%H:%M:%SZ"), "end_date": end_date_slice.strftime("%Y-%m-%dT%H:%M:%SZ")}
+            date_slice = {
+                "start_date": start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "end_date": end_date_slice.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            }
 
             date_slices.append(date_slice)
             start_date = end_date_slice
@@ -193,20 +176,11 @@ class Legacies(IntegrationStream):
             "type": "object",
             "additionalProperties": True,
             "properties": {
-                "type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "quote": {
-                    "type": "string"
-                }
-            }
+                "type": {"type": "string"},
+                "id": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+                "quote": {"type": "string"},
+            },
         }
 
     def get_updated_state(
@@ -219,11 +193,11 @@ class Legacies(IntegrationStream):
         return {}
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
@@ -233,10 +207,7 @@ class Legacies(IntegrationStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        return {
-            "start_date": stream_slice.get("start_date"),
-            "end_date": stream_slice.get("end_date")
-        }
+        return {"start_date": stream_slice.get("start_date"), "end_date": stream_slice.get("end_date")}
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -252,7 +223,10 @@ class Legacies(IntegrationStream):
         while start_date < end_date:
             end_date_slice = min(start_date.add(days=7), end_date)
 
-            date_slice = {"start_date": start_date.strftime("%Y-%m-%dT%H:%M:%SZ"), "end_date": end_date_slice.strftime("%Y-%m-%dT%H:%M:%SZ")}
+            date_slice = {
+                "start_date": start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "end_date": end_date_slice.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            }
 
             date_slices.append(date_slice)
             start_date = end_date_slice
@@ -270,20 +244,11 @@ class Dividers(IntegrationStream):
             "type": "object",
             "additionalProperties": True,
             "properties": {
-                "type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "divide_category": {
-                    "type": "string"
-                }
-            }
+                "type": {"type": "string"},
+                "id": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+                "divide_category": {"type": "string"},
+            },
         }
 
     def stream_slices(
@@ -300,12 +265,112 @@ class Dividers(IntegrationStream):
         return {"category": stream_slice.get("divide_category")}
 
 
+class JusticeSongs(HttpStream, CheckpointMixin, ABC):
+    url_base = "https://api.airbyte-test.com/v1/"
+    primary_key = "id"
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self._state: MutableMapping[str, Any] = {}
+
+    def path(self, **kwargs) -> str:
+        return "justice_songs"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {
+                "type": {"type": "string"},
+                "id": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+                "name": {"type": "string"},
+                "album": {"type": "string"},
+            },
+        }
+
+    @property
+    def availability_strategy(self) -> HttpAvailabilityStrategy:
+        return FixtureAvailabilityStrategy()
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = response.json().get("data", [])
+        yield from data
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        return {"page": next_page_token.get("page")}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._read_single_page(cursor_field, stream_slice, stream_state)
+
+    def _read_single_page(
+        self,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        next_page_token = stream_slice
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        request, response = self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
+            request_kwargs=self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=request_headers,
+            params=request_params,
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            dedupe_query_params=True,
+        )
+        yield from self.parse_response(response=response)
+
+        self.next_page_token(response)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        current_page = self._state.get("page") or 0
+        has_more = response.json().get("has_more")
+        if has_more:
+            self._state = {"page": current_page + 1}
+        else:
+            self._state = {"__ab_full_refresh_sync_complete": True}
+
+
 class SourceFixture(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Dividers(config=config), Legacies(config=config), Planets(config=config), Users(config=config)]
+        return [
+            Dividers(config=config),
+            JusticeSongs(config=config),
+            Legacies(config=config),
+            Planets(config=config),
+            Users(config=config),
+        ]
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         return ConnectorSpecification(
@@ -318,7 +383,7 @@ class SourceFixture(AbstractSource):
                         "pattern_descriptor": "YYYY-MM-DDTHH:MM:SS.000Z",
                         "examples": ["2020-11-16T00:00:00.000Z"],
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
                     }
                 }
             }
