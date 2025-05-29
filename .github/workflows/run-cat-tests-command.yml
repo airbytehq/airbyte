@@ -29,8 +29,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  post-start-comment:
-    name: "Post Start Comment"
+  run-cat-tests:
+    name: "On-Demand CAT Tests"
     runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
