@@ -29,12 +29,15 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
+import jakarta.inject.Singleton
 import java.util.ArrayList
 import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
 
+@Singleton
 class ClickhouseDirectLoadSqlGenerator(
-    private val projectId: String?,
+    private val config: ClickhouseConfiguration,
 ) : DirectLoadSqlGenerator {
     override fun createTable(
         stream: DestinationStream,
@@ -65,7 +68,7 @@ class ClickhouseDirectLoadSqlGenerator(
         val finalTableId = tableName.toPrettyString(QUOTE)
         return Sql.of(
             """
-            CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
+            CREATE $forceCreateTable TABLE `${config.resolvedDatabase}`.$finalTableId (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
@@ -186,7 +189,7 @@ class ClickhouseDirectLoadSqlGenerator(
 
         return Sql.of(
             """
-               MERGE `$projectId`.$targetTableId target_table
+               MERGE `${config.resolvedDatabase}`.$targetTableId target_table
                USING (
                  $selectSourceRecords
                ) new_record
@@ -217,7 +220,7 @@ class ClickhouseDirectLoadSqlGenerator(
 
     override fun dropTable(tableName: TableName): Sql {
         val tableId = tableName.toPrettyString(QUOTE)
-        return Sql.of("""DROP TABLE IF EXISTS `$projectId`.$tableId;""")
+        return Sql.of("""DROP TABLE IF EXISTS `${config.resolvedDatabase}`.$tableId;""")
     }
 
     /**
@@ -264,7 +267,7 @@ class ClickhouseDirectLoadSqlGenerator(
                    _airbyte_raw_id,
                    _airbyte_extracted_at,
                    _airbyte_generation_id
-                 FROM `$projectId`.${sourceTableName.toPrettyString(QUOTE)}
+                 FROM `${config.resolvedDatabase}`.${sourceTableName.toPrettyString(QUOTE)}
                ), numbered_rows AS (
                  SELECT *, row_number() OVER (
                    PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
