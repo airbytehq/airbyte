@@ -10,7 +10,6 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoDriverInformation;
-import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager;
@@ -36,8 +35,7 @@ public class MongoConnectionUtils {
         .build();
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
-        .applyConnectionString(mongoConnectionString)
-        .readPreference(ReadPreference.secondaryPreferred());
+        .applyConnectionString(mongoConnectionString);
 
     if (config.hasAuthCredentials()) {
       final String authSource = config.getAuthSource();
