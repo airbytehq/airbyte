@@ -34,7 +34,8 @@ class ReadOperation(
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val partitionsCreatorFactoriesSupplier: List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
+    val partitionsCreatorFactoriesSupplier:
+        List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 

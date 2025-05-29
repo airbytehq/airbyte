@@ -26,10 +26,10 @@ interface PartitionsCreatorFactory {
 }
 
 /**
- * Interface to allow each toolkit to return the active [PartitionsCreatorFactory] class
- * For [ReadOperation] to be able to iterator on active factories only.
+ * Interface to allow each toolkit to return the active [PartitionsCreatorFactory] class For
+ * [ReadOperation] to be able to iterator on active factories only.
  */
-interface PartitionsCreatorFactorySupplier<T: PartitionsCreatorFactory> : Supplier<T>
+interface PartitionsCreatorFactorySupplier<T : PartitionsCreatorFactory> : Supplier<T>
 
 /**
  * A [PartitionsCreator] breaks down a [Feed] (a stream, or some global data feed) into zero, one or
