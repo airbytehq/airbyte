@@ -39,11 +39,8 @@ class UpdateBatchStateTask(
                             "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
                         }
                         manager.incrementCheckpointCounts(
-                            message.taskName,
-                            message.part,
                             message.state,
                             message.checkpointCounts,
-                            message.inputCount
                         )
                         message.state
                     }
@@ -51,11 +48,6 @@ class UpdateBatchStateTask(
                         log.info {
                             "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                         }
-                        manager.markTaskEndOfStream(
-                            message.taskName,
-                            message.part,
-                            message.totalInputCount
-                        )
                         BatchState.COMPLETE
                     }
                 }
