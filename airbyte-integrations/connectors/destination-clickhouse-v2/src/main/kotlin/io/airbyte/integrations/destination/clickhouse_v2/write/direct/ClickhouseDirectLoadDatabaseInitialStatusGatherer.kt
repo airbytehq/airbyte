@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.clickhouse_v2
+package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.command.DestinationStream
@@ -7,7 +7,6 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
-import java.math.BigInteger
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -42,7 +41,7 @@ class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
     private fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
         // val table = clickhouseClient.query("SELECT count(1) FROM ${tableName.name}").get()
         //     .inputStream.
-
+        // TODO: This needs to be updated.
         return DirectLoadTableStatus(isEmpty = true)
     }
 }

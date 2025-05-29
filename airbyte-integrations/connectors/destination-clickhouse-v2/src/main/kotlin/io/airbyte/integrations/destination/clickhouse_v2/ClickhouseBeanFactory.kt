@@ -10,6 +10,8 @@ import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickHouseSpecific
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseWriter
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadDatabaseInitialStatusGatherer
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
@@ -18,13 +20,14 @@ import jakarta.inject.Singleton
 class ClickhouseBeanFactory {
     @Singleton
     fun destinationWriter(clickhouseClient: Client,
-                          names: TableCatalog
+                          names: TableCatalog,
+                          directLoader: ClickhouseDirectLoadNativeTableOperations,
+                          sqlGenerator: ClickhouseDirectLoadSqlGenerator,
+                          destinationHandler: ClickhouseDatabaseHandler
     ): DestinationWriter {
-        val destinationHandler = ClickhouseDatabaseHandler(clickhouseClient)
-
         val test =  ClickhouseWriter(
             DefaultDirectLoadTableSqlOperations(
-                ClickhouseDirectLoadSqlGenerator(""),
+                sqlGenerator,
                 destinationHandler
             )
         )
@@ -37,14 +40,7 @@ class ClickhouseBeanFactory {
                 clickhouseClient,
             ),
             destinationHandler = destinationHandler,
-            nativeTableOperations =
-            BigqueryDirectLoadNativeTableOperations(
-                bigquery,
-                sqlTableOperations,
-                destinationHandler,
-                projectId = config.projectId,
-                internalTableDataset = config.internalTableDataset,
-            ),
+            nativeTableOperations = directLoader,
             sqlTableOperations = sqlTableOperations,
             streamStateStore = streamStateStore,
             directLoadTableTempTableNameMigration =
