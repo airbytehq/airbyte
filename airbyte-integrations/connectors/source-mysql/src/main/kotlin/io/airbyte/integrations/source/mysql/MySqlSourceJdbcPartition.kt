@@ -328,7 +328,6 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
         )
 }
 
-
 class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -338,11 +337,17 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     cursor: Field,
     cursorUpperBound: JsonNode?,
 ) :
-    MySqlSourceJdbcCursorPartition(selectQueryGenerator, streamState, primaryKey, cursor, cursorUpperBound) {
+    MySqlSourceJdbcCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        primaryKey,
+        cursor,
+        cursorUpperBound
+    ) {
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             checkpointColumns,
-            checkpointColumns.map {lastRecord[it.id] ?: Jsons.nullNode() },
+            checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
             stream,
         )
@@ -350,17 +355,19 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
-                null -> MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
-                    cursor,
-                    cursorUpperBound,
-                    stream,
-                )
-                else -> MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
-                    checkpointColumns,
-                    primaryKeyCheckpoint = upperBound,
-                    cursor,
-                    stream
-                )
+                null ->
+                    MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                        cursor,
+                        cursorUpperBound,
+                        stream,
+                    )
+                else ->
+                    MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                        checkpointColumns,
+                        primaryKeyCheckpoint = upperBound,
+                        cursor,
+                        stream
+                    )
             }
 }
 
@@ -408,25 +415,24 @@ class MySqlSourceJdbcCursorIncrementalPartition(
 @Primary
 @Requires(property = MODE_PROPERTY, value = "concurrent")
 class MySqlJdbcConcurrentPartitionsCreatorFactory<
-    A: JdbcSharedState,
-    S: JdbcStreamState<A>,
-    P: JdbcPartition<S>,>(
+    A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>,
+>(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-): JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         MySqlJdbcConcurrentPartitionsCreator(partition, partitionFactory)
-
 }
 
 class MySqlJdbcConcurrentPartitionsCreator<
-    A: JdbcSharedState,
-    S: JdbcStreamState<A>,
-    P: JdbcPartition<S>
-    >(partition: P,
-      partitionFactory: JdbcPartitionFactory<A, S, P>,
+    A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
+    partition: P,
+    partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
-    val tableEstimateQuery = "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
+    val tableEstimateQuery =
+        "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
 
     override suspend fun run(): List<PartitionReader> {
         // Ensure that the cursor upper bound is known, if required.
@@ -460,13 +466,14 @@ class MySqlJdbcConcurrentPartitionsCreator<
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
-        if (partition !is JdbcSplittablePartition<*> ) {
+        if (partition !is JdbcSplittablePartition<*>) {
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
-        val tableByteSizeEstimate: Long = findTableSizeEstimate(stream, partitionFactory.sharedState)
+        val tableByteSizeEstimate: Long =
+            findTableSizeEstimate(stream, partitionFactory.sharedState)
 
         if (tableByteSizeEstimate == 0L) {
             log.info { "Unable to get table estimate size" }
@@ -501,9 +508,10 @@ class MySqlJdbcConcurrentPartitionsCreator<
     private fun findTableSizeEstimate(stream: Stream, sharedState: JdbcSharedState): Long {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
         jdbcConnectionFactory.get().use { connection ->
-            val stmt = connection.prepareStatement(
-                tableEstimateQuery.format(stream.namespace, stream.name)
-            )
+            val stmt =
+                connection.prepareStatement(
+                    tableEstimateQuery.format(stream.namespace, stream.name)
+                )
             val rs = stmt.executeQuery()
             if (rs.next()) {
                 val tableSize: Long = rs.getLong(1)
@@ -513,4 +521,3 @@ class MySqlJdbcConcurrentPartitionsCreator<
         return 0
     }
 }
-
