@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurati
 import io.airbyte.cdk.load.file.object_storage.CSVFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
-import io.airbyte.cdk.load.message.DestinationRecordRaw
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
@@ -23,10 +22,10 @@ class BigQueryObjectStorageFormattingWriterFactory(
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
         return CSVFormattingWriter(
-                stream,
-                outputStream,
-                rootLevelFlattening = flatten,
-                extractedAtAsTimestampWithTimezone = true,
+            stream,
+            outputStream,
+            rootLevelFlattening = flatten,
+            extractedAtAsTimestampWithTimezone = true,
         )
     }
 }
