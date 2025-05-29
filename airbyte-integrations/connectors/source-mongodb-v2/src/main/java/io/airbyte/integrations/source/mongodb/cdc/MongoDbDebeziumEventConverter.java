@@ -55,12 +55,13 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     // Get the renderUuidFromBinary flag from the configuration
     // When enabled, binary fields with UUID subtypes will be rendered as UUID strings
     final boolean renderUuidFromBinary = config.has(MongoConstants.RENDER_UUIDS_FROM_BINARY) &&
-                                         config.get(MongoConstants.RENDER_UUIDS_FROM_BINARY).asBoolean();
+        config.get(MongoConstants.RENDER_UUIDS_FROM_BINARY).asBoolean();
 
     final JsonNode data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
           before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema, renderUuidFromBinary);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema, renderUuidFromBinary);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema,
+          renderUuidFromBinary);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
@@ -80,7 +81,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
       // In case a mongodb document was updated and then deleted, the update change event will not have
       // any information ({after: null})
       // We are going to treat it as a delete.
-      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema, renderUuidFromBinary);
+      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema,
+          renderUuidFromBinary);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
       return DebeziumEventConverter.addCdcMetadata(

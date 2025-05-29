@@ -34,7 +34,6 @@ import org.bson.BsonRegularExpression;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.UuidRepresentation;
-import org.bson.internal.UuidHelper;
 import org.bson.codecs.BsonCodecProvider;
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DocumentCodecProvider;
@@ -45,6 +44,7 @@ import org.bson.codecs.UuidCodecProvider;
 import org.bson.codecs.ValueCodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.jsr310.Jsr310CodecProvider;
+import org.bson.internal.UuidHelper;
 import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,7 +157,10 @@ public class MongoDbCdcEventUtils {
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-  private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames, final boolean renderUuidFromBinary) {
+  private static void formatDocument(final Document document,
+                                     final ObjectNode objectNode,
+                                     final Set<String> columnNames,
+                                     final boolean renderUuidFromBinary) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames, false, renderUuidFromBinary);
@@ -212,7 +215,10 @@ public class MongoDbCdcEventUtils {
     return jsonNodes;
   }
 
-  private static JsonNode readArray(final BsonReader reader, final Set<String> columnNames, final String fieldName, final boolean renderUuidFromBinary) {
+  private static JsonNode readArray(final BsonReader reader,
+                                    final Set<String> columnNames,
+                                    final String fieldName,
+                                    final boolean renderUuidFromBinary) {
     reader.readStartArray();
     final var elements = Lists.newArrayList();
 
@@ -313,7 +319,10 @@ public class MongoDbCdcEventUtils {
     reader.readNull();
   }
 
-  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final boolean renderUuidFromBinary) {
+  private static void readJavaScriptWithScope(final ObjectNode o,
+                                              final BsonReader reader,
+                                              final String fieldName,
+                                              final boolean renderUuidFromBinary) {
     final var code = reader.readJavaScriptWithScope();
     final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false, renderUuidFromBinary);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
