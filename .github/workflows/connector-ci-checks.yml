@@ -1,4 +1,4 @@
-name: Connector CI Checks
+name: Connector CI
 
 on:
   pull_request:
