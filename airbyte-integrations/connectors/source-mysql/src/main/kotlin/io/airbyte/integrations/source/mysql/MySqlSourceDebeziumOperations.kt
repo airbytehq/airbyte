@@ -24,7 +24,6 @@ import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
 import io.airbyte.cdk.read.cdc.CdcPartitionsCreatorDebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumOffset
-import io.airbyte.cdk.read.cdc.DebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder
 import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
@@ -66,7 +65,8 @@ class MySqlSourceDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
     val configuration: MySqlSourceConfiguration,
     random: Random = Random.Default,
-) : CdcPartitionsCreatorDebeziumOperations<MySqlSourceCdcPosition>,
+) :
+    CdcPartitionsCreatorDebeziumOperations<MySqlSourceCdcPosition>,
     CdcPartitionReaderDebeziumOperations<MySqlSourceCdcPosition> {
     private val log = KotlinLogging.logger {}
     private val cdcIncrementalConfiguration: CdcIncrementalConfiguration by lazy {
