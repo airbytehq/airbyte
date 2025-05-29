@@ -8,11 +8,18 @@ import jakarta.inject.Singleton
 @Singleton
 class ClickhouseDatabaseHandler(private val clickhouseClient: Client): DatabaseHandler {
     override fun execute(sql: Sql) {
-        val statement = java.lang.String.join("\n", sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION"))
-
+        val statement =
+            java.lang.String.join("\n", sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION"))
+        log.error { "Executing SQL: $statement" }
         clickhouseClient.execute(statement)
     }
 
     override suspend fun createNamespaces(namespaces: Collection<String>) {
+        namespaces.forEach { namespace ->
+            {
+                // ClickHouse does not have a concept of namespaces, so we can ignore this.
+                log.info { "Ignoring create namespace request for ClickHouse: $namespace" }
+            }
+        }
     }
 }

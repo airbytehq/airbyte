@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.log
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 import java.util.ArrayList
@@ -45,6 +46,7 @@ class ClickhouseDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     ): Sql {
+        log.error { "Creating table for stream ${stream.descriptor.name} with columns: ${columnNameMapping.values.joinToString(", ")}" }
         fun columnsAndTypes(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping

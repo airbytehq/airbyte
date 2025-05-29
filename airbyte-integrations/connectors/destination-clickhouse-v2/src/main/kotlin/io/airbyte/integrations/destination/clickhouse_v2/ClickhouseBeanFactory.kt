@@ -51,12 +51,12 @@ class ClickhouseBeanFactory {
             nativeTableOperations = directLoader,
             sqlTableOperations = sqlTableOperations,
             streamStateStore = streamStateStore,
-            directLoadTableTempTableNameMigration =
-            DefaultDirectLoadTableTempTableNameMigration(
-                internalNamespace = config.resolvedDatabase,
-                existenceChecker,
-                sqlTableOperations,
-            ),
+            directLoadTableTempTableNameMigration = null,
+            // DefaultDirectLoadTableTempTableNameMigration(
+            //     internalNamespace = config.resolvedDatabase,
+            //     existenceChecker,
+            //     sqlTableOperations,
+            // ),
         )
     }
 
