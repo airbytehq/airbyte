@@ -237,14 +237,18 @@ definitions:
               - SettingContent
             value: |
               {% set settings_content = [] %}
-              {% for setting in record.Settings %}
-                {% set target_details = [] %}
-                {% for detail in setting.Details %}
-                  {% set _ = target_details.append(detail) %}
+              {% if record.get('Settings') %}
+                {% for setting in record.Settings %}
+                  {% set target_details = [] %}
+                  {% if setting.get('Details') %}
+                    {% for detail in setting.Details %}
+                      {% set _ = target_details.append(detail) %}
+                    {% endfor %}
+                  {% endif %}
+                  {% set setting_obj = {"Type": setting.get('Type'), "Details": {"TargetSettingDetail": target_details}} %}
+                  {% set _ = settings_content.append(setting_obj) %}
                 {% endfor %}
-                {% set setting_obj = {"Type": setting.Type, "Details": {"TargetSettingDetail": target_details}} %}
-                {% set _ = settings_content.append(setting_obj) %}
-              {% endfor %}
+              {% endif %}
               {{ settings_content }}
           - type: AddedFieldDefinition
             path:
@@ -258,7 +262,12 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - Settings
-            value: "{{ {'Setting': record.SettingContent} }}"
+            value: |
+              {% if record.SettingContent and record.SettingContent | length > 0 %}
+              {{ {'Setting': record.SettingContent} }}
+              {% else %}
+              {{ record.get('Settings') }}
+              {% endif %}
       - type: RemoveFields
         field_pointers:
           - - SettingContent
