@@ -5,6 +5,8 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.normalizeName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoChangeStreamException;
@@ -199,9 +201,42 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
         final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());
         return Optional.of(resumeToken);
       } else {
+        // the following code is for migrating connectors from 1.x to 2.0.0
+        // seeing null resume token data could be due to the migration from the old offset format to the new
+        // one
+        // the old offset format uses the database name as the server_id
+        // the new offset format uses the connection string as the server_id
+        // so retrieve the list of database names and see if any of them can give us a non-null
+        // resumeTokenData.
+        final List<String> databaseNames = new ArrayList<>();
+        String unsplitDatabaseNames = properties.getProperty(DATABASE_INCLUDE_LIST_KEY);
+        if (unsplitDatabaseNames != null) {
+          databaseNames.addAll(Arrays.asList(unsplitDatabaseNames.split(",")));
+          for (String databaseName : databaseNames) {
+            final Partition mongoDbPartition_old = new MongoDbPartition(normalizeName(databaseName));
+            final Set<Partition> partitions_old =
+                Collections.singleton(mongoDbPartition_old);
+            final OffsetReader<Partition, MongoDbOffsetContext, MongoDbOffsetContext.Loader> offsetReader_old =
+                new OffsetReader<>(offsetStorageReader, loader);
+            final Map<Partition, MongoDbOffsetContext> offsets_old = offsetReader_old.offsets(partitions_old);
+            if (offsets_old == null || offsets_old.values().stream().noneMatch(Objects::nonNull)) {
+              continue;
+            }
+            final MongoDbOffsetContext context_old = offsets_old.get(mongoDbPartition_old);
+            final var offset_old = context_old.getOffset();
+            final Object resumeTokenData_old = offset_old.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
+            if (resumeTokenData_old != null) {
+              final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData_old.toString());
+              LOGGER
+                  .info("This connector is using the old offset format where server_id is set to database name, migrating to the new offset format.");
+              return Optional.of(resumeToken);
+            }
+          }
+        } else {
+          LOGGER.warn("No database names found in properties. Unable to retrieve resume token from old offset format.");
+        }
         return Optional.empty();
       }
-
     } finally {
       LOGGER.info("Closing offsetStorageReader and fileOffsetBackingStore");
       if (offsetStorageReader != null) {
