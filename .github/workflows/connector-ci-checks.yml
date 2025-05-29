@@ -152,6 +152,11 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
+      - name: List users
+        shell: bash
+        run: |
+          getent passwd | awk -F: '$3 >= 1000 { print $1 }'
+      
       - name: Fetch connector secrets
         # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
         # Later integration tests will likely fail in this case, but we at least let them run.
@@ -169,11 +174,6 @@ jobs:
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
-
-      - name: List users
-        shell: bash
-        run: |
-          getent passwd | awk -F: '$3 >= 1000 { print $1 }'
 
       - name: Install and Join Tailscale
         if: failure()
