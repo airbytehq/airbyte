@@ -296,4 +296,18 @@ class StreamManagerTest {
         )
         assertDoesNotThrow { manager1.markCheckpoint() }
     }
+
+    @Test
+    fun `throw if inferNextCheckpointKey called when disabled`() {
+        val manager1 = StreamManager(stream1, requireCheckpointKeyOnState = true)
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            manager1.inferNextCheckpointKey()
+        }
+    }
+
+    @Test
+    fun `throw if force marking a checkpoint when disabled`() {
+        val manager1 = StreamManager(stream1, requireCheckpointKeyOnState = true)
+        Assertions.assertThrows(IllegalStateException::class.java) { manager1.markCheckpoint() }
+    }
 }
