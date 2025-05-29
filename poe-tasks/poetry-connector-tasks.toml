@@ -129,7 +129,3 @@ help = "Pin to a specific branch of the CDK."
 [tool.poe.tasks.run-cat-tests]
 shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
 help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
-
-[tasks.run-cat-tests]
-shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
-help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
