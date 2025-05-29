@@ -248,6 +248,15 @@ definitions:
               {{ settings_content }}
           - type: AddedFieldDefinition
             path:
+              - UrlCustomParameters
+            value: |
+              {% if record.get('UrlCustomParameters') and record.get('UrlCustomParameters').get('Parameters') %}
+              {{ {"Parameters": {"CustomParameter": record.UrlCustomParameters.Parameters}} }}
+              {% else %}
+              {{ record.get('UrlCustomParameters') }}
+              {% endif %}
+          - type: AddedFieldDefinition
+            path:
               - Settings
             value: "{{ {'Setting': record.SettingContent} }}"
       - type: RemoveFields
