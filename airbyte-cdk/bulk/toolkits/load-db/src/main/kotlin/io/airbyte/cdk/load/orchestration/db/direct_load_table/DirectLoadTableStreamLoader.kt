@@ -148,9 +148,9 @@ class DirectLoadTableAppendTruncateStreamLoader(
         if (initialStatus.tempTable != null) {
             val generationId = nativeTableOperations.getGenerationId(tempTableName)
 
-            if (initialStatus.tempTable.isEmpty || generationId >= stream.minimumGenerationId) {
-                nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
-            } else {
+            //if (initialStatus.tempTable.isEmpty || generationId >= stream.minimumGenerationId) {
+            //    nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            //} else {
                 logger.info {
                     "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
                 }
@@ -160,7 +160,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     columnNameMapping,
                     replace = true
                 )
-            }
+            // }
             isWritingToTemporaryTable = true
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
         } else {

@@ -54,18 +54,17 @@ class ClickhouseBeanFactory {
             nativeTableOperations = directLoader,
             sqlTableOperations = sqlTableOperations,
             streamStateStore = streamStateStore,
-            directLoadTableTempTableNameMigration =
-            DefaultDirectLoadTableTempTableNameMigration(
-                internalNamespace = config.resolvedDatabase,
-                existenceChecker,
-                sqlTableOperations,
-            ),
+            directLoadTableTempTableNameMigration = null,
+            // DefaultDirectLoadTableTempTableNameMigration(
+            //     internalNamespace = config.resolvedDatabase,
+            //     existenceChecker,
+            //     sqlTableOperations,
+            // ),
         )
     }
 
     @Singleton
     fun clickhouseClient(config: ClickhouseConfiguration): Client {
-        log.error { config }
         return Client.Builder()
             .addEndpoint(config.endpoint)
             .setUsername(config.username)

@@ -103,7 +103,6 @@ class DestinationStreamFactory(
     private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
 ) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
-        log.error { "$stream" }
         return DestinationStream(
             descriptor =
                 DestinationStream.Descriptor(
