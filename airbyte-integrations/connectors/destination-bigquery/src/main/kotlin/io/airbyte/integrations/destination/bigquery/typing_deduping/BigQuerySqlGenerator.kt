@@ -481,7 +481,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 if (importType.cursor.isEmpty()) {
                     ""
                 } else if (importType.cursor.size == 1) {
-                    val columnName = importType.cursor.first()
+                    val columnName = columnNameMapping[importType.cursor.first()]!!
                     "`$columnName` DESC NULLS LAST,"
                 } else {
                     throw UnsupportedOperationException(

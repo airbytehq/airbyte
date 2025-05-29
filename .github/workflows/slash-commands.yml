@@ -29,6 +29,8 @@ jobs:
             bump-cdk-version-and-merge
             format-fix
             test
+            run-cat-tests
+            run-connector-tests
             test-performance
             publish-java-cdk
             connector-performance
