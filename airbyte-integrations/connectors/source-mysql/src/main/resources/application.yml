@@ -3,7 +3,7 @@ airbyte:
   connector:
     extract:
       jdbc:
-        mode: concurrent
+        mode: sequential
         with-sampling: true
         table-sample-size: 1024
         throughput-bytes-per-second: 10000000
