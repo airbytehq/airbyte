@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
@@ -31,9 +32,12 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (
@@ -84,14 +88,24 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
+    initial_limit = 250
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
+    def __init__(self, config: Mapping[str, Any]):
+        self._error_handler = LimitReducingErrorHandler(
+            max_retries=5,
+            error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors("orders"),
+        )
+        super().__init__(config)
+
+    def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params["limit"] = self.initial_limit  # Always start with the default limit; error handler will mutate on retry
         if not next_page_token:
             params["status"] = "any"
         return params
+
+    def get_error_handler(self):
+        return self._error_handler
 
 
 class Disputes(IncrementalShopifyStream):

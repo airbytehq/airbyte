@@ -110,7 +110,7 @@ class LoadPipelineStepTaskUTest {
         value: String,
         counts: Map<Int, Long> = emptyMap()
     ): PipelineEvent<StreamKey, String> =
-        PipelineMessage(counts.mapKeys { CheckpointId(it.key) }, key, value)
+        PipelineMessage(counts.mapKeys { CheckpointId(it.key.toString()) }, key, value)
     private fun endOfStreamEvent(key: StreamKey): PipelineEvent<StreamKey, String> =
         PipelineEndOfStream(key.stream)
 
@@ -409,7 +409,7 @@ class LoadPipelineStepTaskUTest {
         val expectedBatchUpdateStream1 =
             BatchStateUpdate(
                 key1.stream,
-                mapOf(CheckpointId(0) to 15L, CheckpointId(1) to 51L),
+                mapOf(CheckpointId("0") to 15L, CheckpointId("1") to 51L),
                 BatchState.COMPLETE,
                 taskId,
                 part,
@@ -418,7 +418,7 @@ class LoadPipelineStepTaskUTest {
         val expectedBatchUpdateStream2 =
             BatchStateUpdate(
                 key2.stream,
-                mapOf(CheckpointId(1) to 6L, CheckpointId(2) to 22L, CheckpointId(3) to 38L),
+                mapOf(CheckpointId("1") to 6L, CheckpointId("2") to 22L, CheckpointId("3") to 38L),
                 BatchState.PERSISTED,
                 taskId,
                 part,
@@ -632,7 +632,12 @@ class LoadPipelineStepTaskUTest {
             PipelineContext(
                 parentCheckpointCounts = mapOf(),
                 parentRecord =
-                    DestinationRecordRaw(mockk(), mockk(relaxed = true), "serialized", mockk()),
+                    DestinationRecordRaw(
+                        mockk(),
+                        mockk(relaxed = true),
+                        mockk(),
+                        "serialized".length.toLong()
+                    ),
             )
 
         task.handleOutput(
