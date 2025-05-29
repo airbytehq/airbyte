@@ -15,6 +15,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/format-fix` - Fixes most formatting issues.
 - `/bump-version` - Bumps connector versions.
 - `/run-connector-tests` - Runs connector tests.
+- `/run-cat-tests` - Runs CAT tests.
 
 If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
 

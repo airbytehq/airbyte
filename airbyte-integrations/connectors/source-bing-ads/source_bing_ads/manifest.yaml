@@ -116,6 +116,9 @@ definitions:
           cursor_field: account_name
       record_selector:
         type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_bing_ads.components.DuplicatedRecordsFilter
         extractor:
           type: DpathExtractor
           field_path: ["Accounts"]
