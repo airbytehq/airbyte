@@ -1,4 +1,4 @@
-name: Internal Poetry packages CI
+name: Internal CI Package Checks
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
