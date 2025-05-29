@@ -2,6 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
+      - "*"
   registryOverrides:
     oss:
       enabled: true
