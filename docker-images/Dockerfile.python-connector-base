@@ -6,28 +6,37 @@ FROM ${BASE_IMAGE}
 
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
+# Install dependencies needed for OCR and PDF processing in certain file-based connectors
+# TODO: move these out of the base image
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get dist-upgrade -y && \
+    apt-get install -y --no-install-recommends \
+      socat=1.7.4.4-2 \
+      tesseract-ocr=5.3.0-2 \
+      poppler-utils=22.12.0-2+deb12u1 && \
+    apt-get clean
+    
+RUN pip install --upgrade \
+      pip==24.0 \
+      setuptools==78.1.1 && \
+    pip install --no-cache-dir \
+      poetry==1.8.4
+
 # Set-up groups, users, and directories
 RUN adduser --uid 1000 --system --group --no-create-home airbyte && \
-    mkdir --mode 755 /custom_cache && \
     mkdir --mode 755 /airbyte && \
-    chown airbyte:airbyte /airbyte
-
-ENV PIP_CACHE_DIR=/custom_cache/pip
-RUN pip install --upgrade pip==24.0 setuptools==78.1.1
+    mkdir --mode 755 /custom_cache && \
+    mkdir -p 755 /usr/share/nltk_data && \
+    chown -R airbyte:airbyte /airbyte && \
+    chown -R airbyte:airbyte /custom_cache && \
+    chown -R airbyte:airbyte /secrets && \
+    chown -R airbyte:airbyte /config && \
+    chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && \
+    chown -R airbyte:airbyte /usr/share/pki/nltk_data && \
+    chown -R airbyte:airbyte /etc/pki/ca-trust && \
+    chown -R airbyte:airbyte /tmp
 
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 ENV POETRY_NO_INTERACTION=1
-
-RUN pip install poetry==1.8.4
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get dist-upgrade -y && \
-    apt-get clean
-RUN apt-get install -y socat=1.7.4.4-2
-RUN apt-get update && \
-    apt-get install -y \
-        tesseract-ocr=5.3.0-2 \
-        poppler-utils=22.12.0-2+deb12u1
-
-RUN mkdir -p 755 /usr/share/nltk_data
