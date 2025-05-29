@@ -58,13 +58,6 @@
       "description": "The domain name set for dynamic search ads within the campaign.",
       "type": ["null", "string"]
     },
-    "campaign.dynamic_search_ads_setting.feeds": {
-      "description": "List of feeds utilized for dynamic search ads.",
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
     "campaign.dynamic_search_ads_setting.language_code": {
       "description": "The language code associated with dynamic search ads.",
       "type": ["null", "string"]
