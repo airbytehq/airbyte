@@ -60,9 +60,12 @@ class JdbcConcurrentPartitionsCreatorFactory<
 }
 
 @Singleton
-class JdbcPartitionCreatorFactorySupplier<T: JdbcPartitionsCreatorFactory<A, S, P>, A : JdbcSharedState,
+class JdbcPartitionCreatorFactorySupplier<
+    T: JdbcPartitionsCreatorFactory<A, S, P>,
+    A : JdbcSharedState,
     S : JdbcStreamState<A>,
-    P : JdbcPartition<S>>(val factory: T) : PartitionsCreatorFactorySupplier<T> {
+    P : JdbcPartition<S>>
+(val factory: T) : PartitionsCreatorFactorySupplier<T> {
     override fun get(): T = factory
 }
 
