@@ -32,6 +32,7 @@ jobs:
             format-fix
             poe
             publish-java-cdk
+            run-cat-tests
             run-connector-tests
             test-performance
 
