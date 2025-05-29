@@ -60,7 +60,7 @@ import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
 
 @Singleton
-@Suppress(("DEPRECATION"))
+@Suppress("DEPRECATION")
 class MySqlSourceDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
     val configuration: MySqlSourceConfiguration,
