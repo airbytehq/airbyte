@@ -1,13 +1,17 @@
 #
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
-import logging
 import json
+import logging
 import os
 import uuid
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pytest
+from destination_ragie.client import RagieClient
+from destination_ragie.config import RagieConfig
+from destination_ragie.destination import DestinationRagie
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,9 +24,6 @@ from airbyte_cdk.models import (
     Type,
 )
 
-from destination_ragie.client import RagieClient
-from destination_ragie.config import RagieConfig
-from destination_ragie.destination import DestinationRagie
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,12 +36,12 @@ def config() -> Dict[str, Any]:
     """Fixture to load test configuration from environment variables or config file."""
     # First try to load from environment
     config_path = os.environ.get("CONFIG_PATH", "secrets/config.json")
-    
+
     # Default to loading from config file if variable not set
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
             return json.load(f)
-    
+
     # Use environment variables as fallback
     return {
         "api_key": os.environ["RAGIE_API_KEY"],
@@ -66,17 +67,17 @@ def configured_catalog():
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
-    
+
     overwrite_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="overwrite_stream", 
+            name="overwrite_stream",
             json_schema={"type": "object"},
             supported_sync_modes=[SyncMode.full_refresh],
         ),
         sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
-    
+
     return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
 
 
@@ -118,36 +119,36 @@ def test_write_append(config, configured_catalog):
     """Test writing to an append mode stream."""
     # Setup
     destination = DestinationRagie()
-    
+
     # Create unique identifiers for test data
     test_id = f"test_{uuid.uuid4().hex[:8]}"
-    
+
     # Create test messages
     record = make_record(
-        "append_stream", 
+        "append_stream",
         {
             "id": test_id,
             "title": "Test Document",
             "message": "This is a test document for integration testing",
             "author": "Airbyte Test",
             "category": "Integration Test",
-            "tags": ["test", "integration", "airbyte"]
-        }
+            "tags": ["test", "integration", "airbyte"],
+        },
     )
-    
+
     # Run destination with test messages
     list(destination.write(config, configured_catalog, [record]))
-    
+
     # Verify data was written
     config_model = RagieConfig.model_validate(config)
     client = RagieClient(config=config_model)
-    
+
     # Query by metadata to find our test record
     filter_conditions = {
         "airbyte_stream": "append_stream",
     }
     docs = client.find_docs_by_metadata(filter_conditions)
-    
+
     # Verify document was created with correct content
     matching_docs = [doc for doc in docs if doc.get("metadata", {}).get("external_id") == test_id]
     assert len(matching_docs) == 1
@@ -158,11 +159,11 @@ def test_write_overwrite(config, configured_catalog):
     """Test writing to an overwrite mode stream."""
     # Setup
     destination = DestinationRagie()
-    
+
     # Create unique identifiers for test data
     test_id_1 = f"test_overwrite_1_{uuid.uuid4().hex[:8]}"
     test_id_2 = f"test_overwrite_2_{uuid.uuid4().hex[:8]}"
-    
+
     # First batch - write initial data
     initial_records = [
         make_record(
@@ -172,15 +173,15 @@ def test_write_overwrite(config, configured_catalog):
                 "title": "Initial Document 1",
                 "message": "This document should be overwritten",
                 "author": "Airbyte Test",
-                "category": "Integration Test", 
-                "tags": ["initial", "test"]
-            }
+                "category": "Integration Test",
+                "tags": ["initial", "test"],
+            },
         )
     ]
-    
+
     # Run destination with initial records
     list(destination.write(config, configured_catalog, initial_records))
-    
+
     # Second batch - this should overwrite the first batch
     overwrite_records = [
         make_record(
@@ -191,24 +192,24 @@ def test_write_overwrite(config, configured_catalog):
                 "message": "This is the new document after overwrite",
                 "author": "Airbyte Test",
                 "category": "Integration Test",
-                "tags": ["overwrite", "test"]
-            }
+                "tags": ["overwrite", "test"],
+            },
         )
     ]
-    
+
     # Run destination with overwrite records
     list(destination.write(config, configured_catalog, overwrite_records))
-    
+
     # Verify data was correctly overwritten
     config_model = RagieConfig.model_validate(config)
     client = RagieClient(config=config_model)
-    
+
     # Query by metadata to find our test records
     filter_conditions = {
         "airbyte_stream": "overwrite_stream",
     }
     docs = client.find_docs_by_metadata(filter_conditions)
-    
+
     # Check that only the new document exists
     doc_ids = [doc.get("metadata", {}).get("external_id") for doc in docs]
     assert test_id_1 not in doc_ids
@@ -219,15 +220,13 @@ def clean_up_test_data(config):
     """Helper to clean up test data after integration tests."""
     config_model = RagieConfig.model_validate(config)
     client = RagieClient(config=config_model)
-    
+
     # Find all test documents by the source metadata
-    filter_conditions = {
-        "source": "airbyte_integration_test"
-    }
-    
+    filter_conditions = {"source": "airbyte_integration_test"}
+
     docs = client.find_docs_by_metadata(filter_conditions)
     doc_ids = [doc["id"] for doc in docs if "id" in doc]
-    
+
     if doc_ids:
         client.delete_documents_by_id(doc_ids)
         print(f"Cleaned up {len(doc_ids)} test documents")
@@ -242,4 +241,5 @@ def cleanup_after_tests(config):
 
 if __name__ == "__main__":
     import pytest
+
     pytest.main([__file__])

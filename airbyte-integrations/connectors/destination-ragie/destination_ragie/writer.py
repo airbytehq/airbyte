@@ -1,17 +1,20 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
+import copy
+import hashlib
+import json
 import logging
+import mimetypes
 import os
 import uuid
 from typing import Any, Dict, List, Optional, Set, Tuple
-import copy
-import json
-import hashlib
-import mimetypes
 
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 
 from .client import RagieClient
 from .config import RagieConfig
+
 
 logger = logging.getLogger("airbyte.destination_ragie.writer")
 
@@ -22,10 +25,16 @@ class RagieWriter:
 
     # Update RESERVED_METADATA_KEYS based on the provided API docs for POST /documents
     RESERVED_METADATA_KEYS = {
-        "document_id", "document_type", "document_source", "document_name",
-        "document_uploaded_at", "start_time", "end_time", # Keys from docs
+        "document_id",
+        "document_type",
+        "document_source",
+        "document_name",
+        "document_uploaded_at",
+        "start_time",
+        "end_time",  # Keys from docs
         # Include our internal keys
-        METADATA_AIRBYTE_STREAM_FIELD, METADATA_CONTENT_HASH_FIELD
+        METADATA_AIRBYTE_STREAM_FIELD,
+        METADATA_CONTENT_HASH_FIELD,
     }
 
     def __init__(
@@ -38,8 +47,7 @@ class RagieWriter:
         self.config = config
         self.catalog = catalog
         self.streams: Dict[str, ConfiguredAirbyteStream] = {
-            self._stream_tuple_to_id(s.stream.namespace, s.stream.name): s
-            for s in catalog.streams
+            self._stream_tuple_to_id(s.stream.namespace, s.stream.name): s for s in catalog.streams
         }
         self.static_metadata = self.config.metadata_static_dict or {}
         self.seen_hashes: Dict[str, Set[str]] = {}
@@ -53,14 +61,14 @@ class RagieWriter:
         logger.debug(f"Configured Processing Mode: {self.config.processing_mode}")
         logger.debug(f"Static Metadata Keys: {list(self.static_metadata.keys())}")
 
-
     def _stream_tuple_to_id(self, namespace: Optional[str], name: str) -> str:
         return f"{namespace}_{name}" if namespace else name
 
     # --- Overwrite Logic (delete_streams_to_overwrite) - No changes needed ---
     def delete_streams_to_overwrite(self) -> None:
         streams_to_overwrite = [(sid, sc) for sid, sc in self.streams.items() if sc.destination_sync_mode == DestinationSyncMode.overwrite]
-        if not streams_to_overwrite: return
+        if not streams_to_overwrite:
+            return
         stream_names = [sid for sid, _ in streams_to_overwrite]
         logger.info(f"OVERWRITE mode for streams: {stream_names}. Deleting existing data...")
         all_internal_ids_to_delete: Set[str] = set()
@@ -76,7 +84,11 @@ class RagieWriter:
                     logger.info(f"No existing documents found for stream '{stream_id}'.")
             except Exception as e:
                 logger.error(f"Failed to find documents for overwrite stream '{stream_id}': {e}", exc_info=True)
-                raise AirbyteTracedException(message=f"Failed to query existing documents for overwrite stream '{stream_id}'.", internal_message=str(e), failure_type=FailureType.system_error) from e
+                raise AirbyteTracedException(
+                    message=f"Failed to query existing documents for overwrite stream '{stream_id}'.",
+                    internal_message=str(e),
+                    failure_type=FailureType.system_error,
+                ) from e
         if all_internal_ids_to_delete:
             logger.info(f"Attempting deletion of {len(all_internal_ids_to_delete)} documents for streams: {stream_names}")
             try:
@@ -84,33 +96,46 @@ class RagieWriter:
                 logger.info(f"Successfully processed deletion requests for overwrite streams.")
             except Exception as e:
                 logger.error(f"Failed during document deletion for streams {stream_names}: {e}", exc_info=True)
-                raise AirbyteTracedException(message=f"Failed to delete documents during overwrite for streams {stream_names}.", internal_message=str(e), failure_type=FailureType.system_error) from e
+                raise AirbyteTracedException(
+                    message=f"Failed to delete documents during overwrite for streams {stream_names}.",
+                    internal_message=str(e),
+                    failure_type=FailureType.system_error,
+                ) from e
         else:
-             logger.info("No documents found to delete across overwrite streams.")
+            logger.info("No documents found to delete across overwrite streams.")
 
     # --- Helper Methods (_get_value_from_path, _calculate_content_hash, _preload_hashes_if_needed) - No changes needed ---
     def _get_value_from_path(self, data: Dict[str, Any], path_str: Optional[str]) -> Any:
-        if not path_str or not isinstance(data, dict): return None
-        path = path_str.split('.')
+        if not path_str or not isinstance(data, dict):
+            return None
+        path = path_str.split(".")
         current = data
         for i, key in enumerate(path):
             if isinstance(current, dict):
-                if key in current: current = current[key]
-                else: return None
+                if key in current:
+                    current = current[key]
+                else:
+                    return None
             elif isinstance(current, list):
                 if key.isdigit():
                     try:
                         index = int(key)
-                        if 0 <= index < len(current): current = current[index]
-                        else: return None
-                    except (ValueError, IndexError): return None
+                        if 0 <= index < len(current):
+                            current = current[index]
+                        else:
+                            return None
+                    except (ValueError, IndexError):
+                        return None
                 else:
-                     logger.debug(f"Attempted list access with non-integer key '{key}' in path '{path_str}'.")
-                     return None
-            else: return None
+                    logger.debug(f"Attempted list access with non-integer key '{key}' in path '{path_str}'.")
+                    return None
+            else:
+                return None
         return current
 
-    def _calculate_content_hash(self, metadata: Dict[str, Any], content: Optional[Dict[str, Any]] = None, file_info: Optional[Dict[str, Any]] = None) -> str:
+    def _calculate_content_hash(
+        self, metadata: Dict[str, Any], content: Optional[Dict[str, Any]] = None, file_info: Optional[Dict[str, Any]] = None
+    ) -> str:
         hasher = hashlib.sha256()
         content_part = ""
         metadata_part = ""
@@ -118,25 +143,25 @@ class RagieWriter:
             stable_file_info = {
                 "path": file_info.get("file_relative_path"),
                 "modified": file_info.get("modified"),
-                "size": file_info.get("bytes")
+                "size": file_info.get("bytes"),
             }
             stable_file_info = {k: v for k, v in stable_file_info.items() if v is not None}
             content_part = json.dumps(stable_file_info, sort_keys=True, ensure_ascii=False)
         elif content:
             content_part = json.dumps(content, sort_keys=True, ensure_ascii=False)
         hashable_metadata = {
-            k: v for k, v in metadata.items()
-            if k not in [self.METADATA_AIRBYTE_STREAM_FIELD, self.METADATA_CONTENT_HASH_FIELD]
+            k: v for k, v in metadata.items() if k not in [self.METADATA_AIRBYTE_STREAM_FIELD, self.METADATA_CONTENT_HASH_FIELD]
         }
         metadata_part = json.dumps(hashable_metadata, sort_keys=True, ensure_ascii=False)
         combined_str = content_part + "::" + metadata_part
-        hasher.update(combined_str.encode('utf-8'))
+        hasher.update(combined_str.encode("utf-8"))
         hash_result = hasher.hexdigest()
         # logger.debug(f"Calculated content hash: {hash_result} (File: {bool(file_info)}, Metadata Keys: {list(hashable_metadata.keys())})")
         return hash_result
 
     def _preload_hashes_if_needed(self, stream_id: str) -> None:
-        if stream_id in self.hashes_preloaded: return
+        if stream_id in self.hashes_preloaded:
+            return
         logger.info(f"Preloading hashes for stream '{stream_id}'...")
         try:
             filter_conditions = {self.METADATA_AIRBYTE_STREAM_FIELD: stream_id}
@@ -151,11 +176,13 @@ class RagieWriter:
                 if content_hash:
                     hashes.add(content_hash)
                     found_hashes += 1
-                else: docs_without_hash += 1
+                else:
+                    docs_without_hash += 1
             self.seen_hashes[stream_id] = hashes
             self.hashes_preloaded.add(stream_id)
             log_msg = f"Finished preloading for '{stream_id}'. Found {len(hashes)} existing hashes."
-            if docs_without_hash > 0: log_msg += f" ({docs_without_hash} docs missing hash)."
+            if docs_without_hash > 0:
+                log_msg += f" ({docs_without_hash} docs missing hash)."
             logger.info(log_msg)
         except Exception as e:
             logger.error(f"Failed to preload hashes for stream '{stream_id}': {e}", exc_info=True)
@@ -170,68 +197,67 @@ class RagieWriter:
             for field_path_str in self.config.metadata_fields:
                 value = self._get_value_from_path(record_data, field_path_str)
                 if value is not None:
-                    key = field_path_str.replace('.', '_')
+                    key = field_path_str.replace(".", "_")
                     # Ragie metadata values: string, number, boolean, list of strings.
                     if isinstance(value, (str, bool)):
                         combined_metadata[key] = value
                     elif isinstance(value, (int, float)):
-                         # Ensure it's finite (not NaN or Infinity)
-                         if isinstance(value, float) and not all(map(float.isfinite, [value])):
-                             logger.warning(f"Skipping non-finite float metadata field '{key}' (path: {field_path_str}). Value: {value}")
-                             continue
-                         combined_metadata[key] = value
+                        # Ensure it's finite (not NaN or Infinity)
+                        if isinstance(value, float) and not all(map(float.isfinite, [value])):
+                            logger.warning(f"Skipping non-finite float metadata field '{key}' (path: {field_path_str}). Value: {value}")
+                            continue
+                        combined_metadata[key] = value
                     elif isinstance(value, list) and all(isinstance(item, str) for item in value):
                         combined_metadata[key] = value
                     else:
                         # Try converting other types to string as fallback
                         try:
-                             str_value = str(value)
-                             combined_metadata[key] = str_value
-                             logger.debug(f"Converted metadata field '{key}' (type: {type(value)}) to string.")
+                            str_value = str(value)
+                            combined_metadata[key] = str_value
+                            logger.debug(f"Converted metadata field '{key}' (type: {type(value)}) to string.")
                         except Exception as str_err:
-                             logger.warning(f"Could not convert metadata field '{key}' from path '{field_path_str}' to string (type: {type(value)}). Error: {str_err}. Skipping.")
+                            logger.warning(
+                                f"Could not convert metadata field '{key}' from path '{field_path_str}' to string (type: {type(value)}). Error: {str_err}. Skipping."
+                            )
 
-        
         final_metadata = {}
         for key, value in combined_metadata.items():
             new_key = key
             # Clean key: remove leading/trailing spaces, handle reserved/internal names
             clean_key = key.strip()
             if not clean_key:
-                 logger.warning(f"Skipping metadata field with empty key (original: '{key}').")
-                 continue
+                logger.warning(f"Skipping metadata field with empty key (original: '{key}').")
+                continue
             new_key = clean_key
 
             if new_key in self.RESERVED_METADATA_KEYS or new_key.startswith("_"):
                 temp_key = new_key.lstrip("_")
-                new_key = f"{temp_key}_" if temp_key else "_" # Handle case of key being only underscores
-                if new_key != key: logger.debug(f"Adjusted reserved/internal metadata key '{key}' to '{new_key}'")
-
-
+                new_key = f"{temp_key}_" if temp_key else "_"  # Handle case of key being only underscores
+                if new_key != key:
+                    logger.debug(f"Adjusted reserved/internal metadata key '{key}' to '{new_key}'")
 
             # replace common problematic chars like '.', '$', space
-            problematic_chars = ['.', '$', ' ']
+            problematic_chars = [".", "$", " "]
             if any(char in new_key for char in problematic_chars):
-                 original_key = new_key
-                 for char in problematic_chars:
-                     new_key = new_key.replace(char, '_')
-                 logger.warning(f"Adjusted metadata key '{original_key}' to '{new_key}' due to problematic characters.")
+                original_key = new_key
+                for char in problematic_chars:
+                    new_key = new_key.replace(char, "_")
+                logger.warning(f"Adjusted metadata key '{original_key}' to '{new_key}' due to problematic characters.")
 
             # Final check if cleaned key is empty or reserved again
             if not new_key:
-                 logger.warning(f"Skipping metadata field - key became empty after cleaning (original: '{key}').")
-                 continue
+                logger.warning(f"Skipping metadata field - key became empty after cleaning (original: '{key}').")
+                continue
             if new_key in self.RESERVED_METADATA_KEYS:
-                 new_key = f"{new_key}_"
-                 logger.debug(f"Post-cleaning key '{key}' resulted in reserved key, appended underscore -> '{new_key}'")
+                new_key = f"{new_key}_"
+                logger.debug(f"Post-cleaning key '{key}' resulted in reserved key, appended underscore -> '{new_key}'")
 
             final_metadata[new_key] = value
 
         final_metadata[self.METADATA_AIRBYTE_STREAM_FIELD] = stream_id
 
-
         # Check metadata size limits (optional but good practice)
-        if len(final_metadata) > 1000: # Approximation, actual limit counts list items individually
+        if len(final_metadata) > 1000:  # Approximation, actual limit counts list items individually
             logger.warning(f"Metadata for record exceeds ~1000 key-value pairs ({len(final_metadata)}). Ragie might truncate or reject.")
 
         return final_metadata
@@ -296,10 +322,7 @@ class RagieWriter:
 
         # --- 5. Calculate Content Hash ---
         temp_metadata_for_hashing = copy.deepcopy(final_metadata)
-        content_hash = self._calculate_content_hash(
-            metadata=temp_metadata_for_hashing,
-            content=content_to_send
-        )
+        content_hash = self._calculate_content_hash(metadata=temp_metadata_for_hashing, content=content_to_send)
         final_metadata[self.METADATA_CONTENT_HASH_FIELD] = content_hash
         payload["metadata"] = final_metadata  # Store final metadata dict in payload
 

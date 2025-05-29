@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import logging
 from typing import Any, Iterable, Mapping
 
@@ -11,11 +13,12 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType  
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 
 from .client import RagieClient
 from .config import RagieConfig
 from .writer import RagieWriter
+
 
 # Configure logging for CDK usage
 logging.basicConfig(level=logging.INFO)
@@ -23,15 +26,14 @@ logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger("airbyte.destination_ragie")
 
+
 class DestinationRagie(Destination):
     """
     Airbyte Destination Connector for Ragie.ai.
     """
+
     def write(
-        self,
-        config: Mapping[str, Any],
-        configured_catalog: ConfiguredAirbyteCatalog,
-        input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """
         Reads message stream, configures Ragie client and writer, handles sync modes,
@@ -42,14 +44,13 @@ class DestinationRagie(Destination):
             client = RagieClient(config=config_model)
             writer = RagieWriter(client=client, config=config_model, catalog=configured_catalog)
         except Exception as e:
-             logger.error(f"Failed to initialize connector: {e}", exc_info=True)
-             # Yield a state message? Or just raise? Raising is better to signal init failure.
-             raise AirbyteTracedException(
-                 message="Failed to initialize the Ragie destination connector. Please check configuration.",
-                 internal_message=str(e),
-                 failure_type=FailureType.config_error
-             ) from e
-
+            logger.error(f"Failed to initialize connector: {e}", exc_info=True)
+            # Yield a state message? Or just raise? Raising is better to signal init failure.
+            raise AirbyteTracedException(
+                message="Failed to initialize the Ragie destination connector. Please check configuration.",
+                internal_message=str(e),
+                failure_type=FailureType.config_error,
+            ) from e
 
         logger.info("Starting Ragie destination write operation.")
 
@@ -75,13 +76,13 @@ class DestinationRagie(Destination):
                     try:
                         writer.queue_write_operation(message.record)
                         processed_records += 1
-                        if processed_records % 10 == 0: # Log progress periodically
+                        if processed_records % 10 == 0:  # Log progress periodically
                             logger.info(f"Processed {processed_records} records...")
                     except Exception as e:
-                         # Error processing a single record - log and potentially continue or fail?
-                         # Let's fail fast if queue_write_operation raises something critical.
-                         logger.error(f"Error processing Airbyte Record: {e}", exc_info=True)
-                         raise e # Re-raise to signal failure
+                        # Error processing a single record - log and potentially continue or fail?
+                        # Let's fail fast if queue_write_operation raises something critical.
+                        logger.error(f"Error processing Airbyte Record: {e}", exc_info=True)
+                        raise e  # Re-raise to signal failure
 
                 else:
                     # Ignore other message types (LOG, TRACE, etc.)
@@ -101,9 +102,8 @@ class DestinationRagie(Destination):
                 raise AirbyteTracedException(
                     message="An error occurred during data writing to Ragie.",
                     internal_message=str(e),
-                    failure_type=FailureType.system_error # Or determine failure type if possible
+                    failure_type=FailureType.system_error,  # Or determine failure type if possible
                 ) from e
-
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -122,28 +122,24 @@ class DestinationRagie(Destination):
                 logger.info("Connection check successful.")
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-        except ValueError as e: # Handles Pydantic validation errors
-             logger.error(f"Configuration validation error: {e}")
-             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Configuration validation failed: {e}")
+        except ValueError as e:  # Handles Pydantic validation errors
+            logger.error(f"Configuration validation error: {e}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Configuration validation failed: {e}")
         except Exception as e:
             logger.error(f"Unexpected error during connection check: {e}", exc_info=True)
-            return AirbyteConnectionStatus(
-                status=Status.FAILED,
-                message=f"An unexpected error occurred during connection check: {repr(e)}"
-            )
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An unexpected error occurred during connection check: {repr(e)}")
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
         Returns the connector specification (schema defining configuration).
         """
         return ConnectorSpecification(
-            documentationUrl="https://github.com/YourRepo/airbyte-destination-ragie", # TODO: Update URL
-            supportsIncremental=True, # Because we handle state messages
+            documentationUrl="https://github.com/YourRepo/airbyte-destination-ragie",  # TODO: Update URL
+            supportsIncremental=True,  # Because we handle state messages
             supported_destination_sync_modes=[
                 DestinationSyncMode.overwrite,
                 DestinationSyncMode.append,
-                DestinationSyncMode.append_dedup # Support all modes
+                DestinationSyncMode.append_dedup,  # Support all modes
             ],
             connectionSpecification=RagieConfig.model_json_schema(),
         )
-

@@ -1,7 +1,11 @@
-import logging
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import json
-from typing import List, Optional, Dict, Any
+import logging
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field, field_validator
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,13 +14,7 @@ class RagieConfig(BaseModel):
     class Config:
         title = "Ragie Destination Config"
 
-    api_key: str = Field(
-        title="API Key",
-        description="API Key for Ragie.ai.",
-        airbyte_secret=True,
-        order=0,
-        examples=["tn_******"]
-    )
+    api_key: str = Field(title="API Key", description="API Key for Ragie.ai.", airbyte_secret=True, order=0, examples=["tn_******"])
 
     content_fields: List[str] = Field(
         title="Content Fields",
@@ -24,7 +22,7 @@ class RagieConfig(BaseModel):
         default=[],
         order=1,
         examples=["description", "message", "details.notes"],
-        always_show=True
+        always_show=True,
     )
 
     metadata_fields: List[str] = Field(
@@ -33,7 +31,7 @@ class RagieConfig(BaseModel):
         default=[],
         order=2,
         examples=["user.id", "user.email", "user.profile.created_at"],
-        always_show=True
+        always_show=True,
     )
 
     partition: Optional[str] = Field(
@@ -43,7 +41,7 @@ class RagieConfig(BaseModel):
         pattern=r"^[a-z0-9_\-]*$",
         order=3,
         examples=["support_tickets", "prod_logs"],
-        always_show=True
+        always_show=True,
     )
 
     processing_mode: str = Field(
@@ -53,7 +51,7 @@ class RagieConfig(BaseModel):
         enum=["fast", "hi_res"],
         order=4,
         examples=["fast"],
-        always_show=True
+        always_show=True,
     )
 
     document_name_field: Optional[str] = Field(
@@ -62,7 +60,7 @@ class RagieConfig(BaseModel):
         default="",
         order=5,
         examples=["ticket_id", "log_id"],
-        always_show=True
+        always_show=True,
     )
 
     metadata_static: Optional[str] = Field(
@@ -70,7 +68,7 @@ class RagieConfig(BaseModel):
         description="(Optional) Static key-value pairs as a JSON object string to add to every document's metadata.",
         default="",
         examples=['{"source": "airbyte", "env": "production"}'],
-        order=6
+        order=6,
     )
 
     external_id_field: Optional[str] = Field(
@@ -78,7 +76,7 @@ class RagieConfig(BaseModel):
         description="(Optional) Field from the record to use as the unique 'external_id' for Ragie documents.",
         default="",
         order=7,
-        examples=["event_id", "uuid"]
+        examples=["event_id", "uuid"],
     )
 
     api_url: str = Field(
@@ -86,7 +84,7 @@ class RagieConfig(BaseModel):
         description="URL for the Ragie API. Defaults to https://api.ragie.ai",
         default="https://api.ragie.ai",
         order=8,
-        examples=["https://api.ragie.ai"]
+        examples=["https://api.ragie.ai"],
     )
 
     @field_validator("metadata_static")

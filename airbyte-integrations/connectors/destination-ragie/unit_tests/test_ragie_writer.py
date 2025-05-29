@@ -1,10 +1,21 @@
-import unittest
-from unittest.mock import Mock, MagicMock, patch
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import datetime
 import hashlib
 import json
+import unittest
+from unittest.mock import MagicMock, Mock, patch
+
 from destination_ragie.writer import RagieWriter
-from airbyte_cdk.models import ConfiguredAirbyteStream, ConfiguredAirbyteCatalog, AirbyteRecordMessage, DestinationSyncMode, SyncMode, AirbyteStream
+
+from airbyte_cdk.models import (
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+)
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 
 
@@ -24,22 +35,20 @@ class TestRagieWriter(unittest.TestCase):
 
         # Create a stream with proper AirbyteStream object
         stream = ConfiguredAirbyteStream(
-            stream=AirbyteStream(name="my_stream", namespace="default", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.incremental]),
+            stream=AirbyteStream(
+                name="my_stream", namespace="default", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.incremental]
+            ),
             destination_sync_mode=DestinationSyncMode.append_dedup,
-            sync_mode=SyncMode.incremental
+            sync_mode=SyncMode.incremental,
         )
         self.mock_catalog = ConfiguredAirbyteCatalog(streams=[stream])
-        
+
         # Setup writer
-        self.writer = RagieWriter(
-            client=self.mock_client,
-            config=self.mock_config,
-            catalog=self.mock_catalog
-        )
+        self.writer = RagieWriter(client=self.mock_client, config=self.mock_config, catalog=self.mock_catalog)
         # Initialize write_buffer if not set in __init__
-        if not hasattr(self.writer, 'write_buffer'):
+        if not hasattr(self.writer, "write_buffer"):
             self.writer.write_buffer = []
-    
+
     def _make_record(self, message="hello", author="john", tags=None):
         if tags is None:
             tags = ["tag1", "tag2"]
@@ -47,11 +56,7 @@ class TestRagieWriter(unittest.TestCase):
             stream="my_stream",
             namespace="default",
             emitted_at=int(datetime.datetime.now().timestamp() * 1000),
-            data={
-                "message": message,
-                "doc": {"name": "my_doc"},
-                "meta": {"author": author, "tags": tags}
-            }
+            data={"message": message, "doc": {"name": "my_doc"}, "meta": {"author": author, "tags": tags}},
         )
 
     def test_get_value_from_path(self):
@@ -70,7 +75,6 @@ class TestRagieWriter(unittest.TestCase):
         result = self.writer._stream_tuple_to_id("namespace", "name")
         self.assertEqual(result, "namespace_name")
 
-
     def test_queue_write_operation_skips_duplicates(self):
         record = self._make_record()
         hash_val = self.writer._calculate_content_hash(
@@ -80,15 +84,13 @@ class TestRagieWriter(unittest.TestCase):
                 "meta_author": "john",
                 "meta_tags": ["tag1", "tag2"],
                 "airbyte_stream": "default_my_stream",
-                "airbyte_content_hash": "dummy"
-            }
+                "airbyte_content_hash": "dummy",
+            },
         )
         self.writer.seen_hashes["default_my_stream"] = {hash_val}
         self.mock_client.find_docs_by_metadata.return_value = [{"metadata": {"airbyte_content_hash": hash_val}}]
         self.writer.queue_write_operation(record)
         self.assertEqual(len(self.writer.write_buffer), 0)
-
-
 
     def test_preload_hashes_if_needed_loads_hashes(self):
         self.mock_client.find_docs_by_metadata.return_value = [
@@ -106,14 +108,11 @@ class TestRagieWriter(unittest.TestCase):
             destination_sync_mode=DestinationSyncMode.overwrite,
         )
 
-        self.writer.streams = {
-            "default_overwrite_stream": stream
-        }
+        self.writer.streams = {"default_overwrite_stream": stream}
         self.mock_client.find_ids_by_metadata.return_value = ["id1", "id2"]
         self.writer.delete_streams_to_overwrite()
         self.mock_client.delete_documents_by_id.assert_called_with(["id1", "id2"])
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
