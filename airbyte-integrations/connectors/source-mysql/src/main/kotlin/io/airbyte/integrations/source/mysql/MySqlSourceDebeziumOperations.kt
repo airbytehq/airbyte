@@ -66,7 +66,8 @@ class MySqlSourceDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
     val configuration: MySqlSourceConfiguration,
     random: Random = Random.Default,
-) : CdcPartitionsCreatorDebeziumOperations<MySqlSourceCdcPosition>, CdcPartitionReaderDebeziumOperations<MySqlSourceCdcPosition> {
+) : CdcPartitionsCreatorDebeziumOperations<MySqlSourceCdcPosition>,
+    CdcPartitionReaderDebeziumOperations<MySqlSourceCdcPosition> {
     private val log = KotlinLogging.logger {}
     private val cdcIncrementalConfiguration: CdcIncrementalConfiguration by lazy {
         configuration.incrementalConfiguration as CdcIncrementalConfiguration
