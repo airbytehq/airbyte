@@ -2,12 +2,12 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "*"
   registryOverrides:
     oss:
       enabled: true
     cloud:
-      enabled: true
+      enabled: false
   remoteRegistries:
     pypi:
       enabled: false
