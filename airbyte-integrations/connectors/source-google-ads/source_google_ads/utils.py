@@ -120,7 +120,8 @@ def traced_exception(
         elif query_error:
             message = f"Incorrect custom query. {error.message}"
 
-        elif is_error_type(quota_error, QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED):
+        elif is_error_type(quota_error, QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED) or is_error_type(
+                quota_error, QuotaErrorEnum.QuotaError.EXCESSIVE_LONG_TERM_QUERY_RESOURCE_CONSUMPTION):
             message = (
                 f"The operation limits for your Google Ads account '{customer_id}' have been exceeded for the last 24 hours. "
                 f"To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "
