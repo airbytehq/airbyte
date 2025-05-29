@@ -38,6 +38,8 @@ lock = "poetry lock"
 # Pytest
 pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds' --junitxml=build/test-results/pytest-fast-junit.xml unit_tests"
 pytest-unit-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
 if [ -d unit_tests ]; then
   poetry run pytest --junitxml=build/test-results/pytest-unit-tests-junit.xml unit_tests
 else
@@ -46,6 +48,8 @@ fi
 '''
 
 pytest-integration-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
 if ls integration_tests/test_*.py >/dev/null 2>&1; then
   poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
 else

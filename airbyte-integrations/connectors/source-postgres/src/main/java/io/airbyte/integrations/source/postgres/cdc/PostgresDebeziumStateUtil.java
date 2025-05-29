@@ -214,16 +214,22 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
 
   }
 
+  private static ThreadLocal<JsonNode> initialState = new ThreadLocal<>();
+
   /**
    * Method to construct initial Debezium state which can be passed onto Debezium engine to make it
    * process WAL from a specific LSN and skip snapshot phase
    */
   public JsonNode constructInitialDebeziumState(final JdbcDatabase database, final String dbName) {
-    try {
-      return format(currentXLogLocation(database), currentTransactionId(database), dbName, Instant.now());
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
+    if (initialState.get() == null) {
+      try {
+        final JsonNode asJson = format(currentXLogLocation(database), currentTransactionId(database), dbName, Instant.now());
+        initialState.set(asJson);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
     }
+    return initialState.get();
   }
 
   @VisibleForTesting
@@ -253,6 +259,11 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
         resultSet -> resultSet.getLong(1));
     Preconditions.checkState(transactionId.size() == 1);
     return transactionId.get(0);
+  }
+
+  public static void disposeInitialState() {
+    LOGGER.debug("Dispose initial state cached for {}", Thread.currentThread());
+    initialState.remove();
   }
 
 }
