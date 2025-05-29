@@ -21,22 +21,20 @@ import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
 
 /**
- * Interface for processing AirbyteValue instances into CSV-compatible values.
- * Implementations can provide custom validation and transformation logic.
+ * Interface for processing AirbyteValue instances into CSV-compatible values. Implementations can
+ * provide custom validation and transformation logic.
  */
 interface CsvValueProcessor {
     /**
      * Process an AirbyteValue into a CSV-compatible value.
-     * 
+     *
      * @param value The AirbyteValue to process (it may be null)
      * @return The processed value suitable for CSV output
      */
     fun process(value: AirbyteValue?): Any
 }
 
-/**
- * Default implementation of CsvValueProcessor that maintains the original behavior.
- */
+/** Default implementation of CsvValueProcessor that maintains the original behavior. */
 class DefaultCsvValueProcessor : CsvValueProcessor {
     override fun process(value: AirbyteValue?): Any {
         return value?.let {
@@ -54,6 +52,7 @@ class DefaultCsvValueProcessor : CsvValueProcessor {
                 is TimeWithTimezoneValue -> it.value
                 is TimeWithoutTimezoneValue -> it.value
             }
-        } ?: ""
+        }
+            ?: ""
     }
 }
