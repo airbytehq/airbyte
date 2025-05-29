@@ -35,7 +35,6 @@ For the OAuth client credentials, please follow [instructions](https://developer
 
 ## Setup guide
 
-### Step 1: Set up Xero
 1. Create an application in [Xero development center](https://developer.xero.com/app/manage/).
 2. Select the appropriate authentication method (bearer token or OAuth client credentials).
 3. Configure the required scopes mentioned in the Prerequisites section.
