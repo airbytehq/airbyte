@@ -45,13 +45,6 @@ jobs:
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ steps.job-vars.outputs.repo }}
-          ref: ${{ steps.job-vars.outputs.branch }}
-          fetch-depth: 0
-
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
         # comment with the job run link.
@@ -67,6 +60,13 @@ jobs:
             > - [Run Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)
             > - [Run Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
             >
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.job-vars.outputs.repo }}
+          ref: ${{ steps.job-vars.outputs.branch }}
+          fetch-depth: 0
 
       - name: Run CAT tests with `airbyte-ci`
         if: github.event_name == 'workflow_dispatch'
