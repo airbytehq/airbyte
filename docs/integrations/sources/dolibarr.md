@@ -1,4 +1,5 @@
 # Dolibarr
+
 Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 
 ## Configuration
@@ -6,7 +7,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `my_dolibarr_domain_url` | `string` | my_dolibarr_domain/url. enter your &quot;domain/dolibarr_url&quot; without https:// Example: mydomain.com/dolibarr |  |
+| `my_dolibarr_domain_url` | `string` | `my_dolibarr_domain/url`. Enter your `domain/dolibarr_url` without `https://` Example: `mydomain.com/dolibarr` |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
