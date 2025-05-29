@@ -36,6 +36,9 @@ class DirectLoadTableAppendStreamLoader(
             "AppendStreamLoader starting for stream ${stream.descriptor.toPrettyString()}"
         }
         if (initialStatus.realTable == null) {
+        logger.info {
+                "Creating final table for ${realTableName.toPrettyString()} for stream ${stream.descriptor.toPrettyString()}"
+            }
             sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
         } else {
             nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)

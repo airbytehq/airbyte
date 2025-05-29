@@ -67,18 +67,19 @@ class ClickhouseDirectLoadSqlGenerator(
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
         val forceCreateTable = if (replace) "OR REPLACE" else ""
-        val finalTableId = tableName.toPrettyString(QUOTE)
+//        TODO: Add namespace to table name properly — CH doesn't like periods
+//        val finalTableId = tableName.toPrettyString(QUOTE)
+        val finalTableId = tableName.name
         return Sql.of(
             """
             CREATE $forceCreateTable TABLE `${config.resolvedDatabase}`.$finalTableId (
-              _airbyte_raw_id STRING NOT NULL,
-              _airbyte_extracted_at TIMESTAMP NOT NULL,
-              _airbyte_meta JSON NOT NULL,
-              _airbyte_generation_id INTEGER,
+              _airbyte_raw_id String NOT NULL,
+              _airbyte_extracted_at DateTime NOT NULL,
+              _airbyte_meta String NOT NULL,
+              _airbyte_generation_id UInt32,
               $columnDeclarations
             )
-            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY $clusterConfig;
+            ENGINE = MergeTree ORDER BY (_airbyte_raw_id)
             """.trimIndent()
         )
     }
