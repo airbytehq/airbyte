@@ -98,6 +98,7 @@ class PipelineEventBookkeepingRouter(
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
+                manager.incrementByteCount(record.serializedSizeBytes)
                 // Fallback to the manager if the record doesn't have a checkpointId
                 // This should only happen in STDIO mode.
                 val checkpointId =
@@ -152,7 +153,10 @@ class PipelineEventBookkeepingRouter(
                 val manager = syncManager.getStreamManager(stream)
                 val (checkpointKey, checkpointRecordCount) = getKeyAndCounts(checkpoint, manager)
                 val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
+                    checkpoint
+                        .withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
+                        .withTotalRecords(manager.readCount())
+                        .withTotalBytes(manager.byteCount())
                 checkpointQueue.publish(
                     reservation.replace(
                         StreamCheckpointWrapped(stream, checkpointKey, messageWithCount)
@@ -162,11 +166,15 @@ class PipelineEventBookkeepingRouter(
 
             /** For a global state message, gather the */
             is GlobalCheckpoint -> {
+                var totalRecords: Long = 0
+                var totalBytes: Long = 0
                 val (checkpointKey, checkpointRecordCount) =
                     if (checkpoint.checkpointKey == null) {
                         val streamWithKeyAndCount =
                             catalog.streams.map { stream ->
                                 val manager = syncManager.getStreamManager(stream.descriptor)
+                                totalRecords = totalRecords.plus(manager.readCount())
+                                totalBytes = totalBytes.plus(manager.byteCount())
                                 getKeyAndCounts(checkpoint, manager)
                             }
                         val singleKey =
@@ -181,7 +189,10 @@ class PipelineEventBookkeepingRouter(
                     }
 
                 val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
+                    checkpoint
+                        .withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
+                        .withTotalBytes(totalBytes)
+                        .withTotalRecords(totalRecords)
                 checkpointQueue.publish(
                     reservation.replace(GlobalCheckpointWrapped(checkpointKey, messageWithCount))
                 )

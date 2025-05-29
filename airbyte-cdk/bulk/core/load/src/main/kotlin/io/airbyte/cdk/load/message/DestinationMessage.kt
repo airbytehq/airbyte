@@ -323,7 +323,7 @@ data class DestinationRecordRaw(
     val stream: DestinationStream,
     val rawData: AirbyteMessage,
     val schema: AirbyteType,
-    private val serializedSizeBytes: Long,
+    val serializedSizeBytes: Long,
     val checkpointId: CheckpointId? = null
 ) {
     val fileReference: FileReference? =
@@ -538,6 +538,10 @@ data class DestinationFileStreamIncomplete(
         statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
+private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
+
+private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
+
 /** State. */
 sealed interface CheckpointMessage : DestinationMessage {
     data class Stats(val recordCount: Long)
@@ -559,8 +563,12 @@ sealed interface CheckpointMessage : DestinationMessage {
     val destinationStats: Stats?
     val additionalProperties: Map<String, Any>
     val serializedSizeBytes: Long
+    val totalRecords: Long?
+    val totalBytes: Long?
 
     fun withDestinationStats(stats: Stats): CheckpointMessage
+    fun withTotalRecords(totalRecords: Long): CheckpointMessage
+    fun withTotalBytes(totalBytes: Long): CheckpointMessage
 
     fun decorateStateMessage(message: AirbyteStateMessage) {
         if (sourceStats != null) {
@@ -576,6 +584,13 @@ sealed interface CheckpointMessage : DestinationMessage {
             message.additionalProperties[CHECKPOINT_INDEX_NAME] = it.checkpointIndex.value
             message.additionalProperties[CHECKPOINT_ID_NAME] = it.checkpointId.value
         }
+
+        if (totalRecords != null) {
+            message.additionalProperties[COMMITTED_RECORDS_COUNT] = totalRecords
+        }
+        if (totalBytes != null) {
+            message.additionalProperties[COMMITTED_BYTES_COUNT] = totalBytes
+        }
     }
 }
 
@@ -585,7 +600,9 @@ data class StreamCheckpoint(
     override val destinationStats: Stats? = null,
     override val additionalProperties: Map<String, Any> = emptyMap(),
     override val serializedSizeBytes: Long,
-    override val checkpointKey: CheckpointKey? = null
+    override val checkpointKey: CheckpointKey? = null,
+    override val totalRecords: Long? = null,
+    override val totalBytes: Long? = null
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
@@ -608,6 +625,8 @@ data class StreamCheckpoint(
     )
 
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+    override fun withTotalRecords(totalRecords: Long) = copy(totalRecords = totalRecords)
+    override fun withTotalBytes(totalBytes: Long) = copy(totalBytes = totalBytes)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -628,7 +647,9 @@ data class GlobalCheckpoint(
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,
     override val serializedSizeBytes: Long,
-    override val checkpointKey: CheckpointKey? = null
+    override val checkpointKey: CheckpointKey? = null,
+    override val totalRecords: Long? = null,
+    override val totalBytes: Long? = null,
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -641,6 +662,10 @@ data class GlobalCheckpoint(
         serializedSizeBytes = 0L,
     )
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+    override fun withTotalRecords(totalRecords: Long): CheckpointMessage =
+        copy(totalRecords = totalRecords)
+
+    override fun withTotalBytes(totalBytes: Long): CheckpointMessage = copy(totalBytes = totalBytes)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
