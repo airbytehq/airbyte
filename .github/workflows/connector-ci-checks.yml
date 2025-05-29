@@ -195,7 +195,6 @@ jobs:
           echo "Build failed. SSH access enabled via Tailscale."
           echo "Sleeping for 30 minutes for debugging access..."
           sleep 1800
-    
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
