@@ -44,27 +44,33 @@ class TestTeamsStreamFullRefresh(TestCase):
         """
         A full refresh sync without pagination completes successfully after one retry
         """
-        api_token_authenticator = self.get_authenticator(self._config)
-
-        http_mocker.get(
-            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
-            [
-                ErrorResponseBuilder.response_with_status(200).build(),
-                TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
-            ],
-        )
-
-        with patch("time.sleep", return_value=None):
-            output = read_stream("teams", SyncMode.full_refresh, self._config)
-
-        assert len(output.records) == 1
-
-        error_logs = [
-            error
-            for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-            if f'Response Code: 200, Response Text: {json.dumps({"error_code": "ComplexityException", "status_code": 200})}' in error
+        test_cases = [
+            ("200_ComplexityException", "ComplexityException"),
+            ("200_complexityBudgetExhausted", "complexityBudgetExhausted"),
         ]
-        assert len(error_logs) == 1
+        for test_values in test_cases:
+            response, error_code = test_values[0], test_values[1]
+            api_token_authenticator = self.get_authenticator(self._config)
+
+            http_mocker.get(
+                TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
+                [
+                    ErrorResponseBuilder.response_with_status(200).build(response),
+                    TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
+                ],
+            )
+
+            with patch("time.sleep", return_value=None):
+                output = read_stream("teams", SyncMode.full_refresh, self._config)
+
+            assert len(output.records) == 1
+
+            error_logs = [
+                error
+                for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+                if f'Response Code: 200, Response Text: {json.dumps({"error_code": error_code, "status_code": 200})}' in error
+            ]
+            assert len(error_logs) == 1
 
     @HttpMocker()
     def test_given_retryable_error_when_read_teams_then_stop_syncing(self, http_mocker):

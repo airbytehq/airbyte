@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_milvus
-!pyproject.toml
-!poetry.lock

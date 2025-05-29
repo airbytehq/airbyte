@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.amazonaws.services.s3.model.S3Object
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.commons.json.Jsons
 import java.io.BufferedReader
@@ -13,41 +12,37 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.*
-import java.util.Map
 import kotlin.collections.List
 import kotlin.collections.MutableList
 
 abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
-    S3DestinationAcceptanceTest(S3Format.JSONL) {
+    S3DestinationAcceptanceTest(FileUploadFormat.JSONL, supportsChangeCapture = false) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
-                Map.of(
-                    "format_type",
-                    outputFormat,
-                    "flattening",
-                    Flattening.NO.value,
-                    "compression",
-                    Jsons.jsonNode(Map.of("compression_type", "No Compression"))
+                mapOf(
+                    "format_type" to outputFormat,
+                    "flattening" to Flattening.NO.value,
+                    "compression" to Jsons.jsonNode(mapOf("compression_type" to "No Compression"))
                 )
             )
 
     @Throws(IOException::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             getReader(`object`).use { reader ->
                 var line: String?
                 while ((reader.readLine().also { line = it }) != null) {
-                    jsonRecords.add(Jsons.deserialize(line)[JavaBaseConstants.COLUMN_NAME_DATA])
+                    jsonRecords.add(Jsons.deserialize(line))
                 }
             }
         }

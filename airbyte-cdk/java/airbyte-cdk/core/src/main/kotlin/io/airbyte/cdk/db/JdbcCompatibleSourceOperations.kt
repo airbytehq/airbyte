@@ -39,5 +39,5 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
     fun isCursorType(type: SourceType?): Boolean
 
     @Throws(SQLException::class)
-    abstract fun convertDatabaseRowToAirbyteRecordData(queryContext: ResultSet): AirbyteRecordData
+    fun convertDatabaseRowToAirbyteRecordData(queryContext: ResultSet): AirbyteRecordData
 }

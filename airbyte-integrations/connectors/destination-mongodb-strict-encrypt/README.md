@@ -10,16 +10,16 @@ As a community contributor, you will need access to a MongoDB to run tests.
 2. Go to the `Database Access` page and add new database user with read and write permissions
 3. Add new database with default collection
 4. Add host, port or cluster_url, database name, username and password to `secrets/credentials.json` file
-     ```
-      {
-         "database": "database_name",
-         "user": "user",
-         "password": "password",
-         "cluster_url": "cluster_url",
-         "host": "host",
-         "port": "port"
-       }
-      ```
+   ```
+    {
+       "database": "database_name",
+       "user": "user",
+       "password": "password",
+       "cluster_url": "cluster_url",
+       "host": "host",
+       "port": "port"
+     }
+   ```
 
 ## Airbyte Employee
 

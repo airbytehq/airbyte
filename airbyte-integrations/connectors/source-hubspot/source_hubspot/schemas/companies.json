@@ -3,22 +3,28 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the company",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the company was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the company was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates whether the company is archived or active",
       "type": ["null", "boolean"]
     },
     "contacts": {
+      "description": "List of contacts associated with the company",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of individual contacts",
         "type": "string"
       }
     }

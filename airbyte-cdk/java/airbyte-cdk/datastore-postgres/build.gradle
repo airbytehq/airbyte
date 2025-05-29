@@ -1,25 +1,10 @@
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-deprecation,-this-escape"
-    }
-}
-
-compileKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
-    }
-}
-
-spotbugsTest.enabled = false
-
 dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
 
-    api 'org.postgresql:postgresql:42.6.0'
+    api 'org.postgresql:postgresql:42.7.4'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
-    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
+    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
 }

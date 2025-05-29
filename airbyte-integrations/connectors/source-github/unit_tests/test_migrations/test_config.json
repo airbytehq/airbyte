@@ -1,7 +1,5 @@
 {
-  "credentials": {
-    "personal_access_token": "personal_access_token"
-  },
+  "credentials": { "personal_access_token": "personal_access_token" },
   "repository": "airbytehq/airbyte airbytehq/airbyte-platform",
   "start_date": "2000-01-01T00:00:00Z",
   "branch": "airbytehq/airbyte/master airbytehq/airbyte-platform/main"

@@ -62,7 +62,7 @@ internal class TestDefaultJdbcDatabase {
     @Throws(SQLException::class)
     fun testBufferedResultQuery() {
         val actual =
-            database!!.bufferedResultSetQuery(
+            database.bufferedResultSetQuery(
                 { connection: Connection ->
                     connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
                 },
@@ -75,7 +75,7 @@ internal class TestDefaultJdbcDatabase {
     @Test
     @Throws(SQLException::class)
     fun testResultSetQuery() {
-        database!!
+        database
             .unsafeResultSetQuery(
                 { connection: Connection ->
                     connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
@@ -89,7 +89,7 @@ internal class TestDefaultJdbcDatabase {
     @Throws(SQLException::class)
     fun testQuery() {
         val actual =
-            database!!.queryJsons(
+            database.queryJsons(
                 { connection: Connection ->
                     connection.prepareStatement("SELECT * FROM id_and_name;")
                 },

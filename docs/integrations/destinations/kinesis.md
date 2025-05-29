@@ -44,8 +44,13 @@ The connector buffer size should also be tweaked according to your data size and
 
 ### Setup guide
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
 | 0.1.5   | 2022-09-22 | [16952](https://github.com/airbytehq/airbyte/pull/16952) | Add required config fields |
+
+</details>

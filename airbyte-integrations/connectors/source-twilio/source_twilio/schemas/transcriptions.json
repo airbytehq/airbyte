@@ -1,44 +1,57 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier for the account associated with the transcription data.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used for the transcription.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the transcription was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the transcription was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "The duration of the audio recording for which the transcription was generated.",
       "type": ["null", "integer"]
     },
     "price": {
+      "description": "The cost of the transcription service.",
       "type": ["null", "number"]
     },
     "price_unit": {
+      "description": "The currency unit used for pricing the transcription service.",
       "type": ["null", "string"]
     },
     "recording_sid": {
+      "description": "The unique identifier for the recording associated with the transcription.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier for the transcription data.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the transcription (e.g., in-progress, completed).",
       "type": ["null", "string"]
     },
     "transcription_text": {
+      "description": "The text content of the transcription generated from the audio recording.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of transcription (e.g., automatic, human-generated).",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI where the transcription data can be accessed.",
       "type": ["null", "string"]
     }
   },

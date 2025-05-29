@@ -20,9 +20,10 @@ def get_container_dockerfile(container) -> str:
     Returns:
         str: The Dockerfile of the base image container.
     """
-
     lineage = [
-        field for field in list(container._ctx.selections) if isinstance(field, dagger.api.base.Field) and field.type_name == "Container"
+        field
+        for field in list(container._ctx.selections)
+        if isinstance(field, dagger.client._core.Field) and field.type_name == "Container"
     ]
     dockerfile = []
 

@@ -9,7 +9,7 @@ import com.google.common.collect.Lists
 import io.airbyte.cdk.integrations.base.DestinationConfig.Companion.initialize
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig
-import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.avro.UploadAvroFormatConfig
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -34,7 +34,7 @@ internal class GcsAvroWriterTest {
                     "fake-bucketPath",
                     "fake-bucketRegion",
                     GcsHmacKeyCredentialConfig("fake-access-id", "fake-secret"),
-                    S3AvroFormatConfig(ObjectMapper().createObjectNode())
+                    UploadAvroFormatConfig(ObjectMapper().createObjectNode())
                 ),
                 Mockito.mock(AmazonS3::class.java, Mockito.RETURNS_DEEP_STUBS),
                 ConfiguredAirbyteStream()

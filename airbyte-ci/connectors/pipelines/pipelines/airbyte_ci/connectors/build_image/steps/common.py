@@ -7,6 +7,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 import docker  # type: ignore
+from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.utils import export_container_to_tarball
@@ -14,6 +15,13 @@ from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from typing import Any
+
+
+def apply_airbyte_docker_labels(connector_container: Container, connector: Connector) -> Container:
+    return connector_container.with_label("io.airbyte.version", connector.metadata["dockerImageTag"]).with_label(
+        "io.airbyte.name", connector.metadata["dockerRepository"]
+    )
+
 
 class BuildConnectorImagesBase(Step, ABC):
     """
@@ -34,16 +42,23 @@ class BuildConnectorImagesBase(Step, ABC):
         build_results_per_platform = {}
         for platform in self.build_platforms:
             try:
-                connector = await self._build_connector(platform, *args)
+                connector_container = await self._build_connector(platform, *args)
+                connector_container = apply_airbyte_docker_labels(connector_container, self.context.connector)
                 try:
-                    await connector.with_exec(["spec"])
+                    await connector_container.with_exec(["spec"])
                 except ExecError as e:
                     return StepResult(
-                        step=self, status=StepStatus.FAILURE, stderr=str(e), stdout=f"Failed to run the spec command on the connector container for platform {platform}."
+                        step=self,
+                        status=StepStatus.FAILURE,
+                        stderr=str(e),
+                        stdout=f"Failed to run the spec command on the connector container for platform {platform}.",
+                        exc_info=e,
                     )
-                build_results_per_platform[platform] = connector
+                build_results_per_platform[platform] = connector_container
             except QueryError as e:
-                return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
+                return StepResult(
+                    step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}"
+                )
         success_message = (
             f"The {self.context.connector.technical_name} docker image "
             f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
@@ -84,6 +99,7 @@ class LoadContainerToLocalDockerHost(Step):
 
     async def _run(self) -> StepResult:
         loaded_images = []
+        image_sha = None
         multi_platforms = len(self.containers) > 1
         for platform, container in self.containers.items():
             _, exported_tar_path = await export_container_to_tarball(self.context, container, platform)
@@ -107,4 +123,6 @@ class LoadContainerToLocalDockerHost(Step):
                     step=self, status=StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}"
                 )
 
-        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha}).")
+        return StepResult(
+            step=self, status=StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha})."
+        )

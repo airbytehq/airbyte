@@ -22,7 +22,7 @@ class OrderIdsPartitionRouter(SubstreamPartitionRouter):
             board_ids = self.read_all_boards(stream_boards=stream_map["boards"], stream_organizations=stream_map["organizations"])
 
         for board_id in board_ids:
-            yield {"id": board_id}
+            yield StreamSlice(partition={"id": board_id}, cursor_slice={})
 
     def read_all_boards(self, stream_boards: Stream, stream_organizations: Stream):
         """

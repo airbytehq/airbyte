@@ -1,0 +1,262 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - sms
+definitions:
+  streams:
+    sms:
+      type: DeclarativeStream
+      name: sms
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v4
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['token'] }}"
+          path: /sms
+          http_method: GET
+          request_parameters:
+            fromTS: "{{ config['start_date'] }}"
+            ToTS: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            Cost:
+              type: object
+              description: The cost details of the SMS
+              properties:
+                Currency:
+                  type: string
+                  description: The currency in which the cost is calculated
+                Value:
+                  type: number
+                  description: The value of the cost
+            CreationTS:
+              type: integer
+              description: Timestamp of when the SMS was created
+            From:
+              type: string
+              description: The sender's information or number
+            ID:
+              type: string
+              description: Unique identifier for the SMS
+            SmsCount:
+              type: integer
+              description: The number of SMS messages included in the data
+            Status:
+              type: object
+              description: The status details of the SMS
+              properties:
+                Code:
+                  type: number
+                  description: The code representing the status
+                Description:
+                  type: string
+                  description: Description of the status
+                Name:
+                  type: string
+                  description: Name of the status
+            To:
+              type: string
+              description: The recipient's information or number
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mailjet.com/v4
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: sms
+    primary_key:
+      - ID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v4
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['token'] }}"
+        path: /sms
+        http_method: GET
+        request_parameters:
+          fromTS: "{{ config['start_date'] }}"
+          ToTS: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: Offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: Limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Cost:
+            type: object
+            description: The cost details of the SMS
+            properties:
+              Currency:
+                type: string
+                description: The currency in which the cost is calculated
+              Value:
+                type: number
+                description: The value of the cost
+          CreationTS:
+            type: integer
+            description: Timestamp of when the SMS was created
+          From:
+            type: string
+            description: The sender's information or number
+          ID:
+            type: string
+            description: Unique identifier for the SMS
+          SmsCount:
+            type: integer
+            description: The number of SMS messages included in the data
+          Status:
+            type: object
+            description: The status details of the SMS
+            properties:
+              Code:
+                type: number
+                description: The code representing the status
+              Description:
+                type: string
+                description: Description of the status
+              Name:
+                type: string
+                description: Name of the status
+          To:
+            type: string
+            description: The recipient's information or number
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+    properties:
+      end_date:
+        type: integer
+        title: End date
+        description: >-
+          Retrieve SMS messages created before the specified timestamp. Required
+          format - Unix timestamp.
+        pattern: ^[0-9]*$
+        examples:
+          - 1666281656
+        order: 0
+      start_date:
+        type: integer
+        title: Start date
+        description: >-
+          Retrieve SMS messages created after the specified timestamp. Required
+          format - Unix timestamp.
+        pattern: ^[0-9]*$
+        examples:
+          - 1666261656
+        order: 1
+      token:
+        type: string
+        title: Access Token
+        description: >-
+          Your access token. See <a
+          href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
+        airbyte_secret: true
+        order: 2
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    sms: false
+schemas:
+  sms:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      Cost:
+        type: object
+        description: The cost details of the SMS
+        properties:
+          Currency:
+            type: string
+            description: The currency in which the cost is calculated
+          Value:
+            type: number
+            description: The value of the cost
+      CreationTS:
+        type: integer
+        description: Timestamp of when the SMS was created
+      From:
+        type: string
+        description: The sender's information or number
+      ID:
+        type: string
+        description: Unique identifier for the SMS
+      SmsCount:
+        type: integer
+        description: The number of SMS messages included in the data
+      Status:
+        type: object
+        description: The status details of the SMS
+        properties:
+          Code:
+            type: number
+            description: The code representing the status
+          Description:
+            type: string
+            description: Description of the status
+          Name:
+            type: string
+            description: Name of the status
+      To:
+        type: string
+        description: The recipient's information or number
+    additionalProperties: true

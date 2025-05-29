@@ -1,0 +1,104 @@
+final File buildNumberFile = file("${getLayout().buildDirectory.get()}/generated/build.number")
+
+allprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    group 'io.airbyte.bulk-cdk'
+
+    // Disable spotbugs on test code, which gets annoying really quickly for @MicronautTest classes.
+    spotbugsTest {
+        enabled = false
+    }
+
+    dependencies {
+        api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
+        api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
+        api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
+        api platform('io.micronaut:micronaut-core-bom:4.6.1')
+        api platform('org.junit:junit-bom:5.10.2')
+        api platform('org.slf4j:slf4j-bom:2.0.13')
+        api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
+        api platform('org.testcontainers:testcontainers-bom:1.20.1')
+
+        api 'org.jetbrains.kotlin:kotlin-stdlib'
+        api 'com.google.dagger:dagger:2.51.1'
+        ksp 'com.google.dagger:dagger-compiler:2.52'
+
+        annotationProcessor platform('io.micronaut:micronaut-core-bom:4.6.1')
+        annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
+        annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
+
+        ksp platform('io.micronaut:micronaut-core-bom:4.6.1')
+        ksp 'io.micronaut:micronaut-inject-kotlin'
+        kspTest platform('io.micronaut:micronaut-core-bom:4.6.1')
+        kspTest 'io.micronaut:micronaut-inject-kotlin'
+    }
+
+    if (buildNumberFile.exists()) {
+        version = "0.${buildNumberFile.text.trim()}"
+        publishing {
+            publications {
+                cdk(MavenPublication) {
+                    from components.java
+                }
+            }
+            // This repository is only defined and used in the context of publishing artifacts
+            // It's different from the 'airbyte-public-jars' defined in settings.gradle
+            // only in its omission of the 'public' directory.
+            // Any artifacts publish here will be available in the 'airbyte-public-jars' repo.
+            repositories {
+                maven {
+                    name 'airbyte-repo'
+                    url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/'
+                    credentials {
+                        username System.getenv('CLOUDREPO_USER')
+                        password System.getenv('CLOUDREPO_PASSWORD')
+                    }
+                }
+            }
+        }
+    }
+}
+
+if (buildNumberFile.exists()) {
+    tasks.register('bulkCdkBuild').configure {
+        dependsOn allprojects.collect {it.tasks.named('build')}
+    }
+    tasks.register('bulkCdkPublish').configure {
+        dependsOn allprojects.collect {it.tasks.named('publish')}
+    }
+}
+
+tasks.register('generateBuildNumberFile') {
+    description = 'Generates a build.number file in the build directory'
+    group = 'Custom'
+    outputs.file buildNumberFile
+
+    doLast {
+        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
+        var artifactUrl = "${groupIdUrl}/bulk"
+        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
+
+        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
+        try {
+            connection.setRequestMethod("GET")
+            connection.setDoInput(true)
+            var responseCode = connection.getResponseCode()
+            if (responseCode != 200) {
+                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
+            }
+            String responseContent = connection.inputStream.text
+            def xml = new XmlParser().parseText(responseContent)
+            String latestVersion = xml."versioning"."latest".text()
+            String buildNumber = latestVersion.replaceFirst('^0\\.', '')
+            Integer nextBuildNumber = 1 + buildNumber.toInteger()
+            buildNumberFile.parentFile.mkdirs()
+            buildNumberFile.text = "$nextBuildNumber"
+            logger.lifecycle("Wrote Bulk CDK build number ${nextBuildNumber} to ${buildNumberFile.path}.")
+        } finally {
+            connection.disconnect()
+        }
+    }
+}

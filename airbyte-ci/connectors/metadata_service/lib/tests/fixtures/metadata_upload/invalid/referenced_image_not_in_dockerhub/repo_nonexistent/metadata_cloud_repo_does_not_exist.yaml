@@ -14,7 +14,7 @@ data:
     normalizationIntegrationType: postgres
     normalizationRepository: airbyte/exists-2
     normalizationTag: 0.0.1
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
       dockerRepository: airbyte/does-not-exist-4

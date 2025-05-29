@@ -4,511 +4,664 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the credit note.",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The ID of the customer associated with the credit note.",
       "type": ["string", "null"]
     },
     "subscription_id": {
+      "description": "The ID of the subscription associated with the credit note.",
       "type": ["string", "null"]
     },
     "reference_invoice_id": {
+      "description": "The ID of the invoice this credit note references.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "The type of credit note.",
       "type": ["string", "null"]
     },
     "reason_code": {
+      "description": "The reason code for creating the credit note.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "The status of the credit note.",
       "type": ["string", "null"]
     },
     "vat_number": {
+      "description": "VAT number associated with the credit note.",
       "type": ["string", "null"]
     },
     "date": {
+      "description": "The date when the credit note was created.",
       "type": ["integer", "null"]
     },
     "price_type": {
+      "description": "The type of pricing used for the credit note.",
       "type": ["string", "null"]
     },
     "currency_code": {
+      "description": "The currency code for the credit note.",
       "type": ["string", "null"]
     },
     "total": {
+      "description": "The total amount of the credit note.",
       "type": ["integer", "null"]
     },
     "amount_allocated": {
+      "description": "The amount of credits allocated.",
       "type": ["integer", "null"]
     },
     "amount_refunded": {
+      "description": "The amount of credits refunded.",
       "type": ["integer", "null"]
     },
     "amount_available": {
+      "description": "The amount of credits available.",
       "type": ["integer", "null"]
     },
     "refunded_at": {
+      "description": "The date when the credit note was refunded.",
       "type": ["integer", "null"]
     },
     "voided_at": {
+      "description": "The date when the credit note was voided.",
       "type": ["integer", "null"]
     },
     "generated_at": {
+      "description": "The date when the credit note was generated.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "The version of the credit note resource.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "The date when the credit note was last updated.",
       "type": ["integer", "null"]
     },
     "sub_total": {
+      "description": "The subtotal amount of the credit note.",
       "type": ["integer", "null"]
     },
     "sub_total_in_local_currency": {
+      "description": "The subtotal amount in local currency.",
       "type": ["integer", "null"]
     },
     "total_in_local_currency": {
+      "description": "The total amount in local currency.",
       "type": ["integer", "null"]
     },
     "local_currency_code": {
+      "description": "The local currency code for the credit note.",
       "type": ["string", "null"]
     },
     "round_off_amount": {
+      "description": "Amount rounded off for currency conversions.",
       "type": ["integer", "null"]
     },
     "fractional_correction": {
+      "description": "Fractional correction for rounding off decimals.",
       "type": ["integer", "null"],
       "maximum": 50000
     },
     "deleted": {
+      "description": "Indicates if the credit note has been deleted.",
       "type": ["boolean", "null"]
     },
     "create_reason_code": {
+      "description": "The reason code for creating the credit note.",
       "type": ["string", "null"]
     },
     "vat_number_prefix": {
+      "description": "Prefix for the VAT number.",
       "type": ["string", "null"]
     },
     "base_currency_code": {
+      "description": "The base currency code for the credit note.",
       "type": ["string", "null"]
     },
     "business_entity_id": {
+      "description": "The ID of the business entity associated with the credit note.",
       "type": ["string", "null"]
     },
     "channel": {
+      "description": "The channel through which the credit note was created.",
       "type": ["string", "null"]
     },
     "exchange_rate": {
+      "description": "The exchange rate used for currency conversion.",
       "type": ["number", "null"]
     },
     "is_digital": {
+      "description": "Indicates if the credit note is in digital format.",
       "type": ["boolean", "null"]
     },
     "object": {
+      "description": "The object type of the credit note.",
       "type": ["string", "null"]
     },
     "is_vat_moss_registered": {
+      "description": "Indicates if VAT MOSS registration applies.",
       "type": ["boolean", "null"],
       "$comment": "Only available for accounts which have enabled taxes for EU Region for taxes."
     },
     "customer_notes": {
+      "description": "Notes provided by the customer for the credit note.",
       "type": ["string", "null"]
     },
     "line_items": {
+      "description": "Details of line items in the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "The ID of the line item",
             "type": ["string", "null"]
           },
           "subscription_id": {
+            "description": "The ID of the subscription associated with the line item",
             "type": ["string", "null"]
           },
           "date_from": {
+            "description": "The start date for the line item",
             "type": ["integer", "null"]
           },
           "date_to": {
+            "description": "The end date for the line item",
             "type": ["integer", "null"]
           },
           "unit_amount": {
+            "description": "The amount per unit of the line item",
             "type": ["integer", "null"]
           },
           "quantity": {
+            "description": "The quantity of the line item",
             "type": ["integer", "null"]
           },
           "amount": {
+            "description": "The total amount for the line item",
             "type": ["integer", "null"]
           },
           "pricing_model": {
+            "description": "The pricing model for the line item",
             "type": ["string", "null"]
           },
           "is_taxed": {
+            "description": "Flag indicating if the line item is taxed",
             "type": ["boolean", "null"]
           },
           "tax_amount": {
+            "description": "The amount of tax applied to the line item",
             "type": ["integer", "null"]
           },
           "tax_rate": {
+            "description": "The tax rate applied to the line item",
             "type": ["number", "null"]
           },
           "unit_amount_in_decimal": {
+            "description": "The amount per unit in decimal format",
             "type": ["string", "null"]
           },
           "quantity_in_decimal": {
+            "description": "The quantity of the line item in decimal format",
             "type": ["string", "null"]
           },
           "amount_in_decimal": {
+            "description": "The total amount in decimal format",
             "type": ["string", "null"]
           },
           "discount_amount": {
+            "description": "The amount of discount applied to the line item",
             "type": ["integer", "null"]
           },
           "item_level_discount_amount": {
+            "description": "The amount of item level discount applied",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "The description of the line item",
             "type": ["string", "null"]
           },
           "entity_description": {
+            "description": "The description of the entity associated with the line item",
             "type": ["string", "null"]
           },
           "entity_type": {
+            "description": "The type of entity associated with the line item",
             "type": ["string", "null"]
           },
           "tax_exempt_reason": {
+            "description": "The reason for tax exemption",
             "type": ["string", "null"]
           },
           "entity_id": {
+            "description": "The ID of the entity associated with the line item",
             "type": ["string", "null"]
           },
           "customer_id": {
+            "description": "The ID of the customer associated with the line item",
             "type": ["string", "null"]
           },
           "metered": {
+            "description": "Flag indicating if the line item is metered",
             "type": ["boolean", "null"]
           },
           "reference_line_item_id": {
+            "description": "The reference ID of the line item",
             "type": ["string", "null"]
           },
           "object": {
+            "description": "The object type",
             "type": ["string", "null"]
           }
         }
       }
     },
     "discounts": {
+      "description": "Details of discounts applied to the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "amount": {
+            "description": "The amount of discount",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "The description of the discount",
             "type": ["string", "null"]
           },
           "entity_type": {
+            "description": "The type of entity to which the discount applies",
             "type": ["string", "null"]
           },
           "entity_id": {
+            "description": "The ID of the entity to which the discount applies",
             "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_discounts": {
+      "description": "Details of discounts applied at the line item level in the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
+            "description": "The ID of the line item to which the discount applies",
             "type": ["string", "null"]
           },
           "discount_type": {
+            "description": "The type of discount applied",
             "type": ["string", "null"]
           },
           "discount_amount": {
+            "description": "The amount of the line item discount",
             "type": ["integer", "null"]
           },
           "entity_id": {
+            "description": "The ID of the entity to which the line item discount applies",
             "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_tiers": {
+      "description": "Details of tiers applied to line items in the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
+            "description": "The ID of the line item to which the tier applies",
             "type": ["string", "null"]
           },
           "starting_unit": {
+            "description": "The starting unit of the tier",
             "type": ["integer", "null"]
           },
           "ending_unit": {
+            "description": "The ending unit of the tier",
             "type": ["integer", "null"]
           },
           "quantity_used": {
+            "description": "The quantity used under the tier",
             "type": ["integer", "null"]
           },
           "unit_amount": {
+            "description": "The amount per unit of the tier",
             "type": ["integer", "null"]
           },
           "starting_unit_in_decimal": {
+            "description": "The starting unit in decimal format",
             "type": ["string", "null"]
           },
           "ending_unit_in_decimal": {
+            "description": "The ending unit in decimal format",
             "type": ["string", "null"]
           },
           "quantity_used_in_decimal": {
+            "description": "The quantity used in decimal format",
             "type": ["string", "null"]
           },
           "unit_amount_in_decimal": {
+            "description": "The amount per unit in decimal format",
             "type": ["string", "null"]
           }
         }
       }
     },
     "taxes": {
+      "description": "List of taxes applied to the credit note",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of each individual tax applied",
         "type": ["object", "null"],
         "properties": {
           "name": {
+            "description": "Name of the tax.",
             "type": ["string", "null"]
           },
           "amount": {
+            "description": "The amount of taxes.",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "Description of the tax.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_taxes": {
+      "description": "Details of taxes applied at the line item level in the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
+            "description": "The ID of the line item to which the tax applies",
             "type": ["string", "null"]
           },
           "tax_name": {
+            "description": "The name of the tax",
             "type": ["string", "null"]
           },
           "tax_rate": {
+            "description": "The tax rate applied",
             "type": ["number", "null"],
             "maximum": 100.0
           },
           "is_partial_tax_applied": {
+            "description": "Flag indicating if partial tax is applied",
             "type": ["boolean", "null"]
           },
           "is_non_compliance_tax": {
+            "description": "Flag indicating if the tax is non-compliant",
             "type": ["boolean", "null"]
           },
           "taxable_amount": {
+            "description": "The amount on which tax is calculated",
             "type": ["integer", "null"]
           },
           "tax_amount": {
+            "description": "The amount of tax",
             "type": ["integer", "null"]
           },
           "tax_juris_type": {
+            "description": "The type of jurisdiction for the tax",
             "type": ["string", "null"]
           },
           "tax_juris_name": {
+            "description": "The jurisdiction name for the tax",
             "type": ["string", "null"]
           },
           "tax_juris_code": {
+            "description": "The jurisdiction code for the tax",
             "type": ["string", "null"]
           },
           "tax_amount_in_local_currency": {
+            "description": "The amount of tax in local currency",
             "type": ["integer", "null"]
           },
           "local_currency-code": {
+            "description": "The currency code for local currency",
             "type": ["string", "null"]
           }
         }
       }
     },
     "linked_refunds": {
+      "description": "Details of linked refunds to the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "txn_id": {
+            "description": "The ID of the refund transaction",
             "type": ["string", "null"]
           },
           "applied_amount": {
+            "description": "The amount applied from the refund",
             "type": ["integer", "null"]
           },
           "applied_at": {
+            "description": "The date and time the refund amount was applied",
             "type": ["integer", "null"]
           },
           "txn_status": {
+            "description": "The status of the refund transaction",
             "type": ["string", "null"]
           },
           "txn_date": {
+            "description": "The date of the refund transaction",
             "type": ["integer", "null"]
           },
           "txn_amount": {
+            "description": "The total transaction amount for the refund",
             "type": ["integer", "null"]
           },
           "refund_reason_code": {
+            "description": "The reason code for the refund",
             "type": ["string", "null"]
           }
         }
       }
     },
     "linked_tax_withheld_refunds": {
+      "description": "Details of linked tax withheld refunds to the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "The ID of the tax withheld refund",
             "type": ["string", "null"]
           },
           "amount": {
+            "description": "The amount of tax withheld refund",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "The description of the tax withheld refund",
             "type": ["string", "null"]
           },
           "date": {
+            "description": "The date of the tax withheld refund",
             "type": ["integer", "null"]
           },
           "reference_number": {
+            "description": "The reference number of the tax withheld refund",
             "type": ["string", "null"]
           }
         }
       }
     },
     "allocations": {
+      "description": "Details of allocations associated with the credit note",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "invoice_id": {
+            "description": "The ID of the invoice",
             "type": ["string", "null"]
           },
           "allocated_amount": {
+            "description": "The amount allocated in the allocation",
             "type": ["integer", "null"]
           },
           "allocated_at": {
+            "description": "The date and time the amount was allocated",
             "type": ["integer", "null"]
           },
           "invoice_date": {
+            "description": "The date of the invoice",
             "type": ["integer", "null"]
           },
           "invoice_status": {
+            "description": "The status of the invoice",
             "type": ["string", "null"]
           }
         }
       }
     },
     "shipping_address": {
+      "description": "Details of the shipping address associated with the credit note",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
+          "description": "The first name in the shipping address",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "The last name in the shipping address",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "The email address in the shipping address",
           "type": ["string", "null"]
         },
         "company": {
+          "description": "The company name in the shipping address",
           "type": ["string", "null"]
         },
         "phone": {
+          "description": "The phone number in the shipping address",
           "type": ["string", "null"]
         },
         "line1": {
+          "description": "The first line of the address",
           "type": ["string", "null"]
         },
         "line2": {
+          "description": "The second line of the address",
           "type": ["string", "null"]
         },
         "line3": {
+          "description": "The third line of the address",
           "type": ["string", "null"]
         },
         "city": {
+          "description": "The city in the shipping address",
           "type": ["string", "null"]
         },
         "state_code": {
+          "description": "The state code in the shipping address",
           "type": ["string", "null"]
         },
         "state": {
+          "description": "The state in the shipping address",
           "type": ["string", "null"]
         },
         "country": {
+          "description": "The country in the shipping address",
           "type": ["string", "null"]
         },
         "zip": {
+          "description": "The zip code in the shipping address",
           "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "The validation status of the address",
           "type": ["string", "null"]
         }
       }
     },
     "billing_address": {
+      "description": "Details of the billing address associated with the credit note",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
+          "description": "The first name in the billing address",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "The last name in the billing address",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "The email address in the billing address",
           "type": ["string", "null"]
         },
         "company": {
+          "description": "The company name in the billing address",
           "type": ["string", "null"]
         },
         "phone": {
+          "description": "The phone number in the billing address",
           "type": ["string", "null"]
         },
         "line1": {
+          "description": "The first line of the address",
           "type": ["string", "null"]
         },
         "line2": {
+          "description": "The second line of the address",
           "type": ["string", "null"]
         },
         "line3": {
+          "description": "The third line of the address",
           "type": ["string", "null"]
         },
         "city": {
+          "description": "The city in the billing address",
           "type": ["string", "null"]
         },
         "state_code": {
+          "description": "The state code in the billing address",
           "type": ["string", "null"]
         },
         "state": {
+          "description": "The state in the billing address",
           "type": ["string", "null"]
         },
         "country": {
+          "description": "The country in the billing address",
           "type": ["string", "null"]
         },
         "zip": {
+          "description": "The zip code in the billing address",
           "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "The validation status of the address",
           "type": ["string", "null"]
         },
         "object": {
+          "description": "The object type",
           "type": ["string", "null"]
         }
       }
     },
     "custom_fields": {
+      "description": "Custom fields associated with the credit note.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

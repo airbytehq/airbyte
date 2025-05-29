@@ -1,0 +1,1299 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - payments
+definitions:
+  streams:
+    payments:
+      type: DeclarativeStream
+      name: payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+            'live' else 'https://api-sandbox.gocardless.com' }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
+          path: /payments
+          http_method: GET
+          request_parameters:
+            created_at[gte]: "{{ config['start_date'] }}"
+          request_headers:
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - payments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties:
+                order_dispatch_date:
+                  type:
+                    - "null"
+                    - string
+            amount:
+              type:
+                - "null"
+                - integer
+            amount_refunded:
+              type:
+                - "null"
+                - integer
+            charge_date:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            fx:
+              type:
+                - "null"
+                - object
+              properties:
+                estimated_exchange_rate:
+                  type:
+                    - "null"
+                    - string
+                exchange_rate:
+                  type:
+                    - "null"
+                    - string
+                fx_amount:
+                  type:
+                    - "null"
+                    - integer
+                fx_currency:
+                  type:
+                    - "null"
+                    - string
+            id:
+              type:
+                - "null"
+                - string
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                creditor:
+                  type:
+                    - "null"
+                    - string
+                mandate:
+                  type:
+                    - "null"
+                    - string
+            reference:
+              type:
+                - "null"
+                - string
+            retry_if_possible:
+              type:
+                - "null"
+                - boolean
+            status:
+              type:
+                - "null"
+                - string
+    refunds:
+      type: DeclarativeStream
+      name: refunds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+            'live' else 'https://api-sandbox.gocardless.com' }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
+          path: /refunds
+          http_method: GET
+          request_parameters:
+            created_at[gte]: "{{ config['start_date'] }}"
+          request_headers:
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - refunds
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties:
+                reason:
+                  type:
+                    - "null"
+                    - string
+            amount:
+              type:
+                - "null"
+                - integer
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            fx:
+              type:
+                - "null"
+                - object
+              properties:
+                estimated_exchange_rate:
+                  type:
+                    - "null"
+                    - string
+                exchange_rate:
+                  type:
+                    - "null"
+                    - string
+                fx_amount:
+                  type:
+                    - "null"
+                    - integer
+                fx_currency:
+                  type:
+                    - "null"
+                    - string
+            id:
+              type:
+                - "null"
+                - string
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                payment:
+                  type:
+                    - "null"
+                    - string
+            reference:
+              type:
+                - "null"
+                - string
+    mandates:
+      type: DeclarativeStream
+      name: mandates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+            'live' else 'https://api-sandbox.gocardless.com' }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
+          path: /mandates
+          http_method: GET
+          request_parameters:
+            created_at[gte]: "{{ config['start_date'] }}"
+          request_headers:
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - mandates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties:
+                contract:
+                  type:
+                    - "null"
+                    - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            id:
+              type:
+                - "null"
+                - string
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                creditor:
+                  type:
+                    - "null"
+                    - string
+                customer:
+                  type:
+                    - "null"
+                    - string
+                customer_bank_account:
+                  type:
+                    - "null"
+                    - string
+            next_possible_charge_date:
+              type:
+                - "null"
+                - string
+              format: date
+            reference:
+              type:
+                - "null"
+                - string
+            scheme:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+    payouts:
+      type: DeclarativeStream
+      name: payouts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+            'live' else 'https://api-sandbox.gocardless.com' }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
+          path: /payouts
+          http_method: GET
+          request_parameters:
+            created_at[gte]: "{{ config['start_date'] }}"
+          request_headers:
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - payouts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+            amount:
+              type:
+                - "null"
+                - integer
+            amount_refunded:
+              type:
+                - "null"
+                - integer
+            arrival_date:
+              type:
+                - "null"
+                - string
+              format: date
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            deducted_fees:
+              type:
+                - "null"
+                - integer
+            fx:
+              type:
+                - "null"
+                - object
+              properties:
+                estimated_exchange_rate:
+                  type:
+                    - "null"
+                    - string
+                exchange_rate:
+                  type:
+                    - "null"
+                    - string
+                fx_amount:
+                  type:
+                    - "null"
+                    - integer
+                fx_currency:
+                  type:
+                    - "null"
+                    - string
+            id:
+              type:
+                - "null"
+                - string
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                creditor:
+                  type:
+                    - "null"
+                    - string
+                creditor_bank_account:
+                  type:
+                    - "null"
+                    - string
+            payout_type:
+              type:
+                - "null"
+                - string
+            reference:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            tax_currency:
+              type:
+                - "null"
+                - string
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+      'live' else 'https://api-sandbox.gocardless.com' }}
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: payments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+          'live' else 'https://api-sandbox.gocardless.com' }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /payments
+        http_method: GET
+        request_parameters:
+          created_at[gte]: "{{ config['start_date'] }}"
+        request_headers:
+          GoCardless-Version: "{{ config['gocardless_version'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - payments
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response['meta']['cursors']['after'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              order_dispatch_date:
+                type:
+                  - "null"
+                  - string
+          amount:
+            type:
+              - "null"
+              - integer
+          amount_refunded:
+            type:
+              - "null"
+              - integer
+          charge_date:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          fx:
+            type:
+              - "null"
+              - object
+            properties:
+              estimated_exchange_rate:
+                type:
+                  - "null"
+                  - string
+              exchange_rate:
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                type:
+                  - "null"
+                  - integer
+              fx_currency:
+                type:
+                  - "null"
+                  - string
+          id:
+            type:
+              - "null"
+              - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              creditor:
+                type:
+                  - "null"
+                  - string
+              mandate:
+                type:
+                  - "null"
+                  - string
+          reference:
+            type:
+              - "null"
+              - string
+          retry_if_possible:
+            type:
+              - "null"
+              - boolean
+          status:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: refunds
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+          'live' else 'https://api-sandbox.gocardless.com' }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /refunds
+        http_method: GET
+        request_parameters:
+          created_at[gte]: "{{ config['start_date'] }}"
+        request_headers:
+          GoCardless-Version: "{{ config['gocardless_version'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - refunds
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response['meta']['cursors']['after'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              reason:
+                type:
+                  - "null"
+                  - string
+          amount:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          fx:
+            type:
+              - "null"
+              - object
+            properties:
+              estimated_exchange_rate:
+                type:
+                  - "null"
+                  - string
+              exchange_rate:
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                type:
+                  - "null"
+                  - integer
+              fx_currency:
+                type:
+                  - "null"
+                  - string
+          id:
+            type:
+              - "null"
+              - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              payment:
+                type:
+                  - "null"
+                  - string
+          reference:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: mandates
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+          'live' else 'https://api-sandbox.gocardless.com' }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /mandates
+        http_method: GET
+        request_parameters:
+          created_at[gte]: "{{ config['start_date'] }}"
+        request_headers:
+          GoCardless-Version: "{{ config['gocardless_version'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - mandates
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response['meta']['cursors']['after'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              contract:
+                type:
+                  - "null"
+                  - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          id:
+            type:
+              - "null"
+              - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              creditor:
+                type:
+                  - "null"
+                  - string
+              customer:
+                type:
+                  - "null"
+                  - string
+              customer_bank_account:
+                type:
+                  - "null"
+                  - string
+          next_possible_charge_date:
+            type:
+              - "null"
+              - string
+            format: date
+          reference:
+            type:
+              - "null"
+              - string
+          scheme:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: payouts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+          'live' else 'https://api-sandbox.gocardless.com' }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /payouts
+        http_method: GET
+        request_parameters:
+          created_at[gte]: "{{ config['start_date'] }}"
+        request_headers:
+          GoCardless-Version: "{{ config['gocardless_version'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - payouts
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response['meta']['cursors']['after'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+          amount:
+            type:
+              - "null"
+              - integer
+          amount_refunded:
+            type:
+              - "null"
+              - integer
+          arrival_date:
+            type:
+              - "null"
+              - string
+            format: date
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          deducted_fees:
+            type:
+              - "null"
+              - integer
+          fx:
+            type:
+              - "null"
+              - object
+            properties:
+              estimated_exchange_rate:
+                type:
+                  - "null"
+                  - string
+              exchange_rate:
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                type:
+                  - "null"
+                  - integer
+              fx_currency:
+                type:
+                  - "null"
+                  - string
+          id:
+            type:
+              - "null"
+              - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              creditor:
+                type:
+                  - "null"
+                  - string
+              creditor_bank_account:
+                type:
+                  - "null"
+                  - string
+          payout_type:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          tax_currency:
+            type:
+              - "null"
+              - string
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - gocardless_environment
+      - gocardless_version
+      - start_date
+    properties:
+      access_token:
+        type: string
+        title: Access Token
+        pattern: ^(sandbox|live)_.+$
+        description: Gocardless API TOKEN
+        airbyte_secret: true
+        order: 0
+      gocardless_environment:
+        type: string
+        title: GoCardless API Environment
+        enum:
+          - sandbox
+          - live
+        default: sandbox
+        description: Environment you are trying to connect to.
+        order: 1
+      gocardless_version:
+        type: string
+        title: GoCardless API Version
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        description: >
+          GoCardless version. This is a date. You can find the latest here: 
+
+          https://developer.gocardless.com/api-reference/#api-usage-making-requests
+        order: 2
+      start_date:
+        type: string
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: |
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+          - "2017-01-25T00:00:00Z"
+        order: 3
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    payments: false
+    refunds: false
+    mandates: false
+    payouts: false
+schemas:
+  payments:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+        properties:
+          order_dispatch_date:
+            type:
+              - "null"
+              - string
+      amount:
+        type:
+          - "null"
+          - integer
+      amount_refunded:
+        type:
+          - "null"
+          - integer
+      charge_date:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      fx:
+        type:
+          - "null"
+          - object
+        properties:
+          estimated_exchange_rate:
+            type:
+              - "null"
+              - string
+          exchange_rate:
+            type:
+              - "null"
+              - string
+          fx_amount:
+            type:
+              - "null"
+              - integer
+          fx_currency:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          creditor:
+            type:
+              - "null"
+              - string
+          mandate:
+            type:
+              - "null"
+              - string
+      reference:
+        type:
+          - "null"
+          - string
+      retry_if_possible:
+        type:
+          - "null"
+          - boolean
+      status:
+        type:
+          - "null"
+          - string
+  refunds:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+        properties:
+          reason:
+            type:
+              - "null"
+              - string
+      amount:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      fx:
+        type:
+          - "null"
+          - object
+        properties:
+          estimated_exchange_rate:
+            type:
+              - "null"
+              - string
+          exchange_rate:
+            type:
+              - "null"
+              - string
+          fx_amount:
+            type:
+              - "null"
+              - integer
+          fx_currency:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          payment:
+            type:
+              - "null"
+              - string
+      reference:
+        type:
+          - "null"
+          - string
+  mandates:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+        properties:
+          contract:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          creditor:
+            type:
+              - "null"
+              - string
+          customer:
+            type:
+              - "null"
+              - string
+          customer_bank_account:
+            type:
+              - "null"
+              - string
+      next_possible_charge_date:
+        type:
+          - "null"
+          - string
+        format: date
+      reference:
+        type:
+          - "null"
+          - string
+      scheme:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+  payouts:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+      amount:
+        type:
+          - "null"
+          - integer
+      amount_refunded:
+        type:
+          - "null"
+          - integer
+      arrival_date:
+        type:
+          - "null"
+          - string
+        format: date
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      deducted_fees:
+        type:
+          - "null"
+          - integer
+      fx:
+        type:
+          - "null"
+          - object
+        properties:
+          estimated_exchange_rate:
+            type:
+              - "null"
+              - string
+          exchange_rate:
+            type:
+              - "null"
+              - string
+          fx_amount:
+            type:
+              - "null"
+              - integer
+          fx_currency:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          creditor:
+            type:
+              - "null"
+              - string
+          creditor_bank_account:
+            type:
+              - "null"
+              - string
+      payout_type:
+        type:
+          - "null"
+          - string
+      reference:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      tax_currency:
+        type:
+          - "null"
+          - string

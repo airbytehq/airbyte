@@ -1,29 +1,43 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-coin-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
   githubIssueLabel: source-coin-api
   icon: coinapi.svg
   license: MIT
   name: Coin API
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-coin-api
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
-  tags:
-    - language:python
-    - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-coin-api
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: coin-api_config_dev_null
+          id: 3999ec4a-cb58-4bce-b508-7b23e94e1360
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-COIN-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -1,0 +1,1711 @@
+Table "accounts" {
+    "Id" number [pk]
+    "AccountFinancialStatus" string
+    "AccountLifeCycleStatus" string
+    "AutoTagType" string
+    "AccountMode" string
+    "ForwardCompatibilityMap" string
+    "PaymentMethodType" string
+    "Language" string
+    "LinkedAgencies" object
+    "TaxInformation" string
+    "CurrencyCode" string
+    "TimeZone" string
+    "BusinessAddress" object
+    "BackUpPaymentInstrumentId" number
+    "BillingThresholdAmount" number
+    "BillToCustomerId" number
+    "LastModifiedByUserId" number
+    "LastModifiedTime" string
+    "Name" string
+    "Number" string
+    "ParentCustomerId" number
+    "PauseReason" number
+    "PaymentMethodId" number
+    "PrimaryUserId" number
+    "SalesHouseCustomerId" number
+    "SoldToPaymentInstrumentId" number
+    "TimeStamp" string
+    "TaxCertificate" object
+}
+
+Table "ad_groups" {
+    "CampaignId" integer
+    "AccountId" integer
+    "CustomerId" integer
+    "AdRotation" object
+    "AudienceAdsBidAdjustment" number
+    "BiddingScheme" object
+    "CpcBid" object
+    "CpvBid" object
+    "CpmBid" object
+    "EndDate" object
+    "FinalUrlSuffix" string
+    "ForwardCompatibilityMap" array
+    "Id" integer [pk]
+    "Language" string
+    "Name" string
+    "Network" string
+    "PrivacyStatus" string
+    "Settings" array
+    "StartDate" object
+    "Status" string
+    "TrackingUrlTemplate" string
+    "UrlCustomParameters" object
+    "AdScheduleUseSearcherTimeZone" boolean
+    "AdGroupType" string
+    "MultimediaAdsBidAdjustment" integer
+}
+
+Table "ad_group_labels" {
+    "Account Id" integer
+    "Ad Group" string
+    "Campaign" string
+    "Client Id" string
+    "Id" integer [pk]
+    "Parent Id" integer
+    "Modified Time" string
+    "Status" string
+}
+
+Table "app_install_ads" {
+    "Ad Group" string
+    "App Id" integer
+    "Campaign" string
+    "Client Id" integer
+    "Custom Parameter" string
+    "Device Preference" string
+    "Editorial Appeal Status" string
+    "Editorial Location" string
+    "Editorial Reason Code" string
+    "Editorial Status" string
+    "Editorial Term" string
+    "Final Url" string
+    "Final Url Suffix" string
+    "Id" integer [pk]
+    "Modified Time" string
+    "Parent Id" integer
+    "Publisher Countries" string
+    "Status" string
+    "Text" string
+    "Title" string
+    "Tracking Template" string
+}
+
+Table "app_install_ad_labels" {
+    "Account Id" integer
+    "Client Id" string
+    "Id" integer [pk]
+    "Parent Id" integer
+    "Modified Time" string
+    "Status" string
+}
+
+Table "ads" {
+    "AdGroupId" integer
+    "AccountId" integer
+    "CustomerId" integer
+    "AdFormatPreference" string
+    "DevicePreference" integer
+    "EditorialStatus" string
+    "BusinessName" string
+    "CallToAction" string
+    "CallToActionLanguage" string
+    "Headline" string
+    "Images" object
+    "Videos" object
+    "LongHeadlines" object
+    "LongHeadline" object
+    "LongHeadlineString" string
+    "Text" string
+    "TextPart2" string
+    "TitlePart1" string
+    "TitlePart2" string
+    "TitlePart3" string
+    "FinalAppUrls" null
+    "FinalMobileUrls" object
+    "FinalUrlSuffix" string
+    "FinalUrls" object
+    "ForwardCompatibilityMap" array
+    "Id" integer [pk]
+    "Status" string
+    "TrackingUrlTemplate" string
+    "Type" string
+    "UrlCustomParameters" object
+    "Descriptions" object
+    "Domain" string
+    "Headlines" object
+    "Path1" string
+    "Path2" string
+}
+
+Table "budget" {
+    "Account Id" integer
+    "Type" string
+    "Status" string
+    "Id" integer [pk]
+    "Parent Id" integer
+    "Client Id" integer
+    "Modified Time" string
+    "Budget Id" integer
+    "Budget Name" string
+    "Budget" number
+    "Budget Type" string
+}
+
+Table "campaigns" {
+    "AccountId" integer
+    "CustomerId" integer
+    "AudienceAdsBidAdjustment" number
+    "BiddingScheme" object
+    "BudgetType" string
+    "MultimediaAdsBidAdjustment" number
+    "DailyBudget" number
+    "ExperimentId" number
+    "FinalUrlSuffix" string
+    "ForwardCompatibilityMap" array
+    "Id" number [pk]
+    "Name" string
+    "Status" string
+    "SubType" string
+    "TimeZone" string
+    "TrackingUrlTemplate" string
+    "UrlCustomParameters" object
+    "CampaignType" string
+    "Settings" object
+    "BudgetId" number
+    "Languages" object
+    "AdScheduleUseSearcherTimeZone" boolean
+}
+
+Table "budget_summary_report" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "CampaignId" integer
+    "CampaignName" string
+    "Date" string [pk]
+    "MonthlyBudget" number
+    "DailySpend" number
+    "MonthToDateSpend" number
+}
+
+Table "labels" {
+    "Account Id" integer
+    "Color" string
+    "Client Id" string
+    "Description" string
+    "Id" integer [pk]
+    "Label" string
+    "Modified Time" string
+    "Status" string
+}
+
+Table "keyword_labels" {
+    "Account Id" integer
+    "Client Id" string
+    "Id" integer [pk]
+    "Parent Id" integer
+    "Modified Time" string
+    "Status" string
+}
+
+Table "keywords" {
+    "Account Id" integer
+    "Id" integer [pk]
+    "Ad Group" string
+    "Bid" string
+    "Bid Strategy Type" string
+    "Campaign" string
+    "Client Id" integer
+    "Custom Parameter" string
+    "Destination Url" string
+    "Modified Time" string
+    "Editorial Appeal Status" string
+    "Editorial Location" string
+    "Editorial Reason Code" string
+    "Editorial Status" string
+    "Editorial Term" string
+    "Final Url" string
+    "Final Url Suffix" string
+    "Inherited Bid Strategy Type" string
+    "Keyword" string
+    "Keyword Relevance" string
+    "Landing Page Relevance" string
+    "Landing Page User Experience" string
+    "Match Type" string
+    "Mobile Final Url" string
+    "Param1" string
+    "Param2" string
+    "Param3" string
+    "Parent Id" string
+    "Publisher Countries" string
+    "Quality Score" string
+    "Status" string
+    "Tracking Template" string
+}
+
+Table "campaign_labels" {
+    "Account Id" integer
+    "Campaign" string
+    "Client Id" string
+    "Id" integer [pk]
+    "Parent Id" integer
+    "Modified Time" string
+    "Status" string
+}
+
+Table "age_gender_audience_report_hourly" {
+    "AccountId" integer
+    "AgeGroup" string
+    "Gender" string
+    "TimePeriod" string
+    "AllConversions" integer
+    "AccountName" string
+    "AccountNumber" string
+    "CampaignName" string
+    "CampaignId" integer
+    "AdGroupName" string
+    "AdGroupId" integer
+    "AdDistribution" string
+    "Impressions" integer
+    "Clicks" integer
+    "Conversions" number
+    "Spend" number
+    "Revenue" number
+    "ExtendedCost" number
+    "Assists" integer
+    "Language" string
+    "AccountStatus" string
+    "CampaignStatus" string
+    "AdGroupStatus" string
+    "BaseCampaignId" string
+    "AllRevenue" number
+    "ViewThroughConversions" integer
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" number
+    "ConversionsQualified" number
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "ViewThroughRevenue" number
+
+    indexes {
+        (AgeGroup, Gender, TimePeriod, AccountId, CampaignId, Language, AdDistribution) [pk]
+    }
+}
+
+Table "account_impression_performance_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "AdDistribution" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "AveragePosition" number
+    "Conversions" integer
+    "ConversionRate" number
+    "CostPerConversion" number
+    "LowQualityClicks" integer
+    "LowQualityClicksPercent" number
+    "LowQualityImpressions" integer
+    "LowQualityImpressionsPercent" number
+    "LowQualityConversions" integer
+    "LowQualityConversionRate" number
+    "DeviceType" string
+    "PhoneImpressions" integer
+    "PhoneCalls" integer
+    "Ptr" number
+    "Network" string
+    "Assists" integer
+    "Revenue" number
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "AccountStatus" string
+    "LowQualityGeneralClicks" integer
+    "LowQualitySophisticatedClicks" integer
+    "TopImpressionRatePercent" number
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "ViewThroughConversions" integer
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "LowQualityConversionsQualified" number
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "ViewThroughRevenue" number
+    "VideoViews" integer
+    "ViewThroughRate" number
+    "AverageCPV" number
+    "VideoViewsAt25Percent" integer
+    "VideoViewsAt50Percent" integer
+    "VideoViewsAt75Percent" integer
+    "CompletedVideoViews" integer
+    "VideoCompletionRate" number
+    "TotalWatchTimeInMS" integer
+    "AverageWatchTimePerVideoView" number
+    "AverageWatchTimePerImpression" number
+    "Sales" integer
+    "CostPerSale" number
+    "RevenuePerSale" number
+    "Installs" integer
+    "CostPerInstall" number
+    "RevenuePerInstall" number
+}
+
+Table "account_performance_report_hourly" {
+    "AccountId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Network" string
+    "DeliveredMatchType" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "AccountName" string
+    "AccountNumber" string
+    "PhoneImpressions" integer
+    "PhoneCalls" integer
+    "Clicks" integer
+    "Ctr" number
+    "Spend" number
+    "Impressions" integer
+    "CostPerConversion" number
+    "Ptr" number
+    "Assists" integer
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "Conversions" number
+    "ConversionsQualified" number
+    "ConversionRate" number
+    "LowQualityClicks" integer
+    "LowQualityClicksPercent" number
+    "LowQualityImpressions" integer
+    "LowQualitySophisticatedClicks" integer
+    "LowQualityConversions" integer
+    "LowQualityConversionRate" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+
+    indexes {
+        (AccountId, TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, DeliveredMatchType, DeviceOS, TopVsOther, BidMatchType) [pk]
+    }
+}
+
+Table "audience_performance_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "TimePeriod" string
+    "CampaignName" string
+    "CampaignId" integer
+    "AdGroupName" string
+    "AdGroupId" integer
+    "AudienceId" integer
+    "AudienceName" string
+    "AssociationStatus" string
+    "BidAdjustment" number
+    "TargetingSetting" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "AveragePosition" number
+    "Conversions" integer
+    "ConversionRate" number
+    "CostPerConversion" number
+    "Revenue" number
+    "ReturnOnAdSpend" number
+    "RevenuePerConversion" number
+    "AccountStatus" string
+    "CampaignStatus" string
+    "AdGroupStatus" string
+    "AudienceType" string
+    "BaseCampaignId" integer
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "AssociationId" integer
+    "AssociationLevel" string
+    "ViewThroughConversions" integer
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" number
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "ViewThroughRevenue" number
+
+    indexes {
+        (AudienceId, TimePeriod, AccountId, CampaignId, AdGroupId) [pk]
+    }
+}
+
+Table "keyword_performance_report_hourly" {
+    "AccountId" integer
+    "CampaignId" integer
+    "AdGroupId" integer
+    "KeywordId" integer
+    "Keyword" string
+    "AdId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "DeliveredMatchType" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Language" string
+    "Network" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "AccountName" string
+    "CampaignName" string
+    "AdGroupName" string
+    "KeywordStatus" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "CurrentMaxCpc" number
+    "Spend" number
+    "CostPerConversion" number
+    "QualityScore" number
+    "ExpectedCtr" string
+    "AdRelevance" number
+    "LandingPageExperience" number
+    "QualityImpact" number
+    "Assists" integer
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "CustomParameters" string
+    "FinalAppUrl" string
+    "Mainline1Bid" number
+    "MainlineBid" number
+    "FirstPageBid" number
+    "FinalUrlSuffix" string
+    "ViewThroughConversions" integer
+    "ViewThroughConversionsQualified" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "Conversions" number
+    "ConversionRate" number
+    "ConversionsQualified" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "AllConversions" integer
+    "AllConversionRate" number
+    "AllRevenue" number
+    "AllRevenuePerConversion" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "CampaignStatus" string
+    "TopImpressionRatePercent" number
+    "AdGroupStatus" string
+    "TrackingTemplate" string
+    "BidStrategyType" string
+    "AccountStatus" string
+    "FinalUrl" string
+    "AdType" string
+    "KeywordLabels" string
+    "FinalMobileUrl" string
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "BaseCampaignId" integer
+    "AccountNumber" string
+    "DestinationUrl" string
+
+    indexes {
+        (AccountId, CampaignId, AdGroupId, KeywordId, AdId, TimePeriod, CurrencyCode, DeliveredMatchType, AdDistribution, DeviceType, Language, Network, DeviceOS, TopVsOther, BidMatchType) [pk]
+    }
+}
+
+Table "keyword_performance_report_daily" {
+    "AccountId" integer
+    "CampaignId" integer
+    "AdGroupId" integer
+    "KeywordId" integer
+    "Keyword" string
+    "AdId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "DeliveredMatchType" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Language" string
+    "Network" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "AccountName" string
+    "CampaignName" string
+    "AdGroupName" string
+    "KeywordStatus" string
+    "HistoricalExpectedCtr" number
+    "HistoricalAdRelevance" number
+    "HistoricalLandingPageExperience" number
+    "HistoricalQualityScore" number
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "CurrentMaxCpc" number
+    "Spend" number
+    "CostPerConversion" number
+    "QualityScore" number
+    "ExpectedCtr" string
+    "AdRelevance" number
+    "LandingPageExperience" number
+    "QualityImpact" number
+    "Assists" integer
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "CustomParameters" string
+    "FinalAppUrl" string
+    "Mainline1Bid" number
+    "MainlineBid" number
+    "FirstPageBid" number
+    "FinalUrlSuffix" string
+    "ViewThroughConversions" integer
+    "ViewThroughConversionsQualified" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "Conversions" number
+    "ConversionRate" number
+    "ConversionsQualified" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "AllConversions" integer
+    "AllConversionRate" number
+    "AllRevenue" number
+    "AllRevenuePerConversion" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "CampaignStatus" string
+    "TopImpressionRatePercent" number
+    "AdGroupStatus" string
+    "TrackingTemplate" string
+    "BidStrategyType" string
+    "AccountStatus" string
+    "FinalUrl" string
+    "AdType" string
+    "KeywordLabels" string
+    "FinalMobileUrl" string
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "BaseCampaignId" integer
+    "AccountNumber" string
+    "DestinationUrl" string
+
+    indexes {
+        (AccountId, CampaignId, AdGroupId, KeywordId, AdId, TimePeriod, CurrencyCode, DeliveredMatchType, AdDistribution, DeviceType, Language, Network, DeviceOS, TopVsOther, BidMatchType) [pk]
+    }
+}
+
+Table "ad_group_performance_report_hourly" {
+    "AccountId" integer
+    "CampaignId" integer
+    "AdGroupId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Network" string
+    "DeliveredMatchType" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "Language" string
+    "AccountName" string
+    "CampaignName" string
+    "CampaignType" string
+    "AdGroupName" string
+    "AdGroupType" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "Spend" number
+    "CostPerConversion" number
+    "QualityScore" number
+    "ExpectedCtr" string
+    "AdRelevance" number
+    "LandingPageExperience" number
+    "PhoneImpressions" integer
+    "PhoneCalls" integer
+    "Ptr" number
+    "Assists" integer
+    "CostPerAssist" number
+    "CustomParameters" string
+    "FinalUrlSuffix" string
+    "ViewThroughConversions" integer
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllConversions" integer
+    "AllConversionRate" number
+    "AllRevenue" number
+    "AllRevenuePerConversion" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "Conversions" number
+    "ConversionRate" number
+    "ConversionsQualified" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+
+    indexes {
+        (AccountId, CampaignId, AdGroupId, TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, DeliveredMatchType, DeviceOS, TopVsOther, BidMatchType, Language) [pk]
+    }
+}
+
+Table "ad_performance_report_hourly" {
+    "AccountId" integer
+    "CampaignId" integer
+    "AdGroupId" integer
+    "AdId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Language" string
+    "Network" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "DeliveredMatchType" string
+    "AccountName" string
+    "CampaignName" string
+    "CampaignType" string
+    "AdGroupName" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "Spend" number
+    "CostPerConversion" number
+    "DestinationUrl" string
+    "Assists" integer
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "CustomParameters" string
+    "FinalAppUrl" string
+    "AdDescription" string
+    "AdDescription2" string
+    "ViewThroughConversions" integer
+    "ViewThroughConversionsQualified" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "Conversions" number
+    "ConversionRate" number
+    "ConversionsQualified" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "AllConversions" integer
+    "AllConversionRate" number
+    "AllRevenue" number
+    "AllRevenuePerConversion" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+
+    indexes {
+        (AccountId, CampaignId, AdGroupId, AdId, TimePeriod, CurrencyCode, AdDistribution, DeviceType, Language, Network, DeviceOS, TopVsOther, BidMatchType, DeliveredMatchType) [pk]
+    }
+}
+
+Table "ad_group_impression_performance_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "TimePeriod" string
+    "Status" string
+    "CampaignName" string
+    "CampaignId" integer
+    "AdGroupName" string
+    "AdGroupId" integer
+    "CurrencyCode" string
+    "AdDistribution" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "AveragePosition" number
+    "Conversions" integer
+    "ConversionRate" number
+    "CostPerConversion" number
+    "DeviceType" string
+    "Language" string
+    "QualityScore" integer
+    "ExpectedCtr" number
+    "AdRelevance" integer
+    "LandingPageExperience" integer
+    "PhoneImpressions" integer
+    "PhoneCalls" integer
+    "Ptr" number
+    "Network" string
+    "Assists" integer
+    "Revenue" number
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "TrackingTemplate" string
+    "CustomParameters" string
+    "AccountStatus" string
+    "CampaignStatus" string
+    "AdGroupLabels" string
+    "FinalUrlSuffix" string
+    "CampaignType" string
+    "TopImpressionSharePercent" number
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" number
+    "BaseCampaignId" integer
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "ViewThroughConversions" integer
+    "AdGroupType" string
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "ViewThroughRevenue" number
+    "VideoViews" integer
+    "ViewThroughRate" number
+    "AverageCPV" number
+    "VideoViewsAt25Percent" integer
+    "VideoViewsAt50Percent" integer
+    "VideoViewsAt75Percent" integer
+    "CompletedVideoViews" integer
+    "VideoCompletionRate" number
+    "TotalWatchTimeInMS" integer
+    "AverageWatchTimePerVideoView" number
+    "AverageWatchTimePerImpression" number
+    "Sales" integer
+    "CostPerSale" number
+    "RevenuePerSale" number
+    "Installs" integer
+    "CostPerInstall" number
+    "RevenuePerInstall" number
+
+    indexes {
+        (TimePeriod, Network, DeviceType) [pk]
+    }
+}
+
+Table "campaign_performance_report_hourly" {
+    "AccountId" integer
+    "CampaignId" integer
+    "TimePeriod" string
+    "CurrencyCode" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Network" string
+    "DeliveredMatchType" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "AccountName" string
+    "CampaignName" string
+    "CampaignType" string
+    "CampaignStatus" string
+    "CampaignLabels" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "Spend" number
+    "CostPerConversion" number
+    "QualityScore" number
+    "AdRelevance" number
+    "LandingPageExperience" number
+    "PhoneImpressions" integer
+    "PhoneCalls" integer
+    "Ptr" number
+    "Assists" integer
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "CustomParameters" string
+    "ViewThroughConversions" integer
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllConversions" integer
+    "ConversionsQualified" number
+    "AllConversionRate" number
+    "AllRevenue" number
+    "AllRevenuePerConversion" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "Conversions" number
+    "ConversionRate" number
+    "LowQualityClicks" integer
+    "LowQualityClicksPercent" number
+    "LowQualityImpressions" integer
+    "LowQualitySophisticatedClicks" integer
+    "LowQualityConversions" integer
+    "LowQualityConversionRate" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "BudgetName" string
+    "BudgetStatus" string
+    "BudgetAssociationStatus" string
+
+    indexes {
+        (AccountId, CampaignId, TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, DeliveredMatchType, DeviceOS, TopVsOther, BidMatchType) [pk]
+    }
+}
+
+Table "campaign_impression_performance_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "TimePeriod" string
+    "CampaignStatus" string
+    "CampaignName" string
+    "CampaignId" integer
+    "CurrencyCode" string
+    "AdDistribution" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "AveragePosition" number
+    "Conversions" integer
+    "ConversionRate" number
+    "CostPerConversion" number
+    "LowQualityClicks" integer
+    "LowQualityClicksPercent" number
+    "LowQualityImpressions" integer
+    "LowQualityImpressionsPercent" number
+    "LowQualityConversions" integer
+    "LowQualityConversionRate" number
+    "DeviceType" string
+    "QualityScore" number
+    "ExpectedCtr" string
+    "AdRelevance" number
+    "LandingPageExperience" number
+    "PhoneImpressions" integer
+    "PhoneCalls" integer
+    "Ptr" number
+    "Network" string
+    "Assists" integer
+    "Revenue" number
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "TrackingTemplate" string
+    "CustomParameters" string
+    "AccountStatus" string
+    "LowQualityGeneralClicks" integer
+    "LowQualitySophisticatedClicks" integer
+    "CampaignLabels" string
+    "FinalUrlSuffix" string
+    "CampaignType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" number
+    "BaseCampaignId" integer
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "ViewThroughConversions" integer
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "LowQualityConversionsQualified" number
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "ViewThroughRevenue" number
+    "VideoViews" integer
+    "ViewThroughRate" number
+    "AverageCPV" number
+    "VideoViewsAt25Percent" integer
+    "VideoViewsAt50Percent" integer
+    "VideoViewsAt75Percent" integer
+    "CompletedVideoViews" integer
+    "VideoCompletionRate" number
+    "TotalWatchTimeInMS" integer
+    "AverageWatchTimePerVideoView" number
+    "AverageWatchTimePerImpression" number
+    "Sales" integer
+    "CostPerSale" number
+    "RevenuePerSale" number
+    "Installs" integer
+    "CostPerInstall" number
+    "RevenuePerInstall" number
+}
+
+Table "geographic_performance_report_hourly" {
+    "AccountId" integer
+    "CampaignId" integer
+    "AdGroupId" integer
+    "TimePeriod" string
+    "AccountNumber" string
+    "Country" string
+    "State" string
+    "MetroArea" string
+    "City" string
+    "ProximityTargetLocation" string
+    "Radius" string
+    "LocationType" string
+    "MostSpecificLocation" string
+    "AccountStatus" string
+    "CampaignStatus" string
+    "AdGroupStatus" string
+    "County" string
+    "PostalCode" string
+    "LocationId" string
+    "BaseCampaignId" string
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" string
+    "AllConversionsQualified" string
+    "Neighborhood" string
+    "ViewThroughRevenue" string
+    "CampaignType" string
+    "AssetGroupId" string
+    "AssetGroupName" string
+    "AssetGroupStatus" string
+    "CurrencyCode" string
+    "DeliveredMatchType" string
+    "AdDistribution" string
+    "DeviceType" string
+    "Language" string
+    "Network" string
+    "DeviceOS" string
+    "TopVsOther" string
+    "BidMatchType" string
+    "AccountName" string
+    "CampaignName" string
+    "AdGroupName" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "Spend" number
+    "CostPerConversion" number
+    "Assists" integer
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "ViewThroughConversions" integer
+    "ViewThroughConversionsQualified" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "Conversions" number
+    "ConversionRate" number
+    "ConversionsQualified" number
+    "AverageCpc" number
+    "AveragePosition" number
+    "AverageCpm" number
+    "AllConversions" integer
+    "AllConversionRate" number
+    "AllRevenue" number
+    "AllRevenuePerConversion" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+}
+
+Table "goals_and_funnels_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" string
+    "TimePeriod" string
+    "CampaignName" string
+    "CampaignId" integer
+    "AdGroupName" string
+    "AdGroupId" integer
+    "Keyword" string
+    "KeywordId" integer
+    "Goal" string
+    "AllConversions" integer
+    "Assists" integer
+    "AllRevenue" number
+    "GoalId" integer
+    "DeviceType" string
+    "DeviceOS" string
+    "AccountStatus" string
+    "CampaignStatus" string
+    "AdGroupStatus" string
+    "KeywordStatus" string
+    "GoalType" string
+    "ViewThroughConversions" integer
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "ViewThroughRevenue" number
+
+    indexes {
+        (GoalId, TimePeriod, AccountId, CampaignId, DeviceType, DeviceOS, AdGroupId) [pk]
+    }
+}
+
+Table "product_dimension_performance_report_hourly" {
+    "AccountId" integer
+    "TimePeriod" string
+    "AccountName" string
+    "AccountNumber" string
+    "AdGroupName" string
+    "AdGroupId" integer
+    "CampaignStatus" string
+    "AccountStatus" string
+    "AdGroupStatus" string
+    "Network" string
+    "AdId" integer
+    "CampaignId" integer
+    "CampaignName" string
+    "CurrencyCode" string
+    "DeviceType" string
+    "Language" string
+    "MerchantProductId" string
+    "Title" string
+    "Condition" string
+    "Brand" string
+    "Price" number
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "Conversions" integer
+    "ConversionRate" number
+    "Revenue" number
+    "RevenuePerConversion" number
+    "SellerName" string
+    "OfferLanguage" string
+    "CountryOfSale" string
+    "AdStatus" string
+    "AdDistribution" string
+    "ClickTypeId" string
+    "TotalClicksOnAdElements" number
+    "ClickType" string
+    "ReturnOnAdSpend" number
+    "BidStrategyType" string
+    "LocalStoreCode" string
+    "StoreId" string
+    "AssistedClicks" string
+    "AssistedConversions" string
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "CostPerConversion" number
+    "ViewThroughConversions" integer
+    "Goal" string
+    "GoalType" string
+    "ProductBought" string
+    "QuantityBought" string
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "AssistedConversionsQualified" string
+    "ViewThroughConversionsQualified" number
+    "ProductBoughtTitle" string
+    "GTIN" string
+    "MPN" string
+    "ViewThroughRevenue" number
+    "Sales" integer
+    "CostPerSale" number
+    "RevenuePerSale" number
+    "Installs" integer
+    "CostPerInstall" number
+    "RevenuePerInstall" number
+    "CampaignType" string
+    "AssetGroupId" string
+    "AssetGroupName" string
+    "AssetGroupStatus" string
+    "CustomLabel0" string
+    "CustomLabel1" string
+    "CustomLabel2" string
+    "CustomLabel3" string
+    "CustomLabel4" string
+    "ProductType1" string
+    "ProductType2" string
+    "ProductType3" string
+    "ProductType4" string
+    "ProductType5" string
+}
+
+Table "product_search_query_performance_report_hourly" {
+    "TimePeriod" string
+    "AccountId" integer
+    "AccountNumber" string
+    "AccountName" string
+    "AdId" integer
+    "AdGroupId" integer
+    "AdGroupName" string
+    "CampaignId" integer
+    "CampaignName" string
+    "DestinationUrl" string
+    "DeviceType" string
+    "DeviceOS" string
+    "Language" string
+    "SearchQuery" string
+    "Network" string
+    "MerchantProductId" string
+    "Title" string
+    "ClickTypeId" string
+    "TotalClicksOnAdElements" number
+    "ClickType" string
+    "AdGroupCriterionId" string
+    "ProductGroup" string
+    "PartitionType" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "Conversions" integer
+    "ConversionRate" number
+    "Assists" integer
+    "CostPerAssist" number
+    "Revenue" number
+    "CostPerConversion" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "CustomerId" integer
+    "CustomerName" string
+    "AssistedImpressions" integer
+    "AssistedClicks" integer
+    "AssistedConversions" integer
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllRevenuePerConversion" number
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "AssistedConversionsQualified" number
+    "AllConversionsQualified" number
+    "CampaignType" string
+    "AssetGroupId" integer
+    "AssetGroupName" string
+
+    indexes {
+        (AccountId, TimePeriod, CampaignId, AdId, AdGroupId, SearchQuery, DeviceType, DeviceOS, Language, Network) [pk]
+    }
+}
+
+Table "search_query_performance_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "TimePeriod" string
+    "CampaignName" string
+    "CampaignId" integer
+    "AdGroupName" string
+    "AdGroupId" integer
+    "AdId" integer
+    "AdType" string
+    "DestinationUrl" string
+    "BidMatchType" string
+    "DeliveredMatchType" string
+    "CampaignStatus" string
+    "AdStatus" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "AveragePosition" number
+    "SearchQuery" string
+    "Keyword" string
+    "AdGroupCriterionId" string
+    "Conversions" integer
+    "ConversionRate" number
+    "CostPerConversion" number
+    "Language" string
+    "KeywordId" integer
+    "Network" string
+    "TopVsOther" string
+    "DeviceType" string
+    "DeviceOS" string
+    "Assists" integer
+    "Revenue" number
+    "ReturnOnAdSpend" number
+    "CostPerAssist" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "AccountStatus" string
+    "AdGroupStatus" string
+    "KeywordStatus" string
+    "CampaignType" string
+    "CustomerId" integer
+    "CustomerName" string
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" number
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "AllConversionsQualified" number
+
+    indexes {
+        (SearchQuery, Keyword, TimePeriod, AccountId, CampaignId, Language, DeliveredMatchType, DeviceType, DeviceOS, TopVsOther) [pk]
+    }
+}
+
+Table "user_location_performance_report_hourly" {
+    "AccountName" string
+    "AccountNumber" string
+    "AccountId" integer
+    "TimePeriod" string
+    "CampaignName" string
+    "CampaignId" integer
+    "AdGroupName" string
+    "AdGroupId" integer
+    "Country" string
+    "State" string
+    "MetroArea" string
+    "CurrencyCode" string
+    "AdDistribution" string
+    "Impressions" integer
+    "Clicks" integer
+    "Ctr" number
+    "AverageCpc" number
+    "Spend" number
+    "AveragePosition" number
+    "ProximityTargetLocation" string
+    "Radius" integer
+    "Language" string
+    "City" string
+    "QueryIntentCountry" string
+    "QueryIntentState" string
+    "QueryIntentCity" string
+    "QueryIntentDMA" string
+    "BidMatchType" string
+    "DeliveredMatchType" string
+    "Network" string
+    "TopVsOther" string
+    "DeviceType" string
+    "DeviceOS" string
+    "Assists" integer
+    "Conversions" integer
+    "ConversionRate" number
+    "Revenue" number
+    "ReturnOnAdSpend" number
+    "CostPerConversion" number
+    "CostPerAssist" number
+    "RevenuePerConversion" number
+    "RevenuePerAssist" number
+    "County" string
+    "PostalCode" string
+    "QueryIntentCounty" string
+    "QueryIntentPostalCode" string
+    "LocationId" integer
+    "QueryIntentLocationId" integer
+    "AllConversions" integer
+    "AllRevenue" number
+    "AllConversionRate" number
+    "AllCostPerConversion" number
+    "AllReturnOnAdSpend" number
+    "AllRevenuePerConversion" number
+    "ViewThroughConversions" integer
+    "Goal" string
+    "GoalType" string
+    "AbsoluteTopImpressionRatePercent" number
+    "TopImpressionRatePercent" number
+    "AverageCpm" number
+    "ConversionsQualified" number
+    "AllConversionsQualified" number
+    "ViewThroughConversionsQualified" number
+    "Neighborhood" string
+    "QueryIntentNeighborhood" string
+    "ViewThroughRevenue" number
+    "CampaignType" string
+    "AssetGroupId" integer
+    "AssetGroupName" string
+
+    indexes {
+        (AccountId, AdGroupId, CampaignId, DeliveredMatchType, DeviceOS, DeviceType, Language, LocationId, QueryIntentLocationId, TimePeriod, TopVsOther) [pk]
+    }
+}
+
+Ref {
+    "ad_groups"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "ad_groups"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "ad_group_labels"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "ad_group_labels"."Parent Id" <> "ad_groups"."Id"
+}
+
+Ref {
+    "app_install_ads"."Client Id" <> "accounts"."Id"
+}
+
+Ref {
+    "app_install_ads"."Parent Id" <> "ad_groups"."Id"
+}
+
+Ref {
+    "app_install_ad_labels"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "app_install_ad_labels"."Parent Id" <> "app_install_ads"."Id"
+}
+
+Ref {
+    "ads"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "ads"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "budget"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "budget"."Client Id" <> "accounts"."Id"
+}
+
+Ref {
+    "budget"."Parent Id" <> "campaigns"."Id"
+}
+
+Ref {
+    "campaigns"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "campaigns"."BudgetId" <> "budget"."Budget Id"
+}
+
+Ref {
+    "budget_summary_report"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "budget_summary_report"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "labels"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "labels"."Client Id" <> "accounts"."Id"
+}
+
+Ref {
+    "keyword_labels"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "keyword_labels"."Parent Id" <> "keywords"."Id"
+}
+
+Ref {
+    "keywords"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "keywords"."Client Id" <> "accounts"."Id"
+}
+
+Ref {
+    "keywords"."Parent Id" <> "ad_groups"."Id"
+}
+
+Ref {
+    "campaign_labels"."Account Id" <> "accounts"."Id"
+}
+
+Ref {
+    "campaign_labels"."Parent Id" <> "campaigns"."Id"
+}
+
+Ref {
+    "age_gender_audience_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "age_gender_audience_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "age_gender_audience_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "account_impression_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "account_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "audience_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "audience_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "audience_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "keyword_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "keyword_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "keyword_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "keyword_performance_report_hourly"."KeywordId" <> "keywords"."Id"
+}
+
+Ref {
+    "keyword_performance_report_hourly"."AdId" <> "ads"."Id"
+}
+
+Ref {
+    "keyword_performance_report_daily"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "keyword_performance_report_daily"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "keyword_performance_report_daily"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "keyword_performance_report_daily"."KeywordId" <> "keywords"."Id"
+}
+
+Ref {
+    "keyword_performance_report_daily"."AdId" <> "ads"."Id"
+}
+
+Ref {
+    "ad_group_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "ad_group_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "ad_group_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "ad_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "ad_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "ad_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "ad_performance_report_hourly"."AdId" <> "ads"."Id"
+}
+
+Ref {
+    "ad_group_impression_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "ad_group_impression_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "ad_group_impression_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "ad_group_impression_performance_report_hourly"."BaseCampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "campaign_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "campaign_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "campaign_impression_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "campaign_impression_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "campaign_impression_performance_report_hourly"."BaseCampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "geographic_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "geographic_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "geographic_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "geographic_performance_report_hourly"."BaseCampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "goals_and_funnels_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "goals_and_funnels_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "goals_and_funnels_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "goals_and_funnels_report_hourly"."KeywordId" <> "keywords"."Id"
+}
+
+Ref {
+    "product_dimension_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "product_dimension_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "product_dimension_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "product_dimension_performance_report_hourly"."AdId" <> "ads"."Id"
+}
+
+Ref {
+    "product_dimension_performance_report_hourly"."CampaignType" <> "campaigns"."CampaignType"
+}
+
+Ref {
+    "product_search_query_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "product_search_query_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "product_search_query_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "product_search_query_performance_report_hourly"."AdId" <> "ads"."Id"
+}
+
+Ref {
+    "product_search_query_performance_report_hourly"."CampaignType" <> "campaigns"."CampaignType"
+}
+
+Ref {
+    "search_query_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "search_query_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "search_query_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}
+
+Ref {
+    "search_query_performance_report_hourly"."AdId" <> "ads"."Id"
+}
+
+Ref {
+    "search_query_performance_report_hourly"."KeywordId" <> "keywords"."Id"
+}
+
+Ref {
+    "user_location_performance_report_hourly"."AccountId" <> "accounts"."Id"
+}
+
+Ref {
+    "user_location_performance_report_hourly"."CampaignId" <> "campaigns"."Id"
+}
+
+Ref {
+    "user_location_performance_report_hourly"."AdGroupId" <> "ad_groups"."Id"
+}

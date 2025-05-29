@@ -2,28 +2,36 @@
   "type": "object",
   "properties": {
     "created": {
+      "description": "The timestamp representing when the event was created.",
       "type": ["null", "integer"]
     },
     "data": {
+      "description": "Additional data related to the event, specific to the event type.",
       "type": ["null", "object"],
       "properties": {}
     },
     "id": {
+      "description": "The unique identifier of the event.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Stripe API that generated the event.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "The object type representing the event.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates whether the event occurred in live mode or test mode.",
       "type": ["null", "boolean"]
     },
     "pending_webhooks": {
+      "description": "The number of webhooks pending to be sent related to the event.",
       "type": ["null", "integer"]
     },
     "request": {
+      "description": "The API request information associated with the event.",
       "oneOf": [
         {
           "type": ["null", "string"]
@@ -42,6 +50,7 @@
       ]
     },
     "type": {
+      "description": "The type of event that occurred.",
       "type": ["null", "string"]
     }
   }

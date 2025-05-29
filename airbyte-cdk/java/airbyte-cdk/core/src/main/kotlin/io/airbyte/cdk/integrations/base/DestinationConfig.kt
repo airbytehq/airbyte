@@ -5,9 +5,9 @@ package io.airbyte.cdk.integrations.base
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val LOGGER = KotlinLogging.logger {}
 /** Singleton of destination config for easy lookup of values. */
 class DestinationConfig private constructor() {
     // whether the destination fully supports Destinations V2
@@ -19,7 +19,7 @@ class DestinationConfig private constructor() {
     fun getNodeValue(key: String?): JsonNode? {
         val node = config!!.root!![key]
         if (node == null) {
-            LOGGER.debug("Cannot find node with key {} ", key)
+            LOGGER.debug { "Cannot find node with key $key" }
         }
         return node
     }
@@ -28,7 +28,7 @@ class DestinationConfig private constructor() {
     fun getTextValue(key: String?): String {
         val node = getNodeValue(key)
         if (node == null || !node.isTextual) {
-            LOGGER.debug("Cannot retrieve text value for node with key {}", key)
+            LOGGER.debug { "Cannot retrieve text value for node with key $key" }
             return ""
         }
         return node.asText()
@@ -38,14 +38,13 @@ class DestinationConfig private constructor() {
     fun getBooleanValue(key: String?): Boolean {
         val node = getNodeValue(key)
         if (node == null || !node.isBoolean) {
-            LOGGER.debug("Cannot retrieve boolean value for node with key {}", key)
+            LOGGER.debug { "Cannot retrieve boolean value for node with key $key" }
             return false
         }
         return node.asBoolean()
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DestinationConfig::class.java)
 
         private var config: DestinationConfig? = null
 
@@ -62,7 +61,7 @@ class DestinationConfig private constructor() {
                 config!!.root = root
                 config!!.isV2Destination = isV2Destination
             } else {
-                LOGGER.warn("Singleton was already initialized.")
+                LOGGER.warn { "Singleton was already initialized." }
             }
         }
 

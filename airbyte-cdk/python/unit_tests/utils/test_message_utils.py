@@ -1,9 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import pytest
-from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
-from airbyte_cdk.utils.message_utils import get_stream_descriptor
-from airbyte_protocol.models import (
+from airbyte_cdk.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
     AirbyteMessage,
@@ -17,6 +15,8 @@ from airbyte_protocol.models import (
     StreamDescriptor,
     Type,
 )
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
+from airbyte_cdk.utils.message_utils import get_stream_descriptor
 
 
 def test_get_record_message_stream_descriptor():
@@ -36,9 +36,7 @@ def test_get_record_message_stream_descriptor():
 def test_get_record_message_stream_descriptor_no_namespace():
     message = AirbyteMessage(
         type=Type.RECORD,
-        record=AirbyteRecordMessage(
-            stream="test_stream", data={"id": "12345"}, emitted_at=1
-        ),
+        record=AirbyteRecordMessage(stream="test_stream", data={"id": "12345"}, emitted_at=1),
     )
     expected_descriptor = HashableStreamDescriptor(name="test_stream", namespace=None)
     assert get_stream_descriptor(message) == expected_descriptor
@@ -50,9 +48,7 @@ def test_get_state_message_stream_descriptor():
         state=AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(
-                    name="test_stream", namespace="test_namespace"
-                ),
+                stream_descriptor=StreamDescriptor(name="test_stream", namespace="test_namespace"),
                 stream_state=AirbyteStateBlob(updated_at="2024-02-02"),
             ),
             sourceStats=AirbyteStateStats(recordCount=27.0),

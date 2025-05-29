@@ -4,61 +4,80 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the macro",
       "type": ["null", "integer"]
     },
     "position": {
+      "description": "The position/order of the macro",
       "type": ["null", "integer"]
     },
     "restriction": {
+      "description": "Restrictions applied to the macro.",
       "properties": {
         "id": {
+          "description": "Unique identifier for the restriction",
           "type": ["null", "integer"]
         },
         "ids": {
+          "description": "IDs for specific restrictions applied.",
           "items": {
+            "description": "Unique identifiers associated with the restriction",
             "type": ["null", "integer"]
           },
           "type": ["null", "array"]
         },
         "type": {
+          "description": "Type of restriction applied",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "title": {
+      "description": "The title of the macro",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the macro was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "URL to access the macro details",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Additional information or notes about the macro",
       "type": ["null", "string"]
     },
     "default": {
+      "description": "Indicates if the macro is set as the default",
       "type": ["null", "boolean"]
     },
     "updated_at": {
+      "description": "The date and time when the macro was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "active": {
+      "description": "Indicates if the macro is currently active",
       "type": ["null", "boolean"]
     },
     "raw_title": {
+      "description": "The title of the macro in its raw form",
       "type": ["null", "string"]
     },
     "actions": {
+      "description": "List of actions defined within the macro.",
       "items": {
+        "description": "Properties of each action within the macro.",
         "properties": {
           "field": {
+            "description": "The field affected by the action",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "The value assigned to the field",
             "type": ["null", "string"]
           }
         },

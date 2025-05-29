@@ -1,29 +1,47 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
+  allowedHosts:
+    hosts:
+      - "*.api-us1.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-activecampaign
   connectorSubtype: api
   connectorType: source
   definitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-activecampaign
   documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
   githubIssueLabel: source-activecampaign
   icon: activecampaign.svg
   license: MIT
   name: ActiveCampaign
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-activecampaign
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
+  releaseDate: 2022-10-25
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  ab_internal:
+    ql: 200
+    sl: 100
+  # Disable acceptance tests for now
+  # They are not passing
+  # Low/No Airbyte Cloud Usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-ACTIVECAMPAIGN__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
 metadataSpecVersion: "1.0"

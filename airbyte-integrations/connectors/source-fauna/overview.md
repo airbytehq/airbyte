@@ -94,8 +94,7 @@ mode, you can easily query for documents that are present at a certain time.
 Fauna documents have a lot of extra types. These types need to be converted into the Airbyte JSON format. Below is an
 exhaustive list of how all fauna documents are converted.
 
-
-|  Fauna Type   |                              Format                                 |                        Note                        |
+| Fauna Type    | Format                                                              | Note                                               |
 | ------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
 | Document Ref  | `{ id: "id", "collection": "collection-name", "type": "document" }` |                                                    |
 | Other Ref     | `{ id: "id", "type": "ref-type" }`                                  | This includes collection refs, database refs, etc. |

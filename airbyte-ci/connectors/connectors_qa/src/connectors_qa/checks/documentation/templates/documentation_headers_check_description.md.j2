@@ -1,0 +1,17 @@
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+
+This check expects the following order of headers in the documentation:
+
+````
+
+{% for i in ordered_headers %}
+  {{ i }}
+{% endfor %}
+
+````
+
+
+List of not required headers, which can be not exist in the documentation and their strict check will be skipped:
+{% for i in not_required_headers %}
+  - {{ i }}
+{% endfor %}

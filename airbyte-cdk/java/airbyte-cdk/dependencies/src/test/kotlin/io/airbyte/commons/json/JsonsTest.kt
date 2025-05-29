@@ -236,7 +236,7 @@ internal class JsonsTest {
     fun testToPrettyString() {
         val jsonNode = Jsons.jsonNode(ImmutableMap.of(TEST, ABC))
         val expectedOutput = """{
-  "test": "abc"
+  "test" : "abc"
 }
 """
         Assertions.assertEquals(expectedOutput, Jsons.toPrettyString(jsonNode))

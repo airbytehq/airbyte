@@ -9,7 +9,7 @@ from typing import Any, Mapping
 import pytest
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions
+from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions, MigrateStreamNameOption
 from source_amazon_seller_partner.source import SourceAmazonSellerPartner
 
 CMD = "check"
@@ -61,7 +61,7 @@ class TestMigrateReportOptions:
     )
     def test_transform_report_options(self, input_config, expected_report_options_list):
         expected_config = {**input_config, "report_options_list": expected_report_options_list}
-        assert MigrateReportOptions._transform_report_options(input_config) == expected_config
+        assert MigrateReportOptions._transform(input_config) == expected_config
 
     def test_migrate_config(self, capsys):
         config = load_config(self.test_not_migrated_config_path)
@@ -82,3 +82,29 @@ class TestMigrateReportOptions:
         assert config["report_options_list"]
         migration_instance = MigrateReportOptions()
         assert not migration_instance._should_migrate(config)
+
+
+class TestMigrateStreamNameOption:
+    test_not_migrated_config_path = "unit_tests/test_migrations/stream_name_option_migration/not_migrated_config.json"
+    test_migrated_config_path = "unit_tests/test_migrations/stream_name_option_migration/migrated_config.json"
+
+    def test_migrate_config(self, capsys):
+        config = load_config(self.test_not_migrated_config_path)
+        for options_list in config["report_options_list"]:
+            assert "report_name" not in options_list
+
+        migration_instance = MigrateStreamNameOption()
+        migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
+        control_msg = json.loads(capsys.readouterr().out)
+        assert control_msg["type"] == Type.CONTROL.value
+        assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
+        migrated_config = control_msg["control"]["connectorConfig"]["config"]
+        for options_list in migrated_config["report_options_list"]:
+            assert options_list["report_name"] == options_list["stream_name"]
+
+    def test_should_not_migrate(self):
+        config = load_config(self.test_migrated_config_path)
+        migration_instance = MigrateStreamNameOption()
+        assert not migration_instance._should_migrate(config)
+        for options_list in config["report_options_list"]:
+            assert options_list["stream_name"]

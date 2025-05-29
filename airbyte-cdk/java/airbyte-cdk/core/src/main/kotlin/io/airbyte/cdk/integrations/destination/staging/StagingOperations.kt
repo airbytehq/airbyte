@@ -64,7 +64,7 @@ interface StagingOperations : SqlOperations {
         schemaName: String?,
         stageName: String?,
         stagingPath: String?
-    ): String?
+    ): String
 
     /**
      * Load the data stored in the stage area into a temporary table in the destination
@@ -80,7 +80,7 @@ interface StagingOperations : SqlOperations {
         database: JdbcDatabase?,
         stageName: String?,
         stagingPath: String?,
-        stagedFiles: List<String?>?,
+        stagedFiles: List<String>?,
         tableName: String?,
         schemaName: String?
     )

@@ -10,8 +10,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.*
-import java.util.function.Supplier
-import java.util.stream.Collectors
 
 /**
  * This [DestStateLifecycleManager] handles any state where the state messages are scoped by stream.
@@ -125,29 +123,25 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
         private fun listStatesInOrder(
             streamToState: Map<StreamDescriptor, AirbyteMessage>
         ): Queue<AirbyteMessage> {
-            return streamToState.entries
-                .stream() // typically, we support by namespace and then stream name, so we retain
-                // that pattern here.
-                .sorted(
-                    Comparator.comparing<Map.Entry<StreamDescriptor, AirbyteMessage>, String>(
-                            { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
-                                entry.key.namespace
-                            },
-                            Comparator.nullsFirst<String>(Comparator.naturalOrder<String>())
-                        ) // namespace is allowed to be null
-                        .thenComparing<String> { entry: Map.Entry<StreamDescriptor, AirbyteMessage>
-                            ->
-                            entry.key.name
-                        }
-                )
-                .map<AirbyteMessage> { obj: Map.Entry<StreamDescriptor, AirbyteMessage> ->
-                    obj.value
-                }
-                .collect(
-                    Collectors.toCollection<AirbyteMessage, LinkedList<AirbyteMessage>>(
-                        Supplier<LinkedList<AirbyteMessage>> { LinkedList() }
+            return LinkedList(
+                streamToState.entries
+
+                    // typically, we support by namespace and then stream name, so we retain
+                    // that pattern here.
+                    .sortedWith(
+                        Comparator.comparing<Map.Entry<StreamDescriptor, AirbyteMessage>, String>(
+                                { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
+                                    entry.key.namespace
+                                },
+                                Comparator.nullsFirst<String>(Comparator.naturalOrder<String>())
+                            ) // namespace is allowed to be null
+                            .thenComparing<String> {
+                                entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
+                                entry.key.name
+                            }
                     )
-                )
+                    .map { obj: Map.Entry<StreamDescriptor, AirbyteMessage> -> obj.value }
+            )
         }
 
         /**

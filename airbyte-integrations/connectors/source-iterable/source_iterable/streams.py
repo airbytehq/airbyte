@@ -4,7 +4,6 @@
 
 import csv
 import json
-import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -13,12 +12,12 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
-from requests import HTTPError, codes
+from requests import HTTPError
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 from source_iterable.utils import dateutil_parse
@@ -66,11 +65,6 @@ class IterableStream(HttpStream, ABC):
         """
         return None
 
-    def check_unauthorized_key(self, response: requests.Response) -> bool:
-        if response.status_code == codes.UNAUTHORIZED:
-            self.logger.warning(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
-            return True
-
     def check_generic_error(self, response: requests.Response) -> bool:
         """
         https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
@@ -112,7 +106,7 @@ class IterableStream(HttpStream, ABC):
             if self._slice_retry < 3:
                 return True
             return False
-        return super().should_retry(response)
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def read_records(
         self,
@@ -129,15 +123,12 @@ class IterableStream(HttpStream, ABC):
             yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         except (HTTPError, UserDefinedBackoffException, DefaultBackoffException) as e:
             response = e.response
-            if self.check_unauthorized_key(response):
-                self.ignore_further_slices = True
-                return
             if self.check_generic_error(response):
                 return
             raise e
 
 
-class IterableExportStream(IterableStream, ABC):
+class IterableExportStream(IterableStream, CheckpointMixin, ABC):
     """
     This stream utilize "export" Iterable api for getting large amount of data.
     It can return data in form of new line separater strings each of each
@@ -151,6 +142,14 @@ class IterableExportStream(IterableStream, ABC):
 
     cursor_field = "createdAt"
     primary_key = None
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
 
     def __init__(self, start_date=None, end_date=None, **kwargs):
         super().__init__(**kwargs)
@@ -171,7 +170,12 @@ class IterableExportStream(IterableStream, ABC):
             raise ValueError(f"Unsupported type of datetime field {type(value)}")
         return value
 
-    def get_updated_state(
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(**kwargs):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
+
+    def _get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
@@ -342,42 +346,6 @@ class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRa
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("events")
 
 
-class Lists(IterableStream):
-    data_field = "lists"
-
-    def path(self, **kwargs) -> str:
-        return "lists"
-
-
-class ListUsers(IterableStream):
-    primary_key = "listId"
-    data_field = "getUsers"
-    name = "list_users"
-    # enable caching, because this stream used by other ones
-    use_cache = True
-
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = Lists(authenticator=self._cred)
-        for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
-            yield {"list_id": list_record["id"]}
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        list_id = self._get_list_id(response.url)
-        for user in response.iter_lines():
-            yield {"email": user.decode(), "listId": list_id}
-
-    @staticmethod
-    def _get_list_id(url: str) -> int:
-        parsed_url = urlparse.urlparse(url)
-        for q in parsed_url.query.split("&"):
-            key, value = q.split("=")
-            if key == "listId":
-                return int(value)
-
-
 class Campaigns(IterableStream):
     data_field = "campaigns"
 
@@ -463,71 +431,6 @@ class CampaignsMetrics(IterableStream):
             result.append(row)
 
         return result
-
-
-class Channels(IterableStream):
-    data_field = "channels"
-
-    def path(self, **kwargs) -> str:
-        return "channels"
-
-
-class MessageTypes(IterableStream):
-    data_field = "messageTypes"
-    name = "message_types"
-
-    def path(self, **kwargs) -> str:
-        return "messageTypes"
-
-
-class Metadata(IterableStream):
-    primary_key = None
-    data_field = "results"
-
-    def path(self, **kwargs) -> str:
-        return "metadata"
-
-
-class Events(IterableStream):
-    """
-    https://api.iterable.com/api/docs#export_exportUserEvents
-    """
-
-    primary_key = None
-    data_field = "events"
-    common_fields = ("itblInternal", "_type", "createdAt", "email")
-
-    def path(self, **kwargs) -> str:
-        return "export/userEvents"
-
-    def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params.update({"email": stream_slice["email"], "includeCustomEvents": "true"})
-
-        return params
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = ListUsers(authenticator=self._cred)
-        stream_slices = lists.stream_slices()
-
-        for stream_slice in stream_slices:
-            for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh), stream_slice=stream_slice):
-                yield {"email": list_record["email"]}
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Parse jsonl response body.
-        Put common event fields at the top level.
-        Put the rest of the fields in the `data` subobject.
-        """
-        jsonl_records = StringIO(response.text)
-        for record in jsonl_records:
-            record_dict = json.loads(record)
-            record_dict_common_fields = {}
-            for field in self.common_fields:
-                record_dict_common_fields[field] = record_dict.pop(field, None)
-
-            yield {**record_dict_common_fields, "data": record_dict}
 
 
 class EmailBounce(IterableExportStreamAdjustableRange):
@@ -687,16 +590,3 @@ class Templates(IterableExportStreamRanged):
         for record in records:
             record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
-
-
-class Users(IterableExportStreamRanged):
-    data_field = "user"
-    cursor_field = "profileUpdatedAt"
-
-
-class AccessCheck(ListUsers):
-    # since 401 error is failed silently in all the streams,
-    # we need another class to distinguish an empty stream from 401 response
-    def check_unauthorized_key(self, response: requests.Response) -> bool:
-        # this allows not retrying 401 and raising the error upstream
-        return response.status_code != codes.UNAUTHORIZED

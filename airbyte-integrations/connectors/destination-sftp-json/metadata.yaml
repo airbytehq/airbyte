@@ -8,7 +8,7 @@ data:
   icon: sftp.svg
   license: MIT
   name: SFTP-JSON
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -22,4 +22,7 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

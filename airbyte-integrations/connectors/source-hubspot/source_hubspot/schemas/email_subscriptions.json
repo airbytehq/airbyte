@@ -4,36 +4,47 @@
   "additionalProperties": true,
   "properties": {
     "active": {
+      "description": "Indicates whether the subscription is currently active or not",
       "type": ["null", "boolean"]
     },
     "portalId": {
+      "description": "The unique identifier for the portal associated with the subscription",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "Additional information or details about the subscription",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the subscription",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The display name of the subscription",
       "type": ["null", "string"]
     },
     "order": {
+      "description": "The order in which the subscription is displayed or processed",
       "type": ["null", "integer"]
     },
     "businessUnitId": {
+      "description": "The unique identifier for the business unit associated with the subscription",
       "type": ["null", "integer"]
     },
     "internal": {
+      "description": "Indicates whether the subscription is for internal use only",
       "type": ["null", "boolean"]
     },
     "internalName": {
+      "description": "The internal name for the subscription",
       "type": ["null", "string"]
     },
     "category": {
+      "description": "The category to which the subscription belongs",
       "type": ["null", "string"]
     },
     "channel": {
+      "description": "The communication channel through which the subscription is managed",
       "type": ["null", "string"]
     }
   }

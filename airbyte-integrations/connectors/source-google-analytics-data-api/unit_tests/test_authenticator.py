@@ -23,7 +23,7 @@ def test_token_rotation(requests_mock):
     authenticated_request = authenticator(requests.Request())
     assert auth_request.call_count == 1
     assert auth_request.last_request.qs.get("assertion") == [
-        "eyj0exaioijkv1qilcjhbgcioijsuzi1niisimtpzci6imnsawvudf9pzcj9.eyjpc3mioijjbgllbnrfzw1hawwilcjzy29wzsi6imh0dhbzoi8vd3d3lmdvb2dszwfwaxmuy29tl2f1dggvyw5hbhl0awnzlnjlywrvbmx5iiwiyxvkijoiahr0chm6ly9vyxv0adiuz29vz2xlyxbpcy5jb20vdg9rzw4ilcjlehaioje2nzi1mzq4mdasimlhdci6mty3mjuzmtiwmh0.u1gpfmncrtlsy_ujxpc2iazpvdzb6eq4mobq3xez5v6gqtj0xgou__c6neu9d7qvb8h0jkynggsfibkoci_g7a"
+        "eyjhbgcioijsuzi1niisimtpzci6imnsawvudf9pzcisinr5cci6ikpxvcj9.eyjpc3mioijjbgllbnrfzw1hawwilcjzy29wzsi6imh0dhbzoi8vd3d3lmdvb2dszwfwaxmuy29tl2f1dggvyw5hbhl0awnzlnjlywrvbmx5iiwiyxvkijoiahr0chm6ly9vyxv0adiuz29vz2xlyxbpcy5jb20vdg9rzw4ilcjlehaioje2nzi1mzq4mdasimlhdci6mty3mjuzmtiwmh0.oy_do4cxytjclgajcutbolxftlba89bt2ipuegmis7crh9no_q9h4ispv7iquz5d5h58tpftjhdayb5jfuvheq"
     ]
     assert auth_request.last_request.qs.get("grant_type") == ["urn:ietf:params:oauth:grant-type:jwt-bearer"]
     assert authenticator._token.get("expires_at") == 1672534800

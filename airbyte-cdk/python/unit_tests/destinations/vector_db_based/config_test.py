@@ -4,7 +4,7 @@
 
 from typing import Union
 
-import dpath.util
+import dpath
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
@@ -14,7 +14,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class IndexingModel(BaseModel):
@@ -57,7 +57,7 @@ class ConfigModel(BaseModel):
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/**/discriminator")
+        dpath.delete(schema, "properties/**/discriminator")
 
     @classmethod
     def schema(cls):

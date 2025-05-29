@@ -31,7 +31,8 @@
     "board": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "string"] }
+        "id": { "type": ["null", "string"] },
+        "name": { "type": ["null", "string"] }
       }
     },
     "column_values": {

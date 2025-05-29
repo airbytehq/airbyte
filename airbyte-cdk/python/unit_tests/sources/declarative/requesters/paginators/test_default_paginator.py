@@ -21,7 +21,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
 
 @pytest.mark.parametrize(
-    "page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_records, expected_next_page_token, limit",
+    "page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_record, expected_next_page_token, limit",
     [
         (
             RequestPath(parameters={}),
@@ -31,7 +31,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {},
             {},
             {},
-            [{"id": 0}, {"id": 1}],
+            {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
         ),
@@ -43,7 +43,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {},
             {},
             {},
-            [{"id": 0}, {"id": 1}],
+            {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
         ),
@@ -55,7 +55,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {},
             {},
             {},
-            [{"id": 0}, {"id": 1}],
+            {"id": 1},
             None,
             2,
         ),
@@ -67,7 +67,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"from": "https://airbyte.io/next_url"},
             {},
             {},
-            [{"id": 0}, {"id": 1}],
+            {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
         ),
@@ -79,7 +79,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {},
             {"from": "https://airbyte.io/next_url"},
             {},
-            [{"id": 0}, {"id": 1}],
+            {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
         ),
@@ -91,7 +91,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {},
             {},
             {"from": "https://airbyte.io/next_url"},
-            [{"id": 0}, {"id": 1}],
+            {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
         ),
@@ -113,7 +113,7 @@ def test_default_paginator_with_cursor(
     expected_headers,
     expected_body_data,
     expected_body_json,
-    last_records,
+    last_record,
     expected_next_page_token,
     limit,
 ):
@@ -146,7 +146,7 @@ def test_default_paginator_with_cursor(
     response_body = {"next": "https://airbyte.io/next_url"}
     response._content = json.dumps(response_body).encode("utf-8")
 
-    actual_next_page_token = paginator.next_page_token(response, last_records)
+    actual_next_page_token = paginator.next_page_token(response, 2, last_record)
     actual_next_path = paginator.path()
     actual_request_params = paginator.get_request_params()
     actual_headers = paginator.get_request_headers()
@@ -210,8 +210,8 @@ def test_paginator_request_param_interpolation(
     response.headers = {"A_HEADER": "HEADER_VALUE"}
     response_body = {"next": "https://airbyte.io/next_url"}
     response._content = json.dumps(response_body).encode("utf-8")
-    last_records = [{"id": 0}, {"id": 1}]
-    paginator.next_page_token(response, last_records)
+    last_record = {"id": 1}
+    paginator.next_page_token(response, 2, last_record)
     actual_request_params = paginator.get_request_params()
     assert actual_request_params == expected_request_params
 
@@ -239,13 +239,17 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
 
 
 @pytest.mark.parametrize(
-    "test_name, inject_on_first_request",
+    "inject_on_first_request",
     [
-        pytest.param("test_reset_inject_on_first_request", True),
-        pytest.param("test_reset_no_inject_on_first_request", False),
+        (True),
+        (False),
+    ],
+    ids=[
+        "test_reset_inject_on_first_request",
+        "test_reset_no_inject_on_first_request",
     ],
 )
-def test_reset(test_name, inject_on_first_request):
+def test_reset(inject_on_first_request):
     page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
     url_base = "https://airbyte.io"
@@ -255,7 +259,9 @@ def test_reset(test_name, inject_on_first_request):
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
     )
     initial_request_parameters = paginator.get_request_params()
-    paginator.next_page_token(MagicMock(), [{"first key": "first value"}, {"second key": "second value"}])
+    response = requests.Response()
+    response._content = json.dumps({}).encode("utf-8")
+    paginator.next_page_token(response, 2, {"a key": "a value"})
     request_parameters_for_second_request = paginator.get_request_params()
     paginator.reset()
     request_parameters_after_reset = paginator.get_request_params()
@@ -293,10 +299,10 @@ def test_limit_page_fetched():
     )
 
     for _ in range(number_of_next_performed):
-        last_token = paginator.next_page_token(MagicMock(), MagicMock())
+        last_token = paginator.next_page_token(MagicMock(), 1, MagicMock())
         assert last_token
 
-    assert not paginator.next_page_token(MagicMock(), MagicMock())
+    assert not paginator.next_page_token(MagicMock(), 1, MagicMock())
 
 
 def test_paginator_with_page_option_no_page_size():

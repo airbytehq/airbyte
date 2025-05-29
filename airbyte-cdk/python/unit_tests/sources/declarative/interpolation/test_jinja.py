@@ -5,6 +5,7 @@
 import datetime
 
 import pytest
+from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from freezegun import freeze_time
 from jinja2.exceptions import TemplateSyntaxError
@@ -17,6 +18,13 @@ def test_get_value_from_config():
     config = {"date": "2022-01-01"}
     val = interpolation.eval(s, config)
     assert val == "2022-01-01"
+
+
+def test_get_missing_value_from_config():
+    s = "{{ config['date'] }}"
+    config = {}
+    val = interpolation.eval(s, config)
+    assert val is None
 
 
 @pytest.mark.parametrize(
@@ -39,6 +47,14 @@ def test_get_value_from_stream_slice():
     stream_slice = {"date": "2020-09-09"}
     val = interpolation.eval(s, config, **{"stream_slice": stream_slice})
     assert val == "2020-09-09"
+
+
+def test_get_missing_value_from_stream_slice():
+    s = "{{ stream_slice['date'] }}"
+    config = {"date": "2022-01-01"}
+    stream_slice = {}
+    val = interpolation.eval(s, config, **{"stream_slice": stream_slice})
+    assert val is None
 
 
 def test_get_value_from_a_list_of_mappings():
@@ -141,7 +157,7 @@ def test_negative_day_delta():
         ("test_false_to_string", False, "false"),
         ("test_array_to_string", ["hello", "world"], '["hello", "world"]'),
         ("test_object_to_array", {"hello": "world"}, '{"hello": "world"}'),
-    ]
+    ],
 )
 def test_to_string(test_name, input_value, expected_output):
     interpolation = JinjaInterpolation()
@@ -253,7 +269,7 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
             id="test_now_utc_with_duration_and_format",
         ),
         pytest.param("{{ 1 | string }}", "1", id="test_int_to_string"),
-        pytest.param("{{ [\"hello\", \"world\"] | string }}", "[\"hello\", \"world\"]", id="test_array_to_string"),
+        pytest.param('{{ ["hello", "world"] | string }}', '["hello", "world"]', id="test_array_to_string"),
     ],
 )
 def test_macros_examples(template_string, expected_value):
@@ -261,3 +277,15 @@ def test_macros_examples(template_string, expected_value):
     # If you change the expected output, you must also change the expected output in declarative_component_schema.yaml
     now_utc = interpolation.eval(template_string, {})
     assert now_utc == expected_value
+
+
+def test_interpolation_private_partition_attribute():
+    inner_partition = StreamSlice(partition={}, cursor_slice={})
+    expected_output = "value"
+    setattr(inner_partition, "parent_stream_fields", expected_output)
+    stream_slice = StreamSlice(partition=inner_partition, cursor_slice={})
+    template = "{{ stream_slice._partition.parent_stream_fields }}"
+
+    actual_output = JinjaInterpolation().eval(template, {}, **{"stream_slice": stream_slice})
+
+    assert actual_output == expected_output

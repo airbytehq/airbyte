@@ -3,11 +3,11 @@
 #
 
 
+import logging
 from contextlib import nullcontext as does_not_raise
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
@@ -59,7 +59,7 @@ def test_expected_errors(mocker, config, exception, error_message):
     )
     source = SourceGoogleAds()
     with pytest.raises(AirbyteTracedException) as exception:
-        status_ok, error = source.check_connection(AirbyteLogger(), config)
+        status_ok, error = source.check_connection(logging.getLogger("airbyte"), config)
     assert exception.value.message == error_message
 
 

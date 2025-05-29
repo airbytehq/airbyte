@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from airbyte_cdk.test.mock_http.response_builder import find_template
 

@@ -30,5 +30,5 @@ def test_constant_backoff(test_name, attempt_count, backofftime, expected_backof
     backoff_strategy = ConstantBackoffStrategy(
         parameters={"backoff": PARAMETERS_BACKOFF_TIME}, backoff_time_in_seconds=backofftime, config={"backoff": CONFIG_BACKOFF_TIME}
     )
-    backoff = backoff_strategy.backoff(response_mock, attempt_count)
+    backoff = backoff_strategy.backoff_time(response_mock, attempt_count=attempt_count)
     assert backoff == expected_backoff_time

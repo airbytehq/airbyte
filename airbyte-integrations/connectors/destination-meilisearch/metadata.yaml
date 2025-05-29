@@ -2,13 +2,13 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/destination-meilisearch
   githubIssueLabel: destination-meilisearch
   icon: meilisearch.svg
   license: MIT
   name: MeiliSearch
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -21,5 +21,16 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_MEILISEARCH_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

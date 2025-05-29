@@ -1,10 +1,8 @@
 {
-  "client_id": "389D15E4EE7D4EC09F91F2926EDE5B9B",
-  "client_secret": "rumSF2vR4wGY-bhNOTqo1lttMgi0h_XobxyrKYBzrRUxj9nR",
-  "tenant_id": "22b6dfc8-a47d-4e3d-a4ab-a30f22a5681d",
-  "scopes": "accounting.attachments accounting.contacts accounting.transactions assets.read accounting.attachments.read accounting.contacts.read accounting.settings accounting.settings.read accounting.journals.read accounting.budgets.read accounting.reports.tenninetynine.read accounting.reports.read assets accounting.transactions.read",
-  "authentication": {
-    "auth_type": "custom_connection"
+  "credentials": {
+    "auth_type": "oauth2_access_token",
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   },
-  "start_date": "2021-01-01T00:00:00Z"
+  "start_date": "2021-01-01T00:00:00Z",
+  "tenant_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }

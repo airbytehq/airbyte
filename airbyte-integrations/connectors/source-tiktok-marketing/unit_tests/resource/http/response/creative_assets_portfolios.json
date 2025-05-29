@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "creative_portfolios": [
+      {
+        "creative_portfolio_id": "111111111111111111",
+        "creative_portfolio_type": "portfolio",
+        "creative_portfolio_preview_url": "https://url1.com"
+      },
+      {
+        "creative_portfolio_id": "222222222222222222",
+        "creative_portfolio_type": "portfolio",
+        "creative_portfolio_preview_url": "https://url2.com"
+      }
+    ]
+  }
+}

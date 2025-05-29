@@ -2,45 +2,38 @@
 products: all
 ---
 
-# Getting Started
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
-Getting started with Airbyte takes only a few steps! This page guides you through the initial steps to get started and you'll learn how to setup your first connection on the following pages.
+# Airbyte Overview
 
-You have two options to run Airbyte: Use **Airbyte Cloud** (recommended) or **self-manage Airbyte** in your infrastructure.
+Airbyte is an open-source data integration platform designed to help you consolidate data from various sources into your data warehouses, lakes, and databases.
 
-:::tip
-If you are have already deployed Airbyte or signed up for Airbyte Cloud, jump ahead to [set up a source](./add-a-source.md).
-:::
-
-## Sign Up for Airbyte Cloud
-
-To use Airbyte Cloud, [sign up](https://cloud.airbyte.io/signup) with your email address, Google login, or GitHub login. Upon signing up, you'll be taken to your workspace, which lets you collaborate with team members and share resources across your team under a shared billing account.
-
-Airbyte Cloud offers a 14-day free trial that begins after your first successful sync. For more details on our pricing model, see our [pricing page](https://www.airbyte.com/pricing).
-
-To start setting up a data pipeline, see how to [set up a source](./add-a-source.md).
+Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data for a personal project, Airbyte can work for you! We offer flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise-grade solutions.
 
 
-## Deploy Airbyte (Self-Managed)
+## Airbyte Products
 
-When self-managing Airbyte, your data never leaves your premises. Get started immediately by deploying locally using Docker.
+<Grid columns="2">
 
-### Self-Managed Community (Open Source)
+<CardWithIcon title="Self-Managed Community (OSS)" description="Deploy locally or in your own infrastructure. Get started immediately without your data leaving your premises." ctaText="OSS Quickstart" ctaLink="oss-quickstart" icon="fa-download" />
 
-With Airbyte Self-Managed Community (Open Source), you can use one of the following options in your infrastructure:
+<CardWithIcon title="Cloud" description="A Cloud-native version of Airbyte that provides a fully managed experience for data replication, allowing you to focus on moving data while we take care of managing the infrastructure. Free 14-day trial, no credit card required" ctaText="Sign Up for Cloud" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
-- [Local Deployment](/deploying-airbyte/local-deployment.md) (recommended when trying out Airbyte)
-- [On AWS](/deploying-airbyte/on-aws-ec2.md)
-- [On Azure VM Cloud Shell](/deploying-airbyte/on-azure-vm-cloud-shell.md)
-- [On Digital Ocean Droplet](/deploying-airbyte/on-digitalocean-droplet.md)
-- [On GCP](/deploying-airbyte/on-gcp-compute-engine.md)
-- [On Kubernetes](/deploying-airbyte/on-kubernetes-via-helm.md)
-- [On OCI VM](/deploying-airbyte/on-oci-vm.md)
-- [On Restack](/deploying-airbyte/on-restack.md)
-- [On Plural](/deploying-airbyte/on-plural.md)
-- [On AWS ECS](/deploying-airbyte/on-aws-ecs.md) (Spoiler alert: it doesn't work)
+</Grid>
 
-### Self-Managed Enterprise
-Airbyte Self-Managed Enterprise is the best way to run Airbyte yourself. You get all 300+ pre-built connectors, data never leaves your environment, and Airbyte becomes self-serve in your organization with new tools to manage multiple users, and multiple teams using Airbyte all in one place.
+<Grid columns="2">
 
-To start with Self-Managed Enterprise, navigate to our [Enterprise setup guide](/enterprise-setup/README.md).
+<CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. To start with Self-Managed Enterprise, you'll need a license key. For more details, review our Enterprise setup guide. " ctaText="Learn More" ctaLink="../../enterprise-setup" icon="fa-lock" />
+
+<CardWithIcon title="Cloud Teams" description="For organizations
+looking to scale efficiently. For more details, talk to our Sales team. " ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+
+
+</Grid>
+
+
+## Additional Resources
+- [Airbyte's Core Concepts](../../using-airbyte/core-concepts/)
+- [Building Connections](../../cloud/managing-airbyte-cloud/configuring-connections.md)
+

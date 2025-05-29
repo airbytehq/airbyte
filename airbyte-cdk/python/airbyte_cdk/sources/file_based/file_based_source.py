@@ -44,7 +44,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
+from pydantic.v1.error_wrappers import ValidationError
 
 DEFAULT_CONCURRENCY = 100
 MAX_CONCURRENCY = 100
@@ -61,7 +61,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         spec_class: Type[AbstractFileBasedSpec],
         catalog: Optional[ConfiguredAirbyteCatalog],
         config: Optional[Mapping[str, Any]],
-        state: Optional[MutableMapping[str, Any]],
+        state: Optional[List[AirbyteStateMessage]],
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
@@ -122,6 +122,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             )
 
         errors = []
+        tracebacks = []
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
@@ -130,11 +131,33 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     stream_is_available,
                     reason,
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
+            except AirbyteTracedException as ate:
+                errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
+                tracebacks.append(traceback.format_exc())
             except Exception:
-                errors.append(f"Unable to connect to stream {stream.name} - {''.join(traceback.format_exc())}")
+                errors.append(f"Unable to connect to stream {stream.name}")
+                tracebacks.append(traceback.format_exc())
             else:
                 if not stream_is_available and reason:
                     errors.append(reason)
+
+        if len(errors) == 1 and len(tracebacks) == 1:
+            raise AirbyteTracedException(
+                internal_message=tracebacks[0],
+                message=f"{errors[0]}",
+                failure_type=FailureType.config_error,
+            )
+        if len(errors) == 1 and len(tracebacks) == 0:
+            raise AirbyteTracedException(
+                message=f"{errors[0]}",
+                failure_type=FailureType.config_error,
+            )
+        elif len(errors) > 1:
+            raise AirbyteTracedException(
+                internal_message="\n".join(tracebacks),
+                message=f"{len(errors)} streams with errors: {', '.join(error for error in errors)}",
+                failure_type=FailureType.config_error,
+            )
 
         return not bool(errors), (errors or None)
 
@@ -144,10 +167,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         """
 
         if self.catalog:
-            state_manager = ConnectorStateManager(
-                stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams},
-                state=self.state,
-            )
+            state_manager = ConnectorStateManager(state=self.state)
         else:
             # During `check` operations we don't have a catalog so cannot create a state manager.
             # Since the state manager is only required for incremental syncs, this is fine.

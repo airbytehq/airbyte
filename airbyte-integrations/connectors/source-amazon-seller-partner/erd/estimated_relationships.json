@@ -1,0 +1,247 @@
+{
+  "streams": [
+    {
+      "name": "FBA_CUSTOMER_RETURNS",
+      "relations": {
+        "order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "GET_AFN_INVENTORY_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_AFN_INVENTORY_DATA_BY_COUNTRY",
+      "relations": {}
+    },
+    {
+      "name": "Order detail",
+      "relations": {
+        "order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA",
+      "relations": {
+        "order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "FBA_REPLACEMENT",
+      "relations": {
+        "original-amazon-order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "FEE_CHARGES",
+      "relations": {}
+    },
+    {
+      "name": "Fee_charges",
+      "relations": {}
+    },
+    {
+      "name": "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING",
+      "relations": {
+        "order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "GET_FLAT_FILE_OPEN_LISTINGS_DATA",
+      "relations": {}
+    },
+    {
+      "name": "Order_DATE_GENERAL",
+      "relations": {}
+    },
+    {
+      "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL",
+      "relations": {}
+    },
+    {
+      "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
+      "relations": {
+        "order-id": "Order_DATE_GENERAL.amazon-order-id",
+        "merchant-order-id": "Order_DATE_GENERAL.merchant-order-id"
+      }
+    },
+    {
+      "name": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+      "relations": {
+        "amazon-order-id": "Order_DATE_GENERAL.amazon-order-id",
+        "merchant-order-id": "Order_DATE_GENERAL.merchant-order-id",
+        "shipment-id": "VendorOrders.purchaseOrderNumber"
+      }
+    },
+    {
+      "name": "GET_MERCHANT_LISTINGS_ALL_DATA",
+      "relations": {}
+    },
+    {
+      "name": "VendorDirectFulfillmentShipping",
+      "relations": {}
+    },
+    {
+      "name": "Orders",
+      "relations": {}
+    },
+    {
+      "name": "OrderItems",
+      "relations": {
+        "AmazonOrderId": "Orders.AmazonOrderId"
+      }
+    },
+    {
+      "name": "GET_ORDER_REPORT_DATA_SHIPPING",
+      "relations": {}
+    },
+    {
+      "name": "GET_SELLER_FEEDBACK_DATA",
+      "relations": {
+        "order_id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "GET_XML_BROWSE_TREE_DATA",
+      "relations": {}
+    },
+    {
+      "name": "ListFinancialEventGroups",
+      "relations": {}
+    },
+    {
+      "name": "ListFinancialEvents",
+      "relations": {}
+    },
+    {
+      "name": "GET_LEDGER_DETAIL_VIEW_DATA",
+      "relations": {}
+    },
+    {
+      "name": "FBA FEES",
+      "relations": {}
+    },
+    {
+      "name": "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA",
+      "relations": {
+        "amazon-order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_MERCHANT_CANCELLED_LISTINGS_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_MERCHANT_LISTINGS_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT",
+      "relations": {}
+    },
+    {
+      "name": "GET_MERCHANT_LISTINGS_INACTIVE_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_STRANDED_INVENTORY_UI_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
+      "relations": {}
+    },
+    {
+      "name": "GET_MERCHANTS_LISTINGS_FYP_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_FBA_SNS_FORECAST_DATA",
+      "relations": {}
+    },
+    {
+      "name": "Performance_Data",
+      "relations": {}
+    },
+    {
+      "name": "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE",
+      "relations": {}
+    },
+    {
+      "name": "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE",
+      "relations": {
+        "Order ID": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "GET_FBA_INVENTORY_PLANNING_DATA",
+      "relations": {}
+    },
+    {
+      "name": "GET_LEDGER_SUMMARY_VIEW_DATA",
+      "relations": {}
+    },
+    {
+      "name": "FBA_REIMBURSEMENTS",
+      "relations": {
+        "amazon-order-id": "Order_DATE_GENERAL.amazon-order-id"
+      }
+    },
+    {
+      "name": "VendorOrders",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_FORECASTING_FRESH_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_FORECASTING_RETAIL_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_SALES_AND_TRAFFIC_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_SALES_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_INVENTORY_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+      "relations": {}
+    },
+    {
+      "name": "GET_VENDOR_TRAFFIC_REPORT",
+      "relations": {}
+    }
+  ]
+}

@@ -31,10 +31,27 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 ## Requirements
 
-- **Workramp API ke**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth) for information on how to obtain an API key.
+- **Workramp API key**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth) for information on how to obtain an API key.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                       |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.0   | 2022-01-02 | [18843](https://github.com/airbytehq/airbyte/pull/18843) | Add Workramp Source Connector |
+|:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0   | 2024-08-09 | [43451](https://github.com/airbytehq/airbyte/pull/43451) | Refactor connector to manifest-only format |
+| 0.1.10  | 2024-08-03 | [43207](https://github.com/airbytehq/airbyte/pull/43207) | Update dependencies |
+| 0.1.9   | 2024-07-20 | [42202](https://github.com/airbytehq/airbyte/pull/42202) | Update dependencies |
+| 0.1.8   | 2024-07-13 | [41473](https://github.com/airbytehq/airbyte/pull/41473) | Update dependencies |
+| 0.1.7   | 2024-07-09 | [41116](https://github.com/airbytehq/airbyte/pull/41116) | Update dependencies |
+| 0.1.6   | 2024-07-06 | [40845](https://github.com/airbytehq/airbyte/pull/40845) | Update dependencies |
+| 0.1.5   | 2024-06-25 | [40388](https://github.com/airbytehq/airbyte/pull/40388) | Update dependencies |
+| 0.1.4   | 2024-06-22 | [39967](https://github.com/airbytehq/airbyte/pull/39967) | Update dependencies |
+| 0.1.3   | 2024-06-12 | [38741](https://github.com/airbytehq/airbyte/pull/38741) | Make connector compatible with Builder |
+| 0.1.2   | 2024-06-04 | [38941](https://github.com/airbytehq/airbyte/pull/38941) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1 | 2024-05-20 | [38419](https://github.com/airbytehq/airbyte/pull/38419) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-01-02 | [18843](https://github.com/airbytehq/airbyte/pull/18843) | Add Workramp Source Connector |
+
+</details>

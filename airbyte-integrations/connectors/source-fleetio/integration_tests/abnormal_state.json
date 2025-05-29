@@ -1,0 +1,32 @@
+{
+  "issues": {
+    "id": ""
+  },
+  "service_entries": {
+    "id": ""
+  },
+  "submitted_inspection_forms": {
+    "id": ""
+  },
+  "vehicles": {
+    "id": ""
+  },
+  "contacts": {
+    "id": ""
+  },
+  "expense_entries": {
+    "id": ""
+  },
+  "fuel_entries": {
+    "id": ""
+  },
+  "parts": {
+    "id": ""
+  },
+  "purchase_orders": {
+    "id": ""
+  },
+  "vehicle_assignments": {
+    "id": ""
+  }
+}

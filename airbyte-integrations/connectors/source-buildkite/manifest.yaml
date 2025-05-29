@@ -1,0 +1,3113 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://buildkite.com/
+  Auth page: https://buildkite.com/user/api-access-tokens
+  API Docs: https://buildkite.com/docs/apis/rest-api
+
+check:
+  type: CheckStream
+  stream_names:
+    - organizations
+
+definitions:
+  streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/organizations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    analytics_organizations_suites:
+      type: DeclarativeStream
+      name: analytics_organizations_suites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/analytics/organizations/{{ stream_partition.org_slug }}/suites
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: org_slug
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/analytics_organizations_suites"
+    organizations_pipelines:
+      type: DeclarativeStream
+      name: organizations_pipelines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/organizations/{{ stream_partition.org_slug }}/pipelines
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: org_slug
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_pipelines"
+    access-token:
+      type: DeclarativeStream
+      name: access-token
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/access-token
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/access-token"
+    builds:
+      type: DeclarativeStream
+      name: builds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/builds
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/builds"
+    organizations_clusters:
+      type: DeclarativeStream
+      name: organizations_clusters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/organizations/{{ stream_partition.org_slug }}/clusters
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: org_slug
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_clusters"
+    organizations_builds:
+      type: DeclarativeStream
+      name: organizations_builds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/organizations/{{ stream_partition.org_slug }}/builds
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: org_slug
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_builds"
+    organizations_pipelines_builds:
+      type: DeclarativeStream
+      name: organizations_pipelines_builds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/organizations/{{ stream_partition.org_slug }}/pipelines/{{
+            stream_partition.pipeline_slug }}/builds
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: org_slug
+                stream:
+                  $ref: "#/definitions/streams/organizations"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: pipeline_slug
+                stream:
+                  $ref: "#/definitions/streams/organizations_pipelines"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_pipelines_builds"
+    organizations_clusters_queues:
+      type: DeclarativeStream
+      name: organizations_clusters_queues
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/organizations/{{ stream_partition.org_slug }}/clusters/{{
+            stream_partition.cluster_id }}/queues
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: org_slug
+                stream:
+                  $ref: "#/definitions/streams/organizations"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: cluster_id
+                stream:
+                  $ref: "#/definitions/streams/organizations_clusters"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_clusters_queues"
+    organizations_clusters_tokens:
+      type: DeclarativeStream
+      name: organizations_clusters_tokens
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/organizations/{{ stream_partition.org_slug }}/clusters/{{
+            stream_partition.cluster_id }}/tokens
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: org_slug
+                stream:
+                  $ref: "#/definitions/streams/organizations"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: cluster_id
+                stream:
+                  $ref: "#/definitions/streams/organizations_clusters"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_clusters_tokens"
+    organizations_emojis:
+      type: DeclarativeStream
+      name: organizations_emojis
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/organizations/{{ stream_partition.org_slug }}/emojis
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: org_slug
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_emojis"
+    user:
+      type: DeclarativeStream
+      name: user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/user
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 5
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.buildkite.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/analytics_organizations_suites"
+  - $ref: "#/definitions/streams/organizations_pipelines"
+  - $ref: "#/definitions/streams/access-token"
+  - $ref: "#/definitions/streams/builds"
+  - $ref: "#/definitions/streams/organizations_clusters"
+  - $ref: "#/definitions/streams/organizations_builds"
+  - $ref: "#/definitions/streams/organizations_pipelines_builds"
+  - $ref: "#/definitions/streams/organizations_clusters_queues"
+  - $ref: "#/definitions/streams/organizations_clusters_tokens"
+  - $ref: "#/definitions/streams/organizations_emojis"
+  - $ref: "#/definitions/streams/user"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organizations: true
+    analytics_organizations_suites: true
+    organizations_pipelines: true
+    access-token: true
+    builds: true
+    organizations_clusters: true
+    organizations_builds: true
+    organizations_pipelines_builds: true
+    organizations_clusters_queues: true
+    organizations_clusters_tokens: true
+    organizations_emojis: true
+    user: true
+  testedStreams:
+    organizations:
+      streamHash: 0db7a0ab4da8f378e0d6bb978ab296b9a52c2dbb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    analytics_organizations_suites:
+      streamHash: 1e7a70a9c0fdcf51281c9c0fe3b4b6178dadd4ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_pipelines:
+      streamHash: cc12c12bff4c5f30c809dfa80194ec4d1b0f061c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    access-token:
+      streamHash: 71957c98e106c92f2f8d05747f67644a03ec8caa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    builds:
+      streamHash: 18efc6f171eed2c0ee9174cc5d3b223058aacede
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_clusters:
+      streamHash: 98f9da5dfe1555f81b5004169f98b6690108defe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_builds:
+      streamHash: c28cc53c031e2d0ac5be76c2372ad998d278d9a7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_pipelines_builds:
+      streamHash: 1750fb86dbb94cd07077a76e2580e484e2fdc8a3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_clusters_queues:
+      streamHash: 3fe80d38198f9ecc84a9a2cf422378f9bfe13f11
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_clusters_tokens:
+      streamHash: 5f0aa1a9beafcb226d88848788a7ce3c8df97304
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_emojis:
+      streamHash: 66609939540469b40f95d0be0da945acf2097afc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user:
+      streamHash: 695af164491dff08287da523032dadc917841c5a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      agents_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      emojis_url:
+        type:
+          - string
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      pipelines_url:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  analytics_organizations_suites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      default_branch:
+        type:
+          - string
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  organizations_pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      allow_rebuilds:
+        type:
+          - boolean
+          - "null"
+      badge_url:
+        type:
+          - string
+          - "null"
+      builds_url:
+        type:
+          - string
+          - "null"
+      cancel_running_branch_builds:
+        type:
+          - boolean
+          - "null"
+      cluster_id:
+        type:
+          - string
+          - "null"
+      cluster_url:
+        type:
+          - string
+          - "null"
+      configuration:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      default_branch:
+        type:
+          - string
+          - "null"
+      emoji:
+        type:
+          - string
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      provider:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          settings:
+            type:
+              - object
+              - "null"
+            properties:
+              build_branches:
+                type:
+                  - boolean
+                  - "null"
+              build_merge_group_checks_requested:
+                type:
+                  - boolean
+                  - "null"
+              build_pull_request_base_branch_changed:
+                type:
+                  - boolean
+                  - "null"
+              build_pull_request_forks:
+                type:
+                  - boolean
+                  - "null"
+              build_pull_request_labels_changed:
+                type:
+                  - boolean
+                  - "null"
+              build_pull_request_ready_for_review:
+                type:
+                  - boolean
+                  - "null"
+              build_pull_requests:
+                type:
+                  - boolean
+                  - "null"
+              build_tags:
+                type:
+                  - boolean
+                  - "null"
+              cancel_deleted_branch_builds:
+                type:
+                  - boolean
+                  - "null"
+              filter_enabled:
+                type:
+                  - boolean
+                  - "null"
+              prefix_pull_request_fork_branch_names:
+                type:
+                  - boolean
+                  - "null"
+              publish_blocked_as_pending:
+                type:
+                  - boolean
+                  - "null"
+              publish_commit_status:
+                type:
+                  - boolean
+                  - "null"
+              publish_commit_status_per_step:
+                type:
+                  - boolean
+                  - "null"
+              pull_request_branch_filter_enabled:
+                type:
+                  - boolean
+                  - "null"
+              repository:
+                type:
+                  - string
+                  - "null"
+              separate_pull_request_statuses:
+                type:
+                  - boolean
+                  - "null"
+              skip_builds_for_existing_commits:
+                type:
+                  - boolean
+                  - "null"
+              skip_pull_request_builds_for_existing_commits:
+                type:
+                  - boolean
+                  - "null"
+              trigger_mode:
+                type:
+                  - string
+                  - "null"
+              use_step_key_as_commit_status:
+                type:
+                  - boolean
+                  - "null"
+          webhook_url:
+            type:
+              - string
+              - "null"
+      repository:
+        type:
+          - string
+          - "null"
+      running_builds_count:
+        type:
+          - number
+          - "null"
+      running_jobs_count:
+        type:
+          - number
+          - "null"
+      scheduled_builds_count:
+        type:
+          - number
+          - "null"
+      scheduled_jobs_count:
+        type:
+          - number
+          - "null"
+      skip_queued_branch_builds:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      steps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            agent_query_rules:
+              type:
+                - array
+                - "null"
+            command:
+              type:
+                - string
+                - "null"
+            env:
+              type:
+                - object
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      url:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+      waiting_jobs_count:
+        type:
+          - number
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  access-token:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      scopes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  builds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blocked:
+        type:
+          - boolean
+          - "null"
+      blocked_state:
+        type:
+          - string
+          - "null"
+      branch:
+        type:
+          - string
+          - "null"
+      cluster_id:
+        type:
+          - string
+          - "null"
+      cluster_url:
+        type:
+          - string
+          - "null"
+      commit:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      env:
+        type:
+          - object
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      jobs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            agent_query_rules:
+              type:
+                - array
+                - "null"
+            artifacts_url:
+              type:
+                - string
+                - "null"
+            build_url:
+              type:
+                - string
+                - "null"
+            cluster_id:
+              type:
+                - string
+                - "null"
+            cluster_queue_id:
+              type:
+                - string
+                - "null"
+            cluster_queue_url:
+              type:
+                - string
+                - "null"
+            cluster_url:
+              type:
+                - string
+                - "null"
+            command:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            graphql_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            log_url:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - object
+                - "null"
+              properties:
+                number:
+                  type:
+                    - number
+                    - "null"
+            raw_log_url:
+              type:
+                - string
+                - "null"
+            retried:
+              type:
+                - boolean
+                - "null"
+            runnable_at:
+              type:
+                - string
+                - "null"
+            scheduled_at:
+              type:
+                - string
+                - "null"
+            soft_failed:
+              type:
+                - boolean
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            step:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+            web_url:
+              type:
+                - string
+                - "null"
+      message:
+        type:
+          - string
+          - "null"
+      meta_data:
+        type:
+          - object
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      pipeline:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          allow_rebuilds:
+            type:
+              - boolean
+              - "null"
+          badge_url:
+            type:
+              - string
+              - "null"
+          builds_url:
+            type:
+              - string
+              - "null"
+          cancel_running_branch_builds:
+            type:
+              - boolean
+              - "null"
+          cluster_id:
+            type:
+              - string
+              - "null"
+          cluster_url:
+            type:
+              - string
+              - "null"
+          configuration:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              graphql_id:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          default_branch:
+            type:
+              - string
+              - "null"
+          emoji:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              settings:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  build_branches:
+                    type:
+                      - boolean
+                      - "null"
+                  build_merge_group_checks_requested:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_base_branch_changed:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_forks:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_labels_changed:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_ready_for_review:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_requests:
+                    type:
+                      - boolean
+                      - "null"
+                  build_tags:
+                    type:
+                      - boolean
+                      - "null"
+                  cancel_deleted_branch_builds:
+                    type:
+                      - boolean
+                      - "null"
+                  filter_enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  prefix_pull_request_fork_branch_names:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_blocked_as_pending:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_commit_status:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_commit_status_per_step:
+                    type:
+                      - boolean
+                      - "null"
+                  pull_request_branch_filter_enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  repository:
+                    type:
+                      - string
+                      - "null"
+                  separate_pull_request_statuses:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_builds_for_existing_commits:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_pull_request_builds_for_existing_commits:
+                    type:
+                      - boolean
+                      - "null"
+                  trigger_mode:
+                    type:
+                      - string
+                      - "null"
+                  use_step_key_as_commit_status:
+                    type:
+                      - boolean
+                      - "null"
+              webhook_url:
+                type:
+                  - string
+                  - "null"
+          repository:
+            type:
+              - string
+              - "null"
+          running_builds_count:
+            type:
+              - number
+              - "null"
+          running_jobs_count:
+            type:
+              - number
+              - "null"
+          scheduled_builds_count:
+            type:
+              - number
+              - "null"
+          scheduled_jobs_count:
+            type:
+              - number
+              - "null"
+          skip_queued_branch_builds:
+            type:
+              - boolean
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          steps:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                agent_query_rules:
+                  type:
+                    - array
+                    - "null"
+                command:
+                  type:
+                    - string
+                    - "null"
+                env:
+                  type:
+                    - object
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          url:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+          waiting_jobs_count:
+            type:
+              - number
+              - "null"
+          web_url:
+            type:
+              - string
+              - "null"
+      scheduled_at:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  organizations_clusters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      default_queue_id:
+        type:
+          - string
+          - "null"
+      default_queue_url:
+        type:
+          - string
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      queues_url:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  organizations_builds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blocked:
+        type:
+          - boolean
+          - "null"
+      blocked_state:
+        type:
+          - string
+          - "null"
+      branch:
+        type:
+          - string
+          - "null"
+      cluster_id:
+        type:
+          - string
+          - "null"
+      cluster_url:
+        type:
+          - string
+          - "null"
+      commit:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      env:
+        type:
+          - object
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      jobs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            agent_query_rules:
+              type:
+                - array
+                - "null"
+            artifacts_url:
+              type:
+                - string
+                - "null"
+            build_url:
+              type:
+                - string
+                - "null"
+            cluster_id:
+              type:
+                - string
+                - "null"
+            cluster_queue_id:
+              type:
+                - string
+                - "null"
+            cluster_queue_url:
+              type:
+                - string
+                - "null"
+            cluster_url:
+              type:
+                - string
+                - "null"
+            command:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            graphql_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            log_url:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - object
+                - "null"
+              properties:
+                number:
+                  type:
+                    - number
+                    - "null"
+            raw_log_url:
+              type:
+                - string
+                - "null"
+            retried:
+              type:
+                - boolean
+                - "null"
+            runnable_at:
+              type:
+                - string
+                - "null"
+            scheduled_at:
+              type:
+                - string
+                - "null"
+            soft_failed:
+              type:
+                - boolean
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            step:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+            web_url:
+              type:
+                - string
+                - "null"
+      message:
+        type:
+          - string
+          - "null"
+      meta_data:
+        type:
+          - object
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      pipeline:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          allow_rebuilds:
+            type:
+              - boolean
+              - "null"
+          badge_url:
+            type:
+              - string
+              - "null"
+          builds_url:
+            type:
+              - string
+              - "null"
+          cancel_running_branch_builds:
+            type:
+              - boolean
+              - "null"
+          cluster_id:
+            type:
+              - string
+              - "null"
+          cluster_url:
+            type:
+              - string
+              - "null"
+          configuration:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              graphql_id:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          default_branch:
+            type:
+              - string
+              - "null"
+          emoji:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              settings:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  build_branches:
+                    type:
+                      - boolean
+                      - "null"
+                  build_merge_group_checks_requested:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_base_branch_changed:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_forks:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_labels_changed:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_ready_for_review:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_requests:
+                    type:
+                      - boolean
+                      - "null"
+                  build_tags:
+                    type:
+                      - boolean
+                      - "null"
+                  cancel_deleted_branch_builds:
+                    type:
+                      - boolean
+                      - "null"
+                  filter_enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  prefix_pull_request_fork_branch_names:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_blocked_as_pending:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_commit_status:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_commit_status_per_step:
+                    type:
+                      - boolean
+                      - "null"
+                  pull_request_branch_filter_enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  repository:
+                    type:
+                      - string
+                      - "null"
+                  separate_pull_request_statuses:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_builds_for_existing_commits:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_pull_request_builds_for_existing_commits:
+                    type:
+                      - boolean
+                      - "null"
+                  trigger_mode:
+                    type:
+                      - string
+                      - "null"
+                  use_step_key_as_commit_status:
+                    type:
+                      - boolean
+                      - "null"
+              webhook_url:
+                type:
+                  - string
+                  - "null"
+          repository:
+            type:
+              - string
+              - "null"
+          running_builds_count:
+            type:
+              - number
+              - "null"
+          running_jobs_count:
+            type:
+              - number
+              - "null"
+          scheduled_builds_count:
+            type:
+              - number
+              - "null"
+          scheduled_jobs_count:
+            type:
+              - number
+              - "null"
+          skip_queued_branch_builds:
+            type:
+              - boolean
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          steps:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                agent_query_rules:
+                  type:
+                    - array
+                    - "null"
+                command:
+                  type:
+                    - string
+                    - "null"
+                env:
+                  type:
+                    - object
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          url:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+          waiting_jobs_count:
+            type:
+              - number
+              - "null"
+          web_url:
+            type:
+              - string
+              - "null"
+      scheduled_at:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  organizations_pipelines_builds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blocked:
+        type:
+          - boolean
+          - "null"
+      blocked_state:
+        type:
+          - string
+          - "null"
+      branch:
+        type:
+          - string
+          - "null"
+      cluster_id:
+        type:
+          - string
+          - "null"
+      cluster_url:
+        type:
+          - string
+          - "null"
+      commit:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      env:
+        type:
+          - object
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      jobs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            agent_query_rules:
+              type:
+                - array
+                - "null"
+            artifacts_url:
+              type:
+                - string
+                - "null"
+            build_url:
+              type:
+                - string
+                - "null"
+            cluster_id:
+              type:
+                - string
+                - "null"
+            cluster_queue_id:
+              type:
+                - string
+                - "null"
+            cluster_queue_url:
+              type:
+                - string
+                - "null"
+            cluster_url:
+              type:
+                - string
+                - "null"
+            command:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            graphql_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            log_url:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - object
+                - "null"
+              properties:
+                number:
+                  type:
+                    - number
+                    - "null"
+            raw_log_url:
+              type:
+                - string
+                - "null"
+            retried:
+              type:
+                - boolean
+                - "null"
+            runnable_at:
+              type:
+                - string
+                - "null"
+            scheduled_at:
+              type:
+                - string
+                - "null"
+            soft_failed:
+              type:
+                - boolean
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            step:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+            web_url:
+              type:
+                - string
+                - "null"
+      message:
+        type:
+          - string
+          - "null"
+      meta_data:
+        type:
+          - object
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      pipeline:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          allow_rebuilds:
+            type:
+              - boolean
+              - "null"
+          badge_url:
+            type:
+              - string
+              - "null"
+          builds_url:
+            type:
+              - string
+              - "null"
+          cancel_running_branch_builds:
+            type:
+              - boolean
+              - "null"
+          cluster_id:
+            type:
+              - string
+              - "null"
+          cluster_url:
+            type:
+              - string
+              - "null"
+          configuration:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              graphql_id:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          default_branch:
+            type:
+              - string
+              - "null"
+          emoji:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              settings:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  build_branches:
+                    type:
+                      - boolean
+                      - "null"
+                  build_merge_group_checks_requested:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_base_branch_changed:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_forks:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_labels_changed:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_request_ready_for_review:
+                    type:
+                      - boolean
+                      - "null"
+                  build_pull_requests:
+                    type:
+                      - boolean
+                      - "null"
+                  build_tags:
+                    type:
+                      - boolean
+                      - "null"
+                  cancel_deleted_branch_builds:
+                    type:
+                      - boolean
+                      - "null"
+                  filter_enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  prefix_pull_request_fork_branch_names:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_blocked_as_pending:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_commit_status:
+                    type:
+                      - boolean
+                      - "null"
+                  publish_commit_status_per_step:
+                    type:
+                      - boolean
+                      - "null"
+                  pull_request_branch_filter_enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  repository:
+                    type:
+                      - string
+                      - "null"
+                  separate_pull_request_statuses:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_builds_for_existing_commits:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_pull_request_builds_for_existing_commits:
+                    type:
+                      - boolean
+                      - "null"
+                  trigger_mode:
+                    type:
+                      - string
+                      - "null"
+                  use_step_key_as_commit_status:
+                    type:
+                      - boolean
+                      - "null"
+              webhook_url:
+                type:
+                  - string
+                  - "null"
+          repository:
+            type:
+              - string
+              - "null"
+          running_builds_count:
+            type:
+              - number
+              - "null"
+          running_jobs_count:
+            type:
+              - number
+              - "null"
+          scheduled_builds_count:
+            type:
+              - number
+              - "null"
+          scheduled_jobs_count:
+            type:
+              - number
+              - "null"
+          skip_queued_branch_builds:
+            type:
+              - boolean
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          steps:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                agent_query_rules:
+                  type:
+                    - array
+                    - "null"
+                command:
+                  type:
+                    - string
+                    - "null"
+                env:
+                  type:
+                    - object
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          url:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+          waiting_jobs_count:
+            type:
+              - number
+              - "null"
+          web_url:
+            type:
+              - string
+              - "null"
+      scheduled_at:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  organizations_clusters_queues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      cluster_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      dispatch_paused:
+        type:
+          - boolean
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      key:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  organizations_clusters_tokens:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      cluster_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          graphql_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  organizations_emojis:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      aliases:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avatar_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      graphql_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at

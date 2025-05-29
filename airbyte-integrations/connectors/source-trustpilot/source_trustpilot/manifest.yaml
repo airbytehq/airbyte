@@ -1,0 +1,339 @@
+version: 0.71.0
+type: DeclarativeSource
+
+definitions:
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh"
+    grant_type: refresh_token
+    access_token_name: access_token
+
+  apikey_authenticator:
+    type: ApiKeyAuthenticator
+    header: apikey
+    api_token: "{{ config['client_id'] }}"
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/oauth_authenticator"
+      apikey: "#/definitions/apikey_authenticator"
+
+check:
+  type: CheckStream
+  stream_names:
+    - configured_business_units
+streams:
+  - name: configured_business_units
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /business-units/find
+        type: HttpRequester
+        url_base: https://api.trustpilot.com/v1
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                    - 403
+                    - 404
+                  error_message: Credentails might be expired, please validate
+        request_headers:
+          apikey: "{{ config['client_id'] }}"
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['business_units'] }}"
+          cursor_field: business_unit
+          request_option:
+            type: RequestOption
+            field_name: name
+            inject_into: request_parameter
+    primary_key:
+      - id
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["links"]
+  - name: private_reviews
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: perPage
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      requester:
+        path: >-
+          /private/business-units/{{ stream_partition['business_unit_id']
+          }}/reviews
+        type: HttpRequester
+        url_base: https://api.trustpilot.com/v1
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                    - 403
+                    - 404
+                  error_message: Business account needs oauth flow, refer documentation for more details
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          orderBy: createdat.desc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - reviews
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                name: configured_business_units
+                type: DeclarativeStream
+                retriever:
+                  type: SimpleRetriever
+                  paginator:
+                    type: NoPagination
+                  requester:
+                    path: /business-units/find
+                    type: HttpRequester
+                    url_base: https://api.trustpilot.com/v1
+                    http_method: GET
+                    authenticator:
+                      $ref: "#/definitions/selective_authenticator"
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          response_filters:
+                            - type: HttpResponseFilter
+                              action: IGNORE
+                              http_codes:
+                                - 400
+                                - 403
+                                - 404
+                              error_message: Credentails might be expired, please validate
+                    request_headers:
+                      apikey: "{{ config['client_id'] }}"
+                    request_body_json: {}
+                    request_parameters: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  partition_router:
+                    - type: ListPartitionRouter
+                      values: "{{ config['business_units'] }}"
+                      cursor_field: business_unit
+                      request_option:
+                        type: RequestOption
+                        field_name: name
+                        inject_into: request_parameter
+                primary_key:
+                  - id
+              parent_key: id
+              partition_field: business_unit_id
+    primary_key:
+      - id
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["links"]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - name: business_units
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: perPage
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+      requester:
+        path: /business-units/all
+        type: HttpRequester
+        url_base: https://api.trustpilot.com/v1
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                    - 403
+                    - 404
+                  error_message: Credentails might be expired, please validate
+        request_headers:
+          apikey: "{{ config['client_id'] }}"
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - businessUnits
+    primary_key:
+      - id
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - ["links"]
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/trustpilot
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Trustpilot Spec
+    type: object
+    additionalProperties: true
+    required:
+      - credentials
+      - business_units
+      - start_date
+    properties:
+      credentials:
+        title: Authorization Method
+        type: object
+        order: 0
+        oneOf:
+          - type: object
+            title: "OAuth 2.0"
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+              - access_token
+              - token_expiry_date
+            properties:
+              auth_type:
+                type: string
+                const: "oauth2.0"
+              client_id:
+                type: string
+                title: API key
+                description: The API key of the Trustpilot API application. (represents the OAuth Client ID)
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Secret
+                description: The Secret of the Trustpilot API application. (represents the OAuth Client Secret)
+                airbyte_secret: true
+              access_token:
+                type: string
+                title: Access Token
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                title: Token expiry date time
+                description: The date-time when the access token should be refreshed.
+                format: date-time
+              refresh_token:
+                type: string
+                title: Refresh token
+                description: The key to refresh the expired access_token.
+                airbyte_secret: true
+
+          - type: object
+            title: "API Key"
+            description: The API key authentication method gives you access to only the streams which are part of the Public API. When you want to get streams available via the Consumer API (e.g. the private reviews) you need to use authentication method OAuth 2.0.
+            required:
+              - client_id
+            properties:
+              auth_type:
+                type: string
+                const: "apikey"
+              client_id:
+                type: string
+                title: API key
+                description: The API key of the Trustpilot API application.
+                airbyte_secret: true
+      business_units:
+        type: array
+        items:
+          type: string
+        title: Business Unit names
+        description: The names of business units which shall be synchronized. Some streams e.g. configured_business_units or private_reviews use this configuration.
+        examples:
+          - mydomain.com
+          - www.mydomain.com
+      start_date:
+        type: string
+        title: Start Date
+        description: For streams with sync. method incremental the start date time to be used
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "%Y-%m-%dT%H:%M:%SZ"
+metadata:
+  autoImportSchema:
+    business_units: true
+    private_reviews: true
+    configured_business_units: true

@@ -1,48 +1,62 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier of the account associated with the conference.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the conference was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the conference was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used for the conference.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-defined friendly name for the conference.",
       "type": ["null", "string"]
     },
     "region": {
+      "description": "The region where the conference is hosted.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier (SID) of the conference.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the conference.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI to access the conference resource.",
       "type": ["null", "string"]
     },
     "reason_conference_ended": {
+      "description": "The reason for the conference ending, if available.",
       "type": ["null", "string"]
     },
     "call_sid_ending_conference": {
+      "description": "The SID of the call that ended the conference, if applicable.",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains URLs for accessing subresources related to conferences",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "participants": {
+          "description": "URI to access the participants associated with the conference.",
           "type": ["null", "string"]
         },
         "recordings": {
+          "description": "URI to access the recordings of the conference.",
           "type": ["null", "string"]
         }
       }

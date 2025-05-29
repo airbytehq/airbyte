@@ -9,6 +9,7 @@ import org.apache.avro.Schema
 
 /** Mapping of JsonSchema types to Avro types. */
 enum class JsonSchemaType {
+    TYPE_NAME("type_name", Schema.Type.STRING),
     STRING_V1("WellKnownTypes.json#/definitions/String", Schema.Type.STRING),
     INTEGER_V1("WellKnownTypes.json#/definitions/Integer", Schema.Type.LONG),
     NUMBER_V1("WellKnownTypes.json#/definitions/Number", Schema.Type.DOUBLE),
@@ -71,26 +72,24 @@ enum class JsonSchemaType {
             // Match by Type + airbyteType
             if (jsonSchemaAirbyteType != null) {
                 matchSchemaType =
-                    Arrays.stream(entries.toTypedArray())
+                    entries
+                        .toTypedArray()
                         .filter { type: JsonSchemaType -> jsonSchemaType == type.jsonSchemaType }
                         .filter { type: JsonSchemaType ->
                             jsonSchemaAirbyteType == type.jsonSchemaAirbyteType
                         }
-                        .toList()
             }
 
             // Match by Type are no results already
             if (matchSchemaType == null || matchSchemaType.isEmpty()) {
                 matchSchemaType =
-                    Arrays.stream(entries.toTypedArray())
-                        .filter { format: JsonSchemaType ->
-                            jsonSchemaType == format.jsonSchemaType &&
-                                format.jsonSchemaAirbyteType == null
-                        }
-                        .toList()
+                    entries.toTypedArray().filter { format: JsonSchemaType ->
+                        jsonSchemaType == format.jsonSchemaType &&
+                            format.jsonSchemaAirbyteType == null
+                    }
             }
 
-            require(!matchSchemaType!!.isEmpty()) {
+            require(!matchSchemaType.isEmpty()) {
                 String.format(
                     "Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s",
                     jsonSchemaType,

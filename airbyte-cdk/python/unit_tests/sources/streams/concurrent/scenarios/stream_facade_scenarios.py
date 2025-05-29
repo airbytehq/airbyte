@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.utils import MockStream
@@ -157,7 +158,7 @@ test_stream_facade_raises_exception = (
             ]
         }
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .build()
 )
 
@@ -342,6 +343,7 @@ test_incremental_stream_with_slice_boundaries = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -388,6 +390,7 @@ test_incremental_stream_without_slice_boundaries = (
                         (None, [{"id": "1", "cursor_field": 0}, {"id": "2", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -418,7 +421,7 @@ test_incremental_stream_without_slice_boundaries = (
 
 test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
     TestScenarioBuilder()
-    .set_name("test_incremental_stream_with_many_slices_byt_without_slice_boundaries")
+    .set_name("test_incremental_stream_with_many_slices_but_without_slice_boundaries")
     .set_config({})
     .set_source_builder(
         StreamFacadeSourceBuilder()
@@ -430,6 +433,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
                         ({"parent_id": 309}, [{"id": "3", "cursor_field": 0}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -441,7 +445,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
         )
         .set_incremental(CursorField("cursor_field"), _NO_SLICE_BOUNDARIES)
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(

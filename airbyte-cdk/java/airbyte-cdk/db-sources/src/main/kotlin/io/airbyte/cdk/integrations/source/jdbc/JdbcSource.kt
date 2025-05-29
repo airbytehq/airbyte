@@ -9,10 +9,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.Source
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.JDBCType
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class JdbcSource :
     AbstractJdbcSource<JDBCType>(
@@ -30,15 +31,14 @@ class JdbcSource :
         get() = setOf("information_schema", "pg_catalog", "pg_internal", "catalog_history")
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcSource::class.java)
 
         @Throws(Exception::class)
         @JvmStatic
         fun main(args: Array<String>) {
             val source: Source = JdbcSource()
-            LOGGER.info("starting source: {}", JdbcSource::class.java)
+            LOGGER.info { "starting source: ${JdbcSource::class.java}" }
             IntegrationRunner(source).run(args)
-            LOGGER.info("completed source: {}", JdbcSource::class.java)
+            LOGGER.info { "completed source: ${JdbcSource::class.java}" }
         }
     }
 }

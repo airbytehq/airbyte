@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_okta/spec.json"
+      - spec_path: "source_okta/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

@@ -3,203 +3,269 @@
   "type": "object",
   "properties": {
     "AccountName": {
+      "description": "The name of the Bing Ads account",
       "type": ["null", "string"]
     },
     "AccountNumber": {
+      "description": "The account number associated with the Bing Ads account",
       "type": ["null", "string"]
     },
     "AccountId": {
+      "description": "The unique identifier for the Bing Ads account",
       "type": ["null", "integer"]
     },
     "TimePeriod": {
+      "description": "The time period for the data",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "CurrencyCode": {
+      "description": "The currency code used for the values",
       "type": ["null", "string"]
     },
     "AdDistribution": {
+      "description": "The distribution channel where the ad was displayed",
       "type": ["null", "string"]
     },
     "Impressions": {
+      "description": "The total number of impressions",
       "type": ["null", "integer"]
     },
     "Clicks": {
+      "description": "The total number of clicks",
       "type": ["null", "integer"]
     },
     "Ctr": {
+      "description": "The click-through rate",
       "type": ["null", "number"]
     },
     "AverageCpc": {
+      "description": "The average cost per click",
       "type": ["null", "number"]
     },
     "Spend": {
+      "description": "The total spend",
       "type": ["null", "number"]
     },
     "AveragePosition": {
+      "description": "The average position where the ad was displayed",
       "type": ["null", "number"]
     },
     "Conversions": {
+      "description": "The total number of conversions",
       "type": ["null", "integer"]
     },
     "ConversionRate": {
+      "description": "The rate of conversions generated",
       "type": ["null", "number"]
     },
     "CostPerConversion": {
+      "description": "The cost per conversion",
       "type": ["null", "number"]
     },
     "LowQualityClicks": {
+      "description": "The total number of low-quality clicks",
       "type": ["null", "integer"]
     },
     "LowQualityClicksPercent": {
+      "description": "The percentage of low-quality clicks",
       "type": ["null", "number"]
     },
     "LowQualityImpressions": {
+      "description": "The total number of low-quality impressions",
       "type": ["null", "integer"]
     },
     "LowQualityImpressionsPercent": {
+      "description": "The percentage of low-quality impressions",
       "type": ["null", "number"]
     },
     "LowQualityConversions": {
+      "description": "The total number of low-quality conversions",
       "type": ["null", "integer"]
     },
     "LowQualityConversionRate": {
+      "description": "The conversion rate for low-quality clicks",
       "type": ["null", "number"]
     },
     "DeviceType": {
+      "description": "The type of device on which the ad was displayed",
       "type": ["null", "string"]
     },
     "PhoneImpressions": {
+      "description": "The total number of phone impressions",
       "type": ["null", "integer"]
     },
     "PhoneCalls": {
+      "description": "The total number of phone calls generated",
       "type": ["null", "integer"]
     },
     "Ptr": {
+      "description": "The phone-through rate",
       "type": ["null", "number"]
     },
     "Network": {
+      "description": "The network on which the ad was displayed",
       "type": ["null", "string"]
     },
     "Assists": {
+      "description": "The total number of assists (click assist impressions)",
       "type": ["null", "integer"]
     },
     "Revenue": {
+      "description": "The total revenue generated",
       "type": ["null", "number"]
     },
     "ReturnOnAdSpend": {
+      "description": "The return on ad spend",
       "type": ["null", "number"]
     },
     "CostPerAssist": {
+      "description": "The cost per assist",
       "type": ["null", "number"]
     },
     "RevenuePerConversion": {
+      "description": "The revenue per conversion",
       "type": ["null", "number"]
     },
     "RevenuePerAssist": {
+      "description": "The revenue per assist",
       "type": ["null", "number"]
     },
     "AccountStatus": {
+      "description": "The status of the Bing Ads account",
       "type": ["null", "string"]
     },
     "LowQualityGeneralClicks": {
+      "description": "The total number of low-quality general clicks",
       "type": ["null", "integer"]
     },
     "LowQualitySophisticatedClicks": {
+      "description": "The total number of low-quality sophisticated clicks",
       "type": ["null", "integer"]
     },
     "TopImpressionRatePercent": {
+      "description": "The top impression rate percentage",
       "type": ["null", "number"]
     },
     "AllConversions": {
+      "description": "The total number of all conversions",
       "type": ["null", "integer"]
     },
     "AllRevenue": {
+      "description": "The total revenue generated from all conversions",
       "type": ["null", "number"]
     },
     "AllConversionRate": {
+      "description": "The rate of all conversions generated",
       "type": ["null", "number"]
     },
     "AllCostPerConversion": {
+      "description": "The cost per each conversion",
       "type": ["null", "number"]
     },
     "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all conversions",
       "type": ["null", "number"]
     },
     "AllRevenuePerConversion": {
+      "description": "The average revenue per each conversion",
       "type": ["null", "number"]
     },
     "ViewThroughConversions": {
+      "description": "The total number of view-through conversions",
       "type": ["null", "integer"]
     },
     "AverageCpm": {
+      "description": "The average cost per thousand impressions",
       "type": ["null", "number"]
     },
     "ConversionsQualified": {
+      "description": "The total number of qualified conversions",
       "type": ["null", "number"]
     },
     "LowQualityConversionsQualified": {
+      "description": "The total number of qualified low-quality conversions",
       "type": ["null", "number"]
     },
     "AllConversionsQualified": {
+      "description": "The total number of qualified all conversions",
       "type": ["null", "number"]
     },
     "ViewThroughConversionsQualified": {
+      "description": "The total number of view-through conversions qualified",
       "type": ["null", "number"]
     },
     "ViewThroughRevenue": {
+      "description": "The view-through revenue",
       "type": ["null", "number"]
     },
     "VideoViews": {
+      "description": "The total number of video views",
       "type": ["null", "integer"]
     },
     "ViewThroughRate": {
+      "description": "The view-through rate",
       "type": ["null", "number"]
     },
     "AverageCPV": {
+      "description": "The average cost per video view",
       "type": ["null", "number"]
     },
     "VideoViewsAt25Percent": {
+      "description": "The total number of video views at 25%",
       "type": ["null", "integer"]
     },
     "VideoViewsAt50Percent": {
+      "description": "The total number of video views at 50%",
       "type": ["null", "integer"]
     },
     "VideoViewsAt75Percent": {
+      "description": "The total number of video views at 75%",
       "type": ["null", "integer"]
     },
     "CompletedVideoViews": {
+      "description": "The total number of completed video views",
       "type": ["null", "integer"]
     },
     "VideoCompletionRate": {
+      "description": "The video completion rate",
       "type": ["null", "number"]
     },
     "TotalWatchTimeInMS": {
+      "description": "The total watch time in milliseconds",
       "type": ["null", "integer"]
     },
     "AverageWatchTimePerVideoView": {
+      "description": "The average watch time per video view",
       "type": ["null", "number"]
     },
     "AverageWatchTimePerImpression": {
+      "description": "The average watch time per impression",
       "type": ["null", "number"]
     },
     "Sales": {
+      "description": "The total number of sales",
       "type": ["null", "integer"]
     },
     "CostPerSale": {
+      "description": "The cost per sale",
       "type": ["null", "number"]
     },
     "RevenuePerSale": {
+      "description": "The revenue per sale",
       "type": ["null", "number"]
     },
     "Installs": {
+      "description": "The total number of installs",
       "type": ["null", "integer"]
     },
     "CostPerInstall": {
+      "description": "The cost per install",
       "type": ["null", "number"]
     },
     "RevenuePerInstall": {
+      "description": "The revenue per install",
       "type": ["null", "number"]
     }
   }

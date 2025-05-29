@@ -35,11 +35,11 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
   public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
     if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.getSnapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final Lsn recordLsn = extractLsn(changeEventWithMetadata.eventValueAsJson());
+      final Lsn recordLsn = extractLsn(changeEventWithMetadata.getEventValueAsJson());
       final boolean isEventLSNAfter = targetLsn.compareTo(recordLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + recordLsn + " is after target LSN : " + targetLsn);
@@ -122,7 +122,7 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
     if (offset == null || offset.size() != 1) {
       return false;
     }
-    final Lsn eventLsn = extractLsn(event.eventValueAsJson());
+    final Lsn eventLsn = extractLsn(event.getEventValueAsJson());
     final Lsn offsetLsn = offsetToLsn(offset);
     return eventLsn.compareTo(offsetLsn) > 0;
   }

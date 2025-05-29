@@ -3,22 +3,23 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
-      "description": "The URL of the issue resolution."
+      "description": "The URL of the issue resolution.",
+      "type": "string"
     },
     "id": {
-      "type": "string",
-      "description": "The ID of the issue resolution."
+      "description": "The ID of the issue resolution.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the issue resolution."
+      "description": "The description of the issue resolution.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the issue resolution."
+      "description": "The name of the issue resolution.",
+      "type": "string"
     },
     "isDefault": {
+      "description": "Indicates if this is the default issue resolution.",
       "type": ["null", "boolean"]
     }
   },

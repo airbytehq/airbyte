@@ -10,12 +10,12 @@ import com.google.common.collect.Sets
 import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     /**
@@ -56,37 +56,25 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     private val IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES: Set<String> =
         Sets.newHashSet("airbyte/source-google-workspace-admin-reports", "airbyte/source-kafka")
 
-    @get:Throws(Exception::class)
-    protected abstract val spec: ConnectorSpecification
-        /**
-         * Specification for integration. Will be passed to integration where appropriate in each
-         * test. Should be valid.
-         *
-         * @return integration-specific configuration
-         */
-        get
+    /**
+     * Specification for integration. Will be passed to integration where appropriate in each test.
+     * Should be valid.
+     */
+    @get:Throws(Exception::class) protected abstract val spec: ConnectorSpecification
 
-    @get:Throws(Exception::class)
-    protected abstract val configuredCatalog: ConfiguredAirbyteCatalog
-        /**
-         * The catalog to use to validate the output of read operations. This will be used as
-         * follows:
-         *
-         * Full Refresh syncs will be tested on all the input streams which support it Incremental
-         * syncs: - if the stream declares a source-defined cursor, it will be tested with an
-         * incremental sync using the default cursor. - if the stream requires a user-defined
-         * cursor, it will be tested with the input cursor in both cases, the input [.getState] will
-         * be used as the input state.
-         *
-         * @return
-         * @throws Exception
-         */
-        get
+    /**
+     * The catalog to use to validate the output of read operations. This will be used as follows:
+     *
+     * Full Refresh syncs will be tested on all the input streams which support it Incremental
+     * syncs: - if the stream declares a source-defined cursor, it will be tested with an
+     * incremental sync using the default cursor. - if the stream requires a user-defined cursor, it
+     * will be tested with the input cursor in both cases, the input [.getState] will be used as the
+     * input state.
+     */
+    @get:Throws(Exception::class) protected abstract val configuredCatalog: ConfiguredAirbyteCatalog
 
-    @get:Throws(Exception::class)
-    protected abstract val state: JsonNode?
-        /** @return a JSON file representing the state file to use when testing incremental syncs */
-        get
+    /** a JSON file representing the state file to use when testing incremental syncs */
+    @get:Throws(Exception::class) protected abstract val state: JsonNode?
 
     /** Verify that a spec operation issued to the connector returns a valid spec. */
     @Test
@@ -131,7 +119,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Test
     @Throws(Exception::class)
     fun testDiscover() {
-        val discoverOutput = runDiscover()
+        runDiscover()
         val discoveredCatalog = lastPersistedCatalog
         Assertions.assertNotNull(discoveredCatalog, "Expected discover to produce a catalog")
         verifyCatalog(discoveredCatalog)
@@ -139,7 +127,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
     /** Override this method to check the actual catalog. */
     @Throws(Exception::class)
-    protected fun verifyCatalog(catalog: AirbyteCatalog?) {
+    protected open fun verifyCatalog(catalog: AirbyteCatalog?) {
         // do nothing by default
     }
 
@@ -167,7 +155,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
     /** Override this method to perform more specific assertion on the messages. */
     @Throws(Exception::class)
-    protected open fun assertFullRefreshMessages(allMessages: List<AirbyteMessage?>?) {
+    protected open fun assertFullRefreshMessages(allMessages: List<AirbyteMessage>) {
         // do nothing by default
     }
 
@@ -210,7 +198,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records"
+            "Expected two full refresh syncs to produce the same records."
         )
     }
 
@@ -238,19 +226,17 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         val configuredCatalog = withSourceDefinedCursors(configuredCatalog)
         // only sync incremental streams
         configuredCatalog.streams =
-            configuredCatalog.streams
-                .stream()
-                .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
-                .collect(Collectors.toList())
+            configuredCatalog.streams.filter { s: ConfiguredAirbyteStream ->
+                s.syncMode == SyncMode.INCREMENTAL
+            }
 
         val airbyteMessages = runRead(configuredCatalog, state)
         val recordMessages = filterRecords(airbyteMessages)
         val stateMessages =
             airbyteMessages
-                .stream()
-                .filter { m: AirbyteMessage? -> m!!.type == AirbyteMessage.Type.STATE }
-                .map { obj: AirbyteMessage? -> obj!!.state }
-                .collect(Collectors.toList())
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.STATE }
+                .map { obj: AirbyteMessage -> obj.state }
+
         Assertions.assertFalse(
             recordMessages.isEmpty(),
             "Expected the first incremental sync to produce records"
@@ -405,13 +391,13 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             expected
                 .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
-                .collect(Collectors.toList())
+                .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
+                .toList()
         val prunedActual =
             actual
-                .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
                 .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
-                .collect(Collectors.toList())
+
         Assertions.assertEquals(prunedExpected.size, prunedActual.size, message)
         Assertions.assertTrue(prunedExpected.containsAll(prunedActual), message)
         Assertions.assertTrue(prunedActual.containsAll(prunedExpected), message)
@@ -442,17 +428,31 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         const val CDC_DEFAULT_CURSOR: String = "_ab_cdc_cursor"
         const val CDC_EVENT_SERIAL_NO: String = "_ab_cdc_event_serial_no"
 
-        private val LOGGER: Logger = LoggerFactory.getLogger(SourceAcceptanceTest::class.java)
-
         @JvmStatic
         protected fun filterRecords(
-            messages: Collection<AirbyteMessage?>?
+            messages: Collection<AirbyteMessage>
         ): List<AirbyteRecordMessage> {
-            return messages!!
-                .stream()
-                .filter { m: AirbyteMessage? -> m!!.type == AirbyteMessage.Type.RECORD }
-                .map { obj: AirbyteMessage? -> obj!!.record }
-                .collect(Collectors.toList())
+            return messages
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
+                .map { obj: AirbyteMessage -> obj.record }
+        }
+
+        @JvmStatic
+        fun extractLatestState(stateMessages: List<AirbyteStateMessage>): JsonNode? {
+            var latestState: JsonNode? = null
+            for (stateMessage in stateMessages) {
+                if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.STREAM) {
+                    latestState = Jsons.jsonNode(stateMessages)
+                    break
+                } else if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
+                    latestState =
+                        Jsons.jsonNode(java.util.List.of(Iterables.getLast(stateMessages)))
+                    break
+                } else {
+                    throw RuntimeException("Unknown state type " + stateMessage.type)
+                }
+            }
+            return latestState
         }
     }
 }

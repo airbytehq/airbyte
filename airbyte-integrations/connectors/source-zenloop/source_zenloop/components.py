@@ -32,4 +32,4 @@ class ZenloopPartitionRouter(SubstreamPartitionRouter):
         else:
             for parent_stream_config in self.parent_stream_configs:
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
-                yield {stream_state_field: custom_stream_state_value, "parent_slice": {}}
+                yield StreamSlice(partition={stream_state_field: custom_stream_state_value, "parent_slice": {}}, cursor_slice={})

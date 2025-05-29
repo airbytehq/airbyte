@@ -8,18 +8,19 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.1
   dockerRepository: airbyte/source-tempo
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   githubIssueLabel: source-tempo
   icon: tempo.svg
   license: MIT
   name: Tempo
+  releaseDate: 2021-11-08
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-tempo
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -27,6 +28,27 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: tempo_accounts_only_config_dev_null
+          id: 1bffaa9d-68f0-4b31-9544-ecd2391551d8
+        - name: tempo_config_dev_null
+          id: 27804e86-37c0-46d3-a863-242ab459ce75
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TEMPO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_TEMPO_LIMITED_SCOPES
+          fileName: accounts_only_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
 metadataSpecVersion: "1.0"

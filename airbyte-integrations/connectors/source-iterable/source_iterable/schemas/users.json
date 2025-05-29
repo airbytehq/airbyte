@@ -1,334 +1,455 @@
 {
   "properties": {
     "country": {
+      "description": "Country name.",
       "type": ["null", "string"]
     },
     "firstOrderDate": {
+      "description": "Date and time of the first order.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "addresses": {
+      "description": "List of addresses associated with the user",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "first_name": {
+            "description": "First name of the user associated with the address.",
             "type": ["null", "string"]
           },
           "city": {
+            "description": "City name.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "Full name associated with the address.",
             "type": ["null", "string"]
           },
           "zip": {
+            "description": "Postal code or ZIP code.",
             "type": ["null", "string"]
           },
           "country": {
+            "description": "Country name of the address.",
             "type": ["null", "string"]
           },
           "address1": {
+            "description": "Address line 1.",
             "type": ["null", "string"]
           },
           "address2": {
+            "description": "Address line 2.",
             "type": ["null", "string"]
           },
           "company": {
+            "description": "Company name associated with the address.",
             "type": ["null", "string"]
           },
           "country_code": {
+            "description": "Country code of the address.",
             "type": ["null", "string"]
           },
           "default": {
+            "description": "Indicates if this is the default address.",
             "type": ["null", "boolean"]
           },
           "id": {
+            "description": "Unique identifier for the address.",
             "type": ["null", "string"]
           },
           "last_name": {
+            "description": "Last name of the user associated with the address.",
             "type": ["null", "string"]
           },
           "province": {
+            "description": "Province or state of the address.",
             "type": ["null", "string"]
           },
           "province_code": {
+            "description": "Province or state code of the address.",
             "type": ["null", "string"]
           },
           "country_name": {
+            "description": "Full name of the country.",
             "type": ["null", "string"]
           },
           "phone": {
+            "description": "Contact phone number.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "emailAcquiredDate": {
+      "description": "Date and time when the email was acquired.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "emailSegmentStatus": {
+      "description": "Status of the email segment.",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "Admin GraphQL API ID.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "User ID.",
       "type": ["null", "string"]
     },
     "mostRecentEmailList": {
+      "description": "Most recent email list the user is part of.",
       "type": ["null", "string"]
     },
     "mostRecentEmailSegment": {
+      "description": "Most recent email segment the user is part of.",
       "type": ["null", "string"]
     },
     "aov": {
+      "description": "Average order value.",
       "type": ["null", "number"]
     },
     "firstCampaign": {
+      "description": "First campaign the user interacted with.",
       "type": ["null", "string"]
     },
     "thirdMostRecentOrderDate": {
+      "description": "Date and time of the third most recent order.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "firstPurchaseDate": {
+      "description": "Date and time of the first purchase made by the user.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "firstMedium": {
+      "description": "First medium through which the user interacted.",
       "type": ["null", "string"]
     },
     "default_address": {
+      "description": "Default address of the user",
       "type": ["null", "object"],
       "properties": {
         "first_name": {
+          "description": "First name of the user associated with the address.",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "City name.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Full name associated with the address.",
           "type": ["null", "string"]
         },
         "zip": {
+          "description": "Postal code or ZIP code.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "Country name of the address.",
           "type": ["null", "string"]
         },
         "address2": {
+          "description": "Address line 2.",
           "type": ["null", "string"]
         },
         "company": {
+          "description": "Company name associated with the address.",
           "type": ["null", "string"]
         },
         "country_code": {
+          "description": "Country code of the address.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the address.",
           "type": ["null", "string"]
         },
         "last_name": {
+          "description": "Last name of the user associated with the address.",
           "type": ["null", "string"]
         },
         "address1": {
+          "description": "Address line 1.",
           "type": ["null", "string"]
         },
         "default": {
+          "description": "Indicates if this is the default address.",
           "type": ["null", "boolean"]
         },
         "province": {
+          "description": "Province or state of the address.",
           "type": ["null", "string"]
         },
         "province_code": {
+          "description": "Province or state code of the address.",
           "type": ["null", "string"]
         },
         "country_name": {
+          "description": "Full name of the country.",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "Contact phone number.",
           "type": ["null", "string"]
         }
       }
     },
     "emailListIds": {
+      "description": "List of email list IDs subscribed by the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "IDs of the email lists associated with the user."
+      }
     },
     "accepts_marketing": {
+      "description": "Indicates whether the user has consented to receive marketing communications.",
       "type": ["null", "boolean"]
     },
     "secondMostRecentOrderDate": {
+      "description": "Date and time of the second most recent order.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "state": {
+      "description": "State name.",
       "type": ["null", "string"]
     },
     "mostRecentCampaign": {
+      "description": "Most recent campaign the user interacted with.",
       "type": ["null", "string"]
     },
     "zip": {
+      "description": "Postal code or ZIP code.",
       "type": ["null", "string"]
     },
     "total_spent": {
+      "description": "Total amount spent by the user.",
       "type": ["null", "number"]
     },
     "mostRecentOrderDate": {
+      "description": "Date and time of the most recent order.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_order_id": {
+      "description": "ID of the user's last order.",
       "type": ["null", "string"]
     },
     "tax_exempt": {
+      "description": "Indicates if the user is tax exempt.",
       "type": ["null", "boolean"]
     },
     "mostRecentSource": {
+      "description": "Most recent source of user interaction.",
       "type": ["null", "string"]
     },
     "twelveMonthLtr": {
+      "description": "Lifetime total revenue for the past twelve months.",
       "type": ["null", "integer"]
     },
     "verified_email": {
+      "description": "Indicates if the user's email address is verified.",
       "type": ["null", "boolean"]
     },
     "mostRecentMedium": {
+      "description": "Most recent medium of user interaction.",
       "type": ["null", "string"]
     },
     "orders_count": {
+      "description": "Total number of orders made by the user.",
       "type": ["null", "integer"]
     },
     "firstName": {
+      "description": "User's first name.",
       "type": ["null", "string"]
     },
     "lastInteractionTs": {
+      "description": "Date and time of the last interaction with the user.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "boughtSas": {
+      "description": "Indicates if the user has purchased a specific product or service.",
       "type": ["null", "boolean"]
     },
     "secondMostRecentOrderCards": {
+      "description": "Details of the second most recent order cards related to the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Details of the second most recent order cards."
+      }
     },
     "unsubscribedChannelIds": {
+      "description": "List of channel IDs the user has unsubscribed from",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "IDs of the channels from which the user unsubscribed."
+      }
     },
     "lastName": {
+      "description": "User's last name.",
       "type": ["null", "string"]
     },
     "last_order_name": {
+      "description": "Name of the user's last order.",
       "type": ["null", "string"]
     },
     "secondOrderDate": {
+      "description": "Date and time of the second order.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "hasAccount": {
+      "description": "Indicates if the user has an account.",
       "type": ["null", "boolean"]
     },
     "city": {
+      "description": "City name.",
       "type": ["null", "string"]
     },
     "mostRecentOrderCards": {
+      "description": "Details of the most recent order cards related to the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Details of the most recent order cards."
+      }
     },
     "itblInternal": {
+      "description": "Internal details specific to the platform",
       "type": ["null", "object"],
       "properties": {
         "emailDomain": {
+          "description": "Domain of the user's email address.",
           "type": ["null", "string"]
         },
         "documentUpdatedAt": {
+          "description": "Date and time when the document was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentCreatedAt": {
+          "description": "Date and time when the document was created.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "hasReminder": {
+      "description": "Indicates if the user has set a reminder.",
       "type": ["null", "boolean"]
     },
     "thirdOrderDate": {
+      "description": "Date and time of the third order.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "subscribedMessageTypeIds": {
+      "description": "List of message type IDs user has subscribed to",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "IDs of the message types the user is subscribed to."
+      }
     },
     "firstSource": {
+      "description": "First source of user interaction.",
       "type": ["null", "string"]
     },
     "unsubscribedMessageTypeIds": {
+      "description": "List of message type IDs the user has unsubscribed from",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "IDs of the message types from which the user unsubscribed."
+      }
     },
     "first_name": {
+      "description": "User's first name.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "User's email address.",
       "type": ["null", "string"]
     },
     "thirdMostRecentOrderCards": {
+      "description": "Details of the third most recent order cards related to the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Details of the third most recent order cards."
+      }
     },
     "profileUpdatedAt": {
+      "description": "Date and time when the profile was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "signupDate": {
+      "description": "Date and time when the user signed up.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "businessLines": {
+      "description": "List of business lines the user is associated with",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Business lines associated with the user."
+      }
     },
     "secondOrderCards": {
+      "description": "Details of the second order cards related to the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Details of the second order cards."
+      }
     },
     "address1": {
+      "description": "Primary address line of the user.",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "User's last name.",
       "type": ["null", "string"]
     },
     "ltr": {
+      "description": "Lifetime total revenue.",
       "type": ["null", "integer"]
     },
     "userId": {
+      "description": "User's unique identifier.",
       "type": ["null", "string"]
     },
     "shopify_created_at": {
+      "description": "Date and time when the user was created in Shopify.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "signupSource": {
+      "description": "Source through which the user signed up.",
       "type": ["null", "string"]
     },
     "thirdOrderCards": {
+      "description": "Details of the third order cards related to the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Details of the third order cards."
+      }
     },
     "firstOrderCards": {
+      "description": "Details of the first order cards related to the user",
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "description": "Details of the first order cards."
+      }
     },
     "totalOrders": {
+      "description": "Total number of orders made by the user.",
       "type": ["null", "integer"]
     },
     "shopify_updated_at": {
+      "description": "Date and time when the user was last updated in Shopify.",
       "type": ["null", "string"],
       "format": "date-time"
     }

@@ -8,11 +8,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Config, StreamSlice
 
 
 @dataclass
@@ -58,6 +60,14 @@ class DeclarativeStream(Stream):
         if not isinstance(value, property):
             self._primary_key = value
 
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        return self.retriever.requester.exit_on_rate_limit  # type: ignore # abstract Retriever class has not requester attribute
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self.retriever.requester.exit_on_rate_limit = value  # type: ignore[attr-defined]
+
     @property  # type: ignore
     def name(self) -> str:
         """
@@ -95,8 +105,14 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        cursor = self._stream_cursor_field.eval(self.config)
+        cursor = self._stream_cursor_field.eval(self.config)  # type: ignore # _stream_cursor_field is always cast to interpolated string
         return cursor if cursor else []
+
+    @property
+    def is_resumable(self) -> bool:
+        # Declarative sources always implement state getter/setter, but whether it supports checkpointing is based on
+        # if the retriever has a cursor defined.
+        return self.retriever.cursor is not None if hasattr(self.retriever, "cursor") else False
 
     def read_records(
         self,
@@ -108,7 +124,7 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        if stream_slice is None:
+        if stream_slice is None or stream_slice == {}:
             # As the parameter is Optional, many would just call `read_records(sync_mode)` during testing without specifying the field
             # As part of the declarative model without custom components, this should never happen as the CDK would wire up a
             # SinglePartitionRouter that would create this StreamSlice properly
@@ -150,4 +166,9 @@ class DeclarativeStream(Stream):
         * Updating the state once every record would generate issues for data feed stop conditions or semi-incremental syncs where the
             important state is the one at the beginning of the slice
         """
+        return None
+
+    def get_cursor(self) -> Optional[Cursor]:
+        if self.retriever and isinstance(self.retriever, SimpleRetriever):
+            return self.retriever.cursor
         return None

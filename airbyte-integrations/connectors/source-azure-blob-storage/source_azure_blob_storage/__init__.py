@@ -3,8 +3,8 @@
 #
 
 
-from .config import Config
 from .source import SourceAzureBlobStorage
+from .spec import SourceAzureBlobStorageSpec
 from .stream_reader import SourceAzureBlobStorageStreamReader
 
-__all__ = ["SourceAzureBlobStorage", "SourceAzureBlobStorageStreamReader", "Config"]
+__all__ = ["SourceAzureBlobStorage", "SourceAzureBlobStorageStreamReader", "SourceAzureBlobStorageSpec"]

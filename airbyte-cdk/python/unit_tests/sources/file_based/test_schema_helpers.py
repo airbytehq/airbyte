@@ -260,6 +260,24 @@ def test_comparable_types() -> None:
             id="",
         ),
         pytest.param({"a": {"type": "invalid_type"}}, {"b": {"type": "integer"}}, None, id="invalid-type"),
+        pytest.param(
+            {"a": {"type": "object"}},
+            {"a": {"type": "null"}},
+            {"a": {"type": "object"}},
+            id="single-key-with-null-object-schema2",
+        ),
+        pytest.param(
+            {"a": {"type": "object"}},
+            {"b": {"type": "null"}},
+            {"a": {"type": "object"}, "b": {"type": "null"}},
+            id="new-key-with-null-type",
+        ),
+        pytest.param(
+            {"a": {"type": "null"}},
+            {"a": {"type": "object"}},
+            {"a": {"type": "object"}},
+            id="single-key-with-null-object-schema1",
+        ),
     ],
 )
 def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result: Optional[SchemaType]) -> None:

@@ -4,19 +4,19 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Firebolt Spec",
     "type": "object",
-    "required": ["username", "password", "database"],
+    "required": ["client_id", "client_secret", "account", "database", "engine"],
     "additionalProperties": true,
     "properties": {
-      "username": {
+      "client_id": {
         "type": "string",
-        "title": "Username",
-        "description": "Firebolt email address you use to login.",
-        "examples": ["username@email.com"]
+        "title": "Client ID",
+        "description": "Firebolt service account ID.",
+        "examples": ["bbl9qth066hmxkwyb0hy2iwk8ktez9dz"]
       },
-      "password": {
+      "client_secret": {
         "type": "string",
-        "title": "Password",
-        "description": "Firebolt password.",
+        "title": "Client Secret",
+        "description": "Firebolt secret, corresponding to the service account ID.",
         "airbyte_secret": true
       },
       "account": {
@@ -38,7 +38,7 @@
       "engine": {
         "type": "string",
         "title": "Engine",
-        "description": "Engine name or url to connect to."
+        "description": "Engine name to connect to."
       }
     }
   }

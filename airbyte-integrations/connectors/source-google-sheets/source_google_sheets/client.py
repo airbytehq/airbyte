@@ -21,7 +21,7 @@ class GoogleSheetsClient:
         @classmethod
         def increase_row_batch_size(cls, details):
             if details["exception"].status_code == status_codes.TOO_MANY_REQUESTS and cls.row_batch_size < 1000:
-                cls.row_batch_size = cls.row_batch_size + 10
+                cls.row_batch_size = cls.row_batch_size + 100
                 logger.info(f"Increasing number of records fetching due to rate limits. Current value: {cls.row_batch_size}")
 
         @staticmethod

@@ -2,81 +2,105 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier for the custom audience.",
       "type": ["null", "string"]
     },
     "account_id": {
+      "description": "The ID of the Facebook account associated with the custom audience.",
       "type": ["null", "string"]
     },
     "approximate_count_lower_bound": {
+      "description": "An estimated lower bound count of the size of the custom audience.",
       "type": ["null", "integer"]
     },
     "approximate_count_upper_bound": {
+      "description": "An estimated upper bound count of the size of the custom audience.",
       "type": ["null", "integer"]
     },
     "customer_file_source": {
+      "description": "The source of the customer file used to create the custom audience.",
       "type": ["null", "string"]
     },
     "data_source": {
+      "description": "Information about the source of the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "The type of data source used.",
           "type": ["null", "string"]
         },
         "sub_type": {
+          "description": "The sub-type of the data source.",
           "type": ["null", "string"]
         },
         "creation_params": {
+          "description": "Parameters used for creating the data source.",
           "type": ["null", "string"]
         }
       }
     },
     "delivery_status": {
+      "description": "Status of the delivery related to the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "code": {
+          "description": "The code representing the delivery status of the custom audience.",
           "type": ["null", "integer"]
         },
         "description": {
+          "description": "Description of the delivery status of the custom audience.",
           "type": ["null", "string"]
         }
       }
     },
     "description": {
+      "description": "Description or any additional information related to the custom audience.",
       "type": ["null", "string"]
     },
     "is_value_based": {
+      "description": "Indicates if the custom audience is value-based or not.",
       "type": ["null", "boolean"]
     },
     "lookalike_audience_ids": {
+      "description": "IDs of lookalike audiences based on this custom audience.",
       "type": ["null", "array"],
       "items": {
+        "description": "List of IDs of lookalike audiences based on this custom audience.",
         "type": ["null", "string"]
       }
     },
     "lookalike_spec": {
+      "description": "Specifications for creating lookalike audiences.",
       "type": ["null", "object"],
       "properties": {
         "country": {
+          "description": "The country used as a basis for creating the lookalike audience.",
           "type": ["null", "string"]
         },
         "ratio": {
+          "description": "The ratio of the lookalike audience.",
           "type": ["null", "number"]
         },
         "type": {
+          "description": "The type of lookalike audience being created.",
           "type": ["null", "string"]
         },
         "origin": {
+          "description": "Details about the original custom audience for lookalike creation.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "The ID of the origin for the lookalike audience.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "The name of the origin for the lookalike audience.",
                 "type": ["null", "string"]
               },
               "type": {
+                "description": "The type of the origin used for the lookalike audience.",
                 "type": ["null", "string"]
               }
             }
@@ -85,78 +109,101 @@
       }
     },
     "name": {
+      "description": "The name given to the custom audience.",
       "type": ["null", "string"]
     },
     "operation_status": {
+      "description": "Status of ongoing operations related to the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "code": {
+          "description": "The code representing the operation status of the custom audience.",
           "type": ["null", "integer"]
         },
         "description": {
+          "description": "Description of the operation status of the custom audience.",
           "type": ["null", "string"]
         }
       }
     },
     "opt_out_link": {
+      "description": "The link for opting out of the custom audience.",
       "type": ["null", "string"]
     },
     "page_deletion_marked_delete_time": {
+      "description": "The time when the page deletion was marked for deletion.",
       "type": ["null", "integer"]
     },
     "permission_for_actions": {
+      "description": "Permissions granted for actions associated with the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "can_edit": {
+          "description": "Indicates if the user can edit the custom audience.",
           "type": ["null", "boolean"]
         },
         "can_see_insight": {
+          "description": "Indicates if the user can see insights for the custom audience.",
           "type": ["null", "string"]
         },
         "can_share": {
+          "description": "Indicates if the user can share the custom audience.",
           "type": ["null", "string"]
         },
         "subtype_supports_lookalike": {
+          "description": "Indicates if the subtype supports lookalike audiences.",
           "type": ["null", "string"]
         },
         "supports_recipient_lookalike": {
+          "description": "Indicates if recipient lookalike audiences are supported.",
           "type": ["null", "string"]
         }
       }
     },
     "pixel_id": {
+      "description": "The ID of the pixel associated with the custom audience.",
       "type": ["null", "string"]
     },
     "retention_days": {
+      "description": "The number of days data for the custom audience will be retained.",
       "type": ["null", "integer"]
     },
     "rule": {
+      "description": "The rule or condition used to define the custom audience.",
       "type": ["null", "string"]
     },
     "rule_aggregation": {
+      "description": "The aggregation method used for rules in the custom audience.",
       "type": ["null", "string"]
     },
     "sharing_status": {
+      "description": "Status of sharing permissions for the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "code": {
+          "description": "The code representing the sharing status of the custom audience.",
           "type": ["null", "integer"]
         },
         "description": {
+          "description": "Description of the sharing status of the custom audience.",
           "type": ["null", "string"]
         }
       }
     },
     "subtype": {
+      "description": "The subtype of the custom audience.",
       "type": ["null", "string"]
     },
     "time_content_updated": {
+      "description": "The time when the content of the custom audience was last updated.",
       "type": ["null", "integer"]
     },
     "time_created": {
+      "description": "The time when the custom audience was created.",
       "type": ["null", "integer"]
     },
     "time_updated": {
+      "description": "The time when the custom audience was last updated.",
       "type": ["null", "integer"]
     }
   }

@@ -1,0 +1,2403 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: ""
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path:
+      - "credentials"
+      - "auth_type"
+    authenticators:
+      oauth2_access_token:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['access_token'] }}"
+      oauth2_confidential_application:
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token: ""
+  requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}/api/v2"
+    http_method: "GET"
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - "credentials"
+        - "auth_type"
+      authenticators:
+        oauth2_access_token:
+          type: BearerAuthenticator
+          api_token: "{{ config['credentials']['access_token'] }}"
+        oauth2_confidential_application:
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: ""
+  paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "per_page"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 50
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "per_page"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 50
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] }}/api/v2"
+      http_method: "GET"
+      authenticator:
+        type: SelectiveAuthenticator
+        authenticator_selection_path:
+          - "credentials"
+          - "auth_type"
+        authenticators:
+          oauth2_access_token:
+            type: BearerAuthenticator
+            api_token: "{{ config['credentials']['access_token'] }}"
+          oauth2_confidential_application:
+            type: OAuthAuthenticator
+            token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+            client_id: "{{ config['credentials']['client_id'] }}"
+            client_secret: "{{ config['credentials']['client_secret'] }}"
+            refresh_token: ""
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+  clients_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+    name: "clients"
+    primary_key: "client_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          client_id:
+            type:
+              - string
+              - "null"
+          tenant:
+            type:
+              - string
+              - "null"
+          owners:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          is_token_endpoint_ip_header_trusted:
+            type:
+              - boolean
+              - "null"
+          cross_origin_auth:
+            type:
+              - boolean
+              - "null"
+          callback_url_template:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          global:
+            type:
+              - boolean
+              - "null"
+          client_secret:
+            type:
+              - string
+              - "null"
+          app_type:
+            type:
+              - string
+              - "null"
+          logo_uri:
+            type:
+              - string
+              - "null"
+          is_first_party:
+            type:
+              - boolean
+              - "null"
+          oidc_conformant:
+            type:
+              - boolean
+              - "null"
+          callbacks:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          web_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          client_aliases:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_clients:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_logout_urls:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          oidc_backchannel_logout:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              backchannel_logout_urls:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - string
+                    - "null"
+          grant_types:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          jwt_configuration:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              lifetime_in_seconds:
+                type:
+                  - integer
+                  - "null"
+              secret_encoded:
+                type:
+                  - boolean
+                  - "null"
+              scopes:
+                type:
+                  - object
+                  - "null"
+              alg:
+                type:
+                  - string
+                  - "null"
+          signing_keys:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+          encryption_key:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              pub:
+                type:
+                  - string
+                  - "null"
+              cert:
+                type:
+                  - string
+                  - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+          sso:
+            type:
+              - boolean
+              - "null"
+          sso_disabled:
+            type:
+              - boolean
+              - "null"
+          cross_origin_authentication:
+            type:
+              - boolean
+              - "null"
+          cross_origin_loc:
+            type:
+              - string
+              - "null"
+          custom_login_page_on:
+            type:
+              - boolean
+              - "null"
+          custom_login_page:
+            type:
+              - string
+              - "null"
+          custom_login_page_preview:
+            type:
+              - string
+              - "null"
+          form_template:
+            type:
+              - string
+              - "null"
+          addons:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          token_endpoint_auth_method:
+            type:
+              - string
+              - "null"
+          client_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          mobile:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          initiate_login_uri:
+            type:
+              - string
+              - "null"
+          native_social_login:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          refresh_token:
+            type:
+              - object
+              - "null"
+            properties:
+              rotation_type:
+                type:
+                  - string
+                  - "null"
+              expiration_type:
+                type:
+                  - string
+                  - "null"
+              leeway:
+                type:
+                  - integer
+                  - "null"
+          organization_usage:
+            type:
+              - string
+              - "null"
+          organization_require_behavior:
+            type:
+              - string
+              - "null"
+          client_authentication_methods:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+  users_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        path: "users"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+        request_parameters:
+          sort: "updated_at:1"
+          include_totals: "false"
+          q:
+            "updated_at:{{ '{' }}{{stream_interval.start_time ~ '  TO ' ~ stream_interval.end_time
+            ~ ']' if stream_interval.start_time else config['start_date'] ~ ' TO *]'}}"
+        request_headers: {}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.001S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2013-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        min_datetime: "2013-01-01T00:00:00.000Z"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      step: "P1Y"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          email_verified:
+            type:
+              - boolean
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          phone_verified:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_at:
+            format: date-time
+            type:
+              - string
+              - "null"
+          identities:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                connection:
+                  type:
+                    - string
+                    - "null"
+          app_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          user_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          picture:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          nickname:
+            type:
+              - string
+              - "null"
+          multifactor:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            items:
+              type:
+                - string
+                - "null"
+          last_ip:
+            type:
+              - string
+              - "null"
+          logins_count:
+            type:
+              - integer
+              - "null"
+          blocked:
+            type:
+              - boolean
+              - "null"
+          last_login:
+            type:
+              - string
+              - "null"
+          given_name:
+            type:
+              - string
+              - "null"
+          family_name:
+            type:
+              - string
+              - "null"
+  organizations_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+    name: "organizations"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          branding:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+  organization_members_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          type: DeclarativeStream
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                type: "RequestOption"
+                inject_into: "request_parameter"
+                field_name: "per_page"
+              pagination_strategy:
+                type: "PageIncrement"
+                page_size: 50
+              page_token_option:
+                type: "RequestOption"
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] }}/api/v2"
+              http_method: "GET"
+              authenticator:
+                type: SelectiveAuthenticator
+                authenticator_selection_path:
+                  - "credentials"
+                  - "auth_type"
+                authenticators:
+                  oauth2_access_token:
+                    type: BearerAuthenticator
+                    api_token: "{{ config['credentials']['access_token'] }}"
+                  oauth2_confidential_application:
+                    type: OAuthAuthenticator
+                    token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                    client_id: "{{ config['credentials']['client_id'] }}"
+                    client_secret: "{{ config['credentials']['client_secret'] }}"
+                    refresh_token: ""
+          name: "organizations"
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                display_name:
+                  type:
+                    - string
+                    - "null"
+                branding:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                metadata:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+        parent_key: "id"
+        partition_field: "parent_id"
+  organization_members_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              type: DeclarativeStream
+              retriever:
+                type: SimpleRetriever
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+                paginator:
+                  type: "DefaultPaginator"
+                  page_size_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "per_page"
+                  pagination_strategy:
+                    type: "PageIncrement"
+                    page_size: 50
+                  page_token_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "page"
+                requester:
+                  type: HttpRequester
+                  url_base: "{{ config['base_url'] }}/api/v2"
+                  http_method: "GET"
+                  authenticator:
+                    type: SelectiveAuthenticator
+                    authenticator_selection_path:
+                      - "credentials"
+                      - "auth_type"
+                    authenticators:
+                      oauth2_access_token:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['credentials']['access_token'] }}"
+                      oauth2_confidential_application:
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                        client_id: "{{ config['credentials']['client_id'] }}"
+                        client_secret: "{{ config['credentials']['client_secret'] }}"
+                        refresh_token: ""
+              name: "organizations"
+              primary_key: "id"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $schema: http://json-schema.org/draft-07/schema#
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    display_name:
+                      type:
+                        - string
+                        - "null"
+                    branding:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                    metadata:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+            parent_key: "id"
+            partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          org_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          picture:
+            type:
+              - string
+              - "null"
+  organization_member_roles_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          type: DeclarativeStream
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                type: "RequestOption"
+                inject_into: "request_parameter"
+                field_name: "per_page"
+              pagination_strategy:
+                type: "PageIncrement"
+                page_size: 50
+              page_token_option:
+                type: "RequestOption"
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] }}/api/v2"
+              http_method: "GET"
+              authenticator:
+                type: SelectiveAuthenticator
+                authenticator_selection_path:
+                  - "credentials"
+                  - "auth_type"
+                authenticators:
+                  oauth2_access_token:
+                    type: BearerAuthenticator
+                    api_token: "{{ config['credentials']['access_token'] }}"
+                  oauth2_confidential_application:
+                    type: OAuthAuthenticator
+                    token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                    client_id: "{{ config['credentials']['client_id'] }}"
+                    client_secret: "{{ config['credentials']['client_secret'] }}"
+                    refresh_token: ""
+            partition_router:
+              type: SubstreamPartitionRouter
+              parent_stream_configs:
+                - stream:
+                    type: DeclarativeStream
+                    retriever:
+                      type: SimpleRetriever
+                      record_selector:
+                        type: RecordSelector
+                        extractor:
+                          type: DpathExtractor
+                          field_path: []
+                      paginator:
+                        type: "DefaultPaginator"
+                        page_size_option:
+                          type: "RequestOption"
+                          inject_into: "request_parameter"
+                          field_name: "per_page"
+                        pagination_strategy:
+                          type: "PageIncrement"
+                          page_size: 50
+                        page_token_option:
+                          type: "RequestOption"
+                          inject_into: "request_parameter"
+                          field_name: "page"
+                      requester:
+                        type: HttpRequester
+                        url_base: "{{ config['base_url'] }}/api/v2"
+                        http_method: "GET"
+                        authenticator:
+                          type: SelectiveAuthenticator
+                          authenticator_selection_path:
+                            - "credentials"
+                            - "auth_type"
+                          authenticators:
+                            oauth2_access_token:
+                              type: BearerAuthenticator
+                              api_token: "{{ config['credentials']['access_token'] }}"
+                            oauth2_confidential_application:
+                              type: OAuthAuthenticator
+                              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                              client_id: "{{ config['credentials']['client_id'] }}"
+                              client_secret:
+                                "{{ config['credentials']['client_secret']
+                                }}"
+                              refresh_token: ""
+                    name: "organizations"
+                    primary_key: "id"
+                    schema_loader:
+                      type: InlineSchemaLoader
+                      schema:
+                        $schema: http://json-schema.org/draft-07/schema#
+                        type:
+                          - object
+                          - "null"
+                        additionalProperties: true
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          display_name:
+                            type:
+                              - string
+                              - "null"
+                          branding:
+                            type:
+                              - object
+                              - "null"
+                            additionalProperties: true
+                          metadata:
+                            type:
+                              - object
+                              - "null"
+                            additionalProperties: true
+                  parent_key: "id"
+                  partition_field: "parent_id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                org_id:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                picture:
+                  type:
+                    - string
+                    - "null"
+        parent_key: "user_id"
+        partition_field: "parent_user_id"
+  organization_member_roles_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              type: DeclarativeStream
+              retriever:
+                type: SimpleRetriever
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+                paginator:
+                  type: "DefaultPaginator"
+                  page_size_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "per_page"
+                  pagination_strategy:
+                    type: "PageIncrement"
+                    page_size: 50
+                  page_token_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "page"
+                requester:
+                  type: HttpRequester
+                  url_base: "{{ config['base_url'] }}/api/v2"
+                  http_method: "GET"
+                  authenticator:
+                    type: SelectiveAuthenticator
+                    authenticator_selection_path:
+                      - "credentials"
+                      - "auth_type"
+                    authenticators:
+                      oauth2_access_token:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['credentials']['access_token'] }}"
+                      oauth2_confidential_application:
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                        client_id: "{{ config['credentials']['client_id'] }}"
+                        client_secret: "{{ config['credentials']['client_secret'] }}"
+                        refresh_token: ""
+                partition_router:
+                  type: SubstreamPartitionRouter
+                  parent_stream_configs:
+                    - stream:
+                        type: DeclarativeStream
+                        retriever:
+                          type: SimpleRetriever
+                          record_selector:
+                            type: RecordSelector
+                            extractor:
+                              type: DpathExtractor
+                              field_path: []
+                          paginator:
+                            type: "DefaultPaginator"
+                            page_size_option:
+                              type: "RequestOption"
+                              inject_into: "request_parameter"
+                              field_name: "per_page"
+                            pagination_strategy:
+                              type: "PageIncrement"
+                              page_size: 50
+                            page_token_option:
+                              type: "RequestOption"
+                              inject_into: "request_parameter"
+                              field_name: "page"
+                          requester:
+                            type: HttpRequester
+                            url_base: "{{ config['base_url'] }}/api/v2"
+                            http_method: "GET"
+                            authenticator:
+                              type: SelectiveAuthenticator
+                              authenticator_selection_path:
+                                - "credentials"
+                                - "auth_type"
+                              authenticators:
+                                oauth2_access_token:
+                                  type: BearerAuthenticator
+                                  api_token:
+                                    "{{ config['credentials']['access_token']
+                                    }}"
+                                oauth2_confidential_application:
+                                  type: OAuthAuthenticator
+                                  token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                                  client_id: "{{ config['credentials']['client_id'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
+                                  refresh_token: ""
+                        name: "organizations"
+                        primary_key: "id"
+                        schema_loader:
+                          type: InlineSchemaLoader
+                          schema:
+                            $schema: http://json-schema.org/draft-07/schema#
+                            type:
+                              - object
+                              - "null"
+                            additionalProperties: true
+                            properties:
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              display_name:
+                                type:
+                                  - string
+                                  - "null"
+                              branding:
+                                type:
+                                  - object
+                                  - "null"
+                                additionalProperties: true
+                              metadata:
+                                type:
+                                  - object
+                                  - "null"
+                                additionalProperties: true
+                      parent_key: "id"
+                      partition_field: "parent_id"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $schema: http://json-schema.org/draft-07/schema#
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    org_id:
+                      type:
+                        - string
+                        - "null"
+                    user_id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    picture:
+                      type:
+                        - string
+                        - "null"
+            parent_key: "user_id"
+            partition_field: "parent_user_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          org_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+        path: "clients"
+    name: "clients"
+    primary_key: "client_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          client_id:
+            type:
+              - string
+              - "null"
+          tenant:
+            type:
+              - string
+              - "null"
+          owners:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          is_token_endpoint_ip_header_trusted:
+            type:
+              - boolean
+              - "null"
+          cross_origin_auth:
+            type:
+              - boolean
+              - "null"
+          callback_url_template:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          global:
+            type:
+              - boolean
+              - "null"
+          client_secret:
+            type:
+              - string
+              - "null"
+          app_type:
+            type:
+              - string
+              - "null"
+          logo_uri:
+            type:
+              - string
+              - "null"
+          is_first_party:
+            type:
+              - boolean
+              - "null"
+          oidc_conformant:
+            type:
+              - boolean
+              - "null"
+          callbacks:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          web_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          client_aliases:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_clients:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_logout_urls:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          oidc_backchannel_logout:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              backchannel_logout_urls:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - string
+                    - "null"
+          grant_types:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          jwt_configuration:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              lifetime_in_seconds:
+                type:
+                  - integer
+                  - "null"
+              secret_encoded:
+                type:
+                  - boolean
+                  - "null"
+              scopes:
+                type:
+                  - object
+                  - "null"
+              alg:
+                type:
+                  - string
+                  - "null"
+          signing_keys:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+          encryption_key:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              pub:
+                type:
+                  - string
+                  - "null"
+              cert:
+                type:
+                  - string
+                  - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+          sso:
+            type:
+              - boolean
+              - "null"
+          sso_disabled:
+            type:
+              - boolean
+              - "null"
+          cross_origin_authentication:
+            type:
+              - boolean
+              - "null"
+          cross_origin_loc:
+            type:
+              - string
+              - "null"
+          custom_login_page_on:
+            type:
+              - boolean
+              - "null"
+          custom_login_page:
+            type:
+              - string
+              - "null"
+          custom_login_page_preview:
+            type:
+              - string
+              - "null"
+          form_template:
+            type:
+              - string
+              - "null"
+          addons:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          token_endpoint_auth_method:
+            type:
+              - string
+              - "null"
+          client_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          mobile:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          initiate_login_uri:
+            type:
+              - string
+              - "null"
+          native_social_login:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          refresh_token:
+            type:
+              - object
+              - "null"
+            properties:
+              rotation_type:
+                type:
+                  - string
+                  - "null"
+              expiration_type:
+                type:
+                  - string
+                  - "null"
+              leeway:
+                type:
+                  - integer
+                  - "null"
+          organization_usage:
+            type:
+              - string
+              - "null"
+          organization_require_behavior:
+            type:
+              - string
+              - "null"
+          client_authentication_methods:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        path: "users"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+        request_parameters:
+          sort: "updated_at:1"
+          include_totals: "false"
+          q:
+            "updated_at:{{ '{' }}{{stream_interval.start_time ~ '  TO ' ~ stream_interval.end_time
+            ~ ']' if stream_interval.start_time else config['start_date'] ~ ' TO *]'}}"
+        request_headers: {}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.001S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2013-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        min_datetime: "2013-01-01T00:00:00.000Z"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      step: "P1Y"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          email_verified:
+            type:
+              - boolean
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          phone_verified:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_at:
+            format: date-time
+            type:
+              - string
+              - "null"
+          identities:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                connection:
+                  type:
+                    - string
+                    - "null"
+          app_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          user_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          picture:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          nickname:
+            type:
+              - string
+              - "null"
+          multifactor:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            items:
+              type:
+                - string
+                - "null"
+          last_ip:
+            type:
+              - string
+              - "null"
+          logins_count:
+            type:
+              - integer
+              - "null"
+          blocked:
+            type:
+              - boolean
+              - "null"
+          last_login:
+            type:
+              - string
+              - "null"
+          given_name:
+            type:
+              - string
+              - "null"
+          family_name:
+            type:
+              - string
+              - "null"
+    name: "users"
+    primary_key: "user_id"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+        path: "organizations"
+    name: "organizations"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          branding:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+        path:
+          "organizations/{{ stream_partition.parent_slice.parent_id }}/members/{{
+          stream_partition.parent_user_id }}/roles"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              type: DeclarativeStream
+              retriever:
+                type: SimpleRetriever
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+                paginator:
+                  type: "DefaultPaginator"
+                  page_size_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "per_page"
+                  pagination_strategy:
+                    type: "PageIncrement"
+                    page_size: 50
+                  page_token_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "page"
+                requester:
+                  type: HttpRequester
+                  url_base: "{{ config['base_url'] }}/api/v2"
+                  http_method: "GET"
+                  authenticator:
+                    type: SelectiveAuthenticator
+                    authenticator_selection_path:
+                      - "credentials"
+                      - "auth_type"
+                    authenticators:
+                      oauth2_access_token:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['credentials']['access_token'] }}"
+                      oauth2_confidential_application:
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                        client_id: "{{ config['credentials']['client_id'] }}"
+                        client_secret: "{{ config['credentials']['client_secret'] }}"
+                        refresh_token: ""
+                  path: "organizations/{{ stream_partition.parent_id }}/members"
+                partition_router:
+                  type: SubstreamPartitionRouter
+                  parent_stream_configs:
+                    - stream:
+                        type: DeclarativeStream
+                        retriever:
+                          type: SimpleRetriever
+                          record_selector:
+                            type: RecordSelector
+                            extractor:
+                              type: DpathExtractor
+                              field_path: []
+                          paginator:
+                            type: "DefaultPaginator"
+                            page_size_option:
+                              type: "RequestOption"
+                              inject_into: "request_parameter"
+                              field_name: "per_page"
+                            pagination_strategy:
+                              type: "PageIncrement"
+                              page_size: 50
+                            page_token_option:
+                              type: "RequestOption"
+                              inject_into: "request_parameter"
+                              field_name: "page"
+                          requester:
+                            type: HttpRequester
+                            url_base: "{{ config['base_url'] }}/api/v2"
+                            http_method: "GET"
+                            authenticator:
+                              type: SelectiveAuthenticator
+                              authenticator_selection_path:
+                                - "credentials"
+                                - "auth_type"
+                              authenticators:
+                                oauth2_access_token:
+                                  type: BearerAuthenticator
+                                  api_token: "{{ config['credentials']['access_token'] }}"
+                                oauth2_confidential_application:
+                                  type: OAuthAuthenticator
+                                  token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                                  client_id: "{{ config['credentials']['client_id'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
+                                  refresh_token: ""
+                            path: "organizations"
+                        name: "organizations"
+                        primary_key: "id"
+                        schema_loader:
+                          type: InlineSchemaLoader
+                          schema:
+                            $schema: http://json-schema.org/draft-07/schema#
+                            type:
+                              - object
+                              - "null"
+                            additionalProperties: true
+                            properties:
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              display_name:
+                                type:
+                                  - string
+                                  - "null"
+                              branding:
+                                type:
+                                  - object
+                                  - "null"
+                                additionalProperties: true
+                              metadata:
+                                type:
+                                  - object
+                                  - "null"
+                                additionalProperties: true
+                      parent_key: "id"
+                      partition_field: "parent_id"
+                      type: ParentStreamConfig
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $schema: http://json-schema.org/draft-07/schema#
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    org_id:
+                      type:
+                        - string
+                        - "null"
+                    user_id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    picture:
+                      type:
+                        - string
+                        - "null"
+              name: "organization_members"
+              primary_key: "user_id"
+            parent_key: "user_id"
+            partition_field: "parent_user_id"
+            type: ParentStreamConfig
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          org_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+    name: "organization_member_roles"
+    primary_key: "id"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}/api/v2"
+        http_method: "GET"
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_type"
+          authenticators:
+            oauth2_access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
+            oauth2_confidential_application:
+              type: OAuthAuthenticator
+              token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: ""
+        path: "organizations/{{ stream_partition.parent_id }}/members"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              type: DeclarativeStream
+              retriever:
+                type: SimpleRetriever
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+                paginator:
+                  type: "DefaultPaginator"
+                  page_size_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "per_page"
+                  pagination_strategy:
+                    type: "PageIncrement"
+                    page_size: 50
+                  page_token_option:
+                    type: "RequestOption"
+                    inject_into: "request_parameter"
+                    field_name: "page"
+                requester:
+                  type: HttpRequester
+                  url_base: "{{ config['base_url'] }}/api/v2"
+                  http_method: "GET"
+                  authenticator:
+                    type: SelectiveAuthenticator
+                    authenticator_selection_path:
+                      - "credentials"
+                      - "auth_type"
+                    authenticators:
+                      oauth2_access_token:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['credentials']['access_token'] }}"
+                      oauth2_confidential_application:
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['base_url'] }}oauth/token"
+                        client_id: "{{ config['credentials']['client_id'] }}"
+                        client_secret: "{{ config['credentials']['client_secret'] }}"
+                        refresh_token: ""
+                  path: "organizations"
+              name: "organizations"
+              primary_key: "id"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $schema: http://json-schema.org/draft-07/schema#
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    display_name:
+                      type:
+                        - string
+                        - "null"
+                    branding:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+                    metadata:
+                      type:
+                        - object
+                        - "null"
+                      additionalProperties: true
+            parent_key: "id"
+            partition_field: "parent_id"
+            type: ParentStreamConfig
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          org_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          picture:
+            type:
+              - string
+              - "null"
+    name: "organization_members"
+    primary_key: "user_id"
+check:
+  type: CheckStream
+  stream_names:
+    - "clients"
+    - "users"
+    - "organizations"
+    - "organization_member_roles"
+    - "organization_members"
+type: DeclarativeSource
+spec:
+  type: Spec
+  documentation_url: https://auth0.com/docs/api/management/v2/
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Auth0 Management API Spec
+    type: object
+    required:
+      - base_url
+      - credentials
+    additionalProperties: true
+    properties:
+      base_url:
+        type: string
+        title: Base URL
+        examples:
+          - "https://dev-yourOrg.us.auth0.com/"
+        description:
+          The Authentication API is served over HTTPS. All URLs referenced
+          in the documentation have the following base `https://YOUR_DOMAIN`
+      credentials:
+        title: Authentication Method
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2 Confidential Application
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - audience
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: oauth2_confidential_application
+                order: 0
+              client_id:
+                title: Client ID
+                description: >-
+                  Your application's Client ID. You can find this value on the <a
+                  href="https://manage.auth0.com/#/applications">application's settings
+                  tab</a>
+                  after you login the admin portal.
+                type: string
+                examples:
+                  - "Client_ID"
+              client_secret:
+                title: Client Secret
+                description: >-
+                  Your application's Client Secret. You can find this value on the <a
+                  href="https://manage.auth0.com/#/applications">application's settings
+                  tab</a>
+                  after you login the admin portal.
+                type: string
+                examples:
+                  - "Client_Secret"
+                airbyte_secret: true
+              audience:
+                title: Audience
+                description: >-
+                  The audience for the token, which is your API. You can find this in
+                  the Identifier field on your  <a
+                  href="https://manage.auth0.com/#/apis">API's settings tab</a>
+                type: string
+                examples:
+                  - https://dev-yourOrg.us.auth0.com/api/v2/
+          - type: object
+            title: OAuth2 Access Token
+            required:
+              - access_token
+              - auth_type
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: oauth2_access_token
+                examples:
+                  - "oauth2_access_token"
+                order: 0
+              access_token:
+                title: OAuth2 Access Token
+                description: >-
+                  Also called <a
+                  href="https://auth0.com/docs/secure/tokens/access-tokens/get-management-api-access-tokens-for-testing">API
+                  Access Token </a>
+                  The access token used to call the Auth0 Management API Token. It's
+                  a JWT that contains specific grant permissions knowns as scopes.
+                type: string
+                airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+          - "2023-08-05T00:43:59.244Z"
+        default: "2023-08-05T00:43:59.244Z"
+        airbyte_secret: false

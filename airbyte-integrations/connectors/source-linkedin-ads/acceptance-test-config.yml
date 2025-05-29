@@ -5,11 +5,14 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_linkedin_ads/spec.json"
+      - spec_path: "source_linkedin_ads/spec.yaml"
         config_path: "secrets/config_oauth.json"
   connection:
     tests:
       - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+        timeout_seconds: 60
+      - config_path: "secrets/config_multiple_account_ids.json"
         status: "succeed"
         timeout_seconds: 60
       - config_path: "integration_tests/invalid_config.json"

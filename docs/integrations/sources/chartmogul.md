@@ -1,12 +1,16 @@
 # Chartmogul
+
 This page contains the setup guide and reference information for the [Chartmogul](https://chartmogul.com/) source connector.
 
 ## Prerequisites
+
 - A Chartmogul API Key.
 - A desired start date from which to begin replicating data.
 
 ## Setup guide
+
 ### Step 1: Set up a Chartmogul API key
+
 1. Log in to your Chartmogul account.
 2. In the left navbar, select **Profile** > **View Profile**.
 3. Select **NEW API KEY**.
@@ -15,10 +19,11 @@ This page contains the setup guide and reference information for the [Chartmogul
 6. Click **ADD** to create the key.
 7. Click the **Reveal** icon to see the key, and the **Copy** icon to copy it to your clipboard.
 
-For further reading on Chartmogul API Key creation and maintenance, please refer to the official 
+For further reading on Chartmogul API Key creation and maintenance, please refer to the official
 [Chartmogul documentation](https://help.chartmogul.com/hc/en-us/articles/4407796325906-Creating-and-Managing-API-keys#creating-an-api-key).
 
 ### Step 2: Set up the Chartmogul connector in Airbyte
+
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Chartmogul** from the list of available sources.
 3. Enter a **Source name** of your choosing.
@@ -35,19 +40,19 @@ The **Start date** will only apply to the `Activities` stream. The `Customers` e
 
 The Chartmogul source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported streams
 
 This connector outputs the following full refresh streams:
 
-* [Activities](https://dev.chartmogul.com/reference/list-activities)
-* [CustomerCountDaily](https://dev.chartmogul.com/reference/retrieve-customer-count)
-* [CustomerCountWeekly](https://dev.chartmogul.com/reference/retrieve-customer-count)
-* [CustomerCountMonthly](https://dev.chartmogul.com/reference/retrieve-customer-count)
-* [CustomerCountQuarterly](https://dev.chartmogul.com/reference/retrieve-customer-count)
-* [Customers](https://dev.chartmogul.com/reference/list-customers)
+- [Activities](https://dev.chartmogul.com/reference/list-activities)
+- [CustomerCountDaily](https://dev.chartmogul.com/reference/retrieve-customer-count)
+- [CustomerCountWeekly](https://dev.chartmogul.com/reference/retrieve-customer-count)
+- [CustomerCountMonthly](https://dev.chartmogul.com/reference/retrieve-customer-count)
+- [CustomerCountQuarterly](https://dev.chartmogul.com/reference/retrieve-customer-count)
+- [Customers](https://dev.chartmogul.com/reference/list-customers)
 
 ## Performance considerations
 
@@ -55,10 +60,29 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                                                          |
+|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0 | 2024-08-19 | [44418](https://github.com/airbytehq/airbyte/pull/44418) | Refactor connector to manifest-only format |
+| 1.0.13 | 2024-08-17 | [44342](https://github.com/airbytehq/airbyte/pull/44342) | Update dependencies |
+| 1.0.12 | 2024-08-12 | [43847](https://github.com/airbytehq/airbyte/pull/43847) | Update dependencies |
+| 1.0.11 | 2024-08-10 | [43660](https://github.com/airbytehq/airbyte/pull/43660) | Update dependencies |
+| 1.0.10 | 2024-08-03 | [43231](https://github.com/airbytehq/airbyte/pull/43231) | Update dependencies |
+| 1.0.9 | 2024-07-27 | [42589](https://github.com/airbytehq/airbyte/pull/42589) | Update dependencies |
+| 1.0.8 | 2024-07-20 | [42349](https://github.com/airbytehq/airbyte/pull/42349) | Update dependencies |
+| 1.0.7 | 2024-07-13 | [41854](https://github.com/airbytehq/airbyte/pull/41854) | Update dependencies |
+| 1.0.6 | 2024-07-10 | [41259](https://github.com/airbytehq/airbyte/pull/41259) | Update dependencies |
+| 1.0.5 | 2024-07-06 | [40963](https://github.com/airbytehq/airbyte/pull/40963) | Update dependencies |
+| 1.0.4 | 2024-06-25 | [40448](https://github.com/airbytehq/airbyte/pull/40448) | Update dependencies |
+| 1.0.3 | 2024-06-21 | [39932](https://github.com/airbytehq/airbyte/pull/39932) | Update dependencies |
+| 1.0.2 | 2024-06-06 | [39289](https://github.com/airbytehq/airbyte/pull/39289) | [autopull] Upgrade base image to v1.2.2 |
+| 1.0.1 | 2024-05-14 | [38145](https://github.com/airbytehq/airbyte/pull/38145) | Make connector compatible with builder |
 | 1.0.0 | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
 | 0.2.1 | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification |
 | 0.2.0 | 2022-11-15 | [19276](https://github.com/airbytehq/airbyte/pull/19276) | Migrate connector from Alpha (Python) to Beta (YAML) |
 | 0.1.1 | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count |
 | 0.1.0 | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381) | New Source: Chartmogul |
+
+</details>

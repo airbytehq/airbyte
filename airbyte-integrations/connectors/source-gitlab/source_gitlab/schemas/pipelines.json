@@ -3,38 +3,49 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the pipeline",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal identifier for the pipeline within the project",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "Unique identifier for the project where the pipeline belongs",
       "type": ["null", "integer"]
     },
     "sha": {
+      "description": "Commit SHA associated with the pipeline",
       "type": ["null", "string"]
     },
     "source": {
+      "description": "Source that triggered the pipeline (e.g., web, push, schedule)",
       "type": ["null", "string"]
     },
     "ref": {
+      "description": "Reference (branch or tag) for which the pipeline was triggered",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the pipeline (e.g., running, passed, failed)",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the pipeline was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the pipeline was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "web_url": {
+      "description": "URL to view the pipeline details on the web interface",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the pipeline",
       "type": ["null", "string"]
     }
   }

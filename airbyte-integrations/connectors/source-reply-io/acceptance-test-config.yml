@@ -4,7 +4,7 @@ connector_image: airbyte/source-reply-io:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_reply_io/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

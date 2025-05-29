@@ -10,7 +10,6 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 class ExchangeRates(HttpStream):
@@ -106,10 +105,10 @@ class SourcePythonHttpTutorial(AbstractSource):
             return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # NoAuth just means there is no authentication required for this API. It's only included for completeness
+        # No authentication is required for this API. It's only included for completeness
         # of the example, but if you don't need authentication, you don't need to pass an authenticator at all.
         # Other authenticators are available for API token-based auth and Oauth2.
-        auth = NoAuth()
+        auth = None
         # Parse the date from a string into a datetime object
         start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
         return [ExchangeRates(authenticator=auth, config=config, start_date=start_date)]

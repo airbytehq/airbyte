@@ -1,0 +1,1272 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+description: ""
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    schedules:
+      type: DeclarativeStream
+      name: schedules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/{{stream_partition.project_id}}.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - dock
+              - "*"
+          record_filter:
+            type: RecordFilter
+            condition: '{{ record.name == "schedule" }}'
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition.project_id }}"
+        - type: AddFields
+          fields:
+            - path:
+                - substream_data
+              value: >-
+                {{  { "project_id": record["project_id"], "schedule_id":
+                record["id"] }  }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/schedules"
+    schedule_entries:
+      type: DeclarativeStream
+      name: schedule_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            buckets/{{stream_partition.parent.project_id}}/schedules/{{stream_partition.parent.schedule_id}}/entries.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: substream_data
+              partition_field: parent
+              stream:
+                $ref: "#/definitions/streams/schedules"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/schedule_entries"
+    todos:
+      type: DeclarativeStream
+      name: todos
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/recordings.json
+          http_method: GET
+          request_parameters:
+            type: Todo
+            sort: updated_at
+            direction: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/todos"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/recordings.json
+          http_method: GET
+          request_parameters:
+            type: Message
+            sort: updated_at
+            direction: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+  base_requester:
+    type: HttpRequester
+    url_base: https://3.basecampapi.com/{{config["account_id"]}}/
+    authenticator:
+      type: OAuthAuthenticator
+      refresh_request_body:
+        type: refresh
+        refresh_token: '{{ config["client_refresh_token_2"] }}'
+      token_refresh_endpoint: https://launchpad.37signals.com/authorization/token
+      grant_type: refresh_token
+      client_id: '{{ config["client_id"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token_2"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/schedules"
+  - $ref: "#/definitions/streams/schedule_entries"
+  - $ref: "#/definitions/streams/todos"
+  - $ref: "#/definitions/streams/messages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_id
+      - start_date
+      - client_id
+      - client_secret
+      - client_refresh_token_2
+    properties:
+      account_id:
+        type: number
+        order: 0
+        title: Account ID
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+        order: 2
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 3
+      client_refresh_token_2:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: true
+    schedules: true
+    schedule_entries: true
+    todos: true
+    messages: true
+  testedStreams:
+    projects:
+      streamHash: 7ab6083f8eb5d614b381551faaeb2963f910f721
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    todos:
+      streamHash: 75265e427d15dfaef1fb1348c58a2cbbba0dc39e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    messages:
+      streamHash: ac228d32888b728c80ae692b835f2a556a869d25
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    schedules:
+      streamHash: de546d703b8eee318d1ccba525d3a25b6df7641a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    schedule_entries:
+      streamHash: cf8768b12f2e3a6fadb8cee91aefa3e3728972b2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      bookmark_url:
+        type:
+          - string
+          - "null"
+      bookmarked:
+        type:
+          - boolean
+          - "null"
+      clients_enabled:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      dock:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            app_url:
+              type:
+                - string
+                - "null"
+            enabled:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      id:
+        type: number
+      last_needle_color:
+        type:
+          - string
+          - "null"
+      last_needle_position:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      purpose:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timesheet_enabled:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      substream_data:
+        type:
+          - object
+          - "null"
+        properties:
+          project_id:
+            type:
+              - number
+              - "null"
+          schedule_id:
+            type:
+              - number
+              - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  schedule_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      all_day:
+        type:
+          - boolean
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      bookmark_url:
+        type:
+          - string
+          - "null"
+      bucket:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      comments_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          admin:
+            type:
+              - boolean
+              - "null"
+          attachable_sgid:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          can_access_timesheet:
+            type:
+              - boolean
+              - "null"
+          can_manage_people:
+            type:
+              - boolean
+              - "null"
+          can_manage_projects:
+            type:
+              - boolean
+              - "null"
+          can_ping:
+            type:
+              - boolean
+              - "null"
+          client:
+            type:
+              - boolean
+              - "null"
+          company:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email_address:
+            type:
+              - string
+              - "null"
+          employee:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - boolean
+              - "null"
+          personable_type:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      ends_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      inherits_status:
+        type:
+          - boolean
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          app_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      participants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            admin:
+              type:
+                - boolean
+                - "null"
+            attachable_sgid:
+              type:
+                - string
+                - "null"
+            avatar_url:
+              type:
+                - string
+                - "null"
+            can_access_timesheet:
+              type:
+                - boolean
+                - "null"
+            can_manage_people:
+              type:
+                - boolean
+                - "null"
+            can_manage_projects:
+              type:
+                - boolean
+                - "null"
+            can_ping:
+              type:
+                - boolean
+                - "null"
+            client:
+              type:
+                - boolean
+                - "null"
+            company:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            email_address:
+              type:
+                - string
+                - "null"
+            employee:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            owner:
+              type:
+                - boolean
+                - "null"
+            personable_type:
+              type:
+                - string
+                - "null"
+            time_zone:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      starts_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subscription_url:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      visible_to_clients:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  todos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      assignees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            admin:
+              type:
+                - boolean
+                - "null"
+            attachable_sgid:
+              type:
+                - string
+                - "null"
+            avatar_url:
+              type:
+                - string
+                - "null"
+            can_access_timesheet:
+              type:
+                - boolean
+                - "null"
+            can_manage_people:
+              type:
+                - boolean
+                - "null"
+            can_manage_projects:
+              type:
+                - boolean
+                - "null"
+            can_ping:
+              type:
+                - boolean
+                - "null"
+            client:
+              type:
+                - boolean
+                - "null"
+            company:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            email_address:
+              type:
+                - string
+                - "null"
+            employee:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            owner:
+              type:
+                - boolean
+                - "null"
+            personable_type:
+              type:
+                - string
+                - "null"
+            time_zone:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      bookmark_url:
+        type:
+          - string
+          - "null"
+      bucket:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      comments_url:
+        type:
+          - string
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      completion_subscribers:
+        type:
+          - array
+          - "null"
+      completion_url:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          admin:
+            type:
+              - boolean
+              - "null"
+          attachable_sgid:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          can_access_timesheet:
+            type:
+              - boolean
+              - "null"
+          can_manage_people:
+            type:
+              - boolean
+              - "null"
+          can_manage_projects:
+            type:
+              - boolean
+              - "null"
+          can_ping:
+            type:
+              - boolean
+              - "null"
+          client:
+            type:
+              - boolean
+              - "null"
+          company:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email_address:
+            type:
+              - string
+              - "null"
+          employee:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - boolean
+              - "null"
+          personable_type:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      inherits_status:
+        type:
+          - boolean
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          app_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      position:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subscription_url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      visible_to_clients:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - updated_at
+  messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      bookmark_url:
+        type:
+          - string
+          - "null"
+      bucket:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      comments_url:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          admin:
+            type:
+              - boolean
+              - "null"
+          attachable_sgid:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          can_access_timesheet:
+            type:
+              - boolean
+              - "null"
+          can_manage_people:
+            type:
+              - boolean
+              - "null"
+          can_manage_projects:
+            type:
+              - boolean
+              - "null"
+          can_ping:
+            type:
+              - boolean
+              - "null"
+          client:
+            type:
+              - boolean
+              - "null"
+          company:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email_address:
+            type:
+              - string
+              - "null"
+          employee:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - boolean
+              - "null"
+          personable_type:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      inherits_status:
+        type:
+          - boolean
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          app_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      subscription_url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      visible_to_clients:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - updated_at

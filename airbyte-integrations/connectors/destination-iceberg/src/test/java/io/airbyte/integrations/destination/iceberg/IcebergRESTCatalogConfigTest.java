@@ -21,8 +21,6 @@ import com.amazonaws.services.s3.model.UploadPartResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;
-import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfigFactory;
 import io.airbyte.integrations.destination.iceberg.config.catalog.RESTCatalogConfig;
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
@@ -40,7 +38,6 @@ import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.IcebergGenerics.ScanBuilder;
 import org.apache.iceberg.rest.RESTCatalog;
 import org.apache.iceberg.spark.SparkCatalog;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +58,6 @@ class IcebergRESTCatalogConfigTest {
   private AmazonS3 s3;
   private RESTCatalogConfig config;
   private Catalog catalog;
-  private IcebergCatalogConfigFactory factory;
 
   @BeforeAll
   static void staticSetup() {
@@ -108,20 +104,11 @@ class IcebergRESTCatalogConfigTest {
         .build());
     config.setFormatConfig(new FormatConfig(Jsons.jsonNode(ImmutableMap.of(FORMAT_TYPE_CONFIG_KEY, "Parquet"))));
     config.setDefaultOutputDatabase("default");
-
-    factory = new IcebergCatalogConfigFactory() {
-
-      @Override
-      public IcebergCatalogConfig fromJsonNodeConfig(final @NotNull JsonNode jsonConfig) {
-        return config;
-      }
-
-    };
   }
 
   @Test
   public void checksRESTServerUri() {
-    final IcebergDestination destinationFail = new IcebergDestination();
+    final IcebergOssDestination destinationFail = new IcebergOssDestination();
     final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
                                                                                    {
                                                                                      "catalog_config": {

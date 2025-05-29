@@ -3,178 +3,236 @@
   "type": "object",
   "properties": {
     "customer.currency_code": {
+      "description": "The currency code used for the customer's account",
       "type": ["null", "string"]
     },
     "customer.descriptive_name": {
+      "description": "The descriptive name assigned to the customer account",
       "type": ["null", "string"]
     },
     "customer.time_zone": {
+      "description": "The time zone setting for the customer account",
       "type": ["null", "string"]
     },
     "metrics.active_view_cpm": {
+      "description": "Cost per thousand active viewable impressions",
       "type": ["null", "number"]
     },
     "metrics.active_view_ctr": {
+      "description": "Active view click-through rate",
       "type": ["null", "number"]
     },
     "metrics.active_view_impressions": {
+      "description": "Number of active view viewable impressions",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurability": {
+      "description": "Active view measurability percentage",
       "type": ["null", "number"]
     },
     "metrics.active_view_measurable_cost_micros": {
+      "description": "Cost for active view measurable impressions",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurable_impressions": {
+      "description": "Number of active view measurable impressions",
       "type": ["null", "integer"]
     },
     "metrics.active_view_viewability": {
+      "description": "Active view viewability percentage",
       "type": ["null", "number"]
     },
     "segments.ad_network_type": {
+      "description": "Type of ad network",
       "type": ["null", "string"]
     },
     "metrics.all_conversions_from_interactions_rate": {
+      "description": "Rate of conversions from interactions",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
+      "description": "Total value of all conversions",
       "type": ["null", "number"]
     },
     "metrics.all_conversions": {
+      "description": "Total number of conversions",
       "type": ["null", "number"]
     },
     "metrics.average_cost": {
+      "description": "Average cost per click",
       "type": ["null", "number"]
     },
     "metrics.average_cpc": {
+      "description": "Average cost per click",
       "type": ["null", "number"]
     },
     "metrics.average_cpe": {
+      "description": "Average cost per engagement",
       "type": ["null", "number"]
     },
     "metrics.average_cpm": {
+      "description": "Average cost per thousand impressions",
       "type": ["null", "number"]
     },
     "metrics.average_cpv": {
+      "description": "Average cost per view",
       "type": ["null", "number"]
     },
     "customer.manager": {
+      "description": "The manager assigned to the customer account",
       "type": ["null", "boolean"]
     },
     "metrics.clicks": {
+      "description": "Total number of clicks",
       "type": ["null", "integer"]
     },
     "metrics.content_budget_lost_impression_share": {
+      "description": "Percentage of budget lost due to content network impressions",
       "type": ["null", "number"]
     },
     "metrics.content_impression_share": {
+      "description": "Impression share on the content network",
       "type": ["null", "number"]
     },
     "metrics.content_rank_lost_impression_share": {
+      "description": "Percentage of rank lost due to content network impressions",
       "type": ["null", "number"]
     },
     "metrics.conversions_from_interactions_rate": {
+      "description": "Rate of conversions from interactions",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "Total value of conversions",
       "type": ["null", "number"]
     },
     "metrics.conversions": {
+      "description": "Total number of conversions",
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
+      "description": "Total cost in micros",
       "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
+      "description": "Cost per all conversions",
       "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
+      "description": "Cost per conversion",
       "type": ["null", "number"]
     },
     "metrics.cross_device_conversions": {
+      "description": "Conversions that involve more than one device",
       "type": ["null", "number"]
     },
     "metrics.ctr": {
+      "description": "Click-through rate",
       "type": ["null", "number"]
     },
     "segments.date": {
+      "description": "Date of the data entry",
       "type": ["null", "string"],
       "format": "date"
     },
     "segments.day_of_week": {
+      "description": "Day of the week",
       "type": ["null", "string"]
     },
     "segments.device": {
+      "description": "Type of device",
       "type": ["null", "string"]
     },
     "metrics.engagement_rate": {
+      "description": "Rate of engagements",
       "type": ["null", "number"]
     },
     "metrics.engagements": {
+      "description": "Total number of engagements",
       "type": ["null", "integer"]
     },
     "customer.id": {
+      "description": "The unique identifier for the customer account",
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
+      "description": "Total number of impressions",
       "type": ["null", "integer"]
     },
     "metrics.interaction_rate": {
+      "description": "Rate of interactions",
       "type": ["null", "number"]
     },
     "metrics.interaction_event_types": {
+      "description": "Types of interaction events",
       "type": ["null", "array"],
       "items": {
+        "description": "Specific interaction event type",
         "type": "string"
       }
     },
     "metrics.interactions": {
+      "description": "Total number of interactions",
       "type": ["null", "integer"]
     },
     "customer.auto_tagging_enabled": {
+      "description": "Indicates whether auto tagging is enabled for the customer",
       "type": ["null", "boolean"]
     },
     "customer.test_account": {
+      "description": "Specifies whether the account is a test account",
       "type": ["null", "boolean"]
     },
     "segments.month": {
+      "description": "Month of the year",
       "type": ["null", "string"]
     },
     "segments.quarter": {
+      "description": "Quarter of the year",
       "type": ["null", "string"]
     },
     "metrics.search_budget_lost_impression_share": {
+      "description": "Percentage of budget lost due to search network impressions",
       "type": ["null", "number"]
     },
     "metrics.search_exact_match_impression_share": {
+      "description": "Exact match impression share on the search network",
       "type": ["null", "number"]
     },
     "metrics.search_impression_share": {
+      "description": "Impression share on the search network",
       "type": ["null", "number"]
     },
     "metrics.search_rank_lost_impression_share": {
+      "description": "Percentage of rank lost due to search network impressions",
       "type": ["null", "number"]
     },
     "metrics.value_per_all_conversions": {
+      "description": "Value per all conversions",
       "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
+      "description": "Value per conversion",
       "type": ["null", "number"]
     },
     "metrics.video_view_rate": {
+      "description": "Rate of video views",
       "type": ["null", "number"]
     },
     "metrics.video_views": {
+      "description": "Total number of video views",
       "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
+      "description": "Conversions where the display ad was shown but not clicked",
       "type": ["null", "integer"]
     },
     "segments.week": {
+      "description": "Week of the year",
       "type": ["null", "string"]
     },
     "segments.year": {
+      "description": "Year",
       "type": ["null", "integer"]
     }
   }

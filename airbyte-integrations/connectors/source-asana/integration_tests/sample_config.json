@@ -1,3 +1,10 @@
 {
-  "access_token": "Your Personal Access Token."
+  "credentials": {
+    "option_title": "OAuth Credentials",
+    "client_id": "xxxxx",
+    "client_secret": "xxxxxx",
+    "refresh_token": "xxxxxx"
+  },
+  "test_mode": true,
+  "organization_export_ids": []
 }

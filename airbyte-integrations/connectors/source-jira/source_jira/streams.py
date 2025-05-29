@@ -1,20 +1,25 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
+import logging as Logger
 import re
 import urllib.parse as urlparse
 from abc import ABC
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
+from airbyte_cdk.sources.streams.checkpoint.checkpoint_reader import FULL_REFRESH_COMPLETE_STATE
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
@@ -22,6 +27,36 @@ from source_jira.type_transfromer import DateTimeTransformer
 from .utils import read_full_refresh, read_incremental, safe_max
 
 API_VERSION = 3
+
+
+class JiraErrorHandler(HttpStatusErrorHandler):
+    def __init__(
+        self,
+        stream_name: str,
+        ignore_status_codes: List[int],
+        logger: logging.Logger,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+        max_retries: int = 5,
+        max_time: timedelta = timedelta(seconds=600),
+    ) -> None:
+        super().__init__(logger, error_mapping, max_retries, max_time)
+        self.stream_name = stream_name
+        self.ignore_status_codes = ignore_status_codes
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        # override default error mapping
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code in self.ignore_status_codes:
+            error_message = f"Errors: {response_or_exception.json().get('errorMessages')}"
+
+            if response_or_exception.status_code == requests.codes.BAD_REQUEST:
+                error_message = f"The user doesn't have permission to the project. Please grant the user to the project. {error_message}"
+
+            return ErrorResolution(
+                error_message=f"Stream `{self.stream_name}`. An error occurred, details: {error_message}",
+                response_action=ResponseAction.IGNORE,
+            )
+
+        return super().interpret_response(response_or_exception)
 
 
 class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
@@ -137,6 +172,20 @@ class JiraStream(HttpStream, ABC):
             self.logger.warning(f"Stream `{self.name}`. An error occurred, details: {errors}. Skipping for now. {custom_error}")
 
 
+class FullRefreshJiraStream(JiraStream):
+
+    """
+    This is a temporary solution to avoid incorrect state handling.
+    See comments below for more info:
+    https://github.com/airbytehq/airbyte/pull/39558#discussion_r1695592075
+    https://github.com/airbytehq/airbyte/pull/39558#discussion_r1699539669
+    """
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        yield from super().read_records(**kwargs)
+        self.state = FULL_REFRESH_COMPLETE_STATE
+
+
 class StartDateJiraStream(JiraStream, ABC):
     def __init__(
         self,
@@ -149,14 +198,24 @@ class StartDateJiraStream(JiraStream, ABC):
         self._start_date = start_date
 
 
-class IncrementalJiraStream(StartDateJiraStream, ABC):
+class IncrementalJiraStream(StartDateJiraStream, CheckpointMixin, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._starting_point_cache = {}
+        self._state = None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
+        current_stream_state = current_stream_state or {}
+        stream_state_value = current_stream_state.get(self.cursor_field, {})
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
         current_stream_state[self.cursor_field] = updated_state
@@ -187,221 +246,13 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
         start_point = self.get_starting_point(stream_state=stream_state)
         for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
             cursor_value = pendulum.parse(record[self.cursor_field])
+            self.state = self._get_updated_state(self.state, record)
             if not start_point or cursor_value >= start_point:
                 yield record
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         self._starting_point_cache.clear()
         yield from super().stream_slices(**kwargs)
-
-
-class ApplicationRoles(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get
-    """
-
-    primary_key = "key"
-
-    def path(self, **kwargs) -> str:
-        return "applicationrole"
-
-
-class Avatars(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get
-    """
-
-    extract_field = "system"
-    avatar_types = ("issuetype", "project", "user")
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"avatar/{stream_slice['avatar_type']}/system"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for avatar_type in self.avatar_types:
-            yield {"avatar_type": avatar_type}
-
-
-class Boards(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
-    """
-
-    extract_field = "values"
-    use_cache = True
-    api_v1 = True
-
-    def path(self, **kwargs) -> str:
-        return "board"
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for board in super().read_records(**kwargs):
-            location = board.get("location", {})
-            if not self._projects or location.get("projectKey") in self._projects:
-                yield board
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        location = record.get("location")
-        if location:
-            record["projectId"] = str(location.get("projectId"))
-            record["projectKey"] = location.get("projectKey")
-        return record
-
-
-class BoardIssues(StartDateJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
-    """
-
-    cursor_field = "updated"
-    extract_field = "issues"
-    api_v1 = True
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._starting_point_cache = {}
-        self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"board/{stream_slice['board_id']}/issue"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = ["key", "created", "updated"]
-        jql = self.jql_compare_date(stream_state, stream_slice)
-        if jql:
-            params["jql"] = jql
-        return params
-
-    def jql_compare_date(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[str]:
-        compare_date = self.get_starting_point(stream_state, stream_slice)
-        if compare_date:
-            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
-            return f"{self.cursor_field} >= '{compare_date}'"
-
-    def _is_board_error(self, response):
-        """Check if board has error and should be skipped"""
-        if response.status_code == 500:
-            if "This board has no columns with a mapped status." in response.text:
-                return True
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if self._is_board_error(response):
-            return False
-
-        # for all other HTTP errors the default handling is applied
-        return super().should_retry(response)
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from read_full_refresh(self.boards_stream)
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(stream_slice={"board_id": stream_slice["id"]}, **kwargs)
-        except HTTPError as e:
-            if self._is_board_error(e.response):
-                # Wrong board is skipped
-                self.logger.warning(f"Board {stream_slice['id']} has no columns with a mapped status. Skipping.")
-            else:
-                raise
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        board_id = str(latest_record["boardId"])
-        stream_state_value = current_stream_state.get(board_id, {}).get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(board_id, {})[self.cursor_field] = updated_state
-        return current_stream_state
-
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
-        board_id = str(stream_slice["board_id"])
-        if self.cursor_field not in self._starting_point_cache:
-            self._starting_point_cache.setdefault(board_id, {})[self.cursor_field] = self._get_starting_point(
-                stream_state=stream_state, stream_slice=stream_slice
-            )
-        return self._starting_point_cache[board_id][self.cursor_field]
-
-    def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
-        if stream_state:
-            board_id = str(stream_slice["board_id"])
-            stream_state_value = stream_state.get(board_id, {}).get(self.cursor_field)
-            if stream_state_value:
-                stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
-                return safe_max(stream_state_value, self._start_date)
-        return self._start_date
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["boardId"] = stream_slice["board_id"]
-        record["created"] = record["fields"]["created"]
-        record["updated"] = record["fields"]["updated"]
-        return record
-
-
-class Dashboards(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get
-    """
-
-    extract_field = "dashboards"
-
-    def path(self, **kwargs) -> str:
-        return "dashboard"
-
-
-class Filters(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
-    """
-
-    extract_field = "values"
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "filter/search"
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params["expand"] = "description,owner,jql,viewUrl,searchUrl,favourite,favouritedCount,sharePermissions,isWritable,subscriptions"
-        return params
-
-
-class FilterSharing(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
-    """
-
-    def __init__(self, render_fields: bool = False, **kwargs):
-        super().__init__(**kwargs)
-        self.filters_stream = Filters(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"filter/{stream_slice['filter_id']}/permission"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for filters in read_full_refresh(self.filters_stream):
-            yield from super().read_records(stream_slice={"filter_id": filters["id"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["filterId"] = stream_slice["filter_id"]
-        return record
-
-
-class Groups(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-bulk-get
-    """
-
-    extract_field = "values"
-    primary_key = "groupId"
-
-    def path(self, **kwargs) -> str:
-        return "group/bulk"
 
 
 class Issues(IncrementalJiraStream):
@@ -421,8 +272,11 @@ class Issues(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._project_ids = []
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.issue_fields_stream = IssueFields(authenticator=self._http_client._session.auth, domain=self._domain, projects=self._projects)
+        self.projects_stream = Projects(authenticator=self._http_client._session.auth, domain=self._domain, projects=self._projects)
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return JiraErrorHandler(logger=self.logger, stream_name=self.name, ignore_status_codes=self.skip_http_status_codes)
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -479,41 +333,12 @@ class Issues(IncrementalJiraStream):
         return ""
 
 
-class IssueComments(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
-    """
-
-    extract_field = "comments"
-    cursor_field = "updated"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/comment"
-
-    def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
-            stream_slice = {"key": issue["key"]}
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["key"]
-        return record
-
-
-class IssueFields(JiraStream):
+class IssueFields(FullRefreshJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+
+    This stream is a dependency for the Issue stream, which in turn is a dependency for both the IssueComments and IssueWorklogs streams.
+    These latter streams cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
     use_cache = True
@@ -528,450 +353,12 @@ class IssueFields(JiraStream):
         return results
 
 
-class IssueFieldConfigurations(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "fieldconfiguration"
-
-
-class IssueCustomFieldContexts(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
-    """
-
-    use_cache = True
-    extract_field = "values"
-    skip_http_status_codes = [
-        # https://community.developer.atlassian.com/t/get-custom-field-contexts-not-found-returned/48408/2
-        # /rest/api/3/field/{fieldId}/context - can return 404 if project style is not "classic"
-        requests.codes.NOT_FOUND,
-        # Only Jira administrators can access custom field contexts.
-        requests.codes.FORBIDDEN,
-        requests.codes.BAD_REQUEST,
-    ]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"field/{stream_slice['field_id']}/context"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for field in read_full_refresh(self.issue_fields_stream):
-            if field.get("custom", False):
-                yield from super().read_records(
-                    stream_slice={"field_id": field["id"], "field_type": field.get("schema", {}).get("type")}, **kwargs
-                )
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["fieldId"] = stream_slice["field_id"]
-        record["fieldType"] = stream_slice["field_type"]
-        return record
-
-
-class IssueCustomFieldOptions(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get
-    """
-
-    skip_http_status_codes = [
-        requests.codes.NOT_FOUND,
-        # Only Jira administrators can access custom field options.
-        requests.codes.FORBIDDEN,
-        requests.codes.BAD_REQUEST,
-    ]
-
-    extract_field = "values"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issue_custom_field_contexts_stream = IssueCustomFieldContexts(
-            authenticator=self.authenticator, domain=self._domain, projects=self._projects
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"field/{stream_slice['field_id']}/context/{stream_slice['context_id']}/option"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in read_full_refresh(self.issue_custom_field_contexts_stream):
-            if record.get("fieldType") == "option":
-                yield from super().read_records(stream_slice={"field_id": record["fieldId"], "context_id": record["id"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["fieldId"] = stream_slice["field_id"]
-        record["contextId"] = stream_slice["context_id"]
-        return record
-
-
-class IssueLinkTypes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
-    """
-
-    extract_field = "issueLinkTypes"
-
-    def path(self, **kwargs) -> str:
-        return "issueLinkType"
-
-
-class IssueNavigatorSettings(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get
-    """
-
-    primary_key = None
-
-    def path(self, **kwargs) -> str:
-        return "settings/columns"
-
-
-class IssueNotificationSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "notificationscheme"
-
-
-class IssuePriorities(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "priority/search"
-
-
-class IssuePropertyKeys(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
-    """
-
-    extract_field = "keys"
-    use_cache = True
-    skip_http_status_codes = [
-        # Issue does not exist or you do not have permission to see it.
-        requests.codes.NOT_FOUND,
-        requests.codes.BAD_REQUEST,
-    ]
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        key = stream_slice["key"]
-        return f"issue/{key}/properties"
-
-    def read_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
-        issue_key = stream_slice["key"]
-        yield from super().read_records(stream_slice={"key": issue_key}, **kwargs)
-
-
-class IssueProperties(StartDateJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
-    """
-
-    primary_key = "key"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-        self.issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['issue_key']}/properties/{stream_slice['key']}"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for issue in read_full_refresh(self.issues_stream):
-            for property_key in self.issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
-                yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["issue_key"]
-        return record
-
-
-class IssueRemoteLinks(StartDateJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/remotelink"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for issue in read_full_refresh(self.issues_stream):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["key"]
-        return record
-
-
-class IssueResolutions(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "resolution/search"
-
-
-class IssueSecuritySchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get
-    """
-
-    extract_field = "issueSecuritySchemes"
-
-    def path(self, **kwargs) -> str:
-        return "issuesecurityschemes"
-
-
-class IssueTypes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
-    """
-
-    def path(self, **kwargs) -> str:
-        return "issuetype"
-
-
-class IssueTypeSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "issuetypescheme"
-
-
-class IssueTypeScreenSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-rest-api-3-issuetypescreenscheme-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "issuetypescreenscheme"
-
-
-class IssueTransitions(StartDateJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
-    """
-
-    primary_key = ["issueId", "id"]
-    extract_field = "transitions"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/transitions"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for issue in read_full_refresh(self.issues_stream):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["key"]
-        return record
-
-
-class IssueVotes(StartDateJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
-
-    extract_field voters is commented, since it contains the <Users>
-    objects but does not contain information about exactly votes. The
-    original schema self, votes (number), hasVoted (bool) and list of voters.
-    The schema is correct but extract_field should not be applied.
-    """
-
-    # extract_field = "voters"
-    primary_key = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/votes"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for issue in read_full_refresh(self.issues_stream):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["key"]
-        return record
-
-
-class IssueWatchers(StartDateJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
-
-    extract_field is commented for the same reason as issue_voters.
-    """
-
-    # extract_field = "watchers"
-    primary_key = None
-    skip_http_status_codes = [
-        # Issue is not found or the user does not have permission to view it.
-        requests.codes.NOT_FOUND,
-        requests.codes.BAD_REQUEST,
-    ]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/watchers"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for issue in read_full_refresh(self.issues_stream):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["key"]
-        return record
-
-
-class IssueWorklogs(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
-    """
-
-    extract_field = "worklogs"
-    cursor_field = "updated"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/worklog"
-
-    def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
-            stream_slice = {"key": issue["key"]}
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-
-
-class JiraSettings(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
-    """
-
-    def path(self, **kwargs) -> str:
-        return "application-properties"
-
-
-class Labels(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get
-    """
-
-    extract_field = "values"
-    primary_key = "label"
-
-    def path(self, **kwargs) -> str:
-        return "label"
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        return {"label": record}
-
-
-class Permissions(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get
-    """
-
-    extract_field = "permissions"
-    primary_key = "key"
-
-    def path(self, **kwargs) -> str:
-        return "permissions"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        records = response_json.get(self.extract_field, {}).values()
-        yield from records
-
-
-class PermissionSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get
-    """
-
-    extract_field = "permissionSchemes"
-
-    def path(self, **kwargs) -> str:
-        return "permissionscheme"
-
-
-class Projects(JiraStream):
+class Projects(FullRefreshJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
+
+    This stream is a dependency for the Issue stream, which in turn is a dependency for both the IssueComments and IssueWorklogs streams.
+    These latter streams cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
     extract_field = "values"
@@ -992,161 +379,68 @@ class Projects(JiraStream):
                 yield project
 
 
-class ProjectAvatars(JiraStream):
+class IssueWorklogs(IncrementalJiraStream):
     """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
+
+    Cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
-    skip_http_status_codes = [
-        # Project is not found or the user does not have permission to view the project.
-        requests.codes.UNAUTHORIZED,
-        requests.codes.NOT_FOUND,
-    ]
+    extract_field = "worklogs"
+    cursor_field = "updated"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.issues_stream = Issues(
+            authenticator=self._http_client._session.auth,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"project/{stream_slice['key']}/avatars"
+        return f"issue/{stream_slice['key']}/worklog"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        stream_slice = kwargs["stream_slice"]
-        for records in response_json.values():
-            for record in records:
-                record["projectId"] = stream_slice["key"]
-                yield record
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for project in read_full_refresh(self.projects_stream):
-            yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
+            stream_slice = {"key": issue["key"]}
+            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
 
-class ProjectCategories(JiraStream):
+class IssueComments(IncrementalJiraStream):
     """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
+
+    Cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
-    skip_http_status_codes = [
-        # Project is not found or the user does not have permission to view the project.
-        requests.codes.UNAUTHORIZED,
-        requests.codes.NOT_FOUND,
-    ]
-
-    def path(self, **kwargs) -> str:
-        return "projectCategory"
-
-
-class ProjectComponents(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get
-    """
-
-    extract_field = "values"
+    extract_field = "comments"
+    cursor_field = "updated"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.issues_stream = Issues(
+            authenticator=self._http_client._session.auth,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"project/{stream_slice['key']}/component"
+        return f"issue/{stream_slice['key']}/comment"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for project in read_full_refresh(self.projects_stream):
-            yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
-
-
-class ProjectEmail(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
-    """
-
-    primary_key = "projectId"
-    skip_http_status_codes = [
-        # You cannot edit the configuration of this project.
-        requests.codes.FORBIDDEN,
-        requests.codes.BAD_REQUEST,
-    ]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"project/{stream_slice['project_id']}/email"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for project in read_full_refresh(self.projects_stream):
-            yield from super().read_records(stream_slice={"project_id": project["id"]}, **kwargs)
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
+            stream_slice = {"key": issue["key"]}
+            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = stream_slice["project_id"]
+        record["issueId"] = stream_slice["key"]
         return record
-
-
-class ProjectPermissionSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
-    """
-
-    extract_field = "levels"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"project/{stream_slice['key']}/securitylevel"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for project in read_full_refresh(self.projects_stream):
-            yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = stream_slice["key"]
-        return record
-
-
-class ProjectRoles(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
-    """
-
-    primary_key = "id"
-
-    def path(self, **kwargs) -> str:
-        return "role"
-
-
-class ProjectTypes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
-    """
-
-    primary_key = None
-
-    def path(self, **kwargs) -> str:
-        return "project/type"
-
-
-class ProjectVersions(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get
-    """
-
-    extract_field = "values"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"project/{stream_slice['key']}/version"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for project in read_full_refresh(self.projects_stream):
-            yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
 
 class PullRequests(IncrementalJiraStream):
@@ -1213,275 +507,3 @@ class PullRequests(IncrementalJiraStream):
         record["id"] = stream_slice["id"]
         record[self.cursor_field] = stream_slice[self.cursor_field]
         return record
-
-
-class Screens(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
-    """
-
-    extract_field = "values"
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "screens"
-
-
-class ScreenTabs(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
-    """
-
-    raise_on_http_errors = False
-    use_cache = True
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.screens_stream = Screens(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"screens/{stream_slice['screen_id']}/tabs"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for screen in read_full_refresh(self.screens_stream):
-            yield from self.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs)
-
-    def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
-        screen_id = stream_slice["screen_id"]
-        for screen_tab in super().read_records(stream_slice={"screen_id": screen_id}, **kwargs):
-            """
-            For some projects jira creates screens automatically, which does not present in UI, but exist in screens stream.
-            We receive 400 error "Screen with id {screen_id} does not exist" for tabs by these screens.
-            """
-            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [""])[0])
-            if bad_request_reached:
-                self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
-                return
-            yield screen_tab
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["screenId"] = stream_slice["screen_id"]
-        return record
-
-
-class ScreenTabFields(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.screens_stream = Screens(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        self.screen_tabs_stream = ScreenTabs(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"screens/{stream_slice['screen_id']}/tabs/{stream_slice['tab_id']}/fields"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for screen in read_full_refresh(self.screens_stream):
-            for tab in self.screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
-                if "id" in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
-                    yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["screenId"] = stream_slice["screen_id"]
-        record["tabId"] = stream_slice["tab_id"]
-        return record
-
-
-class ScreenSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "screenscheme"
-
-
-class Sprints(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-sprint-get
-    """
-
-    extract_field = "values"
-    use_cache = True
-    api_v1 = True
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def _get_custom_error(self, response: requests.Response) -> str:
-        if response.status_code == requests.codes.BAD_REQUEST:
-            errors = response.json().get("errorMessages")
-            for error_message in errors:
-                if "The board does not support sprints" in error_message:
-                    return (
-                        "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
-                        "does it have sprints enabled under project settings? If it's a company-managed one,"
-                        " check that it has at least one Scrum board associated with it."
-                    )
-        return ""
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"board/{stream_slice['board_id']}/sprint"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        available_board_types = ["scrum", "simple"]
-        for board in read_full_refresh(self.boards_stream):
-            if board["type"] in available_board_types:
-                board_details = {"name": board["name"], "id": board["id"]}
-                self.logger.info(f"Fetching sprints for board: {board_details}")
-                yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["boardId"] = stream_slice["board_id"]
-        return record
-
-
-class SprintIssues(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get
-    """
-
-    cursor_field = "updated"
-    extract_field = "issues"
-    api_v1 = True
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.sprints_stream = Sprints(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"sprint/{stream_slice['sprint_id']}/issue"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = stream_slice["fields"]
-        jql = self.jql_compare_date(stream_state)
-        if jql:
-            params["jql"] = jql
-        return params
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        fields = self.get_fields()
-        for sprint in read_full_refresh(self.sprints_stream):
-            stream_slice = {"sprint_id": sprint["id"], "fields": fields}
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = record["id"]
-        record["id"] = "-".join([str(stream_slice["sprint_id"]), record["id"]])
-        record["sprintId"] = stream_slice["sprint_id"]
-        record["created"] = record["fields"]["created"]
-        record["updated"] = record["fields"]["updated"]
-        return record
-
-    def get_fields(self):
-        fields = ["key", "status", "created", "updated"]
-        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
-        for name in ["Story Points", "Story point estimate"]:
-            if name in field_ids_by_name:
-                fields.extend(field_ids_by_name[name])
-        return fields
-
-
-class TimeTracking(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
-    """
-
-    primary_key = "key"
-
-    def path(self, **kwargs) -> str:
-        return "configuration/timetracking/list"
-
-
-class Users(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get
-    """
-
-    primary_key = "accountId"
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "users/search"
-
-
-class UsersGroupsDetailed(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
-    """
-
-    primary_key = "accountId"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.users_stream = Users(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return "user"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["accountId"] = stream_slice["accountId"]
-        params["expand"] = "groups,applicationRoles"
-        return params
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for user in read_full_refresh(self.users_stream):
-            yield from super().read_records(stream_slice={"accountId": user["accountId"]}, **kwargs)
-
-
-class Workflows(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "workflow/search"
-
-
-class WorkflowSchemes(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
-    """
-
-    extract_field = "values"
-
-    def path(self, **kwargs) -> str:
-        return "workflowscheme"
-
-
-class WorkflowStatuses(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
-    """
-
-    def path(self, **kwargs) -> str:
-        return "status"
-
-
-class WorkflowStatusCategories(JiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get
-    """
-
-    def path(self, **kwargs) -> str:
-        return "statuscategory"

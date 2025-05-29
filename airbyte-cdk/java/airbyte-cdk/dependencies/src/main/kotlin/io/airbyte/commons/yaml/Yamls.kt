@@ -110,7 +110,7 @@ object Yamls {
                 iterator,
                 VoidCallable { parser.close() },
                 null
-            )!!
+            )
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

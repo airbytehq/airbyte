@@ -1,0 +1,1052 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - users
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{config['api_username']}}"
+            password: "{{config['api_password']}}"
+          path: /organizations/users.php
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            first_name:
+              type:
+                - string
+                - "null"
+            id:
+              type: integer
+            is_owner:
+              type:
+                - boolean
+                - "null"
+            last_name:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type: integer
+                name:
+                  type:
+                    - string
+                    - "null"
+          required:
+            - id
+          additionalProperties: true
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{config['api_username']}}"
+            password: "{{config['api_password']}}"
+          path: /list.php
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type:
+                - string
+                - "null"
+            subscribers_count:
+              type:
+                - integer
+                - "null"
+          required:
+            - id
+          additionalProperties: true
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{config['api_username']}}"
+            password: "{{config['api_password']}}"
+          path: /campaign.php
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            completed_at:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type: string
+            name:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            tags:
+              type:
+                - array
+                - "null"
+              items:
+                type: string
+            template:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type: string
+                name:
+                  type:
+                    - string
+                    - "null"
+                preview_url:
+                  type:
+                    - string
+                    - "null"
+          required:
+            - id
+          additionalProperties: true
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{config['api_username']}}"
+            password: "{{config['api_password']}}"
+          path: /templates.php
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type: integer
+            modified_at:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            preview_url:
+              type:
+                - string
+                - "null"
+          required:
+            - id
+          additionalProperties: true
+    automations:
+      type: DeclarativeStream
+      name: automations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{config['api_username']}}"
+            password: "{{config['api_password']}}"
+          path: /autoresponder.php
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type:
+                - string
+                - "null"
+            sections:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  subject:
+                    type:
+                      - string
+                      - "null"
+                  template:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      preview_url:
+                        type:
+                          - string
+                          - "null"
+          required:
+            - id
+          additionalProperties: true
+    ab_tests:
+      type: DeclarativeStream
+      name: ab_tests
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{config['api_username']}}"
+            password: "{{config['api_password']}}"
+          path: /split.php
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            completed_at:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type: integer
+            name:
+              type:
+                - string
+                - "null"
+            sections:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  subject:
+                    type:
+                      - string
+                      - "null"
+                  template:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      preview_url:
+                        type:
+                          - string
+                          - "null"
+            status:
+              type:
+                - string
+                - "null"
+            tags:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+          required:
+            - id
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{config['api_username']}}"
+      password: "{{config['api_password']}}"
+streams:
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{config['api_username']}}"
+          password: "{{config['api_password']}}"
+        path: /organizations/users.php
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 250
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type: integer
+          is_owner:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type: integer
+              name:
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: segments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{config['api_username']}}"
+          password: "{{config['api_password']}}"
+        path: /list.php
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          subscribers_count:
+            type:
+              - integer
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: campaigns
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{config['api_username']}}"
+          password: "{{config['api_password']}}"
+        path: /campaign.php
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          completed_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          template:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                  - string
+                  - "null"
+              preview_url:
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: templates
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{config['api_username']}}"
+          password: "{{config['api_password']}}"
+        path: /templates.php
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type: integer
+          modified_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          preview_url:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: automations
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{config['api_username']}}"
+          password: "{{config['api_password']}}"
+        path: /autoresponder.php
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          sections:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                subject:
+                  type:
+                    - string
+                    - "null"
+                template:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    preview_url:
+                      type:
+                        - string
+                        - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: ab_tests
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{config['api_username']}}"
+          password: "{{config['api_password']}}"
+        path: /split.php
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          completed_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          sections:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                subject:
+                  type:
+                    - string
+                    - "null"
+                template:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    preview_url:
+                      type:
+                        - string
+                        - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+        required:
+          - id
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_password
+      - api_subdomain
+      - api_username
+    properties:
+      api_password:
+        type: string
+        title: API User Password
+        description: >-
+          API user password. See
+          https://smaily.com/help/api/general/create-api-user/
+        airbyte_secret: true
+        order: 0
+      api_subdomain:
+        type: string
+        title: API Subdomain
+        description: >-
+          API Subdomain. See
+          https://smaily.com/help/api/general/create-api-user/
+        order: 1
+      api_username:
+        type: string
+        title: API User Username
+        description: >-
+          API user username. See
+          https://smaily.com/help/api/general/create-api-user/
+        order: 2
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    users: false
+    segments: false
+    campaigns: false
+    templates: false
+    automations: false
+    ab_tests: false
+schemas:
+  users:
+    type: object
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      is_owner:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+    additionalProperties: true
+  segments:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      subscribers_count:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  campaigns:
+    type: object
+    properties:
+      completed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      template:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          preview_url:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+    additionalProperties: true
+  templates:
+    type: object
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      modified_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      preview_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  automations:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      sections:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            subject:
+              type:
+                - string
+                - "null"
+            template:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type: integer
+                name:
+                  type:
+                    - string
+                    - "null"
+                preview_url:
+                  type:
+                    - string
+                    - "null"
+    required:
+      - id
+    additionalProperties: true
+  ab_tests:
+    type: object
+    properties:
+      completed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+      sections:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            subject:
+              type:
+                - string
+                - "null"
+            template:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type: integer
+                name:
+                  type:
+                    - string
+                    - "null"
+                preview_url:
+                  type:
+                    - string
+                    - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+    additionalProperties: true

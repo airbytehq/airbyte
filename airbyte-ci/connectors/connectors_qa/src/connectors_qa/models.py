@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
@@ -17,6 +17,7 @@ ALL_LANGUAGES = [
     ConnectorLanguage.JAVA,
     ConnectorLanguage.LOW_CODE,
     ConnectorLanguage.PYTHON,
+    ConnectorLanguage.MANIFEST_ONLY,
 ]
 
 ALL_TYPES = ["source", "destination"]
@@ -30,6 +31,7 @@ class CheckCategory(Enum):
     ASSETS = "💼 Assets"
     SECURITY = "🔒 Security"
     METADATA = "📝 Metadata"
+    TESTING = "🧪 Testing"
 
 
 class CheckStatus(Enum):
@@ -61,8 +63,8 @@ class CheckResult:
 
 
 class Check(ABC):
-
     requires_metadata: bool = True
+    runs_on_released_connectors: bool = True
 
     @property
     @abstractmethod
@@ -122,6 +124,15 @@ class Check(ABC):
         return ALL_TYPES
 
     @property
+    def applies_to_connector_ab_internal_sl(self) -> int:
+        """The connector ab_internal_s that the QA check applies to
+
+        Returns:
+            int: integer value for connector ab_internal_sl level
+        """
+        return 0
+
+    @property
     @abstractmethod
     def category(self) -> CheckCategory:
         """The category of the QA check
@@ -134,7 +145,30 @@ class Check(ABC):
         """
         raise NotImplementedError("Subclasses must implement category property/attribute")
 
+    @property
+    def applies_to_connector_support_levels(self) -> Optional[List[str]]:
+        """The connector's support levels that the QA check applies to
+
+        Returns:
+            List[str]: None if connector's support levels that the QA check applies to is not specified
+        """
+        return None
+
+    @property
+    def applies_to_connector_cloud_usage(self) -> Optional[List[str]]:
+        """The connector's cloud usage level that the QA check applies to
+
+        Returns:
+            List[str]: None if connector's cloud usage levels that the QA check applies to is not specified
+        """
+        return None
+
     def run(self, connector: Connector) -> CheckResult:
+        if not self.runs_on_released_connectors and connector.is_released:
+            return self.skip(
+                connector,
+                "Check does not apply to released connectors",
+            )
         if not connector.metadata and self.requires_metadata:
             return self.fail(
                 connector,
@@ -151,6 +185,21 @@ class Check(ABC):
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.connector_type} connectors",
+            )
+        if self.applies_to_connector_support_levels and connector.support_level not in self.applies_to_connector_support_levels:
+            return self.skip(
+                connector,
+                f"Check does not apply to {connector.support_level} connectors",
+            )
+        if self.applies_to_connector_cloud_usage and connector.cloud_usage not in self.applies_to_connector_cloud_usage:
+            return self.skip(
+                connector,
+                f"Check does not apply to {connector.cloud_usage} connectors",
+            )
+        if connector.ab_internal_sl < self.applies_to_connector_ab_internal_sl:
+            return self.skip(
+                connector,
+                f"Check does not apply to connectors with sl < {self.applies_to_connector_ab_internal_sl}",
             )
         return self._run(connector)
 

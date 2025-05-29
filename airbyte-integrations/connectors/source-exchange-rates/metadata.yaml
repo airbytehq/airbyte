@@ -5,17 +5,22 @@ data:
       - apilayer.com
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-exchange-rates
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
       enabled: true
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
-  dockerImageTag: 1.3.0
+  dockerImageTag: 1.4.1
   dockerRepository: airbyte/source-exchange-rates
   githubIssueLabel: source-exchange-rates
   icon: exchangeratesapi.svg
@@ -26,6 +31,18 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/exchange-rates
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: exchange-rates_config_dev_null
+          id: 3c8bf30c-26b8-4dfe-af1b-95bc28606fc8
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-EXCHANGE-RATES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -4,179 +4,232 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the credit note.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "The object type.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The total amount of the credit note.",
       "type": ["null", "integer"]
     },
     "amount_shipping": {
+      "description": "The amount charged for shipping.",
       "type": ["null", "integer"]
     },
     "created": {
+      "description": "The timestamp when the credit note was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp when the credit note was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the credit note.",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "The customer associated with the credit note.",
       "type": ["null", "string"]
     },
     "customer_balance_transaction": {
+      "description": "The balance transaction associated with the customer.",
       "type": ["null", "string"]
     },
     "discount_amount": {
+      "description": "The amount of discount applied.",
       "type": ["null", "string"]
     },
     "discount_amounts": {
+      "description": "Details of discount amounts.",
       "type": ["null", "array"]
     },
     "invoice": {
+      "description": "The invoice associated with the credit note.",
       "type": ["null", "string"]
     },
     "lines": {
+      "description": "An array of line items associated with the credit note",
       "type": ["null", "object"],
       "properties": {
         "object": {
+          "description": "The object type.",
           "type": ["null", "string"]
         },
         "data": {
+          "description": "An array of line item objects containing discount amounts, tax amounts, and tax rates",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "The unique identifier of the line item.",
                 "type": ["null", "string"]
               },
               "object": {
+                "description": "The object type.",
                 "type": ["null", "string"]
               },
               "amount": {
+                "description": "The total amount for the line item.",
                 "type": ["null", "integer"]
               },
               "amount_excluding_tax": {
+                "description": "The amount excluding tax for the line item.",
                 "type": ["null", "integer"]
               },
               "description": {
+                "description": "The description of the line item.",
                 "type": ["null", "string"]
               },
               "discount_amount": {
+                "description": "The discount amount applied to the line item.",
                 "type": ["null", "integer"]
               },
               "discount_amounts": {
+                "description": "An array of discount amounts applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {
+                      "description": "The amount of discount applied.",
                       "type": ["null", "integer"]
                     },
                     "discount": {
+                      "description": "The discount details.",
                       "type": ["null", "string"]
                     }
                   }
                 }
               },
               "invoice_line_item": {
+                "description": "The invoice line item associated with the line.",
                 "type": ["null", "string"]
               },
               "livemode": {
+                "description": "Indicates if the transaction is in live mode.",
                 "type": ["null", "boolean"]
               },
               "quantity": {
+                "description": "The quantity of the line item.",
                 "type": ["null", "integer"]
               },
               "tax_amounts": {
+                "description": "An array of tax amounts applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {
+                      "description": "The tax amount.",
                       "type": ["null", "integer"]
                     },
                     "inclusive": {
+                      "description": "Indicates if tax is inclusive.",
                       "type": ["null", "boolean"]
                     },
                     "tax_rate": {
+                      "description": "The tax rate applied.",
                       "type": ["null", "string"]
                     },
                     "taxability_reason": {
+                      "description": "The reason for taxability.",
                       "type": ["null", "string"]
                     },
                     "taxable_amount": {
+                      "description": "The taxable amount.",
                       "type": ["null", "integer"]
                     }
                   }
                 }
               },
               "tax_rates": {
+                "description": "An array of tax rates applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
                     "id": {
+                      "description": "The unique identifier of the tax rate.",
                       "type": ["null", "string"]
                     },
                     "object": {
+                      "description": "The object type.",
                       "type": ["null", "string"]
                     },
                     "active": {
+                      "description": "Indicates if the tax rate is active.",
                       "type": ["null", "boolean"]
                     },
                     "country": {
+                      "description": "The country for the tax rate.",
                       "type": ["null", "string"]
                     },
                     "created": {
+                      "description": "The timestamp when the tax rate was created.",
                       "type": ["null", "integer"]
                     },
                     "description": {
+                      "description": "The description of the tax rate.",
                       "type": ["null", "string"]
                     },
                     "display_name": {
+                      "description": "The display name of the tax rate.",
                       "type": ["null", "string"]
                     },
                     "effective_percentage": {
+                      "description": "The effective percentage of the tax rate.",
                       "type": ["null", "number"]
                     },
                     "inclusive": {
+                      "description": "Indicates if tax is inclusive.",
                       "type": ["null", "boolean"]
                     },
                     "jurisdiction": {
+                      "description": "The jurisdiction of the tax rate.",
                       "type": ["null", "string"]
                     },
                     "livemode": {
+                      "description": "Indicates if the tax rate is in live mode.",
                       "type": ["null", "boolean"]
                     },
                     "metadata": {
+                      "description": "Additional metadata for the tax rate.",
                       "type": ["null", "object"]
                     },
                     "percentage": {
+                      "description": "The percentage of the tax rate.",
                       "type": ["null", "number"]
                     },
                     "state": {
+                      "description": "The state of the tax rate.",
                       "type": ["null", "string"]
                     },
                     "tax_type": {
+                      "description": "The type of tax.",
                       "type": ["null", "string"]
                     }
                   }
                 }
               },
               "type": {
+                "description": "The type of line item.",
                 "type": ["null", "string"]
               },
               "unit_amount": {
+                "description": "The unit amount of the line item.",
                 "type": ["null", "integer"]
               },
               "unit_amount_decimal": {
+                "description": "The unit amount in decimal format.",
                 "type": ["null", "number"]
               },
               "unit_amount_excluding_tax": {
+                "description": "The unit amount excluding tax.",
                 "type": ["null", "number"]
               }
             }
@@ -184,113 +237,148 @@
         }
       },
       "has_more": {
+        "description": "Indicates if there are more line items.",
         "type": ["null", "boolean"]
       },
       "url": {
+        "description": "The URL for the line items.",
         "type": ["null", "string"]
       }
     },
     "livemode": {
+      "description": "Indicates if the transaction is in live mode.",
       "type": ["null", "boolean"]
     },
     "memo": {
+      "description": "Additional information or notes.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional metadata for the credit note.",
       "type": ["null", "object"]
     },
     "number": {
+      "description": "The unique number of the credit note.",
       "type": ["null", "string"]
     },
     "out_of_band_amount": {
+      "description": "The out of band amount.",
       "type": ["null", "integer"]
     },
     "pdf": {
+      "description": "The URL for the PDF of the credit note.",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason for the credit note.",
       "type": ["null", "string"]
     },
     "refund": {
+      "description": "Indicates if the credit note is a refund.",
       "type": ["null", "string"]
     },
     "shipping_cost": {
+      "description": "Shipping cost details associated with the credit note",
       "type": ["null", "object"],
       "properties": {
         "amount_subtotal": {
+          "description": "The subtotal amount of shipping.",
           "type": ["null", "integer"]
         },
         "amount_tax": {
+          "description": "The tax amount for shipping.",
           "type": ["null", "integer"]
         },
         "amount_total": {
+          "description": "The total amount including tax for shipping.",
           "type": ["null", "integer"]
         },
         "shipping_rate": {
+          "description": "The shipping rate details.",
           "type": ["null", "string"]
         },
         "taxes": {
+          "description": "An array of tax objects applied to the shipping cost",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "amount": {
+                "description": "The tax amount.",
                 "type": ["null", "integer"]
               },
               "rate": {
+                "description": "Tax rate applied to the shipping cost",
                 "type": ["null", "object"],
                 "properties": {
                   "id": {
+                    "description": "The unique identifier of the tax rate.",
                     "type": ["null", "string"]
                   },
                   "object": {
+                    "description": "The object type.",
                     "type": ["null", "string"]
                   },
                   "active": {
+                    "description": "Indicates if the tax rate is active.",
                     "type": ["null", "boolean"]
                   },
                   "country": {
+                    "description": "The country for the tax rate.",
                     "type": ["null", "boolean"]
                   },
                   "created": {
+                    "description": "The timestamp when the tax rate was created.",
                     "type": ["null", "integer"]
                   },
                   "description": {
+                    "description": "The description of the tax rate.",
                     "type": ["null", "string"]
                   },
                   "display_name": {
+                    "description": "The display name of the tax rate.",
                     "type": ["null", "string"]
                   },
                   "effective_percentage": {
+                    "description": "The effective percentage of the tax rate.",
                     "type": ["null", "number"]
                   },
                   "inclusive": {
+                    "description": "Indicates if tax is inclusive.",
                     "type": ["null", "boolean"]
                   },
                   "jurisdiction": {
+                    "description": "The jurisdiction of the tax rate.",
                     "type": ["null", "string"]
                   },
                   "livemode": {
+                    "description": "Indicates if the tax rate is in live mode.",
                     "type": ["null", "boolean"]
                   },
                   "metadata": {
+                    "description": "Additional metadata for the tax rate.",
                     "type": ["null", "boolean"]
                   },
                   "percentage": {
+                    "description": "The percentage of the tax rate.",
                     "type": ["null", "number"]
                   },
                   "state": {
+                    "description": "The state of the tax rate.",
                     "type": ["null", "string"]
                   },
                   "tax_type": {
+                    "description": "The type of tax.",
                     "type": ["null", "string"]
                   }
                 }
               },
               "taxability_reason": {
+                "description": "The reason for taxability.",
                 "type": ["null", "string"]
               },
               "taxable_amount": {
+                "description": "The taxable amount.",
                 "type": ["null", "integer"]
               }
             }
@@ -299,50 +387,64 @@
       }
     },
     "status": {
+      "description": "The status of the credit note.",
       "type": ["null", "string"]
     },
     "subtotal": {
+      "description": "The subtotal amount excluding tax.",
       "type": ["null", "integer"]
     },
     "subtotal_excluding_tax": {
+      "description": "The subtotal amount excluding tax.",
       "type": ["null", "integer"]
     },
     "tax_amounts": {
+      "description": "An array of total tax amounts applied to the credit note",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "amount": {
+            "description": "The tax amount.",
             "type": ["null", "integer"]
           },
           "inclusive": {
+            "description": "Indicates if tax is inclusive.",
             "type": ["null", "boolean"]
           },
           "tax_rate": {
+            "description": "The tax rate applied.",
             "type": ["null", "string"]
           },
           "taxability_reason": {
+            "description": "The reason for taxability.",
             "type": ["null", "string"]
           },
           "taxable_amount": {
+            "description": "The taxable amount.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "total": {
+      "description": "The total amount including tax.",
       "type": ["null", "integer"]
     },
     "total_excluding_tax": {
+      "description": "The total amount excluding tax.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type of the credit note.",
       "type": ["null", "string"]
     },
     "voided_at": {
+      "description": "The timestamp when the credit note was voided.",
       "type": ["null", "integer"]
     },
     "effective_at": {
+      "description": "The effective date of the credit note.",
       "type": ["null", "integer"]
     }
   }
