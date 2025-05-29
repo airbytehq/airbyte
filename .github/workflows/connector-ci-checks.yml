@@ -152,11 +152,6 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
-      - name: List users
-        shell: bash
-        run: |
-          getent passwd | awk -F: '$3 >= 1000 { print $1 }'
-
       - name: Fetch connector secrets
         # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
         # Later integration tests will likely fail in this case, but we at least let them run.
@@ -174,27 +169,6 @@ jobs:
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
-
-      - name: Install and Join Tailscale
-        if: failure()
-        shell: bash
-        run: |
-          curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up \
-            --authkey=${{ secrets.TAILSCALE_AUTHKEY }} \
-            --hostname=ci-runner-${{ github.run_id }} \
-            --ssh \
-            --advertise-tags=tag:ci \
-            --accept-routes=false \
-            --reset
-
-      - name: Sleep for SSH Debugging (Failure Only)
-        if: failure()
-        shell: bash
-        run: |
-          echo "Build failed. SSH access enabled via Tailscale."
-          echo "Sleeping for 30 minutes for debugging access..."
-          sleep 1800
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
