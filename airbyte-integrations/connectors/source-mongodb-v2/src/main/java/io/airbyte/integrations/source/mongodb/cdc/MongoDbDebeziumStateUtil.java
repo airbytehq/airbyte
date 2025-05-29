@@ -183,24 +183,27 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
       final Partition mongoDbPartition = new MongoDbPartition(properties.getProperty(CONNECTOR_NAME_PROPERTY));
 
+      LOGGER.info("Get mongoDbPartition");
       final Set<Partition> partitions =
           Collections.singleton(mongoDbPartition);
       final OffsetReader<Partition, MongoDbOffsetContext, MongoDbOffsetContext.Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);
       final Map<Partition, MongoDbOffsetContext> offsets = offsetReader.offsets(partitions);
 
+      Object resumeTokenData = null;
       if (offsets == null || offsets.values().stream().noneMatch(Objects::nonNull)) {
-        return Optional.empty();
+        // return Optional.empty();
+      } else {
+        final MongoDbOffsetContext context = offsets.get(mongoDbPartition);
+        final var offset = context.getOffset();
+        resumeTokenData = offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
       }
 
-      final MongoDbOffsetContext context = offsets.get(mongoDbPartition);
-      final var offset = context.getOffset();
-
-      final Object resumeTokenData = offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
-
       if (resumeTokenData != null) {
+        LOGGER.info("Resume token is not null");
         final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());
         return Optional.of(resumeToken);
       } else {
+        LOGGER.info("Resume token is null");
         // the following code is for migrating connectors from 1.x to 2.0.0
         // seeing null resume token data could be due to the migration from the old offset format to the new
         // one
@@ -213,6 +216,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
         if (unsplitDatabaseNames != null) {
           databaseNames.addAll(Arrays.asList(unsplitDatabaseNames.split(",")));
           for (String databaseName : databaseNames) {
+            LOGGER.info("Attempting to retrieve resume token using old offset format for database: {}", normalizeName(databaseName));
             final Partition mongoDbPartition_old = new MongoDbPartition(normalizeName(databaseName));
             final Set<Partition> partitions_old =
                 Collections.singleton(mongoDbPartition_old);
