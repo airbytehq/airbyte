@@ -3,37 +3,229 @@ const { toAttributes } = require("../helpers/objects");
 const visit = require("unist-util-visit").visit;
 const { catalog } = require("../connector_registry");
 
-const getEnterpriseConnectorVersion = async (dockerRepository) => {
+const getEnterpriseConnectorVersion = async (connectorType, connectorName) => {
   try {
-    console.log(`Looking for version for enterprise connector: ${dockerRepository}`);
-    const registry = await catalog;
-    console.log(`Registry loaded with ${registry.length} entries`);
+    console.log(`[Enterprise Connector Debug] Starting version lookup for ${connectorType}/${connectorName}`);
     
-    console.log("Sample registry entries:", registry.slice(0, 2));
-    
-    const registryEntry = registry.find(
-      (r) => r.dockerRepository_oss === dockerRepository
-    );
-    
-    console.log(`Registry entry found: ${registryEntry ? 'Yes' : 'No'}`);
-    
-    if (registryEntry) {
-      console.log(`Registry entry details:`, {
-        name: registryEntry.name_oss,
-        dockerRepo: registryEntry.dockerRepository_oss,
-        version: registryEntry.dockerImageTag_oss
-      });
+    if (connectorName === "sap-hana") {
+      console.log(`[Enterprise Connector Debug] Special case for SAP HANA`);
       
-      if (registryEntry.dockerImageTag_oss) {
-        return registryEntry.dockerImageTag_oss;
+      const registry = await catalog;
+      
+      const sapHanaEnterprise = registry.find(
+        (r) => r.dockerRepository_oss === "airbyte/source-sap-hana-enterprise"
+      );
+      
+      if (sapHanaEnterprise && sapHanaEnterprise.dockerImageTag_oss) {
+        console.log(`[Enterprise Connector Debug] Found SAP HANA enterprise connector:`, {
+          name: sapHanaEnterprise.name_oss || sapHanaEnterprise.name_cloud,
+          dockerRepo: sapHanaEnterprise.dockerRepository_oss,
+          version: sapHanaEnterprise.dockerImageTag_oss
+        });
+        
+        if (typeof window !== 'undefined') {
+          console.log(`[Client] Found SAP HANA enterprise connector with version: ${sapHanaEnterprise.dockerImageTag_oss}`);
+        }
+        
+        return sapHanaEnterprise.dockerImageTag_oss;
       }
     }
+    
+    const originalConnectorName = connectorName;
+    if (connectorName === "sap-hana") {
+      console.log(`[Enterprise Connector Debug] Trying alternate name for SAP HANA, checking source-volcano`);
+      connectorName = "volcano";
+    }
+    
+    const registry = await catalog;
+    console.log(`[Enterprise Connector Debug] Registry loaded with ${registry.length} entries`);
+    
+    const enterpriseRepoPatterns = [
+      `airbyte/source-${originalConnectorName}-enterprise`,
+      `airbyte/destination-${originalConnectorName}-enterprise`
+    ];
+    
+    console.log(`[Enterprise Connector Debug] Checking enterprise-specific patterns:`, enterpriseRepoPatterns);
+    
+    for (const repoName of enterpriseRepoPatterns) {
+      console.log(`[Enterprise Connector Debug] Trying enterprise pattern: ${repoName}`);
+      
+      const registryEntry = registry.find(
+        (r) => r.dockerRepository_oss === repoName
+      );
+      
+      if (registryEntry) {
+        console.log(`[Enterprise Connector Debug] Found enterprise entry for ${repoName}:`, {
+          name: registryEntry.name_oss || registryEntry.name_cloud,
+          dockerRepo: registryEntry.dockerRepository_oss,
+          version: registryEntry.dockerImageTag_oss
+        });
+        
+        if (registryEntry.dockerImageTag_oss) {
+          if (typeof window !== 'undefined') {
+            console.log(`[Client] Found enterprise connector with version: ${registryEntry.dockerImageTag_oss}`);
+          }
+          
+          return registryEntry.dockerImageTag_oss;
+        }
+      }
+    }
+    
+    const sapConnectors = registry.filter(
+      (r) => (r.name_oss && r.name_oss.toLowerCase().includes("sap")) || 
+             (r.name_cloud && r.name_cloud.toLowerCase().includes("sap")) ||
+             (r.name_oss && r.name_oss.toLowerCase().includes("hana")) || 
+             (r.name_cloud && r.name_cloud.toLowerCase().includes("hana"))
+    );
+    
+    console.log(`[Enterprise Connector Debug] Found ${sapConnectors.length} SAP-related connectors:`, 
+      sapConnectors.map(c => ({
+        name: c.name_oss || c.name_cloud,
+        dockerRepo: c.dockerRepository_oss,
+        version: c.dockerImageTag_oss
+      }))
+    );
+    
+    const volcanoConnectors = registry.filter(
+      (r) => (r.name_oss && r.name_oss.toLowerCase().includes("volcano")) || 
+             (r.name_cloud && r.name_cloud.toLowerCase().includes("volcano")) ||
+             (r.dockerRepository_oss && r.dockerRepository_oss.toLowerCase().includes("volcano"))
+    );
+    
+    console.log(`[Enterprise Connector Debug] Found ${volcanoConnectors.length} volcano-related connectors:`, 
+      volcanoConnectors.map(c => ({
+        name: c.name_oss || c.name_cloud,
+        dockerRepo: c.dockerRepository_oss,
+        version: c.dockerImageTag_oss
+      }))
+    );
+    
+    console.log(`[Enterprise Connector Debug] Strategy 1: Direct match by name`);
+    const directMatch = registry.find(
+      (r) => (r.name_oss && r.name_oss.toLowerCase() === `sap ${originalConnectorName}`) || 
+             (r.name_cloud && r.name_cloud.toLowerCase() === `sap ${originalConnectorName}`) ||
+             (r.name_oss && r.name_oss.toLowerCase() === originalConnectorName) || 
+             (r.name_cloud && r.name_cloud.toLowerCase() === originalConnectorName)
+    );
+    
+    if (directMatch && directMatch.dockerImageTag_oss) {
+      console.log(`[Enterprise Connector Debug] Found direct match:`, {
+        name: directMatch.name_oss || directMatch.name_cloud,
+        dockerRepo: directMatch.dockerRepository_oss,
+        version: directMatch.dockerImageTag_oss
+      });
+      return directMatch.dockerImageTag_oss;
+    }
+    
+    console.log(`[Enterprise Connector Debug] Strategy 2: Search by name pattern`);
+    const namePatterns = [
+      new RegExp(`${connectorName}`, 'i'),
+      new RegExp(`${originalConnectorName}`, 'i'),
+      new RegExp(`sap.*${originalConnectorName.replace('-', '\\s+')}`, 'i')
+    ];
+    
+    for (const pattern of namePatterns) {
+      console.log(`[Enterprise Connector Debug] Trying name pattern: ${pattern}`);
+      
+      const connectorsByName = registry.filter(
+        (r) => (r.name_oss && r.name_oss.match(pattern)) || 
+               (r.name_cloud && r.name_cloud.match(pattern))
+      );
+      
+      console.log(`[Enterprise Connector Debug] Found ${connectorsByName.length} connectors matching pattern ${pattern}`);
+      
+      if (connectorsByName.length > 0) {
+        console.log(`[Enterprise Connector Debug] Connectors found by name:`, 
+          connectorsByName.map(c => ({
+            name: c.name_oss || c.name_cloud,
+            dockerRepo: c.dockerRepository_oss,
+            version: c.dockerImageTag_oss
+          }))
+        );
+        
+        const connectorWithVersion = connectorsByName.find(c => c.dockerImageTag_oss);
+        if (connectorWithVersion && connectorWithVersion.dockerImageTag_oss) {
+          console.log(`[Enterprise Connector Debug] Using version from name match: ${connectorWithVersion.dockerImageTag_oss}`);
+          return connectorWithVersion.dockerImageTag_oss;
+        }
+      }
+    }
+    
+    console.log(`[Enterprise Connector Debug] Strategy 3: Search by repository patterns`);
+    const possibleRepoNames = [
+      `airbyte/${connectorType.replace(/s$/, "")}-${connectorName}`,
+      `airbyte/source-${connectorName}`,
+      `airbyte/destination-${connectorName}`,
+      `airbyte/${connectorName}`,
+      `${connectorName}`,
+      `airbyte/${connectorType.replace(/s$/, "")}-${originalConnectorName}`,
+      `airbyte/source-${originalConnectorName}`,
+      `airbyte/destination-${originalConnectorName}`,
+      `airbyte/${originalConnectorName}`,
+      `${originalConnectorName}`
+    ];
+    
+    console.log(`[Enterprise Connector Debug] Trying repository patterns:`, possibleRepoNames);
+    
+    for (const repoName of possibleRepoNames) {
+      console.log(`[Enterprise Connector Debug] Trying repository pattern: ${repoName}`);
+      
+      const registryEntry = registry.find(
+        (r) => r.dockerRepository_oss === repoName
+      );
+      
+      if (registryEntry) {
+        console.log(`[Enterprise Connector Debug] Found entry for ${repoName}:`, {
+          name: registryEntry.name_oss || registryEntry.name_cloud,
+          dockerRepo: registryEntry.dockerRepository_oss,
+          version: registryEntry.dockerImageTag_oss
+        });
+        
+        if (registryEntry.dockerImageTag_oss) {
+          return registryEntry.dockerImageTag_oss;
+        }
+      }
+    }
+    
+    console.log(`[Enterprise Connector Debug] Strategy 4: Search for repository containing name`);
+    const repoPatterns = [
+      new RegExp(`${connectorName}`, 'i'),
+      new RegExp(`${originalConnectorName}`, 'i')
+    ];
+    
+    for (const pattern of repoPatterns) {
+      console.log(`[Enterprise Connector Debug] Trying repo pattern: ${pattern}`);
+      
+      const connectorsByRepo = registry.filter(
+        (r) => r.dockerRepository_oss && r.dockerRepository_oss.match(pattern)
+      );
+      
+      console.log(`[Enterprise Connector Debug] Found ${connectorsByRepo.length} connectors with repo matching pattern ${pattern}`);
+      
+      if (connectorsByRepo.length > 0) {
+        console.log(`[Enterprise Connector Debug] Connectors found by repo:`, 
+          connectorsByRepo.map(c => ({
+            name: c.name_oss || c.name_cloud,
+            dockerRepo: c.dockerRepository_oss,
+            version: c.dockerImageTag_oss
+          }))
+        );
+        
+        const connectorWithVersion = connectorsByRepo.find(c => c.dockerImageTag_oss);
+        if (connectorWithVersion && connectorWithVersion.dockerImageTag_oss) {
+          console.log(`[Enterprise Connector Debug] Using version from repo match: ${connectorWithVersion.dockerImageTag_oss}`);
+          return connectorWithVersion.dockerImageTag_oss;
+        }
+      }
+    }
+    
+    console.log(`[Enterprise Connector Debug] No version found for any repository pattern`);
   } catch (error) {
-    console.warn(`Error fetching version for ${dockerRepository}:`, error);
+    console.warn(`[Enterprise Connector Debug] Error fetching version:`, error);
   }
   
-  console.log(`Falling back to "custom" for ${dockerRepository}`);
-  return "custom"; // Fallback to "custom" if version not found
+  console.log(`[Enterprise Connector Debug] Falling back to "Unable to determine connector version"`);
+  return "Unable to determine connector version"; // More informative fallback message
 };
 
 const plugin = () => {
@@ -61,11 +253,15 @@ const plugin = () => {
       }
     }
     
-    const dockerRepository = connectorName ? 
-      `airbyte/${connectorType.replace(/s$/, "")}-${connectorName}` : "";
+    console.log(`[Enterprise Transformer Debug] Processing file: ${vfile.path}`);
+    console.log(`[Enterprise Transformer Debug] Connector type: ${connectorType}, name: ${connectorName}`);
     
-    const version = dockerRepository ? 
-      await getEnterpriseConnectorVersion(dockerRepository) : "custom";
+    const version = await getEnterpriseConnectorVersion(connectorType, connectorName);
+    console.log(`[Enterprise Transformer Debug] Version returned: ${version}`);
+    
+    if (typeof window !== 'undefined') {
+      console.log(`[Client] Enterprise connector transformer processing ${connectorName} with version: ${version}`);
+    }
 
     let firstHeading = true;
 
@@ -73,7 +269,9 @@ const plugin = () => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
         const originalId = node.data.hProperties.id;
-
+        
+        console.log(`[Enterprise Transformer Debug] Creating attributes for HeaderDecoration`);
+        
         const attrDict = {
           isOss: false,
           isCloud: false,
@@ -81,9 +279,7 @@ const plugin = () => {
           isEnterprise: true,
           supportLevel: "certified",
           dockerImageTag: version,
-          github_url: dockerRepository ? 
-            `https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/${connectorType.replace(/s$/, "")}-${connectorName}` : 
-            undefined,
+          github_url: undefined,
           originalTitle,
           originalId,
           // cdkVersion: version,
@@ -93,6 +289,8 @@ const plugin = () => {
           // usageRate,
           // lastUpdated,
         };
+        
+        console.log(`[Enterprise Transformer Debug] Attributes created:`, attrDict);
 
         firstHeading = false;
         node.children = [];

@@ -14,6 +14,36 @@ const fetchCatalog = async () => {
   console.log("Fetching connector registry...");
   const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
   console.log(`fetched ${json.length} connectors from registry`);
+  
+  const sapHanaConnectors = json.filter(c => 
+    (c.name_oss && c.name_oss.toLowerCase().includes("sap hana")) || 
+    (c.name_cloud && c.name_cloud.toLowerCase().includes("sap hana"))
+  );
+  console.log("SAP HANA connectors found:", sapHanaConnectors.length);
+  if (sapHanaConnectors.length > 0) {
+    console.log("SAP HANA connector details:", 
+      sapHanaConnectors.map(c => ({
+        name: c.name_oss || c.name_cloud,
+        dockerRepo: c.dockerRepository_oss,
+        version: c.dockerImageTag_oss
+      }))
+    );
+  }
+  
+  const volcanoConnectors = json.filter(c => 
+    (c.dockerRepository_oss && c.dockerRepository_oss.toLowerCase().includes("volcano"))
+  );
+  console.log("Volcano connectors found:", volcanoConnectors.length);
+  if (volcanoConnectors.length > 0) {
+    console.log("Volcano connector details:", 
+      volcanoConnectors.map(c => ({
+        name: c.name_oss || c.name_cloud,
+        dockerRepo: c.dockerRepository_oss,
+        version: c.dockerImageTag_oss
+      }))
+    );
+  }
+  
   return json;
 };
 
