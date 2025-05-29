@@ -1604,6 +1604,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
+        lookback_window: "P31D"
         cursor_datetime_formats:
           - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
