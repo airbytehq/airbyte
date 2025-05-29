@@ -743,12 +743,14 @@ definitions:
         path:
           - AbsoluteTopImpressionRatePercent
         value: |
-          {{ record['AbsoluteTopImpressionRatePercent'] | replace('%', '') | float if record.get('AbsoluteTopImpressionRatePercent') else 0.0 }}
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - TopImpressionRatePercent
         value: |
-          {{ record['TopImpressionRatePercent'] | replace('%', '') | float if record.get('TopImpressionRatePercent') else 0.0 }}
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
     # used in all ad performance streams
     ad_performance_report_common_transformations:
       - type: AddedFieldDefinition
@@ -770,7 +772,8 @@ definitions:
         path:
           - AllConversionRate
         value: |
-          {{ record['AllConversionRate'] | replace('%', '') | float if record.get('AllConversionRate') else 0.0 }}
+          {% set v = record.get('AllConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - AllConversions
@@ -780,7 +783,8 @@ definitions:
         path:
           - AllReturnOnAdSpend
         value: |
-          {{ record['AllReturnOnAdSpend'] | float if record.get('AllReturnOnAdSpend') else 0.0 }}
+          {% set v = record.get('AllReturnOnAdSpend') %}
+          {{ v | float if v is not none and v != "" else None }}
         # to remove the comma, specifically found for the AllRevenue field, but adding to the other revenue fields as well.
         # ref: https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#formatversion
       # format 2.0 is supposed to set things like 3,071.00 to 3071.00 but this is not always the case so im adding a "replace"
@@ -823,7 +827,8 @@ definitions:
         path:
           - ConversionRate
         value: |
-          {{ record['ConversionRate'] | replace('%', '') | float if record.get('ConversionRate') else 0.0 }}
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - Conversions
@@ -848,7 +853,8 @@ definitions:
         path:
           - ReturnOnAdSpend
         value: |
-          {{ record['ReturnOnAdSpend'] | float if record.get('ReturnOnAdSpend') else 0.0 }}
+          {% set v = record.get('ReturnOnAdSpend') %}
+          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - Revenue
