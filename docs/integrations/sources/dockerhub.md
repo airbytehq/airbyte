@@ -39,6 +39,7 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.26 | 2025-05-24 | [60407](https://github.com/airbytehq/airbyte/pull/60407) | Update dependencies |
 | 0.3.25 | 2025-05-10 | [60027](https://github.com/airbytehq/airbyte/pull/60027) | Update dependencies |
 | 0.3.24 | 2025-05-03 | [59389](https://github.com/airbytehq/airbyte/pull/59389) | Update dependencies |
 | 0.3.23 | 2025-04-26 | [58858](https://github.com/airbytehq/airbyte/pull/58858) | Update dependencies |

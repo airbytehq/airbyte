@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.check
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeDataDumper
@@ -62,6 +63,7 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
                     configContents = updatedConfig,
                     featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
+                    dataChannelMedium = DataChannelMedium.STDIO,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
@@ -92,6 +94,7 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
                     configContents = updatedConfig,
                     featureFlags = featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
+                    dataChannelMedium = DataChannelMedium.STDIO
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()

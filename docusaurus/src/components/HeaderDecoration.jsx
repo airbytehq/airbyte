@@ -309,7 +309,7 @@ const ConnectorMetadataCallout = ({
       )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
-          This premium connector is only available with a license.{" "}
+          <strong>This premium connector is available to Enterprise customers at an additional cost</strong>.{" "}
           <a href="https://airbyte.com/company/talk-to-sales" target="_blank">
             Talk to Sales{" "}
           </a>
@@ -358,7 +358,6 @@ export const HeaderDecoration = ({
   lastUpdated,
   definitionId,
 }) => {
-  console.log("definitionId", definitionId);
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);

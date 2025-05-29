@@ -92,7 +92,7 @@ class ForwardFileRecordTaskTest {
             val key = StreamKey(stream.descriptor)
             val context =
                 PipelineContext(
-                    mapOf(CheckpointId(123) to 14L),
+                    mapOf(CheckpointId("123") to 14L),
                     Fixtures.record(),
                 )
             val result =
@@ -118,7 +118,7 @@ class ForwardFileRecordTaskTest {
         val key = StreamKey(stream.descriptor)
         val context =
             PipelineContext(
-                mapOf(CheckpointId(123) to 14L),
+                mapOf(CheckpointId("123") to 14L),
                 Fixtures.record(),
             )
         val result =
@@ -180,8 +180,8 @@ class ForwardFileRecordTaskTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = message,
-                serialized = "",
                 schema = schema,
+                serializedSizeBytes = 0L
             )
     }
 }

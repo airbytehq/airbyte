@@ -3,7 +3,7 @@
 
 # NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests them.
 
-name: Dockerimage Tests for Connector and Base Images
+name: Docker Image Tests
 on:
   pull_request:
     paths:
@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   detect-changes:
-    name: Detect changes in connector base image Dockerfiles
+    name: Detect Changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -51,6 +51,9 @@ jobs:
     name: Build Java Base Image
     runs-on: ubuntu-latest
     needs: detect-changes
+    environment:
+      name: ghcr.io/airbytehq/java-connector-base
+      url: https://ghcr.io/airbytehq/java-connector-base
     if: needs.detect-changes.outputs.java-base == 'true'
     steps:
       - name: Checkout code
@@ -97,6 +100,9 @@ jobs:
     name: Build Python Base Image
     runs-on: ubuntu-latest
     needs: detect-changes
+    environment:
+      name: ghcr.io/airbytehq/python-connector-base
+      url: https://ghcr.io/airbytehq/python-connector-base
     if: needs.detect-changes.outputs.python-base == 'true'
     steps:
       - name: Checkout code
@@ -156,6 +162,9 @@ jobs:
           - destination-postgres
           - destination-snowflake
     name: Build ${{ matrix.connector }} Java Test Image
+    environment:
+      name: ghcr.io/airbytehq
+      url: https://ghcr.io/airbytehq/${{ matrix.connector }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -201,7 +210,9 @@ jobs:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
             CONNECTOR_NAME=${{ matrix.connector }}
@@ -231,11 +242,16 @@ jobs:
       fail-fast: false
       matrix:
         connector:
+          - source-google-drive
           - source-hubspot
+          - source-s3
           - source-salesforce
           - source-shopify
           - destination-motherduck
     name: Build ${{ matrix.connector }} Python Test Image
+    environment:
+      name: ghcr.io/airbytehq
+      url: https://ghcr.io/airbytehq/${{ matrix.connector }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -262,7 +278,9 @@ jobs:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
             CONNECTOR_NAME=${{ matrix.connector }}
