@@ -163,7 +163,6 @@ definitions:
           CustomerAccountId: "{{ stream_partition['account_id'][0] }}"
           CustomerId: "{{ stream_slice.extra_fields['ParentCustomerId'][0] }}"
           DeveloperToken: "{{ config['developer_token'] }}"
-          Authorization: "Bearer {{ config['_token']['access_token'] }}"
         request_body_json:
           AccountId: "{{ stream_partition['account_id'][0] }}"
           CampaignType: "Audience,DynamicSearchAds,Search,Shopping,PerformanceMax"
