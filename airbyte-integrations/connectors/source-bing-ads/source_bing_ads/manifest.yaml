@@ -226,51 +226,15 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - Languages
-            value: |
-              {% set languages = [] %}
-              {% for language in (record.get('Languages') or []) %}
-              {% set _ = languages.append(language) %}
-              {% endfor %}
-              {{ {"string": languages} }}
-          - type: AddedFieldDefinition
-            path:
-              - SettingContent
-            value: |
-              {% set settings_content = [] %}
-              {% if record.get('Settings') %}
-                {% for setting in record.Settings %}
-                  {% set target_details = [] %}
-                  {% if setting.get('Details') %}
-                    {% for detail in setting.Details %}
-                      {% set _ = target_details.append(detail) %}
-                    {% endfor %}
-                  {% endif %}
-                  {% set setting_obj = {"Type": setting.get('Type'), "Details": {"TargetSettingDetail": target_details}} %}
-                  {% set _ = settings_content.append(setting_obj) %}
-                {% endfor %}
-              {% endif %}
-              {{ settings_content }}
+            value: "{{ {'string': record.get('Languages', [])} }}"
           - type: AddedFieldDefinition
             path:
               - UrlCustomParameters
-            value: |
-              {% if record.get('UrlCustomParameters') and record.get('UrlCustomParameters').get('Parameters') %}
-              {{ {"Parameters": {"CustomParameter": record.UrlCustomParameters.Parameters}} }}
-              {% else %}
-              {{ record.get('UrlCustomParameters') }}
-              {% endif %}
-          - type: AddedFieldDefinition
-            path:
-              - Settings
-            value: |
-              {% if record.SettingContent and record.SettingContent | length > 0 %}
-              {{ {'Setting': record.SettingContent} }}
-              {% else %}
-              {{ record.get('Settings') }}
-              {% endif %}
+            value: "{{ {'Parameters': {'CustomParameter': record.UrlCustomParameters.Parameters}} if record.get('UrlCustomParameters') and record.get('UrlCustomParameters').get('Parameters') else record.get('UrlCustomParameters') }}"
+      - type: CustomTransformation
+        class_name: source_bing_ads.components.CampaignsSettingsTransformer
       - type: RemoveFields
-        field_pointers:
-          - - SettingContent
+        field_pointers: []
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/campaigns_stream"

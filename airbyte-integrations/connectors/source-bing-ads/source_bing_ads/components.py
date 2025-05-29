@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
@@ -57,3 +58,59 @@ class DuplicatedRecordsFilter(RecordFilter):
                 if key not in self._seen_keys:
                     self._seen_keys.add(key)
                     yield record
+
+
+@dataclass
+class CampaignsSettingsTransformer(RecordTransformation):
+    """
+    Transform the Settings field in Campaigns records
+    by wrapping Details arrays in TargetSettingDetail
+    structure. For settings without Details, keep the original
+    structure.
+    """
+
+    def transform(
+        self,
+        record: MutableMapping[str, Any],
+        config: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        """
+        Transform the Settings field in the record.
+
+        For settings with Details, wrap the Details array in
+        TargetSettingDetail. For settings without Details, keep the original
+        structure.
+        """
+        settings = record.get('Settings')
+
+        if (not settings or not isinstance(settings, list) or len(settings) == 0):
+            # Keep original value (None, empty list, etc.)
+            return
+
+        transformed_settings = []
+
+        for setting in settings:
+            if not isinstance(setting, dict):
+                # Keep non-dict settings as-is
+                transformed_settings.append(setting)
+                continue
+
+            if setting.get('Details'):
+                # Wrap Details in TargetSettingDetail
+                transformed_setting = {
+                    "Type": setting.get("Type"),
+                    "Details": {"TargetSettingDetail": setting["Details"]}
+                }
+                # Add any other properties that might exist
+                for key, value in setting.items():
+                    if key not in ["Type", "Details"]:
+                        transformed_setting[key] = value
+                transformed_settings.append(transformed_setting)
+            else:
+                # Keep setting as-is (no Details to wrap)
+                transformed_settings.append(setting)
+
+        # Wrap the transformed settings in the expected structure
+        record['Settings'] = {'Setting': transformed_settings}
