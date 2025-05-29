@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.write.LoadStrategy
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DataChannelBeanFactoryTest {
@@ -32,6 +33,7 @@ class DataChannelBeanFactoryTest {
                     loadStrategy = loadStrategy,
                     isFileTransfer = false,
                     dataChannelMedium = DataChannelMedium.STDIO,
+                    dataChannelSocketPaths = mockk(relaxed = true)
                 )
 
         assertEquals(2, numInputPartitions)
@@ -47,13 +49,14 @@ class DataChannelBeanFactoryTest {
                     loadStrategy = loadStrategy,
                     isFileTransfer = true,
                     dataChannelMedium = DataChannelMedium.STDIO,
+                    dataChannelSocketPaths = mockk(relaxed = true)
                 )
 
         assertEquals(1, numInputPartitions)
     }
 
     @Test
-    fun `num input partitions is 1 if sockets enabled`() {
+    fun `num input partitions is equal to the number of sockets if sockets enabled`() {
         val loadStrategy: LoadStrategy = mockk(relaxed = true)
         every { loadStrategy.inputPartitions } returns 2
         val numInputPartitions =
@@ -62,7 +65,36 @@ class DataChannelBeanFactoryTest {
                     loadStrategy = loadStrategy,
                     isFileTransfer = false,
                     dataChannelMedium = DataChannelMedium.SOCKETS,
+                    dataChannelSocketPaths = (0 until 3).map { "socket.$it" }
                 )
-        assertEquals(1, numInputPartitions)
+        assertEquals(3, numInputPartitions)
+    }
+
+    @Test
+    fun `num data channels is num_input_partitions if sockets enabled`() {
+        val loadStrategy: LoadStrategy = mockk(relaxed = true)
+        every { loadStrategy.inputPartitions } returns 2
+        val numDataChannels =
+            DataChannelBeanFactory()
+                .numDataChannels(dataChannelMedium = DataChannelMedium.SOCKETS, 3)
+        assertEquals(3, numDataChannels)
+    }
+
+    @Test
+    fun `num data channels always 1 for stdio`() {
+        val numDataChannels =
+            DataChannelBeanFactory()
+                .numDataChannels(
+                    dataChannelMedium = DataChannelMedium.STDIO,
+                    numInputPartitions = 3
+                )
+        assertEquals(1, numDataChannels)
+    }
+
+    @Test
+    fun `require checkpoint key for sockets`() {
+        val checkpointKeyRequired =
+            DataChannelBeanFactory().requireCheckpointIdOnRecord(DataChannelMedium.SOCKETS)
+        assertTrue(checkpointKeyRequired)
     }
 }

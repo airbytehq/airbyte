@@ -76,7 +76,7 @@ class RouteEventTaskTest {
             val stream = Fixtures.stream(includeFiles = true)
             val key = StreamKey(stream.descriptor)
             val record = Fixtures.record()
-            val checkpoints = mapOf(CheckpointId(1) to 2L)
+            val checkpoints = mapOf(CheckpointId("1") to 2L)
             val releaseMemCallback: (suspend () -> Unit) = mockk(relaxed = true)
 
             val input =
@@ -92,7 +92,7 @@ class RouteEventTaskTest {
 
             val expectedContext =
                 PipelineContext(
-                    mapOf(CheckpointId(1) to 2),
+                    mapOf(CheckpointId("1") to 2),
                     record,
                 )
 
@@ -127,7 +127,7 @@ class RouteEventTaskTest {
         val stream = Fixtures.stream(includeFiles = false)
         val key = StreamKey(stream.descriptor)
         val record = Fixtures.record()
-        val checkpoints = mapOf(CheckpointId(1) to 2L)
+        val checkpoints = mapOf(CheckpointId("1") to 2L)
 
         val input =
             PipelineMessage(
