@@ -47,7 +47,7 @@ class BigqueryBeansFactory {
 
     @Singleton
     @Named("checkNamespace")
-    fun getCheckNamespace(config: BigqueryConfiguration) = config.datasetId
+    fun getCheckNamespace(config: BigqueryConfiguration): String = config.datasetId
 
     @Singleton
     fun getChecker(
