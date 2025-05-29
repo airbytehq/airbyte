@@ -611,7 +611,9 @@ data class StreamCheckpoint(
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
-        checkpointKey: CheckpointKey? = null
+        checkpointKey: CheckpointKey? = null,
+        totalRecords: Long? = null,
+        totalBytes: Long? = null
     ) : this(
         Checkpoint(
             DestinationStream.Descriptor(streamNamespace, streamName),
@@ -622,6 +624,8 @@ data class StreamCheckpoint(
         emptyMap(),
         serializedSizeBytes = 0L,
         checkpointKey = checkpointKey,
+        totalRecords = totalRecords,
+        totalBytes = totalBytes
     )
 
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
