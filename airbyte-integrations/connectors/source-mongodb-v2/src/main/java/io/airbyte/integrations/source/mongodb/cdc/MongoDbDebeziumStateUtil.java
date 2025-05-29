@@ -224,8 +224,10 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
                 new OffsetReader<>(offsetStorageReader, loader);
             final Map<Partition, MongoDbOffsetContext> offsets_old = offsetReader_old.offsets(partitions_old);
             if (offsets_old == null || offsets_old.values().stream().noneMatch(Objects::nonNull)) {
+              LOGGER.info("offsets_old is null or empty for database: {}", normalizeName(databaseName));
               continue;
             }
+            LOGGER.info("offsets_old is not empty");
             final MongoDbOffsetContext context_old = offsets_old.get(mongoDbPartition_old);
             final var offset_old = context_old.getOffset();
             final Object resumeTokenData_old = offset_old.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
