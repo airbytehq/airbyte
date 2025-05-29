@@ -1,4 +1,4 @@
-name: Internal CI Package Checks
+name: Internal CI Tooling Checks
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
