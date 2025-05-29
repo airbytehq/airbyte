@@ -3,9 +3,10 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 import com.clickhouse.client.api.Client
 import com.clickhouse.data.ClickHouseFormat
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.integrations.destination.clickhouse_v2.log
-import java.io.ByteArrayInputStream
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
@@ -23,7 +24,7 @@ class ClickhouseDirectLoader(private val clickhouseClient: Client) : DirectLoade
 //             return DirectLoader.Incomplete
 //         }
 
-        log.error { record.rawData.record.data.toPrettyString() }
+        // log.error { record.rawData.record.data.toPrettyString() }
         // rely on the CDK to tell us when to finish()
         return DirectLoader.Incomplete
     }
