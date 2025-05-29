@@ -63,7 +63,7 @@ class SourceGoogleAds(AbstractSource):
             except ValueError:
                 message = (
                     f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v17/query_validator"
+                    "https://developers.google.com/google-ads/api/fields/v19/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
