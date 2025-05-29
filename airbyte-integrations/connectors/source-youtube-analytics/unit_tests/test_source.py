@@ -25,7 +25,9 @@ def test_check_connection(requests_mock):
 
 def test_streams(requests_mock):
     requests_mock.get("https://youtubereporting.googleapis.com/v1/jobs", json={})
-    requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "fake-token", "expires_in": 3600, "token_type": "Bearer"})
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token", json={"access_token": "fake-token", "expires_in": 3600, "token_type": "Bearer"}
+    )
 
     with open(os.path.join(os.path.dirname(__file__), "../source_youtube_analytics/defaults/channel_reports.json")) as fp:
         channel_reports = json.load(fp)
