@@ -5,18 +5,34 @@ const { catalog } = require("../connector_registry");
 
 const getEnterpriseConnectorVersion = async (dockerRepository) => {
   try {
+    console.log(`Looking for version for enterprise connector: ${dockerRepository}`);
     const registry = await catalog;
+    console.log(`Registry loaded with ${registry.length} entries`);
+    
+    console.log("Sample registry entries:", registry.slice(0, 2));
+    
     const registryEntry = registry.find(
       (r) => r.dockerRepository_oss === dockerRepository
     );
     
-    if (registryEntry && registryEntry.dockerImageTag_oss) {
-      return registryEntry.dockerImageTag_oss;
+    console.log(`Registry entry found: ${registryEntry ? 'Yes' : 'No'}`);
+    
+    if (registryEntry) {
+      console.log(`Registry entry details:`, {
+        name: registryEntry.name_oss,
+        dockerRepo: registryEntry.dockerRepository_oss,
+        version: registryEntry.dockerImageTag_oss
+      });
+      
+      if (registryEntry.dockerImageTag_oss) {
+        return registryEntry.dockerImageTag_oss;
+      }
     }
   } catch (error) {
     console.warn(`Error fetching version for ${dockerRepository}:`, error);
   }
   
+  console.log(`Falling back to "custom" for ${dockerRepository}`);
   return "custom"; // Fallback to "custom" if version not found
 };
 
