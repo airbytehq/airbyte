@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - contacts
+    - owners
 
 definitions:
   # Authenticator Definitions

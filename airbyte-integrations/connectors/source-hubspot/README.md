@@ -37,3 +37,13 @@ This will run the acceptance tests for the connector.
 ```bash
 airbyte-ci connectors --name=source-hubspot test
 ```
+### Running as a docker container
+
+Then run any of the standard source connector commands:
+
+```bash
+docker run --rm airbyte/source-hubspot:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-hubspot:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-hubspot:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-hubspot:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+```
