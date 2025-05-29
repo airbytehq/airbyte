@@ -24,12 +24,12 @@ definitions:
     use_profile_assertion: true
     profile_assertion:
       type: JwtAuthenticator
-      secret_key: "{{ json_loads(config.get('authorization', {}).get('service_account_info', '{}')).get('private_key') }}"
+      secret_key: "{{ json_loads(config.get('authorization', {}).get('service_account_info', {})).get('private_key') }}"
       algorithm: "RS256"
       token_duration: 3600
       jwt_payload:
-        aud: "{{ json_loads(config.get('authorization', {}).get('service_account_info', '{}')).get('token_uri') }}"
-        iss: "{{ json_loads(config.get('authorization', {}).get('service_account_info', '{}')).get('client_email') }}"
+        aud: "{{ json_loads(config.get('authorization', {}).get('service_account_info', {})).get('token_uri') }}"
+        iss: "{{ json_loads(config.get('authorization', {}).get('service_account_info', {})).get('client_email') }}"
       additional_jwt_payload:
         scope: "https://www.googleapis.com/auth/webmasters.readonly"
 
@@ -115,16 +115,34 @@ definitions:
       step: P3D
       cursor_granularity: P1D
     transformations:
-      - type: CustomTransformation
-        class_name: source_google_search_console.components.GoogleSearchConsoleInjectTransformedSiteUrlAndDimensions
-        dimensions:
-          - date
-          - country
       - type: AddFields
         fields:
           - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
+      # The values in the 'keys' array in the record correspond to the same order that the dimensions
+      # are requested in the API request. For example, if the request body was `dimensions: ["date", "country"]`,
+      # then the first value of `keys` is placed under the `date` field. These arrays are always be the same length
+      # After extracting the keys, the `keys` array is removed from the record.
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+      # - type: CustomTransformation
+      #   class_name: source_google_search_console.components.GoogleSearchConsoleTransformKeysToDimensions
+      #   dimensions:
+      #     - date
+      #     - country
     schema_loader:
       type: InlineSchemaLoader
       schema:

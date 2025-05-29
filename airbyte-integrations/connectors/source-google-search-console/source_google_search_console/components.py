@@ -4,32 +4,20 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
-from urllib.parse import unquote_plus
 
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
-class GoogleSearchConsoleInjectTransformedSiteUrlAndDimensions(RecordTransformation):
+class GoogleSearchConsoleTransformKeysToDimensions(RecordTransformation):
     """
-    A record transformation that flattens the `associations` field in HubSpot records.
-    This transformation takes a nested dictionary under the `associations` key and extracts the IDs
-    of associated objects. The extracted lists of IDs are added as new top-level fields in the record,
-    using the association name as the key (spaces replaced with underscores).
-    Example:
-        Input:
-        {
-            "id": 1,
-            "associations": {
-                "Contacts": {"results": [{"id": 101}, {"id": 102}]}
-            }
-        }
-        Output:
-        {
-            "id": 1,
-            "Contacts": [101, 102]
-        }
+    A record transformation that remaps each value in the keys array back to its associated
+    dimension. The reason this is a custom component is because each value in the keys array
+    corresponds to the same order of the dimensions array which was used in the API request.
+
+    TBD: Maybe we can remove if I find a way to do this in low-code only. Assuming we start
+    using quote_plus() only on the outbound API request path, we can potentially remove this component.
     """
 
     dimensions: List[str] = field(default_factory=lambda: [])
@@ -41,8 +29,6 @@ class GoogleSearchConsoleInjectTransformedSiteUrlAndDimensions(RecordTransformat
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        record["site_url"] = unquote_plus(stream_slice.get("site_url"))
-
         for dimension in self.dimensions:
             record[dimension] = record["keys"].pop(0)
 
