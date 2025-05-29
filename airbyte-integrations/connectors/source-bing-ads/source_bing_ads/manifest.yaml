@@ -846,7 +846,8 @@ definitions:
         path:
           - Ctr
         value: |
-          {{ record['Ctr'] | replace('%', '') | float if record.get('Ctr') else 0.0 }}
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - Impressions
