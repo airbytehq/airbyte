@@ -3,6 +3,11 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamState
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentMap
 
 /**
  * [PartitionsCreatorFactory] must be implemented by each source connector and serves as the
@@ -148,6 +153,10 @@ interface PartitionReader {
      * not necessarily in the same thread as [tryAcquireResources], [run] or [checkpoint].
      */
     fun releaseResources()
+
+    companion object {
+        val pendingStates: ConcurrentLinkedQueue</*AirbyteStateMessage*/Any> = ConcurrentLinkedQueue()
+    }
 }
 
 data class PartitionReadCheckpoint(

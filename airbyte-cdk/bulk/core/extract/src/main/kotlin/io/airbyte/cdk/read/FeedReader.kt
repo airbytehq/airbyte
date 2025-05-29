@@ -7,6 +7,7 @@ import io.airbyte.cdk.output.BoostedOutputConsumer
 import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
@@ -42,7 +43,6 @@ class FeedReader(
 
     /** Reads records from this [feed]. */
     suspend fun read() {
-        maybeCheckpoint() // TEMP
         var partitionsCreatorID = 1L
         while (true) {
             // Create PartitionReader instances.
@@ -51,10 +51,11 @@ class FeedReader(
                 log.info {
                     "no more partitions to read for '${feed.label}' in round $partitionsCreatorID"
                 }
-                // Publish a checkpoint if applicable.
-                maybeCheckpoint()
                 // Publish stream completion.
                 root.streamStatusManager.notifyComplete(feed)
+                // Publish a checkpoint if applicable.
+                maybeCheckpoint(true)
+
                 break
             }
             // Launch coroutines which read from each partition.
@@ -306,7 +307,7 @@ class FeedReader(
                 }
             } finally {
                 // Publish a checkpoint if applicable.
-                maybeCheckpoint()
+                maybeCheckpoint(false)
             }
         }
     }
@@ -315,7 +316,7 @@ class FeedReader(
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
     var acquiredSocket: SocketResource.AcquiredSocket? = null
-    private fun maybeCheckpoint() {
+    private fun maybeCheckpoint(finalCheckpoint: Boolean) {
 
         try {
             //streamState.sharedState.tryAcquireResourcesForReader(Any()) // TEMP
@@ -326,14 +327,37 @@ class FeedReader(
 
             val boostedOutputConsumer =
                 boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.s, emptyMap())
-            val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
+            val stateMessages: MutableList</*AirbyteStateMessage*/Any> = root.stateManager.checkpoint().toMutableList()
+            if (finalCheckpoint) {
+                var s = PartitionReader.pendingStates.poll()
+                while (s != null) {
+//                    boostedOutputConsumer?.accept(s)
+                    stateMessages.add(s)
+                    s = PartitionReader.pendingStates.poll()
+                }
+            }
+
             if (stateMessages.isEmpty()) {
                 return
             }
             log.info { "checkpoint of ${stateMessages.size} state message(s)" }
             for (stateMessage in stateMessages) {
-                boostedOutputConsumer?.accept(stateMessage)
-                root.outputConsumer.accept(stateMessage)
+                when (stateMessage) {
+                    is AirbyteStateMessage -> {
+                        if (finalCheckpoint) boostedOutputConsumer?.accept(stateMessage)
+                        root.outputConsumer.accept(stateMessage)
+                    }
+                    is AirbyteStreamStatusTraceMessage -> {
+                        if (finalCheckpoint) boostedOutputConsumer?.accept(stateMessage)
+                        root.outputConsumer.accept(stateMessage)
+                    }
+                    else -> {
+                        log.warn { "Unknown state message type: ${stateMessage::class}" }
+                        continue // Skip unknown state messages.
+                    }
+                }
+                if (finalCheckpoint.not()) PartitionReader.pendingStates.add(stateMessage)
+
             }
         } finally {
             acquiredSocket?.close()

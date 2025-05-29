@@ -57,7 +57,7 @@ class RootReader(
         }
     }
 
-    val streamStatusManager = StreamStatusManager(stateManager.feeds, outputConsumer::accept)
+    val streamStatusManager = StreamStatusManager(stateManager.feeds, {outputConsumer.accept(it); PartitionReader.pendingStates.add(it)})
 
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {

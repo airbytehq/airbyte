@@ -4,9 +4,15 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.BoostedOutputConsumer
 import io.airbyte.cdk.output.BoostedOutputConsumerFactory
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamState
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -36,6 +42,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     lateinit var streamRecordConsumer: StreamRecordConsumer
 
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
+    protected var boostedOutputConsumer: BoostedOutputConsumer? = null
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -55,13 +62,9 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             val acwr: AcquiredResources? = rr.get(ResourceType.RESOURCE_OUTPUT_SOCKET)
             val assock = acwr as AcquiredResourceWithResource<SocketResource.AcquiredSocket>
             val s = assock.resource.s
+            boostedOutputConsumer = boostedOutputConsumerFactory?.boostedOutputConsumer(s, mapOf("partition_id" to partitionId))
 
-            streamRecordConsumer = streamState.streamFeedBootstrap.streamRecordConsumer(
-                boostedOutputConsumerFactory?.boostedOutputConsumer(
-                    /*(this.acquiredResources.get().first { it is AcquiredResourceWithResource<*> } as AcquiredResourceWithResource<SocketResource.AcquiredSocket>).resource.s*/
-                    s,
-                    mapOf("partition_id" to partitionId)
-                ))
+            streamRecordConsumer = streamState.streamFeedBootstrap.streamRecordConsumer(boostedOutputConsumer)
         }
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -148,6 +151,17 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
+
+        var s = PartitionReader.pendingStates.poll()
+
+        while (s != null) {
+            when (s) {
+                is AirbyteStateMessage -> boostedOutputConsumer?.accept(s)
+                is AirbyteStreamStatusTraceMessage -> boostedOutputConsumer?.accept(s)
+            }
+            s = PartitionReader.pendingStates.poll()
+        }
+
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
         existing exiting with an exception skips checkpoint(), so any work we
@@ -173,6 +187,8 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     }
                 }
             }
+
+
         runComplete.set(true)
     }
 

@@ -279,12 +279,8 @@ class StateManager(
                     AirbyteStateStats()
                         .withRecordCount(streamStateForCheckpoint.numRecords.toDouble())
                 )
-                .withAdditionalProperty("id", streamStateForCheckpoint.id).let { message ->
-                    streamStateForCheckpoint.partitionId?.let {
-                        message.withAdditionalProperty("partition_id", it)
-                    }
-                    message
-                }
+                .withAdditionalProperty("id", streamStateForCheckpoint.id)
+                .apply { streamStateForCheckpoint.partitionId?.let { withAdditionalProperty("partition_id", it) } }
         }
     }
 }
