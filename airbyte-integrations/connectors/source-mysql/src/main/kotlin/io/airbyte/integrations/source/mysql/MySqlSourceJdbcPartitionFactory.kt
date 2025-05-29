@@ -316,7 +316,8 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    // visible for testing
+    fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {

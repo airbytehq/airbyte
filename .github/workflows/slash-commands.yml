@@ -24,10 +24,12 @@ jobs:
           issue-type: both
 
           commands: |
+            bump-bulk-cdk-and-release-connectors
             bump-version
             bump-cdk-version-and-merge
             format-fix
             test
+            run-connector-tests
             test-performance
             publish-java-cdk
             connector-performance

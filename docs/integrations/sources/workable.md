@@ -54,6 +54,9 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.16 | 2025-05-24 | [60781](https://github.com/airbytehq/airbyte/pull/60781) | Update dependencies |
+| 0.2.15 | 2025-05-10 | [59931](https://github.com/airbytehq/airbyte/pull/59931) | Update dependencies |
+| 0.2.14 | 2025-05-04 | [58918](https://github.com/airbytehq/airbyte/pull/58918) | Update dependencies |
 | 0.2.13 | 2025-04-19 | [58564](https://github.com/airbytehq/airbyte/pull/58564) | Update dependencies |
 | 0.2.12 | 2025-04-12 | [58014](https://github.com/airbytehq/airbyte/pull/58014) | Update dependencies |
 | 0.2.11 | 2025-04-05 | [57391](https://github.com/airbytehq/airbyte/pull/57391) | Update dependencies |
