@@ -4,8 +4,12 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.extractors.record_filter import (
+    RecordFilter,
+)
+from airbyte_cdk.sources.declarative.transformations import (
+    RecordTransformation,
+)
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
@@ -13,11 +17,13 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 class DuplicatedRecordsFilter(RecordFilter):
     """
     Filter duplicated records based on the "Id" field.
-    This can happen when we use predicates that could match the same record multiple times.
+    This can happen when we use predicates that could match the same record
+    multiple times.
 
     e.g.
     With one record like:
-    {"type":"RECORD","record":{"stream":"accounts","data":{"Id":151049662,"Name":"Airbyte Plumbing"},"emitted_at":1748277607993}}
+    {"type":"RECORD","record":{"stream":"accounts","data":{"Id":151049662,
+    "Name":"Airbyte Plumbing"},"emitted_at":1748277607993}}
     account_names in config:
     [
         {
@@ -83,9 +89,9 @@ class CampaignsSettingsTransformer(RecordTransformation):
         TargetSettingDetail. For settings without Details, keep the original
         structure.
         """
-        settings = record.get('Settings')
+        settings = record.get("Settings")
 
-        if (not settings or not isinstance(settings, list) or len(settings) == 0):
+        if not settings or not isinstance(settings, list) or len(settings) == 0:
             # Keep original value (None, empty list, etc.)
             return
 
@@ -97,20 +103,17 @@ class CampaignsSettingsTransformer(RecordTransformation):
                 transformed_settings.append(setting)
                 continue
 
-            if setting.get('Details'):
-                # Wrap Details in TargetSettingDetail
-                transformed_setting = {
-                    "Type": setting.get("Type"),
-                    "Details": {"TargetSettingDetail": setting["Details"]}
-                }
+            if "Details" in setting and setting["Details"] is not None:
+                # Wrap Details in TargetSettingDetail only if Details is not None
+                transformed_setting = {"Type": setting.get("Type"), "Details": {"TargetSettingDetail": setting["Details"]}}
                 # Add any other properties that might exist
                 for key, value in setting.items():
                     if key not in ["Type", "Details"]:
                         transformed_setting[key] = value
                 transformed_settings.append(transformed_setting)
             else:
-                # Keep setting as-is (no Details to wrap)
+                # Keep setting as-is (no Details to wrap or Details is None)
                 transformed_settings.append(setting)
 
         # Wrap the transformed settings in the expected structure
-        record['Settings'] = {'Setting': transformed_settings}
+        record["Settings"] = {"Setting": transformed_settings}
