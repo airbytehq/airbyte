@@ -876,37 +876,45 @@ definitions:
         path:
           - AllCostPerConversion
         value: |
-          {{ record['AllCostPerConversion'] | float if record.get('AllCostPerConversion') else none }}
+          {% set v = record.get('AllCostPerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - AllRevenuePerConversion
         value: |
-          {{ record['AllRevenuePerConversion'] | float if record.get('AllRevenuePerConversion') else none }}
+          {% set v = record.get('AllRevenuePerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - CostPerAssist
         value: |
-          {{ record['CostPerAssist'] | float if record.get('CostPerAssist') else none }}
+          {% set v = record.get('CostPerAssist') %}
+          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - CostPerConversion
         value: |
-          {{ record['CostPerConversion'] | float if record.get('CostPerConversion') else none }}
+          {% set v = record.get('CostPerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - RevenuePerAssist
         value: |
-          {{ record['RevenuePerAssist'] | replace(',', '') | float if record.get('RevenuePerAssist') else none }}
+          {% set v = record.get('RevenuePerAssist') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - RevenuePerConversion
         value: |
-          {{ record['RevenuePerConversion'] | replace(',', '') | float if record.get('RevenuePerConversion') else none }}
+          {% set v = record.get('RevenuePerConversion') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - ViewThroughConversionsQualified
         value: |
-          {{ record['ViewThroughConversionsQualified'] | float if record.get('ViewThroughConversionsQualified') else none }}
+          {% set v = record.get('ViewThroughConversionsQualified') %}
+          {{ v | float if v is not none and v != "" else None }}
+      # all below are string fields, just need to ensure they not empty
       - type: AddedFieldDefinition
         path:
           - DestinationUrl
