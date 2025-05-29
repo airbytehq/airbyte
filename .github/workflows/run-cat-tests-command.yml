@@ -29,8 +29,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  post-start-comment:
-    name: "Post Start Comment"
+  run-cat-tests:
+    name: "On-Demand CAT Tests"
     runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
@@ -44,13 +44,6 @@ jobs:
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
-
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ steps.job-vars.outputs.repo }}
-          ref: ${{ steps.job-vars.outputs.branch }}
-          fetch-depth: 0
 
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
@@ -68,15 +61,23 @@ jobs:
             > - [Run Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
             >
 
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.job-vars.outputs.repo }}
+          ref: ${{ steps.job-vars.outputs.branch }}
+          fetch-depth: 0
+
       - name: Run CAT tests with `airbyte-ci`
         if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "manual"
+          context: "pull_request"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
