@@ -100,4 +100,4 @@ jobs:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: confused
           body: |
-            > 🔴 Tests failed.
+            > 🔴 CAT Tests failed.
