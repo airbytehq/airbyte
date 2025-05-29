@@ -107,13 +107,13 @@ FieldType = Dict[Any, Any]
 @dataclasses.dataclass
 class FieldMeta(FromDictMixin):
     json_type: str
-    length: Optional[int]
     api_name: str
     data_type: str
-    decimal_place: Optional[int]
     system_mandatory: bool
     display_label: str
-    pick_list_values: Optional[List[ZohoPickListItem]]
+    decimal_place: Optional[int] = None
+    pick_list_values: Optional[List[ZohoPickListItem]] = None
+    length: Optional[int] = None
     auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
 
     def _default_type_kwargs(self) -> Dict[str, str]:
@@ -133,8 +133,9 @@ class FieldMeta(FromDictMixin):
 
     def _double_field(self) -> FieldType:
         typedef = {"type": ["null", "number"], **self._default_type_kwargs()}
-        if self.decimal_place:
-            typedef["multipleOf"] = float(Decimal("0.1") ** self.decimal_place)
+        # New API versions is returning some invalid validation data
+        # if self.decimal_place:
+        #     typedef["multipleOf"] = float(Decimal("0.1") ** self.decimal_place)
         return typedef
 
     def _string_field(self) -> FieldType:
@@ -143,25 +144,28 @@ class FieldMeta(FromDictMixin):
             # actual values do not correspond to the values in the list
             return {"type": ["null", "string"], "format": "date-time", **self._default_type_kwargs()}
 
-        typedef = {"type": ["null", "string"], "maxLength": self.length, **self._default_type_kwargs()}
+        typedef = {"type": ["null", "string"],
+                   # "maxLength": self.length,  # New API versions is returning some invalid validation data
+                   **self._default_type_kwargs()}
         if self.data_type == ZohoDataType.website:
             typedef["format"] = "uri"
         elif self.data_type == ZohoDataType.email:
             typedef["format"] = "email"
         elif self.data_type == ZohoDataType.date:
             typedef["format"] = "date"
-        elif self.data_type == ZohoDataType.datetime:
-            typedef["format"] = "date-time"
+        # New API versions is returning some invalid validation data
+        # elif self.data_type == ZohoDataType.datetime:
+        #     typedef["format"] = "date-time"
         elif self.data_type == ZohoDataType.bigint:
             typedef["airbyte_type"] = "big_integer"
         elif self.data_type == ZohoDataType.autonumber:
-            print(self.auto_number)
             if self.auto_number.get("prefix") or self.auto_number.get("suffix"):
                 typedef["format"] = "string"
             else:
                 typedef["airbyte_type"] = "big_integer"
-        elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
-            typedef["enum"] = self._picklist_items()
+        # New API versions is returning some invalid validation data
+        # elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
+        #     typedef["enum"] = self._picklist_items()
         return typedef
 
     def _jsonarray_field(self) -> FieldType:
@@ -192,8 +196,9 @@ class FieldMeta(FromDictMixin):
             typedef["minItems"] = 1
             typedef["uniqueItems"] = True
             items = {"type": ["null", "string"]}
-            if self.pick_list_values:
-                items["enum"] = self._picklist_items()
+            # New API versions is returning some invalid validation data
+            # if self.pick_list_values:
+            #     items["enum"] = self._picklist_items()
             typedef["items"] = items
         return typedef
 
@@ -227,13 +232,15 @@ class ModuleMeta(FromDictMixin):
     api_name: str
     module_name: str
     api_supported: bool
+    required_fields: Optional[List[str]] = dataclasses.field(default=None)
     fields: Optional[Iterable[FieldMeta]] = dataclasses.field(default_factory=list)
 
     @property
     def schema(self) -> Schema:
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
-        required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
+        required = (self.required_fields or
+                    list({"id", "Modified_Time"}.union(set([field_.api_name for field_ in self.fields if field_.system_mandatory]))))
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
         properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}
         return Schema(description=self.module_name, properties=properties, required=required)
