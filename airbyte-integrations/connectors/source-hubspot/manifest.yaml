@@ -1,4 +1,4 @@
-version: 6.44.0
+version: 6.51.0
 
 type: DeclarativeSource
 
@@ -61,9 +61,15 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: FAIL
+        action: RETRY
         http_codes:
           - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
           - 530
         error_message: >-
           The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
@@ -72,7 +78,9 @@ definitions:
         http_codes:
           - 403
         error_message: >-
-          Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+          Access denied (403). The authenticated user does not have permissions to access the resource.
+          Verify your scopes: {{ parameters.required_scopes }} to access stream {{ parameters.name }}.
+          See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only
       - type: HttpResponseFilter
         action: FAIL
         http_codes:
@@ -173,11 +181,11 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotSchemaExtractor
+          class_name: source_declarative_manifest.components.HubspotSchemaExtractor
           field_path: []
     schema_transformations:
       - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+        class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
     schema_type_identifier:
       type: SchemaTypeIdentifier
       key_pointer:
@@ -221,13 +229,13 @@ definitions:
         path: /properties/v2/deal/properties
     schema_transformations:
       - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
         field_mapping:
           hs_date_entered_: "hs_v2_date_entered_"
           hs_date_exited_: "hs_v2_date_exited_"
           hs_time_in_: "hs_v2_latest_time_in_"
       - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+        class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   forms_schema_loader:
     $ref: "#/definitions/base_dynamic_schema_loader"
@@ -266,6 +274,8 @@ definitions:
                   http_method: GET
                   request_headers:
                     Content-Type: "application/json"
+                  error_handler:
+                    $ref: "#/definitions/base_error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -279,7 +289,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          class_name: source_declarative_manifest.components.HubspotPropertyHistoryExtractor
           field_path: ["results"]
           entity_primary_key: companyId
           additional_keys: ["archived"]
@@ -314,12 +324,13 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: timestamp
     $parameters:
       name: companies_property_history
       path: /crm/v3/objects/companies
       extractor_field_path: results
+      required_scopes: crm.objects.companies.read
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -353,6 +364,8 @@ definitions:
                   http_method: GET
                   request_headers:
                     Content-Type: "application/json"
+                  error_handler:
+                    $ref: "#/definitions/base_error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -366,7 +379,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          class_name: source_declarative_manifest.components.HubspotPropertyHistoryExtractor
           field_path: ["results"]
           entity_primary_key: vid
           additional_keys: ["archived"] # The old additional_keys aren't valid for the Hubspot V3 endpoint
@@ -401,12 +414,13 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: timestamp
     $parameters:
       name: contacts_property_history
       path: /crm/v3/objects/contacts
       extractor_field_path: results
+      required_scopes: crm.objects.contacts.read
     # The Hubspot V3 API uses camel case. To retain backwards compatibility, we convert fields kebab case from V1
     transformations:
       - type: AddFields
@@ -472,6 +486,8 @@ definitions:
                   http_method: GET
                   request_headers:
                     Content-Type: "application/json"
+                  error_handler:
+                    $ref: "#/definitions/base_error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -485,7 +501,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          class_name: source_declarative_manifest.components.HubspotPropertyHistoryExtractor
           field_path: ["results"]
           entity_primary_key: dealId
           additional_keys: ["archived"]
@@ -520,12 +536,13 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: timestamp
     $parameters:
       name: deals_property_history
       path: /crm/v3/objects/deals
       extractor_field_path: results
+      required_scopes: crm.objects.deals.read
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -536,6 +553,9 @@ definitions:
       - id
     $ref: "#/definitions/stream_base"
     name: marketing_emails
+    $parameters:
+      name: marketing_emails
+      required_scopes: content
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -573,6 +593,9 @@ definitions:
   email_subscriptions_stream:
     primary_key:
       - id
+    $parameters:
+      name: email_subscriptions
+      required_scopes: content
     $ref: "#/definitions/stream_without_pagination"
     name: email_subscriptions
     retriever:
@@ -600,9 +623,9 @@ definitions:
             - path: ["updatedAt"]
               value: "{{ record.get('updatedAt') or record['createdAt'] }}"
         - type: CustomTransformation
-          class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+          class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
         - type: CustomTransformation
-          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
           field_mapping:
             hs_date_entered_: "hs_v2_date_entered_"
             hs_date_exited_: "hs_v2_date_exited_"
@@ -617,7 +640,7 @@ definitions:
       $ref: "#/definitions/base_crm_search_incremental_stream"
       transformations:
         - type: CustomTransformation
-          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
           field_mapping:
             hs_date_entered_: "hs_v2_date_entered_"
             hs_date_exited_: "hs_v2_date_exited_"
@@ -635,6 +658,7 @@ definitions:
         - contacts
         - line_items
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.deals.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -642,19 +666,22 @@ definitions:
         - $ref: "#/definitions/base_dynamic_schema_loader"
           schema_transformations:
             - type: CustomTransformation
-              class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
               field_mapping:
                 hs_date_entered_: "hs_v2_date_entered_"
                 hs_date_exited_: "hs_v2_date_exited_"
                 hs_time_in_: "hs_v2_latest_time_in_"
             - type: CustomTransformation
-              class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deals_archived_stream:
     primary_key:
       - id
     $ref: "#/definitions/stream_base"
     name: deals_archived
+    $parameters:
+      name: deals_archived
+      required_scopes: contacts, crm.objects.deals.read
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -698,14 +725,14 @@ definitions:
             - results
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_hubspot.components.EntitySchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
     transformations:
       - type: AddFields
         fields:
           - path: ["archivedAt"]
             value: "{{ record.get('archivedAt') or record['createdAt'] }}"
       - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
         field_mapping:
           hs_date_entered_: "hs_v2_date_entered_"
           hs_date_exited_: "hs_v2_date_exited_"
@@ -721,7 +748,7 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: archivedAt
     schema_loader:
       - $ref: "#/definitions/deals_archived_schema_loader"
@@ -734,6 +761,9 @@ definitions:
       - id
     $ref: "#/definitions/stream_base"
     name: forms
+    $parameters:
+      name: forms
+      required_scopes: forms
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -795,7 +825,7 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
     schema_loader:
       - $ref: "#/definitions/forms_schema_loader"
@@ -806,6 +836,9 @@ definitions:
   form_submissions_stream:
     $ref: "#/definitions/stream_base"
     name: form_submissions
+    $parameters:
+      name: form_submissions
+      required_scopes: forms
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -854,7 +887,7 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
         cursor_format: "%ms"
     schema_loader:
@@ -867,6 +900,9 @@ definitions:
       - id
     $ref: "#/definitions/stream_base"
     name: owners
+    $parameters:
+      name: owners
+      required_scopes: crm.objects.owners.read
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -890,7 +926,7 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
@@ -902,6 +938,9 @@ definitions:
       - id
     $ref: "#/definitions/stream_base"
     name: owners_archived
+    $parameters:
+      name: owners_archived
+      required_scopes: crm.objects.owners.read
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -927,7 +966,7 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
@@ -939,6 +978,13 @@ definitions:
       - id
     $ref: "#/definitions/stream_base"
     name: ticket_pipelines
+    $parameters:
+      name: ticket_pipelines
+      required_scopes: >-
+        media_bridge.read, tickets, crm.schemas.custom.read, e-commerce, timeline, contacts, crm.schemas.contacts.read,
+        crm.objects.contacts.read, crm.objects.contacts.write, crm.objects.deals.read, crm.schemas.quotes.read,
+        crm.objects.deals.write, crm.objects.companies.read, crm.schemas.companies.read, crm.schemas.deals.read,
+        crm.schemas.line_items.read, crm.objects.companies.write
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -959,7 +1005,7 @@ definitions:
         $ref: "#/schemas/ticket_pipelines"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
 
   campaigns_stream:
@@ -967,6 +1013,9 @@ definitions:
     name: campaigns
     primary_key:
       - id
+    $parameters:
+      name: campaigns
+      required_scopes: crm.lists.read
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -1014,7 +1063,7 @@ definitions:
         $ref: "#/schemas/campaigns"
     transformations:
       - type: CustomTransformation
-        class_name: source_hubspot.components.AddFieldsFromEndpointTransformation
+        class_name: source_declarative_manifest.components.AddFieldsFromEndpointTransformation
         requester:
           $ref: "#/definitions/base_requester"
           path: "/email/public/v1/campaigns/{{ stream_slice['parent_id'] }}"
@@ -1034,7 +1083,7 @@ definitions:
           prefix: counters_
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: lastUpdatedTime
         cursor_format: "%ms"
 
@@ -1042,6 +1091,9 @@ definitions:
     $ref: "#/definitions/stream_base"
     name: contact_lists
     primary_key: listId
+    $parameters:
+      name: contact_lists
+      required_scopes: crm.lists.read
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -1102,6 +1154,9 @@ definitions:
     name: deal_pipelines
     primary_key:
       - pipelineId
+    $parameters:
+      name: deal_pipelines
+      required_scopes: crm.objects.contacts.read
     retriever:
       type: SimpleRetriever
       requester:
@@ -1130,7 +1185,7 @@ definitions:
       is_client_side_incremental: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
         cursor_format: "%ms"
     schema_loader:
@@ -1148,6 +1203,9 @@ definitions:
     name: workflows
     primary_key:
       - id
+    $parameters:
+      name: workflows
+      required_scopes: automation
     retriever:
       type: SimpleRetriever
       requester:
@@ -1191,7 +1249,7 @@ definitions:
         $ref: "#/schemas/workflows"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
         cursor_format: "%ms"
 
@@ -1199,6 +1257,9 @@ definitions:
     $ref: "#/definitions/stream_base"
     name: email_events
     primary_key: id
+    $parameters:
+      name: email_events
+      required_scopes: content
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -1254,7 +1315,7 @@ definitions:
         $ref: "#/schemas/email_events"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: created
         cursor_format: "%ms"
 
@@ -1262,11 +1323,14 @@ definitions:
     $ref: "#/definitions/stream_base"
     name: engagements
     primary_key: id
+    $parameters:
+      name: engagements
+      required_scopes: crm.objects.companies.read, crm.objects.contacts.read, crm.objects.deals.read, tickets, e-commerce
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
         type: CustomRequester
-        class_name: source_hubspot.components.EngagementsHttpRequester
+        class_name: source_declarative_manifest.components.EngagementsHttpRequester
         url_base: https://api.hubapi.com
         authenticator:
           $ref: "#/definitions/authenticator"
@@ -1338,7 +1402,7 @@ definitions:
         $ref: "#/schemas/engagements"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: lastUpdated
         cursor_format: "%ms"
 
@@ -1385,14 +1449,14 @@ definitions:
         $ref: "#/definitions/base_selector"
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_hubspot.components.EntitySchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
     transformations:
       - type: AddFields
         fields:
           - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
       - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+        class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
       - type: DpathFlattenFields
         field_path:
           - properties
@@ -1450,20 +1514,20 @@ definitions:
         type: DefaultPaginator
         pagination_strategy:
           type: CustomPaginationStrategy
-          class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+          class_name: source_declarative_manifest.components.HubspotCRMSearchPaginationStrategy
           page_size: 200
       record_selector:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotAssociationsExtractor
+          class_name: source_declarative_manifest.components.HubspotAssociationsExtractor
           field_path:
             - results
           entity_primary_key: "{{ parameters['entity'] }}"
           associations_list: "{{ parameters['associations'] }}"
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_hubspot.components.EntitySchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
     transformations:
       # - modular to allow support for NewtoLegacyFieldTransformation
       - type: DpathFlattenFields
@@ -1485,6 +1549,7 @@ definitions:
       associations:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read, crm.objects.companies.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1504,6 +1569,7 @@ definitions:
         - deals
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1523,6 +1589,7 @@ definitions:
         - deals
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read, sales-email-read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1541,6 +1608,7 @@ definitions:
         - contacts
         - deals
         - tickets
+      required_scopes: crm.objects.contacts.read
       cursor_filter_property_field: hs_lastmodifieddate
       schema_loader:
         - type: InlineSchemaLoader
@@ -1561,6 +1629,7 @@ definitions:
         - deals
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1580,6 +1649,7 @@ definitions:
         - deals
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1590,6 +1660,9 @@ definitions:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
     primary_key: []
+    $parameters:
+      name: subscription_changes
+      required_scopes: content
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -1643,7 +1716,7 @@ definitions:
         $ref: "#/schemas/subscription_changes"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: timestamp
         cursor_format: "%ms"
 
@@ -1681,7 +1754,7 @@ definitions:
         $ref: "#/definitions/base_selector"
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_hubspot.components.EntitySchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -1715,11 +1788,11 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_hubspot.components.HubspotSchemaExtractor
+            class_name: source_declarative_manifest.components.HubspotSchemaExtractor
             field_path: []
       schema_transformations:
         - type: CustomTransformation
-          class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+          class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
       schema_type_identifier:
         type: SchemaTypeIdentifier
         key_pointer: ["name"]
@@ -1749,7 +1822,7 @@ definitions:
             current_type: phone_number
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_hubspot.components.MigrateEmptyStringState
+        class_name: source_declarative_manifest.components.MigrateEmptyStringState
         cursor_field: updatedAt
         cursor_format: "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -1758,6 +1831,8 @@ definitions:
     name: goals
     $parameters:
       crm_object_name: goal_targets
+      name: goals
+      required_scopes: crm.objects.goals.read
     schema_loader:
       - $ref: "#/definitions/base_crm_object_stream/schema_loader"
       - type: InlineSchemaLoader
@@ -1768,7 +1843,9 @@ definitions:
     $ref: "#/definitions/base_crm_object_stream"
     name: products
     $parameters:
+      name: products
       crm_object_name: product
+      required_scopes: e-commerce
     schema_loader:
       - $ref: "#/definitions/base_crm_object_stream/schema_loader"
       - type: InlineSchemaLoader
@@ -1780,6 +1857,8 @@ definitions:
     name: line_items
     $parameters:
       crm_object_name: line_item
+      name: line_items
+      required_scopes: e-commerce, crm.objects.line_items.read
     schema_loader:
       - $ref: "#/definitions/base_crm_object_stream/schema_loader"
       - type: InlineSchemaLoader
@@ -1796,9 +1875,9 @@ definitions:
             - path: ["updatedAt"]
               value: "{{ record.get('updatedAt') or record['createdAt'] }}"
         - type: CustomTransformation
-          class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+          class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
         - type: CustomTransformation
-          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
           field_mapping:
             hs_lifecyclestage_: "hs_v2_date_entered_"
             hs_date_exited_: "hs_v2_date_exited_"
@@ -1813,7 +1892,7 @@ definitions:
       $ref: "#/definitions/base_crm_search_incremental_stream"
       transformations:
         - type: CustomTransformation
-          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
           field_mapping:
             hs_lifecyclestage_: "hs_v2_date_entered_"
             hs_date_exited_: "hs_v2_date_exited_"
@@ -1830,6 +1909,7 @@ definitions:
         - contacts
         - companies
       cursor_filter_property_field: lastmodifieddate
+      required_scopes: crm.objects.contacts.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1837,13 +1917,13 @@ definitions:
         - $ref: "#/definitions/base_dynamic_schema_loader"
           schema_transformations:
             - type: CustomTransformation
-              class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
               field_mapping:
                 hs_lifecyclestage_: "hs_v2_date_entered_"
                 hs_date_exited_: "hs_v2_date_exited_"
                 hs_time_in_: "hs_v2_latest_time_in_"
             - type: CustomTransformation
-              class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deal_splits_stream:
     type: StateDelegatingStream
@@ -1853,6 +1933,7 @@ definitions:
       name: deal_splits
       entity: deal_split
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.deals.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1870,6 +1951,7 @@ definitions:
         - companies
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read, crm.objects.companies.read, crm.objects.leads.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1888,6 +1970,7 @@ definitions:
         - contacts
         - deals
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1927,6 +2010,363 @@ streams:
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: StateDelegatingStream
+      name: custom_object_stream_name # will be set by components_resolver
+      $parameters:
+        entity: "custom_entity" # will be set by components_resolver
+        schema_properties: "schema_properties_placeholder" # will be set by components_resolver
+        schema_loader:
+          type: CustomSchemaLoader
+          class_name: source_declarative_manifest.components.HubspotCustomObjectsSchemaLoader
+      full_refresh_stream:
+        name: custom_object_stream_name # will be set by components_resolver
+        primary_key:
+          - id
+        $ref: "#/definitions/stream_base"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: "/crm/v3/objects/{{ parameters['entity'] }}"
+            request_parameters:
+              archived: "false"
+              properties:
+                type: QueryProperties
+                property_list:
+                  - "placeholder_for_properties" # will be set by components_resolver
+                property_chunking:
+                  type: PropertyChunking
+                  property_limit_type: characters
+                  property_limit: 15000
+                  record_merge_strategy:
+                    type: GroupByKeyMergeStrategy
+                    key: id
+          paginator:
+            $ref: "#/definitions/cursor_paginator"
+          record_selector:
+            $ref: "#/definitions/base_selector"
+            schema_normalization:
+              type: CustomSchemaNormalization
+              class_name: source_declarative_manifest.components.EntitySchemaNormalization
+        transformations:
+          - type: AddFields
+            fields:
+              - path: ["updatedAt"]
+                value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+          - type: DpathFlattenFields
+            field_path:
+              - properties
+            key_transformation:
+              type: KeyTransformation
+              prefix: properties_
+        incremental_sync:
+          $ref: "#/definitions/incremental_sync"
+          is_client_side_incremental: true
+      incremental_stream:
+        name: custom_object_stream_name # will be set by components_resolver
+        primary_key:
+          - id
+        $ref: "#/definitions/stream_base"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+            http_method: POST
+            request_body_json:
+              sorts:
+                - propertyName: hs_object_id
+                  direction: ASCENDING
+              filters:
+                - propertyName: "hs_lastmodifieddate"
+                  operator: GTE
+                  value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+                - propertyName: "hs_lastmodifieddate"
+                  operator: LTE
+                  value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+                - propertyName: hs_object_id
+                  operator: GTE
+                  value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+              properties: "properties_placeholder" # will be set by components_resolver
+              after: "{{ next_page_token['next_page_token']['after'] }}"
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: CustomPaginationStrategy
+              class_name: source_declarative_manifest.components.HubspotCRMSearchPaginationStrategy
+              page_size: 200
+            page_size_option:
+              type: RequestOption
+              inject_into: body_json
+              field_name: limit
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - results
+            schema_normalization:
+              type: CustomSchemaNormalization
+              class_name: source_declarative_manifest.components.EntitySchemaNormalization
+        transformations:
+          - type: DpathFlattenFields
+            field_path: ["properties"]
+            key_transformation:
+              type: KeyTransformation
+              prefix: properties_
+        incremental_sync:
+          $ref: "#/definitions/incremental_sync"
+          is_client_side_incremental: true
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /crm/v3/schemas
+          http_method: GET
+          error_handler:
+            # Same as the base error handler, but ignores 403 errors
+            # to avoid failing the sync when fetching dynamic streams.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+              # HubSpot API does not always return Retry-After value for 429 HTTP error
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: >-
+                  HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 502
+                  - 503
+                error_message: >-
+                  HubSpot server error (5xx). Retrying with exponential backoff...
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 401
+                error_message: >-
+                  Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+              # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 530
+                error_message: >-
+                  The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: >-
+                  Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                error_message: >-
+                  Bad request (400). Please verify your credentials and try again.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - full_refresh_stream
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_stream
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - entity
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - full_refresh_stream
+            - retriever
+            - requester
+            - request_parameters
+            - properties
+            - property_list
+          value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_stream
+            - retriever
+            - requester
+            - request_body_json
+            - properties
+          value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - schema_properties
+          value: "{{ components_values.properties }}"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: HubSpot Source Spec
+    type: object
+    required:
+      - credentials
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date.
+          It's recommended to provide relevant to your data start date value to optimize synchronization.
+        examples:
+          - "2017-01-25T00:00:00Z"
+        format: date-time
+      credentials:
+        title: Authentication
+        description: Choose how to authenticate to HubSpot.
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+              - credentials_title
+            properties:
+              credentials_title:
+                type: string
+                title: Auth Type
+                description: Name of the credentials
+                const: OAuth Credentials
+                order: 0
+              client_id:
+                title: Client ID
+                description: >-
+                  The Client ID of your HubSpot developer application. See the <a
+                  href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
+                  if you need help finding this ID.
+                type: string
+                examples:
+                  - "123456789000"
+              client_secret:
+                title: Client Secret
+                description: >-
+                  The client secret for your HubSpot developer application. See the <a
+                  href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
+                  if you need help finding this secret.
+                type: string
+                examples:
+                  - secret
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                description: >-
+                  Refresh token to renew an expired access token. See the <a
+                  href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
+                  if you need help finding this token.
+                type: string
+                examples:
+                  - refresh_token
+                airbyte_secret: true
+          - type: object
+            title: Private App
+            required:
+              - access_token
+              - credentials_title
+            properties:
+              credentials_title:
+                type: string
+                title: Auth Type
+                description: Name of the credentials set
+                const: Private App Credentials
+                order: 0
+              access_token:
+                title: Access token
+                description: >-
+                  HubSpot Access token. See the <a
+                  href="https://developers.hubspot.com/docs/api/private-apps">Hubspot docs</a>
+                  if you need help finding this token.
+                type: string
+                airbyte_secret: true
+      enable_experimental_streams:
+        title: Enable experimental streams
+        description: If enabled then experimental streams become available for sync.
+        type: boolean
+        default: false
+      num_worker:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 40
+        default: 3
+        examples: [ 1, 2, 3 ]
+        description: The number of worker threads to use for the sync.
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - credentials_title
+    predicate_value: OAuth Credentials
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
