@@ -22,16 +22,7 @@ For multi-tenant Xero accounts, you'll need to select which organization to conn
 - assets.read
 - offline_access
 
-<!-- env:cloud -->
-
-**For Airbyte Cloud:**
-
-- OAuth 2.0
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-
-**For Airbyte Open Source:**
+## Authentication
 
 There are two currently supported ways to authenticate with Xero:
 
@@ -42,31 +33,9 @@ For the OAuth client credentials, please follow [instructions](https://developer
 - Client ID
 - Client Secret
 
-<!-- /env:oss -->
-
 ## Setup guide
 
 ### Step 1: Set up Xero
-
-<!-- env:cloud -->
-
-### Step 2: Set up the Xero connector in Airbyte
-
-**For Airbyte Cloud:**
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Xero** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your Xero account`.
-5. Log in and `Allow access`.
-6. **Tenant ID** - Enter your Xero Organisation's [Tenant ID](https://developer.xero.com/documentation/guides/oauth2/auth-flow/#xero-tenants)
-7. **Start Date** - UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ` from which you'd like to replicate data.
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-
-**For Airbyte Open Source:**
-
 1. Create an application in [Xero development center](https://developer.xero.com/app/manage/).
 2. Select the appropriate authentication method (bearer token or OAuth client credentials).
 3. Configure the required scopes mentioned in the Prerequisites section.
@@ -78,11 +47,9 @@ For the OAuth client credentials, please follow [instructions](https://developer
 6. Enter your Xero Organisation's [Tenant ID](https://developer.xero.com/documentation/guides/oauth2/auth-flow/#xero-tenants).
 7. Enter a Start Date in UTC format `YYYY-MM-DDTHH:mm:ssZ` from which you'd like to replicate data.
 
-<!-- /env:oss -->
-
 ## Supported sync modes
 
-The Xero source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Xero source connector supports the following [sync modes](https://docs.airbyte.com/understanding-airbyte/connections/connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
