@@ -62,6 +62,11 @@ jobs:
           issue-number: ${{ github.event.inputs.pr }}
           body: |
             > Connector CAT tests started... [Check job output.](${{ steps.job-vars.outputs.run-url }})
+            >
+            > If the connector supports live tests or regression tests, you may want to run those now also:
+            > - [Run Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)
+            > - [Run Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
+            >
 
       - name: Run CAT tests with `airbyte-ci`
         if: github.event_name == 'workflow_dispatch'
@@ -89,10 +94,6 @@ jobs:
           reactions: hooray
           body: |
             > ✅ CAT Tests ran successfully.
-            >
-            > If the connector supports live tests or regression tests, you may want to run them now also:
-            > - [Run Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)
-            > - [Run Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
 
       - name: Append failure comment
         uses: peter-evans/create-or-update-comment@v4
