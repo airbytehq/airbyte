@@ -25,6 +25,13 @@ on:
         required: false
         description: "The pull request number, if applicable. Unused as of now."
 
+permissions:
+  # Allow the workflow to read contents
+  # and to read/write checks and PR comments.
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   generate-matrix:
     name: Generate Connector Matrix
@@ -33,13 +40,22 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 0
 
       - name: Add upstream remote (forks only)
         # This step only runs from forks.
         # It ensures the `upstream` ref is properly declared before proceeding
         # to the step of determining which connectors are modified.
-        if: github.repository != 'airbytehq/airbyte'
+        if: >
+          (inputs.repo != '' &&
+           inputs.repo != 'airbytehq/airbyte'
+          ) ||
+          (github.event.pull_request.head.repo.full_name != '' &&
+           github.event.pull_request.head.repo.full_name != 'airbytehq/airbyte'
+          )
         run: |
           # only add upstream if it doesn't already exist
           if ! git remote | grep -q upstream; then
@@ -88,12 +104,10 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
+        id: checkout
         uses: actions/checkout@v4
         with:
-          # In order to work correctly on forks, `repository` must be set if `ref` is set:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
-          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
-          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
@@ -158,6 +172,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          commit: ${{ steps.checkout.outputs.commit }}
           large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
@@ -185,8 +200,11 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
+        id: checkout
         uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Python deps
@@ -259,6 +277,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          commit: ${{ steps.checkout.outputs.commit }}
           large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
@@ -286,6 +305,8 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Java deps

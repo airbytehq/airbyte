@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
@@ -26,6 +28,7 @@ import io.mockk.mockk
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
@@ -34,7 +37,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
-    private fun factory(isFileTransferEnabled: Boolean) =
+    private fun factory(isFileTransferEnabled: Boolean, requireCheckpointKey: Boolean = false) =
         DestinationMessageFactory(
             DestinationCatalog(
                 listOf(
@@ -48,7 +51,8 @@ class DestinationMessageTest {
                     )
                 )
             ),
-            isFileTransferEnabled
+            isFileTransferEnabled,
+            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey
         )
 
     private fun convert(
@@ -154,6 +158,140 @@ class DestinationMessageTest {
                 .asProtocolMessage()
                 .serializeToString()
         )
+    }
+
+    @Test
+    fun streamCheckpointWithKey() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(descriptor.asProtocolObject())
+                                .withStreamState(blob1)
+                        )
+                        // Note: only source stats, no destination stats
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                )
+
+        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val parsedMessage = convert(factory, inputMessage) as StreamCheckpoint
+
+        assertNotNull(parsedMessage.checkpointKey)
+        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
+        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        assertEquals(
+            inputMessage
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .serializeToString(),
+            parsedMessage
+                .withDestinationStats(CheckpointMessage.Stats(3))
+                .asProtocolMessage()
+                .serializeToString()
+        )
+    }
+
+    @Test
+    fun globalCheckpointWithKey() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(blob1)
+                                .withStreamStates(
+                                    listOf(
+                                        AirbyteStreamState()
+                                            .withStreamDescriptor(descriptor.asProtocolObject())
+                                            .withStreamState(blob2),
+                                    ),
+                                ),
+                        )
+                        // Note: only source stats, no destination stats
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                )
+
+        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val parsedMessage = convert(factory, inputMessage) as GlobalCheckpoint
+
+        assertNotNull(parsedMessage.checkpointKey)
+        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
+        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        assertEquals(
+            inputMessage
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .serializeToString(),
+            parsedMessage
+                .withDestinationStats(CheckpointMessage.Stats(3))
+                .asProtocolMessage()
+                .serializeToString()
+        )
+    }
+
+    @Test
+    fun streamCheckpointThrowsIfRequiredKeyMissing() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(descriptor.asProtocolObject())
+                                .withStreamState(blob1)
+                        )
+                        // Note: only source stats, no destination stats
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty(CHECKPOINT_ID_NAME, "PARTITION_ID")
+                )
+
+        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            convert(factory, inputMessage)
+        }
+    }
+
+    @Test
+    fun globalCheckpointThrowsIfRequiredKeyMissing() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(blob1)
+                                .withStreamStates(
+                                    listOf(
+                                        AirbyteStreamState()
+                                            .withStreamDescriptor(descriptor.asProtocolObject())
+                                            .withStreamState(blob2),
+                                    ),
+                                ),
+                        )
+                        // Note: only source stats, no destination stats
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty(CHECKPOINT_INDEX_NAME, 1234)
+                )
+
+        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            convert(factory, inputMessage)
+        }
     }
 
     companion object {

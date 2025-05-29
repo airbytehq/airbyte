@@ -21,6 +21,9 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointIndex
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.IntegrationTest
@@ -79,6 +82,14 @@ interface PerformanceTestScenario {
      * be the number of distinct records) and the volume of data emitted.
      */
     fun getSummary(): Summary
+
+    fun checkpointKeyForMedium(dataChannelMedium: DataChannelMedium): CheckpointKey? {
+        return if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+            CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
+        } else {
+            null
+        }
+    }
 }
 
 /** Interface to implement for destination that support data validation. */
@@ -413,7 +424,8 @@ abstract class BasicPerformanceTest(
                     testScenario.catalog.streams.forEach {
                         destination.sendMessage(
                             DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                                .asProtocolMessage()
+                                .asProtocolMessage(),
+                            broadcast = true
                         )
                     }
                     destination.shutdown()
