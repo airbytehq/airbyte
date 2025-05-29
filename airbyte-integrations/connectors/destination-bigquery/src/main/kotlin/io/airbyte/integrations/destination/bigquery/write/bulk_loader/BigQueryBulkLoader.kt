@@ -51,6 +51,7 @@ class BigQueryBulkLoader(
                 .setSchema(BigQueryRecordFormatter.CSV_SCHEMA)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
                 .setJobTimeoutMs(600000L) // 10 min timeout
+                .setNullMarker("\\N")
                 .build()
 
         val loadJob = bigQueryClient.create(JobInfo.of(configuration))

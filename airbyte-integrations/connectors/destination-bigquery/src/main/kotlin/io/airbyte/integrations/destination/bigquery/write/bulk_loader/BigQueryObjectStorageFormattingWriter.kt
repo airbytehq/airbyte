@@ -26,6 +26,7 @@ class BigQueryObjectStorageFormattingWriterFactory(
             outputStream,
             rootLevelFlattening = flatten,
             extractedAtAsTimestampWithTimezone = true,
+            BigQueryCsvValueProcessor()
         )
     }
 }

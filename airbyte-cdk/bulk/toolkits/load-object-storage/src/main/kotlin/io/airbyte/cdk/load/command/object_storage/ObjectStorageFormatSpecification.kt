@@ -105,13 +105,13 @@ sealed interface ObjectStorageFormatConfiguration {
 data class JsonFormatConfiguration(
     override val extension: String = "jsonl",
     override val rootLevelFlattening: Boolean = false
-) : ObjectStorageFormatConfiguration {}
+) : ObjectStorageFormatConfiguration
 
 data class CSVFormatConfiguration(
     override val extension: String = "csv",
     override val rootLevelFlattening: Boolean = false,
     val processor: CsvValueProcessor = DefaultCsvValueProcessor(),
-) : ObjectStorageFormatConfiguration {}
+) : ObjectStorageFormatConfiguration
 
 data class AvroFormatConfiguration(
     override val extension: String = "avro",
