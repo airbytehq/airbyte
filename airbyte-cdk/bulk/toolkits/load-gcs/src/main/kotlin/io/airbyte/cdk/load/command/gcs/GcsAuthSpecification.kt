@@ -17,11 +17,11 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "credential_type"
 )
-@JsonSubTypes(JsonSubTypes.Type(value = GcsHmacKeySpecification::class, name = "HMAC key"))
+@JsonSubTypes(JsonSubTypes.Type(value = GcsHmacKeySpecification::class, name = "HMAC_KEY"))
 sealed class GcsAuthSpecification(
     @JsonSchemaTitle("Credential Type")
     @get:JsonProperty("credential_type")
-    val credentialType: Type
+    val credentialType: Type = Type.HMAC_KEY
 ) {
     enum class Type(@get:JsonValue val authTypeName: String) {
         HMAC_KEY("HMAC_KEY"),
