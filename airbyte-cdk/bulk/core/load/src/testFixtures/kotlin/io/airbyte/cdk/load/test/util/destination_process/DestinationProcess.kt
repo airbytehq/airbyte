@@ -25,6 +25,8 @@ import java.nio.file.Path
  * 5. [shutdown] once you have no more messages to send to the destination
  */
 interface DestinationProcess {
+    val dataChannelMedium: DataChannelMedium
+
     /**
      * Run the destination process. Callers who want to interact with the destination should
      * `launch` this method.
@@ -32,7 +34,7 @@ interface DestinationProcess {
     suspend fun run()
 
     suspend fun sendMessage(string: String)
-    suspend fun sendMessage(message: AirbyteMessage)
+    suspend fun sendMessage(message: AirbyteMessage, broadcast: Boolean = false)
     suspend fun sendMessages(vararg messages: AirbyteMessage) {
         messages.forEach { sendMessage(it) }
     }
