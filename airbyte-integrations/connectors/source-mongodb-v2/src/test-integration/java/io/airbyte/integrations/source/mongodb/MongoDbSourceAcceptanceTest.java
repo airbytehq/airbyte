@@ -526,7 +526,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
     final MongoDbCdcTargetPosition targetPosition =
-        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(databaseName),
+            List.of(getConfiguredCatalog().getStreams())));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -554,8 +555,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   void testIsSameOffset() {
     final MongoDbCdcTargetPosition targetPosition =
-        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(databaseName),
+            List.of(getConfiguredCatalog().getStreams())));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(databaseName),
+        List.of(getConfiguredCatalog().getStreams()));
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
