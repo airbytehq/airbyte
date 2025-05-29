@@ -2,17 +2,21 @@ package io.airbyte.integrations.destination.clickhouse_v2
 
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations.DefaultDirectLoadTableTempTableNameMigration
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickHouseSpecification
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseWriter
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickHouseDirectLoadSqlTableOperations
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadTableExistenceChecker
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -23,15 +27,22 @@ class ClickhouseBeanFactory {
                           names: TableCatalog,
                           directLoader: ClickhouseDirectLoadNativeTableOperations,
                           sqlGenerator: ClickhouseDirectLoadSqlGenerator,
-                          destinationHandler: ClickhouseDatabaseHandler
+                          destinationHandler: ClickhouseDatabaseHandler,
+                          streamStateStore: StreamStateStore<*>,
+                          config: ClickhouseConfiguration,
+                          existenceChecker: ClickhouseDirectLoadTableExistenceChecker,
     ): DestinationWriter {
-        val test =  ClickhouseWriter(
+        // This should be converter to a Bean
+        val sqlTableOperations =  ClickHouseDirectLoadSqlTableOperations(
             DefaultDirectLoadTableSqlOperations(
                 sqlGenerator,
                 destinationHandler
-            )
+            ),
+            clickhouseClient
         )
 
+        @Suppress("UNCHECKED_CAST")
+        streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
         return DirectLoadTableWriter(
             internalNamespace = "_internal",
             names = names,
@@ -45,8 +56,8 @@ class ClickhouseBeanFactory {
             streamStateStore = streamStateStore,
             directLoadTableTempTableNameMigration =
             DefaultDirectLoadTableTempTableNameMigration(
-                internalNamespace = config.internalTableDataset,
-                BigqueryDirectLoadTableExistenceChecker(bigquery),
+                internalNamespace = config.resolvedDatabase,
+                existenceChecker,
                 sqlTableOperations,
             ),
         )
