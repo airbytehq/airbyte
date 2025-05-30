@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.normalizeName;
@@ -157,6 +159,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     HashMap<Object, Object> safeProps = new HashMap<>(debeziumProperties);
     safeProps.put("mongodb.password", "****");
     LOGGER.info("properties: " + safeProps);
+    debeziumProperties.setProperty("name", normalizeName(config.get(DATABASE_CONFIGURATION_KEY).get(0).asText()));
     return parseSavedOffset(debeziumProperties);
   }
 
