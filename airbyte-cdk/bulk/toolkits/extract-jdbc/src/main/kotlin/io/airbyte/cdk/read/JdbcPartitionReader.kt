@@ -37,22 +37,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         streamState.streamFeedBootstrap.boostedOutputConsumerFactory
 
     val streamRecordConsumer: StreamRecordConsumer by lazy {
-        streamState.streamFeedBootstrap.streamRecordConsumer(
-            when (sharedState.configuration.boostedMode) {
-                false -> {
-                    null
-                }
-                true -> {
-                    val acquireSocketResource: AcquiredResources? =
-                        acquiredResources.get().getOrElse(ResourceType.RESOURCE_OUTPUT_SOCKET) {
-                            throw IllegalStateException("No socket resource acquired for partition reader")
-                        }
-                    val socketWrapper: SocketWrapper =
-                        (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
-                    boostedOutputConsumer = boostedOutputConsumerFactory?.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
-                    boostedOutputConsumer
-                }
-            })
+        initStreamRecordConsumer()
     }
     /** The [AcquiredResources] acquired for this [JdbcPartitionReader]. */
 
@@ -77,6 +62,24 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
+
+    fun initStreamRecordConsumer() : StreamRecordConsumer =
+        streamState.streamFeedBootstrap.streamRecordConsumer(
+        when (sharedState.configuration.boostedMode) {
+            false -> {
+                null
+            }
+            true -> {
+                val acquireSocketResource: AcquiredResources? =
+                    acquiredResources.get().getOrElse(ResourceType.RESOURCE_OUTPUT_SOCKET) {
+                        throw IllegalStateException("No socket resource acquired for partition reader")
+                    }
+                val socketWrapper: SocketWrapper =
+                    (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
+                boostedOutputConsumer = boostedOutputConsumerFactory?.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
+                boostedOutputConsumer
+            }
+        })
 
     fun out(row: SelectQuerier.ResultRow) {
         streamRecordConsumer.accept(row.data, row.changes)
