@@ -35,7 +35,6 @@ class ReadOperation(
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactoriesSupplier:
@@ -53,10 +52,9 @@ class ReadOperation(
                 config.checkpointTargetInterval,
                 outputConsumer,
                 metaFieldDecorator,
-                partitionsCreatorFactories,
                 boostedOutputConsumerFactory,
                 resourceAcquirer,
-                partitionsCreatorFactoriesSupplier.map { it -> it.get() }
+                partitionsCreatorFactoriesSupplier.map { it -> it.get() },
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->

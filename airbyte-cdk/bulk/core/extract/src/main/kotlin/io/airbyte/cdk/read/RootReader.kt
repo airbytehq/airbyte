@@ -34,9 +34,9 @@ class RootReader(
     val timeout: Duration,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
+    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) {
     private val log = KotlinLogging.logger {}
 
