@@ -14,11 +14,11 @@ data:
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
-  jobSpecific:
-    - jobType: check_connection
-      resourceRequirements:
-        memory_limit: 1600Mi
-        memory_request: 1600Mi
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 1600Mi
+          memory_request: 1600Mi
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
