@@ -38,6 +38,8 @@ class ReadOperation(
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
+    val partitionsCreatorFactoriesSupplier:
+        List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -54,6 +56,7 @@ class ReadOperation(
                 partitionsCreatorFactories,
                 boostedOutputConsumerFactory,
                 resourceAcquirer,
+                partitionsCreatorFactoriesSupplier.map { it -> it.get() }
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->
