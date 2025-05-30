@@ -160,7 +160,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     if (offset.isEmpty()) {
       LOGGER
           .info("This connector is using the old offset format where server_id is set to database name, migrating to the new offset format.");
-      for(String databaseName : debeziumProperties.getProperty(MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY).split(",")) {
+      for(String databaseName : debeziumProperties.getProperty("database.include.list").split(",")) {
         LOGGER.info("Processing database: {}", normalizeName(databaseName));
         debeziumProperties.setProperty("name", normalizeName(databaseName));
         offset = parseSavedOffset(debeziumProperties);
