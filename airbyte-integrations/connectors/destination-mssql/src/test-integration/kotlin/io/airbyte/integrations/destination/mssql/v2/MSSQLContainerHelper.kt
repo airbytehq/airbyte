@@ -23,7 +23,7 @@ object MSSQLContainerHelper {
     private val network = Network.newNetwork()
 
     private val testContainer =
-        MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
+        MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04")
             .acceptLicense()
             .withNetwork(network)
             .withLogConsumer { e -> logger.debug { e.utf8String } }
