@@ -67,7 +67,7 @@ class DuplicatedRecordsFilter(RecordFilter):
 
 
 @dataclass
-class CampaignsSettingsTransformer(RecordTransformation):
+class BingAdsCampaignsRecordTransformer(RecordTransformation):
     """
     Transform the Settings field in Campaigns records
     by wrapping Details arrays in TargetSettingDetail
@@ -117,3 +117,19 @@ class CampaignsSettingsTransformer(RecordTransformation):
 
         # Wrap the transformed settings in the expected structure
         record["Settings"] = {"Setting": transformed_settings}
+
+        # Transform BiddingScheme field - convert all integer values to floats
+        bidding_scheme = record.get("BiddingScheme")
+        if bidding_scheme and isinstance(bidding_scheme, dict):
+            self._convert_integers_to_floats(bidding_scheme)
+
+    def _convert_integers_to_floats(self, obj):
+        """
+        Recursively convert integer values to floats in a dictionary.
+        """
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, dict):
+                    self._convert_integers_to_floats(value)
+                elif isinstance(value, (int, float)) and value == int(value):
+                    obj[key] = float(value)

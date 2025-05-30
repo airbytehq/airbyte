@@ -232,7 +232,7 @@ definitions:
               - UrlCustomParameters
             value: "{{ {'Parameters': {'CustomParameter': record.UrlCustomParameters.Parameters}} if record.get('UrlCustomParameters') and record.get('UrlCustomParameters').get('Parameters') else record.get('UrlCustomParameters') }}"
       - type: CustomTransformation
-        class_name: source_bing_ads.components.CampaignsSettingsTransformer
+        class_name: source_bing_ads.components.BingAdsCampaignsRecordTransformer
       - type: RemoveFields
         field_pointers: []
 streams:
