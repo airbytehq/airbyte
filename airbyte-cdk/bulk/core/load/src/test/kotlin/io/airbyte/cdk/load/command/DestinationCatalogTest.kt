@@ -85,7 +85,12 @@ class DestinationCatalogTest {
             )
         val catalogFactory = DefaultDestinationCatalogFactory()
         val destinationCatalog =
-            catalogFactory.getDestinationCatalog(originalCatalog, streamFactory, "write")
+            catalogFactory.getDestinationCatalog(
+                originalCatalog,
+                streamFactory,
+                operation = "write",
+                checkNamespace = null,
+            )
         assertEquals(originalCatalog, destinationCatalog.asProtocolObject())
     }
 }

@@ -81,18 +81,6 @@ abstract class S3V2WriteTest(
     }
 
     @Test
-    @Disabled("flaky")
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-
-    @Test
-    @Disabled("flaky")
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Test
     fun testMergeUnions() {
         Assumptions.assumeTrue(mergesUnions)
         // Avro and parquet merges unions, merging schemas. Validate the behavior by ensuring
@@ -468,7 +456,6 @@ class S3V2WriteTestParquetUncompressed :
         mergesUnions = true,
     )
 
-@Disabled("flaky: re-enable after dagger flow is disabled")
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
@@ -482,13 +469,7 @@ class S3V2WriteTestParquetSnappy :
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
-    ) {
-    @Disabled("flaky: re-enable after dagger flow is disabled")
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-}
+    )
 
 class S3V2WriteTestEndpointURL :
     S3V2WriteTest(

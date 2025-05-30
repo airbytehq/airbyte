@@ -1,3 +1,6 @@
+---
+dockerRepository: airbyte/source-netsuite-enterprise
+---
 # Source Netsuite
 
 Airbyte’s incubating Netsuite enterprise source connector currently offers Full Refresh and cursosr-based Incremental syncs for streams.
@@ -27,7 +30,7 @@ Airbyte’s incubating Netsuite enterprise source connector currently offers Ful
 
 To find details such as host, port, Account ID and role go on Netsuite home page, scroll down to Settings at the bottom left and click "Set Up SuiteAnalytics Connect".
 
-![Netsuite Setup](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/master/docs/enterprise-setup/assets/enterprise-connectors/netsuite-setup.png)
+![Netsuite Setup](/assets/docs/enterprise-connectors/netsuite-setup.png)
 
 Note: the role controls what is visible and not to the connector. At a minimum the "SuiteAnalytics Connect" permission is required to connect to SuiteAnalytics over JDBC, as described in [Netsuite SuiteAnalytics documentations](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4102771016.html#To-set-up-SuiteAnalytics-Connect-permissions-using-Manage-Roles%3A)
 

@@ -17,6 +17,8 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointIndex
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -98,6 +100,7 @@ class InputConsumerTaskTest {
                 checkpointQueue = checkpointQueue,
                 openStreamQueue = mockk(relaxed = true),
                 fileTransferQueue = mockk(relaxed = true),
+                1
             )
         val task =
             InputConsumerTask(
@@ -146,6 +149,7 @@ class InputConsumerTaskTest {
                 checkpointQueue = checkpointQueue,
                 openStreamQueue = mockk(relaxed = true),
                 fileTransferQueue = mockk(relaxed = true),
+                1
             )
         val task =
             InputConsumerTask(
@@ -210,7 +214,7 @@ class InputConsumerTaskTest {
         coEvery { checkpointQueue.publish(any()) } coAnswers { published.add(firstArg()) }
         published.toList().zip(batches).forEach { (checkpoint, event) ->
             val wrapped = checkpoint.value
-            Assertions.assertEquals(event.expectedStateIndex, wrapped.checkpointId)
+            Assertions.assertEquals(event.expectedStateIndex, wrapped.checkpointKey.checkpointIndex)
             Assertions.assertEquals(event.stream.descriptor, wrapped.stream)
         }
     }
@@ -219,22 +223,19 @@ class InputConsumerTaskTest {
     fun testSendGlobalState() = runTest {
         open class TestEvent
         data class AddRecords(val stream: DestinationStream, val count: Int) : TestEvent()
-        data class SendState(
-            val expectedStream1CheckpointId: CheckpointId,
-            val expectedStream2CheckpointId: CheckpointId,
-            val expectedStats: Long = 0
-        ) : TestEvent()
+        data class SendState(val expectedCheckpointIndex: Int, val expectedStats: Long = 0) :
+            TestEvent()
 
         val batches =
             listOf(
                 AddRecords(MockDestinationCatalogFactory.stream1, 10),
-                SendState(CheckpointId(0), CheckpointId(0), 10),
+                SendState(0, 10),
                 AddRecords(MockDestinationCatalogFactory.stream2, 5),
                 AddRecords(MockDestinationCatalogFactory.stream1, 4),
-                SendState(CheckpointId(1), CheckpointId(1), 9),
+                SendState(1, 9),
                 AddRecords(MockDestinationCatalogFactory.stream2, 3),
-                SendState(CheckpointId(2), CheckpointId(2), 3),
-                SendState(CheckpointId(3), CheckpointId(3), 0),
+                SendState(2, 3),
+                SendState(3, 0),
             )
 
         val task =
@@ -275,10 +276,12 @@ class InputConsumerTaskTest {
         checkpoints.toList().zip(batches.filterIsInstance<SendState>()).forEach {
             (checkpoint, event) ->
             val wrapped = checkpoint.value
-            val stream1State = wrapped.streamIndexes.find { it.first == stream1.descriptor }!!
-            val stream2State = wrapped.streamIndexes.find { it.first == stream2.descriptor }!!
-            Assertions.assertEquals(event.expectedStream1CheckpointId, stream1State.second)
-            Assertions.assertEquals(event.expectedStream2CheckpointId, stream2State.second)
+            val expectedKey =
+                CheckpointKey(
+                    checkpointIndex = CheckpointIndex(event.expectedCheckpointIndex),
+                    checkpointId = CheckpointId(event.expectedCheckpointIndex.toString())
+                )
+            Assertions.assertEquals(expectedKey, wrapped.checkpointKey)
             Assertions.assertEquals(
                 event.expectedStats,
                 wrapped.checkpoint.destinationStats?.recordCount
@@ -312,6 +315,7 @@ class InputConsumerTaskTest {
                 checkpointQueue = checkpointQueue,
                 openStreamQueue = mockk(relaxed = true),
                 fileTransferQueue = mockk(relaxed = true),
+                1
             )
         val task =
             InputConsumerTask(

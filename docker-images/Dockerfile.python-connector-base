@@ -13,7 +13,7 @@ RUN adduser --uid 1000 --system --group --no-create-home airbyte && \
     chown airbyte:airbyte /airbyte
 
 ENV PIP_CACHE_DIR=/custom_cache/pip
-RUN pip install --upgrade pip==24.0 setuptools==70.0.0
+RUN pip install --upgrade pip==24.0 setuptools==78.1.1
 
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
@@ -28,6 +28,6 @@ RUN apt-get install -y socat=1.7.4.4-2
 RUN apt-get update && \
     apt-get install -y \
         tesseract-ocr=5.3.0-2 \
-        poppler-utils=22.12.0-2+b1
+        poppler-utils=22.12.0-2+deb12u1
 
 RUN mkdir -p 755 /usr/share/nltk_data

@@ -1,4 +1,4 @@
-name: Analyze Gradle Dependency Changes
+name: Gradle Dependency Analysis
 on:
   pull_request:
 
