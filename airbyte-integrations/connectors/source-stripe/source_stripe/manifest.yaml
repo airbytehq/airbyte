@@ -67,8 +67,8 @@ definitions:
               http_codes:
                 - 404
               error_message: >-
-                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
-                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync,
                 you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
@@ -860,15 +860,18 @@ definitions:
               types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
 
     customer_balance_transactions:
-      $ref: "#/definitions/entity_stream"
+      $ref: "#/definitions/base_stream"
       $parameters:
         name: customer_balance_transactions
       retriever:
         $ref: "#/definitions/base_retriever"
         $parameters:
-          path: customers/{{ stream_partition.customer_id }}/balance_transactions
+          path: customers/{{ stream_slice.customer_id }}/balance_transactions
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_stripe.components.CustomerIdPartitionRouter
+          parameters:
+            stream_state: "{{ stream_state }}"
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -876,9 +879,33 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/customers"
               incremental_dependency: true
-      # This stream is not truly incremental on the child level.
-      # We're configuring it this way to support incremental syncs on the parent only,
-      # which helps reduce the size of the state.
+              record_selector:
+                extractor:
+                  field_pointer: []
+              parameters:
+                inject_into: extra_fields
+              extra_fields:
+                - ["object"]
+                - ["balance"]
+                - ["id"]
+            - type: ParentStreamConfig
+              parent_key: customer
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/invoices"
+              incremental_dependency: true
+              record_selector:
+                extractor:
+                  field_pointer: ["data"]
+              parameters:
+                inject_into: extra_fields
+              extra_fields:
+                - ["object"]
+                - ["total"]
+                - ["customer"]
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_stripe.components.CustomerBalanceStateMigration
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
@@ -886,7 +913,7 @@ definitions:
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - updated # Remove field that added in entity_stream
+            - - updated
 
     payout_balance_transactions:
       $ref: "#/definitions/entity_stream"
