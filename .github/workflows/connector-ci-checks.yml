@@ -1,8 +1,12 @@
-name: Connector CI Tests
+name: Connector CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
 
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
@@ -387,3 +391,43 @@ jobs:
     steps:
       - name: Report Lint Summary
         run: echo "✅ All connectors lint checks completed successfully (or nothing to check)."
+
+  pre-release-checks:
+    if: github.event.pull_request.draft == false
+    needs: [generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: ${{ matrix.connector || 'No-Op' }} Pre-Release Checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          fetch-depth: 0
+      - name: Install uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+      - name: Install QA Checks
+        if: matrix.connector
+        run: |
+          uv tool install airbyte-ci/connectors/connectors_qa
+      - name: Run QA Checks
+        if: matrix.connector
+        # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
+        run: |
+          connector_name=${{ matrix.connector }}
+          connectors-qa run --name ${connector_name%-strict-encrypt}
+
+  pre-release-checks-summary:
+    name: Pre-Release Checks Summary
+    if: github.event.pull_request.draft == false
+    needs: [pre-release-checks]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Summary
+        run: echo "✅ All Pre-Release Checks completed successfully (or nothing to check)."

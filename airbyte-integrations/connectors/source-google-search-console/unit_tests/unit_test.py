@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 
 import pytest
 import requests
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf as lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,

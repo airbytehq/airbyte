@@ -1,4 +1,4 @@
-name: Internal Poetry packages CI
+name: Internal CI Tooling Checks
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,6 +17,7 @@ on:
       - synchronize
 jobs:
   changes:
+    name: Detect Changes
     runs-on: ubuntu-24.04
     outputs:
       internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
