@@ -110,7 +110,7 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
-| 0.2.4 | 2025-05-29 | [60849](https://github.com/airbytehq/airbyte/pull/60849) | chore: connector source-sftp - upgrade sftp client package to use mwiede/jsch |
+| 0.2.3 | 2025-05-29 | [60849](https://github.com/airbytehq/airbyte/pull/60849) | Upgrade sftp client package to use mwiede/jsch |
 | 0.2.2 | 2024-02-13 | [35221](https://github.com/airbytehq/airbyte/pull/35221) | Adopt CDK 0.20.4 |
 | 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
 | 0.2.0 | 2024-01-15 | [34265](https://github.com/airbytehq/airbyte/pull/34265) | Remove LEGACY state flag |
