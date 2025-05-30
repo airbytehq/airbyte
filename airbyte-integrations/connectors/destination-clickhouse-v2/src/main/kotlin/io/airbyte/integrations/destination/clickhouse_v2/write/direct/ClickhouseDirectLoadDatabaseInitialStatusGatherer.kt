@@ -15,6 +15,7 @@ class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
     private val clickhouseClient: Client,
     private val internalTableDataset: String = "airbyte_internal",
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
+    // TODO: See if there is a different way.
     override suspend fun gatherInitialStatus(streams: TableCatalog): Map<DestinationStream, DirectLoadInitialStatus> {
         val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(streams.size)
         coroutineScope {
@@ -38,10 +39,10 @@ class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
         return map
     }
 
+    // TODO: Implement this
     private fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
         // val table = clickhouseClient.query("SELECT count(1) FROM ${tableName.name}").get()
         //     .inputStream.
-        // TODO: This needs to be updated.
 //        return DirectLoadTableStatus(isEmpty = true)
         return null
     }

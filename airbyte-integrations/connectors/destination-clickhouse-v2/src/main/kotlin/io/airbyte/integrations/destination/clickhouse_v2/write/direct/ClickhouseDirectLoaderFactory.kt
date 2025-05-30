@@ -12,5 +12,4 @@ class ClickhouseDirectLoaderFactory(private val clickhouseClient: Client): Direc
         part: Int
     ): ClickhouseDirectLoader =
         ClickhouseDirectLoader(clickhouseClient)
-
 }
