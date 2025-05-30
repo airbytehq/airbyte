@@ -21,13 +21,14 @@ class ClickhouseChecker(
     override fun check(config: ClickhouseConfiguration) {
          val client = ClickhouseBeanFactory().clickhouseClient(config)
 
+        // TODO: the logic to combine table name database should be codified somewhere ${config.database}.$tableName
          client.execute("CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test UInt8) ENGINE = MergeTree ORDER BY ()")
              .get(10, TimeUnit.SECONDS)
 
          val insert = client.insert(tableName, TEST_DATA.byteInputStream(), ClickHouseFormat.JSONEachRow)
              .get(10, TimeUnit.SECONDS)
 
-         assert(insert.writtenRows == 1L) { "Failed to insert expected rows into check table. Actual written: $insert.writtenRows" }
+         assert(insert.writtenRows == 1L) { "Failed to insert expected rows into check table. Actual written: ${insert.writtenRows}" }
     }
 
     override fun cleanup(config: ClickhouseConfiguration) {

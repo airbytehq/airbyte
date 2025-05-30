@@ -61,11 +61,7 @@ class ClickhouseDirectLoadSqlGenerator(
                 .joinToString(",\n")
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
-        val clusterConfig =
-            clusteringColumns(stream, columnNameMapping)
-                .stream()
-                .map { c: String? -> StringUtils.wrap(c, QUOTE) }
-                .collect(Collectors.joining(", "))
+
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 //        TODO: Add namespace to table name properly — CH doesn't like periods
 //        val finalTableId = tableName.toPrettyString(QUOTE)
@@ -74,7 +70,7 @@ class ClickhouseDirectLoadSqlGenerator(
             """
             CREATE $forceCreateTable TABLE `${config.resolvedDatabase}`.$finalTableId (
               _airbyte_raw_id String NOT NULL,
-              _airbyte_extracted_at DateTime NOT NULL,
+              _airbyte_extracted_at DateTime64(3) NOT NULL,
               _airbyte_meta String NOT NULL,
               _airbyte_generation_id UInt32,
               $columnDeclarations
@@ -84,6 +80,7 @@ class ClickhouseDirectLoadSqlGenerator(
         )
     }
 
+    // TODO: implement this.
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
         throw NotImplementedError(
             "This method is implemented using a native bigquery API call in BigqueryDirectLoadSqlTableOperations"
@@ -310,24 +307,5 @@ class ClickhouseDirectLoadSqlGenerator(
                     }
                 is UnknownType -> ClickHouseDataType.JSON
             }
-
-        fun clusteringColumns(
-            stream: DestinationStream,
-            columnNameMapping: ColumnNameMapping
-        ): List<String> {
-            val clusterColumns: MutableList<String> = ArrayList()
-            if (stream.importType is Dedupe) {
-                // We're doing de-duping, therefore we have a primary key.
-                // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
-                // columns,
-                // and we're always clustering on _airbyte_extracted_at
-                (stream.importType as Dedupe).primaryKey.stream().limit(3).forEach {
-                    pk: List<String> ->
-                    clusterColumns.add(columnNameMapping[pk.first()]!!)
-                }
-            }
-            clusterColumns.add("_airbyte_extracted_at")
-            return clusterColumns
-        }
     }
 }
