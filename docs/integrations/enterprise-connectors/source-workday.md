@@ -1,3 +1,6 @@
+---
+dockerRepository: airbyte/source-workday
+---
 # Source Workday
 
 Airbyte's [Workday](https://workday.com) enterprise source connector currently offers the following features:
