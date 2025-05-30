@@ -222,7 +222,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - Languages
-            value: "{{ {'string': record.get('Languages', [])} }}"
+            value: "{{ {'string': record.get('Languages')} if record.get('Languages') is not none and record.get('Languages') | length > 0 else None }}"
           - type: AddedFieldDefinition
             path:
               - UrlCustomParameters
