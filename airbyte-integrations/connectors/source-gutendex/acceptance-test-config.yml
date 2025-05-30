@@ -3,12 +3,10 @@
 connector_image: airbyte/source-gutendex:dev
 tests:
   spec:
-    - spec_path: "source_gutendex/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:

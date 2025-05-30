@@ -157,7 +157,10 @@ In order for everything to work correctly, it is also necessary that the user wh
     {
       "Effect": "Allow",
       "Action": "s3:*",
-      "Resource": ["arn:aws:s3:::YOUR_BUCKET_NAME/*", "arn:aws:s3:::YOUR_BUCKET_NAME"]
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME"
+      ]
     }
   ]
 }
@@ -313,7 +316,10 @@ The following configuration is available to configure the Parquet output:
 
 These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations/) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                 |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
@@ -326,3 +332,5 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 | 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220)  | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
 | 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907)  | Fix parsing empty object in schema                                                      |
 | 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695)  | Initial Commit                                                                          |
+
+</details>

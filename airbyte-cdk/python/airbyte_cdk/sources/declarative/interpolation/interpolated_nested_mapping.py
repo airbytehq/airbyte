@@ -7,7 +7,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 NestedMappingEntry = Union[dict[str, "NestedMapping"], list["NestedMapping"], str, int, float, bool, None]
 NestedMapping = Union[dict[str, NestedMappingEntry], str]
@@ -25,14 +25,14 @@ class InterpolatedNestedMapping:
     mapping: NestedMapping
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Optional[Mapping[str, Any]]):
+    def __post_init__(self, parameters: Optional[Mapping[str, Any]]) -> None:
         self._interpolation = JinjaInterpolation()
         self._parameters = parameters
 
-    def eval(self, config: Config, **additional_parameters):
+    def eval(self, config: Config, **additional_parameters: Any) -> Any:
         return self._eval(self.mapping, config, **additional_parameters)
 
-    def _eval(self, value, config, **kwargs):
+    def _eval(self, value: Union[NestedMapping, NestedMappingEntry], config: Config, **kwargs: Any) -> Any:
         # Recursively interpolate dictionaries and lists
         if isinstance(value, str):
             return self._interpolation.eval(value, config, parameters=self._parameters, **kwargs)

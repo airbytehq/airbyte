@@ -3,528 +3,664 @@
   "type": "object",
   "properties": {
     "ad_group.id": {
+      "description": "The ID of the ad group this ad belongs to.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.added_by_google_ads": {
+      "description": "Specifies whether the ad was created by Google Ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.app_ad.descriptions": {
+      "description": "Array of descriptions for App ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.headlines": {
+      "description": "Array of headlines for App ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.html5_media_bundles": {
+      "description": "Array of HTML5 media bundles for App ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.images": {
+      "description": "Array of images for App ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.mandatory_ad_text": {
+      "description": "Mandatory text for App ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.app_ad.youtube_videos": {
+      "description": "Array of YouTube videos for App ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.descriptions": {
+      "description": "Array of descriptions for App engagement ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.headlines": {
+      "description": "Array of headlines for App engagement ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.images": {
+      "description": "Array of images for App engagement ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_engagement_ad.videos": {
+      "description": "Array of videos for App engagement ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.call_ad.business_name": {
+      "description": "The business name for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.call_tracked": {
+      "description": "Indicates if calls are being tracked for Call ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.call_ad.conversion_action": {
+      "description": "The conversion action for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.conversion_reporting_state": {
+      "description": "The state of conversion reporting for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.country_code": {
+      "description": "The country code for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.description1": {
+      "description": "Description line 1 for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.description2": {
+      "description": "Description line 2 for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.disable_call_conversion": {
+      "description": "Indicates if call conversions are disabled for Call ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.call_ad.headline1": {
+      "description": "Headline 1 for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.headline2": {
+      "description": "Headline 2 for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.path1": {
+      "description": "Path field 1 for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.path2": {
+      "description": "Path field 2 for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.phone_number": {
+      "description": "The phone number for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.phone_number_verification_url": {
+      "description": "The phone number verification URL for Call ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.device_preference": {
+      "description": "The device preference for the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.display_upload_ad.display_upload_product_type": {
+      "description": "The product type for display upload ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.display_upload_ad.media_bundle": {
+      "description": "The media bundle for display upload ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.display_url": {
+      "description": "The display URL for the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_dynamic_search_ad.description": {
+      "description": "Description for Expanded Dynamic Search ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_dynamic_search_ad.description2": {
+      "description": "Additional description for Expanded Dynamic Search ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.description": {
+      "description": "Description for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.description2": {
+      "description": "Additional description for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.headline_part1": {
+      "description": "Headline part 1 for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.headline_part2": {
+      "description": "Headline part 2 for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.headline_part3": {
+      "description": "Headline part 3 for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.path1": {
+      "description": "Path field 1 for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.path2": {
+      "description": "Path field 2 for Expanded Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.final_app_urls": {
+      "description": "Array of final app URLs.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.final_mobile_urls": {
+      "description": "Array of final mobile URLs.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.final_url_suffix": {
+      "description": "The final URL suffix for the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.final_urls": {
+      "description": "Array of final URLs.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.hotel_ad": {
+      "description": "Representation of a hotel ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.id": {
+      "description": "The ID of the ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.image_url": {
+      "description": "The URL of the image for Image ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.mime_type": {
+      "description": "The MIME type of the image for Image ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.name": {
+      "description": "The name of the image for Image ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.pixel_height": {
+      "description": "The pixel height of the image for Image ads.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.pixel_width": {
+      "description": "The pixel width of the image for Image ads.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.preview_image_url": {
+      "description": "The preview image URL for Image ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.preview_pixel_height": {
+      "description": "The preview pixel height of the image for Image ads.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.preview_pixel_width": {
+      "description": "The preview pixel width of the image for Image ads.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.legacy_app_install_ad": {
+      "description": "Representation of a legacy app install ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.accent_color": {
+      "description": "The accent color for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color": {
+      "description": "Indicates if flexible colors are allowed for Legacy Responsive Display ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.business_name": {
+      "description": "The business name for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text": {
+      "description": "The call to action text for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.description": {
+      "description": "Description for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
+      "description": "Format setting for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.logo_image": {
+      "description": "The logo image for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.long_headline": {
+      "description": "Long headline for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.main_color": {
+      "description": "The main color for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.marketing_image": {
+      "description": "The marketing image for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.price_prefix": {
+      "description": "The price prefix for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.promo_text": {
+      "description": "The promo text for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.short_headline": {
+      "description": "Short headline for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image": {
+      "description": "The square logo image for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image": {
+      "description": "The square marketing image for Legacy Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.local_ad.call_to_actions": {
+      "description": "Array of call to actions for Local ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.local_ad.descriptions": {
+      "description": "Array of descriptions for Local ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.local_ad.headlines": {
+      "description": "Array of headlines for Local ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.local_ad.logo_images": {
+      "description": "Array of logo images for Local ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.local_ad.marketing_images": {
+      "description": "Array of marketing images for Local ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.local_ad.path1": {
+      "description": "Path field 1 for Local ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.local_ad.path2": {
+      "description": "Path field 2 for Local ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.local_ad.videos": {
+      "description": "Array of videos for Local ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.name": {
+      "description": "The name of the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.resource_name": {
+      "description": "The resource name of the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.accent_color": {
+      "description": "The accent color for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.allow_flexible_color": {
+      "description": "Indicates if flexible colors are allowed for Responsive Display ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.responsive_display_ad.business_name": {
+      "description": "The business name for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.call_to_action_text": {
+      "description": "The call to action text for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.control_spec.enable_asset_enhancements": {
+      "description": "Indicates if asset enhancements are enabled for Responsive Display ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.responsive_display_ad.control_spec.enable_autogen_video": {
+      "description": "Indicates if autogen video is enabled for Responsive Display ads.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.responsive_display_ad.descriptions": {
+      "description": "Array of descriptions for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
+      "description": "The format setting for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
+      "description": "Array of headlines for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.logo_images": {
+      "description": "Array of logo images for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
+      "description": "Long headline for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.main_color": {
+      "description": "The main color for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.marketing_images": {
+      "description": "Array of marketing images for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.price_prefix": {
+      "description": "The price prefix for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.promo_text": {
+      "description": "The promo text for Responsive Display ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.square_logo_images": {
+      "description": "Array of square logo images for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
+      "description": "Array of square marketing images for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
+      "description": "Array of YouTube videos for Responsive Display ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.descriptions": {
+      "description": "Array of descriptions for Responsive Search ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.headlines": {
+      "description": "Array of headlines for Responsive Search ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.path1": {
+      "description": "Path field 1 for Responsive Search ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_search_ad.path2": {
+      "description": "Path field 2 for Responsive Search ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.shopping_comparison_listing_ad.headline": {
+      "description": "The headline for Shopping Comparison Listing ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.shopping_product_ad": {
+      "description": "Representation of a shopping product ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.shopping_smart_ad": {
+      "description": "Representation of a shopping smart ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.smart_campaign_ad.descriptions": {
+      "description": "Array of descriptions for Smart Campaign ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.smart_campaign_ad.headlines": {
+      "description": "Array of headlines for Smart Campaign ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.system_managed_resource_source": {
+      "description": "The source of the system-managed resource.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.text_ad.description1": {
+      "description": "Description line 1 for Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.text_ad.description2": {
+      "description": "Description line 2 for Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.text_ad.headline": {
+      "description": "Headline for Text ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.tracking_url_template": {
+      "description": "The tracking URL template for the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.type": {
+      "description": "The type of ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.url_collections": {
+      "description": "Array of URL collections for the ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.url_custom_parameters": {
+      "description": "Array of custom parameters for final URLs.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.video_ad.in_feed.description1": {
+      "description": "Description line 1 for In-Feed video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.in_feed.description2": {
+      "description": "Description line 2 for In-Feed video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.in_feed.headline": {
+      "description": "Headline for In-Feed video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.in_stream.action_button_label": {
+      "description": "Action button label for In-Stream video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.in_stream.action_headline": {
+      "description": "Action headline for In-Stream video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.out_stream.description": {
+      "description": "Description for Out-Stream video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.out_stream.headline": {
+      "description": "Headline for Out-Stream video ads.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_responsive_ad.call_to_actions": {
+      "description": "Array of call to actions for Video Responsive ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.companion_banners": {
+      "description": "Array of companion banners for Video Responsive ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.descriptions": {
+      "description": "Array of descriptions for Video Responsive ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.headlines": {
+      "description": "Array of headlines for Video Responsive ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.long_headlines": {
+      "description": "Array of long headlines for Video Responsive ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.video_responsive_ad.videos": {
+      "description": "Array of videos for Video Responsive ads.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad_group": {
+      "description": "The ad group this ad belongs to.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad_strength": {
+      "description": "The strength of the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.labels": {
+      "description": "Array of labels associated with the ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.policy_summary.approval_status": {
+      "description": "The approval status of the ad based on policies.",
       "type": ["null", "string"]
     },
     "ad_group_ad.policy_summary.policy_topic_entries": {
+      "description": "Array of policy topic entries for the ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.policy_summary.review_status": {
+      "description": "The review status of the ad based on policies.",
       "type": ["null", "string"]
     },
     "ad_group_ad.resource_name": {
+      "description": "The resource name of the ad group ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.status": {
+      "description": "The status of the ad group ad.",
       "type": ["null", "string"]
     },
     "segments.date": {
+      "description": "The date segment for the ad group ad data.",
       "type": ["null", "string"],
       "format": "date"
     }

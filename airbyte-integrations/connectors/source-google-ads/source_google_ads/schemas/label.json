@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "The unique identifier of the customer associated with the label.",
       "type": ["null", "integer"]
     },
     "label.id": {
+      "description": "The unique identifier of the label.",
       "type": ["null", "integer"]
     },
     "label.name": {
+      "description": "The name associated with the label.",
       "type": ["null", "string"]
     },
     "label.resource_name": {
+      "description": "The resource name of the label.",
       "type": ["null", "string"]
     },
     "label.status": {
+      "description": "The status of the label.",
       "type": ["null", "string"]
     },
     "label.text_label.background_color": {
+      "description": "The background color of the text label.",
       "type": ["null", "string"]
     },
     "label.text_label.description": {
+      "description": "The description associated with the text label.",
       "type": ["null", "string"]
     }
   }

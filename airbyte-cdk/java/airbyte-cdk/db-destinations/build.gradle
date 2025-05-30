@@ -1,22 +1,8 @@
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-deprecation,-removal,-this-escape"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-try,-this-escape"
-    }
-}
-
-compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
-spotbugsTest.enabled = false
-spotbugsTestFixtures.enabled = false
-
 dependencies {
-    api 'org.apache.commons:commons-csv:1.10.0'
+    api 'org.apache.commons:commons-csv:1.11.0'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
@@ -24,8 +10,8 @@ dependencies {
 
     implementation 'io.aesy:datasize:1.0.0'
 
-    testFixturesCompileOnly libs.lombok
-    testFixturesAnnotationProcessor libs.lombok
+    testFixturesCompileOnly 'org.projectlombok:lombok:1.18.34'
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
@@ -34,6 +20,6 @@ dependencies {
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
 
 }

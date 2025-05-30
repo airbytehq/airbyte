@@ -3,44 +3,56 @@
   "additionalProperties": true,
   "properties": {
     "created_at": {
+      "description": "Date and time when the image was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "id": {
+      "description": "Unique identifier for the image",
       "type": ["null", "integer"]
     },
     "position": {
+      "description": "Position order of the image relative to other images of the same product",
       "type": ["null", "integer"]
     },
     "product_id": {
+      "description": "Unique identifier of the product associated with the image",
       "type": ["null", "integer"]
     },
     "variant_ids": {
+      "description": "Array of unique identifiers for the product variants associated with the image",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "src": {
+      "description": "URL of the image",
       "type": ["null", "string"]
     },
     "width": {
+      "description": "Width of the image in pixels",
       "type": ["null", "integer"]
     },
     "height": {
+      "description": "Height of the image in pixels",
       "type": ["null", "integer"]
     },
     "updated_at": {
+      "description": "Date and time when the image was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "admin_graphql_api_id": {
+      "description": "Unique identifier for the image in the Admin GraphQL API",
       "type": ["null", "string"]
     },
     "alt": {
+      "description": "Alternative text description of the image for accessibility",
       "type": ["null", "string"]
     },
     "shop_url": {
+      "description": "URL of the shop where the image is hosted",
       "type": ["null", "string"]
     }
   }

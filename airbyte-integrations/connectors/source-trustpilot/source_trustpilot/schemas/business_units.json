@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "displayName": {
       "type": ["string", "null"]
@@ -17,7 +18,7 @@
         "referring": {
           "type": ["array", "null"],
           "items": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         }
       }

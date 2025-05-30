@@ -3,32 +3,32 @@
   "type": "object",
   "properties": {
     "expand": {
-      "type": "string",
       "description": "Expand options that include additional issue details in the response.",
+      "type": "string",
       "readOnly": true,
       "xml": {
         "attribute": true
       }
     },
     "id": {
+      "description": "The unique ID of the issue.",
       "type": "string",
-      "description": "The ID of the issue.",
       "readOnly": true
     },
     "self": {
-      "type": "string",
       "description": "The URL of the issue details.",
+      "type": "string",
       "readOnly": true
     },
     "key": {
+      "description": "The unique key of the issue.",
       "type": "string",
-      "description": "The key of the issue.",
       "readOnly": true
     },
     "renderedFields": {
+      "description": "The rendered value of each field present on the issue.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The rendered value of each field present on the issue.",
       "readOnly": true,
       "properties": {
         "statuscategorychangedate": {
@@ -152,6 +152,7 @@
           "type": ["null", "string"]
         },
         "comment": {
+          "description": "Details of comments on the issue.",
           "type": ["null", "object"],
           "properties": {
             "comments": {
@@ -166,6 +167,7 @@
                     "type": ["null", "string"]
                   },
                   "author": {
+                    "description": "Details of the author of the comment.",
                     "type": ["null", "object"],
                     "properties": {
                       "self": {
@@ -209,6 +211,7 @@
                     }
                   },
                   "body": {
+                    "description": "Details of the body of the comment.",
                     "type": ["null", "object"],
                     "properties": {
                       "version": {
@@ -245,6 +248,7 @@
                     }
                   },
                   "updateAuthor": {
+                    "description": "Details of the author who updated the comment.",
                     "type": ["null", "object"],
                     "properties": {
                       "self": {
@@ -336,25 +340,25 @@
       }
     },
     "properties": {
+      "description": "Details of the issue properties identified in the request.",
       "type": "object",
       "additionalProperties": true,
-      "description": "Details of the issue properties identified in the request.",
       "readOnly": true
     },
     "names": {
+      "description": "The ID and name of each field present on the issue.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The ID and name of each field present on the issue.",
       "readOnly": true
     },
     "schema": {
-      "type": "object",
       "description": "The schema describing each field present on the issue.",
+      "type": "object",
       "readOnly": true
     },
     "transitions": {
-      "type": "array",
       "description": "The transitions that can be performed on the issue.",
+      "type": "array",
       "readOnly": true,
       "items": {
         "type": ["null", "object"],
@@ -427,18 +431,18 @@
       }
     },
     "operations": {
-      "type": ["object", "null"],
       "description": "The operations that can be performed on the issue.",
+      "type": ["object", "null"],
       "readOnly": true
     },
     "editmeta": {
-      "type": ["object", "null"],
       "description": "The metadata for the fields on the issue that can be amended.",
+      "type": ["object", "null"],
       "readOnly": true
     },
     "changelog": {
-      "type": ["object", "null"],
       "description": "Details of changelogs associated with the issue.",
+      "type": ["object", "null"],
       "readOnly": true,
       "properties": {
         "startAt": {
@@ -459,6 +463,7 @@
                 "type": ["null", "string"]
               },
               "author": {
+                "description": "Details of the author of the changelog.",
                 "type": ["null", "object"],
                 "properties": {
                   "self": {
@@ -545,28 +550,31 @@
       }
     },
     "versionedRepresentations": {
+      "description": "The versions of each field on the issue.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The versions of each field on the issue.",
       "readOnly": true
     },
     "fieldsToInclude": {
+      "description": "Specify the fields to include in the fetched issues data. Use specific field names or 'all' to include all fields.",
       "type": "object"
     },
     "fields": {
+      "description": "Details of various fields associated with the issue.",
       "type": "object",
       "properties": {
         "created": {
+          "description": "The timestamp when the issue was created.",
           "type": ["string", "null"],
-          "format": "date-time",
-          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor field. Updated may be absent. Added to solve the #4341"
+          "format": "date-time"
         },
         "updated": {
+          "description": "The timestamp when the issue was last updated.",
           "type": ["string", "null"],
-          "format": "date-time",
-          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor field. Updated may be absent. Added to solve the #4341"
+          "format": "date-time"
         },
         "aggregateprogress": {
+          "description": "Details of the aggregate progress on the issue.",
           "type": ["null", "object"],
           "properties": {
             "percent": {
@@ -581,6 +589,7 @@
           }
         },
         "assignee": {
+          "description": "Details of the assignee of the issue.",
           "type": ["null", "object"],
           "properties": {
             "accountId": {
@@ -636,6 +645,7 @@
           "type": ["null", "array"]
         },
         "comment": {
+          "description": "Details of comments on the issue.",
           "type": ["null", "object"],
           "properties": {
             "comments": {
@@ -659,6 +669,7 @@
           "type": ["null", "array"]
         },
         "creator": {
+          "description": "Details of the creator of the issue.",
           "type": ["null", "object"],
           "properties": {
             "accountId": {
@@ -702,6 +713,7 @@
           }
         },
         "description": {
+          "description": "Details of the description of the issue.",
           "type": ["null", "object"],
           "properties": {
             "content": {
@@ -744,6 +756,7 @@
           "type": ["null", "array"]
         },
         "issuerestriction": {
+          "description": "Details of the issue restriction.",
           "type": ["null", "object"],
           "properties": {
             "issuerestrictions": {
@@ -755,6 +768,7 @@
           }
         },
         "issuetype": {
+          "description": "Details of the issue type.",
           "type": ["null", "object"],
           "properties": {
             "avatarId": {
@@ -787,16 +801,19 @@
           }
         },
         "labels": {
+          "description": "Details of labels attached to the issue.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "lastViewed": {
+          "description": "The timestamp when the issue was last viewed.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "priority": {
+          "description": "Details of the priority of the issue.",
           "type": ["null", "object"],
           "properties": {
             "iconUrl": {
@@ -814,6 +831,7 @@
           }
         },
         "progress": {
+          "description": "Details of the progress on the issue.",
           "type": ["null", "object"],
           "properties": {
             "percent": {
@@ -828,6 +846,7 @@
           }
         },
         "project": {
+          "description": "Details of the project associated with the issue.",
           "type": ["null", "object"],
           "properties": {
             "avatarUrls": {
@@ -885,6 +904,7 @@
           }
         },
         "reporter": {
+          "description": "Details of the reporter of the issue.",
           "type": ["null", "object"],
           "properties": {
             "accountId": {
@@ -928,6 +948,7 @@
           }
         },
         "resolution": {
+          "description": "Details of the resolution of the issue.",
           "type": ["null", "object"],
           "properties": {
             "description": {
@@ -945,10 +966,12 @@
           }
         },
         "resolutiondate": {
+          "description": "The timestamp when the issue was resolved.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "status": {
+          "description": "Details of the status of the issue.",
           "type": ["null", "object"],
           "properties": {
             "description": {
@@ -989,6 +1012,7 @@
           }
         },
         "statuscategorychangedate": {
+          "description": "The timestamp when the status category of the issue changed.",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -996,6 +1020,7 @@
           "type": ["null", "array"]
         },
         "summary": {
+          "description": "The summary of the issue.",
           "type": ["null", "string"]
         },
         "timeestimate": {
@@ -1008,6 +1033,7 @@
           "type": ["null", "integer"]
         },
         "timetracking": {
+          "description": "Details of time tracking on the issue.",
           "type": ["null", "object"],
           "properties": {
             "remainingEstimate": {
@@ -1034,6 +1060,7 @@
           "type": ["null", "array"]
         },
         "votes": {
+          "description": "Details of votes on the issue.",
           "type": ["null", "object"],
           "properties": {
             "hasVoted": {
@@ -1048,6 +1075,7 @@
           }
         },
         "watches": {
+          "description": "Details of watchers on the issue.",
           "type": ["null", "object"],
           "properties": {
             "isWatching": {
@@ -1062,6 +1090,7 @@
           }
         },
         "worklog": {
+          "description": "Details of worklogs on the issue.",
           "type": ["null", "object"],
           "properties": {
             "maxResults": {
@@ -1079,6 +1108,7 @@
                 "type": ["null", "object"],
                 "properties": {
                   "author": {
+                    "description": "Details of the author of the worklog.",
                     "type": ["null", "object"],
                     "properties": {
                       "accountId": {
@@ -1122,6 +1152,7 @@
                     }
                   },
                   "comment": {
+                    "description": "Details of the comment in the worklog.",
                     "type": ["null", "object"],
                     "properties": {
                       "version": {
@@ -1158,14 +1189,17 @@
                     }
                   },
                   "created": {
+                    "description": "The timestamp when the worklog was created.",
                     "type": ["null", "string"],
                     "format": "date-time"
                   },
                   "started": {
+                    "description": "The timestamp when the worklog was started.",
                     "type": ["null", "string"],
                     "format": "date-time"
                   },
                   "updated": {
+                    "description": "The timestamp when the worklog was last updated.",
                     "type": ["null", "string"],
                     "format": "date-time"
                   },
@@ -1185,6 +1219,7 @@
                     "type": ["null", "integer"]
                   },
                   "updateAuthor": {
+                    "description": "Details of the author who updated the worklog.",
                     "type": ["null", "object"],
                     "properties": {
                       "accountId": {
@@ -1239,25 +1274,25 @@
       "additionalProperties": true
     },
     "projectId": {
-      "type": "string",
       "description": "The ID of the project containing the issue.",
+      "type": "string",
       "readOnly": true
     },
     "projectKey": {
-      "type": "string",
       "description": "The key of the project containing the issue.",
+      "type": "string",
       "readOnly": true
     },
     "created": {
+      "description": "The timestamp when the issue was created.",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     },
     "updated": {
+      "description": "The timestamp when the issue was last updated.",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     }
   },

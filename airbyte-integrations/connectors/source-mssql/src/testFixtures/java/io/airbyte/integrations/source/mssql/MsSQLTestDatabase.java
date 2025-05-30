@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.ContainerFactory.NamedContainerModifier;
 import io.airbyte.cdk.testutils.TestDatabase;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -311,11 +312,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public Stream<String> mssqlCmd(final Stream<String> sql) {
-    return Stream.of("/opt/mssql-tools/bin/sqlcmd",
+    return Stream.of("/opt/mssql-tools18/bin/sqlcmd",
         "-U", getContainer().getUsername(),
         "-P", getContainer().getPassword(),
         "-Q", sql.collect(Collectors.joining("; ")),
-        "-b", "-e");
+        "-b", "-e", "-C");
   }
 
   @Override
@@ -416,6 +417,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       }
     }
 
+  }
+
+  @Override
+  public void close() {
+    MssqlDebeziumStateUtil.disposeInitialState();
+    super.close();
   }
 
 }

@@ -3,50 +3,62 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the pull request",
       "type": ["null", "string"]
     },
     "branches": {
+      "description": "List of branches related to the pull requests",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"]
       }
     },
     "pullRequests": {
+      "description": "List of pull requests associated with the Jira instance",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"]
       }
     },
     "repositories": {
+      "description": "List of repositories where the pull requests are made",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"]
       }
     },
     "_instance": {
+      "description": "Details about the Jira instance",
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "Name of the Jira instance",
           "type": ["null", "string"]
         },
         "baseUrl": {
+          "description": "Base URL of the Jira instance",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "Type of the Jira instance",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the Jira instance",
           "type": ["null", "string"]
         },
         "typeName": {
+          "description": "Name of the type of Jira instance",
           "type": ["null", "string"]
         },
         "singleInstance": {
+          "description": "Flag indicating if it is a single instance or not",
           "type": ["null", "boolean"]
         }
       }
     },
     "updated": {
+      "description": "Date and time of when the data was last updated",
       "type": "string",
       "format": "date-time"
     }

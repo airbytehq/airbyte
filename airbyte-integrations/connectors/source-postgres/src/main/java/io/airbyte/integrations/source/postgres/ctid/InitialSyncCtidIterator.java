@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
@@ -14,7 +15,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -25,6 +28,8 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,6 +72,10 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private boolean subQueriesInitialized = false;
   private final boolean tidRangeScanCapableDBServer;
 
+  private final Instant startInstant;
+  private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
+
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
                                  final JdbcDatabase database,
                                  final CtidPostgresSourceOperations sourceOperations,
@@ -79,7 +88,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                  final int maxTuple,
                                  final FileNodeHandler fileNodeHandler,
                                  final boolean tidRangeScanCapableDBServer,
-                                 final boolean useTestPageSize) {
+                                 final boolean useTestPageSize,
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
     this.maxTuple = maxTuple;
@@ -95,11 +106,23 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     this.tableSize = tableSize;
     this.tidRangeScanCapableDBServer = tidRangeScanCapableDBServer;
     this.useTestPageSize = useTestPageSize;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(ctidStateManager);
   }
 
   @CheckForNull
   @Override
   protected RowDataWithCtid computeNext() {
+    if (isCdcSync && cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load for table %s has taken longer than %s hours, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get().toHours());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     try {
       if (!subQueriesInitialized) {
         initSubQueries();
@@ -324,9 +347,24 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    return Optional.of(airbyteStream);
+  }
+
+  @Override
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  private boolean isCdcSync(CtidStateManager initialLoadStateManager) {
+    if (initialLoadStateManager instanceof CtidGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 

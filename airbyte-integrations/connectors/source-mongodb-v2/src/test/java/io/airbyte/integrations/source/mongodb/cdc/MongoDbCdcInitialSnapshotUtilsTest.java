@@ -106,6 +106,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
   void testFailureToGenerateEstimateDoesNotImpactSync() {
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
     final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final ConfiguredAirbyteStream completedStream = createConfiguredAirbyteStream(COMPLETED_NAME, NAMESPACE);
     final ConfiguredAirbyteStream inProgressStream = createConfiguredAirbyteStream(IN_PROGRESS_NAME, NAMESPACE);
     final ConfiguredAirbyteStream newStream = createConfiguredAirbyteStream(NEW_NAME, NAMESPACE);
@@ -117,7 +118,8 @@ class MongoDbCdcInitialSnapshotUtilsTest {
         new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE, IdType.OBJECT_ID),
         new AirbyteStreamNameNamespacePair(IN_PROGRESS_NAME, NAMESPACE),
         new MongoDbStreamState("2", InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID)));
-    when(mongoClient.getDatabase(NAMESPACE)).thenThrow(new IllegalArgumentException("test"));
+    when(mongoClient.getDatabase(NAMESPACE)).thenReturn(mongoDatabase);
+    when(mongoDatabase.getCollection(NEW_NAME)).thenThrow(new IllegalArgumentException("test"));
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);

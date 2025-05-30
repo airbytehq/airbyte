@@ -6,9 +6,13 @@
 
 from __future__ import annotations
 
+from logging import Logger
 from typing import TYPE_CHECKING, Callable, List
 
+import asyncclick as click
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import consts
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, is_automerge_pull_request, update_commit_status_check
 
 if TYPE_CHECKING:
     from dagger import Container
@@ -70,3 +74,52 @@ def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
         return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
 
     return never_fail_exec_inner
+
+
+def do_regression_test_status_check(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
+    """
+    Emit a failing status check that requires a manual override, via a /-command.
+
+    Only required for certified connectors.
+    """
+    commit = ctx.obj["git_revision"]
+    run_url = ctx.obj["gha_workflow_run_url"]
+    should_send = ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST
+
+    if (
+        (not is_automerge_pull_request(ctx.obj.get("pull_request")))
+        and (ctx.obj["git_repo_url"] == AIRBYTE_GITHUB_REPO_URL)
+        and any(
+            [
+                (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
+                for connector in ctx.obj["selected_connectors_with_modified_files"]
+            ]
+        )
+    ):
+        logger.info(f'is_automerge_pull_request={is_automerge_pull_request(ctx.obj.get("pull_request"))}')
+        logger.info(f'git_repo_url={ctx.obj["git_repo_url"]}')
+        for connector in ctx.obj["selected_connectors_with_modified_files"]:
+            logger.info(f"connector = {connector.name}")
+            logger.info(f"connector.language={connector.language}")
+            logger.info(f"connector.support_level = {connector.support_level}")
+        update_commit_status_check(
+            commit,
+            "failure",
+            run_url,
+            description="Check if regression tests have been manually approved",
+            context=status_check_name,
+            is_optional=False,
+            should_send=should_send,
+            logger=logger,
+        )
+    else:
+        update_commit_status_check(
+            commit,
+            "success",
+            run_url,
+            description="[Skipped]",
+            context=status_check_name,
+            is_optional=True,
+            should_send=should_send,
+            logger=logger,
+        )

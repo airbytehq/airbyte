@@ -1,8 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import dagster
+import pandas as pd
 from dagster import build_op_context
+from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 from orchestrator import GITHUB_RESOURCE_TREE, METADATA_RESOURCE_TREE, REGISTRY_ENTRY_RESOURCE_TREE
 from orchestrator.assets.connector_test_report import generate_nightly_report, persist_connectors_test_summary_files
@@ -69,18 +71,21 @@ def debug_badges():
 
 
 def debug_registry_entry():
+
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
                 "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
             }
         ),
-        "latest_metadata_file_blobs": gcs_directory_blobs.configured(
+        "all_metadata_file_blobs": gcs_directory_blobs.configured(
             {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
         ),
+        "slack": SlackResource(token="DUMMY"),
     }
 
-    part_key = "CPuD29SE4v8CEAE="
+    part_key = "CNaH/OOd74UDEAE="
+    empty_dataframe = pd.DataFrame()
 
     context = build_op_context(resources=resources, partition_key=part_key)
-    metadata_entry_val = metadata_entry(context)
+    metadata_entry_val = metadata_entry(context, empty_dataframe)

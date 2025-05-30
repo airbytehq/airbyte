@@ -9,7 +9,7 @@ import pendulum
 from pendulum import DateTime, Period
 
 
-def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1), end_date: Optional[DateTime] = None) -> Iterable[Period]:
+def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=100), end_date: Optional[DateTime] = None) -> Iterable[Period]:
     """
     Yields a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a pendulum.period

@@ -5,52 +5,53 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "shipment-date": {
+      "description": "Date and time of the free replacement shipment in DD-MON-YYYY format",
       "title": "Date",
-      "description": "DD-MON-YYYY. Date of free replacement shipment",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sku": {
+      "description": "Unique identifier of the item used by the seller",
       "title": "Merchant SKU",
-      "description": "Seller's item identifier",
       "type": ["null", "string"]
     },
     "asin": {
-      "title": "ASIN",
       "description": "Amazon Standard Inventory Number",
+      "title": "ASIN",
       "type": ["null", "string"]
     },
     "fulfillment-center-id": {
+      "description": "ID of the fulfillment center shipping this unit",
       "title": "Warehouse ID",
-      "description": "Fulfillment center shipping this unit.",
       "type": ["null", "string"]
     },
     "original-fulfillment-center-id": {
+      "description": "ID of the original fulfillment center shipping the free replaced item",
       "title": "Original Warehouse ID",
-      "description": "Original fulfillment center shipping free replaced item.",
       "type": ["null", "string"]
     },
     "quantity": {
+      "description": "Number of units shipped in the replacement shipment",
       "title": "Quantity",
-      "description": "Units shipped in replacement shipment",
       "type": ["null", "string"]
     },
     "replacement-reason-code": {
+      "description": "Code indicating the reason for the replacement",
       "title": "Replacement Reason Code",
-      "description": "Reason for replacement",
       "type": ["null", "string"]
     },
     "replacement-customer-order-id": {
+      "description": "Order ID of the replacement order for the original item",
       "title": "Replacement Customer Order Id",
-      "description": "Order ID of the replacement order",
       "type": ["null", "string"]
     },
     "original-amazon-order-id": {
+      "description": "Order ID of the original shipment for the replacement item",
       "title": "Original Customer Order ID",
-      "description": "Order ID of original shipment",
       "type": ["null", "string"]
     },
     "dataEndTime": {
+      "description": "End time of the data collection period",
       "type": ["null", "string"],
       "format": "date"
     }

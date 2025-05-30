@@ -3,54 +3,54 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
       "description": "The URL of the component.",
+      "type": "string",
       "readOnly": true
     },
     "id": {
-      "type": "string",
       "description": "The unique identifier for the component.",
+      "type": "string",
       "readOnly": true
     },
     "name": {
-      "type": "string",
-      "description": "The unique name for the component in the project. Required when creating a component. Optional when updating a component. The maximum length is 255 characters."
+      "description": "The unique name for the component in the project. Required when creating a component. Optional when updating a component. The maximum length is 255 characters.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description for the component. Optional when creating or updating a component."
+      "description": "The description for the component. Optional when creating or updating a component.",
+      "type": "string"
     },
     "lead": {
       "description": "The user details for the component's lead user.",
       "type": "object",
       "properties": {
         "self": {
-          "type": "string",
           "description": "The URL of the user.",
+          "type": "string",
           "readOnly": true
         },
         "key": {
-          "type": "string",
-          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string"
         },
         "accountId": {
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.",
           "maxLength": 128,
-          "type": "string",
-          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests."
+          "type": "string"
         },
         "accountType": {
-          "type": "string",
           "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
+          "type": "string",
           "readOnly": true,
           "enum": ["atlassian", "app", "customer", "unknown"]
         },
         "name": {
-          "type": "string",
-          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string"
         },
         "emailAddress": {
-          "type": "string",
           "description": "The email address of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "avatarUrls": {
@@ -59,41 +59,41 @@
           "type": "object",
           "properties": {
             "16x16": {
-              "type": "string",
-              "description": "The URL of the item's 16x16 pixel avatar."
+              "description": "The URL of the item's 16x16 pixel avatar.",
+              "type": "string"
             },
             "24x24": {
-              "type": "string",
-              "description": "The URL of the item's 24x24 pixel avatar."
+              "description": "The URL of the item's 24x24 pixel avatar.",
+              "type": "string"
             },
             "32x32": {
-              "type": "string",
-              "description": "The URL of the item's 32x32 pixel avatar."
+              "description": "The URL of the item's 32x32 pixel avatar.",
+              "type": "string"
             },
             "48x48": {
-              "type": "string",
-              "description": "The URL of the item's 48x48 pixel avatar."
+              "description": "The URL of the item's 48x48 pixel avatar.",
+              "type": "string"
             }
           }
         },
         "displayName": {
-          "type": "string",
           "description": "The display name of the user. Depending on the user\u2019s privacy setting, this may return an alternative value.",
+          "type": "string",
           "readOnly": true
         },
         "active": {
-          "type": "boolean",
           "description": "Whether the user is active.",
+          "type": "boolean",
           "readOnly": true
         },
         "timeZone": {
-          "type": "string",
           "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "locale": {
-          "type": "string",
           "description": "The locale of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "groups": {
@@ -113,12 +113,12 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string",
-                    "description": "The name of group."
+                    "description": "The name of group.",
+                    "type": "string"
                   },
                   "self": {
-                    "type": "string",
                     "description": "The URL for these group details.",
+                    "type": "string",
                     "readOnly": true
                   }
                 }
@@ -156,59 +156,59 @@
                 "type": "object",
                 "properties": {
                   "key": {
-                    "type": "string",
-                    "description": "The key of the application role."
+                    "description": "The key of the application role.",
+                    "type": "string"
                   },
                   "groups": {
+                    "description": "The groups associated with the application role.",
                     "uniqueItems": true,
                     "type": "array",
-                    "description": "The groups associated with the application role.",
                     "items": {
                       "type": "string"
                     }
                   },
                   "name": {
-                    "type": "string",
-                    "description": "The display name of the application role."
+                    "description": "The display name of the application role.",
+                    "type": "string"
                   },
                   "defaultGroups": {
+                    "description": "The groups that are granted default access for this application role.",
                     "uniqueItems": true,
                     "type": "array",
-                    "description": "The groups that are granted default access for this application role.",
                     "items": {
                       "type": "string"
                     }
                   },
                   "selectedByDefault": {
-                    "type": "boolean",
-                    "description": "Determines whether this application role should be selected by default on user creation."
+                    "description": "Determines whether this application role should be selected by default on user creation.",
+                    "type": "boolean"
                   },
                   "defined": {
-                    "type": "boolean",
-                    "description": "Deprecated."
+                    "description": "Deprecated.",
+                    "type": "boolean"
                   },
                   "numberOfSeats": {
-                    "type": "integer",
-                    "description": "The maximum count of users on your license."
+                    "description": "The maximum count of users on your license.",
+                    "type": "integer"
                   },
                   "remainingSeats": {
-                    "type": "integer",
-                    "description": "The count of users remaining on your license."
+                    "description": "The count of users remaining on your license.",
+                    "type": "integer"
                   },
                   "userCount": {
-                    "type": "integer",
-                    "description": "The number of users counting against your license."
+                    "description": "The number of users counting against your license.",
+                    "type": "integer"
                   },
                   "userCountDescription": {
-                    "type": "string",
-                    "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
+                    "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.",
+                    "type": "string"
                   },
                   "hasUnlimitedSeats": {
                     "type": "boolean"
                   },
                   "platform": {
-                    "type": "boolean",
-                    "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
+                    "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+                    "type": "boolean"
                   }
                 }
               }
@@ -229,8 +229,8 @@
           }
         },
         "expand": {
-          "type": "string",
           "description": "Expand options that include additional user details in the response.",
+          "type": "string",
           "readOnly": true,
           "xml": {
             "attribute": true
@@ -239,18 +239,18 @@
       }
     },
     "leadUserName": {
-      "type": ["string", "null"],
-      "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
+      "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+      "type": ["string", "null"]
     },
     "leadAccountId": {
+      "description": "The accountId of the component's lead user. The accountId uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
       "maxLength": 128,
       "type": ["string", "null"],
-      "description": "The accountId of the component's lead user. The accountId uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
       "writeOnly": true
     },
     "assigneeType": {
-      "type": "string",
       "description": "The nominal user type used to determine the assignee for issues created with this component. See `realAssigneeType` for details on how the type of the user, and hence the user, assigned to issues is determined. Can take the following values:\n\n *  `PROJECT_LEAD` the assignee to any issues created with this component is nominally the lead for the project the component is in.\n *  `COMPONENT_LEAD` the assignee to any issues created with this component is nominally the lead for the component.\n *  `UNASSIGNED` an assignee is not set for issues created with this component.\n *  `PROJECT_DEFAULT` the assignee to any issues created with this component is nominally the default assignee for the project that the component is in.\n\nDefault value: `PROJECT_DEFAULT`.  \nOptional when creating or updating a component.",
+      "type": "string",
       "enum": [
         "PROJECT_DEFAULT",
         "COMPONENT_LEAD",
@@ -263,32 +263,32 @@
       "type": "object",
       "properties": {
         "self": {
-          "type": "string",
           "description": "The URL of the user.",
+          "type": "string",
           "readOnly": true
         },
         "key": {
-          "type": ["string", "null"],
-          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": ["string", "null"]
         },
         "accountId": {
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.",
           "maxLength": 128,
-          "type": "string",
-          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests."
+          "type": "string"
         },
         "accountType": {
-          "type": "string",
           "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
+          "type": "string",
           "readOnly": true,
           "enum": ["atlassian", "app", "customer", "unknown"]
         },
         "name": {
-          "type": "string",
-          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string"
         },
         "emailAddress": {
-          "type": "string",
           "description": "The email address of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "avatarUrls": {
@@ -297,41 +297,41 @@
           "type": "object",
           "properties": {
             "16x16": {
-              "type": "string",
-              "description": "The URL of the item's 16x16 pixel avatar."
+              "description": "The URL of the item's 16x16 pixel avatar.",
+              "type": "string"
             },
             "24x24": {
-              "type": "string",
-              "description": "The URL of the item's 24x24 pixel avatar."
+              "description": "The URL of the item's 24x24 pixel avatar.",
+              "type": "string"
             },
             "32x32": {
-              "type": "string",
-              "description": "The URL of the item's 32x32 pixel avatar."
+              "description": "The URL of the item's 32x32 pixel avatar.",
+              "type": "string"
             },
             "48x48": {
-              "type": "string",
-              "description": "The URL of the item's 48x48 pixel avatar."
+              "description": "The URL of the item's 48x48 pixel avatar.",
+              "type": "string"
             }
           }
         },
         "displayName": {
-          "type": "string",
           "description": "The display name of the user. Depending on the user\u2019s privacy setting, this may return an alternative value.",
+          "type": "string",
           "readOnly": true
         },
         "active": {
-          "type": "boolean",
           "description": "Whether the user is active.",
+          "type": "boolean",
           "readOnly": true
         },
         "timeZone": {
-          "type": "string",
           "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "locale": {
-          "type": "string",
           "description": "The locale of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
           "readOnly": true
         },
         "groups": {
@@ -351,12 +351,12 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string",
-                    "description": "The name of group."
+                    "description": "The name of group.",
+                    "type": "string"
                   },
                   "self": {
-                    "type": "string",
                     "description": "The URL for these group details.",
+                    "type": "string",
                     "readOnly": true
                   }
                 }
@@ -394,59 +394,59 @@
                 "type": "object",
                 "properties": {
                   "key": {
-                    "type": "string",
-                    "description": "The key of the application role."
+                    "description": "The key of the application role.",
+                    "type": "string"
                   },
                   "groups": {
+                    "description": "The groups associated with the application role.",
                     "uniqueItems": true,
                     "type": "array",
-                    "description": "The groups associated with the application role.",
                     "items": {
                       "type": "string"
                     }
                   },
                   "name": {
-                    "type": "string",
-                    "description": "The display name of the application role."
+                    "description": "The display name of the application role.",
+                    "type": "string"
                   },
                   "defaultGroups": {
+                    "description": "The groups that are granted default access for this application role.",
                     "uniqueItems": true,
                     "type": "array",
-                    "description": "The groups that are granted default access for this application role.",
                     "items": {
                       "type": "string"
                     }
                   },
                   "selectedByDefault": {
-                    "type": "boolean",
-                    "description": "Determines whether this application role should be selected by default on user creation."
+                    "description": "Determines whether this application role should be selected by default on user creation.",
+                    "type": "boolean"
                   },
                   "defined": {
-                    "type": "boolean",
-                    "description": "Deprecated."
+                    "description": "Deprecated.",
+                    "type": "boolean"
                   },
                   "numberOfSeats": {
-                    "type": "integer",
-                    "description": "The maximum count of users on your license."
+                    "description": "The maximum count of users on your license.",
+                    "type": "integer"
                   },
                   "remainingSeats": {
-                    "type": "integer",
-                    "description": "The count of users remaining on your license."
+                    "description": "The count of users remaining on your license.",
+                    "type": "integer"
                   },
                   "userCount": {
-                    "type": "integer",
-                    "description": "The number of users counting against your license."
+                    "description": "The number of users counting against your license.",
+                    "type": "integer"
                   },
                   "userCountDescription": {
-                    "type": "string",
-                    "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
+                    "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.",
+                    "type": "string"
                   },
                   "hasUnlimitedSeats": {
                     "type": "boolean"
                   },
                   "platform": {
-                    "type": "boolean",
-                    "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
+                    "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+                    "type": "boolean"
                   }
                 }
               }
@@ -467,8 +467,8 @@
           }
         },
         "expand": {
-          "type": "string",
           "description": "Expand options that include additional user details in the response.",
+          "type": "string",
           "readOnly": true,
           "xml": {
             "attribute": true
@@ -477,8 +477,8 @@
       }
     },
     "realAssigneeType": {
-      "type": "string",
       "description": "The type of the assignee that is assigned to issues created with this component, when an assignee cannot be set from the `assigneeType`. For example, `assigneeType` is set to `COMPONENT_LEAD` but no component lead is set. This property is set to one of the following values:\n\n *  `PROJECT_LEAD` when `assigneeType` is `PROJECT_LEAD` and the project lead has permission to be assigned issues in the project that the component is in.\n *  `COMPONENT_LEAD` when `assignee`Type is `COMPONENT_LEAD` and the component lead has permission to be assigned issues in the project that the component is in.\n *  `UNASSIGNED` when `assigneeType` is `UNASSIGNED` and Jira is configured to allow unassigned issues.\n *  `PROJECT_DEFAULT` when none of the preceding cases are true.",
+      "type": "string",
       "readOnly": true,
       "enum": [
         "PROJECT_DEFAULT",
@@ -493,23 +493,25 @@
       "type": "object"
     },
     "isAssigneeTypeValid": {
-      "type": "boolean",
       "description": "Whether a user is associated with `assigneeType`. For example, if the `assigneeType` is set to `COMPONENT_LEAD` but the component lead is not set, then `false` is returned.",
+      "type": "boolean",
       "readOnly": true
     },
     "project": {
-      "type": "string",
-      "description": "The key of the project the component is assigned to. Required when creating a component. Can't be updated."
+      "description": "The key of the project the component is assigned to. Required when creating a component. Can't be updated.",
+      "type": "string"
     },
     "projectId": {
-      "type": "integer",
       "description": "The ID of the project the component is assigned to.",
+      "type": "integer",
       "readOnly": true
     },
     "componentBean": {
+      "description": "Contains information about the component associated with the project.",
       "type": ["null", "object"]
     },
     "issueCount": {
+      "description": "The total count of issues related to the project component.",
       "type": ["null", "integer"]
     }
   },

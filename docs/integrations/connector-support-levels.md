@@ -6,10 +6,10 @@ products: all
 
 The following table describes the support levels of Airbyte connectors.
 
-|                                      | Certified                                 | Community                                                                                              | Custom                                                                                                                                                                                                                                                             |
+|                                      | Airbyte Connector                         | Marketplace                                                                                            | Custom                                                               |
 | ------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Availability**                     | Available to all users                    | Available to all users                                                                                 | Available to all users                                                                                                                                                                                                                                             |
-| **Who builds them?**                 | Either the community or the Airbyte team. | Typically they are built by the community. The Airbyte team may upgrade them to Certified at any time. | Anyone can build custom connectors. We recommend using our [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [Low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview). |
+| **Who builds them?**                 | Either the community or the Airbyte team. | Typically they are built by the community. The Airbyte team may upgrade them to become an Airbyte Connector at any time. | Anyone can build custom connectors. We recommend using our [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [Low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview). |
 | **Who maintains them?**              | The Airbyte team                          | Users                                                                                                  | Users                                                                                                                                                                                                                                                              |
 | **Production Readiness**             | Guaranteed by Airbyte                     | Not guaranteed                                                                                         | Not guaranteed                                                                                                                                                                                                                                                     |
 | **Support: Cloud**                   | Supported\*                               | No Support                                                                                             | Supported\*\*                                                                                                                                                                                                                                                      |
@@ -17,7 +17,7 @@ The following table describes the support levels of Airbyte connectors.
 | **Support: Self-Managed Enterprise** | Supported\*                               | No Support                                                                                             | Supported\*\*                                                                                                                                                                                                                                                      |
 | **Support: Community (OSS)**         | Slack Support only                        | No Support                                                                                             | Slack Support only                                                                                                                                                                                                                                                 |
 
-\*For Certified connectors, Official Support SLAs are only available to customers with Premium
+\*For Airbyte Connectors, Official Support SLAs are only available to customers with Premium
 Support included in their contract. Otherwise, please use our support portal and we will address
 your issues as soon as possible.
 
@@ -25,35 +25,36 @@ your issues as soon as possible.
 Support included in their contract. This support is provided with best efforts, and
 maintenance/upgrades are owned by the customer.
 
-## Certified
+## Airbyte Connectors
 
-A **Certified** connector is actively maintained and supported by the Airbyte team and maintains a
+An **Airbyte Connector** is actively maintained and supported by the Airbyte team and maintains a
 high quality bar. It is production ready.
 
-### What you should know about Certified connectors:
+### What you should know about Airbyte Connectors:
 
-- Certified connectors are available to all users.
-- These connectors have been tested and vetted in order to be certified and are production ready.
-- Certified connectors should go through minimal breaking change but in the event an upgrade is
+- Airbyte Connectors are officially supported by Airbyte and are available to all users.
+- These connectors have been tested and vetted. They are production ready.
+- Airbyte Connectors should go through minimal breaking change but in the event an upgrade is
   needed users will be given an adequate upgrade window.
 
-## Community
+## Marketplace
 
-A **Community** connector is maintained by the Airbyte community until it becomes Certified. Airbyte
+A **Marketplace** connector is maintained by the community members until it becomes an official Airbyte Connector. Airbyte
 has over 800 code contributors and 15,000 people in the Slack community to help. The Airbyte team is
-continually certifying Community connectors as usage grows. As these connectors are not maintained
-by Airbyte, we do not offer support SLAs around them, and we encourage caution when using them in
+continually reviewing Marketplace connectors as usage grows to determine when a Marketplace connector should become an Airbyte Connector. Marketplace connectors are not maintained
+by Airbyte and  we do not offer support SLAs around them. We encourage caution when using them in
 production.
 
-### What you should know about Community connectors:
+### What you should know about Marketplace connectors:
 
-- Community connectors are available to all users.
-- Community connectors may be upgraded to Certified at any time, and we will notify users of these
+- Marketplace connectors are available to all users.
+- Marketplace connectors may be upgraded to an official Airbyte Connector at any time, and we will notify users of these
   upgrades via our Slack Community and in our Connector Catalog.
-- Community connectors might not be feature-complete (features planned for release are under
+- Marketplace connectors might not be feature-complete (features planned for release are under
   development or not prioritized) and may include backward-incompatible/breaking API changes with no
   or short notice.
-- Community connectors have no Support SLAs.
+- Marketplace connectors have no Support SLAs.
+- You're very welcome to contribute new features and streams to an existing Marketplace connector. Airbyte Contributor Experience team is happy to review PRs when we have capacity.
 
 ## Archived
 

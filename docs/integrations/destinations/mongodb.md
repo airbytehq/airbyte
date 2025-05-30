@@ -115,6 +115,9 @@ Collection names should begin with an underscore or a letter character, and cann
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
 | 0.2.0   | 2023-06-27 | [27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                       |
@@ -127,3 +130,5 @@ Collection names should begin with an underscore or a letter character, and cann
 | 0.1.3   | 2021-12-30 | [8809](https://github.com/airbytehq/airbyte/pull/8809)   | Update connector fields title/description                  |
 | 0.1.2   | 2021-10-18 | [6945](https://github.com/airbytehq/airbyte/pull/6945)   | Create a secure-only MongoDb destination                   |
 | 0.1.1   | 2021-09-29 | [6536](https://github.com/airbytehq/airbyte/pull/6536)   | Destination MongoDb: added support via TLS/SSL             |
+
+</details>

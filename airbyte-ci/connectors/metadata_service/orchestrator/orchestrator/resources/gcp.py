@@ -5,10 +5,10 @@
 import json
 import re
 import uuid
-from typing import Optional
+from typing import List, Optional, Union
 
 import dagster._check as check
-from dagster import InitResourceContext, Noneable, StringSource, resource
+from dagster import BoolSource, Field, InitResourceContext, Noneable, StringSource, resource
 from dagster._core.storage.file_manager import check_file_like_obj
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
 from google.cloud import storage
@@ -156,15 +156,21 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
         "gcs_bucket": StringSource,
         "prefix": StringSource,
         "match_regex": StringSource,
+        "only_one": Field(config=bool, default_value=False),
+        "sort_key": Field(config=str, is_required=False),
+        "reverse_sort": Field(config=bool, default_value=False),
     },
 )
-def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
+def gcs_directory_blobs(resource_context: InitResourceContext) -> Union[List[storage.Blob], storage.Blob]:
     """
     List all blobs in a bucket that match the prefix.
     """
     gcs_bucket = resource_context.resource_config["gcs_bucket"]
     prefix = resource_context.resource_config["prefix"]
     match_regex = resource_context.resource_config["match_regex"]
+    only_one = resource_context.resource_config["only_one"]
+    sort_key = resource_context.resource_config.get("sort_key")
+    reverse_sort = resource_context.resource_config["reverse_sort"]
 
     storage_client = resource_context.resources.gcp_gcs_client
     bucket = storage_client.get_bucket(gcs_bucket)
@@ -174,5 +180,11 @@ def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
     gcs_file_blobs = bucket.list_blobs(prefix=prefix)
     if match_regex:
         gcs_file_blobs = [blob for blob in gcs_file_blobs if re.match(match_regex, blob.name)]
+
+    if sort_key:
+        gcs_file_blobs = sorted(gcs_file_blobs, key=lambda x: getattr(x, sort_key), reverse=reverse_sort)
+
+    if only_one:
+        return gcs_file_blobs[0] if gcs_file_blobs else None
 
     return gcs_file_blobs

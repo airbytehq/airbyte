@@ -3,800 +3,800 @@
     "id": 1,
     "make": "Mazda",
     "model": "MX-5",
-    "year": 2008,
-    "price": 2869,
-    "created_at": "2022-02-01T17:02:19+00:00"
+    "year": 2023,
+    "price": 15001,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 2,
     "make": "Mercedes-Benz",
     "model": "C-Class",
-    "year": 2009,
-    "price": 42397,
-    "created_at": "2021-01-25T14:31:33+00:00"
+    "year": 2023,
+    "price": 34239,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 3,
     "make": "Honda",
     "model": "Accord Crosstour",
-    "year": 2011,
-    "price": 63293,
-    "created_at": "2021-02-11T05:36:03+00:00"
+    "year": 2023,
+    "price": 28895,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 4,
     "make": "GMC",
     "model": "Jimmy",
-    "year": 1998,
-    "price": 34079,
-    "created_at": "2022-01-24T03:00:03+00:00"
+    "year": 2023,
+    "price": 25054,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 5,
     "make": "Infiniti",
     "model": "FX",
-    "year": 2004,
-    "price": 17036,
-    "created_at": "2021-10-02T03:55:44+00:00"
+    "year": 2023,
+    "price": 23572,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 6,
     "make": "Dodge",
     "model": "Intrepid",
-    "year": 2002,
-    "price": 65498,
-    "created_at": "2022-01-18T00:41:08+00:00"
+    "year": 2023,
+    "price": 17942,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 7,
     "make": "Nissan",
     "model": "Frontier",
-    "year": 2005,
-    "price": 14516,
-    "created_at": "2021-04-22T16:37:44+00:00"
+    "year": 2023,
+    "price": 16398,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 8,
     "make": "Chevrolet",
     "model": "Express 1500",
-    "year": 2007,
-    "price": 13023,
-    "created_at": "2021-07-12T07:13:04+00:00"
+    "year": 2023,
+    "price": 16548,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 9,
     "make": "Bentley",
     "model": "Continental GTC",
-    "year": 2008,
-    "price": 43458,
-    "created_at": "2021-03-17T05:43:15+00:00"
+    "year": 2023,
+    "price": 34971,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 10,
     "make": "Cadillac",
     "model": "DTS",
-    "year": 2008,
-    "price": 43859,
-    "created_at": "2021-08-12T07:33:58+00:00"
+    "year": 2023,
+    "price": 37400,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 11,
     "make": "Dodge",
     "model": "Ram 2500",
-    "year": 2000,
-    "price": 82904,
-    "created_at": "2021-09-03T10:51:16+00:00"
+    "year": 2023,
+    "price": 19536,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 12,
     "make": "Suzuki",
     "model": "SJ 410",
-    "year": 1984,
-    "price": 38667,
-    "created_at": "2021-01-11T00:15:46+00:00"
+    "year": 2023,
+    "price": 29729,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 13,
     "make": "Audi",
     "model": "S4",
-    "year": 2005,
-    "price": 2391,
-    "created_at": "2021-09-06T03:31:10+00:00"
+    "year": 2023,
+    "price": 42323,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 14,
     "make": "Chevrolet",
     "model": "Suburban 2500",
-    "year": 1998,
-    "price": 55733,
-    "created_at": "2021-10-18T17:26:05+00:00"
+    "year": 2023,
+    "price": 21559,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 15,
     "make": "Ford",
     "model": "Ranger",
-    "year": 2000,
-    "price": 20228,
-    "created_at": "2022-03-24T04:03:19+00:00"
+    "year": 2023,
+    "price": 18192,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 16,
     "make": "Chevrolet",
     "model": "Corvette",
-    "year": 2009,
-    "price": 75052,
-    "created_at": "2021-12-31T03:38:21+00:00"
+    "year": 2023,
+    "price": 14126,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 17,
     "make": "Mitsubishi",
     "model": "Pajero",
-    "year": 1993,
-    "price": 84058,
-    "created_at": "2021-10-15T00:25:34+00:00"
+    "year": 2023,
+    "price": 32060,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 18,
     "make": "Lincoln",
     "model": "LS",
-    "year": 2002,
-    "price": 34081,
-    "created_at": "2022-02-14T22:12:01+00:00"
+    "year": 2023,
+    "price": 25142,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 19,
     "make": "Dodge",
     "model": "Magnum",
-    "year": 2005,
-    "price": 85545,
-    "created_at": "2021-07-25T22:49:48+00:00"
+    "year": 2023,
+    "price": 17701,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 20,
     "make": "Pontiac",
     "model": "Grand Am",
-    "year": 2001,
-    "price": 54837,
-    "created_at": "2021-10-15T14:08:30+00:00"
+    "year": 2023,
+    "price": 26205,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 21,
     "make": "Chevrolet",
     "model": "Suburban 1500",
-    "year": 2006,
-    "price": 89410,
-    "created_at": "2021-03-23T15:40:43+00:00"
+    "year": 2023,
+    "price": 14982,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 22,
     "make": "GMC",
     "model": "Sierra 1500",
-    "year": 2005,
-    "price": 14288,
-    "created_at": "2021-08-30T13:40:04+00:00"
+    "year": 2023,
+    "price": 22367,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 23,
     "make": "GMC",
     "model": "3500",
-    "year": 1995,
-    "price": 12011,
-    "created_at": "2022-04-24T13:11:08+00:00"
+    "year": 2023,
+    "price": 28438,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 24,
     "make": "Mazda",
     "model": "Mazda5",
-    "year": 2006,
-    "price": 6393,
-    "created_at": "2021-07-07T14:14:33+00:00"
+    "year": 2023,
+    "price": 17242,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 25,
     "make": "Chevrolet",
     "model": "Camaro",
-    "year": 1967,
-    "price": 71590,
-    "created_at": "2021-01-10T21:50:22+00:00"
+    "year": 2023,
+    "price": 23442,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 26,
     "make": "Ford",
     "model": "Explorer Sport Trac",
-    "year": 2010,
-    "price": 23498,
-    "created_at": "2022-04-20T00:52:20+00:00"
+    "year": 2023,
+    "price": 27677,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 27,
     "make": "Dodge",
     "model": "Caravan",
-    "year": 1985,
-    "price": 50071,
-    "created_at": "2022-01-05T10:13:31+00:00"
+    "year": 2023,
+    "price": 23033,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 28,
     "make": "Nissan",
     "model": "240SX",
-    "year": 1992,
-    "price": 38379,
-    "created_at": "2022-04-07T04:48:48+00:00"
+    "year": 2023,
+    "price": 19681,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 29,
     "make": "Oldsmobile",
     "model": "Intrigue",
-    "year": 2002,
-    "price": 21376,
-    "created_at": "2021-10-01T13:30:49+00:00"
+    "year": 2023,
+    "price": 27033,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 30,
     "make": "Audi",
     "model": "TT",
-    "year": 2011,
-    "price": 40893,
-    "created_at": "2021-02-28T23:06:37+00:00"
+    "year": 2023,
+    "price": 70136,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 31,
     "make": "Ford",
     "model": "Crown Victoria",
-    "year": 2006,
-    "price": 86225,
-    "created_at": "2021-01-28T23:33:27+00:00"
+    "year": 2023,
+    "price": 16564,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 32,
     "make": "Toyota",
     "model": "Tacoma",
-    "year": 2003,
-    "price": 73558,
-    "created_at": "2022-01-28T22:02:04+00:00"
+    "year": 2023,
+    "price": 17930,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 33,
     "make": "Buick",
     "model": "Regal",
-    "year": 1994,
-    "price": 32279,
-    "created_at": "2022-04-04T13:35:49+00:00"
+    "year": 2023,
+    "price": 31593,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 34,
     "make": "Mercedes-Benz",
     "model": "C-Class",
-    "year": 2001,
-    "price": 98732,
-    "created_at": "2021-03-30T23:16:05+00:00"
+    "year": 2023,
+    "price": 44508,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 35,
     "make": "GMC",
     "model": "Sierra 3500",
-    "year": 2002,
-    "price": 48267,
-    "created_at": "2021-07-30T20:29:51+00:00"
+    "year": 2023,
+    "price": 25102,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 36,
     "make": "Pontiac",
     "model": "G6",
-    "year": 2005,
-    "price": 16766,
-    "created_at": "2021-03-24T07:53:33+00:00"
+    "year": 2023,
+    "price": 22911,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 37,
     "make": "Subaru",
     "model": "Outback Sport",
-    "year": 2002,
-    "price": 34523,
-    "created_at": "2021-12-23T22:47:32+00:00"
+    "year": 2023,
+    "price": 26498,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 38,
     "make": "Ferrari",
     "model": "F430",
-    "year": 2007,
-    "price": 31677,
-    "created_at": "2021-01-11T04:49:57+00:00"
+    "year": 2023,
+    "price": 34657,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 39,
     "make": "Mitsubishi",
     "model": "Montero",
-    "year": 2003,
-    "price": 67136,
-    "created_at": "2021-05-10T07:37:56+00:00"
+    "year": 2023,
+    "price": 23593,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 40,
     "make": "Nissan",
     "model": "Sentra",
-    "year": 1993,
-    "price": 78236,
-    "created_at": "2021-11-10T23:48:26+00:00"
+    "year": 2023,
+    "price": 21899,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 41,
     "make": "Mitsubishi",
     "model": "3000GT",
-    "year": 1993,
-    "price": 58150,
-    "created_at": "2021-09-08T06:55:22+00:00"
+    "year": 2023,
+    "price": 31061,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 42,
     "make": "Ford",
     "model": "E350",
-    "year": 2012,
-    "price": 55270,
-    "created_at": "2021-03-24T13:17:37+00:00"
+    "year": 2023,
+    "price": 26650,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 43,
     "make": "Ford",
     "model": "Taurus",
-    "year": 1987,
-    "price": 13522,
-    "created_at": "2021-10-27T21:03:59+00:00"
+    "year": 2023,
+    "price": 23853,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 44,
     "make": "Chevrolet",
     "model": "Avalanche",
-    "year": 2012,
-    "price": 9862,
-    "created_at": "2021-07-13T12:22:26+00:00"
+    "year": 2023,
+    "price": 27412,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 45,
     "make": "Dodge",
     "model": "Charger",
-    "year": 2012,
-    "price": 81887,
-    "created_at": "2021-04-24T01:48:24+00:00"
+    "year": 2023,
+    "price": 27804,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 46,
     "make": "Jaguar",
     "model": "S-Type",
-    "year": 2005,
-    "price": 34372,
-    "created_at": "2021-04-03T08:56:17+00:00"
+    "year": 2023,
+    "price": 39852,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 47,
     "make": "Plymouth",
     "model": "Grand Voyager",
-    "year": 1994,
-    "price": 90637,
-    "created_at": "2022-04-21T09:21:08+00:00"
+    "year": 2023,
+    "price": 31205,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 48,
     "make": "Pontiac",
     "model": "6000",
-    "year": 1989,
-    "price": 65165,
-    "created_at": "2021-10-30T13:03:07+00:00"
+    "year": 2023,
+    "price": 32539,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 49,
     "make": "Lexus",
     "model": "IS",
-    "year": 2006,
-    "price": 22434,
-    "created_at": "2021-01-16T10:45:52+00:00"
+    "year": 2023,
+    "price": 35712,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 50,
     "make": "Isuzu",
     "model": "VehiCROSS",
-    "year": 2001,
-    "price": 38180,
-    "created_at": "2021-12-13T16:29:27+00:00"
+    "year": 2023,
+    "price": 23578,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 51,
     "make": "Buick",
     "model": "Regal",
-    "year": 2000,
-    "price": 38680,
-    "created_at": "2021-12-29T22:25:54+00:00"
+    "year": 2023,
+    "price": 26548,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 52,
     "make": "Mercedes-Benz",
     "model": "E-Class",
-    "year": 2007,
-    "price": 51556,
-    "created_at": "2021-07-06T11:42:23+00:00"
+    "year": 2023,
+    "price": 39967,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 53,
     "make": "Buick",
     "model": "LeSabre",
-    "year": 2001,
-    "price": 10904,
-    "created_at": "2022-01-05T18:23:35+00:00"
+    "year": 2023,
+    "price": 24308,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 54,
     "make": "Porsche",
     "model": "928",
-    "year": 1989,
-    "price": 70917,
-    "created_at": "2022-01-02T23:16:45+00:00"
+    "year": 2023,
+    "price": 53861,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 55,
     "make": "Lexus",
     "model": "RX",
-    "year": 2007,
-    "price": 5212,
-    "created_at": "2021-07-10T15:02:53+00:00"
+    "year": 2023,
+    "price": 38988,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 56,
     "make": "Ford",
     "model": "Econoline E250",
-    "year": 1996,
-    "price": 75095,
-    "created_at": "2021-02-04T16:17:18+00:00"
+    "year": 2023,
+    "price": 19533,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 57,
     "make": "Chevrolet",
     "model": "Blazer",
-    "year": 2001,
-    "price": 61918,
-    "created_at": "2021-12-08T07:25:30+00:00"
+    "year": 2023,
+    "price": 18865,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 58,
     "make": "GMC",
     "model": "Savana 3500",
-    "year": 2003,
-    "price": 30307,
-    "created_at": "2021-11-21T23:11:45+00:00"
+    "year": 2023,
+    "price": 25586,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 59,
     "make": "BMW",
     "model": "M",
-    "year": 2002,
-    "price": 24598,
-    "created_at": "2021-05-28T04:08:53+00:00"
+    "year": 2023,
+    "price": 40478,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 60,
     "make": "Saturn",
     "model": "S-Series",
-    "year": 1992,
-    "price": 96288,
-    "created_at": "2021-08-24T04:43:43+00:00"
+    "year": 2023,
+    "price": 27890,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 61,
     "make": "Chrysler",
     "model": "Sebring",
-    "year": 2003,
-    "price": 34753,
-    "created_at": "2021-02-11T11:25:35+00:00"
+    "year": 2023,
+    "price": 22732,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 62,
     "make": "Lotus",
     "model": "Evora",
-    "year": 2010,
-    "price": 42760,
-    "created_at": "2021-08-31T00:29:05+00:00"
+    "year": 2023,
+    "price": 22620,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 63,
     "make": "Jeep",
     "model": "Wrangler",
-    "year": 2011,
-    "price": 8684,
-    "created_at": "2021-06-24T10:38:05+00:00"
+    "year": 2023,
+    "price": 22206,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 64,
     "make": "Ford",
     "model": "Expedition",
-    "year": 2012,
-    "price": 25653,
-    "created_at": "2021-07-01T16:13:20+00:00"
+    "year": 2023,
+    "price": 30490,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 65,
     "make": "Chevrolet",
     "model": "Avalanche 2500",
-    "year": 2006,
-    "price": 3158,
-    "created_at": "2021-08-14T10:55:13+00:00"
+    "year": 2023,
+    "price": 17804,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 66,
     "make": "Mazda",
     "model": "Mazda3",
-    "year": 2012,
-    "price": 79820,
-    "created_at": "2021-05-25T21:55:52+00:00"
+    "year": 2023,
+    "price": 29136,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 67,
     "make": "Toyota",
     "model": "Tacoma",
-    "year": 2005,
-    "price": 73572,
-    "created_at": "2021-01-22T09:56:02+00:00"
+    "year": 2023,
+    "price": 17090,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 68,
     "make": "Ford",
     "model": "Explorer Sport",
-    "year": 2000,
-    "price": 64579,
-    "created_at": "2021-02-16T06:56:06+00:00"
+    "year": 2023,
+    "price": 20030,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 69,
     "make": "GMC",
     "model": "Savana Cargo Van",
-    "year": 2006,
-    "price": 65944,
-    "created_at": "2021-09-12T14:08:53+00:00"
+    "year": 2023,
+    "price": 23481,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 70,
     "make": "Chevrolet",
     "model": "HHR",
-    "year": 2009,
-    "price": 8953,
-    "created_at": "2021-08-17T04:25:43+00:00"
+    "year": 2023,
+    "price": 14739,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 71,
     "make": "Ford",
     "model": "Bronco II",
-    "year": 1989,
-    "price": 41811,
-    "created_at": "2021-07-14T14:20:28+00:00"
+    "year": 2023,
+    "price": 23330,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 72,
     "make": "Chevrolet",
     "model": "Suburban 2500",
-    "year": 2011,
-    "price": 57488,
-    "created_at": "2021-09-22T12:32:57+00:00"
+    "year": 2023,
+    "price": 27447,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 73,
     "make": "Suzuki",
     "model": "Grand Vitara",
-    "year": 2008,
-    "price": 6408,
-    "created_at": "2021-11-12T23:19:52+00:00"
+    "year": 2023,
+    "price": 20474,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 74,
     "make": "Mazda",
     "model": "Mazda6",
-    "year": 2012,
-    "price": 14805,
-    "created_at": "2021-06-01T01:55:32+00:00"
+    "year": 2023,
+    "price": 28367,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 75,
     "make": "Chevrolet",
     "model": "Tahoe",
-    "year": 1998,
-    "price": 33585,
-    "created_at": "2022-01-09T04:28:54+00:00"
+    "year": 2023,
+    "price": 18820,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 76,
     "make": "Ford",
     "model": "Explorer Sport Trac",
-    "year": 2010,
-    "price": 2087,
-    "created_at": "2022-03-28T00:28:16+00:00"
+    "year": 2023,
+    "price": 32124,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 77,
     "make": "Ford",
     "model": "F150",
-    "year": 2007,
-    "price": 17621,
-    "created_at": "2021-03-23T15:08:10+00:00"
+    "year": 2023,
+    "price": 15639,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 78,
     "make": "Ford",
     "model": "Taurus",
-    "year": 1995,
-    "price": 16478,
-    "created_at": "2021-06-07T22:29:50+00:00"
+    "year": 2023,
+    "price": 20215,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 79,
     "make": "Mitsubishi",
     "model": "Truck",
-    "year": 1992,
-    "price": 70616,
-    "created_at": "2022-01-30T05:14:02+00:00"
+    "year": 2023,
+    "price": 31651,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 80,
     "make": "Dodge",
     "model": "Colt",
-    "year": 1994,
-    "price": 34163,
-    "created_at": "2022-04-02T18:06:30+00:00"
+    "year": 2023,
+    "price": 21590,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 81,
     "make": "Mazda",
     "model": "RX-7",
-    "year": 1991,
-    "price": 29634,
-    "created_at": "2021-01-06T10:30:59+00:00"
+    "year": 2023,
+    "price": 19443,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 82,
     "make": "Pontiac",
     "model": "Grand Prix",
-    "year": 1984,
-    "price": 88575,
-    "created_at": "2021-02-24T06:06:57+00:00"
+    "year": 2023,
+    "price": 31330,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 83,
     "make": "Mazda",
     "model": "Mazdaspeed 3",
-    "year": 2012,
-    "price": 77723,
-    "created_at": "2021-11-11T22:48:05+00:00"
+    "year": 2023,
+    "price": 26400,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 84,
     "make": "Alfa Romeo",
     "model": "Spider",
-    "year": 1992,
-    "price": 64288,
-    "created_at": "2021-01-06T03:50:27+00:00"
+    "year": 2023,
+    "price": 53177,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 85,
     "make": "Audi",
     "model": "S8",
-    "year": 2002,
-    "price": 33718,
-    "created_at": "2021-07-21T11:14:54+00:00"
+    "year": 2023,
+    "price": 36694,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 86,
     "make": "Isuzu",
     "model": "Amigo",
-    "year": 1992,
-    "price": 53335,
-    "created_at": "2022-03-02T10:42:21+00:00"
+    "year": 2023,
+    "price": 27523,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 87,
     "make": "Toyota",
     "model": "Paseo",
-    "year": 1996,
-    "price": 74558,
-    "created_at": "2021-10-02 14:54:58+00:00"
+    "year": 2023,
+    "price": 21909,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 88,
     "make": "Lincoln",
     "model": "Continental Mark VII",
-    "year": 1986,
-    "price": 42150,
-    "created_at": "2021-10-02T04:48:53+00:00"
+    "year": 2023,
+    "price": 31219,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 89,
     "make": "Dodge",
     "model": "Dakota",
-    "year": 1997,
-    "price": 64516,
-    "created_at": "2021-09-09T23:13:26+00:00"
+    "year": 2023,
+    "price": 19825,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 90,
     "make": "Chevrolet",
     "model": "Tahoe",
-    "year": 1998,
-    "price": 51461,
-    "created_at": "2021-04-06T08:29:19+00:00"
+    "year": 2023,
+    "price": 18151,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 91,
     "make": "Pontiac",
     "model": "Vibe",
-    "year": 2006,
-    "price": 12134,
-    "created_at": "2021-01-11T22:30:14+00:00"
+    "year": 2023,
+    "price": 24722,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 92,
     "make": "Volkswagen",
     "model": "Eos",
-    "year": 2011,
-    "price": 53128,
-    "created_at": "2021-01-12T23:25:06+00:00"
+    "year": 2023,
+    "price": 31509,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 93,
     "make": "Mazda",
     "model": "Mazdaspeed6",
-    "year": 2007,
-    "price": 90902,
-    "created_at": "2021-12-29T14:29:03+00:00"
+    "year": 2023,
+    "price": 15108,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 94,
     "make": "Nissan",
     "model": "Xterra",
-    "year": 2005,
-    "price": 41532,
-    "created_at": "2021-09-07 09:00:49+00:00"
+    "year": 2023,
+    "price": 17102,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 95,
     "make": "Mercury",
     "model": "Sable",
-    "year": 2005,
-    "price": 71337,
-    "created_at": "2021-01-31T22:13:44+00:00"
+    "year": 2023,
+    "price": 23376,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 96,
     "make": "BMW",
     "model": "330",
-    "year": 2006,
-    "price": 14494,
-    "created_at": "2021-09-17T20:52:48+00:00"
+    "year": 2023,
+    "price": 38978,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 97,
     "make": "Audi",
     "model": "R8",
-    "year": 2008,
-    "price": 17642,
-    "created_at": "2021-09-21T11:56:24+00:00"
+    "year": 2023,
+    "price": 39638,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 98,
     "make": "Cadillac",
     "model": "CTS-V",
-    "year": 2007,
-    "price": 19914,
-    "created_at": "2021-09-02T15:38:46+00:00"
+    "year": 2023,
+    "price": 34590,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 99,
     "make": "GMC",
     "model": "1500 Club Coupe",
-    "year": 1997,
-    "price": 82288,
-    "created_at": "2021-04-20T18:58:15+00:00"
+    "year": 2023,
+    "price": 30154,
+    "created_at": "2024-04-08T18:07:20+00:00"
   },
   {
     "id": 100,
     "make": "Buick",
     "model": "Somerset",
-    "year": 1986,
-    "price": 64148,
-    "created_at": "2021-06-10T19:07:38+00:00"
+    "year": 2023,
+    "price": 29981,
+    "created_at": "2024-04-08T18:07:20+00:00"
   }
 ]

@@ -7,9 +7,10 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class CdcStateManager(
     private val initialState: CdcState?,
@@ -26,7 +27,7 @@ class CdcStateManager(
             if (initialStreamsSynced != null) Collections.unmodifiableSet(initialStreamsSynced)
             else null
         this.rawStateMessage = stateMessage
-        LOGGER.info("Initialized CDC state")
+        LOGGER.info { "Initialized CDC state" }
     }
 
     var cdcState: CdcState?
@@ -44,7 +45,5 @@ class CdcStateManager(
             '}'
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CdcStateManager::class.java)
-    }
+    companion object {}
 }

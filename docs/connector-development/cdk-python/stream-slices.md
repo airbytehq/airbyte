@@ -25,4 +25,3 @@ Slack is a chat platform for businesses. Collectively, a company can easily post
 This is a great usecase for stream slicing. The `messages` stream, which outputs one record per chat message, can slice records by time e.g: hourly. It implements this by specifying the beginning and end timestamp of each hour that it wants to pull data from. Then after all the records in a given hour \(i.e: slice\) have been read, the connector outputs a STATE message to indicate that state should be saved. This way, if the connector ever fails during a sync \(for example if the API goes down\) then at most, it will reread only one hour's worth of messages.
 
 See the implementation of the Slack connector [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py).
-

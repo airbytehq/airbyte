@@ -2,7 +2,7 @@ connector_image: airbyte/source-paystack:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_paystack/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -18,6 +18,8 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: disputes
+            bypass_reason: "unable to seed, this stream requires third party system"
+          - name: refunds
             bypass_reason: "unable to seed, this stream requires third party system"
           - name: settlements
             bypass_reason: "unable to seed, this stream requires third party system"

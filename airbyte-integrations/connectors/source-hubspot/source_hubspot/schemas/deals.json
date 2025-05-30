@@ -3,643 +3,839 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the deal",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Deal properties",
       "type": ["null", "object"],
       "properties": {
         "amount": {
+          "description": "Total amount of the deal",
           "type": ["null", "string"]
         },
         "amount_in_home_currency": {
+          "description": "Amount of the deal in home currency",
           "type": ["null", "string"]
         },
         "closed_lost_reason": {
+          "description": "Reason for closing the deal as lost",
           "type": ["null", "string"]
         },
         "closed_won_reason": {
+          "description": "Reason for closing the deal as won",
           "type": ["null", "string"]
         },
         "closedate": {
+          "description": "Date when the deal was closed",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "createdate": {
+          "description": "Date when the deal was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "days_to_close": {
+          "description": "Number of days taken to close the deal",
           "type": ["null", "string"]
         },
         "dealname": {
+          "description": "Name of the deal",
           "type": ["null", "string"]
         },
         "dealstage": {
+          "description": "Current stage of the deal",
           "type": ["null", "string"]
         },
         "dealtype": {
+          "description": "Type of the deal",
           "type": ["null", "string"]
         },
         "description": {
+          "description": "Description of the deal",
           "type": ["null", "string"]
         },
         "engagements_last_meeting_booked": {
+          "description": "Last meeting booked engagement",
           "type": ["null", "string"]
         },
         "engagements_last_meeting_booked_campaign": {
+          "description": "Campaign of the last booked meeting",
           "type": ["null", "string"]
         },
         "engagements_last_meeting_booked_medium": {
+          "description": "Medium of the last booked meeting",
           "type": ["null", "string"]
         },
         "engagements_last_meeting_booked_source": {
+          "description": "Source of the last booked meeting",
           "type": ["null", "string"]
         },
         "hs_acv": {
+          "description": "Annual Contract Value of the deal",
           "type": ["null", "string"]
         },
         "hs_all_accessible_team_ids": {
+          "description": "All team IDs with accessibility",
           "type": ["null", "string"]
         },
         "hs_all_assigned_business_unit_ids": {
+          "description": "All business unit IDs assigned",
           "type": ["null", "string"]
         },
         "hs_all_owner_ids": {
+          "description": "All owner IDs",
           "type": ["null", "string"]
         },
         "hs_all_team_ids": {
+          "description": "All team IDs",
           "type": ["null", "string"]
         },
         "hs_analytics_source": {
+          "description": "Analytics source of the deal",
           "type": ["null", "string"]
         },
         "hs_analytics_source_data_1": {
+          "description": "Additional analytics data 1",
           "type": ["null", "string"]
         },
         "hs_analytics_source_data_2": {
+          "description": "Additional analytics data 2",
           "type": ["null", "string"]
         },
         "hs_arr": {
+          "description": "Annual Run Rate of the deal",
           "type": ["null", "string"]
         },
         "hs_closed_amount": {
+          "description": "Amount at which the deal was closed",
           "type": ["null", "string"]
         },
         "hs_closed_amount_in_home_currency": {
+          "description": "Closed amount in home currency",
           "type": ["null", "string"]
         },
         "hs_created_by_user_id": {
+          "description": "User ID who created the deal",
           "type": ["null", "string"]
         },
         "hs_createdate": {
+          "description": "Creation date of the deal",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_9567448": {
+          "description": "Date when the deal was entered into the system",
           "type": ["null", "string"]
         },
         "hs_date_entered_9567449": {
+          "description": "Another date when the deal was entered",
           "type": ["null", "string"]
         },
         "hs_date_entered_appointmentscheduled": {
+          "description": "Date when appointment was scheduled",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_closedlost": {
+          "description": "Date when deal was marked as closed lost",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_closedwon": {
+          "description": "Date when deal was marked as closed won",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_contractsent": {
+          "description": "Date when contract was sent",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_customclosedwonstage": {
+          "description": "Date entered custom closed won stage",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_decisionmakerboughtin": {
+          "description": "Date decision maker bought in",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_presentationscheduled": {
+          "description": "Date when presentation was scheduled",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_entered_qualifiedtobuy": {
+          "description": "Date when qualified to buy",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_9567448": {
+          "description": "Date when the deal exited the system",
           "type": ["null", "string"]
         },
         "hs_date_exited_9567449": {
+          "description": "Another date when the deal exited",
           "type": ["null", "string"]
         },
         "hs_date_exited_appointmentscheduled": {
+          "description": "Date when appointment was exited",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_closedlost": {
+          "description": "Date when deal was exited as closed lost",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_closedwon": {
+          "description": "Date when deal was exited as closed won",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_contractsent": {
+          "description": "Date when contract was exited",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_customclosedwonstage": {
+          "description": "Date exited from custom closed won stage",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_decisionmakerboughtin": {
+          "description": "Date decision maker bought in exited",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_presentationscheduled": {
+          "description": "Date when presentation was exited",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_date_exited_qualifiedtobuy": {
+          "description": "Date when qualified to buy exited",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_deal_amount_calculation_preference": {
+          "description": "Deal amount calculation preference",
           "type": ["null", "string"]
         },
         "hs_deal_stage_probability": {
+          "description": "Probability of current deal stage",
           "type": ["null", "string"]
         },
         "hs_deal_stage_probability_shadow": {
+          "description": "Shadow probability of deal stage",
           "type": ["null", "string"]
         },
         "hs_forecast_amount": {
+          "description": "Forecasted amount of the deal",
           "type": ["null", "string"]
         },
         "hs_forecast_probability": {
+          "description": "Forecasted probability of the deal",
           "type": ["null", "string"]
         },
         "hs_is_closed": {
+          "description": "Indicates if the deal is closed",
           "type": ["null", "boolean"]
         },
         "hs_is_closed_won": {
+          "description": "Indicates if the deal is closed as won",
           "type": ["null", "boolean"]
         },
         "hs_lastmodifieddate": {
+          "description": "Last modified date of the deal",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_latest_meeting_activity": {
+          "description": "Latest meeting activity associated",
           "type": ["null", "string"]
         },
         "hs_likelihood_to_close": {
+          "description": "Likelihood of closing the deal",
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_discount_percentage": {
+          "description": "Discount percentage for line items",
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_discount_percentage_enabled": {
+          "description": "Indicates if discount percentage is enabled for line items",
           "type": ["null", "boolean"]
         },
         "hs_line_item_global_term_hs_recurring_billing_period": {
+          "description": "Recurring billing period for line items",
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_recurring_billing_period_enabled": {
+          "description": "Indicates if recurring billing period is enabled for line items",
           "type": ["null", "boolean"]
         },
         "hs_line_item_global_term_hs_recurring_billing_start_date": {
+          "description": "Start date for recurring billing of line items",
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
+          "description": "Indicates if start date for recurring billing is enabled for line items",
           "type": ["null", "boolean"]
         },
         "hs_line_item_global_term_recurringbillingfrequency": {
+          "description": "Recurring billing frequency for line items",
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_recurringbillingfrequency_enabled": {
+          "description": "Indicates if recurring billing frequency is enabled for line items",
           "type": ["null", "boolean"]
         },
         "hs_manual_forecast_category": {
+          "description": "Manual forecast category of the deal",
           "type": ["null", "string"]
         },
         "hs_merged_object_ids": {
+          "description": "IDs of merged objects",
           "type": ["null", "string"]
         },
         "hs_mrr": {
+          "description": "Monthly Recurring Revenue of the deal",
           "type": ["null", "string"]
         },
         "hs_next_step": {
+          "description": "Next step planned for the deal",
           "type": ["null", "string"]
         },
         "hs_num_target_accounts": {
+          "description": "Number of target accounts",
           "type": ["null", "string"]
         },
         "hs_object_id": {
+          "description": "Object ID of the deal",
           "type": ["null", "string"]
         },
         "hs_predicted_amount": {
+          "description": "Predicted amount of the deal",
           "type": ["null", "string"]
         },
         "hs_predicted_amount_in_home_currency": {
+          "description": "Predicted amount in home currency",
           "type": ["null", "string"]
         },
         "hs_priority": {
+          "description": "Priority level of the deal",
           "type": ["null", "string"]
         },
         "hs_projected_amount": {
+          "description": "Projected amount of the deal",
           "type": ["null", "string"]
         },
         "hs_projected_amount_in_home_currency": {
+          "description": "Projected amount in home currency",
           "type": ["null", "string"]
         },
         "hs_sales_email_last_replied": {
+          "description": "Last replied email in sales",
           "type": ["null", "string"]
         },
         "hs_tcv": {
+          "description": "Total Contract Value of the deal",
           "type": ["null", "string"]
         },
         "hs_unique_creation_key": {
+          "description": "Unique key for creation",
           "type": ["null", "string"]
         },
         "hs_updated_by_user_id": {
+          "description": "User ID who last updated the deal",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_followers": {
+          "description": "User IDs of all notification followers",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_unfollowers": {
+          "description": "User IDs of all notification unfollowers",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_owners": {
+          "description": "User IDs of all owners",
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
+          "description": "Date when the owner was assigned to the deal",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hubspot_owner_id": {
+          "description": "Owner ID of the deal",
           "type": ["null", "string"]
         },
         "hubspot_team_id": {
+          "description": "Team ID of the deal",
           "type": ["null", "string"]
         },
         "notes_last_contacted": {
+          "description": "Last contact date for notes",
           "type": ["null", "string"]
         },
         "notes_last_updated": {
+          "description": "Last updated date for notes",
           "type": ["null", "string"]
         },
         "notes_next_activity_date": {
+          "description": "Next activity date for notes",
           "type": ["null", "string"]
         },
         "num_associated_contacts": {
+          "description": "Number of associated contacts with the deal",
           "type": ["null", "string"]
         },
         "num_contacted_notes": {
+          "description": "Number of contacted notes",
           "type": ["null", "string"]
         },
         "num_notes": {
+          "description": "Total number of notes",
           "type": ["null", "string"]
         },
         "pipeline": {
+          "description": "Pipeline the deal belongs to",
           "type": ["null", "string"]
         }
       }
     },
     "properties_amount": {
+      "description": "Total amount of the deal",
       "type": ["null", "string"]
     },
     "properties_amount_in_home_currency": {
+      "description": "Total amount of the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_closed_lost_reason": {
+      "description": "Reason for closing the deal as lost",
       "type": ["null", "string"]
     },
     "properties_closed_won_reason": {
+      "description": "Reason for closing the deal as won",
       "type": ["null", "string"]
     },
     "properties_closedate": {
+      "description": "Date when the deal was closed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_createdate": {
+      "description": "Date when the deal was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_days_to_close": {
+      "description": "Number of days taken to close the deal",
       "type": ["null", "string"]
     },
     "properties_dealname": {
+      "description": "Name or title of the deal",
       "type": ["null", "string"]
     },
     "properties_dealstage": {
+      "description": "Current stage of the deal",
       "type": ["null", "string"]
     },
     "properties_dealtype": {
+      "description": "Type or category of the deal",
       "type": ["null", "string"]
     },
     "properties_description": {
+      "description": "Description of the deal",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked": {
+      "description": "Information about the last meeting booked for engagement",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked_campaign": {
+      "description": "Campaign related to the last booked meeting",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked_medium": {
+      "description": "Medium used for the last booked meeting",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked_source": {
+      "description": "Source of the last booked meeting",
       "type": ["null", "string"]
     },
     "properties_hs_acv": {
+      "description": "Annual Contract Value for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_accessible_team_ids": {
+      "description": "IDs of all teams with access to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_assigned_business_unit_ids": {
+      "description": "IDs of all assigned business units for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_owner_ids": {
+      "description": "IDs of all owners of the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_team_ids": {
+      "description": "IDs of all teams associated with the deal",
       "type": ["null", "string"]
     },
     "properties_hs_analytics_source": {
+      "description": "Analytics source for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_analytics_source_data_1": {
+      "description": "Additional analytics data for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_analytics_source_data_2": {
+      "description": "More analytics data for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_arr": {
+      "description": "ARR (Annual Recurring Revenue) for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_closed_amount": {
+      "description": "Amount closed for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_closed_amount_in_home_currency": {
+      "description": "Amount closed for the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_hs_created_by_user_id": {
+      "description": "User ID who created the deal",
       "type": ["null", "string"]
     },
     "properties_hs_createdate": {
+      "description": "Creation date of the deal",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_9567448": {
+      "description": "Date when the deal was created",
       "type": ["null", "string"]
     },
     "properties_hs_date_entered_9567449": {
+      "description": "Another date when the deal was created",
       "type": ["null", "string"]
     },
     "properties_hs_date_entered_appointmentscheduled": {
+      "description": "Date when appointment was scheduled",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_closedlost": {
+      "description": "Date when deal was marked as closed lost",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_closedwon": {
+      "description": "Date when deal was marked as closed won",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_contractsent": {
+      "description": "Date when contract was sent",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_customclosedwonstage": {
+      "description": "Date entered custom closed won stage",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_decisionmakerboughtin": {
+      "description": "Date decision maker bought in",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_presentationscheduled": {
+      "description": "Date when presentation was scheduled",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_entered_qualifiedtobuy": {
+      "description": "Date when qualified to buy",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_9567448": {
+      "description": "Date when the deal was exited",
       "type": ["null", "string"]
     },
     "properties_hs_date_exited_9567449": {
+      "description": "Another date when the deal was exited",
       "type": ["null", "string"]
     },
     "properties_hs_date_exited_appointmentscheduled": {
+      "description": "Date when appointment was exited",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_closedlost": {
+      "description": "Date when deal was exited as closed lost",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_closedwon": {
+      "description": "Date when deal was exited as closed won",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_contractsent": {
+      "description": "Date when contract was exited",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_customclosedwonstage": {
+      "description": "Date exited from custom closed won stage",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_decisionmakerboughtin": {
+      "description": "Date decision maker bought in exited",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_presentationscheduled": {
+      "description": "Date when presentation was exited",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_date_exited_qualifiedtobuy": {
+      "description": "Date when qualified to buy exited",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_deal_amount_calculation_preference": {
+      "description": "Calculation preference for deal amount",
       "type": ["null", "string"]
     },
     "properties_hs_deal_stage_probability": {
+      "description": "Probability of winning the deal at current stage",
       "type": ["null", "string"]
     },
     "properties_hs_deal_stage_probability_shadow": {
+      "description": "Shadow probability of winning the deal at current stage",
       "type": ["null", "string"]
     },
     "properties_hs_forecast_amount": {
+      "description": "Forecasted amount for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_forecast_probability": {
+      "description": "Forecasted probability of closing the deal",
       "type": ["null", "string"]
     },
     "properties_hs_is_closed": {
+      "description": "Flag indicating if the deal is closed",
       "type": ["null", "boolean"]
     },
     "properties_hs_is_closed_won": {
+      "description": "Flag indicating if the deal is closed and won",
       "type": ["null", "boolean"]
     },
     "properties_hs_lastmodifieddate": {
+      "description": "Last modified date of the deal",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_latest_meeting_activity": {
+      "description": "Information about the latest meeting activity related to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_likelihood_to_close": {
+      "description": "Likelihood of closing the deal",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_discount_percentage": {
+      "description": "Global discount percentage for line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_discount_percentage_enabled": {
+      "description": "Flag indicating if global discount percentage for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_period": {
+      "description": "Recurring billing period for line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_period_enabled": {
+      "description": "Flag indicating if recurring billing period for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_start_date": {
+      "description": "Start date for recurring billing of line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
+      "description": "Flag indicating if recurring billing start date for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_line_item_global_term_recurringbillingfrequency": {
+      "description": "Recurring billing frequency for line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_recurringbillingfrequency_enabled": {
+      "description": "Flag indicating if recurring billing frequency for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_manual_forecast_category": {
+      "description": "Manual forecast category for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_merged_object_ids": {
+      "description": "IDs of merged objects related to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_mrr": {
+      "description": "MRR (Monthly Recurring Revenue) for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_next_step": {
+      "description": "Next step planned for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_num_target_accounts": {
+      "description": "Number of target accounts associated with the deal",
       "type": ["null", "string"]
     },
     "properties_hs_object_id": {
+      "description": "Unique object ID for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_predicted_amount": {
+      "description": "Predicted amount for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_predicted_amount_in_home_currency": {
+      "description": "Predicted amount for the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_hs_priority": {
+      "description": "Priority level assigned to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_projected_amount": {
+      "description": "Projected amount for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_projected_amount_in_home_currency": {
+      "description": "Projected amount for the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_hs_sales_email_last_replied": {
+      "description": "Last date the sales email was replied to",
       "type": ["null", "string"]
     },
     "properties_hs_tcv": {
+      "description": "Total Contract Value for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_unique_creation_key": {
+      "description": "Unique key for creation of the deal",
       "type": ["null", "string"]
     },
     "properties_hs_updated_by_user_id": {
+      "description": "User ID who last updated the deal",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "User IDs of all notification followers for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "User IDs of all notification unfollowers for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_owners": {
+      "description": "User IDs of all owners of the deal",
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
+      "description": "Date when the owner was assigned to the deal",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hubspot_owner_id": {
+      "description": "Owner ID of the deal in HubSpot",
       "type": ["null", "string"]
     },
     "properties_hubspot_team_id": {
+      "description": "Team ID associated with the deal in HubSpot",
       "type": ["null", "string"]
     },
     "properties_notes_last_contacted": {
+      "description": "Date when the last contact was made",
       "type": ["null", "string"]
     },
     "properties_notes_last_updated": {
+      "description": "Date when the notes were last updated",
       "type": ["null", "string"]
     },
     "properties_notes_next_activity_date": {
+      "description": "Next planned activity date from notes",
       "type": ["null", "string"]
     },
     "properties_num_associated_contacts": {
+      "description": "Number of contacts associated with the deal",
       "type": ["null", "string"]
     },
     "properties_num_contacted_notes": {
+      "description": "Number of notes related to contacted activities",
       "type": ["null", "string"]
     },
     "properties_num_notes": {
+      "description": "Total number of notes attached to the deal",
       "type": ["null", "string"]
     },
     "properties_pipeline": {
+      "description": "Pipeline information the deal belongs to",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the deal was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the deal was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the deal is archived",
       "type": ["null", "boolean"]
     },
     "companies": {
+      "description": "Information about companies associated with the deal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "contacts": {
+      "description": "Information about contacts associated with the deal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "line_items": {
+      "description": "Details of line items associated with the deal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

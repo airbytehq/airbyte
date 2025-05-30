@@ -5,33 +5,62 @@ data:
   allowedHosts:
     hosts:
       - "*.myfreshworks.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-freshsales
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.1@sha256:775f3f28381e2bb18d84ecccd35624b3de6f2cf62fb481fe7809091435f8eb26
   connectorSubtype: api
   connectorType: source
   definitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   releases:
     breakingChanges:
       1.0.0:
-        message: "This version migrates the Freshsales connector to our low-code framework for greater maintainability. It also introduces changes to data types across most streams. You will need to run a reset after upgrading to continue syncing data with the connector."
+        message:
+          "This version migrates the Freshsales connector to our low-code framework
+          for greater maintainability. It also introduces changes to data types across
+          most streams. You will need to run a reset after upgrading to continue syncing
+          data with the connector."
         upgradeDeadline: "2023-11-29"
   dockerRepository: airbyte/source-freshsales
-  documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   githubIssueLabel: source-freshsales
   icon: freshsales.svg
   license: MIT
   name: Freshsales
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-freshsales
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: 2021-11-03
   releaseStage: beta
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshsales_config_dev_null
+          id: 7825dcaf-24d1-43d6-8a57-8be179ef8f94
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-FRESHSALES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FRESHSALES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

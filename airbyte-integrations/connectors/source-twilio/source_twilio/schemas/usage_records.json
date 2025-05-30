@@ -1,77 +1,100 @@
 {
   "properties": {
     "category": {
+      "description": "The category to which the usage data belongs, such as calls, SMS, or recordings.",
       "type": ["null", "string"]
     },
     "count": {
+      "description": "The number of units consumed in the usage record.",
       "type": ["null", "integer"]
     },
     "price_unit": {
+      "description": "The currency unit in which the price is denoted, such as USD or EUR.",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains references to sub-resources related to the usage record.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "yesterday": {
+          "description": "The resource URI for fetching yesterday's usage records.",
           "type": ["null", "string"]
         },
         "all_time": {
+          "description": "The resource URI for fetching usage records spanning all time periods.",
           "type": ["null", "string"]
         },
         "today": {
+          "description": "The resource URI for fetching today's usage records.",
           "type": ["null", "string"]
         },
         "yearly": {
+          "description": "The resource URI for fetching yearly usage records.",
           "type": ["null", "string"]
         },
         "this_month": {
+          "description": "The resource URI for fetching usage records for the current month.",
           "type": ["null", "string"]
         },
         "monthly": {
+          "description": "The resource URI for fetching monthly usage records.",
           "type": ["null", "string"]
         },
         "daily": {
+          "description": "The resource URI for fetching daily usage records.",
           "type": ["null", "string"]
         },
         "last_month": {
+          "description": "The resource URI for fetching usage records for the last month.",
           "type": ["null", "string"]
         }
       }
     },
     "description": {
+      "description": "A brief explanation or summary of the usage record data.",
       "type": ["null", "string"]
     },
     "end_date": {
+      "description": "The end date of the usage record period.",
       "format": "date",
       "type": ["null", "string"]
     },
     "usage_unit": {
+      "description": "The unit of measurement for the usage field, corresponding to the usage count unit.",
       "type": ["null", "string"]
     },
     "price": {
+      "description": "The total price incurred for the consumed units in the usage record.",
       "type": ["null", "number"]
     },
     "uri": {
+      "description": "The unique resource identifier for the usage record.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the usage record.",
       "type": ["null", "string"]
     },
     "usage": {
+      "description": "The total usage value, which could be a cumulative count or a sum of values depending on the category.",
       "type": ["null", "number"]
     },
     "start_date": {
+      "description": "The start date and time of the usage record period.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "count_unit": {
+      "description": "The unit of measurement for the count field, such as minutes, messages, or bytes.",
       "type": ["null", "string"]
     },
     "as_of": {
+      "description": "The timestamp indicating the date and time up to which the usage data is accurate.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used in the interaction that generated the usage record.",
       "type": ["null", "string"]
     }
   },

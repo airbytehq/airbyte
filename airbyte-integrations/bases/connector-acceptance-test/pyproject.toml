@@ -4,14 +4,14 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector-acceptance-test"
-version = "3.7.0"
+version = "3.9.3"
 description = "Contains acceptance tests for connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 homepage = "https://github.com/airbytehq/airbyte"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.10, <3.12"
 airbyte-protocol-models = "<1.0.0"
 dagger-io = "==0.9.6"
 beartype = "<0.17.2" # dagger 0.9.6 doesn't pin this but doesn't play well with it. We should probably upgrade dagger
@@ -39,13 +39,15 @@ docker = ">=6,<7"
 # Pinning requests and urllib3 to avoid an issue with dockerpy and requests 2.
 # Related issue: https://github.com/docker/docker-py/issues/3113
 urllib3 = "<2.0"
-requests = "^2.31"
+requests = "~2.31"
 pytest-xdist = "^3.3.1"
+pytest-reportlog = "^0.4.0"
 
 [tool.poe.tasks]
 test = "pytest unit_tests"
 ci = ["test"]
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 poe_tasks = ["test"]
 mount_docker_socket = true

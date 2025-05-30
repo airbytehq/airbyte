@@ -5,14 +5,14 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.3.6
   dockerRepository: airbyte/source-dynamodb
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   githubIssueLabel: source-dynamodb
   icon: dynamodb.svg
   license: MIT
   name: DynamoDB
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +21,14 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-DYNAMODB__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

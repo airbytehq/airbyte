@@ -1,0 +1,14 @@
+{
+  "id": "750Tn000004ZoR3IAK",
+  "operation": "queryAll",
+  "object": "ActiveFeatureLicenseMetric",
+  "createdById": "0050900000Bf63SAAR",
+  "createdDate": "2024-04-25T15:50:37.000+0000",
+  "systemModstamp": "2024-04-25T15:50:37.000+0000",
+  "state": "UploadComplete",
+  "concurrencyMode": "Parallel",
+  "contentType": "CSV",
+  "apiVersion": 57.0,
+  "lineEnding": "LF",
+  "columnDelimiter": "COMMA"
+}

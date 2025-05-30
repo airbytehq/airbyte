@@ -18,7 +18,7 @@
       "host": {
         "title": "Host",
         "type": "string",
-        "description": "Hostname of the Typesense instance without protocol.",
+        "description": "Hostname of the Typesense instance without protocol. Accept multiple hosts separated by comma.",
         "order": 1
       },
       "port": {

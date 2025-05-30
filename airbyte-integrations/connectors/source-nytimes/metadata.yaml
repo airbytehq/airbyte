@@ -1,29 +1,43 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.3@sha256:c313c25af0617f5879361e684c956ac25ac1122beaf311c967e5b7a9b45ded79
   connectorSubtype: api
   connectorType: source
   definitionId: 0fae6a9a-04eb-44d4-96e1-e02d3dbc1d83
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-nytimes
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nytimes
   githubIssueLabel: source-nytimes
   icon: nytimes.svg
   license: MIT
   name: New York Times
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-nytimes
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/nytimes
-  tags:
-    - language:python
-    - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-nytimes
   supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: nytimes_config_dev_null
+          id: 458374b9-e318-4baa-87ff-d217fe32697e
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-NYTIMES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

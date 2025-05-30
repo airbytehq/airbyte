@@ -3,39 +3,40 @@
   "type": "object",
   "properties": {
     "workflowId": {
+      "description": "Information about the workflow.",
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "description": "The name of the workflow."
+          "description": "The name of the workflow.",
+          "type": "string"
         },
         "draft": {
-          "type": "boolean",
-          "description": "Whether the workflow is in the draft state."
+          "description": "Whether the workflow is in the draft state.",
+          "type": "boolean"
         }
       }
     },
     "postFunctions": {
-      "type": "array",
       "description": "The list of post functions within the workflow.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "The ID of the transition rule."
+            "description": "The ID of the transition rule.",
+            "type": "string"
           },
           "key": {
-            "type": "string",
             "description": "The key of the rule, as defined in the Connect app descriptor.",
+            "type": "string",
             "readOnly": true
           },
           "configuration": {
             "type": "object",
             "properties": {
               "value": {
-                "type": "string",
-                "description": "Configuration of the rule, as it is stored by the Connect app on the rule configuration page."
+                "description": "Configuration of the rule, as it is stored by the Connect app on the rule configuration page.",
+                "type": "string"
               }
             }
           },
@@ -44,12 +45,12 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "integer",
-                "description": "The transition ID."
+                "description": "The transition ID.",
+                "type": "integer"
               },
               "name": {
-                "type": "string",
-                "description": "The transition name."
+                "description": "The transition name.",
+                "type": "string"
               }
             }
           }
@@ -57,26 +58,26 @@
       }
     },
     "conditions": {
-      "type": "array",
       "description": "The list of conditions within the workflow.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "The ID of the transition rule."
+            "description": "The ID of the transition rule.",
+            "type": "string"
           },
           "key": {
-            "type": "string",
             "description": "The key of the rule, as defined in the Connect app descriptor.",
+            "type": "string",
             "readOnly": true
           },
           "configuration": {
             "type": "object",
             "properties": {
               "value": {
-                "type": "string",
-                "description": "Configuration of the rule, as it is stored by the Connect app on the rule configuration page."
+                "description": "Configuration of the rule, as it is stored by the Connect app on the rule configuration page.",
+                "type": "string"
               }
             }
           },
@@ -85,12 +86,12 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "integer",
-                "description": "The transition ID."
+                "description": "The transition ID.",
+                "type": "integer"
               },
               "name": {
-                "type": "string",
-                "description": "The transition name."
+                "description": "The transition name.",
+                "type": "string"
               }
             }
           }
@@ -98,26 +99,26 @@
       }
     },
     "validators": {
-      "type": "array",
       "description": "The list of validators within the workflow.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "The ID of the transition rule."
+            "description": "The ID of the transition rule.",
+            "type": "string"
           },
           "key": {
-            "type": "string",
             "description": "The key of the rule, as defined in the Connect app descriptor.",
+            "type": "string",
             "readOnly": true
           },
           "configuration": {
             "type": "object",
             "properties": {
               "value": {
-                "type": "string",
-                "description": "Configuration of the rule, as it is stored by the Connect app on the rule configuration page."
+                "description": "Configuration of the rule, as it is stored by the Connect app on the rule configuration page.",
+                "type": "string"
               }
             }
           },
@@ -126,12 +127,12 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "integer",
-                "description": "The transition ID."
+                "description": "The transition ID.",
+                "type": "integer"
               },
               "name": {
-                "type": "string",
-                "description": "The transition name."
+                "description": "The transition name.",
+                "type": "string"
               }
             }
           }

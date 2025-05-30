@@ -2,29 +2,39 @@ data:
   allowedHosts:
     hosts:
       - openexchangerates.org
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-open-exchange-rates
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-open-exchange-rates
+  documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
   githubIssueLabel: source-open-exchange-rates
   icon: open-exchange-rates.svg
   license: MIT
   name: Open Exchange Rates
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseDate: 2023-10-02
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-open-exchange-rates
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-OPEN-EXCHANGE-RATES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

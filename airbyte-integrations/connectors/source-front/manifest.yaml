@@ -1,0 +1,6141 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.frontapp.com/
+  Auth page: https://dev.frontapp.com/docs/create-and-revoke-api-tokens
+  API Docs: https://dev.frontapp.com/reference/introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: events
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: emitted_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    inboxes:
+      type: DeclarativeStream
+      name: inboxes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: inboxes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inboxes"
+    inboxes_channels:
+      type: DeclarativeStream
+      name: inboxes_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: inboxes/{{ stream_partition.inbox_id }}/channels
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: inbox_id
+              stream:
+                $ref: "#/definitions/streams/inboxes"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inboxes_channels"
+    inboxes_conversations:
+      type: DeclarativeStream
+      name: inboxes_conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: inboxes/{{ stream_partition.inbox_id }}/conversations
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: inbox_id
+              stream:
+                $ref: "#/definitions/streams/inboxes"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+          - "%s"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inboxes_conversations"
+    inboxes_teammates:
+      type: DeclarativeStream
+      name: inboxes_teammates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: inboxes/{{ stream_partition.inbox_id }}/teammates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: inbox_id
+              stream:
+                $ref: "#/definitions/streams/inboxes"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inboxes_teammates"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+          - "%s"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    conversations_events:
+      type: DeclarativeStream
+      name: conversations_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations/{{ stream_partition.conversation_id }}/events
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: conversation_id
+              stream:
+                $ref: "#/definitions/streams/conversations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: emitted_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_events"
+    conversations_followers:
+      type: DeclarativeStream
+      name: conversations_followers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations/{{ stream_partition.conversation_id }}/followers
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: conversation_id
+              stream:
+                $ref: "#/definitions/streams/conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_followers"
+    conversations_inboxes:
+      type: DeclarativeStream
+      name: conversations_inboxes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations/{{ stream_partition.conversation_id }}/inboxes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: conversation_id
+              stream:
+                $ref: "#/definitions/streams/conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_inboxes"
+    conversations_messages:
+      type: DeclarativeStream
+      name: conversations_messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations/{{ stream_partition.conversation_id }}/messages
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: conversation_id
+              stream:
+                $ref: "#/definitions/streams/conversations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+          - "%s"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_messages"
+    links:
+      type: DeclarativeStream
+      name: links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: links
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/links"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    accounts_contacts:
+      type: DeclarativeStream
+      name: accounts_contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ stream_partition.account_id }}/contacts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts_contacts"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: channels
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+    company_tags:
+      type: DeclarativeStream
+      name: company_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: company/tags
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: teammate_id
+              stream:
+                $ref: "#/definitions/streams/teammates"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_tags"
+    teammates:
+      type: DeclarativeStream
+      name: teammates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teammates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teammates"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    tags_children:
+      type: DeclarativeStream
+      name: tags_children
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags/{{ stream_partition.tag_id }}/children
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: tag_id
+              stream:
+                $ref: "#/definitions/streams/tags"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags_children"
+    teammates_tags:
+      type: DeclarativeStream
+      name: teammates_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teammates/{{ stream_partition.teammate_id }}/tags
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: teammate_id
+              stream:
+                $ref: "#/definitions/streams/teammates"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teammates_tags"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    teams_tags:
+      type: DeclarativeStream
+      name: teams_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams/{{ stream_partition.team_id }}/tags
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams_tags"
+    contact_groups:
+      type: DeclarativeStream
+      name: contact_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contact_groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contact_groups"
+    conversations_drafts:
+      type: DeclarativeStream
+      name: conversations_drafts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conversations/{{ stream_partition.conversation_id }}/drafts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: conversation_id
+              stream:
+                $ref: "#/definitions/streams/conversations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_drafts"
+    contacts_notes:
+      type: DeclarativeStream
+      name: contacts_notes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/{{ stream_partition.contact_id }}/notes
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: contact_id
+              stream:
+                $ref: "#/definitions/streams/contacts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_notes"
+    teammates_contact_groups:
+      type: DeclarativeStream
+      name: teammates_contact_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teammates/{{ stream_partition.teammate_id }}/contact_groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: teammate_id
+              stream:
+                $ref: "#/definitions/streams/teammates"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teammates_contact_groups"
+    teams_contact_groups:
+      type: DeclarativeStream
+      name: teams_contact_groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams/{{ stream_partition.team_id }}/contact_groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams_contact_groups"
+    knowledge_bases:
+      type: DeclarativeStream
+      name: knowledge_bases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: knowledge_bases
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/knowledge_bases"
+    knowledge_bases_articles:
+      type: DeclarativeStream
+      name: knowledge_bases_articles
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: knowledge_bases/{{ stream_partition.knowledge_base_id }}/articles
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: knowledge_base_id
+              stream:
+                $ref: "#/definitions/streams/knowledge_bases"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/knowledge_bases_articles"
+    knowledge_bases_categories:
+      type: DeclarativeStream
+      name: knowledge_bases_categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: knowledge_bases/{{ stream_partition.knowledge_base_id }}/categories
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: knowledge_base_id
+              stream:
+                $ref: "#/definitions/streams/knowledge_bases"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/knowledge_bases_categories"
+    message_template_folders:
+      type: DeclarativeStream
+      name: message_template_folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: message_template_folders
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/message_template_folders"
+    teams_signatures:
+      type: DeclarativeStream
+      name: teams_signatures
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams/{{ stream_partition.team_id }}/signatures
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams_signatures"
+    message_templates:
+      type: DeclarativeStream
+      name: message_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: message_templates
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/message_templates"
+    teammates_message_templates:
+      type: DeclarativeStream
+      name: teammates_message_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teammates/{{ stream_partition.teammate_id }}/message_templates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: teammate_id
+              stream:
+                $ref: "#/definitions/streams/teammates"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teammates_message_templates"
+    teams_message_templates:
+      type: DeclarativeStream
+      name: teams_message_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams/{{ stream_partition.team_id }}/message_templates
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['page_limit'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams_message_templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api2.frontapp.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/inboxes"
+  - $ref: "#/definitions/streams/inboxes_channels"
+  - $ref: "#/definitions/streams/inboxes_conversations"
+  - $ref: "#/definitions/streams/inboxes_teammates"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/conversations_events"
+  - $ref: "#/definitions/streams/conversations_followers"
+  - $ref: "#/definitions/streams/conversations_inboxes"
+  - $ref: "#/definitions/streams/conversations_messages"
+  - $ref: "#/definitions/streams/links"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/accounts_contacts"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/company_tags"
+  - $ref: "#/definitions/streams/teammates"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/tags_children"
+  - $ref: "#/definitions/streams/teammates_tags"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/teams_tags"
+  - $ref: "#/definitions/streams/contact_groups"
+  - $ref: "#/definitions/streams/conversations_drafts"
+  - $ref: "#/definitions/streams/contacts_notes"
+  - $ref: "#/definitions/streams/teammates_contact_groups"
+  - $ref: "#/definitions/streams/teams_contact_groups"
+  - $ref: "#/definitions/streams/knowledge_bases"
+  - $ref: "#/definitions/streams/knowledge_bases_articles"
+  - $ref: "#/definitions/streams/knowledge_bases_categories"
+  - $ref: "#/definitions/streams/message_template_folders"
+  - $ref: "#/definitions/streams/teams_signatures"
+  - $ref: "#/definitions/streams/message_templates"
+  - $ref: "#/definitions/streams/teammates_message_templates"
+  - $ref: "#/definitions/streams/teams_message_templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      page_limit:
+        type: string
+        description: Page limit for the responses
+        title: Page limit
+        default: "50"
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    events: true
+    inboxes: true
+    inboxes_channels: true
+    inboxes_conversations: true
+    inboxes_teammates: true
+    conversations: true
+    conversations_events: true
+    conversations_followers: true
+    conversations_inboxes: true
+    conversations_messages: true
+    links: true
+    accounts: true
+    accounts_contacts: true
+    contacts: true
+    channels: true
+    company_tags: true
+    teammates: true
+    tags: true
+    tags_children: true
+    teammates_tags: true
+    teams: true
+    teams_tags: true
+    contact_groups: true
+    conversations_drafts: true
+    contacts_notes: true
+    teammates_contact_groups: true
+    teams_contact_groups: true
+    knowledge_bases: true
+    knowledge_bases_articles: true
+    knowledge_bases_categories: true
+    message_template_folders: true
+    teams_signatures: true
+    message_templates: true
+    teammates_message_templates: true
+    teams_message_templates: true
+  testedStreams:
+    events:
+      streamHash: 8763b24a8a4fab0ee36210fe4dea6df6704a58ad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inboxes:
+      streamHash: ccfafe04fab65a323c5f128f449015e3138932e8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inboxes_channels:
+      streamHash: 776006ec048015c5050bb4ba116d444fdd41f0a3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inboxes_conversations:
+      streamHash: 7f3768152ece70759ab54e87551029dac6554e9e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inboxes_teammates:
+      streamHash: 759d4aa9072b9a27a0c8f0a749dbd9ed3480d42f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations:
+      streamHash: 3fe9feed03dd9e4f80add7d2023211adb3bbc731
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations_events:
+      streamHash: 9d38e704e3059709b92097df3bcecd1d46c42c55
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations_followers:
+      streamHash: 3f7c7abd4a90eb3ccbe9fe574d3e85d995e284bf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations_inboxes:
+      streamHash: c04fac92a2a79f256e7fcddee9f0ac1ebe5ca72a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations_messages:
+      streamHash: 4c9117b15f2e568d8a7fc964fc50eeb17c5a7d0e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    links:
+      streamHash: 349ff49de35c11125591b0f5153f98bf62a84e8d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    accounts:
+      streamHash: 6bfc980bc1097267f5d4a738bad844e028174436
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    accounts_contacts:
+      streamHash: 3314e83f63586e0ecc021e372a21339eb9e1708a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 4b9188d48d7d3675fd70701cc13fa0974abbeaf3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    channels:
+      streamHash: 7bce9c3212161c97afe70093b60b48c87b12cdf9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    company_tags:
+      streamHash: c20a9a13efdf976b95d3d6786a56bf10257d8ef1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teammates:
+      streamHash: 80da0a398e42e31a10dae69ec8f034e65915a082
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: ec297329b1fb74a54021e37ead7eca7e35f37fe7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags_children:
+      streamHash: bb92b7d7bcfb19be47abb15916b44b18bd1a745d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teammates_tags:
+      streamHash: b746adcba31f8842964b5388d911f50050eb4089
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: ef84a17900406262094001a6c1e4157a639cb9b6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams_tags:
+      streamHash: ab51090dff3c43d8708771fcf6b54dd4a524c976
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contact_groups:
+      streamHash: afe88d167d005fe56aa9cc567e959e44acbee34e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations_drafts:
+      streamHash: f150684526dd62b12908cef47811b557a8c120ad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts_notes:
+      streamHash: 2ea6410e6225b8b10b746cfbb9f3080ea4a3381d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teammates_contact_groups:
+      streamHash: b95815402d33cf05192216d5029922c6878d5184
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams_contact_groups:
+      streamHash: 1fb134248abefda30e4f3a90d583b5fbe4f3d4a1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    knowledge_bases:
+      streamHash: 969d9bc06efb925b396134d4acb3329c834ad341
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    knowledge_bases_articles:
+      streamHash: 53782f24dcf75ceff43cde4f51678fa0edc2d77d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    knowledge_bases_categories:
+      streamHash: 6752124f21596f2f347f2b7bcfcec6256cca7a47
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    message_template_folders:
+      streamHash: 21e43119af71f2d313786e94e014602f9d161ef9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams_signatures:
+      streamHash: e52e4696f894fc4674b443c416fbf8e2796b6150
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    message_templates:
+      streamHash: 087a259777fdcf9ad6325035dd332e807ea739a1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teammates_message_templates:
+      streamHash: a41b9efbf0680193347303f2212d8592b984c6b2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams_message_templates:
+      streamHash: 912c3b103e8d6a9d3f0cc05871a09b50e31c4cbf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      conversation:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  comments:
+                    type:
+                      - string
+                      - "null"
+                  events:
+                    type:
+                      - string
+                      - "null"
+                  followers:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+                  last_message:
+                    type:
+                      - string
+                      - "null"
+                  messages:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          assignee:
+            type:
+              - object
+              - "null"
+            properties:
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      conversations:
+                        type:
+                          - string
+                          - "null"
+                      inboxes:
+                        type:
+                          - string
+                          - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+              custom_fields:
+                type:
+                  - object
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              is_admin:
+                type:
+                  - boolean
+                  - "null"
+              is_available:
+                type:
+                  - boolean
+                  - "null"
+              is_blocked:
+                type:
+                  - boolean
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_private:
+            type:
+              - boolean
+              - "null"
+          links:
+            type:
+              - array
+              - "null"
+          recipient:
+            type:
+              - object
+              - "null"
+            properties:
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      contact:
+                        type:
+                          - string
+                          - "null"
+              handle:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+          scheduled_reminders:
+            type:
+              - array
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    related:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        conversations:
+                          type:
+                            - string
+                            - "null"
+                        owner:
+                          type:
+                            - string
+                            - "null"
+                    self:
+                      type:
+                        - string
+                        - "null"
+                created_at:
+                  type:
+                    - number
+                    - "null"
+                highlight:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_private:
+                  type:
+                    - boolean
+                    - "null"
+                is_visible_in_conversation_lists:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - number
+                    - "null"
+          waiting_since:
+            type:
+              - number
+              - "null"
+      emitted_at:
+        type: number
+      id:
+        type: string
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          _meta:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+          data:
+            anyOf:
+              - type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    _links:
+                      type: object
+                      properties:
+                        related:
+                          type: object
+                          properties:
+                            channels:
+                              type: string
+                            conversations:
+                              type: string
+                            owner:
+                              type: string
+                            teammates:
+                              type: string
+                        self:
+                          type: string
+                    address:
+                      type: string
+                    custom_fields:
+                      type: object
+                    id:
+                      type: string
+                    is_private:
+                      type: boolean
+                    is_public:
+                      type: boolean
+                    name:
+                      type: string
+                    send_as:
+                      type: string
+              - type: object
+                properties:
+                  _links:
+                    type: object
+                    properties:
+                      related:
+                        type: object
+                        properties:
+                          conversations:
+                            type: string
+                          inboxes:
+                            type: string
+                          owner:
+                            type: string
+                      self:
+                        type: string
+                  actions:
+                    type: array
+                    items:
+                      type: string
+                  custom_fields:
+                    type: object
+                  email:
+                    type: string
+                  first_name:
+                    type: string
+                  id:
+                    type: string
+                  is_admin:
+                    type: boolean
+                  is_available:
+                    type: boolean
+                  is_blocked:
+                    type: boolean
+                  is_private:
+                    type: boolean
+                  last_name:
+                    type: string
+                  name:
+                    type: string
+                  username:
+                    type: string
+      target:
+        type:
+          - object
+          - "null"
+        properties:
+          _meta:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              metadata:
+                type:
+                  - object
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      conversation:
+                        type:
+                          - string
+                          - "null"
+                      conversations:
+                        type:
+                          - string
+                          - "null"
+                      inboxes:
+                        type:
+                          - string
+                          - "null"
+                      mentions:
+                        type:
+                          - string
+                          - "null"
+                      message_seen:
+                        type:
+                          - string
+                          - "null"
+                      owner:
+                        type:
+                          - string
+                          - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+              attachments:
+                type:
+                  - array
+                  - "null"
+              author:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      related:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          conversations:
+                            type:
+                              - string
+                              - "null"
+                          inboxes:
+                            type:
+                              - string
+                              - "null"
+                      self:
+                        type:
+                          - string
+                          - "null"
+                  custom_fields:
+                    type:
+                      - object
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  first_name:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  is_admin:
+                    type:
+                      - boolean
+                      - "null"
+                  is_available:
+                    type:
+                      - boolean
+                      - "null"
+                  is_blocked:
+                    type:
+                      - boolean
+                      - "null"
+                  last_name:
+                    type:
+                      - string
+                      - "null"
+                  username:
+                    type:
+                      - string
+                      - "null"
+              blurb:
+                type:
+                  - string
+                  - "null"
+              body:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - number
+                  - "null"
+              custom_fields:
+                type:
+                  - object
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              highlight:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              is_admin:
+                type:
+                  - boolean
+                  - "null"
+              is_available:
+                type:
+                  - boolean
+                  - "null"
+              is_blocked:
+                type:
+                  - boolean
+                  - "null"
+              is_draft:
+                type:
+                  - boolean
+                  - "null"
+              is_inbound:
+                type:
+                  - boolean
+                  - "null"
+              is_pinned:
+                type:
+                  - boolean
+                  - "null"
+              is_private:
+                type:
+                  - boolean
+                  - "null"
+              is_visible_in_conversation_lists:
+                type:
+                  - boolean
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              posted_at:
+                type:
+                  - number
+                  - "null"
+              recipients:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    _links:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        related:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            contact:
+                              type:
+                                - string
+                                - "null"
+                    handle:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - number
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+    required:
+      - id
+      - emitted_at
+  inboxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              channels:
+                type:
+                  - string
+                  - "null"
+              conversations:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+              teammates:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_public:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      send_as:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  inboxes_channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              inbox:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_valid:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      send_as:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          all_teammates_can_reply:
+            type:
+              - boolean
+              - "null"
+          undo_send_time:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  inboxes_conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              comments:
+                type:
+                  - string
+                  - "null"
+              events:
+                type:
+                  - string
+                  - "null"
+              followers:
+                type:
+                  - string
+                  - "null"
+              inboxes:
+                type:
+                  - string
+                  - "null"
+              last_message:
+                type:
+                  - string
+                  - "null"
+              messages:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  conversations:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_admin:
+            type:
+              - boolean
+              - "null"
+          is_available:
+            type:
+              - boolean
+              - "null"
+          is_blocked:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      created_at:
+        type: number
+      custom_fields:
+        type:
+          - object
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties: {}
+          handle:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+      scheduled_reminders:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                related:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    conversations:
+                      type:
+                        - string
+                        - "null"
+                    owner:
+                      type:
+                        - string
+                        - "null"
+                self:
+                  type:
+                    - string
+                    - "null"
+            created_at:
+              type:
+                - number
+                - "null"
+            highlight:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            is_private:
+              type:
+                - boolean
+                - "null"
+            is_visible_in_conversation_lists:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - number
+                - "null"
+      waiting_since:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - created_at
+  inboxes_teammates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              inboxes:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      is_available:
+        type:
+          - boolean
+          - "null"
+      is_blocked:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              comments:
+                type:
+                  - string
+                  - "null"
+              events:
+                type:
+                  - string
+                  - "null"
+              followers:
+                type:
+                  - string
+                  - "null"
+              inboxes:
+                type:
+                  - string
+                  - "null"
+              last_message:
+                type:
+                  - string
+                  - "null"
+              messages:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  conversations:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_admin:
+            type:
+              - boolean
+              - "null"
+          is_available:
+            type:
+              - boolean
+              - "null"
+          is_blocked:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      created_at:
+        type: number
+      custom_fields:
+        type:
+          - object
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  contact:
+                    type:
+                      - string
+                      - "null"
+          handle:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+      scheduled_reminders:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                related:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    conversations:
+                      type:
+                        - string
+                        - "null"
+                    owner:
+                      type:
+                        - string
+                        - "null"
+                self:
+                  type:
+                    - string
+                    - "null"
+            created_at:
+              type:
+                - number
+                - "null"
+            highlight:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            is_private:
+              type:
+                - boolean
+                - "null"
+            is_visible_in_conversation_lists:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - number
+                - "null"
+      waiting_since:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - created_at
+  conversations_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      conversation:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  comments:
+                    type:
+                      - string
+                      - "null"
+                  events:
+                    type:
+                      - string
+                      - "null"
+                  followers:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+                  last_message:
+                    type:
+                      - string
+                      - "null"
+                  messages:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          assignee:
+            type:
+              - object
+              - "null"
+            properties:
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      conversations:
+                        type:
+                          - string
+                          - "null"
+                      inboxes:
+                        type:
+                          - string
+                          - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+              custom_fields:
+                type:
+                  - object
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              is_admin:
+                type:
+                  - boolean
+                  - "null"
+              is_available:
+                type:
+                  - boolean
+                  - "null"
+              is_blocked:
+                type:
+                  - boolean
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_private:
+            type:
+              - boolean
+              - "null"
+          links:
+            type:
+              - array
+              - "null"
+          recipient:
+            type:
+              - object
+              - "null"
+            properties:
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      contact:
+                        type:
+                          - string
+                          - "null"
+              handle:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+          scheduled_reminders:
+            type:
+              - array
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    related:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        conversations:
+                          type:
+                            - string
+                            - "null"
+                        owner:
+                          type:
+                            - string
+                            - "null"
+                    self:
+                      type:
+                        - string
+                        - "null"
+                created_at:
+                  type:
+                    - number
+                    - "null"
+                highlight:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_private:
+                  type:
+                    - boolean
+                    - "null"
+                is_visible_in_conversation_lists:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - number
+                    - "null"
+          waiting_since:
+            type:
+              - number
+              - "null"
+      emitted_at:
+        type: number
+      id:
+        type: string
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          _meta:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+          data:
+            anyOf:
+              - type: object
+                properties:
+                  _links:
+                    type: object
+                    properties:
+                      related:
+                        type: object
+                        properties:
+                          conversations:
+                            type: string
+                          inboxes:
+                            type: string
+                          owner:
+                            type: string
+                      self:
+                        type: string
+                  actions:
+                    type: array
+                    items:
+                      type: string
+                  custom_fields:
+                    type: object
+                  email:
+                    type: string
+                  first_name:
+                    type: string
+                  id:
+                    type: string
+                  is_admin:
+                    type: boolean
+                  is_available:
+                    type: boolean
+                  is_blocked:
+                    type: boolean
+                  is_private:
+                    type: boolean
+                  last_name:
+                    type: string
+                  name:
+                    type: string
+                  username:
+                    type: string
+              - type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    _links:
+                      type: object
+                      properties:
+                        related:
+                          type: object
+                          properties:
+                            channels:
+                              type: string
+                            conversations:
+                              type: string
+                            owner:
+                              type: string
+                            teammates:
+                              type: string
+                        self:
+                          type: string
+                    address:
+                      type: string
+                    custom_fields:
+                      type: object
+                    id:
+                      type: string
+                    is_private:
+                      type: boolean
+                    is_public:
+                      type: boolean
+                    name:
+                      type: string
+                    send_as:
+                      type: string
+      target:
+        type:
+          - object
+          - "null"
+        properties:
+          _meta:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              metadata:
+                type:
+                  - object
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      conversation:
+                        type:
+                          - string
+                          - "null"
+                      conversations:
+                        type:
+                          - string
+                          - "null"
+                      inboxes:
+                        type:
+                          - string
+                          - "null"
+                      mentions:
+                        type:
+                          - string
+                          - "null"
+                      message_seen:
+                        type:
+                          - string
+                          - "null"
+                      owner:
+                        type:
+                          - string
+                          - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+              attachments:
+                type:
+                  - array
+                  - "null"
+              author:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      related:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          conversations:
+                            type:
+                              - string
+                              - "null"
+                          inboxes:
+                            type:
+                              - string
+                              - "null"
+                      self:
+                        type:
+                          - string
+                          - "null"
+                  custom_fields:
+                    type:
+                      - object
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  first_name:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  is_admin:
+                    type:
+                      - boolean
+                      - "null"
+                  is_available:
+                    type:
+                      - boolean
+                      - "null"
+                  is_blocked:
+                    type:
+                      - boolean
+                      - "null"
+                  last_name:
+                    type:
+                      - string
+                      - "null"
+                  username:
+                    type:
+                      - string
+                      - "null"
+              blurb:
+                type:
+                  - string
+                  - "null"
+              body:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - number
+                  - "null"
+              custom_fields:
+                type:
+                  - object
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              highlight:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              is_admin:
+                type:
+                  - boolean
+                  - "null"
+              is_available:
+                type:
+                  - boolean
+                  - "null"
+              is_blocked:
+                type:
+                  - boolean
+                  - "null"
+              is_draft:
+                type:
+                  - boolean
+                  - "null"
+              is_inbound:
+                type:
+                  - boolean
+                  - "null"
+              is_pinned:
+                type:
+                  - boolean
+                  - "null"
+              is_private:
+                type:
+                  - boolean
+                  - "null"
+              is_visible_in_conversation_lists:
+                type:
+                  - boolean
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              posted_at:
+                type:
+                  - number
+                  - "null"
+              recipients:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    _links:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        related:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            contact:
+                              type:
+                                - string
+                                - "null"
+                    handle:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - number
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+    required:
+      - id
+      - emitted_at
+  conversations_followers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              inboxes:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      is_available:
+        type:
+          - boolean
+          - "null"
+      is_blocked:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  conversations_inboxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              channels:
+                type:
+                  - string
+                  - "null"
+              conversations:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+              teammates:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_public:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      send_as:
+        type:
+          - string
+          - "null"
+  conversations_messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversation:
+                type:
+                  - string
+                  - "null"
+              message_seen:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  conversations:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_admin:
+            type:
+              - boolean
+              - "null"
+          is_available:
+            type:
+              - boolean
+              - "null"
+          is_blocked:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      blurb:
+        type:
+          - string
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      id:
+        type: string
+      is_draft:
+        type:
+          - boolean
+          - "null"
+      is_inbound:
+        type:
+          - boolean
+          - "null"
+      recipients:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                related:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    contact:
+                      type:
+                        - string
+                        - "null"
+            handle:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  links:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      external_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              contacts:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  accounts_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              notes:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  contacts:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          domains:
+            type:
+              - array
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - number
+              - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      handles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            handle:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              notes:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      avatar_url:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      handles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            handle:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              inbox:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_valid:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      send_as:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          all_teammates_can_reply:
+            type:
+              - boolean
+              - "null"
+          undo_send_time:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  company_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      highlight:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible_in_conversation_lists:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  teammates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              inboxes:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      is_available:
+        type:
+          - boolean
+          - "null"
+      is_blocked:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              children:
+                type:
+                  - string
+                  - "null"
+              conversations:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+              parent_tag:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      highlight:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible_in_conversation_lists:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  tags_children:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              parent_tag:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      highlight:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible_in_conversation_lists:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  teammates_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      highlight:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible_in_conversation_lists:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversations:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      highlight:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible_in_conversation_lists:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  contact_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              contacts:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  conversations_drafts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              conversation:
+                type:
+                  - string
+                  - "null"
+              message_replied_to:
+                type:
+                  - string
+                  - "null"
+              message_seen:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  conversations:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_admin:
+            type:
+              - boolean
+              - "null"
+          is_available:
+            type:
+              - boolean
+              - "null"
+          is_blocked:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      blurb:
+        type:
+          - string
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      draft_mode:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_draft:
+        type:
+          - boolean
+          - "null"
+      is_inbound:
+        type:
+          - boolean
+          - "null"
+      recipients:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                related:
+                  type:
+                    - object
+                    - "null"
+                  properties: {}
+            handle:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  contacts_notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              author:
+                type:
+                  - string
+                  - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  conversations:
+                    type:
+                      - string
+                      - "null"
+                  inboxes:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_admin:
+            type:
+              - boolean
+              - "null"
+          is_available:
+            type:
+              - boolean
+              - "null"
+          is_blocked:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      is_private:
+        type:
+          - boolean
+          - "null"
+    required:
+      - created_at
+  teammates_contact_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              contacts:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      is_private:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams_contact_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              contacts:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_private:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  knowledge_bases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              articles:
+                type:
+                  - string
+                  - "null"
+              categories:
+                type:
+                  - string
+                  - "null"
+              content:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      locales:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  knowledge_bases_articles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              content:
+                type:
+                  - string
+                  - "null"
+              knowledge_base:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      locales:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_at:
+        type: number
+    required:
+      - updated_at
+  knowledge_bases_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              articles:
+                type:
+                  - string
+                  - "null"
+              content:
+                type:
+                  - string
+                  - "null"
+              knowledge_base:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_hidden:
+        type:
+          - boolean
+          - "null"
+      locales:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_at:
+        type: number
+    required:
+      - updated_at
+  message_template_folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              child_folders:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+              parent_folder:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  teams_signatures:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      body:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_default:
+        type:
+          - boolean
+          - "null"
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible_for_all_teammate_channels:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sender_info:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  message_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              owner:
+                type:
+                  - string
+                  - "null"
+              parent_folder:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      is_available_for_all_inboxes:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  teammates_message_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              owner:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      is_available_for_all_inboxes:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  teams_message_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - object
+              - "null"
+            properties:
+              owner:
+                type:
+                  - string
+                  - "null"
+              parent_folder:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      is_available_for_all_inboxes:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at

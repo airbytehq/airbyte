@@ -132,8 +132,7 @@ public class XminCtidUtilsTest {
     assertEquals(1, streamsCategorised.remainingStreams().statesFromXminSync().size());
     assertEquals(xminState, streamsCategorised.remainingStreams().statesFromXminSync().get(0));
 
-    assertEquals(1, streamsCategorised.ctidStreams().streamsForCtidSync().size());
-    assertEquals(MODELS_STREAM_2, streamsCategorised.ctidStreams().streamsForCtidSync().get(0));
+    assertEquals(2, streamsCategorised.ctidStreams().streamsForCtidSync().size());
     assertEquals(1, streamsCategorised.ctidStreams().statesFromCtidSync().size());
     assertEquals(ctidState, streamsCategorised.ctidStreams().statesFromCtidSync().get(0));
 

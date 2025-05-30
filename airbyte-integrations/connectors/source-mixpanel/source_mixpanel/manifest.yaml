@@ -1,0 +1,393 @@
+version: 0.80.0
+type: DeclarativeSource
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+
+  api_token_auth:
+    type: ApiKeyAuthenticator
+    api_token: "Basic {{ config['credentials']['api_secret'] | base64encode }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: Authorization
+
+  basic_http_authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['credentials']['username'] }}"
+    password: "{{ config['credentials']['secret'] }}"
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "option_title"]
+    authenticators:
+      Project Secret: "#/definitions/api_token_auth"
+      Service Account: "#/definitions/basic_http_authenticator"
+
+  default_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - http_codes: [400]
+        action: FAIL
+        error_message: Authentication has failed. Please update your config with valid credentials.
+      - error_message_contains: "Unable to authenticate request"
+        action: FAIL
+        error_message: Authentication has failed. Please update your config with valid credentials.
+      - http_codes: [402]
+        action: FAIL
+        error_message: Unable to perform a request. Payment Required.
+      - predicate: "{{ 'Retry-After' in headers }}"
+        action: RATE_LIMITED
+        error_message: Query rate limit exceeded.
+      - error_message_contains: "Query rate limit exceeded"
+        action: RATE_LIMITED
+        error_message: Query rate limit exceeded.
+      - http_codes: [500]
+        error_message_contains: "unknown error"
+        action: RETRY
+        error_message: An unknown error occurred
+      - error_message_contains: "to_date cannot be later than today"
+        action: FAIL
+        error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
+
+  requester:
+    type: CustomRequester
+    class_name: "source_mixpanel.components.MixpanelHttpRequester"
+    url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+    path: "{{ parameters['path'] }}"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    request_parameters:
+      project_id: "{{ config['credentials']['project_id'] }}"
+    error_handler:
+      $ref: "#/definitions/default_error_handler"
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "{{ parameters['field_path'] }}"
+
+  selector_empty_dpath:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+    partition_router: []
+
+  stream_base:
+    type: DeclarativeStream
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: 'P{{ config["date_window_size"] or 30 }}D'
+    cursor_granularity: P1D
+    lookback_window: 'P{{ config["attribution_window"] or 5 }}D'
+    cursor_field: date
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: from_date
+      type: RequestOption
+    end_time_option:
+      inject_into: request_parameter
+      field_name: to_date
+      type: RequestOption
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config.end_date or day_delta(-1, format="%Y-%m-%dT%H:%M:%SZ") }}'
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  # https://developer.mixpanel.com/reference/cohorts
+  cohorts_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: cohorts
+      path: 2.0/cohorts/list
+      field_path: []
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_empty_dpath"
+        record_filter:
+          condition: "{{ record.created >= stream_interval.start_time }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CustomPaginationStrategy
+      class_name: "source_mixpanel.components.EngagePaginationStrategy"
+      start_from_page: 1
+      page_size: '{{ config["page_size"] or 1000 }}'
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page_size
+
+  # https://developer.mixpanel.com/reference/engage
+  engage_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key: distinct_id
+    $parameters:
+      name: engage
+      field_path: results
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.EngagesHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+        path: 2.0/engage
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          $ref: "#/definitions/default_error_handler"
+      paginator:
+        $ref: "#/definitions/paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['$properties']['$last_seen'] >= stream_interval.start_time }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_seen
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - class_name: "source_mixpanel.components.EngageTransformation"
+      - type: AddFields
+        fields:
+          - path:
+              - browser_version
+            value: "{{ record.browser_version | string if record.browser_version else '' }}"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
+      file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+
+  cohort_members_stream:
+    $ref: "#/definitions/engage_stream"
+    primary_key:
+      - distinct_id
+      - cohort_id
+    $parameters:
+      name: cohort_members
+      path: 2.0/engage
+      field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: POST
+      paginator:
+        $ref: "#/definitions/paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['$properties']['$last_seen'] >= stream_interval.start_time }}"
+      partition_router:
+        class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/cohorts_stream"
+            parent_key: id
+            partition_field: id
+            request_option:
+              inject_into: body_json
+              type: RequestOption
+              field_name: filter_by_cohort
+    transformations:
+      - class_name: "source_mixpanel.components.EngageTransformation"
+      - type: AddFields
+        fields:
+          - path:
+              - cohort_id
+            value: "{{ stream_partition.get('id') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - browser_version
+            value: "{{ record.browser_version | string if record.browser_version else '' }}"
+
+  # No API docs! build based on singer source
+  revenue_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key: "date"
+    $parameters:
+      name: revenue
+      path: 2.0/engage/revenue
+      field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          class_name: "source_mixpanel.components.RevenueDpathExtractor"
+          field_path:
+            - "{{ parameters['field_path'] }}"
+    incremental_sync: "#/definitions/incremental_sync"
+
+  # https://developer.mixpanel.com/reference/list-all-annotations-for-project
+  annotations_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: annotations
+      field_path: results
+      path: annotations
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.AnnotationsHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+        path: |
+          {% set project_id = config.credentials.project_id %}
+          {% if project_id %}app/projects/{{project_id}}{% else %}2.0{% endif %}/annotations
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          $ref: "#/definitions/default_error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "{{ 'results' if config.credentials.project_id else 'annotations' }}"
+
+  # https://developer.mixpanel.com/reference/funnels-query
+  funnel_ids_stream:
+    type: DeclarativeStream
+    name: funnel_ids
+    primary_key:
+      - funnel_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: 2.0/funnels/list
+        http_method: GET
+        request_parameters:
+          project_id: "{{ config['credentials']['project_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - funnel_id
+            value: "{{ record.funnel_id | string }}"
+
+  # https://developer.mixpanel.com/reference/funnels-query
+  funnels_stream:
+    type: DeclarativeStream
+    name: funnels
+    $parameters:
+      name: funnels
+    primary_key:
+      - funnel_id
+      - date
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.FunnelsHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+        path: 2.0/funnels
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          $ref: "#/definitions/default_error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: "source_mixpanel.components.FunnelsDpathExtractor"
+          field_path:
+            - data
+      partition_router:
+        type: CustomPartitionRouter
+        class_name: "source_mixpanel.components.FunnelsSubstreamPartitionRouter"
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: funnel_id
+            request_option:
+              type: RequestOption
+              field_name: funnel_id
+              inject_into: request_parameter
+            partition_field: funnel_id
+            stream: "#/definitions/funnel_ids_stream"
+    incremental_sync: "#/definitions/incremental_sync"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - funnel_id
+            value: "{{ stream_partition.get('funnel_id') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - name
+            value: "{{ stream_slice.get('funnel_name') }}"
+
+streams:
+  - "#/definitions/cohorts_stream"
+  - "#/definitions/engage_stream"
+  - "#/definitions/revenue_stream"
+  - "#/definitions/annotations_stream"
+  - "#/definitions/cohort_members_stream"
+  - "#/definitions/funnels_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - cohorts

@@ -8,30 +8,30 @@ The Freshservice supports full refresh syncs. You can choose if this connector w
 
 Several output streams are available from this source:
 
-* [Tickets](https://api.freshservice.com/v2/#view_all_ticket) (Incremental)
-* [Problems](https://api.freshservice.com/v2/#problems) (Incremental)
-* [Changes](https://api.freshservice.com/v2/#changes) (Incremental)
-* [Releases](https://api.freshservice.com/v2/#releases) (Incremental)
-* [Requesters](https://api.freshservice.com/v2/#requesters)
-* [Agents](https://api.freshservice.com/v2/#agents)
-* [Locations](https://api.freshservice.com/v2/#locations)
-* [Products](https://api.freshservice.com/v2/#products)
-* [Vendors](https://api.freshservice.com/v2/#vendors)
-* [Assets](https://api.freshservice.com/v2/#assets)
-* [PurchaseOrders](https://api.freshservice.com/v2/#purchase-order)
-* [Software](https://api.freshservice.com/v2/#software)
-* [Satisfaction Survey Responses](https://api.freshservice.com/#ticket_csat_attributes)
+- [Tickets](https://api.freshservice.com/v2/#view_all_ticket) (Incremental)
+- [Problems](https://api.freshservice.com/v2/#problems) (Incremental)
+- [Changes](https://api.freshservice.com/v2/#changes) (Incremental)
+- [Releases](https://api.freshservice.com/v2/#releases) (Incremental)
+- [Requesters](https://api.freshservice.com/v2/#requesters)
+- [Agents](https://api.freshservice.com/v2/#agents)
+- [Locations](https://api.freshservice.com/v2/#locations)
+- [Products](https://api.freshservice.com/v2/#products)
+- [Vendors](https://api.freshservice.com/v2/#vendors)
+- [Assets](https://api.freshservice.com/v2/#assets)
+- [PurchaseOrders](https://api.freshservice.com/v2/#purchase-order)
+- [Software](https://api.freshservice.com/v2/#software)
+- [Satisfaction Survey Responses](https://api.freshservice.com/#ticket_csat_attributes)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| SSL connection | No |
-| Namespaces | No |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| SSL connection    | No         |
+| Namespaces        | No         |
 
 ### Performance considerations
 
@@ -41,10 +41,10 @@ The Freshservice connector should not run into Freshservice API limitations unde
 
 ### Requirements
 
-* Freshservice Account
-* Freshservice API Key
-* Freshservice domain name
-* Replciation Start Date
+- Freshservice Account
+- Freshservice API Key
+- Freshservice domain name
+- Replciation Start Date
 
 ### Setup guide
 
@@ -52,12 +52,35 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                |
+| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.4.0 | 2024-08-15 | [44148](https://github.com/airbytehq/airbyte/pull/44148) | Refactor connector to manifest-only format |
+| 1.3.17 | 2024-08-10 | [43545](https://github.com/airbytehq/airbyte/pull/43545) | Update dependencies |
+| 1.3.16 | 2024-08-03 | [43254](https://github.com/airbytehq/airbyte/pull/43254) | Update dependencies |
+| 1.3.15 | 2024-07-27 | [42663](https://github.com/airbytehq/airbyte/pull/42663) | Update dependencies |
+| 1.3.14 | 2024-07-20 | [42382](https://github.com/airbytehq/airbyte/pull/42382) | Update dependencies |
+| 1.3.13 | 2024-07-13 | [41713](https://github.com/airbytehq/airbyte/pull/41713) | Update dependencies |
+| 1.3.12 | 2024-07-10 | [41423](https://github.com/airbytehq/airbyte/pull/41423) | Update dependencies |
+| 1.3.11 | 2024-07-09 | [41311](https://github.com/airbytehq/airbyte/pull/41311) | Update dependencies |
+| 1.3.10 | 2024-07-06 | [40941](https://github.com/airbytehq/airbyte/pull/40941) | Update dependencies |
+| 1.3.9 | 2024-06-25 | [40381](https://github.com/airbytehq/airbyte/pull/40381) | Update dependencies |
+| 1.3.8 | 2024-06-22 | [40177](https://github.com/airbytehq/airbyte/pull/40177) | Update dependencies |
+| 1.3.7 | 2024-06-06 | [39173](https://github.com/airbytehq/airbyte/pull/39173) | [autopull] Upgrade base image to v1.2.2 |
+| 1.3.6 | 2024-05-15 | [38195](https://github.com/airbytehq/airbyte/pull/38195) | Make connector compatible with builder |
+| 1.3.5 | 2024-04-19 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Updating to 0.80.0 CDK |
+| 1.3.4 | 2024-04-18 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Manage dependencies with Poetry. |
+| 1.3.3 | 2024-04-15 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.3.2 | 2024-04-12 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | schema descriptions |
 | 1.3.1 | 2024-01-29 | [34633](https://github.com/airbytehq/airbyte/pull/34633) | Add backoff policy for `Requested Items` stream |
 | 1.3.0 | 2024-01-15 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Add `Requested Items` stream |
 | 1.2.0 | 2023-08-06 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Migrated to Low-Code CDK |
-| 1.1.0 | 2023-05-09 | [25929](https://github.com/airbytehq/airbyte/pull/25929) | Add stream for customer satisfaction survey responses endpoint  |
+| 1.1.0 | 2023-05-09 | [25929](https://github.com/airbytehq/airbyte/pull/25929) | Add stream for customer satisfaction survey responses endpoint |
 | 1.0.0 | 2023-05-02 | [25743](https://github.com/airbytehq/airbyte/pull/25743) | Correct data types in tickets, agents and requesters schemas to match Freshservice API |
 | 0.1.1 | 2021-12-28 | [9143](https://github.com/airbytehq/airbyte/pull/9143) | Update titles and descriptions |
 | 0.1.0 | 2021-10-29 | [6967](https://github.com/airbytehq/airbyte/pull/6967) | 🎉 New Source: Freshservice |
+
+</details>

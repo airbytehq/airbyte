@@ -1,0 +1,666 @@
+{
+  "streams": [
+    {
+      "name": "accounts",
+      "relations": {
+        "BackUpPaymentInstrumentId": "payment_instruments.Id",
+        "BillToCustomerId": "customers.Id",
+        "LastModifiedByUserId": "users.Id",
+        "ParentCustomerId": "customers.Id",
+        "PaymentMethodId": "payment_methods.Id",
+        "PrimaryUserId": "users.Id",
+        "SalesHouseCustomerId": "customers.Id",
+        "SoldToPaymentInstrumentId": "payment_instruments.Id"
+      }
+    },
+    {
+      "name": "ad_groups",
+      "relations": {
+        "CampaignId": "campaigns.Id",
+        "AccountId": "accounts.Id",
+        "CustomerId": "customers.Id"
+      }
+    },
+    {
+      "name": "ad_group_labels",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Parent Id": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "app_install_ads",
+      "relations": {
+        "Client Id": "accounts.Id",
+        "Parent Id": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "app_install_ad_labels",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Parent Id": "app_install_ads.Id"
+      }
+    },
+    {
+      "name": "ads",
+      "relations": {
+        "AdGroupId": "ad_groups.Id",
+        "AccountId": "accounts.Id",
+        "CustomerId": "customers.Id"
+      }
+    },
+    {
+      "name": "budget",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Client Id": "accounts.Id",
+        "Parent Id": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaigns",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CustomerId": "customers.Id",
+        "BudgetId": "budget.Budget Id"
+      }
+    },
+    {
+      "name": "budget_summary_report",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "labels",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Client Id": "accounts.Id"
+      }
+    },
+    {
+      "name": "keyword_labels",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Parent Id": "keywords.Id"
+      }
+    },
+    {
+      "name": "keywords",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Client Id": "accounts.Id",
+        "Parent Id": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "campaign_labels",
+      "relations": {
+        "Account Id": "accounts.Id",
+        "Parent Id": "campaigns.Id"
+      }
+    },
+    {
+      "name": "age_gender_audience_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "age_gender_audience_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "age_gender_audience_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "age_gender_audience_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "account_impression_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_impression_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_impression_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_impression_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "account_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id"
+      }
+    },
+    {
+      "name": "audience_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "audience_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "audience_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "audience_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "keyword_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "keyword_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "keyword_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "keyword_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "ad_group_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "ad_group_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "ad_group_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "ad_group_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id"
+      }
+    },
+    {
+      "name": "ad_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "ad_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "ad_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "ad_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id"
+      }
+    },
+    {
+      "name": "ad_group_impression_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "ad_group_impression_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "ad_group_impression_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "ad_group_impression_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_impression_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_impression_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_impression_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "campaign_impression_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "geographic_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "geographic_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "geographic_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "geographic_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "BaseCampaignId": "campaigns.Id"
+      }
+    },
+    {
+      "name": "goals_and_funnels_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "goals_and_funnels_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "goals_and_funnels_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "goals_and_funnels_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "product_dimension_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_dimension_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_dimension_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_dimension_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_search_query_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_search_query_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_search_query_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "product_search_query_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "AdGroupId": "ad_groups.Id",
+        "CampaignId": "campaigns.Id",
+        "AdId": "ads.Id",
+        "CampaignType": "campaigns.CampaignType",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "search_query_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "search_query_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "search_query_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "search_query_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "AdId": "ads.Id",
+        "KeywordId": "keywords.Id"
+      }
+    },
+    {
+      "name": "user_location_performance_report_hourly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "LocationId": "geographic_performance_report_daily.LocationId",
+        "QueryIntentLocationId": "geographic_performance_report_daily.LocationId",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "user_location_performance_report_daily",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "LocationId": "geographic_performance_report_daily.LocationId",
+        "QueryIntentLocationId": "geographic_performance_report_daily.LocationId",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "user_location_performance_report_weekly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "LocationId": "geographic_performance_report_daily.LocationId",
+        "QueryIntentLocationId": "geographic_performance_report_daily.LocationId",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    },
+    {
+      "name": "user_location_performance_report_monthly",
+      "relations": {
+        "AccountId": "accounts.Id",
+        "CampaignId": "campaigns.Id",
+        "AdGroupId": "ad_groups.Id",
+        "LocationId": "geographic_performance_report_daily.LocationId",
+        "QueryIntentLocationId": "geographic_performance_report_daily.LocationId",
+        "AssetGroupId": "asset_groups.Id"
+      }
+    }
+  ]
+}

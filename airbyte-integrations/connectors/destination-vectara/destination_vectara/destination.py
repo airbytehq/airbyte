@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -67,7 +67,7 @@ class DestinationVectara(Destination):
         # Make sure to flush any records still in the queue
         writer.flush()
 
-    def check(self, logger: AirbyteLogger, config: VectaraConfig) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: VectaraConfig) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.

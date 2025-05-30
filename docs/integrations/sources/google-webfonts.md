@@ -34,8 +34,8 @@ Just pass the generated API key and optional parameters for establishing the con
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter the params configuration if needed. Supported params are: sort, alt, prettyPrint (Optional)
-6. Click **Set up source**.
+4. Enter the params configuration if needed. Supported params are: sort, alt, prettyPrint (Optional)
+5. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -63,6 +63,28 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2022-10-26 | [Init](https://github.com/airbytehq/airbyte/pull/18496)| Initial commit |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.0 | 2024-08-23 | [44615](https://github.com/airbytehq/airbyte/pull/44615) | Refactor connector to manifest-only format |
+| 0.1.16 | 2024-08-17 | [44279](https://github.com/airbytehq/airbyte/pull/44279) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43552](https://github.com/airbytehq/airbyte/pull/43552) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43181](https://github.com/airbytehq/airbyte/pull/43181) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42774](https://github.com/airbytehq/airbyte/pull/42774) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42365](https://github.com/airbytehq/airbyte/pull/42365) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41761](https://github.com/airbytehq/airbyte/pull/41761) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41593](https://github.com/airbytehq/airbyte/pull/41593) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41203](https://github.com/airbytehq/airbyte/pull/41203) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40847](https://github.com/airbytehq/airbyte/pull/40847) | Update dependencies |
+| 0.1.7 | 2024-06-25 | [40420](https://github.com/airbytehq/airbyte/pull/40420) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40173](https://github.com/airbytehq/airbyte/pull/40173) | Update dependencies |
+| 0.1.5 | 2024-06-04 | [38960](https://github.com/airbytehq/airbyte/pull/38960) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.4 | 2024-05-28 | [38684](https://github.com/airbytehq/airbyte/pull/38684) | Make connector compatible with Builder |
+| 0.1.3 | 2024-04-19 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.1.2 | 2024-04-15 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.1 | 2024-04-12 | [37172](https://github.com/airbytehq/airbyte/pull/37172) | schema descriptions |
+| 0.1.0   | 2022-10-26 | [Init](https://github.com/airbytehq/airbyte/pull/18496)  | Initial commit                                                                  |
+
+</details>

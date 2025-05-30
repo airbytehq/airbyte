@@ -4,22 +4,30 @@
 /airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
 /airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
 
 # CI/CD
-/.github/ @airbytehq/connector-extensibility
-/airbyte-ci/ @airbytehq/connector-extensibility
+/.github/ @airbytehq/dev-tooling
+/airbyte-ci/ @airbytehq/dev-tooling
 
 # Python CDK and Connector Acceptance Tests
-/airbyte-cdk/python @airbytehq/connector-extensibility
-/airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/connector-extensibility @lazebnyi @oustynova
+/airbyte-cdk/python @airbytehq/python-team
+/airbyte-integrations/connector-templates/ @airbytehq/dev-marketplace-contributions
+/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-tooling
 
 # Build customization file change
-/airbyte-integrations/connectors/**/build_customization.py @airbytehq/connector-extensibility
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-tooling
 
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
+
+# Bulk CDK
+/airbyte-cdk/bulk @airbytehq/dbsources @airbytehq/destinations
+/airbyte-cdk/bulk/core/extract/ @airbytehq/dbsources
+/airbyte-cdk/bulk/core/load/ @airbytehq/destinations
+/airbyte-cdk/bulk/toolkits/extract-*/ @airbytehq/dbsources
+/airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/destinations
 
 # Java CDK
 /airbyte-cdk/java/airbyte-cdk @airbytehq/dbsources @airbytehq/destinations
@@ -51,3 +59,10 @@
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+
+# Python critical connectors
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/python-team

@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - TODO # Please change to the hostname of the source.
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:

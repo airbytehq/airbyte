@@ -6,19 +6,19 @@
 
 Each stream will be output into its own table in MariaDB ColumnStore. Each table will contain 3 columns:
 
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in MariaDB ColumnStore is VARCHAR(256).
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MariaDB ColumnStore is TIMESTAMP.
-* `_airbyte_data`: a json blob representing with the event data. The column type in MariaDB ColumnStore is LONGTEXT.
+- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in MariaDB ColumnStore is VARCHAR(256).
+- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MariaDB ColumnStore is TIMESTAMP.
+- `_airbyte_data`: a json blob representing with the event data. The column type in MariaDB ColumnStore is LONGTEXT.
 
 ### Features
 
-| Feature | Supported?(Yes/No) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Replicate Incremental Deletes | Yes |  |
-| SSL connection | No |  |
-| SSH Tunnel Support | Yes |  |
+| Feature                       | Supported?(Yes/No) | Notes |
+| :---------------------------- | :----------------- | :---- |
+| Full Refresh Sync             | Yes                |       |
+| Incremental Sync              | Yes                |       |
+| Replicate Incremental Deletes | Yes                |       |
+| SSL connection                | No                 |       |
+| SSH Tunnel Support            | Yes                |       |
 
 ### Performance considerations
 
@@ -44,15 +44,15 @@ MariaDB ColumnStore doesn't differentiate between a database and schema. A datab
 
 ### Setup the MariaDB ColumnStore destination in Airbyte
 
-Before setting up MariaDB ColumnStore destination in Airbyte, you need to set the [local\_infile](https://mariadb.com/kb/en/server-system-variables/#local_infile) system variable to true. You can do this by running the query `SET GLOBAL local_infile = true` . This is required cause Airbyte uses `LOAD DATA LOCAL INFILE` to load data into table.
+Before setting up MariaDB ColumnStore destination in Airbyte, you need to set the [local_infile](https://mariadb.com/kb/en/server-system-variables/#local_infile) system variable to true. You can do this by running the query `SET GLOBAL local_infile = true` . This is required cause Airbyte uses `LOAD DATA LOCAL INFILE` to load data into table.
 
 You should now have all the requirements needed to configure MariaDB ColumnStore as a destination in the UI. You'll need the following information to configure the MariaDB ColumnStore destination:
 
-* **Host**
-* **Port**
-* **Username**
-* **Password**
-* **Database**
+- **Host**
+- **Port**
+- **Username**
+- **Password**
+- **Database**
 
 ## Connection via SSH Tunnel
 
@@ -72,16 +72,20 @@ Using this feature requires additional configuration, when creating the destinat
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the MariaDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
-## CHANGELOG
+## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------|
-| 0.1.7 | 2022-09-07 | [16391](https://github.com/airbytehq/airbyte/pull/16391) | Add custom JDBC parameters field |
-| 0.1.6 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
-| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling            |
-| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.2   | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description    |
-| 0.1.1   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key.    |
-| 0.1.0   | 2021-11-15 | [\#7961](https://github.com/airbytehq/airbyte/pull/7961) | Added MariaDB ColumnStore destination.       |
+<details>
+  <summary>Expand to review</summary>
 
+| Version | Date       | Pull Request                                             | Subject                                                |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
+| 0.1.7   | 2022-09-07 | [16391](https://github.com/airbytehq/airbyte/pull/16391) | Add custom JDBC parameters field                       |
+| 0.1.6   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                 |
+| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                      |
+| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option           |
+| 0.1.2   | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description              |
+| 0.1.1   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key.              |
+| 0.1.0   | 2021-11-15 | [\#7961](https://github.com/airbytehq/airbyte/pull/7961) | Added MariaDB ColumnStore destination.                 |
+
+</details>

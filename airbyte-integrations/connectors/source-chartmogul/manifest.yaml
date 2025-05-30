@@ -1,0 +1,1224 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.chartmogul.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /v1/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            address:
+              type:
+                - "null"
+                - object
+              properties:
+                address_zip:
+                  type:
+                    - "null"
+                    - string
+                city:
+                  type:
+                    - "null"
+                    - string
+                country:
+                  type:
+                    - "null"
+                    - string
+                state:
+                  type:
+                    - "null"
+                    - string
+            arr:
+              type:
+                - "null"
+                - integer
+            attributes:
+              type:
+                - "null"
+                - object
+              properties:
+                clearbit:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                custom:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                stripe:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    brandID:
+                      type:
+                        - "null"
+                        - string
+                    brandName:
+                      type:
+                        - "null"
+                        - string
+                    createdAt:
+                      type:
+                        - "null"
+                        - string
+                    platformName:
+                      type:
+                        - "null"
+                        - string
+                tags:
+                  type:
+                    - "null"
+                    - array
+            billing-system-type:
+              type:
+                - "null"
+                - string
+            billing-system-url:
+              type:
+                - "null"
+                - string
+            chartmogul-url:
+              type:
+                - "null"
+                - string
+            city:
+              type:
+                - "null"
+                - string
+            company:
+              type:
+                - "null"
+                - string
+            country:
+              type:
+                - "null"
+                - string
+            currency:
+              type:
+                - "null"
+                - string
+            currency-sign:
+              type:
+                - "null"
+                - string
+            customer_since:
+              type:
+                - "null"
+                - string
+            data_source_uuid:
+              type:
+                - "null"
+                - string
+            data_source_uuids:
+              type:
+                - "null"
+                - array
+            email:
+              type:
+                - "null"
+                - string
+            external_id:
+              type:
+                - "null"
+                - string
+            external_ids:
+              type:
+                - "null"
+                - array
+            free_trial_started_at:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - integer
+            lead_created_at:
+              type:
+                - "null"
+                - string
+            mrr:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            state:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            uuid:
+              type:
+                - string
+            zip:
+              type:
+                - "null"
+                - string
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.chartmogul.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /v1/activities
+          http_method: GET
+          request_parameters:
+            start-date: "{{ config.start_date }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start-after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response['entries'][-1]['uuid'] }}"
+            stop_condition: "{{ not response.has_more }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            description:
+              type:
+                - "null"
+                - string
+            activity-mrr-movement:
+              type:
+                - "null"
+                - integer
+            activity-mrr:
+              type:
+                - "null"
+                - integer
+            activity-arr:
+              type:
+                - "null"
+                - integer
+            date:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+            currency:
+              type:
+                - "null"
+                - string
+            subscription-external-id:
+              type:
+                - "null"
+                - string
+            plan-external-id:
+              type:
+                - "null"
+                - string
+            customer-name:
+              type:
+                - "null"
+                - string
+            customer-uuid:
+              type:
+                - "null"
+                - string
+            customer-external-id:
+              type:
+                - "null"
+                - string
+            billing-connector-uuid:
+              type:
+                - "null"
+                - string
+            uuid:
+              type:
+                - string
+    customer_daily_count:
+      type: DeclarativeStream
+      name: customer_daily_count
+      primary_key:
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.chartmogul.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /v1/metrics/customer-count
+          http_method: GET
+          request_parameters:
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            interval: day
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            date:
+              type:
+                - string
+            customers:
+              type:
+                - integer
+    customer_weekly_count:
+      type: DeclarativeStream
+      name: customer_weekly_count
+      primary_key:
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.chartmogul.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /v1/metrics/customer-count
+          http_method: GET
+          request_parameters:
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            interval: week
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            date:
+              type:
+                - string
+            customers:
+              type:
+                - integer
+    customer_monthly_count:
+      type: DeclarativeStream
+      name: customer_monthly_count
+      primary_key:
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.chartmogul.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /v1/metrics/customer-count
+          http_method: GET
+          request_parameters:
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            interval: month
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            date:
+              type:
+                - string
+            customers:
+              type:
+                - integer
+    customer_quarterly_count:
+      type: DeclarativeStream
+      name: customer_quarterly_count
+      primary_key:
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.chartmogul.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key'] }}"
+          path: /v1/metrics/customer-count
+          http_method: GET
+          request_parameters:
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            interval: quarter
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            date:
+              type:
+                - string
+            customers:
+              type:
+                - integer
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.chartmogul.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.chartmogul.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /v1/customers
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - entries
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          address:
+            type:
+              - "null"
+              - object
+            properties:
+              address_zip:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+          arr:
+            type:
+              - "null"
+              - integer
+          attributes:
+            type:
+              - "null"
+              - object
+            properties:
+              clearbit:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              custom:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              stripe:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  brandID:
+                    type:
+                      - "null"
+                      - string
+                  brandName:
+                    type:
+                      - "null"
+                      - string
+                  createdAt:
+                    type:
+                      - "null"
+                      - string
+                  platformName:
+                    type:
+                      - "null"
+                      - string
+              tags:
+                type:
+                  - "null"
+                  - array
+          billing-system-type:
+            type:
+              - "null"
+              - string
+          billing-system-url:
+            type:
+              - "null"
+              - string
+          chartmogul-url:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          company:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          currency:
+            type:
+              - "null"
+              - string
+          currency-sign:
+            type:
+              - "null"
+              - string
+          customer_since:
+            type:
+              - "null"
+              - string
+          data_source_uuid:
+            type:
+              - "null"
+              - string
+          data_source_uuids:
+            type:
+              - "null"
+              - array
+          email:
+            type:
+              - "null"
+              - string
+          external_id:
+            type:
+              - "null"
+              - string
+          external_ids:
+            type:
+              - "null"
+              - array
+          free_trial_started_at:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - integer
+          lead_created_at:
+            type:
+              - "null"
+              - string
+          mrr:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          uuid:
+            type:
+              - string
+          zip:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: activities
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.chartmogul.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /v1/activities
+        http_method: GET
+        request_parameters:
+          start-date: "{{ config.start_date }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - entries
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start-after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 200
+          cursor_value: "{{ response['entries'][-1]['uuid'] }}"
+          stop_condition: "{{ not response.has_more }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        "$schema": http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          description:
+            type:
+              - "null"
+              - string
+          activity-mrr-movement:
+            type:
+              - "null"
+              - integer
+          activity-mrr:
+            type:
+              - "null"
+              - integer
+          activity-arr:
+            type:
+              - "null"
+              - integer
+          date:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          currency:
+            type:
+              - "null"
+              - string
+          subscription-external-id:
+            type:
+              - "null"
+              - string
+          plan-external-id:
+            type:
+              - "null"
+              - string
+          customer-name:
+            type:
+              - "null"
+              - string
+          customer-uuid:
+            type:
+              - "null"
+              - string
+          customer-external-id:
+            type:
+              - "null"
+              - string
+          billing-connector-uuid:
+            type:
+              - "null"
+              - string
+          uuid:
+            type:
+              - string
+  - type: DeclarativeStream
+    name: customer_daily_count
+    primary_key:
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.chartmogul.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /v1/metrics/customer-count
+        http_method: GET
+        request_parameters:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: day
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - entries
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        "$schema": http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            type:
+              - string
+          customers:
+            type:
+              - integer
+  - type: DeclarativeStream
+    name: customer_weekly_count
+    primary_key:
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.chartmogul.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /v1/metrics/customer-count
+        http_method: GET
+        request_parameters:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: week
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - entries
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        "$schema": http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            type:
+              - string
+          customers:
+            type:
+              - integer
+  - type: DeclarativeStream
+    name: customer_monthly_count
+    primary_key:
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.chartmogul.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /v1/metrics/customer-count
+        http_method: GET
+        request_parameters:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: month
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - entries
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        "$schema": http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            type:
+              - string
+          customers:
+            type:
+              - integer
+  - type: DeclarativeStream
+    name: customer_quarterly_count
+    primary_key:
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.chartmogul.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /v1/metrics/customer-count
+        http_method: GET
+        request_parameters:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: quarter
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - entries
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        "$schema": http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            type:
+              - string
+          customers:
+            type:
+              - integer
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/chartmogul
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API key
+        description: >-
+          Your Chartmogul API key. See <a
+          href="https://help.chartmogul.com/hc/en-us/articles/4407796325906-Creating-and-Managing-API-keys#creating-an-api-key">
+          the docs </a> for info on how to obtain this.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. When feasible,
+          any data before this date will not be replicated.
+        examples:
+          - "2017-01-25T00:00:00Z"
+        order: 1
+        format: date-time
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    customers: false
+    activities: false
+    customer_daily_count: false
+    customer_weekly_count: false
+    customer_monthly_count: false
+    customer_quarterly_count: false
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - "null"
+          - object
+        properties:
+          address_zip:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+      arr:
+        type:
+          - "null"
+          - integer
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          clearbit:
+            type:
+              - "null"
+              - object
+            properties: {}
+          custom:
+            type:
+              - "null"
+              - object
+            properties: {}
+          stripe:
+            type:
+              - "null"
+              - object
+            properties:
+              brandID:
+                type:
+                  - "null"
+                  - string
+              brandName:
+                type:
+                  - "null"
+                  - string
+              createdAt:
+                type:
+                  - "null"
+                  - string
+              platformName:
+                type:
+                  - "null"
+                  - string
+          tags:
+            type:
+              - "null"
+              - array
+      billing-system-type:
+        type:
+          - "null"
+          - string
+      billing-system-url:
+        type:
+          - "null"
+          - string
+      chartmogul-url:
+        type:
+          - "null"
+          - string
+      city:
+        type:
+          - "null"
+          - string
+      company:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      currency-sign:
+        type:
+          - "null"
+          - string
+      customer_since:
+        type:
+          - "null"
+          - string
+      data_source_uuid:
+        type:
+          - "null"
+          - string
+      data_source_uuids:
+        type:
+          - "null"
+          - array
+      email:
+        type:
+          - "null"
+          - string
+      external_id:
+        type:
+          - "null"
+          - string
+      external_ids:
+        type:
+          - "null"
+          - array
+      free_trial_started_at:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - integer
+      lead_created_at:
+        type:
+          - "null"
+          - string
+      mrr:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      uuid:
+        type:
+          - string
+      zip:
+        type:
+          - "null"
+          - string
+  activities:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      activity-mrr-movement:
+        type:
+          - "null"
+          - integer
+      activity-mrr:
+        type:
+          - "null"
+          - integer
+      activity-arr:
+        type:
+          - "null"
+          - integer
+      date:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      subscription-external-id:
+        type:
+          - "null"
+          - string
+      plan-external-id:
+        type:
+          - "null"
+          - string
+      customer-name:
+        type:
+          - "null"
+          - string
+      customer-uuid:
+        type:
+          - "null"
+          - string
+      customer-external-id:
+        type:
+          - "null"
+          - string
+      billing-connector-uuid:
+        type:
+          - "null"
+          - string
+      uuid:
+        type:
+          - string
+  customer_daily_count:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+      customers:
+        type:
+          - integer
+  customer_weekly_count:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+      customers:
+        type:
+          - integer
+  customer_monthly_count:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+      customers:
+        type:
+          - integer
+  customer_quarterly_count:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+      customers:
+        type:
+          - integer

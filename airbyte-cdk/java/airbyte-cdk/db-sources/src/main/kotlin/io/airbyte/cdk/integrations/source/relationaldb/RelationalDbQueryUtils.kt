@@ -9,15 +9,14 @@ import io.airbyte.commons.stream.AirbyteStreamUtils
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Utility class for methods to query a relational db. */
 object RelationalDbQueryUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(RelationalDbQueryUtils::class.java)
 
+    @JvmStatic
     fun getIdentifierWithQuoting(identifier: String, quoteString: String): String {
         // double-quoted values within a database name or column name should be wrapped with extra
         // quoteString
@@ -53,15 +52,18 @@ object RelationalDbQueryUtils {
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) without quotes. */
+    @JvmStatic
     fun getFullyQualifiedTableName(schemaName: String?, tableName: String): String {
         return if (schemaName != null) "$schemaName.$tableName" else tableName
     }
 
     /** @return the input identifier with quotes. */
+    @JvmStatic
     fun enquoteIdentifier(identifier: String?, quoteString: String?): String {
         return quoteString + identifier + quoteString
     }
 
+    @JvmStatic
     fun <Database : SqlDatabase?> queryTable(
         database: Database,
         sqlQuery: String?,
@@ -73,7 +75,7 @@ object RelationalDbQueryUtils {
         return AutoCloseableIterators.lazyIterator(
             {
                 try {
-                    LOGGER.info("Queueing query: {}", sqlQuery)
+                    LOGGER.info { "Queueing query: $sqlQuery" }
                     val stream = database!!.unsafeQuery(sqlQuery)
                     return@lazyIterator AutoCloseableIterators.fromStream<JsonNode>(
                         stream,
@@ -87,22 +89,20 @@ object RelationalDbQueryUtils {
         )
     }
 
+    @JvmStatic
     fun logStreamSyncStatus(streams: List<ConfiguredAirbyteStream>, syncType: String?) {
         if (streams.isEmpty()) {
-            LOGGER.info("No Streams will be synced via {}.", syncType)
+            LOGGER.info { "No Streams will be synced via $syncType." }
         } else {
-            LOGGER.info("Streams to be synced via {} : {}", syncType, streams.size)
-            LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streams))
+            LOGGER.info { "Streams to be synced via $syncType : ${streams.size}" }
+            LOGGER.info { "Streams: ${prettyPrintConfiguredAirbyteStreamList(streams)}" }
         }
     }
 
     fun prettyPrintConfiguredAirbyteStreamList(streamList: List<ConfiguredAirbyteStream>): String {
-        return streamList
-            .stream()
-            .map { s: ConfiguredAirbyteStream ->
-                "%s.%s".formatted(s.stream.namespace, s.stream.name)
-            }
-            .collect(Collectors.joining(", "))
+        return streamList.joinToString(", ") { s: ConfiguredAirbyteStream ->
+            "${s.stream.namespace}.${s.stream.name}"
+        }
     }
 
     class TableSizeInfo(tableSize: Long, avgRowLength: Long) {

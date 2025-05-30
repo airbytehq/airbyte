@@ -1,0 +1,339 @@
+{
+  "streams": [
+    {
+      "name": "checkout_sessions",
+      "relations": {
+        "customer": "customers.id",
+        "payment_intent": "payment_intents.id",
+        "setup_intent": "setup_intents.id",
+        "subscription": "subscriptions.id",
+        "invoice": "invoices.id",
+        "payment_link": "payment_methods.id",
+        "payment_method_collection": "payment_methods.id"
+      }
+    },
+    {
+      "name": "customer_balance_transactions",
+      "relations": {
+        "customer": "customers.id",
+        "credit_note": "credit_notes.id",
+        "invoice": "invoices.id"
+      }
+    },
+    {
+      "name": "events",
+      "relations": {}
+    },
+    {
+      "name": "external_account_cards",
+      "relations": {
+        "account": "accounts.id"
+      }
+    },
+    {
+      "name": "external_account_bank_accounts",
+      "relations": {
+        "account": "accounts.id"
+      }
+    },
+    {
+      "name": "persons",
+      "relations": {
+        "account": "accounts.id"
+      }
+    },
+    {
+      "name": "setup_attempts",
+      "relations": {
+        "customer": "customers.id",
+        "payment_method": "payment_methods.id",
+        "setup_intent": "setup_intents.id"
+      }
+    },
+    {
+      "name": "accounts",
+      "relations": {}
+    },
+    {
+      "name": "shipping_rates",
+      "relations": {}
+    },
+    {
+      "name": "balance_transactions",
+      "relations": {
+        "source": "charges.id"
+      }
+    },
+    {
+      "name": "files",
+      "relations": {}
+    },
+    {
+      "name": "file_links",
+      "relations": {
+        "file": "files.id"
+      }
+    },
+    {
+      "name": "refunds",
+      "relations": {
+        "charge": "charges.id",
+        "payment_intent": "payment_intents.id"
+      }
+    },
+    {
+      "name": "payment_methods",
+      "relations": {}
+    },
+    {
+      "name": "credit_notes",
+      "relations": {
+        "customer": "customers.id",
+        "invoice": "invoices.id",
+        "customer_balance_transaction": "customer_balance_transactions.id",
+        "refund": "refunds.id"
+      }
+    },
+    {
+      "name": "early_fraud_warnings",
+      "relations": {
+        "charge": "charges.id"
+      }
+    },
+    {
+      "name": "authorizations",
+      "relations": {}
+    },
+    {
+      "name": "customers",
+      "relations": {
+        "default_source": "cards.id",
+        "default_card": "cards.id"
+      }
+    },
+    {
+      "name": "cardholders",
+      "relations": {}
+    },
+    {
+      "name": "charges",
+      "relations": {
+        "customer": "customers.id",
+        "order": "orders.id",
+        "application": "accounts.id",
+        "payment_intent": "payment_intents.id",
+        "source_transfer": "transfers.id",
+        "application_fee": "application_fees.id",
+        "balance_transaction": "balance_transactions.id",
+        "dispute": "disputes.id",
+        "failure_balance_transaction": "balance_transactions.id",
+        "payment_method": "payment_methods.id"
+      }
+    },
+    {
+      "name": "coupons",
+      "relations": {}
+    },
+    {
+      "name": "disputes",
+      "relations": {
+        "charge": "charges.id",
+        "payment_intent": "payment_intents.id",
+        "balance_transaction": "balance_transactions.id"
+      }
+    },
+    {
+      "name": "application_fees",
+      "relations": {
+        "account": "accounts.id",
+        "charge": "charges.id",
+        "balance_transaction": "balance_transactions.id"
+      }
+    },
+    {
+      "name": "invoices",
+      "relations": {
+        "customer": "customers.id",
+        "charge": "charges.id",
+        "payment": "payment_methods.id",
+        "subscription": "subscriptions.id",
+        "application": "accounts.id",
+        "default_source": "cards.id",
+        "default_payment_method": "payment_methods.id",
+        "latest_invoice": "invoices.id",
+        "quote": "quotes.id"
+      }
+    },
+    {
+      "name": "invoice_items",
+      "relations": {
+        "invoice": "invoices.id",
+        "subscription": "subscriptions.id",
+        "subscription_item": "subscription_items.id",
+        "customer": "customers.id"
+      }
+    },
+    {
+      "name": "payouts",
+      "relations": {
+        "balance_transaction": "balance_transactions.id",
+        "recipient": "accounts.id",
+        "destination": "bank_accounts.id",
+        "source_transaction": "charges.id",
+        "original_payout": "payouts.id",
+        "reversed_by": "payouts.id"
+      }
+    },
+    {
+      "name": "plans",
+      "relations": {
+        "product": "products.id"
+      }
+    },
+    {
+      "name": "prices",
+      "relations": {
+        "product": "products.id"
+      }
+    },
+    {
+      "name": "products",
+      "relations": {
+        "default_price": "prices.id"
+      }
+    },
+    {
+      "name": "reviews",
+      "relations": {
+        "charge": "charges.id",
+        "payment_intent": "payment_intents.id"
+      }
+    },
+    {
+      "name": "subscriptions",
+      "relations": {
+        "customer": "customers.id",
+        "application": "accounts.id",
+        "pending_setup_intent": "setup_intents.id",
+        "default_source": "cards.id",
+        "default_payment_method": "payment_methods.id",
+        "latest_invoice": "invoices.id",
+        "schedule": "subscription_schedule.id"
+      }
+    },
+    {
+      "name": "subscription_schedule",
+      "relations": {
+        "application": "accounts.id",
+        "customer": "customers.id",
+        "released_subscription": "subscriptions.id",
+        "subscription": "subscriptions.id"
+      }
+    },
+    {
+      "name": "transfers",
+      "relations": {
+        "balance_transaction": "balance_transactions.id",
+        "recipient": "accounts.id",
+        "destination": "bank_accounts.id",
+        "source_transaction": "charges.id",
+        "failure_balance_transaction": "balance_transactions.id",
+        "destination_payment": "payment_methods.id"
+      }
+    },
+    {
+      "name": "payment_intents",
+      "relations": {
+        "customer": "customers.id",
+        "invoice": "invoices.id",
+        "payment_method": "payment_methods.id",
+        "latest_charge": "charges.id"
+      }
+    },
+    {
+      "name": "promotion_codes",
+      "relations": {
+        "customer": "customers.id"
+      }
+    },
+    {
+      "name": "setup_intents",
+      "relations": {
+        "customer": "customers.id",
+        "payment_method": "payment_methods.id",
+        "latest_attempt": "setup_attempts.id"
+      }
+    },
+    {
+      "name": "cards",
+      "relations": {}
+    },
+    {
+      "name": "transactions",
+      "relations": {
+        "card": "cards.id",
+        "cardholder": "cardholders.id",
+        "dispute": "disputes.id",
+        "balance_transaction": "balance_transactions.id"
+      }
+    },
+    {
+      "name": "top_ups",
+      "relations": {
+        "balance_transaction": "balance_transactions.id",
+        "destination_balance": "balance_transactions.id"
+      }
+    },
+    {
+      "name": "application_fees_refunds",
+      "relations": {
+        "balance_transaction": "balance_transactions.id",
+        "fee": "application_fees.id"
+      }
+    },
+    {
+      "name": "bank_accounts",
+      "relations": {
+        "customer": "customers.id"
+      }
+    },
+    {
+      "name": "checkout_sessions_line_items",
+      "relations": {
+        "checkout_session_id": "checkout_sessions.id"
+      }
+    },
+    {
+      "name": "invoice_line_items",
+      "relations": {
+        "invoice": "invoices.id",
+        "subscription": "subscriptions.id",
+        "subscription_item": "subscription_items.id",
+        "invoice_item": "invoice_items.id"
+      }
+    },
+    {
+      "name": "subscription_items",
+      "relations": {
+        "subscription": "subscriptions.id",
+        "customer": "customers.id"
+      }
+    },
+    {
+      "name": "transfer_reversals",
+      "relations": {
+        "balance_transaction": "balance_transactions.id",
+        "transfer": "transfers.id",
+        "source_refund": "refunds.id",
+        "destination_payment_refund": "refunds.id"
+      }
+    },
+    {
+      "name": "usage_records",
+      "relations": {
+        "invoice": "invoices.id",
+        "subscription_item": "subscription_items.id"
+      }
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!source_klaviyo
-!setup.py
-!main.py
-!secrets

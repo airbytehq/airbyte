@@ -14,7 +14,6 @@ import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
-import java.util.function.Consumer
 import java.util.function.Supplier
 
 object SqlOperationsUtils {
@@ -111,9 +110,7 @@ object SqlOperationsUtils {
                 // default
                 for (partition in Iterables.partition(records, 10000)) {
                     val sql = StringBuilder(insertQueryComponent)
-                    partition.forEach(
-                        Consumer { r: PartialAirbyteMessage? -> sql.append(recordQueryComponent) }
-                    )
+                    partition.forEach { _ -> sql.append(recordQueryComponent) }
                     val s = sql.toString()
                     val s1 = s.substring(0, s.length - 2) + (if (sem) ";" else "")
 

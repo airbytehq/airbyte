@@ -14,6 +14,7 @@ interface DebeziumEventConverter {
     fun toAirbyteMessage(event: ChangeEventWithMetadata): AirbyteMessage
 
     companion object {
+        @JvmStatic
         fun buildAirbyteMessage(
             source: JsonNode?,
             cdcMetadataInjector: CdcMetadataInjector<*>,
@@ -35,6 +36,7 @@ interface DebeziumEventConverter {
                 .withRecord(airbyteRecordMessage)
         }
 
+        @JvmStatic
         fun addCdcMetadata(
             baseNode: ObjectNode,
             source: JsonNode,

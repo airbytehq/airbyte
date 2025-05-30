@@ -1,7 +1,5 @@
 # Getting Started
 
-:warning: This framework is in **alpha**. It is still in active development and may include backward-incompatible changes. Please share feedback and requests directly with us at feedback@airbyte.io :warning:
-
 ## Summary
 
 Throughout this tutorial, we'll walk you through the creation of an Airbyte source to read and extract data from an HTTP API.
@@ -41,7 +39,7 @@ This can be done by signing up for the Free tier plan on [Exchange Rates Data AP
 ## Requirements
 
 - An Exchange Rates API key
-- Python >= 3.9
+- Python >= 3.10
 - [Poetry](https://python-poetry.org/)
 - Docker must be running
 - [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1) CLI

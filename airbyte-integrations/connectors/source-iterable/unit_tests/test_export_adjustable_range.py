@@ -67,7 +67,7 @@ def test_email_stream(mock_lists_resp, catalog, time_mock):
     assert records
     assert sum(ranges) == DAYS_DURATION
     # since read is called on source instance, under the hood .streams() is called which triggers one more http call
-    assert len(responses.calls) == len(ranges) + 1
+    assert len(responses.calls) == len(ranges)
     assert ranges == [
         AdjustableSliceGenerator.INITIAL_RANGE_DAYS,
         *([int(DAYS_PER_MINUTE_RATE / AdjustableSliceGenerator.REQUEST_PER_MINUTE_LIMIT)] * 35),
@@ -114,4 +114,4 @@ def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_du
     assert sum(ranges) == days_duration
     assert len(ranges) == len(records)
     # since read is called on source instance, under the hood .streams() is called which triggers one more http call
-    assert len(responses.calls) == 3 * len(ranges) + 1
+    assert len(responses.calls) == 3 * len(ranges)

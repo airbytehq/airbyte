@@ -3,155 +3,200 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the expense entry",
       "type": ["null", "integer"]
     },
     "notes": {
+      "description": "Additional notes or comments for the expense entry",
       "type": ["null", "string"]
     },
     "total_cost": {
+      "description": "Total cost of the expense entry",
       "type": ["null", "number"]
     },
     "units": {
+      "description": "Number of units (if applicable)",
       "type": ["null", "number"]
     },
     "is_closed": {
+      "description": "Indicates if the expense entry is closed",
       "type": ["null", "boolean"]
     },
     "is_locked": {
+      "description": "Indicates if the expense entry is locked",
       "type": ["null", "boolean"]
     },
     "is_billed": {
+      "description": "Indicates if the expense has been billed to the client",
       "type": ["null", "boolean"]
     },
     "locked_reason": {
+      "description": "Reason for locking the expense entry",
       "type": ["null", "string"]
     },
     "spent_date": {
+      "description": "Date when the expense was incurred",
       "type": ["null", "string"],
       "format": "date"
     },
     "created_at": {
+      "description": "Date and time when the expense was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time of the last update to the expense entry",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "billable": {
+      "description": "Indicates if the expense is billable to the client",
       "type": ["null", "boolean"]
     },
     "receipt": {
+      "description": "Details of the receipt attached to the expense",
       "type": ["null", "object"],
       "properties": {
         "url": {
+          "description": "URL path to access the receipt file",
           "type": ["null", "string"]
         },
         "file_name": {
+          "description": "Name of the receipt file",
           "type": ["null", "string"]
         },
         "file_size": {
+          "description": "Size of the receipt file",
           "type": ["null", "integer"]
         },
         "content_type": {
+          "description": "MIME type of the receipt content",
           "type": ["null", "string"]
         }
       }
     },
     "user": {
+      "description": "Information about the user who incurred the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the user",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the user who incurred the expense",
           "type": ["null", "string"]
         }
       }
     },
     "user_assignment": {
+      "description": "Details of the assignment or task associated with the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the user assignment",
           "type": ["null", "integer"]
         },
         "is_project_manager": {
+          "description": "Indicates if the user is a project manager",
           "type": ["null", "boolean"]
         },
         "is_active": {
+          "description": "Indicates if the user assignment is active",
           "type": ["null", "boolean"]
         },
         "budget": {
+          "description": "Budget allocated for the user assignment",
           "type": ["null", "number"]
         },
         "created_at": {
+          "description": "Date and time when the user assignment was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "Date and time of the last update to the user assignment",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hourly_rate": {
+          "description": "Hourly rate set for the user assignment",
           "type": ["null", "number"]
         },
         "use_default_rates": {
+          "description": "Indicates if default rates are used for the user assignment",
           "type": ["null", "boolean"]
         }
       }
     },
     "project": {
+      "description": "Information about the project for which the expense was made",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the project",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the project associated with the expense",
           "type": ["null", "string"]
         },
         "code": {
+          "description": "Code associated with the project",
           "type": ["null", "string"]
         }
       }
     },
     "expense_category": {
+      "description": "Information about the category of the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the expense category",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the expense category",
           "type": ["null", "string"]
         },
         "unit_price": {
+          "description": "Price per unit (if applicable)",
           "type": ["null", "number"]
         },
         "unit_name": {
+          "description": "Name of the unit (if applicable)",
           "type": ["null", "string"]
         }
       }
     },
     "client": {
+      "description": "Details of the client associated with the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the client",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the client associated with the expense",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "Currency used for the client's transactions",
           "type": ["null", "string"]
         }
       }
     },
     "invoice": {
+      "description": "Details of the invoice related to the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the invoice associated with the expense",
           "type": ["null", "integer"]
         },
         "number": {
+          "description": "Invoice number related to the expense",
           "type": ["null", "string"]
         }
       }

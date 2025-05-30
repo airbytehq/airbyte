@@ -8,6 +8,7 @@ from typing import Any, List, Mapping, MutableMapping, Union
 
 import pytest
 import requests
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from source_recharge.source import Orders, RechargeTokenAuthenticator, SourceRecharge
 
 
@@ -69,23 +70,23 @@ class TestCommon:
         assert expected == result
 
     @pytest.mark.parametrize(
-        ("http_status", "headers", "should_retry"),
+        ("http_status", "headers", "expected_action"),
         [
-            (HTTPStatus.OK, {"Content-Length": 256}, True),
-            (HTTPStatus.BAD_REQUEST, {}, False),
-            (HTTPStatus.TOO_MANY_REQUESTS, {}, True),
-            (HTTPStatus.INTERNAL_SERVER_ERROR, {}, True),
-            (HTTPStatus.FORBIDDEN, {}, False),
+            (HTTPStatus.OK, {"Content-Length": 256}, ResponseAction.RETRY),
+            (HTTPStatus.BAD_REQUEST, {}, ResponseAction.FAIL),
+            (HTTPStatus.TOO_MANY_REQUESTS, {}, ResponseAction.RATE_LIMITED),
+            (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ResponseAction.RETRY),
+            (HTTPStatus.FORBIDDEN, {}, ResponseAction.FAIL),
         ],
     )
-    def test_should_retry(self, config, http_status, headers, should_retry) -> None:
+    def test_should_retry(self, config, http_status, headers, expected_action) -> None:
         response = requests.Response()
         response.status_code = http_status
         response._content = b""
         response.headers = headers
         stream = Orders(config, authenticator=None)
-        assert stream.should_retry(response) == should_retry
-
+        error_resolution = stream.get_error_handler().interpret_response(response)
+        error_resolution.response_action == expected_action
 
 class TestFullRefreshStreams:
     def generate_records(self, stream_name, count) -> Union[Mapping[str, List[Mapping[str, Any]]], Mapping[str, Any]]:
@@ -121,14 +122,24 @@ class TestFullRefreshStreams:
                 True,
                 None,
                 {"start_date": "2023-01-01 00:00:01", "end_date": "2023-01-31 00:00:01"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2023-01-01 00:00:01", "updated_at_max": "2023-01-31 00:00:01"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2023-01-01 00:00:01",
+                    "updated_at_max": "2023-01-31 00:00:01",
+                },
             ),
             (
                 Orders,
                 False,
                 None,
                 {"start_date": "2023-01-01 00:00:01", "end_date": "2023-01-31 00:00:01"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2023-01-01 00:00:01", "updated_at_max": "2023-01-31 00:00:01"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2023-01-01 00:00:01",
+                    "updated_at_max": "2023-01-31 00:00:01",
+                },
             ),
         ],
     )
@@ -216,14 +227,24 @@ class TestIncrementalStreams:
                 True,
                 None,
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2020-01-01T00:00:00Z",
+                    "updated_at_max": "2020-02-01T00:00:00Z",
+                },
             ),
             (
                 Orders,
                 False,
                 None,
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {"limit": 250, "sort_by": "updated_at-asc", "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+                {
+                    "limit": 250,
+                    "sort_by": "updated_at-asc",
+                    "updated_at_min": "2020-01-01T00:00:00Z",
+                    "updated_at_max": "2020-02-01T00:00:00Z",
+                },
             ),
         ],
     )

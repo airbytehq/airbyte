@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Final, List, Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 FALSE_VALUES: Final[List[Any]] = ["False", "false", "{}", "[]", "()", "", "0", "0.0", {}, False, [], (), set()]
 
@@ -23,12 +23,12 @@ class InterpolatedBoolean:
     condition: str
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._default = "False"
         self._interpolation = JinjaInterpolation()
         self._parameters = parameters
 
-    def eval(self, config: Config, **additional_parameters):
+    def eval(self, config: Config, **additional_parameters: Any) -> bool:
         """
         Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
 

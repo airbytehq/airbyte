@@ -2,36 +2,34 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
-import os
-import urllib
 from abc import ABC, abstractmethod
-from pathlib import Path
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
-import requests_cache
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
-from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode
+from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
+from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
+from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.sources.utils.types import JsonType
-from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
+from deprecated import deprecated
 from requests.auth import AuthBase
-
-from .auth.core import HttpAuthenticator, NoAuth
-from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
-class HttpStream(Stream, ABC):
+class HttpStream(Stream, CheckpointMixin, ABC):
     """
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
@@ -39,18 +37,37 @@ class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
-    # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
-        self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
-        self._session = self.request_session()
-        self._session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+    def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
+        self._exit_on_rate_limit: bool = False
+        self._http_client = HttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=self.get_error_handler(),
+            api_budget=api_budget or APIBudget(policies=[]),
+            authenticator=authenticator,
+            use_cache=self.use_cache,
+            backoff_strategy=self.get_backoff_strategy(),
+            message_repository=InMemoryMessageRepository(),
         )
-        self._authenticator: HttpAuthenticator = NoAuth()
-        if isinstance(authenticator, AuthBase):
-            self._session.auth = authenticator
-        elif authenticator:
-            self._authenticator = authenticator
+
+        # There are three conditions that dictate if RFR should automatically be applied to a stream
+        # 1. Streams that explicitly initialize their own cursor should defer to it and not automatically apply RFR
+        # 2. Streams with at least one cursor_field are incremental and thus a superior sync to RFR.
+        # 3. Streams overriding read_records() do not guarantee that they will call the parent implementation which can perform
+        #    per-page checkpointing so RFR is only supported if a stream use the default `HttpStream.read_records()` method
+        if not self.cursor and len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = ResumableFullRefreshCursor()
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        """
+        :return: False if the stream will retry endlessly when rate limited
+        """
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self._exit_on_rate_limit = value
 
     @property
     def cache_filename(self) -> str:
@@ -68,30 +85,6 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    def request_session(self) -> requests.Session:
-        """
-        Session factory based on use_cache property and call rate limits (api_budget parameter)
-        :return: instance of request-based session
-        """
-        if self.use_cache:
-            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
-            # Use in-memory cache if cache_dir is not set
-            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
-            if cache_dir:
-                sqlite_path = str(Path(cache_dir) / self.cache_filename)
-            else:
-                sqlite_path = "file::memory:?cache=shared"
-            return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
-        else:
-            return LimiterSession(api_budget=self._api_budget)
-
-    def clear_cache(self) -> None:
-        """
-        Clear cached requests for current session, can be called any time
-        """
-        if isinstance(self._session, requests_cache.CachedSession):
-            self._session.cache.clear()  # type: ignore # cache.clear is not typed
-
     @property
     @abstractmethod
     def url_base(self) -> str:
@@ -107,6 +100,7 @@ class HttpStream(Stream, ABC):
         return "GET"
 
     @property
+    @deprecated(version="3.0.0", reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
     def raise_on_http_errors(self) -> bool:
         """
         Override if needed. If set to False, allows opting-out of raising HTTP code exception.
@@ -114,6 +108,7 @@ class HttpStream(Stream, ABC):
         return True
 
     @property
+    @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def max_retries(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
@@ -121,6 +116,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
+    @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def max_time(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
@@ -128,19 +124,12 @@ class HttpStream(Stream, ABC):
         return 60 * 10
 
     @property
+    @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def retry_factor(self) -> float:
         """
         Override if needed. Specifies factor for backoff policy.
         """
         return 5
-
-    @property
-    def authenticator(self) -> HttpAuthenticator:
-        return self._authenticator
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -250,176 +239,38 @@ class HttpStream(Stream, ABC):
         :return: An iterable containing the parsed response
         """
 
-    # TODO move all the retry logic to a functor/decorator which is input as an init parameter
-    def should_retry(self, response: requests.Response) -> bool:
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         """
-        Override to set different conditions for backoff based on the response from the server.
+        Used to initialize Adapter to avoid breaking changes.
+        If Stream has a `backoff_time` method implementation, we know this stream uses old (pre-HTTPClient) backoff handlers and thus an adapter is needed.
 
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
+        Override to provide custom BackoffStrategy
+        :return Optional[BackoffStrategy]:
         """
-        return response.status_code == 429 or 500 <= response.status_code < 600
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
-
-        This method is called only if should_backoff() returns True for the input request.
-
-        :param response:
-        :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-        to the default backoff behavior (e.g using an exponential algorithm).
-        """
-        return None
-
-    def error_message(self, response: requests.Response) -> str:
-        """
-        Override this method to specify a custom error message which can incorporate the HTTP response received
-
-        :param response: The incoming HTTP response from the partner API
-        :return:
-        """
-        return ""
-
-    def must_deduplicate_query_params(self) -> bool:
-        return False
-
-    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-        """
-        Remove query parameters from params mapping if they are already encoded in the URL.
-        :param url: URL with
-        :param params:
-        :return:
-        """
-        if params is None:
-            params = {}
-        query_string = urllib.parse.urlparse(url).query
-        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
-
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
-
-    def _create_prepared_request(
-        self,
-        path: str,
-        headers: Optional[Mapping[str, str]] = None,
-        params: Optional[Mapping[str, str]] = None,
-        json: Optional[Mapping[str, Any]] = None,
-        data: Optional[Union[str, Mapping[str, Any]]] = None,
-    ) -> requests.PreparedRequest:
-        url = self._join_url(self.url_base, path)
-        if self.must_deduplicate_query_params():
-            query_params = self.deduplicate_query_params(url, params)
+        if hasattr(self, "backoff_time"):
+            return HttpStreamAdapterBackoffStrategy(self)
         else:
-            query_params = params or {}
-        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
-        if self.http_method.upper() in BODY_REQUEST_METHODS:
-            if json and data:
-                raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
-                )
-            elif json:
-                args["json"] = json
-            elif data:
-                args["data"] = data
-        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
+            return None
 
-        return prepared_request
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        """
+        Used to initialize Adapter to avoid breaking changes.
+        If Stream has a `should_retry` method implementation, we know this stream uses old (pre-HTTPClient) error handlers and thus an adapter is needed.
+
+        Override to provide custom ErrorHandler
+        :return Optional[ErrorHandler]:
+        """
+        if hasattr(self, "should_retry"):
+            error_handler = HttpStreamAdapterHttpStatusErrorHandler(
+                stream=self, logger=logging.getLogger(), max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time or 0)
+            )
+            return error_handler
+        else:
+            return None
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
         return urljoin(url_base, path)
-
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        """
-        Wraps sending the request in rate limit and error handlers.
-        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
-
-        This method handles two types of exceptions:
-            1. Expected transient exceptions e.g: 429 status code.
-            2. Unexpected transient exceptions e.g: timeout.
-
-        To trigger a backoff, we raise an exception that is handled by the backoff decorator. If an exception is not handled by the decorator will
-        fail the sync.
-
-        For expected transient exceptions, backoff time is determined by the type of exception raised:
-            1. CustomBackoffException uses the user-provided backoff value
-            2. DefaultBackoffException falls back on the decorator's default behavior e.g: exponential backoff
-
-        Unexpected transient exceptions use the default backoff parameters.
-        Unexpected persistent exceptions are not handled and will cause the sync to fail.
-        """
-        self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
-        )
-        response: requests.Response = self._session.send(request, **request_kwargs)
-
-        # Evaluation of response.text can be heavy, for example, if streaming a large response
-        # Do it only in debug mode
-        if self.logger.isEnabledFor(logging.DEBUG):
-            self.logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-            )
-        if self.should_retry(response):
-            custom_backoff_time = self.backoff_time(response)
-            error_message = self.error_message(response)
-            if custom_backoff_time:
-                raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
-                )
-            else:
-                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-        elif self.raise_on_http_errors:
-            # Raise any HTTP exceptions that happened in case there were unexpected ones
-            try:
-                response.raise_for_status()
-            except requests.HTTPError as exc:
-                self.logger.error(response.text)
-                raise exc
-        return response
-
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        """
-        Creates backoff wrappers which are responsible for retry logic
-        """
-
-        """
-        Backoff package has max_tries parameter that means total number of
-        tries before giving up, so if this number is 0 no calls expected to be done.
-        But for this class we call it max_REtries assuming there would be at
-        least one attempt and some retry attempts, to comply this logic we add
-        1 to expected retries attempts.
-        """
-        max_tries = self.max_retries
-        """
-        According to backoff max_tries docstring:
-            max_tries: The maximum number of attempts to make before giving
-                up ...The default value of None means there is no limit to
-                the number of tries.
-        This implies that if max_tries is explicitly set to None there is no
-        limit to retry attempts, otherwise it is limited number of tries. But
-        this is not true for current version of backoff packages (1.8.0). Setting
-        max_tries to 0 or negative number would result in endless retry attempts.
-        Add this condition to avoid an endless loop if it hasn't been set
-        explicitly (i.e. max_retries is not None).
-        """
-        max_time = self.max_time
-        """
-        According to backoff max_time docstring:
-            max_time: The maximum total amount of time to try for before
-                giving up. Once expired, the exception will be allowed to
-                escape. If a callable is passed, it will be
-                evaluated at runtime and its return value used.
-        """
-        if max_tries is not None:
-            max_tries = max(0, max_tries) + 1
-
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
-        return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
@@ -479,9 +330,45 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
+        # A cursor_field indicates this is an incremental stream which offers better checkpointing than RFR enabled via the cursor
+        if self.cursor_field or not isinstance(self.get_cursor(), ResumableFullRefreshCursor):
+            yield from self._read_pages(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+        else:
+            yield from self._read_single_page(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        cursor = self.get_cursor()
+        if cursor:
+            return cursor.get_stream_state()  # type: ignore
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.set_initial_state(value)
+        self._state = value
+
+    def get_cursor(self) -> Optional[Cursor]:
+        # I don't love that this is semi-stateful but not sure what else to do. We don't know exactly what type of cursor to
+        # instantiate when creating the class. We can make a few assumptions like if there is a cursor_field which implies
+        # incremental, but we don't know until runtime if this is a substream. Ideally, a stream should explicitly define
+        # its cursor, but because we're trying to automatically apply RFR we're stuck with this logic where we replace the
+        # cursor at runtime once we detect this is a substream based on self.has_multiple_slices being reassigned
+        if self.has_multiple_slices and isinstance(self.cursor, ResumableFullRefreshCursor):
+            self.cursor = SubstreamResumableFullRefreshCursor()
+            return self.cursor
+        else:
+            return self.cursor
 
     def _read_pages(
         self,
@@ -491,6 +378,8 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
+        partition, _, _ = self._extract_slice_fields(stream_slice=stream_slice)
+
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
@@ -502,8 +391,56 @@ class HttpStream(Stream, ABC):
             if not next_page_token:
                 pagination_complete = True
 
+        cursor = self.get_cursor()
+        if cursor and isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            # Substreams checkpoint state by marking an entire parent partition as completed so that on the subsequent attempt
+            # after a failure, completed parents are skipped and the sync can make progress
+            cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
+
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+    def _read_single_page(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        partition, cursor_slice, remaining_slice = self._extract_slice_fields(stream_slice=stream_slice)
+        stream_state = stream_state or {}
+        next_page_token = cursor_slice or None
+
+        request, response = self._fetch_next_page(remaining_slice, stream_state, next_page_token)
+        yield from records_generator_fn(request, response, stream_state, remaining_slice)
+
+        next_page_token = self.next_page_token(response) or {"__ab_full_refresh_sync_complete": True}
+
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=partition))
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+    @staticmethod
+    def _extract_slice_fields(stream_slice: Optional[Mapping[str, Any]]) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+        if not stream_slice:
+            return {}, {}, {}
+
+        if isinstance(stream_slice, StreamSlice):
+            partition = stream_slice.partition
+            cursor_slice = stream_slice.cursor_slice
+            remaining = {k: v for k, v in stream_slice.items()}
+        else:
+            # RFR streams that implement stream_slices() to generate stream slices in the legacy mapping format are converted into a
+            # structured stream slice mapping by the LegacyCursorBasedCheckpointReader. The structured mapping object has separate
+            # fields for the partition and cursor_slice value
+            partition = stream_slice.get("partition", {})
+            cursor_slice = stream_slice.get("cursor_slice", {})
+            remaining = {key: val for key, val in stream_slice.items() if key != "partition" and key != "cursor_slice"}
+        return partition, cursor_slice, remaining
 
     def _fetch_next_page(
         self,
@@ -511,18 +448,31 @@ class HttpStream(Stream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
-        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+
+        request, response = self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
+            request_kwargs=self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            dedupe_query_params=True,
+            log_formatter=self.get_log_formatter(),
+            exit_on_rate_limit=self.exit_on_rate_limit,
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        response = self._send_request(request, request_kwargs)
         return request, response
+
+    def get_log_formatter(self) -> Optional[Callable[[requests.Response], Any]]:
+        """
+
+        :return Optional[Callable[[requests.Response], Any]]: Function that will be used in logging inside HttpClient
+        """
+        return None
 
 
 class HttpSubStream(HttpStream, ABC):
@@ -532,20 +482,92 @@ class HttpSubStream(HttpStream, ABC):
         """
         super().__init__(**kwargs)
         self.parent = parent
+        self.has_multiple_slices = True  # Substreams are based on parent records which implies there are multiple slices
+
+        # There are three conditions that dictate if RFR should automatically be applied to a stream
+        # 1. Streams that explicitly initialize their own cursor should defer to it and not automatically apply RFR
+        # 2. Streams with at least one cursor_field are incremental and thus a superior sync to RFR.
+        # 3. Streams overriding read_records() do not guarantee that they will call the parent implementation which can perform
+        #    per-page checkpointing so RFR is only supported if a stream use the default `HttpStream.read_records()` method
+        if not self.cursor and len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = SubstreamResumableFullRefreshCursor()
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
+        # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
+        # not support either substreams or RFR, but something that needs to be considered once we do
+        for parent_record in self.parent.read_only_records(stream_state):
+            # Skip non-records (eg AirbyteLogMessage)
+            if isinstance(parent_record, AirbyteMessage):
+                if parent_record.type == MessageType.RECORD:
+                    parent_record = parent_record.record.data
+                else:
+                    continue
+            elif isinstance(parent_record, Record):
+                parent_record = parent_record.data
+            yield {"parent": parent_record}
 
-        # iterate over all parent stream_slices
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+
+@deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
+class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
+    def __init__(self, stream: HttpStream):
+        self.stream = stream
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa  # HttpStream.backoff_time has been deprecated
+
+
+@deprecated(version="3.0.0", reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
+class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
+    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
+        self.stream = stream
+        super().__init__(**kwargs)
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, Exception):
+            return super().interpret_response(response_or_exception)
+        elif isinstance(response_or_exception, requests.Response):
+            should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
+            if should_retry:
+                if response_or_exception.status_code == 429:
+                    return ErrorResolution(
+                        response_action=ResponseAction.RATE_LIMITED,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    )
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                )
+            else:
+                if response_or_exception.ok:  # type: ignore # noqa
+                    return ErrorResolution(
+                        response_action=ResponseAction.SUCCESS,
+                        failure_type=None,
+                        error_message=None,
+                    )
+                if self.stream.raise_on_http_errors:
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
+                    )
+                else:
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
+                    )
+        else:
+            self._logger.error(f"Received unexpected response type: {type(response_or_exception)}")
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Received unexpected response type: {type(response_or_exception)}",
             )
-
-            # iterate over all parent records with current stream_slice
-            for record in parent_records:
-                yield {"parent": record}

@@ -1,162 +1,211 @@
 {
   "properties": {
     "metric": {
+      "description": "Ticket metrics data",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the ticket",
       "type": ["null", "integer"]
     },
     "time": {
+      "description": "Time related to the ticket",
       "type": ["null", "string"]
     },
     "instance_id": {
+      "description": "ID of the Zendesk instance associated with the ticket",
       "type": ["null", "integer"]
     },
     "ticket_id": {
+      "description": "ID of the ticket",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The current status of the ticket (open, pending, solved, etc.).",
       "properties": {
         "calendar": {
+          "description": "The status of the ticket in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "The status of the ticket in business hours",
           "type": ["null", "integer"]
         }
       },
       "type": ["null", "object"]
     },
     "type": {
+      "description": "Type of ticket",
       "type": ["null", "string"]
     },
     "agent_wait_time_in_minutes": {
+      "description": "The total time an agent spent waiting before responding to the ticket.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Time spent waiting for an agent to respond in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Time spent waiting for an agent to respond in business hours",
           "type": ["null", "integer"]
         }
       }
     },
     "assignee_stations": {
+      "description": "Number of stations assigned to the ticket's assignee",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Timestamp when the ticket was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "first_resolution_time_in_minutes": {
+      "description": "The time taken to provide the initial resolution to the ticket.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Time taken to provide the first resolution in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Time taken to provide the first resolution in business hours",
           "type": ["null", "integer"]
         }
       }
     },
     "full_resolution_time_in_minutes": {
+      "description": "The total time taken to completely resolve the ticket.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Total time taken to fully resolve the ticket in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Total time taken to fully resolve the ticket in business hours",
           "type": ["null", "integer"]
         }
       }
     },
     "group_stations": {
+      "description": "Number of stations assigned to the ticket's group",
       "type": ["null", "integer"]
     },
     "latest_comment_added_at": {
+      "description": "Timestamp when the latest comment was added",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "on_hold_time_in_minutes": {
+      "description": "The cumulative time the ticket spent on hold during its lifecycle.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Total time the ticket was on hold in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Total time the ticket was on hold in business hours",
           "type": ["null", "integer"]
         }
       }
     },
     "reopens": {
+      "description": "Number of times the ticket has been reopened",
       "type": ["null", "integer"]
     },
     "replies": {
+      "description": "Number of replies made on the ticket",
       "type": ["null", "integer"]
     },
     "reply_time_in_minutes": {
+      "description": "The time taken to reply to the ticket after initial submission.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Average time taken to reply to the ticket in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Average time taken to reply to the ticket in business hours",
           "type": ["null", "integer"]
         }
       }
     },
     "requester_updated_at": {
+      "description": "Timestamp when the requester information was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "requester_wait_time_in_minutes": {
+      "description": "The time a requester had to wait before the ticket was assigned to an agent.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Time spent waiting for a requester response in calendar hours",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Time spent waiting for a requester response in business hours",
           "type": ["null", "integer"]
         }
       }
     },
     "status_updated_at": {
+      "description": "Timestamp when the status of the ticket was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Datetime when the ticket last created a ticket event",
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "generated_timestamp": {
+      "description": "Timestamp when the ticket was last updated, either by a system update or by a ticket event.",
+      "type": ["null", "integer"]
+    },
     "url": {
+      "description": "URL link to the ticket details",
       "type": ["null", "string"]
     },
     "initially_assigned_at": {
+      "description": "Timestamp when the ticket was initially assigned",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "assigned_at": {
+      "description": "Timestamp when the ticket was assigned to an agent",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "solved_at": {
+      "description": "Timestamp when the ticket was solved",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "assignee_updated_at": {
+      "description": "Timestamp when the assignee was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "custom_status_updated_at": {
+      "description": "Timestamp when the custom status was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "reply_time_in_seconds": {
+      "description": "The time taken to reply to the ticket after initial submission in seconds.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
+          "description": "Average time taken to reply to the ticket in seconds (calendar hours)",
           "type": ["null", "integer"]
         },
         "business": {
+          "description": "Average time taken to reply to the ticket in seconds (business hours)",
           "type": ["null", "integer"]
         }
       }

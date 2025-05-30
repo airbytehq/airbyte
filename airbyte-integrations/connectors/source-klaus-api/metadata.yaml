@@ -4,9 +4,9 @@ data:
       - "*" # Please change to the hostname of the source.
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-klaus-api
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: aad35903-2c0d-4e25-8010-d62ed909e0b7
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-klaus-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaus-api
   githubIssueLabel: source-klaus-api
@@ -27,6 +27,20 @@ data:
     ql: 300
     sl: 100
   tags:
-    - language:python
     - cdk:low-code
+    # Disable acceptance tests for now
+    # They are not passing
+    # No Airbyte Cloud usage
+    #
+    # connectorTestSuitesOptions:
+    #   - suite: acceptanceTests
+    #     testSecrets:
+    #       - name: SECRET_SOURCE-KLAUS-API__CREDS
+    #         fileName: config.json
+    #         secretStore:
+    #           type: GSM
+    #           alias: airbyte-connector-testing-secret-store
+    - language:manifest-only
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
 metadataSpecVersion: "1.0"

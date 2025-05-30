@@ -4,39 +4,51 @@
   "type": "object",
   "properties": {
     "email": {
+      "description": "Email address of the contact.",
       "type": ["string", "null"]
     },
     "enabled": {
+      "description": "Indicates whether the contact is currently enabled or disabled.",
       "type": ["boolean", "null"]
     },
     "first_name": {
+      "description": "First name of the contact.",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "Unique identifier of the contact.",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The unique identifier of the customer associated with the contact.",
       "type": ["string", "null"]
     },
     "label": {
+      "description": "A label assigned to the contact for easy identification.",
       "type": ["string", "null"]
     },
     "last_name": {
+      "description": "Last name of the contact.",
       "type": ["string", "null"]
     },
     "object": {
+      "description": "Type of object, in this case, it will be 'contact'.",
       "type": ["string", "null"]
     },
     "send_account_email": {
+      "description": "Indicates whether account-related emails are enabled for the contact.",
       "type": ["boolean", "null"]
     },
     "send_billing_email": {
+      "description": "Indicates whether billing-related emails are enabled for the contact.",
       "type": ["boolean", "null"]
     },
     "phone": {
+      "description": "Phone number of the contact.",
       "type": ["string", "null"]
     },
     "custom_fields": {
+      "description": "Key-value pairs containing additional custom fields for the contact.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

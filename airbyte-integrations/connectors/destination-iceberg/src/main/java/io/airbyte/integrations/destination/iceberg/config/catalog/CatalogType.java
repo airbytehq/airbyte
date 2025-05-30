@@ -11,5 +11,6 @@ public enum CatalogType {
   HIVE,
   HADOOP,
   JDBC,
-  REST
+  REST,
+  GLUE
 }

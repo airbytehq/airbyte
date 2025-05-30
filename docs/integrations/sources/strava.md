@@ -122,11 +122,34 @@ More information about Strava rate limits and adjustments to those limits can be
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.2.0   | 2023-10-24 | [31007](https://github.com/airbytehq/airbyte/pull/31007) | Migrate to low-code framework                              |
-| 0.1.4   | 2023-03-23 | [24368](https://github.com/airbytehq/airbyte/pull/24368) | Add date-time format for input                             |
-| 0.1.3   | 2023-03-15 | [24101](https://github.com/airbytehq/airbyte/pull/24101) | certified to beta, fixed spec, fixed SAT, added unit tests |
-| 0.1.2   | 2021-12-15 | [8799](https://github.com/airbytehq/airbyte/pull/8799)   | Implement OAuth 2.0 support                                |
-| 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                   |
-| 0.1.0   | 2021-10-18 | [7151](https://github.com/airbytehq/airbyte/pull/7151)   | Initial release supporting Strava API                      |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.0 | 2024-08-27 | [44820](https://github.com/airbytehq/airbyte/pull/44820) | Refactor connector to manifest-only format |
+| 0.2.17 | 2024-08-24 | [44667](https://github.com/airbytehq/airbyte/pull/44667) | Update dependencies |
+| 0.2.16 | 2024-08-17 | [44354](https://github.com/airbytehq/airbyte/pull/44354) | Update dependencies |
+| 0.2.15 | 2024-08-10 | [43588](https://github.com/airbytehq/airbyte/pull/43588) | Update dependencies |
+| 0.2.14 | 2024-08-03 | [43283](https://github.com/airbytehq/airbyte/pull/43283) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42131](https://github.com/airbytehq/airbyte/pull/42131) | Fix bug in start date format in manifest |
+| 0.2.12 | 2024-07-20 | [42353](https://github.com/airbytehq/airbyte/pull/42353) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41933](https://github.com/airbytehq/airbyte/pull/41933) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41499](https://github.com/airbytehq/airbyte/pull/41499) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41201](https://github.com/airbytehq/airbyte/pull/41201) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [40970](https://github.com/airbytehq/airbyte/pull/40970) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40393](https://github.com/airbytehq/airbyte/pull/40393) | Update dependencies |
+| 0.2.6 | 2024-06-21 | [39941](https://github.com/airbytehq/airbyte/pull/39941) | Update dependencies |
+| 0.2.5 | 2024-06-06 | [39221](https://github.com/airbytehq/airbyte/pull/39221) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.4 | 2024-04-19 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37266](https://github.com/airbytehq/airbyte/pull/37266) | schema descriptions |
+| 0.2.0 | 2023-10-24 | [31007](https://github.com/airbytehq/airbyte/pull/31007) | Migrate to low-code framework |
+| 0.1.4 | 2023-03-23 | [24368](https://github.com/airbytehq/airbyte/pull/24368) | Add date-time format for input |
+| 0.1.3 | 2023-03-15 | [24101](https://github.com/airbytehq/airbyte/pull/24101) | certified to beta, fixed spec, fixed SAT, added unit tests |
+| 0.1.2 | 2021-12-15 | [8799](https://github.com/airbytehq/airbyte/pull/8799) | Implement OAuth 2.0 support |
+| 0.1.1 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| 0.1.0 | 2021-10-18 | [7151](https://github.com/airbytehq/airbyte/pull/7151) | Initial release supporting Strava API |
+
+</details>

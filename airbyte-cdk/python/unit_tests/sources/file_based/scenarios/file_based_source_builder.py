@@ -33,7 +33,9 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._config: Optional[Mapping[str, Any]] = None
         self._state: Optional[TState] = None
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> InMemoryFilesSource:
+    def build(
+        self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]
+    ) -> InMemoryFilesSource:
         if self._file_type is None:
             raise ValueError("file_type is not set")
         return InMemoryFilesSource(

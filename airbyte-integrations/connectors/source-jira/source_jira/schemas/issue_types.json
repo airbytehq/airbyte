@@ -4,48 +4,48 @@
   "description": "Details about an issue type.",
   "properties": {
     "avatarId": {
-      "type": ["null", "integer"],
       "description": "The ID of the issue type's avatar.",
+      "type": ["null", "integer"],
       "readOnly": true
     },
     "description": {
-      "type": ["null", "string"],
       "description": "The description of the issue type.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "entityId": {
-      "type": ["null", "string"],
       "description": "Unique ID for next-gen projects.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "hierarchyLevel": {
-      "type": ["null", "integer"],
       "description": "Hierarchy level of the issue type.",
+      "type": ["null", "integer"],
       "readOnly": true
     },
     "iconUrl": {
-      "type": ["null", "string"],
       "description": "The URL of the issue type's avatar.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "id": {
-      "type": ["null", "string"],
       "description": "The ID of the issue type.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "name": {
-      "type": ["null", "string"],
       "description": "The name of the issue type.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "self": {
-      "type": ["null", "string"],
       "description": "The URL of these issue type details.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "subtask": {
-      "type": ["null", "boolean"],
       "description": "The URL of these issue type details.",
+      "type": ["null", "boolean"],
       "readOnly": true
     },
     "scope": {
@@ -54,8 +54,8 @@
       "type": ["null", "object"],
       "properties": {
         "type": {
-          "type": ["null", "string"],
           "description": "The type of scope.",
+          "type": ["null", "string"],
           "readOnly": true
         },
         "project": {
@@ -64,33 +64,33 @@
           "type": ["null", "object"],
           "properties": {
             "self": {
-              "type": ["null", "string"],
               "description": "The URL of the project details.",
+              "type": ["null", "string"],
               "readOnly": true
             },
             "id": {
-              "type": ["null", "string"],
-              "description": "The ID of the project."
+              "description": "The ID of the project.",
+              "type": ["null", "string"]
             },
             "key": {
-              "type": ["null", "string"],
               "description": "The key of the project.",
+              "type": ["null", "string"],
               "readOnly": true
             },
             "name": {
-              "type": ["null", "string"],
               "description": "The name of the project.",
+              "type": ["null", "string"],
               "readOnly": true
             },
             "projectTypeKey": {
+              "description": "The project type of the project.",
               "type": ["null", "string"],
-              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
               "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
-              "type": "boolean",
               "description": "Whether or not the project is simplified.",
+              "type": "boolean",
               "readOnly": true
             },
             "avatarUrls": {
@@ -99,20 +99,20 @@
               "type": ["null", "object"],
               "properties": {
                 "16x16": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 16x16 pixel avatar."
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": ["null", "string"]
                 },
                 "24x24": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 24x24 pixel avatar."
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": ["null", "string"]
                 },
                 "32x32": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 32x32 pixel avatar."
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": ["null", "string"]
                 },
                 "48x48": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 48x48 pixel avatar."
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": ["null", "string"]
                 }
               }
             },
@@ -122,23 +122,23 @@
               "type": ["null", "object"],
               "properties": {
                 "self": {
-                  "type": ["null", "string"],
                   "description": "The URL of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 },
                 "id": {
-                  "type": ["null", "string"],
                   "description": "The ID of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 },
                 "description": {
-                  "type": ["null", "string"],
                   "description": "The name of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 },
                 "name": {
-                  "type": ["null", "string"],
                   "description": "The description of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 }
               }
@@ -148,6 +148,7 @@
       }
     },
     "untranslatedName": {
+      "description": "The untranslated name of the issue type.",
       "type": ["null", "string"]
     }
   }

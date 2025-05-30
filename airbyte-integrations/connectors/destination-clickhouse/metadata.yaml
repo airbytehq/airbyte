@@ -8,7 +8,7 @@ data:
   icon: clickhouse.svg
   license: MIT
   name: Clickhouse
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-clickhouse-strict-encrypt
       enabled: true
@@ -33,4 +33,7 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

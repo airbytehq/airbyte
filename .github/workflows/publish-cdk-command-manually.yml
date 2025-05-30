@@ -28,35 +28,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # We are using these runners because they are the same as the one for `publish-command.yml`
-  # One problem we had using `ubuntu-latest` for example is that the user is not root and some commands would fail in
-  # `manage.sh` (specifically `apt-get`)
-  start-publish-docker-image-runner-0:
-    name: Start Build EC2 Runner 0
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: airbytehq/airbyte
-          ref: master
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ env.PAT }}
-          label: ${{ github.run_id }}-publisher
-
   build-cdk:
     runs-on: ubuntu-latest
     steps:
@@ -126,15 +97,11 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
-      - name: "Publish Python CDK: bump version"
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }} # This token is what allows us to commit directly to master
+      - name: "Publish Python CDK: bump Poetry package version"
         id: bumpversion
         run: |
           cd airbyte-cdk/python
-          # Bump docker image version
-          # TODO: this should not be necessary, as it's the source-declarative-manifest one which should be published separately
-          pip install bumpversion
-          bumpversion ${{ github.event.inputs.release-type }}
           # Bump package version
           poetry version ${{ github.event.inputs.release-type }}
           new_version="$(poetry version -s)"
@@ -143,8 +110,8 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-cdk/python/pyproject.toml airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md airbyte-cdk/python/Dockerfile
-          commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Python CDK
+          file_pattern: airbyte-cdk/python/pyproject.toml airbyte-cdk/python/CHANGELOG.md
+          commit_message: 🤖 ${{ github.event.inputs.release-type }} bump Python CDK to version ${{ steps.bumpversion.outputs.NEW_VERSION }}
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
       - name: Post failure to Slack channel dev-connectors-extensibility
@@ -221,34 +188,66 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
-  publish-docker-image:
-    timeout-minutes: 240
+  bump-manifest-source:
+    name: Bump CDK dependency of source-declarative-manifest
     needs:
-      - start-publish-docker-image-runner-0
+      - bump-version
       - publish-cdk
-    runs-on: runner-pool-${{ github.run_id }}
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@v1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: airbytehq/airbyte
+          repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Install Python
-        uses: actions/setup-python@v4
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }} # This token is what allows us to commit directly to master
+      - name: Bump CDK dependency of source-declarative-manifest
+        timeout-minutes: 10
+        run: |
+          cd airbyte-integrations/connectors/source-declarative-manifest
+          echo "Attempting to pull the newly published version of airbyte-cdk."
+          while true; do
+            # --no-cache to force looking for the new version
+            poetry add airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}} --no-cache && break
+            # Loop to wait for the new version to be available to poetry
+            echo "Couldn't add new dependency. This is normal if the dependency could not (yet) be found. Retrying in 10 seconds..."
+            sleep 10
+          done
+          echo "Successfully updated the CDK dependency of source-declarative-manifest to ${{needs.bump-version.outputs.new_cdk_version}}"
+      - name: Bump version of source-declarative-manifest
+        uses: ./.github/actions/run-airbyte-ci
         with:
-          python-version: "3.10"
-      - name: Publish source-declarative-manifest
-        id: publish
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
-        uses: Wandalen/wretry.action@v1.0.42
+          context: "master" # TODO: figure out why changing this yells with `The ci_gcs_credentials was not set on this PipelineContext.`
+          # Disable the dagger_cloud_token to disable remote cache access.
+          # See https://github.com/airbytehq/airbyte-internal-issues/issues/6439#issuecomment-2109503985 for context
+          #dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          # There is no pull request number as we do this manually, so will just reference when we started doing it manually for now
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump-version version:${{needs.bump-version.outputs.new_cdk_version}} 'Bump CDK version to ${{needs.bump-version.outputs.new_cdk_version}}' --pr-number=36501"
+          python_registry_token: ${{ secrets.PYPI_TOKEN }}
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          command: |
-            docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-cdk/python false
+          file_pattern: docs/integrations/sources/low-code.md airbyte-integrations/connectors/source-declarative-manifest/*
+          commit_message: 🤖 Cut version ${{needs.bump-version.outputs.new_cdk_version}} of source-declarative-manifest
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
@@ -257,13 +256,20 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `publish-docker-image` while publishing Python CDK!",
+                "text": ":warning: A new version of Python CDK has been released but `source-declarative-manifest` and Connector Builder haven't been automatically updated",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Error while publishing Docker image following Python CDK release!"
+                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": ":warning: Could not bump version of `source-declarative-manifest`.>\n"
                         }
                     },
                     {
@@ -281,12 +287,12 @@ jobs:
   update-connector-builder:
     needs:
       - bump-version
-      - publish-docker-image
+      - bump-manifest-source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Checkout Airbyte Platform Internal
         uses: actions/checkout@v3
         with:
@@ -307,8 +313,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          commit-message: Updating CDK version following release
-          title: Updating CDK version following release
+          commit-message: "chore: update CDK version following release"
+          title: "chore: update CDK version following release"
           body: This is an automatically generated PR triggered by a CDK release
           branch: automatic-cdk-release
           base: master
@@ -382,33 +388,3 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-publish-docker-image-runner-0:
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    name: Stop Build EC2 Runner
-    needs:
-      - start-publish-docker-image-runner-0 # required to get output from the start-runner job
-      - publish-docker-image # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Stop EC2 runner
-        uses: airbytehq/ec2-github-runner@base64v1.1.0
-        with:
-          mode: stop
-          github-token: ${{ env.PAT }}
-          label: ${{ needs.start-publish-docker-image-runner-0.outputs.label }}
-          ec2-instance-id: ${{ needs.start-publish-docker-image-runner-0.outputs.ec2-instance-id }}

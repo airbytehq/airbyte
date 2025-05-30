@@ -3,11 +3,11 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -57,9 +57,9 @@ class NoPagination(Paginator):
     ) -> Mapping[str, Any]:
         return {}
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Mapping[str, Any]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Mapping[str, Any]:
         return {}
 
-    def reset(self) -> None:
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         # No state to reset
         pass

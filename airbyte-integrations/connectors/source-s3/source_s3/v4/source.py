@@ -4,10 +4,8 @@
 
 from typing import Any, Dict, Mapping, Optional
 
-from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk import ConnectorSpecification, emit_configuration_as_airbyte_control_message, is_cloud_environment
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
-from airbyte_cdk.utils import is_cloud_environment
 from source_s3.source import SourceS3Spec
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 

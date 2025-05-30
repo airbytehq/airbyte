@@ -1,0 +1,1521 @@
+version: 0.78.5
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    deals:
+      type: DeclarativeStream
+      name: deals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /deals
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - deals
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['account_username'] }}.api-us1.com/api/3
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Api-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/deals"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/forms"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - account_username
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: API Key
+        order: 0
+      account_username:
+        type: string
+        description: Account Username
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: false
+    contacts: false
+    lists: false
+    deals: false
+    segments: false
+    forms: false
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type: string
+      activerss_interval:
+        type: string
+      activerss_items:
+        type: string
+      activerss_url:
+        type:
+          - string
+          - "null"
+      addressid:
+        type: string
+      analytics_campaign_name:
+        type: string
+      automation:
+        type:
+          - string
+          - "null"
+      basemessageid:
+        type: string
+      basetemplateid:
+        type: string
+      bounceid:
+        type: string
+      cdate:
+        type: string
+      deletestamp:
+        type:
+          - string
+          - "null"
+      embed_images:
+        type: string
+      facebook:
+        type: string
+      formid:
+        type: string
+      forwards:
+        type: string
+      hardbounces:
+        type: string
+      htmlunsub:
+        type: string
+      htmlunsubdata:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      ip4:
+        type: string
+      laststep:
+        type: string
+      ldate:
+        type:
+          - string
+          - "null"
+      linkclicks:
+        type: string
+      links:
+        type: object
+        properties:
+          automation:
+            type: string
+          campaignLists:
+            type: string
+          campaignMessage:
+            type: string
+          campaignMessages:
+            type: string
+          links:
+            type: string
+          user:
+            type: string
+        required:
+          - user
+          - automation
+          - campaignMessage
+          - campaignMessages
+          - links
+          - campaignLists
+      mail_cleanup:
+        type: string
+      mail_send:
+        type: string
+      mail_transfer:
+        type: string
+      mailer_log_file:
+        type: string
+      managetext:
+        type: string
+      mdate:
+        type: string
+      name:
+        type: string
+      opens:
+        type: string
+      public:
+        type: string
+      realcid:
+        type: string
+      recurring:
+        type: string
+      reminder_field:
+        type: string
+      reminder_format:
+        type:
+          - string
+          - "null"
+      reminder_last_cron_run:
+        type:
+          - string
+          - "null"
+      reminder_offset:
+        type: string
+      reminder_offset_sign:
+        type: string
+      reminder_offset_type:
+        type: string
+      reminder_type:
+        type: string
+      replies:
+        type: string
+      replysys:
+        type: string
+      responder_existing:
+        type: string
+      responder_offset:
+        type: string
+      responder_type:
+        type: string
+      schedule:
+        type: string
+      scheduleddate:
+        type:
+          - string
+          - "null"
+      sdate:
+        type:
+          - string
+          - "null"
+      segmentid:
+        type: string
+      send_amt:
+        type: string
+      sendid:
+        type: string
+      seriesid:
+        type: string
+      socialshares:
+        type: string
+      softbounces:
+        type: string
+      source:
+        type: string
+      split_content:
+        type: string
+      split_offset:
+        type: string
+      split_offset_type:
+        type: string
+      split_type:
+        type: string
+      split_winner_awaiting:
+        type: string
+      split_winner_messageid:
+        type: string
+      status:
+        type: string
+      subscriberclicks:
+        type: string
+      survey:
+        type: string
+      textunsub:
+        type: string
+      textunsubdata:
+        type:
+          - string
+          - "null"
+      threadid:
+        type: string
+      total_amt:
+        type: string
+      tracklinks:
+        type: string
+      tracklinksanalytics:
+        type: string
+      trackreads:
+        type: string
+      trackreadsanalytics:
+        type: string
+      tweet:
+        type: string
+      uniqueforwards:
+        type: string
+      uniquelinkclicks:
+        type: string
+      uniqueopens:
+        type: string
+      uniquereplies:
+        type: string
+      unsubreasons:
+        type: string
+      unsubscribes:
+        type: string
+      updates:
+        type: string
+      user:
+        type: string
+      userid:
+        type: string
+      waitpreview:
+        type:
+          - string
+          - "null"
+      willrecur:
+        type: string
+    required:
+      - type
+      - userid
+      - segmentid
+      - bounceid
+      - realcid
+      - sendid
+      - threadid
+      - seriesid
+      - formid
+      - basetemplateid
+      - basemessageid
+      - addressid
+      - source
+      - name
+      - cdate
+      - mdate
+      - sdate
+      - ldate
+      - send_amt
+      - total_amt
+      - opens
+      - uniqueopens
+      - linkclicks
+      - uniquelinkclicks
+      - subscriberclicks
+      - forwards
+      - uniqueforwards
+      - hardbounces
+      - softbounces
+      - unsubscribes
+      - unsubreasons
+      - updates
+      - socialshares
+      - replies
+      - uniquereplies
+      - status
+      - public
+      - mail_transfer
+      - mail_send
+      - mail_cleanup
+      - mailer_log_file
+      - tracklinks
+      - tracklinksanalytics
+      - trackreads
+      - trackreadsanalytics
+      - analytics_campaign_name
+      - tweet
+      - facebook
+      - survey
+      - embed_images
+      - htmlunsub
+      - textunsub
+      - htmlunsubdata
+      - textunsubdata
+      - recurring
+      - willrecur
+      - split_type
+      - split_content
+      - split_offset
+      - split_offset_type
+      - split_winner_messageid
+      - split_winner_awaiting
+      - responder_offset
+      - responder_type
+      - responder_existing
+      - reminder_field
+      - reminder_format
+      - reminder_type
+      - reminder_offset
+      - reminder_offset_type
+      - reminder_offset_sign
+      - reminder_last_cron_run
+      - activerss_interval
+      - activerss_url
+      - activerss_items
+      - ip4
+      - laststep
+      - managetext
+      - schedule
+      - scheduleddate
+      - waitpreview
+      - deletestamp
+      - replysys
+      - links
+      - id
+      - user
+      - automation
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      accountContacts:
+        type: array
+        items:
+          type: string
+      adate:
+        type:
+          - string
+          - "null"
+      anonymized:
+        type: string
+      bounced_date:
+        type:
+          - string
+          - "null"
+      bounced_hard:
+        type: string
+      bounced_soft:
+        type: string
+      cdate:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      created_timestamp:
+        type: string
+      created_utc_timestamp:
+        type: string
+      deleted:
+        type: string
+      deleted_at:
+        type:
+          - string
+          - "null"
+      edate:
+        type:
+          - string
+          - "null"
+      email:
+        type: string
+      email_domain:
+        type: string
+      email_empty:
+        type: boolean
+      email_local:
+        type: string
+      firstName:
+        type: string
+      gravatar:
+        type: string
+      hash:
+        type: string
+      id:
+        type: string
+      ip:
+        type: string
+      lastName:
+        type: string
+      links:
+        type: object
+        properties:
+          accountContacts:
+            type: string
+          automationEntryCounts:
+            type: string
+          bounceLogs:
+            type: string
+          contactAutomations:
+            type: string
+          contactData:
+            type: string
+          contactDeals:
+            type: string
+          contactGoals:
+            type: string
+          contactLists:
+            type: string
+          contactLogs:
+            type: string
+          contactTags:
+            type: string
+          deals:
+            type: string
+          fieldValues:
+            type: string
+          geoIps:
+            type: string
+          notes:
+            type: string
+          organization:
+            type: string
+          plusAppend:
+            type: string
+          scoreValues:
+            type: string
+          trackingLogs:
+            type: string
+        required:
+          - bounceLogs
+          - contactAutomations
+          - contactData
+          - contactGoals
+          - contactLists
+          - contactLogs
+          - contactTags
+          - contactDeals
+          - deals
+          - fieldValues
+          - geoIps
+          - notes
+          - organization
+          - plusAppend
+          - trackingLogs
+          - scoreValues
+          - accountContacts
+          - automationEntryCounts
+      mpp_tracking:
+        type: string
+      organization:
+        type: "null"
+      orgid:
+        type: string
+      orgname:
+        type: string
+      phone:
+        type: string
+      rating_tstamp:
+        type:
+          - string
+          - "null"
+      scoreValues:
+        type: array
+        items:
+          type: string
+      segmentio_id:
+        type: string
+      sentcnt:
+        type: string
+      socialdata_lastcheck:
+        type:
+          - string
+          - "null"
+      ua:
+        type:
+          - string
+          - "null"
+      udate:
+        type: string
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_timestamp:
+        type: string
+      updated_utc_timestamp:
+        type: string
+    required:
+      - cdate
+      - email
+      - phone
+      - firstName
+      - lastName
+      - orgid
+      - orgname
+      - segmentio_id
+      - bounced_hard
+      - bounced_soft
+      - bounced_date
+      - ip
+      - ua
+      - hash
+      - socialdata_lastcheck
+      - email_local
+      - email_domain
+      - sentcnt
+      - rating_tstamp
+      - gravatar
+      - deleted
+      - anonymized
+      - adate
+      - udate
+      - edate
+      - deleted_at
+      - created_utc_timestamp
+      - updated_utc_timestamp
+      - created_timestamp
+      - updated_timestamp
+      - created_by
+      - updated_by
+      - email_empty
+      - mpp_tracking
+      - scoreValues
+      - accountContacts
+      - links
+      - id
+      - organization
+    additionalProperties: true
+  lists:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      analytics_domains:
+        type:
+          - string
+          - "null"
+      analytics_source:
+        type:
+          - string
+          - "null"
+      analytics_ua:
+        type:
+          - string
+          - "null"
+      carboncopy:
+        type:
+          - string
+          - "null"
+      cdate:
+        type:
+          - string
+          - "null"
+      deletestamp:
+        type:
+          - string
+          - "null"
+      facebook_session:
+        type:
+          - string
+          - "null"
+      fulladdress:
+        type:
+          - string
+          - "null"
+      get_unsubscribe_reason:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type: object
+        properties:
+          addressLists:
+            type:
+              - string
+              - "null"
+          contactGoalLists:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      optinmessageid:
+        type:
+          - string
+          - "null"
+      optinoptout:
+        type:
+          - string
+          - "null"
+      optoutconf:
+        type:
+          - string
+          - "null"
+      p_embed_image:
+        type:
+          - string
+          - "null"
+      p_use_analytics_link:
+        type:
+          - string
+          - "null"
+      p_use_analytics_read:
+        type:
+          - string
+          - "null"
+      p_use_captcha:
+        type:
+          - string
+          - "null"
+      p_use_facebook:
+        type:
+          - string
+          - "null"
+      p_use_tracking:
+        type:
+          - string
+          - "null"
+      p_use_twitter:
+        type:
+          - string
+          - "null"
+      private:
+        type:
+          - string
+          - "null"
+      require_name:
+        type:
+          - string
+          - "null"
+      send_last_broadcast:
+        type:
+          - string
+          - "null"
+      sender_addr1:
+        type:
+          - string
+          - "null"
+      sender_addr2:
+        type:
+          - string
+          - "null"
+      sender_city:
+        type:
+          - string
+          - "null"
+      sender_country:
+        type:
+          - string
+          - "null"
+      sender_name:
+        type:
+          - string
+          - "null"
+      sender_phone:
+        type:
+          - string
+          - "null"
+      sender_reminder:
+        type:
+          - string
+          - "null"
+      sender_state:
+        type:
+          - string
+          - "null"
+      sender_url:
+        type:
+          - string
+          - "null"
+      sender_zip:
+        type:
+          - string
+          - "null"
+      stringid:
+        type:
+          - string
+          - "null"
+      subscription_notify:
+        type:
+          - string
+          - "null"
+      to_name:
+        type:
+          - string
+          - "null"
+      twitter_token:
+        type:
+          - string
+          - "null"
+      twitter_token_secret:
+        type:
+          - string
+          - "null"
+      udate:
+        type:
+          - string
+          - "null"
+      unsubscription_notify:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - string
+          - "null"
+      userid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  deals:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      account:
+        type:
+          - string
+          - "null"
+      activitycount:
+        type:
+          - string
+          - "null"
+      cdate:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customerAccount:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      edate:
+        type:
+          - string
+          - "null"
+      group:
+        type:
+          - string
+          - "null"
+      hash:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isDisabled:
+        type:
+          - boolean
+          - "null"
+      links:
+        type: object
+        properties:
+          account:
+            type:
+              - string
+              - "null"
+          contact:
+            type:
+              - string
+              - "null"
+          contactDeals:
+            type:
+              - string
+              - "null"
+          customerAccount:
+            type:
+              - string
+              - "null"
+          dealActivities:
+            type:
+              - string
+              - "null"
+          dealCustomFieldData:
+            type:
+              - string
+              - "null"
+          group:
+            type:
+              - string
+              - "null"
+          nextTask:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - string
+              - "null"
+          scoreValues:
+            type:
+              - string
+              - "null"
+          stage:
+            type:
+              - string
+              - "null"
+          tasks:
+            type:
+              - string
+              - "null"
+      mdate:
+        type:
+          - string
+          - "null"
+      nextTask:
+        type:
+          - string
+          - "null"
+      nextdate:
+        type:
+          - string
+          - "null"
+      nextdealid:
+        type:
+          - string
+          - "null"
+      nexttaskid:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      percent:
+        type:
+          - string
+          - "null"
+      stage:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+      winProbability:
+        type:
+          - integer
+          - "null"
+      winProbabilityMdate:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  segments:
+    type: object
+    properties:
+      hidden:
+        type:
+          - string
+          - "null"
+        examples:
+          - "0"
+      id:
+        type: string
+        examples:
+          - "1"
+      links:
+        type:
+          - array
+          - "null"
+      logic:
+        type:
+          - string
+          - "null"
+        examples:
+          - and
+      name:
+        type:
+          - string
+          - "null"
+        examples:
+          - Segment of Automation 1
+      seriesid:
+        type:
+          - string
+          - "null"
+        examples:
+          - "1"
+    required:
+      - id
+    additionalProperties: true
+  forms:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      action:
+        type:
+          - string
+          - "null"
+      actiondata:
+        type: object
+        properties:
+          actions:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                  examples:
+                    - subscribe-to-list
+                email:
+                  type:
+                    - string
+                    - "null"
+                  examples:
+                    - johndoe@example.com
+                list:
+                  type:
+                    - string
+                    - "null"
+                  examples:
+                    - "1"
+      address:
+        type:
+          - string
+          - "null"
+      addressid:
+        type:
+          - string
+          - "null"
+        examples:
+          - "0"
+      aid:
+        type:
+          - string
+          - "null"
+        default: "0"
+        examples:
+          - "0"
+      body:
+        type:
+          - string
+          - "null"
+      button:
+        type:
+          - string
+          - "null"
+        examples:
+          - Submit
+      cdate:
+        type:
+          - string
+          - "null"
+        examples:
+          - "2018-08-17T13:47:31-05:00"
+      cfields:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+              examples:
+                - header
+            class:
+              type:
+                - string
+                - "null"
+              examples:
+                - _x41699710
+            header:
+              type:
+                - string
+                - "null"
+              examples:
+                - Subscribe for Email Updates
+      contacts:
+        type: integer
+        default: 0
+        examples:
+          - 0
+      deals:
+        type: integer
+        default: 0
+        examples:
+          - 0
+      defaultscreenshot:
+        type:
+          - string
+          - "null"
+        default: https://img-us1.com/default-form.gif
+        examples:
+          - https://img-us1.com/default-form.gif
+      entries:
+        type:
+          - string
+          - "null"
+        examples:
+          - "0"
+      id:
+        type: string
+        default: "1"
+        examples:
+          - "1"
+      layout:
+        type:
+          - string
+          - "null"
+        examples:
+          - inline-form
+      links:
+        type: object
+        properties:
+          address:
+            type:
+              - string
+              - "null"
+            default: https://:account.api-us1.com/api/3/forms/1/address
+            examples:
+              - https://:account.api-us1.com/api/3/forms/1/address
+      name:
+        type:
+          - string
+          - "null"
+        examples:
+          - Testing
+      options:
+        type: object
+        properties:
+          blanks_overwrite:
+            type:
+              - boolean
+              - "null"
+            examples:
+              - true
+              - false
+          confaction:
+            type:
+              - string
+              - "null"
+            examples:
+              - show-message
+          confform:
+            type:
+              - string
+              - "null"
+            examples:
+              - "2"
+          optin_created:
+            type: boolean
+            default: true
+            examples:
+              - true
+              - false
+          optin_id:
+            type:
+              - integer
+              - "null"
+            examples:
+              - 1
+          sendoptin:
+            type:
+              - boolean
+              - "null"
+            examples:
+              - true
+              - false
+      parentformid:
+        type:
+          - string
+          - "null"
+        examples:
+          - "0"
+      recent:
+        type: array
+      style:
+        type: object
+        properties:
+          ac_branding:
+            type:
+              - boolean
+              - "null"
+            examples:
+              - true
+              - false
+          background:
+            type:
+              - string
+              - "null"
+            examples:
+              - FFFFFF
+          border:
+            type: object
+            properties:
+              color:
+                type:
+                  - string
+                  - "null"
+                examples:
+                  - B0B0B0
+              radius:
+                type:
+                  - integer
+                  - "null"
+                default: 0
+                examples:
+                  - 0
+              style:
+                type:
+                  - string
+                  - "null"
+                examples:
+                  - solid
+              width:
+                type:
+                  - integer
+                  - "null"
+                examples:
+                  - 0
+          button:
+            type: object
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+                examples:
+                  - "333333"
+              border:
+                type: object
+                properties:
+                  color:
+                    type:
+                      - string
+                      - "null"
+                    examples:
+                      - "333333"
+                  radius:
+                    type:
+                      - integer
+                      - "null"
+                    examples:
+                      - 4
+                  style:
+                    type:
+                      - string
+                      - "null"
+                    examples:
+                      - solid
+                  width:
+                    type:
+                      - integer
+                      - "null"
+                    examples:
+                      - 0
+              fontcolor:
+                type:
+                  - string
+                  - "null"
+                examples:
+                  - FFFFFF
+              padding:
+                type:
+                  - integer
+                  - "null"
+                examples:
+                  - 10
+          dark:
+            type:
+              - boolean
+              - "null"
+            examples:
+              - true
+              - false
+          fontcolor:
+            type:
+              - string
+              - "null"
+            examples:
+              - "000000"
+          layout:
+            type:
+              - string
+              - "null"
+            examples:
+              - normal
+          width:
+            type:
+              - integer
+              - "null"
+            examples:
+              - 500
+      submit:
+        type:
+          - string
+          - "null"
+        examples:
+          - show-thank-you
+      submitdata:
+        type: object
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      thanks:
+        type:
+          - string
+          - "null"
+        examples:
+          - Thanks for signing up!
+      title:
+        type:
+          - string
+          - "null"
+      udate:
+        type:
+          - string
+          - "null"
+        examples:
+          - "2018-08-17T13:47:38-05:00"
+      url:
+        type:
+          - string
+          - "null"
+      userid:
+        type:
+          - string
+          - "null"
+        examples:
+          - "1"
+    required:
+      - id
+    additionalProperties: true

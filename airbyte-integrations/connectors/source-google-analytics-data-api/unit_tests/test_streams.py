@@ -3,13 +3,16 @@
 #
 
 import datetime
+import json
 import random
 from http import HTTPStatus
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from freezegun import freeze_time
+from requests.models import Response
 from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream, SourceGoogleAnalyticsDataApi
 
 from .utils import read_incremental
@@ -247,26 +250,32 @@ def test_http_method(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "response_action_expected", "response_body"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS, {}),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL, {}),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY, {}),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY, {"error": {"message": "Exhausted concurrent requests quota."}}),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY, {}),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
+def test_should_retry(patch_base_class, http_status, response_action_expected, response_body):
+    response_mock = Response()
     response_mock.status_code = http_status
+    if response_body:
+        json_data = response_body
+        response_mock._content = str.encode(json.dumps(json_data))
+        response_mock.headers = {'Content-Type': 'application/json'}
+        response_mock.encoding = 'utf-8'
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
-    assert stream.should_retry(response_mock) == should_retry
+    assert stream.get_error_handler().interpret_response(response_mock).response_action == response_action_expected
 
 
 def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+    response_mock = Response()
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
 
 
 @freeze_time("2023-01-01 00:00:00")
@@ -297,6 +306,24 @@ def test_stream_slices():
         {"startDate": "2022-12-20", "endDate": "2022-12-24"},
         {"startDate": "2022-12-25", "endDate": "2022-12-29"},
         {"startDate": "2022-12-30", "endDate": "2023-01-01"},
+    ]
+
+@freeze_time("2023-01-01 00:00:00")
+def test_full_refresh():
+    """
+    Test case when full refresh state is used
+    """
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1, "dimensions": ["browser", "country", "language"]}
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    full_refresh_state = {
+      "__ab_full_refresh_state_message": True
+    }
+    slices = list(stream.stream_slices(sync_mode=None, stream_state=full_refresh_state))
+    assert slices == [
+        {"startDate": "2022-12-29", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2022-12-30"},
+        {"startDate": "2022-12-31", "endDate": "2022-12-31"},
+        {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
 

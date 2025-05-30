@@ -1,39 +1,50 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier of the account that owns this queue.",
       "type": ["null", "string"]
     },
     "average_wait_time": {
+      "description": "The average time, in seconds, that callers have spent waiting in this queue.",
       "type": ["null", "integer"]
     },
     "current_size": {
+      "description": "The current number of callers waiting in this queue.",
       "type": ["null", "integer"]
     },
     "date_created": {
+      "description": "The date and time when this queue was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when this queue was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-defined human-readable name for this queue.",
       "type": ["null", "string"]
     },
     "max_size": {
+      "description": "The maximum number of callers allowed in this queue.",
       "type": ["null", "integer"]
     },
     "sid": {
+      "description": "A unique identifier for this queue.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI for this queue resource.",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains URIs for related subresources of this queue.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "members": {
+          "description": "A URI to fetch the members (callers) of this queue.",
           "type": ["null", "string"]
         }
       }

@@ -8,7 +8,7 @@ data:
   icon: yugabytedb.svg
   license: MIT
   name: YugabyteDB
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

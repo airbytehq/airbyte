@@ -5,10 +5,14 @@
 import os.path
 import sys
 import time
+from typing import Any, Mapping
 
 import pendulum
 import pytest
-from source_marketo.source import Activities, MarketoAuthenticator
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from source_marketo.source import Activities, MarketoAuthenticator, SourceMarketo
+
+START_DATE = pendulum.now().subtract(days=75)
 
 
 @pytest.fixture(autouse=True)
@@ -30,12 +34,11 @@ def mock_requests(requests_mock):
 
 @pytest.fixture
 def config():
-    start_date = pendulum.now().subtract(days=75).strftime("%Y-%m-%dT%H:%M:%SZ")
     config = {
         "client_id": "client-id",
         "client_secret": "********",
         "domain_url": "https://602-EUO-598.mktorest.com",
-        "start_date": start_date,
+        "start_date": START_DATE.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "window_in_days": 30,
     }
     config["authenticator"] = MarketoAuthenticator(config)
@@ -91,3 +94,18 @@ def file_generator(faker):
         return path, records
 
     return _generator
+
+
+def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> DeclarativeStream:
+    source = SourceMarketo()
+    matches_by_name = [
+        stream_config for stream_config in source._get_declarative_streams(config) if stream_config.name == stream_name
+    ]
+    if not matches_by_name:
+        raise ValueError("Please provide a valid stream name.")
+    return matches_by_name[0]
+
+
+@pytest.fixture(autouse=True)
+def mock_auth(requests_mock) -> None:
+    requests_mock.post("/identity/oauth/token", json={"access_token": "access_token", "expires_in": 3600})

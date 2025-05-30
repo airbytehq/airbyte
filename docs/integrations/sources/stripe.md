@@ -9,8 +9,9 @@ This page contains the setup guide and reference information for the [Stripe](ht
 ## Prerequisites
 
 - Access to the Stripe account containing the data you wish to replicate
+- Stripe Account ID
 
-## Setup Guide
+## Setup guide
 
 :::note
 To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
@@ -27,12 +28,24 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
-### Step 2: Set up the Stripe source connector in Airbyte
+### Step 2: Set up the Stripe connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Stripe** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+<!-- env:cloud -->
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Stripe from the Source type dropdown.
+4. Enter a name for the Stripe connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Stripe from the Source type dropdown.
+4. Enter a name for the Stripe connector.
+<!-- /env:oss -->
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
@@ -57,12 +70,12 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ## Supported sync modes
 
-The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 The Stripe source connector supports the following streams:
 
@@ -95,7 +108,7 @@ The Stripe source connector supports the following streams:
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
-- [Payment Methods](https://stripe.com/docs/api/payment_methods/list)
+- [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
@@ -116,13 +129,12 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
+### Data type map
 
-
-
-### Data type mapping
-
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
 
 ## Limitations & Troubleshooting
 
@@ -146,6 +158,7 @@ Please be aware: this also means that any change older than 30 days will not be 
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
+
 - `Balance Transactions`
 - `Events`
 - `File Links`
@@ -199,6 +212,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 ## Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
+
 - `Bank Accounts`
 - `Coupons`
 - `Customers`
@@ -213,16 +227,46 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 - `Subscriptions`
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
-* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-### Data type mapping
+- Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
-|:--------|:-----------| :-------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.0   | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891)  | Update `Payment Methods` stream                                                                                                                                                                                               |
+| 5.5.4   | 2024-09-09 | [45348](https://github.com/airbytehq/airbyte/pull/45348)  | Remove `stripe` python package                                                                                                                                                                                                |
+| 5.5.3   | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101)  | Fix regression following pagination issue fix                                                                                                                                                                                 |
+| 5.5.2   | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862)  | Fix RFR pagination issue                                                                                                                                                                                                      |
+| 5.5.1   | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105)  | Update dependencies                                                                                                                                                                                                           |
+| 5.5.0   | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302)  | Fix problem with state not updating and upgrade cdk 4                                                                                                                                                                         |
+| 5.4.12  | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985)  | Expand Invoice discounts and tax rates                                                                                                                                                                                        |
+| 5.4.11  | 2024-07-27 | [42623](https://github.com/airbytehq/airbyte/pull/42623)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.10  | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.9   | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.8   | 2024-07-10 | [41477](https://github.com/airbytehq/airbyte/pull/41477)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.7   | 2024-07-09 | [40869](https://github.com/airbytehq/airbyte/pull/40869)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.6   | 2024-07-08 | [41044](https://github.com/airbytehq/airbyte/pull/41044)  | Use latest `CDK` version possible                                                                                                                                                                                             |
+| 5.4.5   | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.4   | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040)  | Update dependencies                                                                                                                                                                                                           |
+| 5.4.3   | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284)  | [autopull] Upgrade base image to v1.2.2                                                                                                                                                                                       |
+| 5.4.2   | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412)  | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream                                                                                                                                          |
+| 5.4.1   | 2024-06-11 | [39393](https://github.com/airbytehq/airbyte/pull/39393)  | Added missing `event types` (incremental sync) for `Invoices` stream                                                                                                                                                          |
+| 5.4.0   | 2024-06-05 | [39138](https://github.com/airbytehq/airbyte/pull/39138)  | Fixed the `Refunds` stream missing data for the `incremental` sync                                                                                                                                                            |
+| 5.3.9   | 2024-05-22 | [38550](https://github.com/airbytehq/airbyte/pull/38550)  | Update authenticator package                                                                                                                                                                                                  |
+| 5.3.8   | 2024-05-15 | [38248](https://github.com/airbytehq/airbyte/pull/38248)  | Replace AirbyteLogger with logging.Logger                                                                                                                                                                                     |
+| 5.3.7   | 2024-04-24 | [36663](https://github.com/airbytehq/airbyte/pull/36663)  | Schema descriptions                                                                                                                                                                                                           |
+| 5.3.6   | 2024-04-18 | [37448](https://github.com/airbytehq/airbyte/pull/37448)  | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                                                                                                               |
+| 5.3.5   | 2024-04-18 | [37418](https://github.com/airbytehq/airbyte/pull/37418)  | Ensure python return code != 0 in case of error                                                                                                                                                                               |
+| 5.3.4   | 2024-04-11 | [37406](https://github.com/airbytehq/airbyte/pull/37406)  | Update CDK version to have partitioned state fix                                                                                                                                                                              |
+| 5.3.3   | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001)  | Update airbyte-cdk to flush print buffer for every message                                                                                                                                                                    |
+| 5.3.2   | 2024-04-11 | [36964](https://github.com/airbytehq/airbyte/pull/36964)  | Update CDK version to fix breaking change before another devs work on it                                                                                                                                                      |
+| 5.3.1   | 2024-04-10 | [36960](https://github.com/airbytehq/airbyte/pull/36960)  | Remove unused imports                                                                                                                                                                                                         |
 | 5.3.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                 |
 | 5.2.4   | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137)  | Fix license in `pyproject.toml`                                                                                                                                                                                               |
 | 5.2.3   | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068)  | Manage dependencies with Poetry.                                                                                                                                                                                              |
@@ -319,4 +363,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)    | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)    | Add acceptance tests for connected accounts                                                                                                                                                                                   |
 | 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)    | Bump CDK connectors                                                                                                                                                                                                           |
+
+</details>
+
 </HideInUI>

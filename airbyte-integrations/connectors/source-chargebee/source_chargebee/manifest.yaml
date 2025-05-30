@@ -280,6 +280,39 @@ definitions:
       primary_key: "id"
       path: "/subscriptions"
       stream_cursor_field: "updated_at"
+  subscription_with_scheduled_changes_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          field_path: []
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Entity unavailable. Subscription may have been deleted."
+            - http_codes: [400]
+              action: IGNORE
+              error_message_contains: "No changes are scheduled for this subscription."
+              error_message: "No scheduled changes for subscription."
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/subscription_stream"
+            parent_key: "id"
+            partition_field: "subscription_id"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_chargebee.components.CustomFieldTransformation
+    $parameters:
+      name: "subscription_with_scheduled_changes"
+      primary_key: "id"
+      path: "/subscriptions/{{ stream_slice.subscription_id }}/retrieve_with_scheduled_changes"
   transaction_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -414,6 +447,7 @@ streams:
   - "#/definitions/payment_source_stream"
   - "#/definitions/promotional_credit_stream"
   - "#/definitions/subscription_stream"
+  - "#/definitions/subscription_with_scheduled_changes_stream"
   - "#/definitions/transaction_stream"
   - "#/definitions/unbilled_charge_stream"
   - "#/definitions/virtual_bank_account_stream"

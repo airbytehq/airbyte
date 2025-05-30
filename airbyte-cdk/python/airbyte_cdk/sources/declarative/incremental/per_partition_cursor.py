@@ -2,41 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
+import logging
+from collections import OrderedDict
+from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-
-
-class PerPartitionKeySerializer:
-    """
-    We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
-    concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
-    since they are not hashable. By creating json string using the dict, we can have a use the dict as a key to the dict since strings are
-    hashable.
-    """
-
-    @staticmethod
-    def to_partition_key(to_serialize: Any) -> str:
-        # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
-        return json.dumps(to_serialize, indent=None, separators=(",", ":"), sort_keys=True)
-
-    @staticmethod
-    def to_partition(to_deserialize: Any) -> Mapping[str, Any]:
-        return json.loads(to_deserialize)  # type: ignore # The partition is known to be a dict, but the type hint is Any
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
+from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 class CursorFactory:
-    def __init__(self, create_function: Callable[[], Cursor]):
+    def __init__(self, create_function: Callable[[], DeclarativeCursor]):
         self._create_function = create_function
 
-    def create(self) -> Cursor:
+    def create(self) -> DeclarativeCursor:
         return self._create_function()
 
 
-class PerPartitionCursor(Cursor):
+class PerPartitionCursor(DeclarativeCursor):
     """
     Given a stream has many partitions, it is important to provide a state per partition.
 
@@ -57,34 +41,88 @@ class PerPartitionCursor(Cursor):
     Therefore, we need to manage state per partition.
     """
 
+    DEFAULT_MAX_PARTITIONS_NUMBER = 10000
     _NO_STATE: Mapping[str, Any] = {}
     _NO_CURSOR_STATE: Mapping[str, Any] = {}
     _KEY = 0
     _VALUE = 1
+    _state_to_migrate_from: Mapping[str, Any] = {}
 
-    def __init__(self, cursor_factory: CursorFactory, partition_router: StreamSlicer):
+    def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
-        self._cursor_per_partition: MutableMapping[str, Cursor] = {}
+        # The dict is ordered to ensure that once the maximum number of partitions is reached,
+        # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
+        self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         slices = self._partition_router.stream_slices()
         for partition in slices:
+            # Ensure the maximum number of partitions is not exceeded
+            self._ensure_partition_limit()
+
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
             if not cursor:
-                cursor = self._create_cursor(self._NO_CURSOR_STATE)
+                partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
+                cursor = self._create_cursor(partition_state)
                 self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
             for cursor_slice in cursor.stream_slices():
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
+    def _ensure_partition_limit(self) -> None:
+        """
+        Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
+        """
+        while len(self._cursor_per_partition) > self.DEFAULT_MAX_PARTITIONS_NUMBER - 1:
+            oldest_partition = self._cursor_per_partition.popitem(last=False)[0]  # Remove the oldest partition
+            logging.warning(f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}.")
+
     def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        Set the initial state for the cursors.
+
+        This method initializes the state for each partition cursor using the provided stream state.
+        If a partition state is provided in the stream state, it will update the corresponding partition cursor with this state.
+
+        Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
+        does not have parent streams, this step will be skipped due to the default PartitionRouter implementation.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
+                {
+                    "states": [
+                        {
+                            "partition": {
+                                "partition_key": "value"
+                            },
+                            "cursor": {
+                                "last_updated": "2023-05-27T00:00:00Z"
+                            }
+                        }
+                    ],
+                    "parent_state": {
+                        "parent_stream_name": {
+                            "last_updated": "2023-05-27T00:00:00Z"
+                        }
+                    }
+                }
+        """
         if not stream_state:
             return
 
-        for state in stream_state["states"]:
-            self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+        if "states" not in stream_state:
+            # We assume that `stream_state` is in a global format that can be applied to all partitions.
+            # Example: {"global_state_format_key": "global_state_format_value"}
+            self._state_to_migrate_from = stream_state
+
+        else:
+            for state in stream_state["states"]:
+                self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
+        # Set parent state for partition routers based on parent streams
+        self._partition_router.set_initial_state(stream_state)
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].observe(
@@ -113,7 +151,12 @@ class PerPartitionCursor(Cursor):
                         "cursor": cursor_state,
                     }
                 )
-        return {"states": states}
+        state: dict[str, Any] = {"states": states}
+
+        parent_state = self._partition_router.get_stream_state()
+        if parent_state:
+            state["parent_state"] = parent_state
+        return state
 
     def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Optional[StreamState]:
         cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
@@ -141,7 +184,7 @@ class PerPartitionCursor(Cursor):
 
         return self._get_state_for_partition(stream_slice.partition)
 
-    def _create_cursor(self, cursor_state: Any) -> Cursor:
+    def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:
         cursor = self._cursor_factory.create()
         cursor.set_initial_state(cursor_state)
         return cursor
@@ -248,7 +291,7 @@ class PerPartitionCursor(Cursor):
             StreamSlice(partition={}, cursor_slice=record.associated_slice.cursor_slice) if record.associated_slice else None,
         )
 
-    def _get_cursor(self, record: Record) -> Cursor:
+    def _get_cursor(self, record: Record) -> DeclarativeCursor:
         if not record.associated_slice:
             raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
         partition_key = self._to_partition_key(record.associated_slice.partition)

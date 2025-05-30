@@ -1,96 +1,126 @@
 {
   "properties": {
     "metadata": {
+      "description": "Additional information related to the transfer",
       "type": ["null", "object"],
       "properties": {}
     },
     "reversals": {
+      "description": "Details of any reversals associated with the transfer",
       "type": ["null", "object"],
       "properties": {
         "object": {
+          "description": "The object type, in this case, 'list'",
           "type": ["null", "string"]
         },
         "data": {
+          "description": "An array of reversal objects",
           "type": ["null", "array"]
         },
         "has_more": {
+          "description": "Indicates if there are more reversals to retrieve",
           "type": ["null", "boolean"]
         },
         "total_count": {
+          "description": "Total count of reversals",
           "type": ["null", "number"]
         },
         "url": {
+          "description": "URL to retrieve all reversals for the transfer",
           "type": ["null", "string"]
         }
       }
     },
     "id": {
+      "description": "The unique identifier of the transfer",
       "type": ["null", "string"]
     },
     "statement_description": {
+      "description": "The description appearing on the recipient's bank statement",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount of the transfer",
       "type": ["null", "integer"]
     },
     "balance_transaction": {
+      "description": "The balance transaction associated with the transfer",
       "type": ["null", "string"]
     },
     "reversed": {
+      "description": "Indicates if the transfer was fully or partially reversed",
       "type": ["null", "boolean"]
     },
     "created": {
+      "description": "The timestamp when the transfer was created",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp when the transfer was last updated",
       "type": ["null", "integer"]
     },
     "amount_reversed": {
+      "description": "The amount that was reversed from the transfer",
       "type": ["null", "integer"]
     },
     "source_type": {
+      "description": "The type of the transfer source, e.g., card, bank account",
       "type": ["null", "string"]
     },
     "source_transaction": {
+      "description": "The source transaction that funded the transfer",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date the transfer was initiated",
       "type": ["null", "integer"]
     },
     "livemode": {
+      "description": "Indicates if the transfer was made in live mode",
       "type": ["null", "boolean"]
     },
     "statement_descriptor": {
+      "description": "An optional statement descriptor appended to the recipient's bank statement",
       "type": ["null", "string"]
     },
     "failure_balance_transaction": {
+      "description": "The balance transaction information for a failed transfer",
       "type": ["null", "string"]
     },
     "recipient": {
+      "description": "The recipient of the transfer, usually a connected account",
       "type": ["null", "string"]
     },
     "destination": {
+      "description": "The destination bank account or card where the funds are transferred",
       "type": ["null", "string"]
     },
     "automatic": {
+      "description": "Indicates if the transfer was processed automatically",
       "type": ["null", "boolean"]
     },
     "object": {
+      "description": "The object type, in this case, 'transfer'",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency of the transfer amount",
       "type": ["null", "string"]
     },
     "transfer_group": {
+      "description": "A unique identifier for the transfer group if multiple transfers are linked",
       "type": ["null", "string"]
     },
     "arrival_date": {
+      "description": "The date the funds are expected to arrive in the destination bank account",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "A description of the transfer",
       "type": ["null", "string"]
     },
     "destination_payment": {
+      "description": "The destination payment id if applicable",
       "type": ["null", "string"]
     }
   },

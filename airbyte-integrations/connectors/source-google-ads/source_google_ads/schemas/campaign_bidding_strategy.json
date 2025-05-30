@@ -3,96 +3,127 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "The ID of the customer associated with the bidding strategy.",
       "type": ["null", "integer"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign associated with the bidding strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.aligned_campaign_budget_id": {
+      "description": "The ID of the campaign budget that this bidding strategy is aligned with.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.campaign_count": {
+      "description": "The total count of campaigns that are using this bidding strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.currency_code": {
+      "description": "The currency code used by the bidding strategy.",
       "type": ["null", "string"]
     },
     "bidding_strategy.effective_currency_code": {
+      "description": "The effective currency code applied by the bidding strategy across campaigns.",
       "type": ["null", "string"]
     },
     "bidding_strategy.enhanced_cpc": {
+      "description": "Indicates if Enhanced CPC (ECPC) is enabled for this bidding strategy.",
       "type": ["null", "string"]
     },
     "bidding_strategy.id": {
+      "description": "The unique ID of the bidding strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.maximize_conversion_value.cpc_bid_ceiling_micros": {
+      "description": "The maximum CPC bid ceiling in micros for Maximize Conversion Value strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.maximize_conversion_value.cpc_bid_floor_micros": {
+      "description": "The minimum CPC bid floor in micros for Maximize Conversion Value strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.maximize_conversion_value.target_roas": {
+      "description": "The target Return on Ad Spend (ROAS) for Maximize Conversion Value strategy.",
       "type": ["null", "number"]
     },
     "bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros": {
+      "description": "The maximum CPC bid ceiling in micros for Maximize Conversions strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.maximize_conversions.cpc_bid_floor_micros": {
+      "description": "The minimum CPC bid floor in micros for Maximize Conversions strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.maximize_conversions.target_cpa_micros": {
+      "description": "The target Cost per Acquisition (CPA) in micros for Maximize Conversions strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.name": {
+      "description": "The name of the bidding strategy.",
       "type": ["null", "string"]
     },
     "bidding_strategy.non_removed_campaign_count": {
+      "description": "The count of active campaigns that are using this bidding strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.resource_name": {
+      "description": "The resource name of the bidding strategy.",
       "type": ["null", "string"]
     },
     "bidding_strategy.status": {
+      "description": "The status of the bidding strategy.",
       "type": ["null", "string"]
     },
     "bidding_strategy.target_cpa.cpc_bid_ceiling_micros": {
+      "description": "The maximum CPC bid ceiling in micros for Target CPA strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_cpa.cpc_bid_floor_micros": {
+      "description": "The minimum CPC bid floor in micros for Target CPA strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_cpa.target_cpa_micros": {
+      "description": "The target Cost per Acquisition (CPA) in micros for Target CPA strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_impression_share.cpc_bid_ceiling_micros": {
+      "description": "The maximum CPC bid ceiling in micros for Target Impression Share strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_impression_share.location": {
+      "description": "The targeted location for Impression Share in Target Impression Share strategy.",
       "type": ["null", "string"]
     },
     "bidding_strategy.target_impression_share.location_fraction_micros": {
+      "description": "The fraction of requested location's impressions targeted by Target Impression Share.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_roas.cpc_bid_ceiling_micros": {
+      "description": "The maximum CPC bid ceiling in micros for Target ROAS strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_roas.cpc_bid_floor_micros": {
+      "description": "The minimum CPC bid floor in micros for Target ROAS strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_roas.target_roas": {
+      "description": "The target Return on Ad Spend (ROAS) for Target ROAS strategy.",
       "type": ["null", "number"]
     },
     "bidding_strategy.target_spend.cpc_bid_ceiling_micros": {
+      "description": "The maximum CPC bid ceiling in micros for Target Spend strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_spend.target_spend_micros": {
+      "description": "The target spend in micros for Target Spend strategy.",
       "type": ["null", "integer"]
     },
     "bidding_strategy.type": {
+      "description": "The type of bidding strategy used.",
       "type": ["null", "string"]
     },
     "segments.date": {
+      "description": "The date segment for the data.",
       "type": ["null", "string"],
       "format": "date"
     }
