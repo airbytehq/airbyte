@@ -19,13 +19,10 @@ val logger = KotlinLogging.logger {}
  * configuration to match test container configuration.
  */
 object MSSQLContainerHelper {
-
-    private val network = Network.newNetwork()
-
+    
     private val testContainer =
         MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04")
             .acceptLicense()
-//            .withNetwork(network)
             .withLogConsumer { e -> logger.debug { e.utf8String } }
 
     fun start() {
@@ -38,8 +35,6 @@ object MSSQLContainerHelper {
 
     fun getHost(): String = testContainer.host
 
-    fun getNetwork(): Network = network
-
     fun getPassword(): String = testContainer.password
 
     fun getPort(): Int? = testContainer.getMappedPort(MS_SQL_SERVER_PORT)
@@ -49,9 +44,6 @@ object MSSQLContainerHelper {
     fun getIpAddress(): String? {
         // Ensure that the container is started first
         start()
-        println("======= host: " + testContainer.host)
-        println("======= ip address: " + testContainer.containerInfo.networkSettings.networks.entries.first().value.ipAddress)
-//        return testContainer.host
         return testContainer.containerInfo.networkSettings.networks.entries.first().value.ipAddress
 
     }
