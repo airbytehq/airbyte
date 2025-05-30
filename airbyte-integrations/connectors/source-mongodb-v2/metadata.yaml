@@ -66,8 +66,7 @@ data:
           **What to expect when upgrading:**
 
           1. You will need to reconfigure your MongoDB source connector to use the new `databases` array field
-          2. Your existing CDC state may not be compatible with the new version, which could require a full refresh sync
-          3. If you're using CDC incremental sync mode, we recommend testing this upgrade in a staging environment first
+          2. If you're using CDC incremental sync mode, we recommend testing this upgrade in a staging environment first
 
           **Migration steps:**
 
