@@ -76,7 +76,8 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
        structure: {"Details": {"TargetSettingDetail": original_details}}
     2. For settings without Details, keep the original structure
     3. Convert empty lists ([]) to null for backward compatibility
-    4. Wrap all transformed settings in {"Setting": transformed_settings}
+    4. Convert string values to integers for keys ending with "Id"
+    5. Wrap all transformed settings in {"Setting": transformed_settings}
 
     BiddingScheme field transformations:
     1. Recursively convert all integer values to floats to ensure
@@ -88,6 +89,19 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
                                       "Details": {"TargetSettingDetail": [...]},
                                       "PageFeedIds": null}]}}
     """
+
+    def _convert_id_strings_to_integers(self, key: str, value: Any) -> Any:
+        """
+        Convert string values to integers for keys ending with "Id"
+        if the string represents a valid integer.
+        """
+        if key.endswith("Id") and isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                # If conversion fails, return original value
+                return value
+        return value
 
     def transform(
         self,
@@ -112,7 +126,10 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
 
             if "Details" in setting and setting["Details"] is not None:
                 # Wrap Details in TargetSettingDetail only if Details is not None
-                transformed_setting = {"Type": setting.get("Type"), "Details": {"TargetSettingDetail": setting["Details"]}}
+                transformed_setting = {
+                    "Type": setting.get("Type"),
+                    "Details": {"TargetSettingDetail": setting["Details"]},
+                }
                 # Add any other properties that might exist
                 for key, value in setting.items():
                     if key not in ["Type", "Details"]:
@@ -120,17 +137,19 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
                         if isinstance(value, list) and len(value) == 0:
                             transformed_setting[key] = None
                         else:
-                            transformed_setting[key] = value
+                            # Convert string IDs to integers
+                            transformed_setting[key] = self._convert_id_strings_to_integers(key, value)
                 transformed_settings.append(transformed_setting)
             else:
                 # Keep setting as-is (no Details to wrap or Details is None)
-                # But still convert empty lists to null
+                # But still convert empty lists to null and string IDs to integers
                 transformed_setting = {}
                 for key, value in setting.items():
                     if isinstance(value, list) and len(value) == 0:
                         transformed_setting[key] = None
                     else:
-                        transformed_setting[key] = value
+                        # Convert string IDs to integers
+                        transformed_setting[key] = self._convert_id_strings_to_integers(key, value)
                 transformed_settings.append(transformed_setting)
 
         # Wrap the transformed settings in the expected structure

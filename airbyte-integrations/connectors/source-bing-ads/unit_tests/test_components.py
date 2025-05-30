@@ -168,6 +168,132 @@ class TestBingAdsCampaignsRecordTransformer:
         assert input_record["Settings"] == expected_settings
 
     @pytest.mark.parametrize(
+        "test_name,input_record,expected_settings",
+        [
+            (
+                "string_id_conversion_with_details",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "AccountId": "12345",
+                            "CampaignIds": ["67890"],  # List, not string
+                            "PageFeedIds": [],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "AccountId": 12345,
+                            "CampaignIds": ["67890"],  # List stays as list
+                            "PageFeedIds": None,
+                        }
+                    ]
+                },
+            ),
+            (
+                "string_id_conversion_without_details",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "AccountId": "98765",
+                            "AdGroupIds": ["11111", "22222"],  # List, not string
+                            "CustomerId": "33333",
+                            "NonIdField": "should_not_convert",
+                            "EmptyList": [],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "AccountId": 98765,
+                            "AdGroupIds": ["11111", "22222"],  # List stays as list
+                            "CustomerId": 33333,
+                            "NonIdField": "should_not_convert",
+                            "EmptyList": None,
+                        }
+                    ]
+                },
+            ),
+            (
+                "mixed_id_types",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "AccountId": "12345",  # string -> int
+                            "CampaignId": 67890,  # already int -> stays int
+                            "AdGroupIds": "invalid_number",  # string but doesn't end with "Id" -> stays string
+                            "KeywordId": 99999,  # already int -> stays int
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "AccountId": 12345,
+                            "CampaignId": 67890,
+                            "AdGroupIds": "invalid_number",  # Not converted (doesn't end with "Id")
+                            "KeywordId": 99999,
+                        }
+                    ]
+                },
+            ),
+            (
+                "edge_case_id_fields",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "CustomSetting",
+                            "Id": "123456",  # ends with Id -> convert
+                            "MyId": "345678",  # ends with Id -> convert
+                            "AccountId": "456789",  # ends with Id -> convert
+                            "Identity": "567890",  # ends with "ity", not "Id" -> don't convert
+                            "NotAnId": "333444",  # ends with Id -> convert
+                            "Ids": "789012",  # doesn't end with "Id" -> don't convert
+                            "Ideas": "111222",  # doesn't end with "Id" -> don't convert
+                            "AlsoNotIds": "555666",  # doesn't end with "Id" -> don't convert
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "CustomSetting",
+                            "Id": 123456,
+                            "MyId": 345678,
+                            "AccountId": 456789,
+                            "Identity": "567890",  # Not converted (ends with "ity")
+                            "NotAnId": 333444,  # Converted (ends with "Id")
+                            "Ids": "789012",  # Not converted
+                            "Ideas": "111222",  # Not converted
+                            "AlsoNotIds": "555666",  # Not converted
+                        }
+                    ]
+                },
+            ),
+        ],
+    )
+    def test_string_id_conversion(self, test_name, input_record, expected_settings):
+        """Test string to integer conversion for keys ending with 'Id'."""
+        self.transformer.transform(input_record)
+        assert input_record["Settings"] == expected_settings
+
+    @pytest.mark.parametrize(
         "test_name,input_record",
         [
             ("empty_settings_list", {"Id": 486441589, "Settings": []}),
@@ -307,6 +433,44 @@ class TestBingAdsCampaignsRecordTransformer:
                 {
                     "Type": "TargetSetting",
                     "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                }
+            ]
+        }
+        assert input_record["Settings"] == expected_settings
+
+        # Check BiddingScheme transformation
+        expected_bidding_scheme = {"Type": "TargetCpa", "TargetCpa": 40.0, "MaxCpc": {"Amount": 9.0}}
+        assert input_record["BiddingScheme"] == expected_bidding_scheme
+
+    def test_combined_transformations_with_id_conversion(self):
+        """Test that Settings, BiddingScheme, and ID conversion work together."""
+        input_record = {
+            "Id": 486441589,
+            "Settings": [
+                {
+                    "Type": "TargetSetting",
+                    "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}],
+                    "AccountId": "12345",
+                    "CampaignIds": ["67890"],  # List, not string
+                    "PageFeedIds": [],
+                    "NonIdField": "should_not_convert",
+                }
+            ],
+            "BiddingScheme": {"Type": "TargetCpa", "TargetCpa": 40, "MaxCpc": {"Amount": 9}},
+        }
+
+        self.transformer.transform(input_record)
+
+        # Check Settings transformation with ID conversion
+        expected_settings = {
+            "Setting": [
+                {
+                    "Type": "TargetSetting",
+                    "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                    "AccountId": 12345,
+                    "CampaignIds": ["67890"],  # List stays as list
+                    "PageFeedIds": None,
+                    "NonIdField": "should_not_convert",
                 }
             ]
         }
