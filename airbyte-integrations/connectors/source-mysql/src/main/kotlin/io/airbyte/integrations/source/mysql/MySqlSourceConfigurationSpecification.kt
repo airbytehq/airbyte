@@ -184,6 +184,12 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("tmp_boosted_mode")
     @JsonSchemaDefault("true")
     val tmpBoostedMode: Boolean? = null
+
+    @JsonProperty(value = "tmp_num_sockets")
+    val tmpNumSockets: Int? = 1
+
+    @JsonProperty(value = "tmp_socket_file_path_base")
+    val tmpSocketFilePathBase: String? = "/tmp/tmp-socket-#"
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

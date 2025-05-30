@@ -10,7 +10,8 @@ import kotlinx.coroutines.runBlocking
 @Singleton
 @Requires(bean = SourceConfiguration::class, beanProperty = "boostedMode", value = "true")
 class SocketManager(private val socketPaths: List<String>, socketFactory: SocketWrapperFactory) {
-    @Inject constructor(socketFactory: SocketWrapperFactory) : this(List(10) { "/tmp/tmp-socket-$it" }, socketFactory) // TEMP: read paths from env var
+    @Inject constructor(socketFactory: SocketWrapperFactory, config: SourceConfiguration) :
+        this(List(config.numSockets) { config.socketFilePathBase.replace("#", "$it") }, socketFactory) // TEMP: read paths from env var
 
     val sockets: List<SocketWrapper>
     init {

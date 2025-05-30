@@ -21,6 +21,11 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     val resourceAcquisitionHeartbeat: Duration
 
     val boostedMode: Boolean
+
+    val numSockets: Int
+
+    val socketFilePathBase: String
+
     /** Whether it's a CDC configuration. Default to global state */
     fun isCdc(): Boolean {
         return global
