@@ -60,6 +60,9 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
 
+        // touch it to initialize
+        streamRecordConsumer
+
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
@@ -97,6 +100,19 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             }
         }
     }
+
+    protected fun outputPendingMessages() {
+        var s = PartitionReader.pendingStates.poll()
+
+        while (s != null) {
+            when (s) {
+                is AirbyteStateMessage -> boostedOutputConsumer?.accept(s)
+                is AirbyteStreamStatusTraceMessage -> boostedOutputConsumer?.accept(s)
+            }
+            s = PartitionReader.pendingStates.poll()
+        }
+    }
+
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
@@ -108,6 +124,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val numRecords = AtomicLong()
 
     override suspend fun run() {
+        outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
         existing exiting with an exception skips checkpoint(), so any work we
@@ -126,7 +143,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
                 }
             }
         runComplete.set(true)
@@ -155,17 +171,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
-
-        var s = PartitionReader.pendingStates.poll()
-
-        while (s != null) {
-            when (s) {
-                is AirbyteStateMessage -> boostedOutputConsumer?.accept(s)
-                is AirbyteStreamStatusTraceMessage -> boostedOutputConsumer?.accept(s)
-            }
-            s = PartitionReader.pendingStates.poll()
-        }
-
+        outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
         existing exiting with an exception skips checkpoint(), so any work we

@@ -3,6 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -318,16 +319,17 @@ class FeedReader(
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
 
         try {
-            //streamState.sharedState.tryAcquireResourcesForReader(Any()) // TEMP
-            val acqs = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
-            acquiredSocket =
-                acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
-                    ?: return // No output socket available, skip checkpoint.
-
-            val boostedOutputConsumer =
-                boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
             val stateMessages: MutableList</*AirbyteStateMessage*/Any> = root.stateManager.checkpoint().toMutableList()
+            var boostedOutputConsumer: BoostedOutputConsumer? = null
             if (finalCheckpoint) {
+                val acqs = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
+                acquiredSocket =
+                    acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
+                        ?: return // No output socket available, skip checkpoint.
+
+                val boostedOutputConsumer =
+                    boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
+
                 var s = PartitionReader.pendingStates.poll()
                 while (s != null) {
 //                    boostedOutputConsumer?.accept(s)

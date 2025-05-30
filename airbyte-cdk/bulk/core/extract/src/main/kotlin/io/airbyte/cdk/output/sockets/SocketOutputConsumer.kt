@@ -102,7 +102,6 @@ class BoostedOutputConsumer(
             socket.outputStream?.write(System.lineSeparator().toByteArray())
 //            stdout.println(buffer.toString(Charsets.UTF_8))
 //            stdout.flush()
-            socket.outputStream?.flush()
             buffer.reset()
         }
     }
