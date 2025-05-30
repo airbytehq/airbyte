@@ -4,12 +4,8 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.extractors.record_filter import (
-    RecordFilter,
-)
-from airbyte_cdk.sources.declarative.transformations import (
-    RecordTransformation,
-)
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
@@ -69,10 +65,24 @@ class DuplicatedRecordsFilter(RecordFilter):
 @dataclass
 class BingAdsCampaignsRecordTransformer(RecordTransformation):
     """
-    Transform the Settings field in Campaigns records
-    by wrapping Details arrays in TargetSettingDetail
-    structure. For settings without Details, keep the original
-    structure.
+    Transform Campaigns records with the following logic:
+
+    Settings field transformations:
+    1. For settings with Details, wrap the Details array in TargetSettingDetail
+       structure: {"Details": {"TargetSettingDetail": original_details}}
+    2. For settings without Details, keep the original structure
+    3. Convert empty lists ([]) to null for backward compatibility
+    4. Wrap all transformed settings in {"Setting": transformed_settings}
+
+    BiddingScheme field transformations:
+    1. Recursively convert all integer values to floats to ensure
+       consistent numeric type handling
+
+    Example Settings transformation:
+    Input:  {"Settings": [{"Type": "Target", "Details": [...], "PageFeedIds": []}]}
+    Output: {"Settings": {"Setting": [{"Type": "Target",
+                                      "Details": {"TargetSettingDetail": [...]},
+                                      "PageFeedIds": null}]}}
     """
 
     def transform(
@@ -82,13 +92,6 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        """
-        Transform the Settings field in the record.
-
-        For settings with Details, wrap the Details array in
-        TargetSettingDetail. For settings without Details, keep the original
-        structure.
-        """
         settings = record.get("Settings")
 
         if not settings or not isinstance(settings, list) or len(settings) == 0:
@@ -109,11 +112,22 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
                 # Add any other properties that might exist
                 for key, value in setting.items():
                     if key not in ["Type", "Details"]:
-                        transformed_setting[key] = value
+                        # Convert empty lists to null for backward compatibility
+                        if isinstance(value, list) and len(value) == 0:
+                            transformed_setting[key] = None
+                        else:
+                            transformed_setting[key] = value
                 transformed_settings.append(transformed_setting)
             else:
                 # Keep setting as-is (no Details to wrap or Details is None)
-                transformed_settings.append(setting)
+                # But still convert empty lists to null
+                transformed_setting = {}
+                for key, value in setting.items():
+                    if isinstance(value, list) and len(value) == 0:
+                        transformed_setting[key] = None
+                    else:
+                        transformed_setting[key] = value
+                transformed_settings.append(transformed_setting)
 
         # Wrap the transformed settings in the expected structure
         record["Settings"] = {"Setting": transformed_settings}
