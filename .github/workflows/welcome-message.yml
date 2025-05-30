@@ -19,10 +19,8 @@ on:
       # - synchronize
 
 jobs:
-  welcome-community-contributor:
-    name: Welcome Community Contributor
-    # Comment-out this line for manual testing:
-    if: github.event.pull_request.head.repo.fork == true
+  welcome-contributor:
+    name: PR Welcome Message
     permissions:
       contents: read
       issues: write
@@ -36,7 +34,8 @@ jobs:
         id: template
         uses: chuhlomin/render-template@v1.4
         with:
-          template: .github/community-pr-welcome.md
+          # Use a different template for internal vs forks (community)
+          template: ${{ github.event.pull_request.head.repo.fork == true && '.github/pr-welcome-community.md' || '.github/pr-welcome-internal.md' }}
           vars: |
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
