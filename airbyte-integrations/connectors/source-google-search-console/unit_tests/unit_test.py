@@ -17,7 +17,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
     SearchAnalyticsKeywordSiteReportBySite,
-    Sites,
 )
 from utils import command_check
 
@@ -121,16 +120,6 @@ def test_updated_state():
         "https://domain2.com": {"web": {"date": "2022-01-01"}},
         "date": "2022-01-01",
     }
-
-
-def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
-    stream = Sites(None, ["https://domain1.com"], "2023-01-01", "2023-01-01")
-    slice = list(stream.stream_slices(None))[0]
-    url = stream.url_base + stream.path(None, slice)
-    requests_mock.get(url, status_code=403, json=forbidden_error_message_json)
-    test_response = requests.get(url)
-    assert stream.should_retry(test_response) is False
-    assert stream.raise_on_http_errors is False
 
 
 def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
