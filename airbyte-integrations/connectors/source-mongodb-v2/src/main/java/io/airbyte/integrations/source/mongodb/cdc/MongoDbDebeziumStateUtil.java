@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.normalizeName;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -159,9 +160,9 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     Optional<BsonDocument> offset = parseSavedOffset(debeziumProperties);
     if (offset.isEmpty()) {
       LOGGER
-          .info("This connector is using the old offset format where server_id is set to database name, migrating to the new offset format.");
-      for(String databaseName : debeziumProperties.getProperty("database.include.list").split(",")) {
-        LOGGER.info("Processing database: {}", normalizeName(databaseName));
+          .info(
+              "This connector is using the old offset format where server_id is set to database name, migrating to the new offset format where save_id is now connection string.");
+      for (String databaseName : debeziumProperties.getProperty(DATABASE_INCLUDE_LIST_KEY).split(",")) {
         debeziumProperties.setProperty("name", normalizeName(databaseName));
         offset = parseSavedOffset(debeziumProperties);
         if (!offset.isEmpty())
