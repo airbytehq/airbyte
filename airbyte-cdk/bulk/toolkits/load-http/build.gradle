@@ -1,0 +1,18 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}
+
+project.tasks.matching {
+    it.name == 'spotbugsIntegrationTestLegacy' ||
+            it.name == 'spotbugsIntegrationTest' ||
+            it.name == 'spotbugsTest' ||
+            it.name == 'spotbugsMain'
+}.configureEach {
+    enabled = false
+}
+
+test {
+    systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
+}
