@@ -70,7 +70,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         authorization = config["authorization"]
         if authorization["auth_type"] == "Service":
             try:
-                authorization["service_account_info"] = json.loads(authorization["service_account_info"])
+                json.loads(authorization["service_account_info"])
             except ValueError:
                 message = "authorization.service_account_info is not valid JSON"
                 raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
