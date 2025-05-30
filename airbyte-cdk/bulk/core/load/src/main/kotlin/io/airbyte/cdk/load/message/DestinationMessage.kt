@@ -29,6 +29,11 @@ import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.toAirbyteValues
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
+import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointIndex
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -44,6 +49,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.math.BigInteger
 import java.time.OffsetDateTime
@@ -115,6 +121,9 @@ data class Meta(
     }
 
     companion object {
+        const val CHECKPOINT_ID_NAME: String = "partition_id"
+        const val CHECKPOINT_INDEX_NAME: String = "id"
+
         const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
         const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
         const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
@@ -127,6 +136,12 @@ data class Meta(
                 COLUMN_NAME_AB_META,
                 COLUMN_NAME_AB_GENERATION_ID,
             )
+
+        /**
+         * A legacy column name. Destinations with "typing and deduping" used this in the raw tables
+         * to indicate when a record went through T+D.
+         */
+        const val COLUMN_NAME_AB_LOADED_AT: String = "_airbyte_loaded_at"
 
         fun getMetaValue(metaColumnName: String, value: String): AirbyteValue {
             if (!COLUMN_NAMES.contains(metaColumnName)) {
@@ -184,13 +199,12 @@ data class Meta(
 data class DestinationRecord(
     override val stream: DestinationStream,
     val message: AirbyteMessage,
-    val serialized: String,
-    val schema: AirbyteType
+    val schema: AirbyteType,
+    val serializedSizeBytes: Long,
+    val checkpointId: CheckpointId? = null
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage = message
 
-    fun asRecordSerialized(): DestinationRecordSerialized =
-        DestinationRecordSerialized(stream, serialized)
     fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
@@ -200,11 +214,11 @@ data class DestinationRecord(
                 message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
                     ?: emptyList(),
             ),
-            serialized.length.toLong(),
         )
     }
+
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, message, serialized, schema)
+        return DestinationRecordRaw(stream, message, schema, serializedSizeBytes, checkpointId)
     }
 }
 
@@ -307,9 +321,10 @@ data class FileReference(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream,
-    private val rawData: AirbyteMessage,
-    private val serialized: String,
-    private val schema: AirbyteType,
+    val rawData: AirbyteMessage,
+    val schema: AirbyteType,
+    val serializedSizeBytes: Long,
+    val checkpointId: CheckpointId? = null,
 ) {
     val fileReference: FileReference? =
         rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
@@ -327,7 +342,6 @@ data class DestinationRecordRaw(
                 rawData.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
                     ?: emptyList(),
             ),
-            serialized.length.toLong(),
         )
     }
 
@@ -392,7 +406,7 @@ data class DestinationRecordRaw(
                     }
                         ?: emptyList()
                 ),
-            serializedSizeBytes = serialized.length.toLong()
+            serializedSizeBytes = serializedSizeBytes
         )
     }
 }
@@ -400,7 +414,6 @@ data class DestinationRecordRaw(
 data class DestinationFile(
     override val stream: DestinationStream,
     val emittedAtMs: Long,
-    val serialized: String,
     val fileMessage: AirbyteRecordMessageFile
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
@@ -540,9 +553,12 @@ sealed interface CheckpointMessage : DestinationMessage {
             }
     }
 
+    val checkpointKey: CheckpointKey?
+
     val sourceStats: Stats?
     val destinationStats: Stats?
     val additionalProperties: Map<String, Any>
+    val serializedSizeBytes: Long
 
     fun withDestinationStats(stats: Stats): CheckpointMessage
 
@@ -556,6 +572,10 @@ sealed interface CheckpointMessage : DestinationMessage {
                 AirbyteStateStats().withRecordCount(destinationStats!!.recordCount.toDouble())
         }
         additionalProperties.forEach { (key, value) -> message.withAdditionalProperty(key, value) }
+        checkpointKey?.let {
+            message.additionalProperties[CHECKPOINT_INDEX_NAME] = it.checkpointIndex.value
+            message.additionalProperties[CHECKPOINT_ID_NAME] = it.checkpointId.value
+        }
     }
 }
 
@@ -564,6 +584,8 @@ data class StreamCheckpoint(
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     override val additionalProperties: Map<String, Any> = emptyMap(),
+    override val serializedSizeBytes: Long,
+    override val checkpointKey: CheckpointKey? = null
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
@@ -572,6 +594,7 @@ data class StreamCheckpoint(
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
+        checkpointKey: CheckpointKey? = null
     ) : this(
         Checkpoint(
             DestinationStream.Descriptor(streamNamespace, streamName),
@@ -580,6 +603,8 @@ data class StreamCheckpoint(
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
         emptyMap(),
+        serializedSizeBytes = 0L,
+        checkpointKey = checkpointKey,
     )
 
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
@@ -602,6 +627,8 @@ data class GlobalCheckpoint(
     override val additionalProperties: Map<String, Any>,
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,
+    override val serializedSizeBytes: Long,
+    override val checkpointKey: CheckpointKey? = null
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -611,6 +638,7 @@ data class GlobalCheckpoint(
         state = blob.deserializeToNode(),
         Stats(sourceRecordCount),
         additionalProperties = emptyMap(),
+        serializedSizeBytes = 0L,
     )
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
@@ -644,11 +672,11 @@ class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
+    @Named("requireCheckpointIdOnRecordAndKeyOnState")
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false
 ) {
-    fun fromAirbyteMessage(
-        message: AirbyteMessage,
-        serialized: String,
-    ): DestinationMessage {
+
+    fun fromAirbyteMessage(message: AirbyteMessage, serializedSizeBytes: Long): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
                 when (it) {
@@ -680,7 +708,6 @@ class DestinationMessageFactory(
                         DestinationFile(
                             stream = stream,
                             emittedAtMs = message.record.emittedAt,
-                            serialized = serialized,
                             fileMessage =
                                 DestinationFile.AirbyteRecordMessageFile(
                                     fileUrl = fileMessage["file_url"] as String?,
@@ -697,7 +724,27 @@ class DestinationMessageFactory(
                         )
                     }
                 } else {
-                    DestinationRecord(stream, message, serialized, stream.schema)
+                    // In socket mode, multiple sockets can run in parallel, which means that we
+                    // depend on upstream to associate each record with the appropriate state
+                    // message for us.
+                    val checkpointId =
+                        if (requireCheckpointIdOnRecordAndKeyOnState) {
+                            val idSource =
+                                (message.record.additionalProperties[CHECKPOINT_ID_NAME]
+                                    ?: throw IllegalStateException(
+                                        "Expected `partition_id` on record"
+                                    ))
+                            CheckpointId(idSource as String)
+                        } else {
+                            null
+                        }
+                    DestinationRecord(
+                        stream,
+                        message,
+                        stream.schema,
+                        serializedSizeBytes,
+                        checkpointId
+                    )
                 }
             }
             AirbyteMessage.Type.TRACE -> {
@@ -744,17 +791,22 @@ class DestinationMessageFactory(
             }
             AirbyteMessage.Type.STATE -> {
                 when (message.state.type) {
-                    AirbyteStateMessage.AirbyteStateType.STREAM ->
+                    AirbyteStateMessage.AirbyteStateType.STREAM -> {
+                        val additionalProperties = message.state.additionalProperties
                         StreamCheckpoint(
                             checkpoint = fromAirbyteStreamState(message.state.stream),
                             sourceStats =
                                 message.state.sourceStats?.recordCount?.let {
                                     Stats(recordCount = it.toLong())
                                 },
-                            additionalProperties = message.state.additionalProperties,
+                            additionalProperties = additionalProperties,
+                            serializedSizeBytes = serializedSizeBytes,
+                            checkpointKey = keyFromAdditionalPropertiesMaybe(additionalProperties),
                         )
+                    }
                     null,
-                    AirbyteStateMessage.AirbyteStateType.GLOBAL ->
+                    AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
+                        val additionalProperties = message.state.additionalProperties
                         GlobalCheckpoint(
                             sourceStats =
                                 message.state.sourceStats?.recordCount?.let {
@@ -767,12 +819,33 @@ class DestinationMessageFactory(
                                 },
                             additionalProperties = message.state.additionalProperties,
                             originalTypeField = message.state.type,
+                            serializedSizeBytes = serializedSizeBytes,
+                            checkpointKey = keyFromAdditionalPropertiesMaybe(additionalProperties)
                         )
+                    }
                     else -> // TODO: Do we still need to handle LEGACY?
                     Undefined
                 }
             }
             else -> Undefined
+        }
+    }
+
+    private fun keyFromAdditionalPropertiesMaybe(
+        additionalProperties: Map<String, Any>,
+    ): CheckpointKey? {
+        val id = additionalProperties[CHECKPOINT_ID_NAME]?.let { CheckpointId(it as String) }
+        val index =
+            additionalProperties[CHECKPOINT_INDEX_NAME]?.let {
+                CheckpointIndex((it as Int).toInt())
+            }
+        return if (id != null && index != null) {
+            CheckpointKey(index, id)
+        } else {
+            check(!requireCheckpointIdOnRecordAndKeyOnState) {
+                "Expected `$CHECKPOINT_ID_NAME` and `$CHECKPOINT_INDEX_NAME` in additional properties (got ${additionalProperties.keys})"
+            }
+            null
         }
     }
 

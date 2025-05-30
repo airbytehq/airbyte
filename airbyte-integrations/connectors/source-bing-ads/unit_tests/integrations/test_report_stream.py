@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Optional
 
@@ -9,7 +10,6 @@ from bingads.v13.reporting.reporting_service_manager import ReportingServiceMana
 from config_builder import ConfigBuilder
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestReportStream(BaseTest):
@@ -48,35 +48,28 @@ class TestSuiteReportStream(TestReportStream):
     cursor_field = "TimePeriod"
 
     def setUp(self):
+        super().setUp()
         if not self.stream_name:
             self.skipTest("Skipping TestSuiteReportStream")
 
-    @HttpMocker()
-    def test_return_records_from_given_csv_file(self, http_mocker: HttpMocker):
-        self.auth_client(http_mocker)
+    def test_return_records_from_given_csv_file(self):
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
 
-    @HttpMocker()
-    def test_transform_records_from_given_csv_file(self, http_mocker: HttpMocker):
-        self.auth_client(http_mocker)
+    def test_transform_records_from_given_csv_file(self):
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
 
         assert len(output.records) == self.records_number
         for record in output.records:
             assert self.transform_field in record.record.data.keys()
 
-    @HttpMocker()
-    def test_incremental_read_returns_records(self, http_mocker: HttpMocker):
-        self.auth_client(http_mocker)
+    def test_incremental_read_returns_records(self):
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         assert output.most_recent_state.stream_state.__dict__ == self.first_read_state
 
-    @HttpMocker()
-    def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
+    def test_incremental_read_with_state_returns_records(self):
         state = self._state(self.state_file, self.stream_name)
-        self.auth_client(http_mocker)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
         )
@@ -96,3 +89,19 @@ class TestSuiteReportStream(TestReportStream):
         month = request_start_date.Month
         day = request_start_date.Day
         assert pendulum.DateTime(year, month, day, tzinfo=pendulum.UTC) == pendulum.parse(provided_state)
+
+    def test_incremental_read_with_state_and_no_start_date_returns_records_once(self):
+        """
+        Test that incremental read with state and no start date in config returns records only once.
+        We observed that if the start date is not provided in the config, and we don't parse correctly the account_id
+        from the state, the incremental read returns records multiple times as we yield the default_time_periods
+        for no start date scenario.
+        """
+        state = self._state(self.state_file, self.stream_name)
+        config = deepcopy(self._config)
+        del config["reports_start_date"]  # Simulate no start date in config
+        output, service_call_mock = self.read_stream(self.stream_name, SyncMode.incremental, config, self.incremental_report_file, state)
+        if not self.second_read_records_number:
+            assert len(output.records) == self.records_number
+        else:
+            assert len(output.records) == self.second_read_records_number

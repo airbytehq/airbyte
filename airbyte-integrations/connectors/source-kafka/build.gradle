@@ -14,6 +14,13 @@ application {
 }
 
 dependencies {
+    api 'org.apache.avro:avro:1.11.4'
+    api 'org.bouncycastle:bcprov-jdk15on:1.67'   // for fixing vulnerability
+    api 'org.xerial.snappy:snappy-java:1.1.10.4' // for fixing vulnerability
+    api 'org.apache.sshd:sshd-common:2.12.0'// for fixing vulnerability
+    api 'org.apache.mina:mina-core:2.0.27'  // for fixing vulnerability
+    api 'net.minidev:json-smart:2.5.2' // for fixing vulnerability
+
 
     implementation 'software.amazon.msk:aws-msk-iam-auth:2.3.1'
     implementation 'org.apache.kafka:kafka-clients:3.2.1'
