@@ -8,6 +8,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ClickhouseDirectLoadNativeTableOperations: DirectLoadTableNativeOperations {
+    // TODO: implement this.
     override fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
@@ -16,6 +17,6 @@ class ClickhouseDirectLoadNativeTableOperations: DirectLoadTableNativeOperations
         // No alteration for now
     }
 
-    // TODO: this needs to be updated.
+    // TODO: implement this.
     override fun getGenerationId(tableName: TableName): Long = 0
 }

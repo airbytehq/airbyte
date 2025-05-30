@@ -3,12 +3,13 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseDatabaseHandler
 
 class ClickHouseDirectLoadSqlTableOperations(
-    private val defaultOperations: DefaultDirectLoadTableSqlOperations,
     private val client: Client,
-) : DirectLoadTableSqlOperations by defaultOperations {
+    sqlGenerator: ClickhouseDirectLoadSqlGenerator,
+    destinationHandler: ClickhouseDatabaseHandler,
+) : DefaultDirectLoadTableSqlOperations(sqlGenerator, destinationHandler) {
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         // manually delete the target table - otherwise we can't e.g. update the partitioning scheme
         client.execute(
