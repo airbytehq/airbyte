@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
+import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getIpAddress
+import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
@@ -47,28 +49,24 @@ object MSSQLContainerHelper {
 
 class MSSQLConfigUpdater : ConfigurationUpdater {
     override fun update(config: String): String {
-        //        var updatedConfig = config
-        //
-        //        // If not running the connector in docker, we must use the mapped port to connect
-        // to the
-        //        // database.  Otherwise, get the container's IP address for the host
-        //        updatedConfig =
-        //            if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
-        //                getPort()?.let { updatedConfig.replace("$MS_SQL_SERVER_PORT",
-        // it.toString()) }
-        //                    ?: updatedConfig
-        //            } else {
-        //                getIpAddress()?.let { config.replace("localhost", it) } ?: updatedConfig
-        //            }
-        //
-        //        updatedConfig =
-        //            updatedConfig.replace("replace_me_username",
-        // MSSQLContainerHelper.getUsername())
-        //        updatedConfig =
-        //            updatedConfig.replace("replace_me_password",
-        // MSSQLContainerHelper.getPassword())
-        //        logger.debug { "Using updated MSSQL configuration: $updatedConfig" }
-        return config
+        var updatedConfig = config
+
+        // If not running the connector in docker, we must use the mapped port to connect to the
+        // database.  Otherwise, get the container's IP address for the host
+        updatedConfig =
+            if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
+                getPort()?.let { updatedConfig.replace("$MS_SQL_SERVER_PORT", it.toString()) }
+                    ?: updatedConfig
+            } else {
+                getIpAddress()?.let { config.replace("localhost", it) } ?: updatedConfig
+            }
+
+        updatedConfig =
+            updatedConfig.replace("replace_me_username", MSSQLContainerHelper.getUsername())
+        updatedConfig =
+            updatedConfig.replace("replace_me_password", MSSQLContainerHelper.getPassword())
+        logger.debug { "Using updated MSSQL configuration: $updatedConfig" }
+        return updatedConfig
     }
 
     override fun setDefaultNamespace(
