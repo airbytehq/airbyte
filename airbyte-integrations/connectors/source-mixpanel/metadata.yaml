@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 400
-    sl: 200
+    sl: 100
   allowedHosts:
     hosts:
       - mixpanel.com
@@ -62,7 +62,7 @@ data:
       - annotations
       - revenue
       - funnels
-  supportLevel: certified
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
