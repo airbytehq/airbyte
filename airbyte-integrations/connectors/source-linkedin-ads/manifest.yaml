@@ -430,7 +430,7 @@ definitions:
           http_method: GET
           request_parameters:
             q: owner
-            count: 500
+            count: "500"
           request_headers:
             LinkedIn-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -482,7 +482,7 @@ definitions:
           http_method: GET
           request_parameters:
             q: owner
-            count: 500
+            count: "500"
           request_headers:
             LinkedIn-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
