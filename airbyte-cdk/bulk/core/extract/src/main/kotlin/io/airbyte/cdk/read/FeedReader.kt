@@ -327,7 +327,7 @@ class FeedReader(
                     acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
                         ?: return // No output socket available, skip checkpoint.
 
-                val boostedOutputConsumer =
+                boostedOutputConsumer =
                     boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
 
                 var s = PartitionReader.pendingStates.poll()

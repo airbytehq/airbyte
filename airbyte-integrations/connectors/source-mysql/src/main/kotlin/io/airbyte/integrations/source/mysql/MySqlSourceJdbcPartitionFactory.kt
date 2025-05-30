@@ -446,7 +446,8 @@ class MySqlSourceJdbcPartitionFactory(
                 streamState,
                 checkpointColumns,
                 listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
-                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
+                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+//                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
                 cursor,
                 cursorUpperBound
             )
@@ -509,7 +510,7 @@ class MySqlSourceJdbcPartitionFactory(
         num: Int,
         lowerBound: Long?,
         upperBound: Long
-    ): Map<Long, Long> {
+    ): Map<Long, Long?> {
         var queryPlan: MutableList<Long> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: 0L
         val eachStep: Long = (upperBound - effectiveLowerBound) / num
@@ -518,7 +519,7 @@ class MySqlSourceJdbcPartitionFactory(
         }
 
         val lbs: List<Long> = listOf(effectiveLowerBound) + queryPlan
-        val ubs: List<Long> = queryPlan + upperBound
+        val ubs: List<Long?> = queryPlan + /*upperBound*/null
         return lbs.zip(ubs).toMap()
     }
 

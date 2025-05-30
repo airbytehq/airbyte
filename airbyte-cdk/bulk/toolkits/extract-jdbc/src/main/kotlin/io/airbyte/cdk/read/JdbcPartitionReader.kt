@@ -143,6 +143,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
+                    numRecords.incrementAndGet()
                 }
             }
         runComplete.set(true)
