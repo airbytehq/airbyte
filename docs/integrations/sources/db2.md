@@ -2,6 +2,10 @@
 
 ## Overview
 
+:::warning
+This Marketplace connector is community-maintained. Airbyte offers an Enterprise connector for Db2, which includes support and premium features better suited to larger organizations. See [Db2](../enterprise-connectors/source-db2) to learn more.
+:::
+
 The IBM Db2 source allows you to sync data from Db2. It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This IBM Db2 source connector is built on top of the [IBM Data Server Driver](https://mvnrepository.com/artifact/com.ibm.db2/jcc/11.5.5.0) for JDBC and SQLJ. It is a pure-Java driver \(Type 4\) that supports the JDBC 4 specification as described in IBM Db2 [documentation](https://www.ibm.com/docs/en/db2/11.5?topic=apis-supported-drivers-jdbc-sqlj).

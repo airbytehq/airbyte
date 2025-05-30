@@ -1,4 +1,4 @@
-# Source Db2
+# Db2
 
 ## Features
 

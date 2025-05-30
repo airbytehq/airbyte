@@ -1,4 +1,4 @@
-# Source ServiceNow
+# ServiceNow
 
 Airbyte’s incubating ServiceNow enterprise source connector currently offers Full Refresh syncs for streams that are part of Software Asset Management and Configuration Management Database applications.
 
