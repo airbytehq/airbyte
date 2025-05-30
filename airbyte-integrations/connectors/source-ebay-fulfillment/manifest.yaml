@@ -1,0 +1,1033 @@
+version: 6.48.12
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://www.ebay.com/
+
+  Documentation:
+  https://developer.ebay.com/api-docs/sell/fulfillment/overview.html
+
+check:
+  type: CheckStream
+  stream_names:
+    - orders
+
+definitions:
+  streams:
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - orderId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sell/fulfillment/v1/order
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: lastmodifieddate:[%Y-%m-%dT%H:%M:%S.%fZ..]
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['api_host'] }}"
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: "{{ config['refresh_token_endpoint'] }}"
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"password\"] }}"
+          username: "{{ config[\"username\"] }}"
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_data:
+          grant_type: refresh_token
+          redirect_uri: "{{ config['redirect_uri'] }}"
+          refresh_token: "{{  config['refresh_token']}}"
+      session_token_path:
+        - access_token
+      expiration_duration: PT2H
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/orders"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - refresh_token_endpoint
+      - api_host
+      - username
+      - password
+      - redirect_uri
+      - refresh_token
+      - start_date
+    properties:
+      refresh_token_endpoint:
+        type: string
+        enum:
+          - https://api.ebay.com/identity/v1/oauth2/token
+          - https://api.sandbox.ebay.com/identity/v1/oauth2/token
+        order: 0
+        title: Refresh Token Endpoint
+        default: https://api.ebay.com/identity/v1/oauth2/token
+      api_host:
+        type: string
+        enum:
+          - https://api.ebay.com
+          - https://api.sandbox.ebay.com
+        order: 1
+        title: API Host
+        default: https://api.ebay.com
+      username:
+        type: string
+        order: 2
+        title: Username
+      password:
+        type: string
+        order: 3
+        title: Password
+        airbyte_secret: true
+      redirect_uri:
+        type: string
+        order: 4
+        title: Redirect URI
+      refresh_token:
+        type: string
+        order: 5
+        title: Refresh Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 6
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    orders: true
+  testedStreams:
+    orders:
+      hasRecords: true
+      streamHash: aa8fd78f2ad1d1dbd95115a82a5f5fc42c1c3a7f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developer.ebay.com/api-docs/sell/fulfillment/overview.html
+
+schemas:
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      buyer:
+        type:
+          - object
+          - "null"
+        properties:
+          buyerRegistrationAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              contactAddress:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  addressLine1:
+                    type:
+                      - string
+                      - "null"
+                  addressLine2:
+                    type:
+                      - string
+                      - "null"
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  countryCode:
+                    type:
+                      - string
+                      - "null"
+                  postalCode:
+                    type:
+                      - string
+                      - "null"
+                  stateOrProvince:
+                    type:
+                      - string
+                      - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              fullName:
+                type:
+                  - string
+                  - "null"
+              primaryPhone:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  phoneNumber:
+                    type:
+                      - string
+                      - "null"
+              secondaryPhone:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  phoneNumber:
+                    type:
+                      - string
+                      - "null"
+          taxAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+              stateOrProvince:
+                type:
+                  - string
+                  - "null"
+          username:
+            type:
+              - string
+              - "null"
+      buyerCheckoutNotes:
+        type:
+          - string
+          - "null"
+      cancelStatus:
+        type:
+          - object
+          - "null"
+        properties:
+          cancelRequests:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                cancelInitiator:
+                  type:
+                    - string
+                    - "null"
+                cancelReason:
+                  type:
+                    - string
+                    - "null"
+                cancelRequestId:
+                  type:
+                    - string
+                    - "null"
+                cancelRequestState:
+                  type:
+                    - string
+                    - "null"
+                cancelRequestedDate:
+                  type:
+                    - string
+                    - "null"
+          cancelState:
+            type:
+              - string
+              - "null"
+      creationDate:
+        type:
+          - string
+          - "null"
+      ebayCollectAndRemitTax:
+        type:
+          - boolean
+          - "null"
+      fulfillmentHrefs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      fulfillmentStartInstructions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ebaySupportedFulfillment:
+              type:
+                - boolean
+                - "null"
+            finalDestinationAddress:
+              type:
+                - object
+                - "null"
+              properties:
+                addressLine1:
+                  type:
+                    - string
+                    - "null"
+                addressLine2:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                postalCode:
+                  type:
+                    - string
+                    - "null"
+                stateOrProvince:
+                  type:
+                    - string
+                    - "null"
+            fulfillmentInstructionsType:
+              type:
+                - string
+                - "null"
+            maxEstimatedDeliveryDate:
+              type:
+                - string
+                - "null"
+            minEstimatedDeliveryDate:
+              type:
+                - string
+                - "null"
+            shippingStep:
+              type:
+                - object
+                - "null"
+              properties:
+                shipTo:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    contactAddress:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        addressLine1:
+                          type:
+                            - string
+                            - "null"
+                        addressLine2:
+                          type:
+                            - string
+                            - "null"
+                        city:
+                          type:
+                            - string
+                            - "null"
+                        countryCode:
+                          type:
+                            - string
+                            - "null"
+                        postalCode:
+                          type:
+                            - string
+                            - "null"
+                        stateOrProvince:
+                          type:
+                            - string
+                            - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    fullName:
+                      type:
+                        - string
+                        - "null"
+                    primaryPhone:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        phoneNumber:
+                          type:
+                            - string
+                            - "null"
+                shipToReferenceId:
+                  type:
+                    - string
+                    - "null"
+                shippingCarrierCode:
+                  type:
+                    - string
+                    - "null"
+                shippingServiceCode:
+                  type:
+                    - string
+                    - "null"
+      lastModifiedDate:
+        type: string
+      legacyOrderId:
+        type:
+          - string
+          - "null"
+      lineItems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            appliedPromotions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  discountAmount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  promotionId:
+                    type:
+                      - string
+                      - "null"
+            deliveryCost:
+              type:
+                - object
+                - "null"
+              properties:
+                discountAmount:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                importCharges:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                shippingCost:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                shippingIntermediationFee:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+            discountedLineItemCost:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            ebayCollectAndRemitTaxes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  collectionMethod:
+                    type:
+                      - string
+                      - "null"
+                  ebayReference:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  taxType:
+                    type:
+                      - string
+                      - "null"
+            ebayCollectedCharges:
+              type:
+                - object
+                - "null"
+              properties:
+                charges:
+                  type:
+                    - array
+                    - "null"
+                ebayShipping:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+            itemLocation:
+              type:
+                - object
+                - "null"
+              properties:
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - string
+                    - "null"
+                postalCode:
+                  type:
+                    - string
+                    - "null"
+            legacyItemId:
+              type:
+                - string
+                - "null"
+            legacyVariationId:
+              type:
+                - string
+                - "null"
+            lineItemCost:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            lineItemFulfillmentInstructions:
+              type:
+                - object
+                - "null"
+              properties:
+                guaranteedDelivery:
+                  type:
+                    - boolean
+                    - "null"
+                maxEstimatedDeliveryDate:
+                  type:
+                    - string
+                    - "null"
+                minEstimatedDeliveryDate:
+                  type:
+                    - string
+                    - "null"
+                shipByDate:
+                  type:
+                    - string
+                    - "null"
+            lineItemFulfillmentStatus:
+              type:
+                - string
+                - "null"
+            lineItemId:
+              type:
+                - string
+                - "null"
+            listingMarketplaceId:
+              type:
+                - string
+                - "null"
+            properties:
+              type:
+                - object
+                - "null"
+              properties:
+                buyerProtection:
+                  type:
+                    - boolean
+                    - "null"
+                fromBestOffer:
+                  type:
+                    - boolean
+                    - "null"
+                soldViaAdCampaign:
+                  type:
+                    - boolean
+                    - "null"
+            purchaseMarketplaceId:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            refunds:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  refundDate:
+                    type:
+                      - string
+                      - "null"
+                  refundId:
+                    type:
+                      - string
+                      - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            soldFormat:
+              type:
+                - string
+                - "null"
+            taxes:
+              type:
+                - array
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            total:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            variationAspects:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      orderFulfillmentStatus:
+        type:
+          - string
+          - "null"
+      orderId:
+        type: string
+      orderPaymentStatus:
+        type:
+          - string
+          - "null"
+      paymentSummary:
+        type:
+          - object
+          - "null"
+        properties:
+          payments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                paymentDate:
+                  type:
+                    - string
+                    - "null"
+                paymentMethod:
+                  type:
+                    - string
+                    - "null"
+                paymentReferenceId:
+                  type:
+                    - string
+                    - "null"
+                paymentStatus:
+                  type:
+                    - string
+                    - "null"
+          refunds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                refundDate:
+                  type:
+                    - string
+                    - "null"
+                refundId:
+                  type:
+                    - string
+                    - "null"
+                refundReferenceId:
+                  type:
+                    - string
+                    - "null"
+                refundStatus:
+                  type:
+                    - string
+                    - "null"
+          totalDueSeller:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+      pricingSummary:
+        type:
+          - object
+          - "null"
+        properties:
+          deliveryCost:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          deliveryDiscount:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          priceDiscount:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          priceSubtotal:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          total:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+      program:
+        type:
+          - object
+          - "null"
+        properties:
+          authenticityVerification:
+            type:
+              - object
+              - "null"
+            properties:
+              status:
+                type:
+                  - string
+                  - "null"
+          ebayShipping:
+            type:
+              - object
+              - "null"
+            properties:
+              shippingLabelProvidedBy:
+                type:
+                  - string
+                  - "null"
+      salesRecordReference:
+        type:
+          - string
+          - "null"
+      sellerId:
+        type:
+          - string
+          - "null"
+      totalFeeBasisAmount:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalMarketplaceFee:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+    required:
+      - orderId
+      - lastModifiedDate

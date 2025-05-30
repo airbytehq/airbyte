@@ -323,8 +323,8 @@ data class DestinationRecordRaw(
     val stream: DestinationStream,
     val rawData: AirbyteMessage,
     val schema: AirbyteType,
-    private val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null
+    val serializedSizeBytes: Long,
+    val checkpointId: CheckpointId? = null,
 ) {
     val fileReference: FileReference? =
         rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
