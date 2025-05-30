@@ -25,7 +25,7 @@ class SocketManagerTest(private val socketManager: SocketManager) {
         override suspend fun initializeSocket() {
         }
 
-        override suspend fun closeSocket() {
+        override suspend fun shutdownSocket() {
         }
 
         var innerStatus: SocketWrapper.SocketStatus = SocketWrapper.SocketStatus.SOCKET_INITIALIZED
@@ -56,14 +56,14 @@ class SocketManagerTest(private val socketManager: SocketManager) {
     @Test
     fun test() {
         val socketManager: SocketManager = SocketManager(List<String>(10) {""}, socketFactory)
-        assertNull(socketManager.getFree())
+        assertNull(socketManager.bindFreeSocket())
         val m = socketManager.sockets[0] as MockSocketWrapper
         m.innerStatus = SocketWrapper.SocketStatus.SOCKET_READY
-        assertNotNull(socketManager.getFree())
+        assertNotNull(socketManager.bindFreeSocket())
         m.innerStatus = SocketWrapper.SocketStatus.SOCKET_INITIALIZED
-        assertNull(socketManager.getFree())
+        assertNull(socketManager.bindFreeSocket())
         m.innerStatus = SocketWrapper.SocketStatus.SOCKET_READY
         m.innerBound = true
-        assertNull(socketManager.getFree())
+        assertNull(socketManager.bindFreeSocket())
     }
 }

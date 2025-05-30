@@ -180,6 +180,10 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+
+    @JsonProperty("tmp_boosted_mode")
+    @JsonSchemaDefault("true")
+    val tmpBoostedMode: Boolean? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

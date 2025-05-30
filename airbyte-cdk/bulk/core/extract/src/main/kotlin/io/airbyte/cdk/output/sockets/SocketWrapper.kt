@@ -1,8 +1,6 @@
 package io.airbyte.cdk.output.sockets
 
-import ddtrot.jnr.ffi.annotations.Out
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.net.StandardProtocolFamily
@@ -32,7 +30,7 @@ interface SocketWrapper {
     }
 
     suspend fun initializeSocket()
-    suspend fun closeSocket()
+    suspend fun shutdownSocket()
     val status: SocketStatus
     var bound: Boolean
     fun bindSocket()
@@ -69,16 +67,19 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
             socketStatus.set(SocketWrapper.SocketStatus.SOCKET_WAITING_LISTENER)
             logger.info { "Waiting for $socketFilePath to connect..." }
             // accept blocks until a listener connects
-            val socketChennel: SocketChannel? = serverSocketChannel.accept()
+            val socketChannel: SocketChannel = serverSocketChannel.accept()
             socketStatus.set(SocketWrapper.SocketStatus.SOCKET_READY)
-            outputStream = Channels.newOutputStream(socketChennel).buffered()
+            outputStream = Channels.newOutputStream(socketChannel)
             logger.info { "connected to server socket at $socketFilePath" }
         }
         Unit
     }
 
-    override suspend fun closeSocket() {
-        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSING) // TEMP
+    override suspend fun shutdownSocket() {
+        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSING)
+        outputStream?.close()
+        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSED)
+        unbindSocket()
     }
 
     override fun bindSocket() {

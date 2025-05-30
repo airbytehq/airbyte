@@ -20,6 +20,7 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     val maxConcurrency: Int
     val resourceAcquisitionHeartbeat: Duration
 
+    val boostedMode: Boolean
     /** Whether it's a CDC configuration. Default to global state */
     fun isCdc(): Boolean {
         return global

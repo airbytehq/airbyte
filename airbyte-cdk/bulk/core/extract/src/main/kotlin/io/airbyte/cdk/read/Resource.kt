@@ -9,7 +9,6 @@ import io.airbyte.cdk.output.sockets.SocketManager
 import io.airbyte.cdk.output.sockets.SocketWrapper
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import kotlin.math.acos
 import kotlinx.coroutines.sync.Semaphore
 
 /** [Resource] models a shared resource which can be acquired and released. */
@@ -35,7 +34,7 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
         val acquired = mutableMapOf<ResourceType, Resource.Acquired>()
         run {
             requested.forEach { resourceType ->
-                val res = acqs.filter { acq -> acq.type == resourceType }.first().tryAcquire()
+                val res = acqs.first { acq -> acq.type == resourceType }.tryAcquire()
                 res?.apply { acquired[resourceType] = this }
                     ?: return@run
             }
@@ -74,14 +73,14 @@ class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.Ac
 @Singleton
 class SocketResource(val socketManager: SocketManager?) : Resource<SocketResource.AcquiredSocket> {
 
-    class AcquiredSocket(val s: SocketWrapper): Resource.Acquired {
+    class AcquiredSocket(val socketWrapper: SocketWrapper): Resource.Acquired {
         override fun close() {
-            s.unbindSocket()
+            socketWrapper.unbindSocket()
         }
     }
 
     override fun tryAcquire(): AcquiredSocket? {
-        val maybeSocket = socketManager?.getFree()
+        val maybeSocket = socketManager?.bindFreeSocket()
         return maybeSocket?.let { AcquiredSocket(it) }
 
     }

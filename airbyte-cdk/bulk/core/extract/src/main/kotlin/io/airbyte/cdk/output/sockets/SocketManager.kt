@@ -1,15 +1,16 @@
 package io.airbyte.cdk.output.sockets
 
+import io.airbyte.cdk.command.Configuration
+import io.airbyte.cdk.command.SourceConfiguration
 import io.micronaut.context.annotation.Requires
-import io.micronaut.core.annotation.Creator
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-@Requires(property = SPEED_MODE_PROPERTY, value = "boosted")
+@Requires(bean = SourceConfiguration::class, beanProperty = "boostedMode", value = "true")
 class SocketManager(private val socketPaths: List<String>, socketFactory: SocketWrapperFactory) {
-    @Inject constructor(socketFactory: SocketWrapperFactory) : this(List(10) { "/tmp/tmp-socket-$it" }, socketFactory) // TEMP
+    @Inject constructor(socketFactory: SocketWrapperFactory) : this(List(10) { "/tmp/tmp-socket-$it" }, socketFactory) // TEMP: read paths from env var
 
     val sockets: List<SocketWrapper>
     init {
@@ -22,16 +23,18 @@ class SocketManager(private val socketPaths: List<String>, socketFactory: Socket
     }
 
 
-    fun getFree(): SocketWrapper? {
+     fun bindFreeSocket(): SocketWrapper? {
         synchronized(sockets) {
-            val maybeSocket: SocketWrapper? = sockets.filter { it.status == SocketWrapper.SocketStatus.SOCKET_READY && it.bound.not() }.firstOrNull()
-            maybeSocket?.bound = true
+            val maybeSocket: SocketWrapper? =
+                sockets.firstOrNull {
+                    it.status == SocketWrapper.SocketStatus.SOCKET_READY && it.bound.not() }
+                    ?.also { it.bindSocket() }
             return maybeSocket
         }
     }
 
     /*companion object {
-        @Creator // TEMP
+        @Creator
         fun getInstance(socketFactory: SocketWrapperFactory) : SocketManager {
             return SocketManager(List(10) { "/tmp/tmp-socket-$it" }, socketFactory )
         }

@@ -9,8 +9,8 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging

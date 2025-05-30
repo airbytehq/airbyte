@@ -10,9 +10,9 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.BoostedOutputConsumer
-import io.airbyte.cdk.output.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -80,9 +80,9 @@ sealed class FeedBootstrap<T : Feed>(
         val outputer: OutputConsumer = boostedOutputConsumer ?: outputConsumer
 
 
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, partitionId: String?) {
+        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData, partitionId)
+                acceptWithoutChanges(recordData)
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -95,7 +95,7 @@ sealed class FeedBootstrap<T : Feed>(
             }
         }
 
-        private fun acceptWithoutChanges(recordData: ObjectNode, partitionId: String?) {
+        private fun acceptWithoutChanges(recordData: ObjectNode) {
             synchronized(this) {
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
@@ -252,7 +252,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, partitionId: String? = null)
+    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
 }
 
 /**

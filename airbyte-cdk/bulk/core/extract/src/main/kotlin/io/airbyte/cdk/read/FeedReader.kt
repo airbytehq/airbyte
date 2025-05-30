@@ -3,8 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.BoostedOutputConsumer
-import io.airbyte.cdk.output.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
@@ -326,7 +325,7 @@ class FeedReader(
                     ?: return // No output socket available, skip checkpoint.
 
             val boostedOutputConsumer =
-                boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.s, emptyMap())
+                boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
             val stateMessages: MutableList</*AirbyteStateMessage*/Any> = root.stateManager.checkpoint().toMutableList()
             if (finalCheckpoint) {
                 var s = PartitionReader.pendingStates.poll()

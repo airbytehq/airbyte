@@ -6,7 +6,6 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
-import io.airbyte.cdk.output.sockets.SocketManager
 import jakarta.inject.Singleton
 import java.time.Instant
 
@@ -57,23 +56,16 @@ class DefaultJdbcSharedState(
         return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
-    override fun tryAcquireResourcesForReader(resourceTypes: Any): Map<ResourceType, JdbcPartitionReader.AcquiredResources>? {
-        val reses = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_DB_CONNECTION,
-            ResourceType.RESOURCE_OUTPUT_SOCKET))
-        val acquiredThread: Resource.Acquired = reses?.get(ResourceType.RESOURCE_DB_CONNECTION) ?: return null
-        val acquiredSocket = reses.get(ResourceType.RESOURCE_OUTPUT_SOCKET) ?: return null
-/*
-        val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire() ?: return null
-*/
-        val aa = object : JdbcPartitionReader.AcquiredResourceWithResource<SocketResource.AcquiredSocket> {
-            override val resource: SocketResource.AcquiredSocket = acquiredSocket as SocketResource.AcquiredSocket
-            override fun close() = acquiredSocket.close()
-        }
+    override fun tryAcquireResourcesForReader(resourceTypes: List<ResourceType>): Map<ResourceType, JdbcPartitionReader.AcquiredResources>? {
+        val acquiredResources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourceTypes)
 
-        return mapOf(
-            ResourceType.RESOURCE_DB_CONNECTION to JdbcPartitionReader.AcquiredResources { acquiredThread.close() },
-            ResourceType.RESOURCE_OUTPUT_SOCKET to aa
-        )
+        return acquiredResources?.map { it.key to when (it.value) {
+            is ConcurrencyResource.AcquiredThread -> JdbcPartitionReader.AcquiredResources { it.value.close() }
+            is SocketResource.AcquiredSocket -> object : JdbcPartitionReader.AcquiredResourceHolder<SocketResource.AcquiredSocket> {
+                override val resource: SocketResource.AcquiredSocket = it.value as SocketResource.AcquiredSocket
+                override fun close() = it.value.close()
+            }
+            else -> throw IllegalStateException("Unknown resource type: ${it.value::class.java}")
+        } }?.toMap()
     }
 }
