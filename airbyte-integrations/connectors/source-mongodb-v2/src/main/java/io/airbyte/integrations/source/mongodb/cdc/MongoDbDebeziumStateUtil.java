@@ -162,6 +162,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
           .info("This connector is using the old offset format where server_id is set to database name, migrating to the new offset format.");
       for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
         final String streamName = stream.getStream().getName();
+        LOGGER.info("Processing stream: {}", normalizeName(streamName));
         debeziumProperties.setProperty("name", normalizeName(streamName));
         offset = parseSavedOffset(debeziumProperties);
         if (!offset.isEmpty())
