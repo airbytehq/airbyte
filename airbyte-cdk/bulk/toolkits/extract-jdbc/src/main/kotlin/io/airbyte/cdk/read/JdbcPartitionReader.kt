@@ -77,6 +77,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     acquiredResources.get().getOrElse(ResourceType.RESOURCE_OUTPUT_SOCKET) {
                         throw IllegalStateException("No socket resource acquired for partition reader")
                     }
+                @Suppress("UNCHECKED_CAST")
                 val socketWrapper: SocketWrapper =
                     (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
                 boostedOutputConsumer = boostedOutputConsumerFactory?.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
