@@ -53,7 +53,7 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{stream_partition.get('site_url')}}/searchAnalytics/query"
+        path: "/sites/{{stream_partition.get('site_url')}}/searchAnalytics/query" # todo add sanitize_url interpolation once it is in the CDK
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
         paginator:
@@ -138,15 +138,13 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
-      # - type: CustomTransformation
-      #   class_name: source_google_search_console.components.GoogleSearchConsoleTransformKeysToDimensions
-      #   dimensions:
-      #     - date
-      #     - country
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_by_country"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_search_console.components.NestedSubstreamStateMigration
 
 streams:
   - "#/definitions/search_analytics_by_country_stream"

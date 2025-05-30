@@ -3,8 +3,9 @@
 #
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
@@ -36,3 +37,68 @@ class GoogleSearchConsoleTransformKeysToDimensions(RecordTransformation):
         # is not custom behavior, but given that we're transforming the record by moving the keys under,
         # dimensions, it is better to keep the functionality in a single transformation.
         record.pop("keys")
+
+
+@dataclass
+class NestedSubstreamStateMigration(StateMigration):
+    """
+    We require a custom state migration to move from the custom substream state that was generated via the legacy
+    cursor custom components. State was not written back to the platform in a way that is compatible with concurrent cursors.
+
+    The old state roughly had the following shape:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+    }
+
+    However, this was incompatible when we removed the custom cursors with the concurrent substream partition cursor
+    components that were configured with use global_substream_cursor and incremental_dependency. They rely on passing the value
+    of parent_state when getting parent records for the conversations/companies parent stream. The migration results in state:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+            # There are a lot of nested elements here, but are not used or relevant to syncs
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+        "parent_state": {
+            "conversations": {
+                "updated_at": 1744153060
+            }
+        }
+    }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return len(stream_state) > 0 and "states" not in stream_state
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_state: Optional[Mapping[str, Any]] = None
+        per_partition_state = []
+        for site_url_key, search_type_state in stream_state.items():
+            if site_url_key == "date":
+                # The legacy state also contains a global cursor value under the `date` key which we
+                # treat as the global state
+                global_state = {site_url_key: search_type_state}
+            else:
+                site_url = site_url_key
+                for search_type_key, cursor in search_type_state.items():
+                    per_partition_state.append({"partition": {"site_url": site_url, "search_type": search_type_key}, "cursor": cursor})
+        if global_state:
+            return {
+                "use_global_cursor": False,
+                "states": per_partition_state,
+                "state": global_state,
+            }
+        else:
+            return {
+                "use_global_cursor": False,
+                "states": per_partition_state,
+            }

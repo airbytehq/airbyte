@@ -180,7 +180,7 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
 
-    source = SourceGoogleSearchConsole()
+    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
 
     assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
@@ -249,15 +249,16 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     ],
 )
 def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
-    source = SourceGoogleSearchConsole()
+    source = SourceGoogleSearchConsole(config=test_config, catalog=None, state=None)
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
     actual = source.check_connection(logger, test_config)
     assert actual == expected
 
 
 def test_streams(config_gen):
-    source = SourceGoogleSearchConsole()
-    streams = source.streams(config_gen())
+    config = config_gen()
+    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    streams = source.streams(config)
     assert len(streams) == 15
     streams = source.streams(config_gen(custom_reports_array=...))
     assert len(streams) == 14
@@ -308,7 +309,14 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
     custom_reports = [{"name": "custom", "dimensions": dimensions}]
-    status = SourceGoogleSearchConsole().check(config=config_gen(custom_reports_array=custom_reports), logger=None).status
+
+    custom_report_config = config_gen(custom_reports_array=custom_reports)
+
+    status = (
+        SourceGoogleSearchConsole(config=custom_report_config, catalog=None, state=None)
+        .check(config=custom_report_config, logger=None)
+        .status
+    )
     assert status is expected_status
     if status is Status.FAILED:
         return
