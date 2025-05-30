@@ -229,6 +229,13 @@ definitions:
             value: "{{ record.shop.get('id') or record.store.get('id') }}"
     $parameters:
       name: "shop"
+  payment_methods_stream:
+    description: >-
+      Payment Methods Stream: https://developer.rechargepayments.com/2021-11/payment_methods/payment_methods_list
+    $ref: "#/definitions/base_modern_api_stream"
+    $parameters:
+      name: "payment_methods"
+      data_path: "payment_methods"
 
   # INCREMENTAL STREAMS
   # ADDRESSES
@@ -317,6 +324,7 @@ streams:
   - "#/definitions/events_stream"
   - "#/definitions/bundle_selections_stream"
   - "#/definitions/credit_adjustments_stream"
+  - "#/definitions/payment_methods_stream"
   # The `orders` stream remains implemented in `streams.py` due to:
   # 1. Inability to resolve `$ref` conditionally
   # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)
