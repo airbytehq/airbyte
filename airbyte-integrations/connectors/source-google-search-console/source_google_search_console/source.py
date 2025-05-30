@@ -130,7 +130,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         if response.status_code != 200:
             raise UnidentifiedError(response.json())
 
-        remote_site_urls = {s["siteUrl"] for s in response.json()["siteEntry"]}
+        remote_site_urls = {s["siteUrl"] for s in response.json().get("siteEntry", [])}
         invalid_site_url = set(site_urls) - remote_site_urls
         if invalid_site_url:
             raise InvalidSiteURLValidationError(invalid_site_url)
