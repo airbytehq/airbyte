@@ -1,12 +1,11 @@
-package io.airbyte.cdk.load.http.authentication
+package io.airbyte.cdk.load.http
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.DestinationOperation
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import okhttp3.OkHttpClient
-import okhttp3.Request
 
 val SALESFORCE_STRING_TYPES: Set<String> = setOf(
     "base64",
@@ -37,27 +36,30 @@ val SALESFORCE_NUMBER_TYPES: Set<String> = setOf("currency", "double", "long", "
 val SUPPORTED_SYNC_MODES: Set<DestinationSyncMode> = setOf(DestinationSyncMode.APPEND, DestinationSyncMode.UPDATE, DestinationSyncMode.APPEND_DEDUP, DestinationSyncMode.SOFT_DELETE)
 
 
-class SalesforceOperationRepository(httpClient: OkHttpClient, baseUrl: String) {
-    private val httpClient: OkHttpClient = httpClient
+class SalesforceOperationRepository(httpClient: HttpClient, baseUrl: String) {
+    private val httpClient: HttpClient = httpClient
     private val baseUrl: String = baseUrl
+    private val decoder: JsonDecoder = JsonDecoder()
 
     fun fetchAll(): List<DestinationOperation> {
-        val objectsRequest: Request = Request.Builder()
-            .url("${baseUrl}/services/data/v62.0/sobjects")
-            .method("GET", null)
-            .build()
-        val objectsResponse: JsonNode = Jsons.readTree(httpClient.newCall(objectsRequest).execute().body!!.bytes())  // FIXME error handling
-
-        return objectsResponse.get("sobjects").asIterable().flatMap { fetchOperations(it.get("name").asText()) }  // FIXME in python, we added threading here since most of the time is spent on I/O
+        val response: Response = httpClient.sendRequest(
+            Request(
+                RequestMethod.GET,
+                "${baseUrl}/services/data/v62.0/sobjects"
+            )
+        )
+        return decoder.decode(response).get("sobjects").asIterable().flatMap { fetchOperations(it.get("name").asText()) }  // FIXME in python, we added threading here since most of the time is spent on I/O
     }
 
     fun fetchOperations(objectName: String): List<DestinationOperation> {
-        val describeRequest: Request = Request.Builder()
-            .url("${baseUrl}/services/data/v62.0/sobjects/$objectName/describe")
-            .method("GET", null)
-            .build()
-        val describeResponse: JsonNode = Jsons.readTree(httpClient.newCall(describeRequest).execute().body!!.bytes())
-        return SUPPORTED_SYNC_MODES.map { createDestinationOperation(describeResponse, it) }
+        val response: Response = httpClient.sendRequest(
+            Request(
+                RequestMethod.GET,
+                "${baseUrl}/services/data/v62.0/sobjects/$objectName/describe"
+            )
+        )
+        val decodedResponse: JsonNode = decoder.decode(response)
+        return SUPPORTED_SYNC_MODES.map { createDestinationOperation(decodedResponse, it) }
     }
 
     private fun createDestinationOperation(describeResponse: JsonNode, syncMode: DestinationSyncMode) : DestinationOperation {
@@ -75,7 +77,7 @@ class SalesforceOperationRepository(httpClient: OkHttpClient, baseUrl: String) {
             }
             schema.putObject("properties").apply {
                 for(field in fieldsForSyncMode) {
-                    put(field.get("name").asText(), getJsonSchemaField(field))  // FIXME deprecated
+                    replace(field.get("name").asText(), getJsonSchemaField(field))
                 }
             }
         }

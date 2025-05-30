@@ -4,17 +4,15 @@
 
 package io.airbyte.cdk.load.http
 
-// TODO import dev.failsafe.RetryPolicy
-// val failsafeCall = FailsafeCall.with(policy).compose(call)
-// val response: Response = failsafeCall.execute()
+import dev.failsafe.RetryPolicy
 import io.airbyte.cdk.load.http.authentication.OAuthAuthenticator
-import io.airbyte.cdk.load.http.authentication.SalesforceOperationRepository
+import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
 import okhttp3.OkHttpClient
 
 
 val clientId: String = "<redacted>"
 val clientSecret: String = "<redacted>"
-val refreshToken: String = "<redacted>";
+val refreshToken: String = "<redacted>"
 
 val isSandbox: Boolean = true
 
@@ -23,7 +21,8 @@ fun main() {
     val authenticator: OAuthAuthenticator = OAuthAuthenticator(authEndpoint, clientId, clientSecret, refreshToken)
     val baseUrl: String = authenticator.queryForAccessToken().get("instance_url").asText()
 
-    val httpClient: OkHttpClient = OkHttpClient.Builder().addInterceptor(authenticator).build()
+    val okhttpClient: OkHttpClient = OkHttpClient.Builder().addInterceptor(authenticator).build()
+    val httpClient = AirbyteOkHttpClient(okhttpClient, RetryPolicy.ofDefaults())
     val operations = SalesforceOperationRepository(httpClient, baseUrl).fetchAll()
     println("DONE")
 }

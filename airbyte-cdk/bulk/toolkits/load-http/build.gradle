@@ -1,7 +1,11 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
 
+    api("org.apache.commons:commons-csv:1.11.0")  // FIXME to confirm if we better improve the csv toolkit or to import this directly here
+
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'dev.failsafe:failsafe:3.3.2'
+    implementation 'dev.failsafe:failsafe-okhttp:3.3.2'
 }
 
 project.tasks.matching {
