@@ -93,7 +93,9 @@ abstract class S3V2WriteTest(
         val streamName = "stream"
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = streamName,
+                namespaceMapper = namespaceMapperForMedium(),
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -199,7 +201,8 @@ abstract class S3V2WriteTest(
         Assumptions.assumeTrue(unionBehavior == UnionBehavior.PROMOTE_TO_OBJECT)
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, "stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "stream",
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -222,7 +225,8 @@ abstract class S3V2WriteTest(
                                     nullable = true
                                 )
                         )
-                    )
+                    ),
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         assertThrows<DestinationUncleanExitException> {
@@ -245,7 +249,8 @@ abstract class S3V2WriteTest(
         Assumptions.assumeTrue(mergesUnions)
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, "stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "stream",
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -289,7 +294,8 @@ abstract class S3V2WriteTest(
                                     nullable = true
                                 ),
                         )
-                    )
+                    ),
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         val expectedRecords =
