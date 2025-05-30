@@ -31,7 +31,7 @@ class ClickhouseDirectLoader(private val clickhouseClient: Client) : DirectLoade
              flush(descriptor)
              recordCount = 0
              streamRecords = mutableListOf()
-             return DirectLoader.Incomplete
+             return DirectLoader.Complete
          }
 
         // log.error { record.rawData.record.data.toPrettyString() }
