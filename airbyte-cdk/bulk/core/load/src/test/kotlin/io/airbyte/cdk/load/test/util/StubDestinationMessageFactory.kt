@@ -32,16 +32,15 @@ object StubDestinationMessageFactory {
                     .withRecord(
                         AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
                     ),
-            serialized = "",
-            schema = ObjectTypeWithoutSchema
+            schema = ObjectTypeWithoutSchema,
+            0L
         )
     }
 
-    fun makeFile(stream: DestinationStream, record: String): DestinationFile {
+    fun makeFile(stream: DestinationStream): DestinationFile {
         return DestinationFile(
             stream = stream,
             emittedAtMs = 0,
-            serialized = record,
             fileMessage = nullFileMessage,
         )
     }
@@ -70,6 +69,7 @@ object StubDestinationMessageFactory {
                     JsonNodeFactory.instance.objectNode()
                 ),
             sourceStats = CheckpointMessage.Stats(recordCount),
+            serializedSizeBytes = 0L
         )
     }
 
@@ -80,6 +80,7 @@ object StubDestinationMessageFactory {
             checkpoints = emptyList(),
             additionalProperties = emptyMap(),
             originalTypeField = AirbyteStateMessage.AirbyteStateType.GLOBAL,
+            serializedSizeBytes = 0L
         )
     }
 

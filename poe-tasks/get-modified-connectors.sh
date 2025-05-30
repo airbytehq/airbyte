@@ -35,8 +35,13 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-# 1) update remote default branch quietly
-git fetch --quiet origin $DEFAULT_BRANCH
+# 1) Fetch the latest from the default branch (using the correct remote)
+if git remote get-url upstream &>/dev/null; then
+  REMOTE="upstream"
+else
+  REMOTE="origin"
+fi
+git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
 
 # 2) set up ignore patterns
 ignore_patterns=(
@@ -58,8 +63,8 @@ if $PREV_COMMIT; then
 else
   # Default behavior
   # This is for a PR branch.
-  git fetch --quiet origin "$DEFAULT_BRANCH"
-  committed=$(git diff --name-only origin/"$DEFAULT_BRANCH"...HEAD)
+  git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
+  committed=$(git diff --name-only "${REMOTE}/${DEFAULT_BRANCH}"...HEAD)
   staged=$(git diff --cached --name-only)
   unstaged=$(git diff --name-only)
   untracked=$(git ls-files --others --exclude-standard)

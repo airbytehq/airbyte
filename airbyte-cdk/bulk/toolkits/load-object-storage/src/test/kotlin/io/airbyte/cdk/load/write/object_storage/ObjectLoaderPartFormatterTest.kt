@@ -89,8 +89,8 @@ class ObjectLoaderPartFormatterTest {
                 .withRecord(
                     AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
                 ),
-            serialized = "",
             ObjectTypeWithEmptySchema,
+            serializedSizeBytes = 0L
         )
 
     private fun makeRecords(n: Int): Iterator<DestinationRecordRaw> =

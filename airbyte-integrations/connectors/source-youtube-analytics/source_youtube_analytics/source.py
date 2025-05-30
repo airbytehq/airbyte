@@ -143,8 +143,8 @@ class JobsResource(CustomBackoffMixin, HttpStream):
         self.name = None
         self.http_method = "GET"
         results = list(self.read_records(sync_mode=None))
-        result = results[0]
-        return result.get("jobs", {})
+        result = results[0] if results else {"jobs": []}
+        return result.get("jobs", [])
 
     def create(self, name):
         "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/create"
@@ -262,16 +262,17 @@ class SourceYoutubeAnalytics(AbstractSource):
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        authenticator = self.get_authenticator(config)
-        jobs_resource = JobsResource(authenticator=authenticator)
-        result = jobs_resource.list()
-        if result:
+        try:
+            authenticator = self.get_authenticator(config)
+            jobs_resource = JobsResource(authenticator=authenticator)
+            jobs_resource.list()
             return True, None
-        else:
-            return (
-                False,
-                "The Youtube account is not valid. Please make sure you're trying to use the active Youtube Account connected to your Google Account.",
-            )
+        except requests.exceptions.RequestException as e:
+            if "401" in str(e):
+                return False, "Authentication failed. Please verify your credentials."
+            elif "403" in str(e):
+                return False, "Authorization failed. Please ensure you have the correct permissions."
+            return False, f"Unable to connect to YouTube Analytics API: {str(e)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)

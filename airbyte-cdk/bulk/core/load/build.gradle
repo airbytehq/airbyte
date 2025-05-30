@@ -58,7 +58,8 @@ project.tasks.matching {
     it.name == 'spotbugsIntegrationTestLegacy' ||
             it.name == 'spotbugsIntegrationTest' ||
             it.name == 'spotbugsTest' ||
-            it.name == 'spotbugsMain'
+            it.name == 'spotbugsMain' ||
+            it.name == 'spotbugsTestFixtures'
 }.configureEach {
     enabled = false
 }

@@ -210,6 +210,10 @@
           "profile_visits": {
             "description": "The number of times the profile has been visited.",
             "type": ["null", "integer"]
+          },
+          "views": {
+            "description": "The number of views on the media.",
+            "type": ["null", "integer"]
           }
         },
         "required": ["id"]
@@ -434,6 +438,10 @@
           "total_interactions": {
             "description\u00a8": "The number of replies and shares of the story.",
             "type": ["null", "integer"]
+          },
+          "views": {
+            "description": "The number of views the story received.",
+            "type": ["null", "integer"]
           }
         }
       },
@@ -450,11 +458,17 @@
           "account": {
             "type": ["object", "null"],
             "properties": {
-              "business_account_id": { "type": ["string", "null"] },
-              "page_id": { "type": ["string", "null"] }
+              "business_account_id": {
+                "type": ["string", "null"]
+              },
+              "page_id": {
+                "type": ["string", "null"]
+              }
             }
           },
-          "id": { "type": "string" }
+          "id": {
+            "type": "string"
+          }
         },
         "required": ["id"]
       },

@@ -169,24 +169,25 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0 | 2025-05-15 | [60298](https://github.com/airbytehq/airbyte/pull/60298) | Promoting release candidate 4.1.0-rc.1 to a main version. |
+| 4.1.1      | 2025-05-26 | [60908](https://github.com/airbytehq/airbyte/pull/60908) | Update dependencies |
+| 4.1.0      | 2025-05-15 | [60298](https://github.com/airbytehq/airbyte/pull/60298) | Promoting release candidate 4.1.0-rc.1 to a main version. |
 | 4.1.0-rc.1 | 2025-05-12 | [59689](https://github.com/airbytehq/airbyte/pull/59689) | Migrate to manifest-only format |
-| 4.0.0 | 2025-05-07 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
-| 3.5.4 | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
-| 3.5.3 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
-| 3.5.2 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
-| 3.5.1 | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
-| 3.5.0 | 2025-01-23 | [52105](https://github.com/airbytehq/airbyte/pull/52105) | Update incremental per partition streams to use concurrency |
-| 3.4.8 | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
-| 3.4.7 | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
-| 3.4.6 | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
-| 3.4.5 | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
-| 3.4.4 | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 3.4.3 | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
-| 3.4.2 | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
-| 3.4.1 | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |
-| 3.4.0 | 2024-12-05 | [48738](https://github.com/airbytehq/airbyte/pull/48738) | Enable concurrency for substreams without cursor |
-| 3.3.1 | 2024-11-18 | [48539](https://github.com/airbytehq/airbyte/pull/48539) | Update dependencies |
+| 4.0.0      | 2025-05-07 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
+| 3.5.4      | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
+| 3.5.3      | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
+| 3.5.2      | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
+| 3.5.1      | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
+| 3.5.0      | 2025-01-23 | [52105](https://github.com/airbytehq/airbyte/pull/52105) | Update incremental per partition streams to use concurrency |
+| 3.4.8      | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
+| 3.4.7      | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
+| 3.4.6      | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
+| 3.4.5      | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
+| 3.4.4      | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.4.3      | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
+| 3.4.2      | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
+| 3.4.1      | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |
+| 3.4.0      | 2024-12-05 | [48738](https://github.com/airbytehq/airbyte/pull/48738) | Enable concurrency for substreams without cursor |
+| 3.3.1      | 2024-11-18 | [48539](https://github.com/airbytehq/airbyte/pull/48539) | Update dependencies |
 | 3.3.0-rc.3 | 2024-11-14 | [48395](https://github.com/airbytehq/airbyte/pull/48395)   | Change JQL filters comparing cursor values to use milliseconds since unix epoch so that data isn't skipped when the active timezone is a negative UTC offset           |
 | 3.3.0-rc.2 | 2024-11-08 | [38612](https://github.com/airbytehq/airbyte/pull/38612)   | Add substream state migration. Update CDK to v6.                                                                                                                       |
 | 3.3.0-rc.1 | 2024-10-28 | [38612](https://github.com/airbytehq/airbyte/pull/38612)   | Migrate IssueComments and IssueWorklogs streams to low-code (This change is irreversible)                                                                              |
