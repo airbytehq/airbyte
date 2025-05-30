@@ -53,7 +53,7 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{stream_partition.get('site_url')}}/searchAnalytics/query" # todo add sanitize_url interpolation once it is in the CDK
+        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
         paginator:
