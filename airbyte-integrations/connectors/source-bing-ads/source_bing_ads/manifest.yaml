@@ -202,7 +202,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - CustomerId
-            value: "{{ stream_slice.extra_fields['ParentCustomerId'][0] }}"
+            value: "{{ stream_partition.extra_fields['ParentCustomerId'] }}"
           - type: AddedFieldDefinition
             path:
               - DailyBudget
