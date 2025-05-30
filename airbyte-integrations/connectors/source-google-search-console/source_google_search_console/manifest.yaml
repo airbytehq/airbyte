@@ -150,17 +150,12 @@ definitions:
     name: sites
     retriever:
       type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - "*"
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
         http_method: GET
+        authenticator: "#/definitions/selective_authenticator"
         error_handler:
           type: DefaultErrorHandler
           response_filters:
@@ -169,6 +164,12 @@ definitions:
               http_codes:
                 - 403
                 - 400
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - ""
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['site_urls'] }}"
@@ -183,17 +184,12 @@ definitions:
     name: sitemaps
     retriever:
       type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - "sitemap"
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/sitemaps"
         http_method: GET
+        authenticator: "#/definitions/selective_authenticator"
         error_handler:
           type: DefaultErrorHandler
           response_filters:
@@ -202,6 +198,12 @@ definitions:
               http_codes:
                 - 403
                 - 400
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "sitemap"
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['site_urls'] }}"
