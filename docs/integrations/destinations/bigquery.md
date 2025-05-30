@@ -213,6 +213,8 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.2 | 2025-05-29 | [60986](https://github.com/airbytehq/airbyte/pull/60986) | CHECK operation uses configured default dataset instead of `airbyte_internal_test`. |
+| 2.11.1 | 2025-05-29 | [60973](https://github.com/airbytehq/airbyte/pull/60973) | Improve error recovery when a stream's sync mode and schema are both changed and the previous sync exited uncleanly. |
 | 2.11.0 | 2025-05-27 | [60922](https://github.com/airbytehq/airbyte/pull/60922) | Promoting release candidate 2.11.0-rc.7 to a main version. |
 | 2.11.0-rc.7 | 2025-05-22 | [60865](https://github.com/airbytehq/airbyte/pull/60865)   | Add a random element to the check sync namespace                                                                                                                                  |
 | 2.11.0-rc.6 | 2025-05-22 | [60859](https://github.com/airbytehq/airbyte/pull/60859)   | Improve bigquery quota usage in standard inserts for streams with heavy load                                                                                                      |
