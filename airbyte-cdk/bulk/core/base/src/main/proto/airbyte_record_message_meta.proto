@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+syntax = "proto3";
+
+package io.airbyte.protocol.protobuf;
+
+message AirbyteRecordMessageMeta {
+  repeated AirbyteRecordMessageMetaChange changes = 1;
+};
+
+enum AirbyteRecordChangeType {
+  NULLED = 0;
+  TRUNCATED = 1;
+};
+
+enum AirbyteRecordChangeReasonType {
+  // The record, in aggregate, was too large to be processed
+  SOURCE_RECORD_SIZE_LIMITATION = 0;
+  DESTINATION_RECORD_SIZE_LIMITATION = 1;
+  PLATFORM_RECORD_SIZE_LIMITATION = 2;
+  // A single field, was too large to be processed
+  SOURCE_FIELD_SIZE_LIMITATION = 3;
+  DESTINATION_FIELD_SIZE_LIMITATION = 4;
+  PLATFORM_FIELD_SIZE_LIMITATION = 5;
+  // The field could not be read or written
+  SOURCE_SERIALIZATION_ERROR = 6;
+  DESTINATION_SERIALIZATION_ERROR = 7;
+  PLATFORM_SERIALIZATION_ERROR = 8;
+  // Errors producing the field
+  SOURCE_RETRIEVAL_ERROR = 9;
+  // Errors casting to appropriate type
+  DESTINATION_TYPECAST_ERROR = 10;
+};
+
+message AirbyteRecordMessageMetaChange {
+  string field = 1;
+  AirbyteRecordChangeType change = 2;
+  AirbyteRecordChangeReasonType reason = 3;
+};

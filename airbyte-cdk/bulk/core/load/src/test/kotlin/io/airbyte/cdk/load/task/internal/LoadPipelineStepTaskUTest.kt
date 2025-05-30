@@ -633,9 +633,8 @@ class LoadPipelineStepTaskUTest {
                 parentCheckpointCounts = mapOf(),
                 parentRecord =
                     DestinationRecordRaw(
-                        mockk(),
                         mockk(relaxed = true),
-                        mockk(),
+                        mockk(relaxed = true),
                         "serialized".length.toLong()
                     ),
             )

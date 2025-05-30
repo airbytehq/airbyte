@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+syntax = "proto3";
+
+import "airbyte_record_message.proto";
+
+package io.airbyte.protocol.protobuf;
+
+/**
+ * Currently we only define AirbyteRecordMessage as protobuf.
+ * Control messages, because they are sparse, can be sent as serialized json for now.
+ */
+message AirbyteMessageProtobuf {
+  oneof type {
+    AirbyteRecordMessageProtobuf record = 1;
+    string airbyte_protocol_message = 2;
+  }
+};
