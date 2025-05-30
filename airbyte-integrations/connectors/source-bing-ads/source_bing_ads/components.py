@@ -118,18 +118,24 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
         # Wrap the transformed settings in the expected structure
         record["Settings"] = {"Setting": transformed_settings}
 
-        # Transform BiddingScheme field - convert all integer values to floats
+        # Safely traverse and convert all integer values to floats
+        # in the BiddingScheme field
         bidding_scheme = record.get("BiddingScheme")
         if bidding_scheme and isinstance(bidding_scheme, dict):
             self._convert_integers_to_floats(bidding_scheme)
 
-    def _convert_integers_to_floats(self, obj):
+    def _convert_integers_to_floats(self, obj: MutableMapping[str, Any]) -> None:
         """
         Recursively convert integer values to floats in a dictionary.
         """
-        if isinstance(obj, dict):
-            for key, value in obj.items():
-                if isinstance(value, dict):
-                    self._convert_integers_to_floats(value)
-                elif isinstance(value, (int, float)) and value == int(value):
-                    obj[key] = float(value)
+        if not isinstance(obj, dict):
+            return
+
+        for key, value in obj.items():
+            if isinstance(value, dict):
+                self._convert_integers_to_floats(value)
+                continue
+
+            # Convert any whole numbers to float type
+            if isinstance(value, (int, float)) and value == int(value):
+                obj[key] = float(value)
