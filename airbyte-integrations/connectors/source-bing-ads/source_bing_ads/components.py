@@ -2,10 +2,11 @@
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
@@ -16,11 +17,13 @@ PARENT_SLICE_KEY: str = "parent_slice"
 class DuplicatedRecordsFilter(RecordFilter):
     """
     Filter duplicated records based on the "Id" field.
-    This can happen when we use predicates that could match the same record multiple times.
+    This can happen when we use predicates that could match the same record
+    multiple times.
 
     e.g.
     With one record like:
-    {"type":"RECORD","record":{"stream":"accounts","data":{"Id":151049662,"Name":"Airbyte Plumbing"},"emitted_at":1748277607993}}
+    {"type":"RECORD","record":{"stream":"accounts","data":{"Id":151049662,
+    "Name":"Airbyte Plumbing"},"emitted_at":1748277607993}}
     account_names in config:
     [
         {
@@ -61,6 +64,99 @@ class DuplicatedRecordsFilter(RecordFilter):
                 if key not in self._seen_keys:
                     self._seen_keys.add(key)
                     yield record
+
+
+@dataclass
+class BingAdsCampaignsRecordTransformer(RecordTransformation):
+    """
+    Transform Campaigns records with the following logic:
+
+    Settings field transformations:
+    1. For settings with Details, wrap the Details array in TargetSettingDetail
+       structure: {"Details": {"TargetSettingDetail": original_details}}
+    2. For settings without Details, keep the original structure
+    3. Convert empty lists ([]) to null for backward compatibility
+    4. Wrap all transformed settings in {"Setting": transformed_settings}
+
+    BiddingScheme field transformations:
+    1. Recursively convert all integer values to floats to ensure
+       consistent numeric type handling
+
+    Example Settings transformation:
+    Input:  {"Settings": [{"Type": "Target", "Details": [...], "PageFeedIds": []}]}
+    Output: {"Settings": {"Setting": [{"Type": "Target",
+                                      "Details": {"TargetSettingDetail": [...]},
+                                      "PageFeedIds": null}]}}
+    """
+
+    def transform(
+        self,
+        record: MutableMapping[str, Any],
+        config: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        settings = record.get("Settings")
+
+        if not settings or not isinstance(settings, list) or len(settings) == 0:
+            # Keep original value (None, empty list, etc.)
+            return
+
+        transformed_settings = []
+
+        for setting in settings:
+            if not isinstance(setting, dict):
+                # Keep non-dict settings as-is
+                transformed_settings.append(setting)
+                continue
+
+            if "Details" in setting and setting["Details"] is not None:
+                # Wrap Details in TargetSettingDetail only if Details is not None
+                transformed_setting = {"Type": setting.get("Type"), "Details": {"TargetSettingDetail": setting["Details"]}}
+                # Add any other properties that might exist
+                for key, value in setting.items():
+                    if key not in ["Type", "Details"]:
+                        # Convert empty lists to null for backward compatibility
+                        if isinstance(value, list) and len(value) == 0:
+                            transformed_setting[key] = None
+                        else:
+                            transformed_setting[key] = value
+                transformed_settings.append(transformed_setting)
+            else:
+                # Keep setting as-is (no Details to wrap or Details is None)
+                # But still convert empty lists to null
+                transformed_setting = {}
+                for key, value in setting.items():
+                    if isinstance(value, list) and len(value) == 0:
+                        transformed_setting[key] = None
+                    else:
+                        transformed_setting[key] = value
+                transformed_settings.append(transformed_setting)
+
+        # Wrap the transformed settings in the expected structure
+        record["Settings"] = {"Setting": transformed_settings}
+
+        # Safely traverse and convert all integer values to floats
+        # in the BiddingScheme field
+        bidding_scheme = record.get("BiddingScheme")
+        if bidding_scheme and isinstance(bidding_scheme, dict):
+            self._convert_integers_to_floats(bidding_scheme)
+
+    def _convert_integers_to_floats(self, obj: MutableMapping[str, Any]) -> None:
+        """
+        Recursively convert integer values to floats in a dictionary.
+        """
+        if not isinstance(obj, dict):
+            return
+
+        for key, value in obj.items():
+            if isinstance(value, dict):
+                self._convert_integers_to_floats(value)
+                continue
+
+            # Convert any whole numbers to float type
+            if isinstance(value, (int, float)) and value == int(value):
+                obj[key] = float(value)
 
 
 @dataclass
