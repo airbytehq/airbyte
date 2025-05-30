@@ -156,14 +156,6 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
-        error_handler:
-          type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 403
-                - 400
       record_selector:
         type: RecordSelector
         extractor:
@@ -190,14 +182,6 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/sitemaps"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
-        error_handler:
-          type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 403
-                - 400
       record_selector:
         type: RecordSelector
         extractor:
