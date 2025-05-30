@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.mockk.coEvery
@@ -42,6 +43,7 @@ class InputConsumerTaskUTest {
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
     @MockK lateinit var partitioner: InputPartitioner
     @MockK lateinit var openStreamQueue: QueueWriter<DestinationStream>
+    @MockK lateinit var pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 
     private val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
     private lateinit var dstream: DestinationStream
@@ -50,12 +52,9 @@ class InputConsumerTaskUTest {
         InputConsumerTask(
             catalog,
             inputFlow,
-            checkpointQueue,
-            syncManager,
-            fileTransferQueue,
             recordQueueForPipeline,
             partitioner,
-            openStreamQueue
+            pipelineEventBookkeepingRouter
         )
 
     @BeforeEach
@@ -84,8 +83,8 @@ class InputConsumerTaskUTest {
                             DestinationRecord(
                                 stream = dstream,
                                 message = mockk(relaxed = true),
-                                serialized = "",
-                                schema = ObjectTypeWithoutSchema
+                                schema = ObjectTypeWithoutSchema,
+                                0L
                             )
                         )
                     )
