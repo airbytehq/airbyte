@@ -24,4 +24,5 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+    - suite: acceptanceTests
 metadataSpecVersion: "1.0"
