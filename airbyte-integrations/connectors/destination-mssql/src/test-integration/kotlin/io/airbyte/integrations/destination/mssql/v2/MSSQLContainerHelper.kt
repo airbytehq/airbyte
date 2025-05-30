@@ -44,7 +44,6 @@ object MSSQLContainerHelper {
         // Ensure that the container is started first
         start()
         return testContainer.containerInfo.networkSettings.networks.entries.first().value.ipAddress
-
     }
 }
 
