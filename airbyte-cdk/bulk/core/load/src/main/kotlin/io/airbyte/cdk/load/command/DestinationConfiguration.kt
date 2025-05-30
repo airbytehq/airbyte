@@ -87,7 +87,7 @@ abstract class DestinationConfiguration : Configuration {
     companion object {
         const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
         const val DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 60L
-        const val DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS = 15 * 60L
+        const val DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS = 5 * 60L
         const val DEFAULT_GENERATION_ID_METADATA_KEY = "ab-generation-id"
     }
 
