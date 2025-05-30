@@ -42,7 +42,9 @@ data class DestinationStream(
                 }
             }
 
-        fun toPrettyString() = "$namespace.$name"
+        fun toPrettyString(): String {
+            return if (namespace == null) name else "$namespace.$name"
+        }
     }
 
     /**
