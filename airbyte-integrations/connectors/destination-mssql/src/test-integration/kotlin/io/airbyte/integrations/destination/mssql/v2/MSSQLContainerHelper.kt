@@ -25,7 +25,6 @@ object MSSQLContainerHelper {
     private val testContainer =
         MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
             .acceptLicense()
-            .withNetwork(network)
             .withLogConsumer { e -> logger.debug { e.utf8String } }
 
     fun start() {
@@ -37,8 +36,6 @@ object MSSQLContainerHelper {
     }
 
     fun getHost(): String = testContainer.host
-
-    fun getNetwork(): Network = network
 
     fun getPassword(): String = testContainer.password
 
