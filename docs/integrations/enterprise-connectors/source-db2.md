@@ -1,3 +1,6 @@
+---
+dockerRepository: airbyte/source-db2
+---
 # Source Db2
 
 ## Features
