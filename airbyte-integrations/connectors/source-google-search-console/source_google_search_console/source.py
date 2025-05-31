@@ -11,8 +11,9 @@ import jsonschema
 import pendulum
 import requests
 
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
@@ -25,7 +26,6 @@ from source_google_search_console.exceptions import (
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
-    SearchAnalyticsByCountry,
     SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
     SearchAnalyticsByDevice,
@@ -37,8 +37,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsPageReport,
     SearchAnalyticsSiteReportByPage,
     SearchAnalyticsSiteReportBySite,
-    Sitemaps,
-    Sites,
 )
 
 
@@ -55,7 +53,10 @@ custom_reports_schema = {
 }
 
 
-class SourceGoogleSearchConsole(AbstractSource):
+class SourceGoogleSearchConsole(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
     @staticmethod
     def normalize_url(url):
         parse_result = urlparse(url)
@@ -68,7 +69,7 @@ class SourceGoogleSearchConsole(AbstractSource):
         authorization = config["authorization"]
         if authorization["auth_type"] == "Service":
             try:
-                authorization["service_account_info"] = json.loads(authorization["service_account_info"])
+                json.loads(authorization["service_account_info"])
             except ValueError:
                 message = "authorization.service_account_info is not valid JSON"
                 raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
@@ -110,29 +111,6 @@ class SourceGoogleSearchConsole(AbstractSource):
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            config = self._validate_and_transform(config)
-            stream_kwargs = self.get_stream_kwargs(config)
-            self.validate_site_urls(config["site_urls"], stream_kwargs["authenticator"])
-            sites = Sites(**stream_kwargs)
-            stream_slice = sites.stream_slices(SyncMode.full_refresh)
-
-            # stream_slice returns all site_urls and we need to make sure that
-            # the connection is successful for all of them
-            for _slice in stream_slice:
-                sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
-                next(sites_gen)
-            return True, None
-
-        except (InvalidSiteURLValidationError, UnauthorizedOauthError, UnauthorizedServiceAccountError, jsonschema.ValidationError) as e:
-            return False, repr(e)
-        except (Exception, UnidentifiedError) as error:
-            return (
-                False,
-                f"Unable to check connectivity to Google Search Console API - {repr(error)}",
-            )
-
     def validate_site_urls(self, site_urls: List[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
@@ -172,22 +150,23 @@ class SourceGoogleSearchConsole(AbstractSource):
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
-        streams = [
-            Sites(**stream_config),
-            Sitemaps(**stream_config),
-            SearchAnalyticsByCountry(**stream_config),
-            SearchAnalyticsByDevice(**stream_config),
-            SearchAnalyticsByDate(**stream_config),
-            SearchAnalyticsByQuery(**stream_config),
-            SearchAnalyticsByPage(**stream_config),
-            SearchAnalyticsAllFields(**stream_config),
-            SearchAnalyticsKeywordPageReport(**stream_config),
-            SearchAnalyticsPageReport(**stream_config),
-            SearchAnalyticsSiteReportBySite(**stream_config),
-            SearchAnalyticsSiteReportByPage(**stream_config),
-            SearchAnalyticsKeywordSiteReportByPage(**stream_config),
-            SearchAnalyticsKeywordSiteReportBySite(**stream_config),
-        ]
+        streams = super().streams(config=config)
+
+        streams.extend(
+            [
+                SearchAnalyticsByDevice(**stream_config),
+                SearchAnalyticsByDate(**stream_config),
+                SearchAnalyticsByQuery(**stream_config),
+                SearchAnalyticsByPage(**stream_config),
+                SearchAnalyticsAllFields(**stream_config),
+                SearchAnalyticsKeywordPageReport(**stream_config),
+                SearchAnalyticsPageReport(**stream_config),
+                SearchAnalyticsSiteReportBySite(**stream_config),
+                SearchAnalyticsSiteReportByPage(**stream_config),
+                SearchAnalyticsKeywordSiteReportByPage(**stream_config),
+                SearchAnalyticsKeywordSiteReportBySite(**stream_config),
+            ]
+        )
 
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
 

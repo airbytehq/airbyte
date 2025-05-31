@@ -22,7 +22,6 @@ TEST_CONFIG_PATH = "unit_tests/test_migrations/test_config.json"
 BACKUP_CONFIG_PATH = str(Path(__file__).parent / "test_config.json.bak")
 NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_new_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
-SOURCE: Source = SourceGoogleSearchConsole()
 
 
 # HELPERS
@@ -50,8 +49,11 @@ def test_migrate_config():
     try:
         migration_instance = MigrateCustomReports()
         original_config = load_config()
+
+        source: Source = SourceGoogleSearchConsole(catalog=None, config=original_config, state=None)
+
         # migrate the test_config
-        migration_instance.migrate(SOURCE_INPUT_ARGS, SOURCE)
+        migration_instance.migrate(SOURCE_INPUT_ARGS, source)
         # load the updated config
         test_migrated_config = load_config()
         # check migrated property
