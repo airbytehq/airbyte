@@ -140,7 +140,7 @@ data:
         - name: shopify_config_oauth_dev_null
           id: a08529a9-618c-4bfc-884f-f5dccba1c1ab
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-SHOPIFY-TRANSACTIONS-WITH-USER-ID__CREDS
           fileName: config_transactions_with_user_id.json
