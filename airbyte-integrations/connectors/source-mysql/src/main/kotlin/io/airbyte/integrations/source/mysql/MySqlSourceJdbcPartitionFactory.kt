@@ -471,7 +471,7 @@ class MySqlSourceJdbcPartitionFactory(
                 streamState,
                 checkpointColumns,
                 listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
-                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
+                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
             )
         }
     }
@@ -493,7 +493,7 @@ class MySqlSourceJdbcPartitionFactory(
                 streamState,
                 checkpointColumns,
                 listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
-                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
+                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) }, // TODO: check here
             )
         }
     }
@@ -519,7 +519,7 @@ class MySqlSourceJdbcPartitionFactory(
         }
 
         val lbs: List<Long> = listOf(effectiveLowerBound) + queryPlan
-        val ubs: List<Long?> = queryPlan + /*upperBound*/null
+        val ubs: List<Long?> = queryPlan + null
         return lbs.zip(ubs).toMap()
     }
 
@@ -527,7 +527,7 @@ class MySqlSourceJdbcPartitionFactory(
         num: Int,
         lowerBound: Double?,
         upperBound: Double
-    ): Map<Double, Double> {
+    ): Map<Double, Double?> {
         var queryPlan: MutableList<Double> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: 0.0
         val eachStep: Double = (upperBound - effectiveLowerBound) / num
@@ -535,7 +535,7 @@ class MySqlSourceJdbcPartitionFactory(
             queryPlan.add(i * eachStep)
         }
         val lbs: List<Double> = listOf(effectiveLowerBound) + queryPlan
-        val ubs: List<Double> = queryPlan + upperBound
+        val ubs: List<Double?> = queryPlan + null
         return lbs.zip(ubs).toMap()
     }
 
@@ -543,12 +543,12 @@ class MySqlSourceJdbcPartitionFactory(
         num: Int,
         lowerBound: String?,
         upperBound: String
-    ): Map<String, String> {
+    ): Map<String, String?> {
         val effectiveLowerBound = lowerBound ?: String()
         var queryPlan: List<String> =
             unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
         val lbs: List<String> = listOf(effectiveLowerBound) + queryPlan
-        val ubs: List<String> = queryPlan + upperBound
+        val ubs: List<String?> = queryPlan + null
         return lbs.zip(ubs).toMap()
     }
 

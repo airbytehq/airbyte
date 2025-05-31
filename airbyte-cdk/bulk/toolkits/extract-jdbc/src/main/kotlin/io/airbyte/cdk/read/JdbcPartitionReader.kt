@@ -27,7 +27,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     private fun generatePartitionId(length: Int): String =
         (1..length).map { charPool.random() }.joinToString("")
 
-    protected val partitionId: String = generatePartitionId(4)
+    protected var partitionId: String = generatePartitionId(4)
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
     val sharedState: JdbcSharedState = streamState.sharedState
@@ -91,6 +91,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
+        partitionId = generatePartitionId(4)
     }
 
     /** If configured max feed read time elapsed we exit with a transient error */
