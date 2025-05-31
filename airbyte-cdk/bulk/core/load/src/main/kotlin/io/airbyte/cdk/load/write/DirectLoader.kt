@@ -71,14 +71,14 @@ interface DirectLoader : AutoCloseable {
      * Called once per record until it returns [Complete], after which [close] is called, the loader
      * is discarded, and the records are considered processed by the platform.
      */
-    fun accept(record: DestinationRecordRaw): DirectLoadResult
+    suspend fun accept(record: DestinationRecordRaw): DirectLoadResult
 
     /**
      * Called by the CDK to force work to finish. It will only be called if the last call to
      * [accept] did not return [Complete]. After which [close] is called, the loader is discarded,
      * and the records are considered processed by the platform.
      */
-    fun finish()
+    suspend fun finish()
 }
 
 interface DirectLoaderFactory<T : DirectLoader> : LoadStrategy {

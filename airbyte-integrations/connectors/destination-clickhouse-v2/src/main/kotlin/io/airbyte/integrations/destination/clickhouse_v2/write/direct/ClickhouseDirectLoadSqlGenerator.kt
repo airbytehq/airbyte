@@ -29,12 +29,11 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
-import io.airbyte.integrations.destination.clickhouse_v2.log
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.util.ArrayList
-import java.util.stream.Collectors
-import org.apache.commons.lang3.StringUtils
+
+private val log = KotlinLogging.logger {}
 
 @Singleton
 class ClickhouseDirectLoadSqlGenerator(
@@ -75,7 +74,7 @@ class ClickhouseDirectLoadSqlGenerator(
               _airbyte_generation_id UInt32,
               $columnDeclarations
             )
-            ENGINE = MergeTree ORDER BY (_airbyte_raw_id)
+            ENGINE = MergeTree ORDER BY ()
             """.trimIndent()
         )
     }

@@ -1,0 +1,38 @@
+package io.airbyte.integrations.destination.clickhouse_v2
+
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
+import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
+import jakarta.inject.Singleton
+import java.util.Locale
+
+@Singleton
+class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration): RawTableNameGenerator {
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
+        TableName(
+            config.resolvedDatabase,
+            "test_${streamDescriptor.name}",
+        )
+}
+
+@javax.inject.Singleton
+class ClickhouseFinalTableNameGenerator(val config: ClickhouseConfiguration) : FinalTableNameGenerator {
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
+        TableName(
+            config.resolvedDatabase,
+            streamDescriptor.name,
+        )
+}
+
+@javax.inject.Singleton
+class ClickhouseColumnNameGenerator : ColumnNameGenerator {
+    override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
+        return ColumnNameGenerator.ColumnName(
+           column,
+            column.lowercase(Locale.getDefault()),
+        )
+    }
+}

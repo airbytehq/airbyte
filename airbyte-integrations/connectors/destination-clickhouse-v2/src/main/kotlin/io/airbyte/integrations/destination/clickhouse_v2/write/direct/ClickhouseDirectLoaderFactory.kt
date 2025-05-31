@@ -7,9 +7,11 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ClickhouseDirectLoaderFactory(private val clickhouseClient: Client): DirectLoaderFactory<ClickhouseDirectLoader> {
+    override val maxNumOpenLoaders = 2
+
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int
     ): ClickhouseDirectLoader =
-        ClickhouseDirectLoader(clickhouseClient)
+        ClickhouseDirectLoader(streamDescriptor, clickhouseClient)
 }
