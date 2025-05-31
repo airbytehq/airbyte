@@ -272,6 +272,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 2.7.8 | 2025-05-31 | [61135](https://github.com/airbytehq/airbyte/pull/61135) | Update dependencies |
 | 2.7.7 | 2025-05-17 | [60708](https://github.com/airbytehq/airbyte/pull/60708) | Update dependencies |
 | 2.7.6 | 2025-05-10 | [59870](https://github.com/airbytehq/airbyte/pull/59870) | Update dependencies |
 | 2.7.5 | 2025-05-03 | [59225](https://github.com/airbytehq/airbyte/pull/59225) | Update dependencies |
