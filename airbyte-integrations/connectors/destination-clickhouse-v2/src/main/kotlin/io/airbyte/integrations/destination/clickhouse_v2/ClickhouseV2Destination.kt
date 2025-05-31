@@ -1,19 +1,7 @@
 package io.airbyte.integrations.destination.clickhouse_v2
 
 import io.airbyte.cdk.AirbyteDestinationRunner
-import io.airbyte.cdk.load.command.aws.AwsToolkitConstants
-import io.github.oshai.kotlinlogging.KotlinLogging
-
-/**
- * This is needed because the GCS client is, under the hood, using the S3Client.
- *
- * And the S3Client depends on the AWS environment - we're not actually _using the assume role
- * stuff, but the wiring needs to be satisfied.
- */
-val additionalMicronautEnvs = listOf(AwsToolkitConstants.MICRONAUT_ENVIRONMENT)
-
-val log = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {
-    AirbyteDestinationRunner.run(*args, additionalMicronautEnvs = additionalMicronautEnvs)
+    AirbyteDestinationRunner.run(*args)
 }
