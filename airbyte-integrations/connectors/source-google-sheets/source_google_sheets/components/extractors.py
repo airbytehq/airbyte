@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
-from source_google_sheets.utils import name_conversion, safe_name_conversion
+from source_google_sheets.utils import experimental_safe_name_conversion, name_conversion, safe_name_conversion
 
 
 class RawSchemaParser:
@@ -54,6 +54,7 @@ class RawSchemaParser:
         schema_pointer: List[Union[InterpolatedString, str]],
         key_pointer: List[Union[InterpolatedString, str]],
         names_conversion: bool,
+        experimental_names_conversion: bool,
     ):
         """
         1. Parses sheet headers from the provided raw schema. This method assumes that data is contiguous
@@ -71,7 +72,10 @@ class RawSchemaParser:
             raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
             if not raw_schema_property_value or raw_schema_property_value.isspace():
                 break
-            if names_conversion:
+            # Apply experimental conversion if enabled; otherwise, apply standard conversion if enabled
+            if experimental_names_conversion:
+                raw_schema_property_value = experimental_safe_name_conversion(raw_schema_property_value)
+            elif names_conversion:
                 raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
 
             if raw_schema_property_value in seen_values:
@@ -89,12 +93,13 @@ class RawSchemaParser:
     def parse(self, schema_type_identifier, records: Iterable[MutableMapping[Any, Any]]):
         """Removes duplicated fields and makes names conversion"""
         names_conversion = self.config.get("names_conversion", False)
+        experimental_names_conversion = self.config.get("experimental_names_conversion", False)
         schema_pointer = schema_type_identifier.get("schema_pointer")
         key_pointer = schema_type_identifier["key_pointer"]
         parsed_properties = []
         for raw_schema_data in records:
             for _, parsed_value, raw_schema_property in self.parse_raw_schema_values(
-                raw_schema_data, schema_pointer, key_pointer, names_conversion
+                raw_schema_data, schema_pointer, key_pointer, names_conversion, experimental_names_conversion
             ):
                 self._set_data(parsed_value, raw_schema_property, key_pointer)
                 parsed_properties.append(raw_schema_property)
@@ -140,16 +145,20 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         self._values_to_match_key = parameters["values_to_match_key"]
         schema_type_identifier = parameters["schema_type_identifier"]
         names_conversion = self.config.get("names_conversion", False)
+        experimental_names_conversion = self.config.get("experimental_names_conversion", False)
         self._indexed_properties_to_match = self.extract_properties_to_match(
-            parameters["properties_to_match"], schema_type_identifier, names_conversion=names_conversion
+            parameters["properties_to_match"],
+            schema_type_identifier,
+            names_conversion=names_conversion,
+            experimental_names_conversion=experimental_names_conversion,
         )
 
-    def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion):
+    def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion, experimental_names_conversion):
         schema_pointer = schema_type_identifier.get("schema_pointer")
         key_pointer = schema_type_identifier["key_pointer"]
         indexed_properties = {}
         for property_index, property_parsed_value, _ in self.parse_raw_schema_values(
-            properties_to_match, schema_pointer, key_pointer, names_conversion
+            properties_to_match, schema_pointer, key_pointer, names_conversion, experimental_names_conversion
         ):
             indexed_properties[property_index] = property_parsed_value
         return indexed_properties

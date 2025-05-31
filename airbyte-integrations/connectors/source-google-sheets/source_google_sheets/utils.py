@@ -37,10 +37,68 @@ def name_conversion(text: str) -> str:
     return text
 
 
+def experimental_name_conversion(text: str) -> str:
+    """
+    Convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
+    Removes leading/trailing spaces, combines number-word pairs (e.g., '50th' -> '50th'),
+    letter-number pairs (e.g., 'Q3' -> 'Q3'), and removes special characters without adding underscores.
+    Spaces are converted to underscores for snake_case. Preserves spaces between numbers and words.
+    """
+    # Step 1: Tokenization
+    tokens = []
+    for m in TOKEN_PATTERN.finditer(text):
+        if m.group("NoToken") is None:
+            tokens.append(m.group(0))
+        else:
+            # Process each character in NoToken match
+            for char in m.group(0):
+                if char.isspace():
+                    tokens.append("")
+
+    # Step 2: Combine adjacent tokens where appropriate
+    combined_tokens = []
+    i = 0
+    while i < len(tokens):
+        if i + 1 < len(tokens) and tokens[i] and len(tokens[i]) == 1 and tokens[i].isupper() and tokens[i + 1] and tokens[i + 1].isdigit():
+            combined_tokens.append(tokens[i] + tokens[i + 1])  # e.g., "Q3"
+            i += 2
+        elif i + 1 < len(tokens) and tokens[i] and tokens[i].isdigit() and tokens[i + 1] and tokens[i + 1].isalpha():
+            combined_tokens.append(tokens[i] + tokens[i + 1])  # e.g., "80th"
+            i += 2
+        else:
+            combined_tokens.append(tokens[i])
+            i += 1
+
+    # Step 3: Clean up empty tokens
+    while combined_tokens and combined_tokens[0] == "":
+        combined_tokens.pop(0)
+    while combined_tokens and combined_tokens[-1] == "":
+        combined_tokens.pop()
+    if len(combined_tokens) >= 3:
+        combined_tokens = combined_tokens[:1] + [t for t in combined_tokens[1:-1] if t] + combined_tokens[-1:]
+
+    # Step 4: Handle leading digits
+    if combined_tokens and combined_tokens[0].isdigit():
+        combined_tokens.insert(0, "")
+
+    # Step 5: Join and convert to lowercase
+    result = DEFAULT_SEPARATOR.join(combined_tokens)
+    return result.lower()
+
+
 def safe_name_conversion(text: str) -> str:
     if not text:
         return text
     new = name_conversion(text)
+    if not new:
+        raise Exception(f"initial string '{text}' converted to empty")
+    return new
+
+
+def experimental_safe_name_conversion(text: str) -> str:
+    if not text:
+        return text
+    new = experimental_name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
     return new
