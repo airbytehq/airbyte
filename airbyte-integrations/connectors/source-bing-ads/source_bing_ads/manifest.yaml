@@ -58,7 +58,6 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/accounts"
-
     retriever:
       type: SimpleRetriever
       requester:
@@ -144,8 +143,291 @@ definitions:
               - LastModifiedTime
             value: '{{ format_datetime(record.LastModifiedTime, "%Y-%m-%dT%H:%M:%S.%f" ) }}'
 
+  campaigns_stream:
+    type: DeclarativeStream
+    name: campaigns
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaigns"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://campaign.api.bingads.microsoft.com
+        path: /CampaignManagement/v13/Campaigns/QueryByAccountId
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          CustomerAccountId: "{{ stream_partition['account_id'][0] }}"
+          CustomerId: "{{ stream_slice.extra_fields['ParentCustomerId'][0] }}"
+          DeveloperToken: "{{ config['developer_token'] }}"
+          Authorization: "Bearer {{ config['_token']['access_token'] }}"
+        request_body_json:
+          AccountId: "{{ stream_partition['account_id'][0] }}"
+          CampaignType: "Audience,DynamicSearchAds,Search,Shopping,PerformanceMax"
+          ReturnAdditionalFields: "AdScheduleUseSearcherTimeZone,BidStrategyId,CpvCpmBiddingScheme,DynamicDescriptionSetting,DynamicFeedSetting,MaxConversionValueBiddingScheme,MultimediaAdsBidAdjustment,TargetImpressionShareBiddingScheme,TargetSetting,VerifiedTrackingSetting"
+        authenticator: "#/definitions/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["Campaigns"]
+          schema_normalization: Default
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1 # If you want to query one account at a time
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: account_id
+              deduplicate: true
+              stream:
+                $ref: "#/definitions/accounts_stream"
+              extra_fields:
+                - - ParentCustomerId
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - Id
+            value: "{{ record.Id|int }}"
+          - type: AddedFieldDefinition
+            path:
+              - ExperimentId
+            value: "{{ record.get('ExperimentId')|int if record.get('ExperimentId') is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: "{{ stream_partition['account_id'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CustomerId
+            value: "{{ stream_slice.extra_fields['ParentCustomerId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - DailyBudget
+            value: "{{ record.get('DailyBudget')|float if record.get('DailyBudget') is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - BudgetId
+            value: "{{ record.get('BudgetId')|int if record.get('BudgetId') is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - BidStrategyId
+            value: "{{ record.get('BidStrategyId')|int if record.get('BidStrategyId') is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - Languages
+            value: |
+              {% set languages = [] %}
+              {% for language in (record.get('Languages') or []) %}
+              {% set _ = languages.append(language) %}
+              {% endfor %}
+              {{ {"string": languages} }}
+          - type: AddedFieldDefinition
+            path:
+              - SettingContent
+            value: |
+              {% set settings_content = [] %}
+              {% for setting in record.Settings %}
+                {% set target_details = [] %}
+                {% for detail in setting.Details %}
+                  {% set _ = target_details.append(detail) %}
+                {% endfor %}
+                {% set setting_obj = {"Type": setting.Type, "Details": {"TargetSettingDetail": target_details}} %}
+                {% set _ = settings_content.append(setting_obj) %}
+              {% endfor %}
+              {{ settings_content }}
+          - type: AddedFieldDefinition
+            path:
+              - Settings
+            value: "{{ {'Setting': record.SettingContent} }}"
+      - type: RemoveFields
+        field_pointers:
+          - - SettingContent
+
+  ad_groups_stream:
+    type: DeclarativeStream
+    name: ad_groups
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_groups"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/AdGroups/QueryByCampaignId
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerAccountId: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          CustomerId: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+        request_body_json:
+          CampaignId: "{{ stream_partition['campaign_id'][0] | string }}"
+          ReturnAdditionalFields: "AdGroupType,AdScheduleUseSearcherTimeZone,CpmBid,CpvBid,MultimediaAdsBidAdjustment"
+        authenticator: "#/definitions/authenticator"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/campaigns_stream"
+              extra_fields:
+                - - AccountId
+                - - CustomerId
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [ "AdGroups" ]
+        schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CampaignId
+            value: "{{ stream_partition['campaign_id'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CustomerId
+            value: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+
+  ads_stream:
+    type: DeclarativeStream
+    name: ads
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ads"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Ads/QueryByAdGroupId
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerAccountId: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          CustomerId: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+        request_body_json:
+          AdGroupId: "{{ stream_partition['ad_group_id'][0] | string }}"
+          AdTypes: '{{ [ "Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch" ] }}'
+          ReturnAdditionalFields: "ImpressionTrackingUrls,Videos,LongHeadlines"
+        authenticator: "#/definitions/authenticator"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: ad_group_id
+              stream:
+                $ref: "#/definitions/ad_groups_stream"
+              extra_fields:
+                - - AccountId
+                - - CustomerId
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [ "Ads" ]
+        schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - AdGroupId
+            value: "{{ stream_partition['ad_group_id'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CustomerId
+            value: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Descriptions_AssetLink
+            value: "{{ record.get('Descriptions') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_FinalMobileUrls_string
+            value: "{{ record.get('FinalMobileUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_FinalUrls_string
+            value: "{{ record.get('FinalUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Headlines_AssetLink
+            value: "{{ record.get('Headlines') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - Descriptions
+          - - FinalMobileUrls
+          - - FinalUrls
+          - - Headlines
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - Descriptions
+              - AssetLink
+            value: "{{ record.get('_tmp_Descriptions_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalMobileUrls
+              - string
+            value: "{{ record.get('_tmp_FinalMobileUrls_string') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalUrls
+              - string
+            value: "{{ record.get('_tmp_FinalUrls_string') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Headlines
+              - AssetLink
+            value: "{{ record.get('_tmp_Headlines_AssetLink') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - _tmp_Descriptions_AssetLink
+          - - _tmp_FinalMobileUrls_string
+          - - _tmp_FinalUrls_string
+          - - _tmp_Headlines_AssetLink
+
 streams:
   - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/campaigns_stream"
+  - $ref: "#/definitions/ad_groups_stream"
+  - $ref: "#/definitions/ads_stream"
 
 schemas:
   accounts:
@@ -390,6 +672,1013 @@ schemas:
                   type:
                     - "null"
                     - string
+
+  campaigns:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The unique identifier of the account associated with the campaign.
+        type:
+          - "null"
+          - integer
+      CustomerId:
+        description: The unique identifier of the customer associated with the campaign.
+        type:
+          - "null"
+          - integer
+      AudienceAdsBidAdjustment:
+        description: Bid adjustment value for audience targeting ads.
+        type:
+          - "null"
+          - number
+      BiddingScheme:
+        description: Details of the bidding scheme for the campaign
+        type:
+          - "null"
+          - object
+        properties:
+          Type:
+            description: The type of bidding strategy used for the campaign.
+            type:
+              - "null"
+              - string
+          MaxCpc:
+            description: Details of the maximum cost-per-click bid
+            type:
+              - "null"
+              - object
+            properties:
+              Amount:
+                description: The maximum cost-per-click bid for the campaign.
+                type:
+                  - "null"
+                  - number
+      BudgetType:
+        description: The type of budget (e.g., daily, monthly) for the campaign.
+        type:
+          - "null"
+          - string
+      MultimediaAdsBidAdjustment:
+        description: Bid adjustment value for multimedia ads.
+        type:
+          - "null"
+          - number
+      DailyBudget:
+        description: The daily budget amount set for the campaign.
+        type:
+          - "null"
+          - number
+      ExperimentId:
+        description: The identifier of the experiment linked to the campaign.
+        type:
+          - "null"
+          - number
+      FinalUrlSuffix:
+        description: The final URL suffix appended to campaign URLs.
+        type:
+          - "null"
+          - string
+      ForwardCompatibilityMap:
+        description: Forward compatibility map for potential future enhancements
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            key:
+              description: The key identifying a forward compatibility setting.
+              type:
+                - "null"
+                - string
+            value:
+              description: The value associated with the forward compatibility setting.
+              type:
+                - "null"
+                - string
+      Id:
+        description: The unique identifier of the campaign.
+        type:
+          - "null"
+          - number
+      Name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      Status:
+        description: The status of the campaign (e.g., Active, Paused).
+        type:
+          - "null"
+          - string
+      SubType:
+        description: The subtype of the campaign, providing additional context.
+        type:
+          - "null"
+          - string
+      TimeZone:
+        description: The time zone setting for the campaign.
+        type:
+          - "null"
+          - string
+      TrackingUrlTemplate:
+        description: The tracking URL template used for the campaign.
+        type:
+          - "null"
+          - string
+      UrlCustomParameters:
+        description: Custom parameters for campaign URLs
+        type:
+          - "null"
+          - object
+        properties:
+          Parameters:
+            description: Specific URL parameters
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                Key:
+                  description: The key parameter for URL customization.
+                  type:
+                    - "null"
+                    - string
+                Value:
+                  description: The value parameter for URL customization.
+                  type:
+                    - "null"
+                    - string
+      CampaignType:
+        description: The type of campaign (e.g., Search, Display, Video) being run.
+        type:
+          - "null"
+          - string
+      Settings:
+        description: Settings related to the campaign
+        type:
+          - "null"
+          - object
+        properties:
+          Setting:
+            description: Specific setting details
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                Type:
+                  description: The type of setting applied to the campaign.
+                  type:
+                    - "null"
+                    - string
+                Details:
+                  description: Specific details of the setting
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    TargetSettingDetail:
+                      description: Specific target setting details
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          CriterionTypeGroup:
+                            description: The group type for targeting.
+                            type:
+                              - "null"
+                              - string
+                          TargetAndBid:
+                            description: Indicates whether targeting is set to 'Bid only' or 'Target and bid'.
+                            type:
+                              - "null"
+                              - boolean
+      BudgetId:
+        description: The identifier of the budget associated with the campaign.
+        type:
+          - "null"
+          - number
+      Languages:
+        description: Languages targeted in the campaign
+        type:
+          - "null"
+          - object
+        properties:
+          string:
+            description: The languages targeted by the campaign.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      AdScheduleUseSearcherTimeZone:
+        description: Indicates whether ad schedules should be based on the searcher's time zone.
+        type:
+          - "null"
+          - boolean
+
+  ad_groups:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      CampaignId:
+        description: The unique identifier of the campaign to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      AccountId:
+        description: The unique identifier of the account to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      CustomerId:
+        description: The unique identifier of the customer to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      AdRotation:
+        description: Defines how ads are rotated within the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          EndDate:
+            description: The end date for the ad rotation period.
+            type:
+              - "null"
+              - string
+          StartDate:
+            description: The start date for the ad rotation period.
+            type:
+              - "null"
+              - string
+          Type:
+            description: The type of ad rotation strategy being used.
+            type:
+              - "null"
+              - string
+      AudienceAdsBidAdjustment:
+        description: The bid adjustment for audience-based ads.
+        type:
+          - "null"
+          - number
+      BiddingScheme:
+        description: The bidding strategy used for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Type:
+            description: The type of bidding strategy being used.
+            type:
+              - "null"
+              - string
+          InheritedBidStrategyType:
+            description: The inherited bid strategy type from the parent campaign.
+            type:
+              - "null"
+              - string
+      CpcBid:
+        description: The cost-per-click bid for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Amount:
+            description: The amount of the cost-per-click bid.
+            type:
+              - "null"
+              - number
+      CpvBid:
+        description: The cost-per-view bid for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Amount:
+            description: The amount of the cost-per-view bid.
+            type:
+              - "null"
+              - number
+      CpmBid:
+        description: The cost-per-thousand-impressions bid for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Amount:
+            description: The amount of the cost-per-thousand-impressions bid.
+            type:
+              - "null"
+              - number
+      EndDate:
+        description: The end date of the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Day:
+            description: The day part of the end date.
+            type:
+              - "null"
+              - integer
+          Month:
+            description: The month part of the end date.
+            type:
+              - "null"
+              - integer
+          Year:
+            description: The year part of the end date.
+            type:
+              - "null"
+              - integer
+      FinalUrlSuffix:
+        description: A string to append to the final URL.
+        type:
+          - "null"
+          - string
+      ForwardCompatibilityMap:
+        description: A map of key-value pairs for forward compatibility.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            key:
+              description: The key of the compatibility pair.
+              type:
+                - "null"
+                - string
+            value:
+              description: The value of the compatibility pair.
+              type:
+                - "null"
+                - string
+      Id:
+        description: The unique identifier of the ad group.
+        type:
+          - "null"
+          - integer
+      Language:
+        description: The language targeting setting for the ad group.
+        type:
+          - "null"
+          - string
+      Name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      Network:
+        description: The network targeting setting for the ad group.
+        type:
+          - "null"
+          - string
+      PrivacyStatus:
+        description: The privacy status of the ad group.
+        type:
+          - "null"
+          - string
+      Settings:
+        description: The settings associated with the ad group.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            Type:
+              description: The type of setting.
+              type:
+                - "null"
+                - string
+      StartDate:
+        description: The start date of the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Day:
+            description: The day part of the start date.
+            type:
+              - "null"
+              - integer
+          Month:
+            description: The month part of the start date.
+            type:
+              - "null"
+              - integer
+          Year:
+            description: The year part of the start date.
+            type:
+              - "null"
+              - integer
+      Status:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      TrackingUrlTemplate:
+        description: The tracking URL template for the ad group.
+        type:
+          - "null"
+          - string
+      UrlCustomParameters:
+        description: Custom parameters for tracking URLs.
+        type:
+          - "null"
+          - object
+        properties:
+          Parameters:
+            description: The list of custom parameters.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  description: The key of the custom parameter.
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: The value of the custom parameter.
+                  type:
+                    - "null"
+                    - string
+      AdScheduleUseSearcherTimeZone:
+        description: Indicates whether ad scheduling uses the searcher's time zone.
+        type:
+          - "null"
+          - boolean
+      AdGroupType:
+        description: The type of the ad group (e.g., Search, Display, Video, etc).
+        type:
+          - "null"
+          - string
+      MultimediaAdsBidAdjustment:
+        description: The bid adjustment for multimedia ads.
+        type:
+          - "null"
+          - integer
+
+  ads:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AdGroupId:
+        description: The unique identifier for the ad group to which the ad belongs
+        type:
+          - "null"
+          - integer
+      AccountId:
+        description: The unique identifier for the account associated with the ad
+        type:
+          - "null"
+          - integer
+      CustomerId:
+        description: The unique identifier for the customer associated with the ad
+        type:
+          - "null"
+          - integer
+      AdFormatPreference:
+        description: Preference for the ad format
+        type:
+          - "null"
+          - string
+      DevicePreference:
+        description: Preference for the device on which the ad should be displayed
+        type:
+          - "null"
+          - integer
+      EditorialStatus:
+        description: The editorial review status of the ad
+        type:
+          - "null"
+          - string
+      BusinessName:
+        description: The name of the business or entity associated with the ad
+        type:
+          - "null"
+          - string
+      CallToAction:
+        description: The call-to-action message for the ad
+        type:
+          - "null"
+          - string
+      CallToActionLanguage:
+        description: The language used for the call-to-action message
+        type:
+          - "null"
+          - string
+      Headline:
+        description: The headline of the ad
+        type:
+          - "null"
+          - string
+      Images:
+        description: Contains images for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the images
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      Videos:
+        description: Contains videos for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the videos
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      LongHeadlines:
+        description: Contains long headlines for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the long headlines
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      LongHeadline:
+        description: Long headline for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          Asset:
+            description: Defines the asset properties for long headlines
+            type:
+              - "null"
+              - object
+            properties:
+              Id:
+                description: The unique identifier for the asset
+                type:
+                  - "null"
+                  - integer
+              Name:
+                description: The name of the asset
+                type:
+                  - "null"
+                  - integer
+              Type:
+                description: The type of the asset
+                type:
+                  - "null"
+                  - integer
+          AssetPerformanceLabel:
+            description: Label indicating the performance of the asset
+            type:
+              - "null"
+              - string
+          EditorialStatus:
+            description: The editorial review status of the asset
+            type:
+              - "null"
+              - string
+          PinnedField:
+            description: Indicates if the field is pinned
+            type:
+              - "null"
+              - string
+      LongHeadlineString:
+        description: The long headline content as a string
+        type:
+          - "null"
+          - string
+      Text:
+        description: The text content of the ad
+        type:
+          - "null"
+          - string
+      TextPart2:
+        description: The second part of the text content for the ad
+        type:
+          - "null"
+          - string
+      TitlePart1:
+        description: The first part of the ad title
+        type:
+          - "null"
+          - string
+      TitlePart2:
+        description: The second part of the ad title
+        type:
+          - "null"
+          - string
+      TitlePart3:
+        description: The third part of the ad title
+        type:
+          - "null"
+          - string
+      FinalAppUrls:
+        description: Final URLs for mobile app links
+        type: "null"
+      FinalMobileUrls:
+        description: Mobile final URLs for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          string:
+            description: String properties for mobile URLs
+            type:
+              - "null"
+              - array
+            items:
+              description: Final mobile URL
+              type:
+                - "null"
+                - string
+      FinalUrlSuffix:
+        description: Suffix to append to the final URL
+        type:
+          - "null"
+          - string
+      FinalUrls:
+        description: Final URLs for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          string:
+            description: String properties for URLs
+            type:
+              - "null"
+              - array
+            items:
+              description: Final URL
+              type:
+                - "null"
+                - string
+      ForwardCompatibilityMap:
+        description: Map for forward compatibility with future API changes
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            key:
+              description: Key for the compatibility map
+              type:
+                - "null"
+                - string
+            value:
+              description: Value for the compatibility map
+              type:
+                - "null"
+                - string
+      Id:
+        description: The unique identifier for the ad
+        type:
+          - "null"
+          - integer
+      Status:
+        description: The status of the ad
+        type:
+          - "null"
+          - string
+      TrackingUrlTemplate:
+        description: Template for tracking URLs
+        type:
+          - "null"
+          - string
+      Type:
+        description: The type of ad
+        type:
+          - "null"
+          - string
+      UrlCustomParameters:
+        description: Custom URL parameters for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          Parameters:
+            description: Defines the URL parameter properties
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  description: Parameter key
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: Parameter value
+                  type:
+                    - "null"
+                    - string
+      Descriptions:
+        description: Contains descriptions for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the descriptions
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      Domain:
+        description: The domain associated with the ad
+        type:
+          - "null"
+          - string
+      Headlines:
+        description: Contains headlines for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the headlines
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      Path1:
+        description: The first part of the display URL path
+        type:
+          - "null"
+          - string
+      Path2:
+        description: The second part of the display URL path
+        type:
+          - "null"
+          - string
+
 
 concurrency_level:
   type: ConcurrencyLevel
