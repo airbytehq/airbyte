@@ -2,12 +2,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from dataclasses import dataclass
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass

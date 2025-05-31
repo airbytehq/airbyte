@@ -24,7 +24,6 @@ from source_google_search_console.components import NestedSubstreamStateMigratio
                     {"partition": {"search_type": "news", "site_url": "https://nerv.gov"}, "cursor": {"date": "2025-05-21"}},
                     {"partition": {"search_type": "image", "site_url": "https://nerv.gov"}, "cursor": {"date": "2025-05-14"}},
                 ],
-                "state": {"date": "2025-05-14"},
             },
             id="test_migrate_legacy_state_to_per_partition_state",
         ),
