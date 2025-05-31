@@ -55,16 +55,6 @@ definitions:
         path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: startRow
-            inject_into: request_body
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 25000
-            inject_on_first_request: true
         request_headers:
           Content-Type: "application/json"
         request_body_json:
@@ -78,6 +68,16 @@ definitions:
         # Currently relying on the default error handler behavior. Two pieces of functionality not covered are
         # - Silently skipping over 403 permissions errors and relying on partial success reporting
         # - Retrying 400 errors with aggregation_type=auto instead of failing outright
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: startRow
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 25000
+          inject_on_first_request: true
       record_selector:
         type: RecordSelector
         extractor:
