@@ -63,16 +63,19 @@ definitions:
           dimensions: ["date", "country"]
           type: "{{ stream_partition.get('search_type') }}"
           aggregationType: auto
-          rowLimit: "25000"
           dataState: "{{ config.get('data_state', 'final') }}"
         # Currently relying on the default error handler behavior. Two pieces of functionality not covered are
         # - Silently skipping over 403 permissions errors and relying on partial success reporting
         # - Retrying 400 errors with aggregation_type=auto instead of failing outright
       paginator:
         type: DefaultPaginator
-        page_size_option:
+        page_token_option:
           type: RequestOption
           field_name: startRow
+          inject_into: body_json
+        page_size_option:
+          type: RequestOption
+          field_name: rowLimit
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
