@@ -454,8 +454,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: '{{ response.get("paging", {}).get("start", {}) + response.get("paging", {}).get("count", {}) }}'
+            stop_condition: '{{ response.get("paging", {}).get("total", {}) == 0 }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -505,8 +506,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: '{{ response.get("paging", {}).get("start", {}) + response.get("paging", {}).get("count", {}) }}'
+            stop_condition: '{{ response.get("paging", {}).get("total", {}) == 0 }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
