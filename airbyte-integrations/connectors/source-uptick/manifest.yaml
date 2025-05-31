@@ -1,0 +1,5304 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: |-
+  Extract data from Uptick - The new standard in
+  fire inspection software.
+
+check:
+  type: CheckStream
+  stream_names:
+    - tasks
+
+definitions:
+  streams:
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __str__
+              value: "{{ record['attributes']['__str__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __web_url__
+              value: "{{ record['attributes']['__web_url__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - due
+              value: "{{ record['attributes']['due'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - pm_date
+              value: "{{ record['attributes']['pm_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - tolerance_start
+              value: "{{ record['attributes']['tolerance_start'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - tolerance_end
+              value: "{{ record['attributes']['tolerance_end'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - description
+              value: "{{ record['attributes']['description'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - scope_of_works
+              value: "{{ record['attributes']['scope_of_works'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address
+              value: "{{ record['attributes']['address'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - coord_lat
+              value: "{{ record['attributes']['coord_lat'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - coord_lng
+              value: "{{ record['attributes']['coord_lng'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_procedure
+              value: "{{ record['attributes']['access_procedure'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_schedule
+              value: "{{ record['attributes']['access_schedule'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_code
+              value: "{{ record['attributes']['access_code'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - priority
+              value: "{{ record['attributes']['priority'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - authorisation_amount
+              value: "{{ record['attributes']['authorisation_amount'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - app_link
+              value: "{{ record['attributes']['app_link'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - timezone
+              value: "{{ record['attributes']['timezone'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - contractor_authorisation_limit
+              value: "{{ record['attributes']['contractor_authorisation_limit'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_editable
+              value: "{{ record['attributes']['is_editable'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - category_id
+              value: "{{ record['relationships']['category']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - servicegroup_id
+              value: "{{ record['relationships']['servicegroup']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_id
+              value: "{{ record['relationships']['client']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ record['relationships']['property']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billingcard_id
+              value: "{{ record['relationships']['billingcard']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - assigned_to_id
+              value: "{{ record['relationships']['assigned_to']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - costcentre_id
+              value: "{{ record['relationships']['costcentre']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - author_id
+              value: "{{ record['relationships']['author']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated_by_id
+              value: "{{ record['relationships']['updated_by']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status_id
+              value: "{{ record['relationships']['status']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    taskcategories:
+      type: DeclarativeStream
+      name: taskcategories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: taskcategories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record[\"attributes\"][\"name\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taskcategories"
+    clients:
+      type: DeclarativeStream
+      name: clients
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __web_url__
+              value: "{{ record['attributes']['__web_url__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - contact_name
+              value: "{{ record['attributes']['contact_name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - contact_email
+              value: "{{ record['attributes']['contact_email'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - autocomp_label
+              value: "{{ record['attributes']['autocomp_label'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - current_business_hours_in_bh
+              value: "{{ record['attributes']['current_business_hours']['in_bh'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - current_business_hours_hours_start
+              value: >-
+                {{
+                record['attributes']['current_business_hours']['hours']['start']
+                }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - current_business_hours_hours_end
+              value: >-
+                {{
+                record['attributes']['current_business_hours']['hours']['end']
+                }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - current_business_hours_hours_closed
+              value: >-
+                {{
+                record['attributes']['current_business_hours']['hours']['closed']
+                }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - current_business_hours_is_set
+              value: "{{ record['attributes']['current_business_hours']['is_set'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_manual
+              value: "{{ record['attributes']['report_manual'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billing_manual
+              value: "{{ record['attributes']['billing_manual'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billing_fixedprice
+              value: "{{ record['attributes']['billing_fixedprice'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - quoting_autoreminders_enabled
+              value: "{{ record['attributes']['quoting_autoreminders_enabled'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - primary_contact__email
+              value: "{{ record['attributes']['primary_contact__email'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - primary_contact_id
+              value: "{{ record['relationships']['primary_contact']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billingcard_id
+              value: "{{ record['relationships']['billingcard']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - pricetier_id
+              value: "{{ record['relationships']['pricetier']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients"
+    clientgroups:
+      type: DeclarativeStream
+      name: clientgroups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clientgroups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - sector
+              value: "{{ record['attributes']['sector'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clientgroups"
+    properties:
+      type: DeclarativeStream
+      name: properties
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: properties
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __str__
+              value: "{{ record['attributes']['__str__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __web_url__
+              value: "{{ record['attributes']['__web_url__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_country
+              value: "{{ record['attributes']['address']['country'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_display
+              value: "{{ record['attributes']['address']['display'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_streetline
+              value: "{{ record['attributes']['address']['streetline'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_city
+              value: "{{ record['attributes']['address']['city'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_state
+              value: "{{ record['attributes']['address']['state'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_country_name
+              value: "{{ record['attributes']['address']['country_name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_postal_code
+              value: "{{ record['attributes']['address']['postal_code'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - address_place_id
+              value: "{{ record['attributes']['address']['place_id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - coords_lat
+              value: "{{ record['attributes']['coords']['lat'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - coords_lng
+              value: "{{ record['attributes']['coords']['lng'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - timezone
+              value: "{{ record['attributes']['timezone'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_inductionreq
+              value: "{{ record['attributes']['access_inductionreq'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_logbookreq
+              value: "{{ record['attributes']['access_logbookreq'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_schedule
+              value: "{{ record['attributes']['access_schedule'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - access_signaturereq
+              value: "{{ record['attributes']['access_signaturereq'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - autocomp_label
+              value: "{{ record['attributes']['autocomp_label'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billing_manual
+              value: "{{ record['attributes']['billing_manual'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - building_tenancies
+              value: "{{ record['attributes']['building_tenancies'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_signature_required
+              value: "{{ record['attributes']['client_signature_required'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - report_manual
+              value: "{{ record['attributes']['report_manual'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - bsecure_resolved_guid
+              value: "{{ record['attributes']['bsecure_resolved_guid'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_id
+              value: "{{ record['relationships']['client']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/properties"
+    taskprofitability:
+      type: DeclarativeStream
+      name: taskprofitability
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: intelligence/task-profitability/
+          http_method: GET
+          request_parameters:
+            inactive_date_after: "{{ config['start_date'] }}"
+            inactive_date_before: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taskprofitability"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_sent
+              value: "{{ record['attributes']['is_sent'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ record['attributes']['date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - due_date
+              value: "{{ record['attributes']['due_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - subtotal
+              value: "{{ record['attributes']['subtotal'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - gst
+              value: "{{ record['attributes']['gst'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - total
+              value: "{{ record['attributes']['total'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - description
+              value: "{{ record['attributes']['description'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - currency
+              value: "{{ record['attributes']['currency'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_overdue
+              value: "{{ record['attributes']['is_overdue'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - author_id
+              value: "{{ record['relationships']['author']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billingcard_id
+              value: "{{ record['relationships']['billingcard']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - task_id
+              value: "{{ record['relationships']['task']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ record['relationships']['property']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_id
+              value: "{{ record['relationships']['client']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - category
+              value: "{{ record['attributes']['category'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - scope_of_works
+              value: "{{ record['attributes']['scope_of_works'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - retention_rate
+              value: "{{ record['attributes']['retention_rate'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - final_rebate_rate
+              value: "{{ record['attributes']['final_rebate_rate'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - expected_start_date
+              value: "{{ record['attributes']['expected_start_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - expected_completion_date
+              value: "{{ record['attributes']['expected_completion_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - actual_start_date
+              value: "{{ record['attributes']['actual_start_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - retention_date
+              value: "{{ record['attributes']['retention_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - original_servicequote_id
+              value: >-
+                {{
+                record['relationships']['original_servicequote']['data']['id']
+                }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - costcentre_id
+              value: "{{ record['relationships']['costcentre']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - billingcard_id
+              value: "{{ record['relationships']['billingcard']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ record['relationships']['property']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_id
+              value: "{{ record['relationships']['client']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supervisor_id
+              value: "{{ record['relationships']['supervisor']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    servicequotes:
+      type: DeclarativeStream
+      name: servicequotes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: servicequotes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ record['attributes']['uuid'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status_changed_submitted
+              value: "{{ record['attributes']['status_changed_submitted'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status_changed_approved
+              value: "{{ record['attributes']['status_changed_approved'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - expiry_date
+              value: "{{ record['attributes']['expiry_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - review_date
+              value: "{{ record['attributes']['review_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - template
+              value: "{{ record['attributes']['template'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - template_name
+              value: "{{ record['attributes']['template_name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - description
+              value: "{{ record['attributes']['description'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - scope_of_works_format
+              value: "{{ record['attributes']['scope_of_works_format'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - upload_path
+              value: "{{ record['attributes']['upload_path'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_access_schedule
+              value: "{{ record['attributes']['property_access_schedule'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - authorisation_date
+              value: "{{ record['attributes']['authorisation_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - product_subtotal
+              value: "{{ record['attributes']['product_subtotal'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - documenttemplate_id
+              value: "{{ record['relationships']['documenttemplate']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_object_id
+              value: "{{ record['relationships']['client_object']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_object_id
+              value: "{{ record['relationships']['property_object']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - author_id
+              value: "{{ record['relationships']['author']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - project_id
+              value: "{{ record['relationships']['project']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/servicequotes"
+    defectquotes:
+      type: DeclarativeStream
+      name: defectquotes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: defectquotes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ record['attributes']['date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - due_date
+              value: "{{ record['attributes']['due_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - expiry_date
+              value: "{{ record['attributes']['expiry_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - last_actioned
+              value: "{{ record['attributes']['last_actioned'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - email_template
+              value: "{{ record['attributes']['email_template'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reminder_email_template
+              value: "{{ record['attributes']['reminder_email_template'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - description
+              value: "{{ record['attributes']['description'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - scope_of_works
+              value: "{{ record['attributes']['scope_of_works'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ record['attributes']['uuid'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - upload_path
+              value: "{{ record['attributes']['upload_path'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - documenttemplate_id
+              value: "{{ record['relationships']['documenttemplate']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - task_id
+              value: "{{ record['relationships']['task']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ record['relationships']['property']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - client_id
+              value: "{{ record['relationships']['client']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - author_id
+              value: "{{ record['relationships']['author']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - costcentre_id
+              value: "{{ record['relationships']['costcentre']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/defectquotes"
+    suppliers:
+      type: DeclarativeStream
+      name: suppliers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: suppliers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __str__
+              value: "{{ record['attributes']['__str__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - __web_url__
+              value: "{{ record['attributes']['__web_url__'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - partner_uid
+              value: "{{ record['attributes']['partner_uid'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - accounts_name
+              value: "{{ record['attributes']['accounts_name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - purchasing_name
+              value: "{{ record['attributes']['purchasing_name'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppliers"
+    purchaseorders:
+      type: DeclarativeStream
+      name: purchaseorders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchaseorders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - type
+              value: "{{ record['attributes']['type'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - all_goods_received
+              value: "{{ record['attributes']['all_goods_received'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ record['attributes']['date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - total
+              value: "{{ record['attributes']['total'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supplier_ref
+              value: "{{ record['attributes']['supplier_ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_editable
+              value: "{{ record['attributes']['is_editable'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_via
+              value: "{{ record['attributes']['created_via'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - has_manually_added_costs
+              value: "{{ record['attributes']['has_manually_added_costs'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - currency
+              value: "{{ record['attributes']['currency'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - fx_rate
+              value: "{{ record['attributes']['fx_rate'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supplier_id
+              value: "{{ record['relationships']['supplier']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - task_id
+              value: "{{ record['relationships']['task']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_by_id
+              value: "{{ record['relationships']['created_by']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - submitted_by_id
+              value: "{{ record['relationships']['submitted_by']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reviewed_by_id
+              value: "{{ record['relationships']['reviewed_by']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchaseorders"
+    assets:
+      type: DeclarativeStream
+      name: assets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: assets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_silent
+              value: "{{ record['attributes']['is_silent'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_notoncofo
+              value: "{{ record['attributes']['is_notoncofo'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uptick_ref
+              value: "{{ record['attributes']['uptick_ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref
+              value: "{{ record['attributes']['ref'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - compliant
+              value: "{{ record['attributes']['compliant'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inspection_order
+              value: "{{ record['attributes']['inspection_order'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - base_date
+              value: "{{ record['attributes']['base_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - total_expected_life
+              value: "{{ record['attributes']['total_expected_life'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inspected_date
+              value: "{{ record['attributes']['inspected_date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - guid
+              value: "{{ record['attributes']['guid'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - coord_lat
+              value: "{{ record['attributes']['coord_lat'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - coord_lng
+              value: "{{ record['attributes']['coord_lng'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - last_service_result
+              value: "{{ record['attributes']['last_service_result'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_absolute_url
+              value: "{{ record['attributes']['get_absolute_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_edit_url
+              value: "{{ record['attributes']['get_edit_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - get_service_url
+              value: "{{ record['attributes']['get_service_url'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - type_id
+              value: "{{ record['relationships']['type']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - variant_id
+              value: "{{ record['relationships']['variant']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ record['relationships']['property']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - contractor_id
+              value: "{{ record['relationships']['contractor']['data']['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - serviced_by_id
+              value: "{{ record['relationships']['serviced_by']['data']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assets"
+    routines:
+      type: DeclarativeStream
+      name: routines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: routines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - display_name
+              value: "{{ record['attributes']['display_name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - due
+              value: "{{ record['attributes']['due'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - tolerance_period_start
+              value: "{{ record['attributes']['tolerance_period_start'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - tolerance_period_end
+              value: "{{ record['attributes']['tolerance_period_end'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_processing
+              value: "{{ record['attributes']['is_processing'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - routineservicelevel_id
+              value: >-
+                {{ record['relationships']['routineservicelevel']['data']['id']
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/routines"
+    billingcard:
+      type: DeclarativeStream
+      name: billingcard
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: billingcards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['attributes']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - is_active
+              value: "{{ record['attributes']['is_active'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - autocomp_label
+              value: "{{ record['attributes']['autocomp_label'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/billingcard"
+    purchaseorderbills:
+      type: DeclarativeStream
+      name: purchaseorderbills
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchaseorderbills
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created
+              value: "{{ record['attributes']['created'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['attributes']['updated'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - invoice_number
+              value: "{{ record['attributes']['invoice_number'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - invoice_date
+              value: "{{ record['attributes']['invoice_date'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchaseorderbills"
+    purchaseorderdockets:
+      type: DeclarativeStream
+      name: purchaseorderdockets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchaseorderdockets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[offset]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - number
+              value: "{{ record['attributes']['number']}}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ record['attributes']['date'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - status
+              value: "{{ record['attributes']['status'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchaseorderdockets"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url']}}/api/v2/"
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - oauth_access_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+        refresh_token_config_path:
+          - client_refresh_token
+      token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+      grant_type: refresh_token
+
+streams:
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/taskcategories"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/clientgroups"
+  - $ref: "#/definitions/streams/properties"
+  - $ref: "#/definitions/streams/taskprofitability"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/servicequotes"
+  - $ref: "#/definitions/streams/defectquotes"
+  - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/purchaseorders"
+  - $ref: "#/definitions/streams/assets"
+  - $ref: "#/definitions/streams/routines"
+  - $ref: "#/definitions/streams/billingcard"
+  - $ref: "#/definitions/streams/purchaseorderbills"
+  - $ref: "#/definitions/streams/purchaseorderdockets"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - start_date
+    properties:
+      base_url:
+        type: string
+        description: "Ex: https://demo-fire.onuptick.com/"
+        order: 0
+        title: Base Url
+      client_id:
+        type: string
+        order: 1
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 2
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 3
+        title: Refresh token
+        airbyte_secret: true
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        order: 4
+        title: Access token
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 5
+        title: Token expiry date
+        format: date-time
+      start_date:
+        type: string
+        description: Fetch data starting from this date (by default 2025-01-01)
+        order: 6
+        title: Start Date
+        default: "2025-01-01"
+      end_date:
+        type: string
+        description: Fetch data up until this date
+        order: 7
+        title: End Date
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    tasks: false
+    taskcategories: true
+    clients: true
+    clientgroups: true
+    properties: true
+    taskprofitability: true
+    invoices: false
+    projects: true
+    servicequotes: false
+    defectquotes: false
+    suppliers: true
+    purchaseorders: false
+    assets: true
+    routines: true
+    billingcard: false
+    purchaseorderbills: false
+    purchaseorderdockets: false
+  testedStreams:
+    tasks:
+      hasRecords: true
+      streamHash: 475248239a027fbfa34e7ef5ea151f6583c75865
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taskcategories:
+      hasRecords: true
+      streamHash: cefe1a4e0bd4157a77ebac0b0d324e4a4fdf1b1b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    clients:
+      hasRecords: true
+      streamHash: a2fb8ce0857e5f95c5a378f789c08973d8fe17b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    clientgroups:
+      hasRecords: true
+      streamHash: 3317c567787cedef8c891f959b5dbb4341af8d3b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    properties:
+      hasRecords: true
+      streamHash: 2cff58f3005957f334c9fea35684028ff03aa94d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taskprofitability:
+      streamHash: c021f00a28144eb5262c50f09b0e051f68999f37
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoices:
+      hasRecords: true
+      streamHash: 004b545ae7456e4eb8daf71761b3ca5e008101c9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: 40752bde636618aeaca8bb6814ee260d3ffbeda7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    servicequotes:
+      hasRecords: true
+      streamHash: d5409a47366ba091f8c4cc133895f1b15ff237f6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    defectquotes:
+      hasRecords: true
+      streamHash: 4d86962808a30f324fad2cb22d338fad51111569
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suppliers:
+      hasRecords: true
+      streamHash: 752caa35924396b41b79d05b2c26a98f1c690e90
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchaseorders:
+      hasRecords: true
+      streamHash: ef4b0f12e32105e78cfa5c83e5c4e29db5458cc6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    assets:
+      hasRecords: true
+      streamHash: 32009a288c45e13c5befefb8ac65865a5a01874a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    routines:
+      hasRecords: true
+      streamHash: c4da971780aecca5ee416e990fee7975dcc27a27
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    billingcard:
+      streamHash: 16c7e175b2e930ad9f0cdacd22f313176452de26
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    purchaseorderbills:
+      streamHash: c0c9a15684da97a912da0cedf2a18257494871ff
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    purchaseorderdockets:
+      streamHash: c525d82cf311faad573ad0e03b63c1ef7b4e8a10
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      __str__:
+        type:
+          - string
+          - "null"
+      __web_url__:
+        type:
+          - string
+          - "null"
+      access_code:
+        type:
+          - number
+          - string
+          - "null"
+      access_procedure:
+        type:
+          - string
+          - "null"
+      access_schedule:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      app_link:
+        type:
+          - string
+          - "null"
+      assigned_to_id:
+        type:
+          - number
+          - string
+          - "null"
+      author_id:
+        type:
+          - number
+          - string
+          - "null"
+      authorisation_amount:
+        type:
+          - number
+          - "null"
+      billingcard_id:
+        type:
+          - number
+          - string
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      contractor_authorisation_limit:
+        type:
+          - number
+          - "null"
+      coord_lat:
+        type:
+          - number
+          - "null"
+      coord_lng:
+        type:
+          - number
+          - "null"
+      costcentre_id:
+        type:
+          - string
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - number
+          - string
+          - "null"
+      pm_date:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      property_id:
+        type:
+          - number
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          assigned_office:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          assigned_to:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          author:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          billingcard:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          branch:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          callout:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          client:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          contractor:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          contractor_assigned_technician:
+            type:
+              - object
+              - "null"
+            properties: {}
+          costcentre:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          parent_task:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          project:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          property:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          round:
+            type:
+              - object
+              - "null"
+            properties: {}
+          servicegroup:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          sla:
+            type:
+              - object
+              - "null"
+            properties: {}
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          technician:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          updated_by:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          zone:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      scope_of_works:
+        type:
+          - string
+          - "null"
+      servicegroup_id:
+        type:
+          - number
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      tolerance_end:
+        type:
+          - string
+          - "null"
+      tolerance_start:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - number
+          - string
+          - "null"
+    required:
+      - id
+  taskcategories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      __web_url__:
+        type:
+          - string
+          - "null"
+      autocomp_label:
+        type:
+          - string
+          - "null"
+      billing_fixedprice:
+        type:
+          - boolean
+          - "null"
+      billing_manual:
+        type:
+          - boolean
+          - "null"
+      billingcard_id:
+        type:
+          - number
+          - string
+          - "null"
+      contact_email:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      current_business_hours_hours_closed:
+        type:
+          - boolean
+          - "null"
+      current_business_hours_hours_end:
+        type:
+          - string
+          - "null"
+      current_business_hours_hours_start:
+        type:
+          - string
+          - "null"
+      current_business_hours_in_bh:
+        type:
+          - boolean
+          - "null"
+      current_business_hours_is_set:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pricetier_id:
+        type:
+          - number
+          - "null"
+      primary_contact__email:
+        type:
+          - string
+          - "null"
+      primary_contact_id:
+        type:
+          - number
+          - "null"
+      quoting_autoreminders_enabled:
+        type:
+          - boolean
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          account_manager:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          billingcard:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          clientgroup:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          pricetier:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          primary_contact:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      report_manual:
+        type:
+          - boolean
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  clientgroups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          parent_clientgroup:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      sector:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      __str__:
+        type:
+          - string
+          - "null"
+      __web_url__:
+        type:
+          - string
+          - "null"
+      access_inductionreq:
+        type:
+          - boolean
+          - "null"
+      access_logbookreq:
+        type:
+          - boolean
+          - "null"
+      access_schedule:
+        type:
+          - string
+          - "null"
+      access_signaturereq:
+        type:
+          - boolean
+          - "null"
+      address_city:
+        type:
+          - string
+          - "null"
+      address_country:
+        type:
+          - string
+          - "null"
+      address_country_name:
+        type:
+          - string
+          - "null"
+      address_display:
+        type:
+          - string
+          - "null"
+      address_place_id:
+        type:
+          - string
+          - "null"
+      address_postal_code:
+        type:
+          - number
+          - string
+          - "null"
+      address_state:
+        type:
+          - string
+          - "null"
+      address_streetline:
+        type:
+          - string
+          - "null"
+      autocomp_label:
+        type:
+          - string
+          - "null"
+      billing_manual:
+        type:
+          - boolean
+          - "null"
+      bsecure_resolved_guid:
+        type:
+          - string
+          - "null"
+      building_tenancies:
+        type:
+          - number
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      client_signature_required:
+        type:
+          - boolean
+          - "null"
+      coords_lat:
+        type:
+          - number
+          - "null"
+      coords_lng:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          account_manager:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          billingcard:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          branch:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          client:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          iotsite:
+            type:
+              - object
+              - "null"
+            properties: {}
+          parent_property:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          pricetier:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          zone:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      report_manual:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  taskprofitability:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actual_cost_for_period_total:
+        type:
+          - number
+          - "null"
+      actual_cost_total:
+        type:
+          - number
+          - "null"
+      actual_hours_total:
+        type:
+          - number
+          - "null"
+      actual_onsite_hours:
+        type:
+          - number
+          - "null"
+      actual_other_hours:
+        type:
+          - number
+          - "null"
+      actual_profit:
+        type:
+          - number
+          - "null"
+      actual_travel_hours:
+        type:
+          - number
+          - "null"
+      billable_total:
+        type:
+          - number
+          - "null"
+      branch:
+        type:
+          - string
+          - "null"
+      cash_position:
+        type:
+          - number
+          - "null"
+      cash_position_for_period:
+        type:
+          - number
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      client_name:
+        type:
+          - string
+          - "null"
+      committed_cost_total:
+        type:
+          - number
+          - "null"
+      committed_hours_total:
+        type:
+          - number
+          - "null"
+      committed_onsite_hours:
+        type:
+          - number
+          - "null"
+      committed_other_hours:
+        type:
+          - number
+          - "null"
+      committed_travel_hours:
+        type:
+          - number
+          - "null"
+      cost_centre:
+        type:
+          - string
+          - "null"
+      cost_to_complete:
+        type:
+          - number
+          - "null"
+      cumulative_actual_cost:
+        type:
+          - number
+          - "null"
+      cumulative_invoiced:
+        type:
+          - number
+          - "null"
+      cumulative_invoiced_credit:
+        type:
+          - number
+          - "null"
+      cumulative_net_invoiced:
+        type:
+          - number
+          - "null"
+      estimated_cost_total:
+        type:
+          - number
+          - "null"
+      estimated_hours_total:
+        type:
+          - number
+          - "null"
+      estimated_sell_total:
+        type:
+          - number
+          - "null"
+      expected_revenue_total:
+        type:
+          - number
+          - "null"
+      historical_billable_total:
+        type:
+          - number
+          - "null"
+      hours_total:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      invoiced_credit_total:
+        type:
+          - number
+          - "null"
+      invoiced_for_period_credit:
+        type:
+          - number
+          - "null"
+      invoiced_for_period_total:
+        type:
+          - number
+          - "null"
+      invoiced_total:
+        type:
+          - number
+          - "null"
+      material_transferred_to_warehouse_cost:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      negative_billable_total:
+        type:
+          - number
+          - "null"
+      net_invoiced:
+        type:
+          - number
+          - "null"
+      net_invoiced_for_period:
+        type:
+          - number
+          - "null"
+      onsite_hours_total:
+        type:
+          - number
+          - "null"
+      other_hours_total:
+        type:
+          - number
+          - "null"
+      paid_cost_total:
+        type:
+          - number
+          - "null"
+      primary_technician:
+        type:
+          - string
+          - "null"
+      project_reference:
+        type:
+          - string
+          - "null"
+      property_id:
+        type:
+          - number
+          - "null"
+      property_name:
+        type:
+          - string
+          - "null"
+      quoted_cost_total:
+        type:
+          - number
+          - "null"
+      quoted_profit:
+        type:
+          - number
+          - "null"
+      quoted_sell_total:
+        type:
+          - number
+          - "null"
+      received_total:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      revised_cost_total:
+        type:
+          - number
+          - "null"
+      revised_hours_total:
+        type:
+          - number
+          - "null"
+      revised_margin:
+        type:
+          - number
+          - "null"
+      revised_profit:
+        type:
+          - number
+          - "null"
+      revised_sell_total:
+        type:
+          - number
+          - "null"
+      service_group:
+        type:
+          - string
+          - "null"
+      travel_hours_total:
+        type:
+          - number
+          - "null"
+      uninvoiced:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - integer
+          - "null"
+      author_id:
+        type:
+          - number
+          - string
+          - "null"
+      billingcard_id:
+        type:
+          - number
+          - "null"
+      client_id:
+        type:
+          - number
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      gst:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      is_overdue:
+        type:
+          - boolean
+          - "null"
+      is_sent:
+        type:
+          - boolean
+          - "null"
+      property_id:
+        type:
+          - number
+          - string
+          - "null"
+      ref:
+        type:
+          - number
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          author:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          billingcard:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          branch:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          client:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          property:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          task:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subtotal:
+        type:
+          - number
+          - "null"
+      task_id:
+        type:
+          - number
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      actual_start_date:
+        type:
+          - string
+          - "null"
+      billingcard_id:
+        type:
+          - number
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      costcentre_id:
+        type:
+          - number
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      expected_completion_date:
+        type:
+          - string
+          - "null"
+      expected_start_date:
+        type:
+          - string
+          - "null"
+      final_rebate_rate:
+        type:
+          - number
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      original_servicequote_id:
+        type:
+          - number
+          - string
+          - "null"
+      property_id:
+        type:
+          - number
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          billingcard:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          branch:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          client:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          costcentre:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          original_servicequote:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          property:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          supervisor:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      retention_date:
+        type:
+          - string
+          - "null"
+      retention_rate:
+        type:
+          - number
+          - "null"
+      scope_of_works:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      supervisor_id:
+        type:
+          - number
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  servicequotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      author_id:
+        type:
+          - string
+          - number
+          - "null"
+      authorisation_date:
+        type:
+          - string
+          - "null"
+      client_object_id:
+        type:
+          - number
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      documenttemplate_id:
+        type:
+          - number
+          - string
+          - "null"
+      expiry_date:
+        type:
+          - string
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      product_subtotal:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - string
+          - "null"
+      property_access_schedule:
+        type:
+          - string
+          - "null"
+      property_object_id:
+        type:
+          - number
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          author:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          client_object:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          documenttemplate:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          project:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          property_object:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          salesperson:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          supervisor:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      review_date:
+        type:
+          - string
+          - "null"
+      scope_of_works_format:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_changed_approved:
+        type:
+          - string
+          - "null"
+      status_changed_submitted:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      template_name:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      upload_path:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  defectquotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - number
+          - string
+          - "null"
+      author_id:
+        type:
+          - string
+          - number
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      costcentre_id:
+        type:
+          - number
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      documenttemplate_id:
+        type:
+          - number
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      email_template:
+        type:
+          - string
+          - "null"
+      expiry_date:
+        type:
+          - string
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_actioned:
+        type:
+          - string
+          - "null"
+      property_id:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          author:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          branch:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          client:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          costcentre:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          documenttemplate:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          property:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          salesperson:
+            type:
+              - object
+              - "null"
+            properties: {}
+          servicegroup:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          supervisor:
+            type:
+              - object
+              - "null"
+            properties: {}
+          task:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      reminder_email_template:
+        type:
+          - string
+          - "null"
+      scope_of_works:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      task_id:
+        type:
+          - number
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      upload_path:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  suppliers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      __str__:
+        type:
+          - string
+          - "null"
+      __web_url__:
+        type:
+          - string
+          - "null"
+      accounts_name:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      partner_uid:
+        type:
+          - string
+          - "null"
+      purchasing_name:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          accounting_organisation:
+            type:
+              - object
+              - "null"
+            properties: {}
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  purchaseorders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      all_goods_received:
+        type:
+          - boolean
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      created_via:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      fx_rate:
+        type:
+          - number
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      has_manually_added_costs:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          contractor:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          reviewed_by:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          submitted_by:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          supplier:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          supplier_contact:
+            type:
+              - object
+              - "null"
+            properties: {}
+          task:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          warehouse:
+            type:
+              - object
+              - "null"
+            properties: {}
+      reviewed_by_id:
+        type:
+          - number
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      submitted_by_id:
+        type:
+          - number
+          - string
+          - "null"
+      supplier_id:
+        type:
+          - number
+          - string
+          - "null"
+      supplier_ref:
+        type:
+          - number
+          - string
+          - "null"
+      task_id:
+        type:
+          - string
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  assets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      base_date:
+        type:
+          - string
+          - "null"
+      compliant:
+        type:
+          - boolean
+          - "null"
+      contractor_id:
+        type:
+          - number
+          - "null"
+      coord_lat:
+        type:
+          - number
+          - "null"
+      coord_lng:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      get_absolute_url:
+        type:
+          - string
+          - "null"
+      get_edit_url:
+        type:
+          - string
+          - "null"
+      get_service_url:
+        type:
+          - string
+          - "null"
+      guid:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inspected_date:
+        type:
+          - string
+          - "null"
+      inspection_order:
+        type:
+          - number
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_notoncofo:
+        type:
+          - boolean
+          - "null"
+      is_silent:
+        type:
+          - boolean
+          - "null"
+      last_service_result:
+        type:
+          - string
+          - "null"
+      property_id:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - number
+          - string
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          contractor:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          iotdevice:
+            type:
+              - object
+              - "null"
+            properties: {}
+          product:
+            type:
+              - object
+              - "null"
+            properties: {}
+          property:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          serviced_by:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          variant:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      serviced_by_id:
+        type:
+          - number
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      total_expected_life:
+        type:
+          - number
+          - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      uptick_ref:
+        type:
+          - string
+          - "null"
+      variant_id:
+        type:
+          - number
+          - string
+          - "null"
+    required:
+      - id
+  routines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_processing:
+        type:
+          - boolean
+          - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          routineservicelevel:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      routineservicelevel_id:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tolerance_period_end:
+        type:
+          - string
+          - "null"
+      tolerance_period_start:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  billingcard:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  purchaseorderbills:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  purchaseorderdockets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
