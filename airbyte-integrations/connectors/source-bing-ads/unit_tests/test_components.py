@@ -294,6 +294,316 @@ class TestBingAdsCampaignsRecordTransformer:
         assert input_record["Settings"] == expected_settings
 
     @pytest.mark.parametrize(
+        "test_name,input_record,expected_settings",
+        [
+            (
+                "page_feed_ids_list_of_strings_with_details",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "PageFeedIds": ["8246337222870", "8246337224338"],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "PageFeedIds": {"long": [8246337222870, 8246337224338]},
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_list_of_strings_without_details",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": ["1234567890123", "9876543210987"],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": {"long": [1234567890123, 9876543210987]},
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_single_string_item",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Location"}],
+                            "PageFeedIds": ["5555666677778888"],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Location"}]},
+                            "PageFeedIds": {"long": [5555666677778888]},
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_empty_list",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "PageFeedIds": [],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "PageFeedIds": None,
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_none_value",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": None,
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": None,
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_missing_field",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "AccountId": "12345",
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "AccountId": 12345,
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_mixed_with_other_fields",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "AccountId": "98765",
+                            "PageFeedIds": ["1111222233334444", "5555666677778888"],
+                            "CampaignId": "11111",
+                            "EmptyList": [],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "AccountId": 98765,
+                            "PageFeedIds": {"long": [1111222233334444, 5555666677778888]},
+                            "CampaignId": 11111,
+                            "EmptyList": None,
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_invalid_conversion",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": ["invalid_number", "not_a_number"],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": ["invalid_number", "not_a_number"],
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_mixed_valid_invalid",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Location"}],
+                            "PageFeedIds": ["1234567890", "invalid", "9876543210"],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Location"}]},
+                            "PageFeedIds": ["1234567890", "invalid", "9876543210"],
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_non_string_items",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": [123456789, "987654321", None],
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "PerformanceMaxSetting",
+                            "PageFeedIds": {"long": [987654321]},
+                        }
+                    ]
+                },
+            ),
+            (
+                "page_feed_ids_already_object_format",
+                {
+                    "Id": 486441589,
+                    "Settings": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": [{"CriterionTypeGroup": "Audience"}],
+                            "PageFeedIds": {"long": [1234567890, 9876543210]},
+                        }
+                    ],
+                },
+                {
+                    "Setting": [
+                        {
+                            "Type": "TargetSetting",
+                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience"}]},
+                            "PageFeedIds": {"long": [1234567890, 9876543210]},
+                        }
+                    ]
+                },
+            ),
+        ],
+    )
+    def test_page_feed_ids_transformation(self, test_name, input_record, expected_settings):
+        """Test PageFeedIds list to object transformation."""
+        self.transformer.transform(input_record)
+        assert input_record["Settings"] == expected_settings
+
+    @pytest.mark.parametrize(
+        "test_name,input_value,expected_output",
+        [
+            (
+                "valid_list_of_string_ids",
+                ["8246337222870", "8246337224338", "1234567890"],
+                {"long": [8246337222870, 8246337224338, 1234567890]},
+            ),
+            (
+                "single_string_id",
+                ["9876543210987"],
+                {"long": [9876543210987]},
+            ),
+            (
+                "empty_list",
+                [],
+                [],
+            ),
+            (
+                "none_value",
+                None,
+                None,
+            ),
+            (
+                "non_list_value",
+                "not_a_list",
+                "not_a_list",
+            ),
+            (
+                "list_with_invalid_strings",
+                ["invalid", "not_a_number"],
+                ["invalid", "not_a_number"],
+            ),
+            (
+                "mixed_valid_invalid_strings",
+                ["1234567890", "invalid", "9876543210"],
+                ["1234567890", "invalid", "9876543210"],
+            ),
+            (
+                "list_with_non_string_items",
+                [123456789, "987654321", None],
+                {"long": [987654321]},
+            ),
+            (
+                "list_with_empty_strings",
+                ["", "1234567890", ""],
+                ["", "1234567890", ""],
+            ),
+            (
+                "large_numbers",
+                ["999999999999999999", "111111111111111111"],
+                {"long": [999999999999999999, 111111111111111111]},
+            ),
+        ],
+    )
+    def test_convert_page_feed_id_lists_helper(self, test_name, input_value, expected_output):
+        """Test the _convert_page_feed_id_lists helper method directly."""
+        result = self.transformer._convert_page_feed_id_lists(input_value)
+        assert result == expected_output
+
+    @pytest.mark.parametrize(
         "test_name,input_record",
         [
             ("empty_settings_list", {"Id": 486441589, "Settings": []}),

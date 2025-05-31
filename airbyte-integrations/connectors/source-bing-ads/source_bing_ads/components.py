@@ -69,39 +69,32 @@ class DuplicatedRecordsFilter(RecordFilter):
 @dataclass
 class BingAdsCampaignsRecordTransformer(RecordTransformation):
     """
-    Transform Campaigns records with the following logic:
+    Transform Campaigns records from Bing Ads API to ensure consistent data structure and types.
+
+    This transformer handles two main transformations:
 
     Settings field transformations:
-    1. For settings with Details, wrap the Details array in TargetSettingDetail
-       structure: {"Details": {"TargetSettingDetail": original_details}}
-    2. For settings without Details, keep the original structure
+    1. For settings with Details, wrap the Details array in TargetSettingDetail structure:
+       {"Details": {"TargetSettingDetail": original_details}}
+    2. For settings without Details or with null Details, preserve the original structure
     3. Convert empty lists ([]) to null for backward compatibility
-    4. Convert string values to integers for keys ending with "Id"
-    5. Wrap all transformed settings in {"Setting": transformed_settings}
+    4. Convert string values to integers for keys ending with "Id" (when valid integers)
+    5. Convert PageFeedIds lists to object format: {"long": [int_values]}
+    6. Wrap all transformed settings in {"Setting": transformed_settings}
 
     BiddingScheme field transformations:
-    1. Recursively convert all integer values to floats to ensure
-       consistent numeric type handling
+    1. Recursively convert all integer values to floats to ensure consistent numeric type handling
 
     Example Settings transformation:
-    Input:  {"Settings": [{"Type": "Target", "Details": [...], "PageFeedIds": []}]}
+    Input:  {"Settings": [{"Type": "Target", "Details": [...], "PageFeedIds": ["123", "456"]}]}
     Output: {"Settings": {"Setting": [{"Type": "Target",
                                       "Details": {"TargetSettingDetail": [...]},
-                                      "PageFeedIds": null}]}}
-    """
+                                      "PageFeedIds": {"long": [123, 456]}}]}}
 
-    def _convert_id_strings_to_integers(self, key: str, value: Any) -> Any:
-        """
-        Convert string values to integers for keys ending with "Id"
-        if the string represents a valid integer.
-        """
-        if key.endswith("Id") and isinstance(value, str):
-            try:
-                return int(value)
-            except ValueError:
-                # If conversion fails, return original value
-                return value
-        return value
+    Example BiddingScheme transformation:
+    Input:  {"BiddingScheme": {"MaxCpc": {"Amount": 5}}}
+    Output: {"BiddingScheme": {"MaxCpc": {"Amount": 5.0}}}
+    """
 
     def transform(
         self,
@@ -110,9 +103,34 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        settings = record.get("Settings")
+        """
+        Transform the record by converting the Settings and BiddingScheme properties.
 
-        if not settings or not isinstance(settings, list) or len(settings) == 0:
+        Args:
+            record: The campaign record to transform (modified in-place)
+            config: Optional configuration (unused)
+            stream_state: Optional stream state (unused)
+            stream_slice: Optional stream slice (unused)
+        """
+        settings = record.get("Settings")
+        bidding_scheme = record.get("BiddingScheme")
+
+        if settings:
+            self._transform_settings_property(record, settings)
+
+        if bidding_scheme:
+            self._transform_bidding_scheme_property(bidding_scheme)
+
+    def _transform_settings_property(self, record: MutableMapping[str, Any], settings: Any) -> None:
+        """
+        Transform the Settings property of a campaign record.
+        Converts the Settings list into the expected nested structure and applies
+        value transformations to individual setting properties.
+        Args:
+            record: The campaign record containing the Settings (modified in-place)
+            settings: The Settings value from the record
+        """
+        if not isinstance(settings, list) or len(settings) == 0:
             # Keep original value (None, empty list, etc.)
             return
 
@@ -133,37 +151,55 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
                 # Add any other properties that might exist
                 for key, value in setting.items():
                     if key not in ["Type", "Details"]:
-                        # Convert empty lists to null for backward compatibility
-                        if isinstance(value, list) and len(value) == 0:
-                            transformed_setting[key] = None
-                        else:
-                            # Convert string IDs to integers
-                            transformed_setting[key] = self._convert_id_strings_to_integers(key, value)
+                        transformed_setting[key] = self._transform_setting_value(key, value)
                 transformed_settings.append(transformed_setting)
             else:
                 # Keep setting as-is (no Details to wrap or Details is None)
                 # But still convert empty lists to null and string IDs to integers
                 transformed_setting = {}
                 for key, value in setting.items():
-                    if isinstance(value, list) and len(value) == 0:
-                        transformed_setting[key] = None
-                    else:
-                        # Convert string IDs to integers
-                        transformed_setting[key] = self._convert_id_strings_to_integers(key, value)
+                    transformed_setting[key] = self._transform_setting_value(key, value)
                 transformed_settings.append(transformed_setting)
 
         # Wrap the transformed settings in the expected structure
         record["Settings"] = {"Setting": transformed_settings}
 
-        # Safely traverse and convert all integer values to floats
-        # in the BiddingScheme field
-        bidding_scheme = record.get("BiddingScheme")
+    def _transform_setting_value(self, key: str, value: Any) -> Any:
+        """
+        Transform individual setting values based on key name and value type.
+        Applies specific transformations:
+        - Empty lists become null
+        - PageFeedIds lists become {"long": [int_values]} objects
+        - String values for keys ending with "Id" become integers (when valid)
+        Args:
+            key: The setting property name
+            value: The setting property value
+        Returns:
+            The transformed value
+        """
+        # Convert empty lists to null for backward compatibility
+        if isinstance(value, list) and len(value) == 0:
+            return None
+        elif key == "PageFeedIds":
+            # Convert PageFeedIds list to object with long array
+            return self._convert_page_feed_id_lists(value)
+        else:
+            # Convert string IDs to integers
+            return self._convert_id_strings_to_integers(key, value)
+
+    def _transform_bidding_scheme_property(self, bidding_scheme: Any) -> None:
+        """
+        Transform the BiddingScheme property of a campaign record.
+        Recursively converts all integer values to floats for consistent numeric handling.
+        """
         if bidding_scheme and isinstance(bidding_scheme, dict):
             self._convert_integers_to_floats(bidding_scheme)
 
     def _convert_integers_to_floats(self, obj: MutableMapping[str, Any]) -> None:
         """
         Recursively convert integer values to floats in a dictionary.
+        This ensures consistent numeric type handling across all BiddingScheme values.
+        Only converts values that are whole numbers (int or float with no decimal part).
         """
         if not isinstance(obj, dict):
             return
@@ -176,6 +212,39 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
             # Convert any whole numbers to float type
             if isinstance(value, (int, float)) and value == int(value):
                 obj[key] = float(value)
+
+    def _convert_id_strings_to_integers(self, key: str, value: Any) -> Any:
+        """
+        Convert string values to integers for keys ending with "Id".
+        Only converts if the string represents a valid integer. If conversion fails,
+        the original string value is preserved.
+        """
+        if key.endswith("Id") and isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                # If conversion fails, return original value
+                return value
+        return value
+
+    def _convert_page_feed_id_lists(self, value: Any) -> Any:
+        """
+        Convert PageFeedIds from list of strings to object with long array of integers.
+        This transformation is required for compatibility with the expected API format.
+        If any string cannot be converted to an integer, the original value is returned.
+        Example:
+            Input:  ["8246337222870", "1234567890"]
+            Output: {"long": [8246337222870, 1234567890]}
+        """
+        if isinstance(value, list) and len(value) > 0:
+            try:
+                # Convert string IDs to integers
+                long_values = [int(id_str) for id_str in value if isinstance(id_str, str)]
+                return {"long": long_values}
+            except ValueError:
+                # If conversion fails, return original value
+                return value
+        return value
 
 
 @dataclass
