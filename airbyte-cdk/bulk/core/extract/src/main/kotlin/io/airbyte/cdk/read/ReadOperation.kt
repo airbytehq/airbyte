@@ -10,6 +10,7 @@ import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -34,6 +35,8 @@ class ReadOperation(
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactoriesSupplier:
         List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
 ) : Operation {
@@ -49,7 +52,9 @@ class ReadOperation(
                 config.checkpointTargetInterval,
                 outputConsumer,
                 metaFieldDecorator,
-                partitionsCreatorFactoriesSupplier.map { it -> it.get() }
+                boostedOutputConsumerFactory,
+                resourceAcquirer,
+                partitionsCreatorFactoriesSupplier.map { it -> it.get() },
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->

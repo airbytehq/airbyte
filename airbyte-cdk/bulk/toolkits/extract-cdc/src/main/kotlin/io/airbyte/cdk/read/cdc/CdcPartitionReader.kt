@@ -131,7 +131,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 null
             }
         val serializedState: OpaqueStateValue = readerOps.serializeState(offset, schemaHistory)
-        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get())
+        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get(),"") // TEMP
     }
 
     inner class EventConsumer(

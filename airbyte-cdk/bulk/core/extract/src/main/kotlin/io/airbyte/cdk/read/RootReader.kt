@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -33,6 +34,8 @@ class RootReader(
     val timeout: Duration,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) {
     private val log = KotlinLogging.logger {}
@@ -54,7 +57,7 @@ class RootReader(
         }
     }
 
-    val streamStatusManager = StreamStatusManager(stateManager.feeds, outputConsumer::accept)
+    val streamStatusManager = StreamStatusManager(stateManager.feeds, {outputConsumer.accept(it); PartitionReader.pendingStates.add(it)})
 
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
@@ -74,7 +77,7 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
+                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, boostedOutputConsumerFactory).read() }
                 }
             // Call listener hook.
             listener(feedJobs)
