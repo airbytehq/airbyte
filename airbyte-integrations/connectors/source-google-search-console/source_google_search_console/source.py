@@ -38,8 +38,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsPageReport,
     SearchAnalyticsSiteReportByPage,
     SearchAnalyticsSiteReportBySite,
-    Sitemaps,
-    Sites,
 )
 
 
@@ -114,29 +112,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            config = self._validate_and_transform(config)
-            stream_kwargs = self.get_stream_kwargs(config)
-            self.validate_site_urls(config["site_urls"], stream_kwargs["authenticator"])
-            sites = Sites(**stream_kwargs)
-            stream_slice = sites.stream_slices(SyncMode.full_refresh)
-
-            # stream_slice returns all site_urls and we need to make sure that
-            # the connection is successful for all of them
-            for _slice in stream_slice:
-                sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
-                next(sites_gen)
-            return True, None
-
-        except (InvalidSiteURLValidationError, UnauthorizedOauthError, UnauthorizedServiceAccountError, jsonschema.ValidationError) as e:
-            return False, repr(e)
-        except (Exception, UnidentifiedError) as error:
-            return (
-                False,
-                f"Unable to check connectivity to Google Search Console API - {repr(error)}",
-            )
-
     def validate_site_urls(self, site_urls: List[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
@@ -180,9 +155,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
 
         streams.extend(
             [
-                Sites(**stream_config),
-                Sitemaps(**stream_config),
-                # SearchAnalyticsByCountry(**stream_config),
                 SearchAnalyticsByDevice(**stream_config),
                 SearchAnalyticsByDate(**stream_config),
                 SearchAnalyticsByQuery(**stream_config),
