@@ -9,12 +9,15 @@ export const Details = ({ className, children, ...rest }) => {
   const ref = React.useRef(null);
 
   const items = React.Children.toArray(children);
-  const summary = items.find((item) => React.isValidElement(item) && item.type === "summary");
-  const content = items.filter((item) => React.isValidElement(item) && item.type !== "summary");
-
+  const summary = items.find(
+    (item) => React.isValidElement(item) && item.type === "summary",
+  );
+  const content = items.filter(
+    (item) => React.isValidElement(item) && item.type !== "summary",
+  );
 
   React.useEffect(() => {
-    const detailsHeaderId = ref.current?.previousElementSibling?.id
+    const detailsHeaderId = ref.current?.previousElementSibling?.id;
     const contentIds = content
       .map((element) => {
         if (element.props.id) {
@@ -23,7 +26,10 @@ export const Details = ({ className, children, ...rest }) => {
       })
       .filter(Boolean);
 
-    if (contentIds.includes(location.hash) || location.hash === `#${detailsHeaderId}`) {
+    if (
+      contentIds.includes(location.hash) ||
+      location.hash === `#${detailsHeaderId}`
+    ) {
       setOpen(true);
     } else {
       setOpen(false);
@@ -34,12 +40,7 @@ export const Details = ({ className, children, ...rest }) => {
     <details
       open={open}
       ref={ref}
-      className={classNames(
-        className,
-        "alert",
-        "alert--info",
-        styles.details
-      )}
+      className={classNames(className, "alert", "alert--info", styles.details)}
       {...rest}
     >
       {summary}

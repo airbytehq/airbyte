@@ -1,8 +1,5 @@
 # Salesforce
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Salesforce](https://www.salesforce.com/) source connector.
@@ -219,10 +216,20 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.7.2      | 2025-03-24  | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues                                                                                                                                   |
+| 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
+| 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
+| 2.7.9 | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
+| 2.7.8 | 2025-04-27 | [58997](https://github.com/airbytehq/airbyte/pull/58997) | Update dependencies |
+| 2.7.7 | 2025-04-19 | [58453](https://github.com/airbytehq/airbyte/pull/58453) | Update dependencies |
+| 2.7.6 | 2025-04-12 | [57976](https://github.com/airbytehq/airbyte/pull/57976) | Update dependencies |
+| 2.7.5 | 2025-04-05 | [57424](https://github.com/airbytehq/airbyte/pull/57424) | Update dependencies |
+| 2.7.4 | 2025-03-27 | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response |
+| 2.7.3 | 2025-03-29 | [56776](https://github.com/airbytehq/airbyte/pull/56776) | Update dependencies |
+| 2.7.2 | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
 | 2.7.1 | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
-| 2.7.0      | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever                                                                                                               |
-| 2.6.5      | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version.                                                                                                              |
+| 2.7.0 | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever |
+| 2.6.5 | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
+| 2.6.5 | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
 | 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
 | 2.6.4      | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3      | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies                                                                                                                                                    |

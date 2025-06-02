@@ -1,0 +1,851 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://aviationstack.com/dashboard
+  API Reference: https://aviationstack.com/documentation
+
+check:
+  type: CheckStream
+  stream_names:
+    - airports
+
+definitions:
+  streams:
+    airports:
+      type: DeclarativeStream
+      name: airports
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/airports
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/airports"
+    airlines:
+      type: DeclarativeStream
+      name: airlines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/airlines
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/airlines"
+    airplanes:
+      type: DeclarativeStream
+      name: airplanes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/airplanes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: delivery_date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/airplanes"
+    aircraft_types:
+      type: DeclarativeStream
+      name: aircraft_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/aircraft_types
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/aircraft_types"
+    cities:
+      type: DeclarativeStream
+      name: cities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/cities
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cities"
+    countries:
+      type: DeclarativeStream
+      name: countries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/countries
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/countries"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/taxes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Subscription needed
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.aviationstack.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"access_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: access_key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/airports"
+  - $ref: "#/definitions/streams/airlines"
+  - $ref: "#/definitions/streams/airplanes"
+  - $ref: "#/definitions/streams/aircraft_types"
+  - $ref: "#/definitions/streams/cities"
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/taxes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_key
+      - start_date
+    properties:
+      access_key:
+        type: string
+        description: >-
+          Your unique API key for authenticating with the Aviation API. You can
+          find it in your Aviation account dashboard at
+          https://aviationstack.com/dashboard
+        name: access_key
+        title: Access Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    airports: true
+    airlines: true
+    airplanes: true
+    aircraft_types: true
+    cities: true
+    countries: true
+    taxes: true
+  testedStreams:
+    airports:
+      streamHash: afa8b28ce9a87181d308e2ded87753b2e141ec89
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    airlines:
+      streamHash: 1bea145e063a36a6e3ce65e63a24952bb46f2c77
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    airplanes:
+      streamHash: 04d600126ee54746732b0e746db36a8ae912fa5f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    aircraft_types:
+      streamHash: 21e0b2baa54b66fc34e8882576db90bdbd2dbb60
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    cities:
+      streamHash: 67409cc4d39b5dadf0c12a84bbf4d940e7e972e6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    countries:
+      streamHash: 2775b51d4b486a1722e13094dd7d6c473f8acb3f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    taxes:
+      streamHash: 3963089f22e2d364f5aa3c8a20dd71b93e3e0661
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://aviationstack.com/documentation
+
+schemas:
+  airports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      airport_id:
+        type:
+          - string
+          - "null"
+      airport_name:
+        type:
+          - string
+          - "null"
+      city_iata_code:
+        type:
+          - string
+          - "null"
+      country_iso2:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      geoname_id:
+        type:
+          - string
+          - "null"
+      gmt:
+        type:
+          - string
+          - "null"
+      iata_code:
+        type:
+          - string
+          - "null"
+      icao_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      latitude:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  airlines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      airline_id:
+        type:
+          - string
+          - "null"
+      airline_name:
+        type:
+          - string
+          - "null"
+      callsign:
+        type:
+          - string
+          - "null"
+      country_iso2:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      date_founded:
+        type:
+          - string
+          - "null"
+      fleet_average_age:
+        type:
+          - string
+          - "null"
+      fleet_size:
+        type:
+          - string
+          - "null"
+      hub_code:
+        type:
+          - string
+          - "null"
+      iata_code:
+        type:
+          - string
+          - "null"
+      iata_prefix_accounting:
+        type:
+          - string
+          - "null"
+      icao_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  airplanes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      airline_iata_code:
+        type:
+          - string
+          - "null"
+      airplane_id:
+        type:
+          - string
+          - "null"
+      construction_number:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type: string
+      engines_count:
+        type:
+          - string
+          - "null"
+      engines_type:
+        type:
+          - string
+          - "null"
+      first_flight_date:
+        type:
+          - string
+          - "null"
+      iata_code_long:
+        type:
+          - string
+          - "null"
+      iata_code_short:
+        type:
+          - string
+          - "null"
+      iata_type:
+        type:
+          - string
+          - "null"
+      icao_code_hex:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      line_number:
+        type:
+          - string
+          - "null"
+      model_code:
+        type:
+          - string
+          - "null"
+      model_name:
+        type:
+          - string
+          - "null"
+      plane_age:
+        type:
+          - string
+          - "null"
+      plane_class:
+        type:
+          - string
+          - "null"
+      plane_owner:
+        type:
+          - string
+          - "null"
+      plane_series:
+        type:
+          - string
+          - "null"
+      plane_status:
+        type:
+          - string
+          - "null"
+      production_line:
+        type:
+          - string
+          - "null"
+      registration_date:
+        type:
+          - string
+          - "null"
+      registration_number:
+        type:
+          - string
+          - "null"
+      rollout_date:
+        type:
+          - string
+          - "null"
+      test_registration_number:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - delivery_date
+  aircraft_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      aircraft_name:
+        type:
+          - string
+          - "null"
+      iata_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      plane_type_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  cities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      city_id:
+        type:
+          - string
+          - "null"
+      city_name:
+        type:
+          - string
+          - "null"
+      country_iso2:
+        type:
+          - string
+          - "null"
+      geoname_id:
+        type:
+          - string
+          - "null"
+      gmt:
+        type:
+          - string
+          - "null"
+      iata_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      latitude:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      capital:
+        type:
+          - string
+          - "null"
+      continent:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      country_iso2:
+        type:
+          - string
+          - "null"
+      country_iso3:
+        type:
+          - string
+          - "null"
+      country_iso_numeric:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_name:
+        type:
+          - string
+          - "null"
+      fips_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      phone_prefix:
+        type:
+          - string
+          - "null"
+      population:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      iata_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      tax_id:
+        type:
+          - string
+          - "null"
+      tax_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id

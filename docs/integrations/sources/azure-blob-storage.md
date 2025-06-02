@@ -53,10 +53,10 @@ to use role [Storage Blob Data Reader](https://learn.microsoft.com/en-gb/azure/s
 Follow these steps to set up an IAM role:
 </summary>
 
-1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](../../.gitbook/assets/source/azure-blob-storage/access_control_iam.png)
-2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](../../.gitbook/assets/source/azure-blob-storage/add_role.png)
-3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click `Next` ![Search Role](../../.gitbook/assets/source/azure-blob-storage/search_role.png)
-4. Select `User, Group, or service principal`, click on `members` and select member(s) so they appear in table and click `Next` ![Add Members](../../.gitbook/assets/source/azure-blob-storage/add_members.png)
+1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](/.gitbook/assets/source/azure-blob-storage/access_control_iam.png)
+2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](/.gitbook/assets/source/azure-blob-storage/add_role.png)
+3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click `Next` ![Search Role](/.gitbook/assets/source/azure-blob-storage/search_role.png)
+4. Select `User, Group, or service principal`, click on `members` and select member(s) so they appear in table and click `Next` ![Add Members](/.gitbook/assets/source/azure-blob-storage/add_members.png)
 5. (Optional) Add Conditions to restrict the role assignments a user can create.
 6. Click `Review + Assign`
 </details>
@@ -301,6 +301,15 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.6.8 | 2025-05-27 | [60867](https://github.com/airbytehq/airbyte/pull/60867) | Update dependencies |
+| 0.6.7 | 2025-05-24 | [60675](https://github.com/airbytehq/airbyte/pull/60675) | Update dependencies |
+| 0.6.6 | 2025-05-10 | [59806](https://github.com/airbytehq/airbyte/pull/59806) | Update dependencies |
+| 0.6.5 | 2025-05-03 | [59318](https://github.com/airbytehq/airbyte/pull/59318) | Update dependencies |
+| 0.6.4 | 2025-04-26 | [58728](https://github.com/airbytehq/airbyte/pull/58728) | Update dependencies |
+| 0.6.3 | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies |
+| 0.6.2 | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies |
+| 0.6.1 | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies |
+| 0.6.0 | 2025-03-31 | [56466](https://github.com/airbytehq/airbyte/pull/56466) | Upgrading dependencies and CDK and Python to 3.11 |
 | 0.5.0 | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals |
 | 0.4.4 | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2 |
 | 0.4.3 | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover |

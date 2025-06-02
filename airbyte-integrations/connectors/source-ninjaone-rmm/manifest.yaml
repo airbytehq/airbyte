@@ -1,0 +1,703 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.ninjarmm.com/
+  API Reference: https://app.ninjarmm.com/apidocs/?links.active=core
+
+check:
+  type: CheckStream
+  stream_names:
+    - organizations
+
+definitions:
+  streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    policies:
+      type: DeclarativeStream
+      name: policies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/policies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/policies"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - activities
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: activityTime
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    automation_scripts:
+      type: DeclarativeStream
+      name: automation_scripts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/automation/scripts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedOn
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/automation_scripts"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedOn
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    software_products:
+      type: DeclarativeStream
+      name: software_products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/software-products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/software_products"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.ninjarmm.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/policies"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/automation_scripts"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/software_products"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Token could be generated natively by authorize section of NinjaOne
+          swagger documentation
+          `https://app.ninjarmm.com/apidocs/?links.active=authorization`
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organizations: true
+    policies: true
+    activities: true
+    automation_scripts: true
+    groups: true
+    locations: true
+    roles: true
+    software_products: true
+  testedStreams:
+    organizations:
+      streamHash: 334653f81b6ec212d2c4d78f4ffb59e9aa87edcc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    policies:
+      streamHash: c1865fe8c87b2a7d001c3b537e536f32fef144a7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activities:
+      streamHash: 5c71d64fa995611dbd7a4c52e71f2db5e53cbad7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    automation_scripts:
+      streamHash: e9ce9bd008aa12fca1e56cdc5eb2523e7571f343
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: 7f38a950742224c331e362c47545a291b1b75528
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      streamHash: fbcdc8d1a2d05f9657ba2f4e473b28eb485a751f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: e5bbaa0e4250616871d7f8ac04da2fbc559943be
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    software_products:
+      streamHash: 210ab55f5fe14ec317889ee3cc4805ac60041c6e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: >-
+      https://app.ninjarmm.com/apidocs/?links.active=core#/system/getOrganizations
+
+schemas:
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      nodeApprovalMode:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  policies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      nodeClass:
+        type:
+          - string
+          - "null"
+      nodeClassDefault:
+        type:
+          - boolean
+          - "null"
+      updated:
+        type: number
+    required:
+      - id
+      - updated
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      activityResult:
+        type:
+          - string
+          - "null"
+      activityTime:
+        type: number
+      activityType:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          message:
+            type:
+              - object
+              - "null"
+            properties:
+              code:
+                type:
+                  - string
+                  - "null"
+              params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  appUserEmail:
+                    type:
+                      - string
+                      - "null"
+                  appUserId:
+                    type:
+                      - string
+                      - "null"
+                  appUserName:
+                    type:
+                      - string
+                      - "null"
+                  ip:
+                    type:
+                      - string
+                      - "null"
+                  mfa:
+                    type:
+                      - string
+                      - "null"
+                  newUserEmail:
+                    type:
+                      - string
+                      - "null"
+                  newUserId:
+                    type:
+                      - string
+                      - "null"
+                  newUserName:
+                    type:
+                      - string
+                      - "null"
+      id:
+        type: number
+      message:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusCode:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - activityTime
+  automation_scripts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      architecture:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      createdOn:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operatingSystems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      scriptParameters:
+        type:
+          - array
+          - "null"
+      updatedOn:
+        type: number
+    required:
+      - id
+      - updatedOn
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+      updated:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      chassisType:
+        type:
+          - string
+          - "null"
+      created:
+        type: number
+      custom:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      nodeClass:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created
+  software_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      installable:
+        type:
+          - boolean
+          - "null"
+      productName:
+        type:
+          - string
+          - "null"
+      vendorName:
+        type:
+          - string
+          - "null"
+    required:
+      - id

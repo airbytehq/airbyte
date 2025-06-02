@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import json
 import math
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, ShopifyScopes, SourceShopify
 from source_shopify.streams.streams import (
@@ -14,6 +14,7 @@ from source_shopify.streams.streams import (
     Articles,
     Blogs,
     Collects,
+    Countries,
     CustomCollections,
     Customers,
     DiscountCodes,
@@ -338,6 +339,7 @@ def test_user_scopes_generate_full_list_of_streams(config, mocker):
         "read_locations",
         "read_inventory",
         "read_merchant_managed_fulfillment_orders",
+        "read_shipping",
         "read_shopify_payments_payouts",
         "read_online_store_pages",
     ]
@@ -350,3 +352,168 @@ def test_user_scopes_generate_full_list_of_streams(config, mocker):
     # Adjust this number based on the actual permitted streams
     expected_streams_number = 45
     assert len(source.streams(config)) == expected_streams_number
+
+
+@pytest.mark.parametrize(
+    "response_data, expected_token",
+    [
+        # Case 1: Empty page (no nodes, no next page)
+        (
+            {
+                "data": {
+                    "deliveryProfiles": {
+                        "pageInfo": {"hasNextPage": False, "endCursor": None},
+                        "nodes": [],
+                    }
+                }
+            },
+            None,
+        ),
+        # Case 2: Parent page iteration (parent page has next page, sub-page does not)
+        (
+            {
+                "data": {
+                    "deliveryProfiles": {
+                        "pageInfo": {"hasNextPage": True, "endCursor": "parent_cursor"},
+                        "nodes": [
+                            {
+                                "profileLocationGroups": [
+                                    {
+                                        "locationGroupZones": {
+                                            "nodes": [],
+                                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                    }
+                }
+            },
+            {"cursor": "parent_cursor", "sub_cursor": None},
+        ),
+        # Case 3: Sub-page iteration (sub-page has next page regardless of parent page)
+        (
+            {
+                "data": {
+                    "deliveryProfiles": {
+                        "pageInfo": {"hasNextPage": False, "endCursor": "parent_cursor"},
+                        "nodes": [
+                            {
+                                "profileLocationGroups": [
+                                    {
+                                        "locationGroupZones": {
+                                            "nodes": [],
+                                            "pageInfo": {"hasNextPage": True, "endCursor": "sub_cursor"},
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                    }
+                }
+            },
+            {"cursor": None, "sub_cursor": "sub_cursor"},
+        ),
+    ],
+)
+def test_countries_next_page_token(config, response_data, expected_token):
+    config["shop"] = "test-store"
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+
+    response_body = json.dumps(response_data)
+    response = requests.Response()
+    response.status_code = 200
+    response._content = response_body.encode("utf-8")
+
+    token = stream.next_page_token(response)
+    assert token == expected_token
+
+
+def test_countries_process_country(config, countries_record_data, countries_expected_record_data):
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+    assert stream._process_country(countries_record_data) == countries_expected_record_data
+
+
+def test_countries_request_body_json(config):
+    config["shop"] = "test-store"
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+    stream_slice = {"parent": {"profile_location_groups": [{"locationGroup": {"id": "location/group/id"}}]}}
+    request_body = stream.request_body_json(stream_slice=stream_slice, stream_state={})
+
+    expected_request_body = {
+        "query": """query DeliveryZoneList {
+  deliveryProfiles(
+    first: 1
+  ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      profileLocationGroups(
+        locationGroupId: "location/group/id"
+      ) {
+        locationGroupZones(
+          first: 100
+        ) {
+          nodes {
+            zone {
+              id
+              name
+              countries {
+                id
+                name
+                translated_name: translatedName
+                code {
+                  country_code: countryCode
+                  rest_of_world: restOfWorld
+                }
+                provinces {
+                  id
+                  name
+                  code
+                  translated_name: translatedName
+                }
+              }
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  }
+}"""
+    }
+    assert request_body == expected_request_body
+
+
+def test_countries_parse_response(config, countries_response_data, countries_expected_record_data):
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+    response = MagicMock(status_code=requests.codes.OK)
+    response.json.return_value = countries_response_data
+
+    records = stream.parse_response(response)
+    expected_records = [
+        countries_expected_record_data,
+    ]
+    assert list(records) == expected_records

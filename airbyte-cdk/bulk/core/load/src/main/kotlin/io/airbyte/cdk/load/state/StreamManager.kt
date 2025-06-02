@@ -4,17 +4,14 @@
 
 package io.airbyte.cdk.load.state
 
-import com.google.common.collect.Range
-import com.google.common.collect.RangeSet
-import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchEnvelope
-import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
+import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.task.implementor.CloseStreamTask
+import io.airbyte.cdk.load.task.implementor.FailStreamTask
+import io.airbyte.cdk.load.util.setOnce
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CompletableDeferred
 
@@ -24,135 +21,47 @@ data class StreamProcessingFailed(val streamException: Exception) : StreamResult
 
 data object StreamProcessingSucceeded : StreamResult
 
-@JvmInline value class CheckpointId(val id: Int)
-
-/** Manages the state of a single stream. */
-interface StreamManager {
-    /**
-     * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
-     * this should throw an exception.
-     */
-    fun incrementReadCount(): Long
-    fun readCount(): Long
-
-    /**
-     * Mark the end-of-stream, set the end of stream variant (complete or incomplete) and return the
-     * record count. Expect this exactly once. Expect no further `countRecordIn`, and expect that
-     * [markProcessingSucceeded] will always occur after this, while [markProcessingFailed] can
-     * occur before or after.
-     */
-    fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long
-    fun endOfStreamRead(): Boolean
-
-    /** Whether we received a stream complete message for the managed stream. */
-    fun isComplete(): Boolean
-
-    /**
-     * Mark a checkpoint in the stream and return the current index and the number of records since
-     * the last one.
-     *
-     * NOTE: Single-writer. If in the future multiple threads set checkpoints, this method should be
-     * synchronized.
-     */
-    fun markCheckpoint(): Pair<Long, Long>
-
-    /** Record that the given batch's state has been reached for the associated range(s). */
-    fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>)
-
-    /**
-     * True if all are true:
-     * * all records have been seen (ie, we've counted an end-of-stream)
-     * * a [Batch.State.COMPLETE] batch range has been seen covering every record
-     *
-     * Does NOT require that the stream be closed.
-     */
-    fun isBatchProcessingComplete(): Boolean
-
-    /**
-     * True if all records in [0, index] have at least reached [Batch.State.PERSISTED]. This is
-     * implicitly true if they have all reached [Batch.State.COMPLETE].
-     */
-    fun areRecordsPersistedUntil(index: Long): Boolean
-
-    /**
-     * Indicates destination processing of the stream succeeded, regardless of complete/incomplete
-     * status. This should only be called after all records and end of stream messages have been
-     * read.
-     */
-    fun markProcessingSucceeded()
-
-    /**
-     * Indicates destination processing of the stream failed. Returns false if task was already
-     * complete
-     */
-    fun markProcessingFailed(causedBy: Exception): Boolean
-
-    /** Suspend until the stream completes, returning the result. */
-    suspend fun awaitStreamResult(): StreamResult
-
-    /** True if the stream processing has not yet been marked as successful or failed. */
-    fun isActive(): Boolean
-
-    /**
-     * Return a monotonically increasing id of the checkpointed batch of records on which we're
-     * working.
-     *
-     * This will be incremented each time `markCheckpoint` is called.
-     */
-    fun getCurrentCheckpointId(): CheckpointId
-
-    /** Update the counts of persisted for a given checkpoint. */
-    fun incrementPersistedCount(checkpointId: CheckpointId, count: Long)
-
-    /** Update the counts of completed for a given checkpoint. */
-    fun incrementCompletedCount(checkpointId: CheckpointId, count: Long)
-
-    /**
-     * True if persisted counts for each checkpoint up to and including [checkpointId] match the
-     * number of records read for that id.
-     */
-    fun areRecordsPersistedUntilCheckpoint(checkpointId: CheckpointId): Boolean
-
-    /**
-     * True if all records in the stream have been marked as completed AND the stream has been
-     * marked as complete.
-     */
-    fun isBatchProcessingCompleteForCheckpoints(): Boolean
+/**
+ * For tracking counts against checkpoints of records read and persisted. Currently it only tracks
+ * row count, but could be extended to track bytes moved if needed.
+ */
+@JvmInline
+value class CheckpointValue(
+    val records: Long,
+// TODO: File bytes moved
+) {
+    operator fun plus(other: CheckpointValue): CheckpointValue {
+        return CheckpointValue(records + other.records)
+    }
 }
 
-class DefaultStreamManager(
+/** Manages the state of a single stream. */
+class StreamManager(
     val stream: DestinationStream,
-) : StreamManager {
+    private val requireCheckpointKeyOnState: Boolean = false,
+) {
     private val streamResult = CompletableDeferred<StreamResult>()
-
-    data class CachedRanges(val state: Batch.State, val ranges: RangeSet<Long>)
-
-    private val cachedRangesById = ConcurrentHashMap<String, CachedRanges>()
-
-    private val log = KotlinLogging.logger {}
 
     private val recordCount = AtomicLong(0)
 
     private val markedEndOfStream = AtomicBoolean(false)
     private val receivedComplete = AtomicBoolean(false)
 
-    private val rangesState: ConcurrentHashMap<Batch.State, RangeSet<Long>> = ConcurrentHashMap()
+    private val isClosed = AtomicBoolean(false)
 
-    data class CheckpointCounts(
-        val recordsRead: Long = 0L,
-        val recordsPersisted: AtomicLong = AtomicLong(0L),
-        val recordsCompleted: AtomicLong = AtomicLong(0L),
-    )
-    private val nextCheckpointId = AtomicLong(0L)
+    private val nextInferredCheckpointIndex = AtomicInteger(1)
     private val lastCheckpointRecordIndex = AtomicLong(0L)
-    private val checkpointCounts: ConcurrentHashMap<CheckpointId, CheckpointCounts> =
+    private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, CheckpointValue> =
+        ConcurrentHashMap()
+    private val checkpointCountsByState:
+        ConcurrentHashMap<BatchState, ConcurrentHashMap<CheckpointId, CheckpointValue>> =
         ConcurrentHashMap()
 
-    init {
-        Batch.State.entries.forEach { rangesState[it] = TreeRangeSet.create() }
-    }
-
-    override fun incrementReadCount(): Long {
+    /**
+     * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
+     * this should throw an exception.
+     */
+    fun incrementReadCount(): Long {
         if (markedEndOfStream.get()) {
             throw IllegalStateException("Stream is closed for reading")
         }
@@ -160,11 +69,17 @@ class DefaultStreamManager(
         return recordCount.getAndIncrement()
     }
 
-    override fun readCount(): Long {
+    fun readCount(): Long {
         return recordCount.get()
     }
 
-    override fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long {
+    /**
+     * Mark the end-of-stream, set the end of stream variant (complete or incomplete) and return the
+     * record count. Expect this exactly once. Expect no further `countRecordIn`, and expect that
+     * [markProcessingSucceeded] will always occur after this, while [markProcessingFailed] can
+     * occur before or after.
+     */
+    fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long {
         if (markedEndOfStream.getAndSet(true)) {
             throw IllegalStateException("Stream is closed for reading")
         }
@@ -173,214 +88,147 @@ class DefaultStreamManager(
         return recordCount.get()
     }
 
-    override fun endOfStreamRead(): Boolean {
+    fun endOfStreamRead(): Boolean {
         return markedEndOfStream.get()
     }
 
-    override fun isComplete(): Boolean {
+    /** Whether we received a stream complete message for the managed stream. */
+    fun receivedStreamComplete(): Boolean {
         return receivedComplete.get()
     }
 
-    override fun markCheckpoint(): Pair<Long, Long> {
+    /**
+     * Mark this stream manager as having initiated a terminal task (i.e. [CloseStreamTask] or
+     * [FailStreamTask]).
+     *
+     * @return `true` if this stream manager was not already terminating; `false` if another thread
+     * has already invoked `setClosed` on this stream manager
+     */
+    fun setClosed(): Boolean {
+        return isClosed.setOnce()
+    }
+
+    /**
+     * Mark a checkpoint in the stream and return the current index and the number of records since
+     * the last one.
+     *
+     * NOTE: Single-writer. If in the future multiple threads set checkpoints, this method should be
+     * synchronized.
+     */
+    fun markCheckpoint(): Pair<Long, Long> {
+        check(!requireCheckpointKeyOnState) {
+            "Cannot force mark a checkpoint when requireCheckpointKeyOnState is true"
+        }
+
         val recordIndex = recordCount.get()
         val count = recordIndex - lastCheckpointRecordIndex.getAndSet(recordIndex)
 
-        val checkpointId = CheckpointId(nextCheckpointId.getAndIncrement().toInt())
-        checkpointCounts.merge(checkpointId, CheckpointCounts(recordsRead = count)) { old, _ ->
-            if (old.recordsRead > 0) {
+        val checkpointIndex = nextInferredCheckpointIndex.getAndIncrement()
+        val checkpointId = CheckpointId(checkpointIndex.toString())
+        recordsReadPerCheckpoint.merge(checkpointId, CheckpointValue(records = count)) { old, _ ->
+            if (old.records > 0) {
                 throw IllegalStateException("Checkpoint $old already exists")
             }
-            old.copy(recordsRead = count)
+            CheckpointValue(records = count)
         }
 
         return Pair(recordIndex, count)
     }
 
-    override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
-        rangesState[batch.batch.state]
-            ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
-
-        val stateRangesToAdd = mutableListOf(batch.batch.state to batch.ranges)
-
-        // If the batch is part of a group, update all ranges associated with its groupId
-        // to the most advanced state. Otherwise, just use the ranges provided.
-        val fromCache =
-            batch.batch.groupId?.let { groupId ->
-                val cachedRangesMaybe = cachedRangesById[groupId]
-                val cachedSet = cachedRangesMaybe?.ranges?.asRanges() ?: emptySet()
-                val newRanges = TreeRangeSet.create(cachedSet + batch.ranges.asRanges()).merged()
-                val newCachedRanges = CachedRanges(state = batch.batch.state, ranges = newRanges)
-                cachedRangesById[groupId] = newCachedRanges
-                if (cachedRangesMaybe != null && cachedRangesMaybe.state != batch.batch.state) {
-                    stateRangesToAdd.add(batch.batch.state to newRanges)
-                    stateRangesToAdd.add(cachedRangesMaybe.state to batch.ranges)
-                }
-                cachedRangesMaybe
-            }
-
-        stateRangesToAdd.forEach { (stateToSet, rangesToUpdate) ->
-            when (stateToSet) {
-                Batch.State.COMPLETE -> {
-                    // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
-                    addAndMarge(Batch.State.PERSISTED, rangesToUpdate)
-                    addAndMarge(Batch.State.COMPLETE, rangesToUpdate)
-                }
-                else -> {
-                    // For all other states, just mark the state.
-                    addAndMarge(stateToSet, rangesToUpdate)
-                }
-            }
-        }
-
-        log.info {
-            "Added ${batch.batch.state}->${batch.ranges} (groupId=${batch.batch.groupId}) to ${stream.descriptor.namespace}.${stream.descriptor.name}=>${rangesState[batch.batch.state]}"
-        }
-        log.debug {
-            val groupLineMaybe =
-                if (fromCache != null) {
-                    "\n                From group cache: ${fromCache.state}->${fromCache.ranges}"
-                } else {
-                    ""
-                }
-            val stateRangesJoined =
-                stateRangesToAdd.joinToString(",") { "${it.first}->${it.second}" }
-            val readRange = TreeRangeSet.create(listOf(Range.closed(0, recordCount.get())))
-            """ Added $stateRangesJoined to ${stream.descriptor.namespace}.${stream.descriptor.name}$groupLineMaybe
-            READ:      $readRange (complete=${markedEndOfStream.get()})
-            PROCESSED: ${rangesState[Batch.State.PROCESSED]}
-            STAGED:    ${rangesState[Batch.State.STAGED]}
-            PERSISTED: ${rangesState[Batch.State.PERSISTED]}
-            COMPLETE:  ${rangesState[Batch.State.COMPLETE]}
-        """.trimIndent()
-        }
-    }
-
-    private fun RangeSet<Long>.merged(): RangeSet<Long> {
-        val newRanges = this.asRanges().toMutableSet()
-        this.asRanges().forEach { oldRange ->
-            newRanges
-                .find { newRange ->
-                    oldRange.upperEndpoint() + 1 == newRange.lowerEndpoint() ||
-                        newRange.upperEndpoint() + 1 == oldRange.lowerEndpoint()
-                }
-                ?.let { newRange ->
-                    newRanges.remove(oldRange)
-                    newRanges.remove(newRange)
-                    val lower = minOf(oldRange.lowerEndpoint(), newRange.lowerEndpoint())
-                    val upper = maxOf(oldRange.upperEndpoint(), newRange.upperEndpoint())
-                    newRanges.add(Range.closed(lower, upper))
-                }
-        }
-        return TreeRangeSet.create(newRanges)
-    }
-
-    private fun addAndMarge(state: Batch.State, ranges: RangeSet<Long>) {
-        rangesState[state] =
-            (rangesState[state]?.let {
-                    it.addAll(ranges)
-                    it
-                }
-                    ?: ranges)
-                .merged()
-    }
-
-    /** True if all records in `[0, index)` have reached the given state. */
-    private fun isProcessingCompleteForState(index: Long, state: Batch.State): Boolean {
-        val completeRanges = rangesState[state]!!
-
-        // Force the ranges to overlap at their endpoints, in order to work around
-        // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
-        // contiguous.
-        // This ensures that a state message received at eg, index 10 (after messages 0..9 have
-        // been received), will pass `{'[0..5]','[6..9]'}.encloses('[0..10)')`.
-        val expanded =
-            completeRanges.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
-        val expandedSet = TreeRangeSet.create(expanded)
-
-        if (index == 0L && recordCount.get() == 0L) {
-            return true
-        }
-
-        return expandedSet.encloses(Range.closedOpen(0L, index))
-    }
-
-    override fun isBatchProcessingComplete(): Boolean {
-        /* If the stream hasn't been fully read, it can't be done. */
-        if (!markedEndOfStream.get()) {
-            return false
-        }
-
-        /* A closed empty stream is always complete. */
-        if (recordCount.get() == 0L) {
-            return true
-        }
-
-        return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
-    }
-
-    override fun areRecordsPersistedUntil(index: Long): Boolean {
-        return isProcessingCompleteForState(index, Batch.State.PERSISTED)
-    }
-
-    override fun markProcessingSucceeded() {
+    /**
+     * Indicates destination processing of the stream succeeded, regardless of complete/incomplete
+     * status. This should only be called after all records and end of stream messages have been
+     * read.
+     */
+    fun markProcessingSucceeded() {
         if (!markedEndOfStream.get()) {
             throw IllegalStateException("Stream is not closed for reading")
         }
         streamResult.complete(StreamProcessingSucceeded)
     }
 
-    override fun markProcessingFailed(causedBy: Exception): Boolean {
+    /**
+     * Indicates destination processing of the stream failed. Returns false if task was already
+     * complete
+     */
+    fun markProcessingFailed(causedBy: Exception): Boolean {
         return streamResult.complete(StreamProcessingFailed(causedBy))
     }
 
-    override suspend fun awaitStreamResult(): StreamResult {
+    /** Suspend until the stream completes, returning the result. */
+    suspend fun awaitStreamResult(): StreamResult {
         return streamResult.await()
     }
 
-    override fun isActive(): Boolean {
+    /** True if the stream processing has not yet been marked as successful or failed. */
+    fun isActive(): Boolean {
         return streamResult.isActive
     }
 
-    override fun getCurrentCheckpointId(): CheckpointId {
-        return CheckpointId(nextCheckpointId.get().toInt())
-    }
-
-    override fun incrementPersistedCount(checkpointId: CheckpointId, count: Long) {
-        checkpointCounts
-            .getOrPut(checkpointId) { CheckpointCounts() }
-            .recordsPersisted
-            .addAndGet(count)
-    }
-
-    override fun incrementCompletedCount(checkpointId: CheckpointId, count: Long) {
-        checkpointCounts
-            .getOrPut(checkpointId) { CheckpointCounts() }
-            .recordsCompleted
-            .addAndGet(count)
-    }
-
-    override fun areRecordsPersistedUntilCheckpoint(checkpointId: CheckpointId): Boolean {
-        val counts = checkpointCounts.filter { it.key.id <= checkpointId.id }
-        if (counts.size < checkpointId.id + 1) {
-            return false
+    /**
+     * Return a monotonically increasing index of the checkpointed batch of records on which we're
+     * working.
+     *
+     * It is returned as a CheckpointKey, with the id as the string representation of the index.
+     * This is to make it compatible with state management for the socket path, where id and index
+     * are maintained separately by the source and delivered on state and record messages.
+     *
+     * The underlying value will be incremented each time `markCheckpoint` is called.
+     */
+    fun inferNextCheckpointKey(): CheckpointKey {
+        check(!requireCheckpointKeyOnState) {
+            "Cannot infer CheckpointKey when requireCheckpointKeyOnState is true"
         }
+        val indexValue = nextInferredCheckpointIndex.get()
+        return CheckpointKey(
+            checkpointIndex = CheckpointIndex(indexValue),
+            checkpointId = CheckpointId(indexValue.toString())
+        )
+    }
 
-        val (readCount, persistedCount, completedCount) =
-            counts.toList().fold(Triple(0L, 0L, 0L)) { acc, (_, checkpointCount) ->
-                Triple(
-                    acc.first + checkpointCount.recordsRead,
-                    acc.second + checkpointCount.recordsPersisted.get(),
-                    acc.third + checkpointCount.recordsCompleted.get(),
-                )
-            }
+    fun incrementCheckpointCounts(
+        state: BatchState,
+        checkpointCounts: Map<CheckpointId, Long>,
+    ) {
+        val idToValue = checkpointCountsByState.getOrPut(state) { ConcurrentHashMap() }
+
+        checkpointCounts.forEach { (checkpointId, recordCount) ->
+            idToValue.merge(checkpointId, CheckpointValue(recordCount)) { old, new -> old + new }
+        }
+    }
+
+    private fun countByStateForCheckpoint(
+        checkpointId: CheckpointId,
+        state: BatchState
+    ): CheckpointValue {
+        val countsForState = checkpointCountsByState.filter { (it.key == state) }.values
+        val count = countsForState.sumOf { it[checkpointId]?.records ?: 0L }
+        return CheckpointValue(records = count)
+    }
+
+    /**
+     * True if persisted counts associated with the index [checkpointId] are equal to the number of
+     * records read.
+     */
+    fun areRecordsPersistedForCheckpoint(checkpointId: CheckpointId): Boolean {
+        val readCount = recordsReadPerCheckpoint[checkpointId] ?: CheckpointValue(records = 0)
+
+        val persistedCount = countByStateForCheckpoint(checkpointId, BatchState.PERSISTED)
+        val completedCount = countByStateForCheckpoint(checkpointId, BatchState.COMPLETE)
+
         if (persistedCount == readCount) {
             return true
         }
+
         // Completed implies persisted.
         return completedCount == readCount
     }
 
-    override fun isBatchProcessingCompleteForCheckpoints(): Boolean {
+    /**
+     * True if all records in the stream have been marked as completed AND the stream has been
+     * marked as complete.
+     */
+    fun isBatchProcessingCompleteForCheckpoints(): Boolean {
         if (!markedEndOfStream.get()) {
             return false
         }
@@ -390,19 +238,22 @@ class DefaultStreamManager(
             return true
         }
 
-        val completedCount = checkpointCounts.values.sumOf { it.recordsCompleted.get() }
+        val completedCount =
+            checkpointCountsByState
+                .filter { (state, _) -> state == BatchState.COMPLETE }
+                .values
+                .flatMap { it.values }
+                .sumOf { it.records }
+
         return completedCount == readCount
     }
-}
 
-interface StreamManagerFactory {
-    fun create(stream: DestinationStream): StreamManager
-}
-
-@Singleton
-@Secondary
-class DefaultStreamManagerFactory : StreamManagerFactory {
-    override fun create(stream: DestinationStream): StreamManager {
-        return DefaultStreamManager(stream)
+    /**
+     * Some destinations need to perform expensive post-processing at the end of a sync, but can
+     * skip that post-processing if the sync had 0 records. So we should tell the destination
+     * whether any records were processed.
+     */
+    fun hadNonzeroRecords(): Boolean {
+        return recordCount.get() > 0
     }
 }

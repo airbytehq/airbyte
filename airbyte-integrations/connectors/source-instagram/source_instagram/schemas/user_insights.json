@@ -19,24 +19,12 @@
       "description": "The total number of followers for the user's account.",
       "type": ["null", "integer"]
     },
-    "impressions": {
-      "description": "The total number of times the user's content has been displayed.",
-      "type": ["null", "integer"]
-    },
     "reach": {
       "description": "The total number of unique accounts that have seen the user's content.",
       "type": ["null", "integer"]
     },
-    "impressions_week": {
-      "description": "The total number of impressions in the last week.",
-      "type": ["null", "integer"]
-    },
     "reach_week": {
       "description": "The total reach in the last week.",
-      "type": ["null", "integer"]
-    },
-    "impressions_days_28": {
-      "description": "The total number of impressions in the last 28 days.",
       "type": ["null", "integer"]
     },
     "reach_days_28": {
