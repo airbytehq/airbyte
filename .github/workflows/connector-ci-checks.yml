@@ -319,7 +319,6 @@ jobs:
         uses: actions/create-github-app-token@v1
         id: get-app-token
         if: github.event_name == 'workflow_call' && inputs.gitref != ''
-
         with:
           owner: "airbytehq"
           repositories: "airbyte"
