@@ -12,6 +12,8 @@ import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.ServerSocketWriterOutputStream
+import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.NUM_SOCKETS
+import io.airbyte.cdk.load.test.util.rotate
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -22,6 +24,7 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -38,10 +41,11 @@ class NonDockerizedDestination(
     additionalMicronautEnvs: List<String>,
     micronautProperties: Map<Property, String>,
     injectInputStream: Boolean,
-    dataChannelMedium: DataChannelMedium,
+    override val dataChannelMedium: DataChannelMedium,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
-    private val destinationStdinPipe: PrintWriter
+    private val destinationStdinPipes: Array<PrintWriter>
+    private val onChannel = AtomicInteger(0)
     private val destination: CliRunnable
     private val destinationComplete = CompletableDeferred<Unit>()
     // The destination has a runBlocking inside WriteOperation.
@@ -68,21 +72,26 @@ class NonDockerizedDestination(
                     // so we also have to specify autoFlush=false (i.e. the default behavior
                     // from PrintWriter(outputStream) ).
                     // Thanks, spotbugs.
-                    destinationStdinPipe =
-                        PrintWriter(PipedOutputStream(destinationStdin), false, Charsets.UTF_8)
+                    destinationStdinPipes =
+                        arrayOf(
+                            PrintWriter(PipedOutputStream(destinationStdin), false, Charsets.UTF_8)
+                        )
                     mapOf(
                         EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.STDIO.toString(),
                     )
                 }
                 DataChannelMedium.SOCKETS -> {
-                    val socketFile = File.createTempFile("ab_socket", ".socket")
-                    socketFile.delete()
-                    val serverSocketWriterOutputStream =
-                        ServerSocketWriterOutputStream(socketFile.path.toString())
-                    destinationStdinPipe = PrintWriter(serverSocketWriterOutputStream)
+                    val socketWriters =
+                        (0 until NUM_SOCKETS).map {
+                            val socketFile = File.createTempFile("ab_socket_${it}_", ".socket")
+                            socketFile.delete()
+                            ServerSocketWriterOutputStream(socketFile.path.toString())
+                        }
+                    destinationStdinPipes = socketWriters.map { PrintWriter(it) }.toTypedArray()
                     mapOf(
                         EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.SOCKETS.toString(),
-                        EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS to socketFile.path.toString()
+                        EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS to
+                            socketWriters.joinToString(",") { it.socketPath }
                     )
                 }
             }
@@ -125,18 +134,25 @@ class NonDockerizedDestination(
             .invokeOnCompletion { executor.shutdownNow() }
     }
 
-    override suspend fun sendMessage(message: AirbyteMessage) {
-        destinationStdinPipe.println(message.serializeToString())
+    override suspend fun sendMessage(message: AirbyteMessage, broadcast: Boolean) {
+        val messageString = message.serializeToString()
+        val channelsToSendTo =
+            if (broadcast) {
+                destinationStdinPipes
+            } else {
+                arrayOf(destinationStdinPipes[onChannel.rotate(destinationStdinPipes.size)])
+            }
+        channelsToSendTo.forEach { it.println(messageString) }
     }
 
     override suspend fun sendMessage(string: String) {
-        destinationStdinPipe.println(string)
+        destinationStdinPipes[onChannel.rotate(destinationStdinPipes.size)].println(string)
     }
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
 
     override suspend fun shutdown() {
-        destinationStdinPipe.close()
+        destinationStdinPipes.forEach { it.close() }
         destinationComplete.join()
     }
 

@@ -38,10 +38,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     AdGroupPerformanceReportHourly,
     AdGroupPerformanceReportMonthly,
     AdGroupPerformanceReportWeekly,
-    AdPerformanceReportDaily,
-    AdPerformanceReportHourly,
-    AdPerformanceReportMonthly,
-    AdPerformanceReportWeekly,
     AgeGenderAudienceReportDaily,
     AgeGenderAudienceReportHourly,
     AgeGenderAudienceReportMonthly,
@@ -89,6 +85,12 @@ from source_bing_ads.report_streams import (  # noqa: F401
     UserLocationPerformanceReportHourly,
     UserLocationPerformanceReportMonthly,
     UserLocationPerformanceReportWeekly,
+)
+from source_bing_ads.reports.ad_performance_report import (  # noqa: F401
+    AdPerformanceReportDaily,
+    AdPerformanceReportHourly,
+    AdPerformanceReportMonthly,
+    AdPerformanceReportWeekly,
 )
 
 
@@ -161,7 +163,6 @@ class SourceBingAds(YamlDeclarativeSource):
             AppInstallAdLabels(client, config),
             Ads(client, config),
             Budget(client, config),
-            Campaigns(client, config),
             BudgetSummaryReport(client, config),
             Labels(client, config),
             KeywordLabels(client, config),
@@ -176,7 +177,7 @@ class SourceBingAds(YamlDeclarativeSource):
             "AudiencePerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
-            "AdPerformanceReport",
+            # "AdPerformanceReport",
             "AdGroupImpressionPerformanceReport",
             "CampaignPerformanceReport",
             "CampaignImpressionPerformanceReport",
