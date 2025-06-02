@@ -53,9 +53,7 @@ class AirbyteValueToCsvRowTest {
         val result = objectValue.toCsvRecord(schema, processor)
 
         assertEquals(3, result.size)
-        assertEquals("processed_string", result[0])
-        assertEquals("processed_int", result[1])
-        assertEquals("processed_null", result[2])
+        assertEquals(listOf("processed_string", "processed_int", "processed_null"), result)
 
         // Verify processor was called for each field
         verify { processor.process(StringValue("test")) }
@@ -91,9 +89,7 @@ class AirbyteValueToCsvRowTest {
 
         assertEquals(3, result.size)
         // Order should match schema property order, not alphabetical
-        assertEquals("z_value", result[0]) // z_field first in schema
-        assertEquals("a_value", result[1]) // a_field second in schema
-        assertEquals("m_value", result[2]) // m_field third in schema
+        assertEquals(listOf("z_value", "a_value", "m_value"), result)
     }
 
     @Test
@@ -114,8 +110,7 @@ class AirbyteValueToCsvRowTest {
         val result = objectValue.toCsvRecord(schema, processor)
 
         assertEquals(2, result.size)
-        assertEquals("", result[0]) // null values processed as empty strings
-        assertEquals("", result[1])
+        assertEquals(listOf("", ""), result)
     }
 
     @Test
@@ -155,8 +150,6 @@ class AirbyteValueToCsvRowTest {
         val result = objectValue.toCsvRecord(schema, customProcessor)
 
         assertEquals(3, result.size)
-        assertEquals("HELLO", result[0])
-        assertEquals(BigInteger.valueOf(50), result[1])
-        assertEquals("MISSING", result[2])
+        assertEquals(listOf("HELLO", BigInteger.valueOf(50), "MISSING"), result)
     }
 }
