@@ -50,11 +50,13 @@ class FilePartAccumulatorLegacyTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId("0"))
 
         coVerify(exactly = 1) {
             outputQueue.publish(
-                match { (it as PipelineMessage).checkpointCounts == mapOf(CheckpointId(0) to 1L) },
+                match {
+                    (it as PipelineMessage).checkpointCounts == mapOf(CheckpointId("0") to 1L)
+                },
                 0
             )
         }
@@ -68,7 +70,7 @@ class FilePartAccumulatorLegacyTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId("0"))
 
         coVerify(exactly = 2) { outputQueue.publish(any(), 0) }
     }
@@ -82,7 +84,7 @@ class FilePartAccumulatorLegacyTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId("0"))
 
         coVerify(exactly = 2) { outputQueue.publish(any(), 0) }
     }

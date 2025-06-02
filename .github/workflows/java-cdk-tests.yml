@@ -1,0 +1,71 @@
+name: Java CDK Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      java: ${{ steps.changes.outputs.java }}
+
+    steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            java:
+              - 'airbyte-cdk/java/**/*'
+              - 'airbyte-cdk/bulk/**/*'
+
+  run-check:
+    needs:
+      - changes
+    if: needs.changes.outputs.java == 'true'
+    # As of now, 16 cores seems to be enough.
+    # Any revision upwards should be based on a performance analysis of gradle scans.
+    # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
+    # which explains why which we went down from 64 cores to 16.
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    name: Gradle Check
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Java Setup
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "21"
+      - name: Run Java CDK Tests
+        uses: burrunan/gradle-cache-action@v3
+        env:
+          CI: true
+        with:
+          job-id: gradle-check
+          read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-distribution-sha-256-sum-warning: false
+          concurrent: true
+          # TODO: be able to remove the skipSlowTests property
+          arguments: --scan :airbyte-cdk:check -DskipSlowTests=true
