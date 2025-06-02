@@ -1,11 +1,8 @@
-# SharePoint Enterprise
+---
+  dockerRepository: airbyte/source-sharepoint-enterprise
+---
 
-:::info
-Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for
-Airbyte Self-Managed Enterprise and Airbyte Teams customers. These connectors, built and maintained by the Airbyte team,
-provide enhanced capabilities and support for critical enterprise systems.
-To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
-:::
+# SharePoint Enterprise
 
 <HideInUI>
 
@@ -311,6 +308,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.2.0 | 2025-04-30 | [144](https://github.com/airbytehq/airbyte-enterprise/pull/144) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
 
 </details>

@@ -46,7 +46,7 @@ import org.apache.mina.util.ConcurrentHashSet
  * This can be enabled by injecting [io.airbyte.cdk.load.command.s3.S3ClientConfigurationProvider]
  * with [io.airbyte.cdk.load.command.s3.S3ClientConfiguration.useLegacyJavaClient] set to `true`.
  *
- * Currently this exists only to facilitate performance testing, but it may be needed as a fallback
+ * Currently, this exists only to facilitate performance testing, but it may be needed as a fallback
  * if the new SDK cannot meet performance requirements.
  */
 class S3LegacyJavaClient(val amazonS3: AmazonS3, val bucket: S3BucketConfiguration) : S3Client {
@@ -179,7 +179,7 @@ class S3LegacyJavaClientFactory {
         val amazonS3 =
             clientBuilder
                 .withCredentials(provider)
-                .withRegion(bucket.s3BucketRegion.region)
+                .withRegion(bucket.s3BucketRegion)
                 // the SDK defaults to RetryMode.LEGACY
                 // (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
                 // this _can_ be configured via environment variable, but it seems more reliable
@@ -200,7 +200,7 @@ class S3LegacyJavaClientFactory {
         val builder = clientBuilder.withCredentials(provider)
         val amazonS3 =
             if (bucket.s3Endpoint.isNullOrEmpty()) {
-                    builder.withRegion(bucket.s3BucketRegion.region)
+                    builder.withRegion(bucket.s3BucketRegion)
                 } else {
                     val clientConfiguration = ClientConfiguration().withProtocol(Protocol.HTTPS)
                     clientConfiguration.signerOverride = "AWSS3V4SignerType"
@@ -209,7 +209,7 @@ class S3LegacyJavaClientFactory {
                         .withEndpointConfiguration(
                             AwsClientBuilder.EndpointConfiguration(
                                 bucket.s3Endpoint,
-                                bucket.s3BucketRegion.region
+                                bucket.s3BucketRegion
                             )
                         )
                         .withPathStyleAccessEnabled(true)

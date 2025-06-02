@@ -28,7 +28,7 @@ const plugin = () => {
             },
           ],
         },
-        []
+        [],
       );
 
       // Add the ProductInformation JSX node right after the first header node

@@ -10,7 +10,7 @@ For file-based DBs, data is written to `/tmp/airbyte_local` by default. To chang
 
 This destination implements [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It's a new version of the existing DuckDB destination and works both with DuckDB and MotherDuck.
 
-Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).
+Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
 
 ## Use with MotherDuck
 
@@ -53,9 +53,9 @@ In addition, columns specified in the [JSON schema](https://docs.airbyte.com/con
 | Full Refresh Sync                                                        | Yes       |     |
 | Incremental - Append Sync                                                | Yes       |     |
 | Incremental - Append + Deduped                                           | Yes       |     |
-| [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) | Yes       |     |
-| [Namespaces](/using-airbyte/core-concepts/namespaces)                    | No        |     |
-| [Data Generations](/operator-guides/refreshes#data-generations)          | No        |     |
+| [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) | Yes       |     |
+| [Namespaces](/platform/using-airbyte/core-concepts/namespaces)                    | No        |     |
+| [Data Generations](/platform/operator-guides/refreshes#data-generations)          | No        |     |
 
 #### Performance consideration
 
@@ -72,6 +72,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.19 | 2025-05-25 | [60905](https://github.com/airbytehq/airbyte/pull/60905) | Allow unicode characters in database/table names |
 | 0.1.18 | 2025-03-01 | [54737](https://github.com/airbytehq/airbyte/pull/54737) | Update airbyte-cdk to ^6.0.0 in destination-motherduck |
 | 0.1.17 | 2024-12-26 | [50425](https://github.com/airbytehq/airbyte/pull/50425) | Fix bug overwrite write method not saving all batches |
 | 0.1.16 | 2024-12-06 | [48562](https://github.com/airbytehq/airbyte/pull/48562) | Improved handling of config parameters during SQL engine creation. |

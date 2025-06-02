@@ -12,10 +12,10 @@ You will only be able to connect to a self-hosted instance of Drupal using these
 
 Drupal can run on MySQL, Percona, MariaDb, MSSQL, MongoDB, Postgres, or SQL-Lite. If you're not using SQL-lite, you can use Airbyte to sync your Drupal instance by connecting to the underlying database using the appropriate Airbyte connector:
 
-- [MySQL/Percona/MariaDB](mysql.md)
-- [MSSQL](mssql.md)
-- [Mongo](mongodb-v2.md)
-- [Postgres](postgres.md)
+- [MySQL/Percona/MariaDB](mysql)
+- [MSSQL](mssql)
+- [Mongo](mongodb-v2)
+- [Postgres](postgres)
 
 :::info
 

@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.integrations.destination.mssql.v2.LIMITS
 import java.sql.Types
 
 enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
@@ -28,6 +29,10 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     BIT(Types.BOOLEAN),
     DATE(Types.DATE),
     BIGINT(Types.BIGINT),
+    /**
+     * if you change the numeric precision/scale, remember to also update [LIMITS.MAX_NUMERIC] /
+     * [LIMITS.MIN_NUMERIC]
+     */
     DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(38, 8)"),
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
     VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
