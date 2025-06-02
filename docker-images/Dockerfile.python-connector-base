@@ -19,9 +19,6 @@ RUN mkdir --mode 755 /airbyte && \
     chown -R airbyte:airbyte /custom_cache && \
     chown -R airbyte:airbyte /secrets && \
     chown -R airbyte:airbyte /config && \
-    chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && \
-    chown -R airbyte:airbyte /usr/share/pki/nltk_data && \
-    chown -R airbyte:airbyte /etc/pki/ca-trust && \
     chown -R airbyte:airbyte /tmp
 
 
