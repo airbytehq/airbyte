@@ -21,8 +21,8 @@ data class ClickhouseConfiguration(
 
 @Singleton
 class ClickhouseConfigurationFactory :
-    DestinationConfigurationFactory<ClickHouseSpecification, ClickhouseConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: ClickHouseSpecification): ClickhouseConfiguration =
+    DestinationConfigurationFactory<ClickhouseSpecification, ClickhouseConfiguration> {
+    override fun makeWithoutExceptionHandling(pojo: ClickhouseSpecification): ClickhouseConfiguration =
         ClickhouseConfiguration(
             pojo.hostname,
             pojo.port,

@@ -5,7 +5,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseDatabaseHandler
 
-class ClickHouseDirectLoadSqlTableOperations(
+class ClickhouseDirectLoadSqlTableOperations(
     private val client: Client,
     sqlGenerator: ClickhouseDirectLoadSqlGenerator,
     destinationHandler: ClickhouseDatabaseHandler,

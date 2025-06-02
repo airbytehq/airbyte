@@ -22,11 +22,11 @@ import jakarta.inject.Singleton
 class ClickhouseBeanFactory {
 
     @Singleton
-    fun clickHouseDirectLoadSqlTableOperations(
+    fun clickhouseDirectLoadSqlTableOperations(
         clickhouseClient: Client,
         sqlGenerator: ClickhouseDirectLoadSqlGenerator,
         destinationHandler: ClickhouseDatabaseHandler,
-    ): DirectLoadTableSqlOperations = ClickHouseDirectLoadSqlTableOperations(
+    ): DirectLoadTableSqlOperations = ClickhouseDirectLoadSqlTableOperations(
         clickhouseClient,
         sqlGenerator,
         destinationHandler,
