@@ -84,7 +84,7 @@ class DockerizedDestination(
         destinationDataChannels =
             when (dataChannelMedium) {
                 DataChannelMedium.STDIO -> arrayOf(process.outputStream)
-                DataChannelMedium.SOCKETS -> {
+                DataChannelMedium.SOCKET -> {
                     (0 until NUM_SOCKETS)
                         .map {
                             val sidecarPort = TcpPortReserver.findAvailablePort()
@@ -154,10 +154,10 @@ class DockerizedDestination(
 
         val socketPaths = (0 until NUM_SOCKETS).joinToString(",") { makeSocketPath(it) }
         val socketPathEnvVarsMaybe =
-            if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+            if (dataChannelMedium == DataChannelMedium.SOCKET) {
                 listOf(
                     "-e",
-                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKETS}",
+                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKET}",
                     "-e",
                     "${EnvVarConstants.DATA_CHANNEL_FORMAT.environmentVariable}=$dataChannelFormat",
                     "-e",
@@ -284,7 +284,7 @@ class DockerizedDestination(
     }
 
     private suspend fun awaitReadyForSendingMessages() {
-        if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
             destinationAwaitingSocketConnection.await()
         }
     }

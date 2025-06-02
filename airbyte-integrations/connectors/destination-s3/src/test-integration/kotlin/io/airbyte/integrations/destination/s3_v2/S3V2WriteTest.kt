@@ -521,7 +521,7 @@ class S3V2WriteTestJsonUncompressedSockets :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-        dataChannelMedium = DataChannelMedium.SOCKETS
+        dataChannelMedium = DataChannelMedium.SOCKET
     ) {
     @Test
     @Disabled("Clear will never run in socket mode")
@@ -543,7 +543,7 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
         // Because proto uses a fixed-sized array of typed unions, nulls are always present
         nullEqualsUnset = true,
         mismatchedTypesUnrepresentable = true,
-        dataChannelMedium = DataChannelMedium.SOCKETS,
+        dataChannelMedium = DataChannelMedium.SOCKET,
         dataChannelFormat = DataChannelFormat.PROTOBUF,
     ){
     @Test

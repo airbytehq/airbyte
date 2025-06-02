@@ -94,7 +94,7 @@ class DataChannelBeanFactory {
             DataChannelMedium.STDIO -> {
                 if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
             }
-            DataChannelMedium.SOCKETS -> {
+            DataChannelMedium.SOCKET -> {
                 dataChannelSocketPaths.size
             }
         }
@@ -108,7 +108,7 @@ class DataChannelBeanFactory {
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> 1
-            DataChannelMedium.SOCKETS -> numInputPartitions
+            DataChannelMedium.SOCKET -> numInputPartitions
         }
     }
 
@@ -122,7 +122,7 @@ class DataChannelBeanFactory {
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     fun requireCheckpointIdOnRecord(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
-    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKETS
+    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKET
 
     /**
      * PRIVATE: Do not use outside this factory.
@@ -165,7 +165,7 @@ class DataChannelBeanFactory {
         when (dataChannelFormat) {
             DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
             DataChannelFormat.PROTOBUF -> {
-                check(dataChannelMedium == DataChannelMedium.SOCKETS) {
+                check(dataChannelMedium == DataChannelMedium.SOCKET) {
                     "PROTOBUF data channel format is only supported for SOCKETS medium."
                 }
                 ProtobufDataChannelReader(destinationMessageFactory)
@@ -203,7 +203,7 @@ class DataChannelBeanFactory {
                 }
                 return pipelineInputQueue.asOrderedFlows()
             }
-            DataChannelMedium.SOCKETS -> {
+            DataChannelMedium.SOCKET -> {
                 socketPaths
                     .map { path ->
                         val socket =

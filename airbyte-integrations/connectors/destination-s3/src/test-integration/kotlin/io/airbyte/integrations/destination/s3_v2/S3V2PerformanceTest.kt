@@ -57,5 +57,5 @@ class S3V2JsonNoFrillsPerformanceTestSockets :
         micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
         numFilesForFileTransfer = 5,
         fileSizeMbForFileTransfer = 1024,
-        dataChannelMedium = DataChannelMedium.SOCKETS
+        dataChannelMedium = DataChannelMedium.SOCKET
     )

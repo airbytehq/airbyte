@@ -86,7 +86,7 @@ interface PerformanceTestScenario {
     fun getSummary(): Summary
 
     fun checkpointKeyForMedium(dataChannelMedium: DataChannelMedium): CheckpointKey? {
-        return if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+        return if (dataChannelMedium == DataChannelMedium.SOCKET) {
             CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
         } else {
             null

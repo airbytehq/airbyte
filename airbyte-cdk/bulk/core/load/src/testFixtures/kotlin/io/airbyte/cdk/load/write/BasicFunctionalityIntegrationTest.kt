@@ -3334,7 +3334,7 @@ abstract class BasicFunctionalityIntegrationTest(
     private fun checkpointKeyForMedium(): CheckpointKey? {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> null
-            DataChannelMedium.SOCKETS -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
+            DataChannelMedium.SOCKET -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
         }
     }
 }

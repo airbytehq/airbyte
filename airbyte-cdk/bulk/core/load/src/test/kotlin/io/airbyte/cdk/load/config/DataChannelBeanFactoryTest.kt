@@ -65,7 +65,7 @@ class DataChannelBeanFactoryTest {
                 .numInputPartitions(
                     loadStrategy = loadStrategy,
                     isFileTransfer = false,
-                    dataChannelMedium = DataChannelMedium.SOCKETS,
+                    dataChannelMedium = DataChannelMedium.SOCKET,
                     dataChannelSocketPaths = (0 until 3).map { "socket.$it" }
                 )
         assertEquals(3, numInputPartitions)
@@ -77,7 +77,7 @@ class DataChannelBeanFactoryTest {
         every { loadStrategy.inputPartitions } returns 2
         val numDataChannels =
             DataChannelBeanFactory()
-                .numDataChannels(dataChannelMedium = DataChannelMedium.SOCKETS, 3)
+                .numDataChannels(dataChannelMedium = DataChannelMedium.SOCKET, 3)
         assertEquals(3, numDataChannels)
     }
 
@@ -95,7 +95,7 @@ class DataChannelBeanFactoryTest {
     @Test
     fun `require checkpoint key for sockets`() {
         val checkpointKeyRequired =
-            DataChannelBeanFactory().requireCheckpointIdOnRecord(DataChannelMedium.SOCKETS)
+            DataChannelBeanFactory().requireCheckpointIdOnRecord(DataChannelMedium.SOCKET)
         assertTrue(checkpointKeyRequired)
     }
 

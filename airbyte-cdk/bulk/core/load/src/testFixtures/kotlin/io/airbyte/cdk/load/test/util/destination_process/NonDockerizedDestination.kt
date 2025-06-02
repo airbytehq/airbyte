@@ -82,7 +82,7 @@ class NonDockerizedDestination(
                         EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.STDIO.toString(),
                     )
                 }
-                DataChannelMedium.SOCKETS -> {
+                DataChannelMedium.SOCKET -> {
                     val socketWriters =
                         (0 until NUM_SOCKETS).map {
                             val socketFile = File.createTempFile("ab_socket_${it}_", ".socket")
@@ -91,7 +91,7 @@ class NonDockerizedDestination(
                         }
                     destinationDataChannels = socketWriters.toTypedArray()
                     mapOf(
-                        EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.SOCKETS.toString(),
+                        EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.SOCKET.toString(),
                         EnvVarConstants.DATA_CHANNEL_FORMAT to dataChannelFormat.toString(),
                         EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS to
                             socketWriters.joinToString(",") { it.socketPath }
