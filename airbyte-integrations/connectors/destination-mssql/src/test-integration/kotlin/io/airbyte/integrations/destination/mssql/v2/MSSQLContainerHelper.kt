@@ -19,7 +19,7 @@ val logger = KotlinLogging.logger {}
  * configuration to match test container configuration.
  */
 object MSSQLContainerHelper {
-    
+
     private val testContainer =
         MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
             .acceptLicense()
