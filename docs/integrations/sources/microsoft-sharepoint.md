@@ -306,6 +306,10 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.10.2 | 2025-05-10 | [59113](https://github.com/airbytehq/airbyte/pull/59113) | Update dependencies |
+| 0.10.1 | 2025-05-07 | [59700](https://github.com/airbytehq/airbyte/pull/59711) | Fix edege case for unexcpeted uris. |
+| 0.10.0 | 2025-05-07 | [59700](https://github.com/airbytehq/airbyte/pull/59700) | Promoting release candidate 0.10.0-rc.1 to a main version. |
+| 0.10.0-rc.1 | 2025-05-05 | [57507](https://github.com/airbytehq/airbyte/pull/57507) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.9.3 | 2025-04-19 | [58471](https://github.com/airbytehq/airbyte/pull/58471) | Update dependencies |
 | 0.9.2 | 2025-04-12 | [57920](https://github.com/airbytehq/airbyte/pull/57920) | Update dependencies |
 | 0.9.1 | 2025-04-05 | [57065](https://github.com/airbytehq/airbyte/pull/57065) | Update dependencies |

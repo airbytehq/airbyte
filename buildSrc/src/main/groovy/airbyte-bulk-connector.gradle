@@ -205,11 +205,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
 
                 jvmArgs = project.test.jvmArgs
-                systemProperties = project.test.systemProperties + [
-                        'junit.jupiter.execution.parallel.enabled': 'true',
-                        'junit.jupiter.execution.parallel.config.strategy': 'fixed',
-                        'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.max((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
-                ]
+                systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
 
@@ -227,6 +223,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 // integration tests depend on the runtime code
                 integrationTestImplementation project
                 integrationTestLegacyImplementation project
+                integrationTestLegacyImplementation project.sourceSets.integrationTest.output
             }
 
             project.tasks.named('build').configure {

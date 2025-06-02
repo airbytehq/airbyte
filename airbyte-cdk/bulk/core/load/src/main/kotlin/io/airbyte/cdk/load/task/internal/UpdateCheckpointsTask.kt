@@ -19,15 +19,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : Task
-
 @Singleton
 @Secondary
-class DefaultUpdateCheckpointsTask(
+class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
-) : UpdateCheckpointsTask {
+) : Task {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -37,16 +35,23 @@ class DefaultUpdateCheckpointsTask(
         checkpointMessageQueue.consume().collect {
             when (it.value) {
                 is StreamCheckpointWrapped -> {
-                    val (_, stream, index, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with index $index" }
-                    checkpointManager.addStreamCheckpoint(stream, index, it.replace(message))
+                    val (stream, checkpointKey, message) = it.value
+                    log.info { "Updating checkpoint for stream $stream with id $checkpointKey" }
+                    checkpointManager.addStreamCheckpoint(
+                        stream,
+                        checkpointKey,
+                        it.replace(message)
+                    )
                 }
                 is GlobalCheckpointWrapped -> {
-                    val (_, streamIndexes, message) = it.value
-                    log.info { "Updating global checkpoint for streams $streamIndexes" }
-                    checkpointManager.addGlobalCheckpoint(streamIndexes, it.replace(message))
+                    val (checkpointKey, message) = it.value
+                    log.info { "Updating global checkpoint with $checkpointKey" }
+                    checkpointManager.addGlobalCheckpoint(checkpointKey, it.replace(message))
                 }
             }
+            // If its corresponding data was processed before this checkpoint was added,
+            // then it's possible it's already data-sufficient.
+            checkpointManager.flushReadyCheckpointMessages()
         }
         syncManager.markCheckpointsProcessed()
         log.info { "All checkpoints (state) updated" }

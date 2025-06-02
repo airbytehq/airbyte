@@ -1,9 +1,5 @@
 # Facebook Pages
 
-:::danger
-The Facebook Pages API utilized by this connector has been deprecated. You will not be able to make a successful connection. If you would like to make a community contribution or track API upgrade status, visit: https://github.com/airbytehq/airbyte/issues/25515.
-:::
-
 This page contains the setup guide and reference information for the Facebook Pages source connector.
 
 ## Prerequisites
@@ -88,6 +84,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.2 | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043) | Update dependencies |
 | 1.1.1 | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787) | Update dependencies |
 | 1.1.0 | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126) | Re-enable in cloud and update versions |
 | 1.0.32 | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793) | Update dependencies |
