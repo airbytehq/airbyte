@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
+import io.airbyte.cdk.load.message.ProbeMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.pipeline.InputPartitioner
@@ -92,6 +93,7 @@ class InputConsumerTask(
                                 reserved.replace(message)
                             )
                         Undefined -> log.warn { "Unhandled message: $message" }
+                        ProbeMessage,
                         Ignored -> {
                             /* do nothing */
                         }
