@@ -46,6 +46,10 @@ class BigqueryBeansFactory {
     fun getBulkLoadConfig(config: BigqueryConfiguration) = BigqueryBulkLoadConfiguration(config)
 
     @Singleton
+    @Named("checkNamespace")
+    fun getCheckNamespace(config: BigqueryConfiguration): String = config.datasetId
+
+    @Singleton
     fun getChecker(
         catalog: DestinationCatalog,
         @Named("inputStream") stdinPipe: InputStream,

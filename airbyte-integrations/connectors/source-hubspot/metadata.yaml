@@ -10,9 +10,15 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 5.8.2
+  dockerImageTag: 5.8.4
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 1600Mi
+          memory_request: 1600Mi
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
   githubIssueLabel: source-hubspot
   icon: hubspot.svg

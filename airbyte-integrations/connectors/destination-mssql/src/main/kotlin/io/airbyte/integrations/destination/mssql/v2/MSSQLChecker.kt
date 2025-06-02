@@ -144,8 +144,8 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
                             DestinationRecordRaw(
                                 stream,
                                 message,
-                                Jsons.writeValueAsString(message),
-                                stream.schema
+                                stream.schema,
+                                Jsons.writeValueAsString(message).length.toLong(),
                             )
                         }
                 csvWriter.accept(destinationRecord)
