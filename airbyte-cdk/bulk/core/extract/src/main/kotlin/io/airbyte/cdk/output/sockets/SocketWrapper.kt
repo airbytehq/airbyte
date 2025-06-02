@@ -1,5 +1,6 @@
 package io.airbyte.cdk.output.sockets
 
+import io.airbyte.cdk.output.sockets.SocketWrapper.SocketStatus.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.OutputStream
@@ -30,7 +31,7 @@ interface SocketWrapper {
     }
 
     suspend fun initializeSocket()
-    suspend fun shutdownSocket()
+    fun shutdownSocket()
     val status: SocketStatus
     var bound: Boolean
     fun bindSocket()
@@ -40,13 +41,25 @@ interface SocketWrapper {
 
 class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper {
 
-    private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SocketWrapper.SocketStatus.SOCKET_CLOSED)
+    private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
 
     override var outputStream: OutputStream? = null
     override val status: SocketWrapper.SocketStatus
-        get() = socketStatus.get()
+        get() {
+            if (socketStatus.get() == SOCKET_READY) ensureSocketState()
+            return socketStatus.get()
+        }
 
+    private fun ensureSocketState() {
+        try {
+            // Ensure the socket is still open and writable
+            outputStream?.write(0)
+        } catch (_: Exception) {
+            shutdownSocket()
+            socketStatus.set(SOCKET_ERROR)
+        }
+    }
     override var bound: Boolean
         get() = socketBound.get()
         set(value) = socketBound.set(value)
@@ -62,24 +75,25 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
         val serverSocketChannel: ServerSocketChannel =
             ServerSocketChannel.open(StandardProtocolFamily.UNIX)
         serverSocketChannel.bind(socketAddress)
-        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_INITIALIZED)
+        socketStatus.set(SOCKET_INITIALIZED)
         launch(Dispatchers.IO + Job()) {
-            socketStatus.set(SocketWrapper.SocketStatus.SOCKET_WAITING_LISTENER)
+            socketStatus.set(SOCKET_WAITING_LISTENER)
             logger.info { "Waiting for $socketFilePath to connect..." }
             // accept blocks until a listener connects
             val socketChannel: SocketChannel = serverSocketChannel.accept()
-            socketStatus.set(SocketWrapper.SocketStatus.SOCKET_READY)
+            socketStatus.set(SOCKET_READY)
             outputStream = Channels.newOutputStream(socketChannel)
             logger.info { "connected to server socket at $socketFilePath" }
         }
         Unit
     }
 
-    override suspend fun shutdownSocket() {
-        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSING)
+    override fun shutdownSocket() {
+        socketStatus.set(SOCKET_CLOSING)
         outputStream?.close()
-        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSED)
+        outputStream = null
         unbindSocket()
+        socketStatus.set(SOCKET_CLOSED)
     }
 
     override fun bindSocket() {
