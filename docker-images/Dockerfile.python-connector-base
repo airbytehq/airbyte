@@ -19,7 +19,8 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 ENV POETRY_NO_INTERACTION=1
 
-# Create and set up pip cache directory (maybe don't need this)
+# Create and set up pip cache directory
+# TODO: Remove this block if not needed.
 ENV PIP_CACHE_DIR=/pip_cache
 RUN mkdir -p ${PIP_CACHE_DIR} && chown -R airbyte:airbyte ${PIP_CACHE_DIR}
 
