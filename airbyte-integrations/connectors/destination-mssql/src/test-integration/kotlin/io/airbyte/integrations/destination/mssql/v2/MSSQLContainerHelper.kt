@@ -11,7 +11,6 @@ import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
-import org.testcontainers.containers.Network
 
 val logger = KotlinLogging.logger {}
 /**
