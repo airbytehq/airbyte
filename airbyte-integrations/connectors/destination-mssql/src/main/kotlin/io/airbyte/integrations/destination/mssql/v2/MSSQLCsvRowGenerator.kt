@@ -21,7 +21,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.data.csv.toCsvValue
+import io.airbyte.cdk.load.data.csv.DefaultCsvValueProcessor
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
@@ -124,12 +124,13 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
         }
 
         val values = enrichedRecord.allTypedFields
+        val csvProcessor = DefaultCsvValueProcessor()
         return schema.properties.map { (columnName, _) ->
             val value = values[columnName]
             if (value == null || value.abValue is NullValue || !validateValuesPreLoad) {
-                return@map value?.abValue.toCsvValue()
+                return@map csvProcessor.process(value?.abValue)
             }
-            value.abValue.toCsvValue()
+            csvProcessor.process(value.abValue)
         }
     }
 }

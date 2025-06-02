@@ -20,7 +20,8 @@ val logger = KotlinLogging.logger {}
 object MSSQLContainerHelper {
 
     private val testContainer =
-        MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
+        MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04")
+            .withNetwork(Network.newNetwork())
             .acceptLicense()
             .withLogConsumer { e -> logger.debug { e.utf8String } }
 
