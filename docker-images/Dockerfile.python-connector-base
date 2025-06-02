@@ -15,10 +15,12 @@ RUN mkdir --mode 755 /airbyte && \
     mkdir --mode 755 /custom_cache && \
     mkdir /secrets && \
     mkdir /config && \
+    mkdir /nonexistent && \
     chown airbyte:airbyte /airbyte && \
     chown -R airbyte:airbyte /custom_cache && \
     chown -R airbyte:airbyte /secrets && \
     chown -R airbyte:airbyte /config && \
+    chown -R airbyte:airbyte /nonexistent && \
     chown -R airbyte:airbyte /tmp
 
 
