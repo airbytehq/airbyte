@@ -28,6 +28,7 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.2 | 2025-05-24 | [60575](https://github.com/airbytehq/airbyte/pull/60575) | Update dependencies |
 | 0.3.1 | 2025-05-10 | [60071](https://github.com/airbytehq/airbyte/pull/60071) | Update dependencies |
 | 0.3.0 | 2025-05-09 | [59679](https://github.com/airbytehq/airbyte/pull/59679) | Add  stream `customer_estimates` stream |
 | 0.2.9 | 2025-05-03 | [59078](https://github.com/airbytehq/airbyte/pull/59078) | Update dependencies |

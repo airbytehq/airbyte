@@ -133,20 +133,30 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 .stream()
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
-        val forceCreateTable = if (replace) "OR REPLACE" else ""
         val finalTableId = tableName.toPrettyString(QUOTE, finalTableSuffix)
-        return Sql.of(
-            """
-            CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
-              _airbyte_raw_id STRING NOT NULL,
-              _airbyte_extracted_at TIMESTAMP NOT NULL,
-              _airbyte_meta JSON NOT NULL,
-              _airbyte_generation_id INTEGER,
-              $columnDeclarations
+        return Sql.separately(
+            listOfNotNull(
+                // CREATE OR REPLACE TABLE exists,
+                // but still returns an error if the new table has a different
+                // partitioning/clustering scheme.
+                // So we'll explicitly drop+create the table instead.
+                if (replace) {
+                    """DROP TABLE IF EXISTS `$projectId`.$finalTableId"""
+                } else {
+                    null
+                },
+                """
+                CREATE TABLE `$projectId`.$finalTableId (
+                  _airbyte_raw_id STRING NOT NULL,
+                  _airbyte_extracted_at TIMESTAMP NOT NULL,
+                  _airbyte_meta JSON NOT NULL,
+                  _airbyte_generation_id INTEGER,
+                  $columnDeclarations
+                )
+                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                CLUSTER BY $clusterConfig;
+                """.trimIndent(),
             )
-            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY $clusterConfig;
-            """.trimIndent()
         )
     }
 

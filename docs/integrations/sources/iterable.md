@@ -83,6 +83,8 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.36 | 2025-05-24 | [58772](https://github.com/airbytehq/airbyte/pull/58772) | Update dependencies |
+| 0.6.35 | 2025-05-22 | [60854](https://github.com/airbytehq/airbyte/pull/60854) | Update dependencies and expected records |
 | 0.6.34 | 2025-04-12 | [57737](https://github.com/airbytehq/airbyte/pull/57737) | Update dependencies |
 | 0.6.33 | 2025-04-05 | [57057](https://github.com/airbytehq/airbyte/pull/57057) | Update dependencies |
 | 0.6.32 | 2025-03-29 | [56655](https://github.com/airbytehq/airbyte/pull/56655) | Update dependencies |
@@ -134,6 +136,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 | 0.3.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
 | 0.2.2 | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry. |
 | 0.2.1 | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
+| 0.2.1   | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
 | 0.2.0   | 2023-09-29 | [28457](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
 | 0.1.31  | 2023-12-06 | [33106](https://github.com/airbytehq/airbyte/pull/33106) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                            |
 | 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                                                                              |
