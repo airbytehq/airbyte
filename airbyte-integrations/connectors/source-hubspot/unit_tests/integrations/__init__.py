@@ -11,7 +11,6 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpResponse, HttpRequest, HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, find_template
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
-from source_hubspot import SourceHubspot
 
 from .config_builder import ConfigBuilder
 from .request_builders.api import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
@@ -19,6 +18,7 @@ from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStr
 from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
+from ..conftest import get_source
 
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
@@ -119,10 +119,6 @@ class HubspotTestCase:
         http_mocker.post(req, response)
 
     @classmethod
-    def mock_scopes(cls, http_mocker: HttpMocker, token: str, scopes: List[str]):
-        http_mocker.get(ScopesRequestBuilder().with_access_token(token).build(), ScopesResponseBuilder(scopes).build())
-
-    @classmethod
     def mock_custom_objects(cls, http_mocker: HttpMocker):
         http_mocker.get(
             CustomObjectsRequestBuilder().build(),
@@ -190,4 +186,4 @@ class HubspotTestCase:
     def read_from_stream(
         cls, cfg, stream: str, sync_mode: SyncMode, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
     ) -> EntrypointOutput:
-        return read(SourceHubspot(cfg, None, None), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)
+        return read(get_source(cfg, state), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)

@@ -1,10 +1,10 @@
 # Vector db connectors
-/airbyte-integrations/connectors/destination-pinecone @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-weaviate @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-pinecone @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-weaviate @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-milvus @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-qdrant @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-chroma @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/dev-extensibility
 
 # CI/CD
 /.github/ @airbytehq/dev-extensibility
