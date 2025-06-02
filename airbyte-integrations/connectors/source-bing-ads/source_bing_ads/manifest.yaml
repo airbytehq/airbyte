@@ -359,12 +359,22 @@ definitions:
             path:
               - CostPerConversion
             value: |
-              {{ record.get('CostPerConversion') | float if record.get('CostPerConversion') | default('') | trim else none }}
+              {% set cost_per_conversion = record.get('CostPerConversion') | default('') | trim %}
+              {% if cost_per_conversion and cost_per_conversion | float > 0.0 -%}
+              {{ cost_per_conversion | float }}
+              {%- else -%}
+              {{ none }}
+              {%- endif %}
           - type: AddedFieldDefinition
             path:
               - Ptr
             value: |
-              {{ record.get('Ptr') | replace('%', '') | float if record.get('Ptr') | default('') | trim else none }}
+              {%- set ptr = record.get('Ptr') | default('') | trim -%}
+              {%- if ptr and ptr | replace('%', '') | float > 0.0 -%}
+              {{ ptr | replace('%', '') | float }}
+              {%- else -%}
+              {{ none }}
+              {%- endif %}
           - type: AddedFieldDefinition
             path:
               - Assists
@@ -379,7 +389,12 @@ definitions:
             path:
               - CostPerAssist
             value: |
-              {{ record.get('CostPerAssist') | float if record.get('CostPerAssist') | default('') | trim else none }}
+              {%- set cost_per_assist = record.get('CostPerAssist') | default('') | trim -%}
+              {%- if cost_per_assist and cost_per_assist | float > 0.0 -%}
+              {{ cost_per_assist | float }}
+              {%- else -%}
+              {{ none }}
+              {%- endif %}
           - type: AddedFieldDefinition
             path:
               - AverageCpc
@@ -449,12 +464,22 @@ definitions:
             path:
               - RevenuePerConversion
             value: |
-              {{ record.get('RevenuePerConversion') | replace(',', '') | float if record.get('RevenuePerConversion') | default('') | trim else none }}
+              {%- set revenue_per_conversion = record.get('RevenuePerConversion') | default('') | trim -%}
+              {%- if revenue_per_conversion and revenue_per_conversion | replace(',', '') | float > 0.0 -%}
+              {{ revenue_per_conversion | replace(',', '') | float }}
+              {%- else -%}
+              {{ none }}
+              {%- endif %}
           - type: AddedFieldDefinition
             path:
               - RevenuePerAssist
             value: |
-              {{ record.get('RevenuePerAssist') | replace(',', '') | float if record.get('RevenuePerAssist') | default('') | trim else none }}
+              {%- set revenue_per_assist = record.get('RevenuePerAssist') | default('') | trim -%}
+              {%- if revenue_per_assist and revenue_per_assist | replace(',', '') | float > 0.0 -%}
+              {{ revenue_per_assist | replace(',', '') | float }}
+              {%- else -%}
+              {{ none }}
+              {%- endif %}
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
