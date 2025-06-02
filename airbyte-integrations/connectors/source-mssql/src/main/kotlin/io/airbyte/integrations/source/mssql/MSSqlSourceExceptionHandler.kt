@@ -64,7 +64,7 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                     "Transaction conflicted with another process and was terminated, will retry.",
                 sampleInternalMessage =
                     "com.microsoft.sqlserver.jdbc.SQLServerException: " +
-                            "Transaction (Process ID 63) was deadlocked on lock resources with another process and has been chosen as the deadlock victim. Rerun the transaction.",
+                        "Transaction (Process ID 63) was deadlocked on lock resources with another process and has been chosen as the deadlock victim. Rerun the transaction.",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6287")
             ),
         )
@@ -80,7 +80,7 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                     "The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.",
                 sampleInternalMessage =
                     "java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: " +
-                            "An exception occurred in the change event producer. This connector will be stopped.",
+                        "An exception occurred in the change event producer. This connector will be stopped.",
                 referenceLinks =
                     listOf(
                         "https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html"
