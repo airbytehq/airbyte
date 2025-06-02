@@ -3,7 +3,10 @@ package io.airbyte.integrations.destination.clickhouse_v2
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+
+private val log = KotlinLogging.logger {}
 
 @Singleton
 class ClickhouseDatabaseHandler(private val clickhouseClient: Client): DatabaseHandler {
