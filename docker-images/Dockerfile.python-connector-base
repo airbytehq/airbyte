@@ -13,7 +13,15 @@ RUN adduser --uid 1000 --system --group --no-create-home airbyte
 # Create the cache airbyte directories and set the right permissions
 RUN mkdir --mode 755 /airbyte && \
     mkdir --mode 755 /custom_cache && \
-    chown airbyte:airbyte /airbyte
+    chown airbyte:airbyte /airbyte && \
+    chown -R airbyte:airbyte /custom_cache && \
+    chown -R airbyte:airbyte /secrets && \
+    chown -R airbyte:airbyte /config && \
+    chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && \
+    chown -R airbyte:airbyte /usr/share/pki/nltk_data && \
+    chown -R airbyte:airbyte /etc/pki/ca-trust && \
+    chown -R airbyte:airbyte /tmp
+
 
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
