@@ -11,6 +11,7 @@
 [tasks]
 
 get-language = "echo 'manifest-only'" # Use with -qq to get just the language name
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
 fetch-secrets = "airbyte-cdk secrets fetch ${POE_PWD}"
 
 install = [
@@ -57,3 +58,7 @@ else
   echo "No unit tests defined; skipping unit tests locking."
 fi
 '''
+
+[tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
