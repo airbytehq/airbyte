@@ -1,9 +1,11 @@
 plugins {
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.45.1'
+    cdkVersionRequired = '0.48.9'
     features = ['db-sources', 'datastore-mongo']
     useLocalCdk = false
 }

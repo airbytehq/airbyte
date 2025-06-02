@@ -189,10 +189,19 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.0      | 2025-03-25 | [56354](https://github.com/airbytehq/airbyte/pull/56354) | Migrate posts to low-code                                                                                                                                                                                                |
-| 4.7.2      | 2025-03-11 | [55676](https://github.com/airbytehq/airbyte/pull/55676) | Prepare posts stream for low-code migration                                                                                                                                                                                        |
-| 4.7.1      | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb                                                                                                                                                                                           |
-| 4.7.0      | 2025-02-24 | [54656](https://github.com/airbytehq/airbyte/pull/54656) | Promoting release candidate 4.7.0-rc.1 to a main version.                                                                                                                                                                          |
+| 4.9.1 | 2025-05-10 | [60014](https://github.com/airbytehq/airbyte/pull/60014) | Update dependencies |
+| 4.9.0 | 2025-05-05 | [56419](https://github.com/airbytehq/airbyte/pull/56419) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
+| 4.8.7 | 2025-05-04 | [59531](https://github.com/airbytehq/airbyte/pull/59531) | Update dependencies |
+| 4.8.6 | 2025-04-26 | [58917](https://github.com/airbytehq/airbyte/pull/58917) | Update dependencies |
+| 4.8.5 | 2025-04-19 | [58547](https://github.com/airbytehq/airbyte/pull/58547) | Update dependencies |
+| 4.8.4 | 2025-04-13 | [58042](https://github.com/airbytehq/airbyte/pull/58042) | Update dependencies |
+| 4.8.3 | 2025-04-05 | [57389](https://github.com/airbytehq/airbyte/pull/57389) | Update dependencies |
+| 4.8.2 | 2025-03-29 | [55157](https://github.com/airbytehq/airbyte/pull/55157) | Update dependencies |
+| 4.8.1 | 2025-03-25 | [56405](https://github.com/airbytehq/airbyte/pull/56405) | Fix empty child state migration issue |
+| 4.8.0 | 2025-03-25 | [56354](https://github.com/airbytehq/airbyte/pull/56354) | Migrate posts to low-code |
+| 4.7.2 | 2025-03-11 | [55676](https://github.com/airbytehq/airbyte/pull/55676) | Prepare posts stream for low-code migration |
+| 4.7.1 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb |
+| 4.7.0 | 2025-02-24 | [54656](https://github.com/airbytehq/airbyte/pull/54656) | Promoting release candidate 4.7.0-rc.1 to a main version. |
 | 4.7.0-rc.1 | 2025-02-13 | [53620](https://github.com/airbytehq/airbyte/pull/53620) | Replace ZendeskSupportAuditLogsIncrementalSync with low-code DatetimeBasedCursor                                                                                                                                                   |
 | 4.6.0      | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add `User Identities` stream                                                                                                                                                                                                       |
 | 4.5.0      | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream                                                                                                                                                                                             |

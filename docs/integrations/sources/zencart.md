@@ -4,7 +4,7 @@
 
 ## Sync overview
 
-Zencart runs on a MySQL database. You can use Airbyte to sync your Zencart instance by connecting to the underlying MySQL database and leveraging the [MySQL](mysql.md) connector.
+Zencart runs on a MySQL database. You can use Airbyte to sync your Zencart instance by connecting to the underlying MySQL database and leveraging the [MySQL](mysql) connector.
 
 :::info
 

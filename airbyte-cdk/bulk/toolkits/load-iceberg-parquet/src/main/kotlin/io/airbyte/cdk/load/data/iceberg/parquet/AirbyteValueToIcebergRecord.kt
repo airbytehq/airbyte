@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownValue
 import java.time.ZoneOffset
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
@@ -121,7 +120,6 @@ class AirbyteValueToIcebergRecord {
                             "${type.typeId()} type is not allowed for TimestampValue"
                         )
                 }
-            is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
 }

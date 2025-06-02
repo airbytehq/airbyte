@@ -1,0 +1,344 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: Connector for fetching asset and employee data from Bluetelly
+
+check:
+  type: CheckStream
+  stream_names:
+    - assets
+
+definitions:
+  streams:
+    assets:
+      type: DeclarativeStream
+      name: assets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/assets
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assets"
+    employees:
+      type: DeclarativeStream
+      name: employees
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/employees
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.bluetallyapp.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/assets"
+  - $ref: "#/definitions/streams/employees"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API key to authenticate with the BlueTally API. You can generate
+          it by navigating to your account settings, selecting 'API Keys', and
+          clicking 'Create API Key'.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    assets: true
+    employees: true
+  testedStreams:
+    assets:
+      streamHash: fb7eb65d3c6f200d5e0c1adbb0c9fbe2227b08de
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    employees:
+      streamHash: b12e46b96e657522a60de3c08d7f6759ace9c270
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: >-
+      https://developers.bluetallyapp.com/reference/getting-started-with-your-api
+
+schemas:
+  assets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset_id:
+        type:
+          - string
+          - "null"
+      asset_name:
+        type:
+          - string
+          - "null"
+      asset_serial:
+        type:
+          - string
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      category_name:
+        type:
+          - string
+          - "null"
+      checkout_date:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - number
+          - "null"
+      deployed_to:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            checkout_date:
+              type:
+                - string
+                - "null"
+            employee_id:
+              type:
+                - number
+                - "null"
+      end_of_life_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      location_id:
+        type:
+          - number
+          - "null"
+      manufacturer_id:
+        type:
+          - number
+          - "null"
+      manufacturer_name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      order_number:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      product_name:
+        type:
+          - string
+          - "null"
+      purchase_cost:
+        type:
+          - number
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+      warranty_expiration_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type:
+          - boolean
+          - "null"
+      assets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      number_of_accessories:
+        type:
+          - number
+          - "null"
+      number_of_assets:
+        type:
+          - number
+          - "null"
+      number_of_consumables:
+        type:
+          - number
+          - "null"
+      number_of_licenses:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at

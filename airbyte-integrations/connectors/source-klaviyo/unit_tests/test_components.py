@@ -1,5 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
+import os
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -260,11 +262,106 @@ def test_extract_records_by_path(mock_values, mock_get, extractor, mock_response
 
 
 def test_update_target_records_with_included(extractor):
-    target_records = [{"relationships": {"type1": {"data": {"id": 1}}}}]
-    included_records = [{"id": 1, "type": "type1", "attributes": {"key": "value"}}]
+    target_records = [{"relationships": {"type1": {"data": {"type": "type1", "id": "1"}}}}]
+    included_records = [{"id": "1", "type": "type1", "attributes": {"key": "value"}}]
 
     updated_records = list(extractor.update_target_records_with_included(target_records, included_records))
-    assert updated_records[0]["relationships"]["type1"]["data"] == {"id": 1, "key": "value"}
+    assert updated_records[0]["relationships"]["type1"]["data"] == {"type": "type1", "id": "1", "key": "value"}
+
+
+def test_extract_records_with_included_fields(components_module, mock_response, mock_config, mock_decoder):
+    """
+    Test the extraction of records with included fields from a Klaviyo API response. The API resoonse mocked is obtained
+    from the API docs: https://developers.klaviyo.com/en/reference/get_events
+    The JSON file is located in the integration folder of within the unit_tests.
+    """
+
+    # Load JSON from file
+    json_path = os.path.join(os.path.dirname(__file__), "integration", "get_events.json")
+    with open(json_path, "r") as f:
+        response_json = json.load(f)
+
+    # Update JSON to match included IDs
+    response_json["data"][0]["relationships"]["profile"]["data"]["id"] = "01GDDKASAP8TKDDA2GRZDSVP4H"
+    response_json["data"][0]["relationships"]["metric"]["data"]["id"] = "string"
+    response_json["data"][0]["relationships"]["attributions"]["data"][0]["id"] = "925e385b52fb405715f3616c337cc65c"
+
+    # Mock response to return the JSON
+    mock_response.json.return_value = response_json
+    mock_decoder.decode.return_value = response_json
+
+    # Setup field path to extract 'data'
+    mock_field_path = [Mock()]
+    mock_field_path[0].eval.return_value = "data"
+
+    # Instantiate extractor
+    extractor = components_module.KlaviyoIncludedFieldExtractor(mock_field_path, mock_config, mock_decoder)
+
+    # Extract records
+    records = list(extractor.extract_records(mock_response))
+
+    # Assert the record structure
+    assert len(records) == 1
+    record = records[0]
+
+    # Print the record for debugging
+    # print(json.dumps(record, indent=2))
+
+    # Verify profile attributes
+    assert record["relationships"]["profile"]["data"]["type"] == "profile"
+    assert record["relationships"]["profile"]["data"]["id"] == "01GDDKASAP8TKDDA2GRZDSVP4H"
+    assert record["relationships"]["profile"]["data"]["email"] == "sarah.mason@klaviyo-demo.com"
+    assert record["relationships"]["profile"]["data"]["first_name"] == "Sarah"
+    assert record["relationships"]["profile"]["data"]["last_name"] == "Mason"
+    assert record["relationships"]["profile"]["data"]["properties"] == {"pseudonym": "Dr. Octopus"}
+
+    # Verify metric attributes
+    assert record["relationships"]["metric"]["data"]["type"] == "metric"
+    assert record["relationships"]["metric"]["data"]["id"] == "string"
+    assert record["relationships"]["metric"]["data"]["name"] == "string"
+    assert record["relationships"]["metric"]["data"]["created"] == "string"
+    assert record["relationships"]["metric"]["data"]["updated"] == "string"
+    assert record["relationships"]["metric"]["data"]["integration"] == {}
+
+    # Verify attribution attributes (empty in this case)
+    assert len(record["relationships"]["attributions"]["data"]) == 1
+    assert record["relationships"]["attributions"]["data"][0]["type"] == "attribution"
+    assert record["relationships"]["attributions"]["data"][0]["id"] == "925e385b52fb405715f3616c337cc65c"
+    # No attributes should be added since included attribution has empty attributes
+    assert len(record["relationships"]["attributions"]["data"][0]) == 3  # type, id, and relationships
+
+    # Verify attribution relationships
+    assert "relationships" in record["relationships"]["attributions"]["data"][0]
+    attribution_relationships = record["relationships"]["attributions"]["data"][0]["relationships"]
+
+    # Check each nested relationship
+    assert "event" in attribution_relationships
+    assert attribution_relationships["event"]["data"]["type"] == "event"
+    assert attribution_relationships["event"]["data"]["id"] == "string"
+
+    assert "attributed-event" in attribution_relationships
+    assert attribution_relationships["attributed-event"]["data"]["type"] == "event"
+    assert attribution_relationships["attributed-event"]["data"]["id"] == "string"
+
+    assert "campaign" in attribution_relationships
+    assert attribution_relationships["campaign"]["data"]["type"] == "campaign"
+    assert attribution_relationships["campaign"]["data"]["id"] == "string"
+
+    assert "campaign-message" in attribution_relationships
+    assert attribution_relationships["campaign-message"]["data"]["type"] == "campaign-message"
+    assert attribution_relationships["campaign-message"]["data"]["id"] == "string"
+
+    assert "flow" in attribution_relationships
+    assert attribution_relationships["flow"]["data"]["type"] == "flow"
+    assert attribution_relationships["flow"]["data"]["id"] == "string"
+
+    assert "flow-message" in attribution_relationships
+    assert attribution_relationships["flow-message"]["data"]["type"] == "flow-message"
+    assert attribution_relationships["flow-message"]["data"]["id"] == "string"
+
+    assert "flow-message-variation" in attribution_relationships
+    assert attribution_relationships["flow-message-variation"]["data"]["type"] == "flow-message"
+    assert attribution_relationships["flow-message-variation"]["data"]["id"] == "string"
 
 
 def test_migrate_a_valid_legacy_state_to_per_partition(components_module):

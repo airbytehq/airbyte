@@ -19,6 +19,7 @@ allprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'com.google.devtools.ksp'
     apply plugin: 'idea'
+    apply plugin: 'project-report'
 
 
     // By default gradle uses directory as the project name. That works very well in a single project environment but

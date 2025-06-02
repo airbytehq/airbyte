@@ -9,7 +9,7 @@
       "access_key_id" : {
         "type" : "string",
         "description" : "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
-        "title" : "S3 Key ID",
+        "title" : "Access Key ID",
         "examples" : [ "A012345678910EXAMPLE" ],
         "airbyte_secret" : true,
         "always_show" : true,
@@ -18,7 +18,7 @@
       "secret_access_key" : {
         "type" : "string",
         "description" : "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
-        "title" : "S3 Access Key",
+        "title" : "Secret Access Key",
         "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
         "airbyte_secret" : true,
         "always_show" : true,

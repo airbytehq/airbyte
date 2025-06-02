@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
@@ -42,7 +43,8 @@ abstract class S3V2WriteTest(
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
-    private val mergesUnions: Boolean = false
+    private val mergesUnions: Boolean = false,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -53,7 +55,7 @@ abstract class S3V2WriteTest(
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
         micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = stringifySchemalessObjects,
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = schematizedArrayBehavior,
@@ -64,6 +66,7 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelMedium = dataChannelMedium
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -315,7 +318,22 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -356,6 +374,11 @@ class S3V2WriteTestCsvUncompressed :
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
     }
+
+    @Test
+    override fun testTruncateRefreshNoData() {
+        super.testTruncateRefreshNoData()
+    }
 }
 
 class S3V2WriteTestCsvRootLevelFlattening :
@@ -393,10 +416,14 @@ class S3V2WriteTestAvroUncompressed :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         preserveUndeclaredFields = false,
+        // this is technically false. Avro + parquet do have limits on numbers.
+        // But float64 is weird, in that the actual _limits_ are unreasonably large -
+        // but at that size, you have very little precision.
+        // This is actually covered by the nested/topLevelFloatLosesPrecision test cases.
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestAvroBzip2 :
@@ -411,7 +438,7 @@ class S3V2WriteTestAvroBzip2 :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestParquetUncompressed :
@@ -426,7 +453,7 @@ class S3V2WriteTestParquetUncompressed :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestParquetSnappy :
@@ -441,7 +468,7 @@ class S3V2WriteTestParquetSnappy :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestEndpointURL :
@@ -482,3 +509,21 @@ class S3V2CsvAssumeRole :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     )
+
+class S3V2WriteTestJsonUncompressedSockets :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+        dataChannelMedium = DataChannelMedium.SOCKETS
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}

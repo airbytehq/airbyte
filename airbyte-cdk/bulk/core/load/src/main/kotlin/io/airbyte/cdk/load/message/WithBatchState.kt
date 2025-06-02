@@ -11,5 +11,5 @@ package io.airbyte.cdk.load.message
  * internal state.
  */
 interface WithBatchState {
-    val state: Batch.State
+    val state: BatchState
 }

@@ -5,15 +5,15 @@ package io.airbyte.cdk.db.bigquery
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.api.gax.retrying.RetrySettings
-import com.google.auth.oauth2.ServiceAccountCredentials
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.*
-import com.google.common.base.Charsets
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Streams
 import io.airbyte.cdk.db.SqlDatabase
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
@@ -38,11 +38,11 @@ constructor(
         try {
             this.sourceOperations = sourceOperations
             val bigQueryBuilder = BigQueryOptions.newBuilder()
-            var credentials: ServiceAccountCredentials? = null
-            if (jsonCreds != null && !jsonCreds.isEmpty()) {
+            var credentials: GoogleCredentials? = null
+            if (!jsonCreds.isNullOrEmpty()) {
                 credentials =
-                    ServiceAccountCredentials.fromStream(
-                        ByteArrayInputStream(jsonCreds.toByteArray(Charsets.UTF_8))
+                    GoogleCredentials.fromStream(
+                        ByteArrayInputStream(jsonCreds.toByteArray(StandardCharsets.UTF_8))
                     )
             }
             bigQuery =
@@ -50,7 +50,7 @@ constructor(
                     .setProjectId(projectId)
                     .setCredentials(
                         if (!Objects.isNull(credentials)) credentials
-                        else ServiceAccountCredentials.getApplicationDefault()
+                        else GoogleCredentials.getApplicationDefault()
                     )
                     .setHeaderProvider {
                         ImmutableMap.of("user-agent", getUserAgentHeader(connectorVersion))
@@ -85,7 +85,7 @@ constructor(
         val result = executeQuery(bigQuery, getQueryConfig(sql, emptyList()))
         if (result.getLeft() == null) {
             throw SQLException(
-                "BigQuery request is failed with error: ${result.getRight()}. SQL: ${sql}"
+                "BigQuery request is failed with error: ${result.getRight()}. SQL: $sql"
             )
         }
         LOGGER.info { "BigQuery successfully finished execution SQL: $sql" }
@@ -124,7 +124,7 @@ constructor(
             throw Exception(
                 "Failed to execute query " +
                     sql +
-                    (if (params != null && !params.isEmpty()) " with params $params" else "") +
+                    (if (!params.isNullOrEmpty()) " with params $params" else "") +
                     ". Error: " +
                     result.getRight()
             )

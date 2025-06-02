@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -34,13 +35,15 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
+import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointIndex
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -55,6 +58,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -74,6 +78,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
+// TODO kill Untyped, rename StronglyTyped -> AllTypes, and use the
+//  SimpleTypeBehavior enum for all types.
+//  https://github.com/airbytehq/airbyte-internal-issues/issues/12715
 sealed interface AllTypesBehavior
 
 data class StronglyTyped(
@@ -89,9 +96,37 @@ data class StronglyTyped(
     val nestedFloatLosesPrecision: Boolean = true,
     /** Whether the destination supports integers larger than int64 */
     val integerCanBeLarge: Boolean = true,
+    /** Whether the destination supports numbers larger than 1e39-1 */
+    val numberCanBeLarge: Boolean = true,
+    /**
+     * In some strongly-typed destinations, timetz columns are actually weakly typed. For example,
+     * Bigquery writes timetz values into STRING columns, and doesn't actually validate that they
+     * are valid timetz values.
+     */
+    val timeWithTimezoneBehavior: SimpleValueBehavior = SimpleValueBehavior.STRONGLY_TYPE,
 ) : AllTypesBehavior
 
 data object Untyped : AllTypesBehavior
+
+enum class SimpleValueBehavior {
+    /**
+     * The destination doesn't support this data type, so we just write a JSON field. We also don't
+     * validate the value in any way.
+     *
+     * This is generally poor practice. Some older connectors use this behavior for legacy reasons,
+     * but newer connectors should prefer [VALIDATE_AND_PASS_THROUGH].
+     */
+    PASS_THROUGH,
+
+    /**
+     * The destination doesn't support this data type, so we just write a JSON field. However, we
+     * still validate that the value is valid before writing it to the destination.
+     */
+    VALIDATE_AND_PASS_THROUGH,
+
+    /** The destination supports this data type natively. */
+    STRONGLY_TYPE,
+}
 
 /**
  * Destinations may choose to handle nested objects/arrays in a few different ways.
@@ -171,6 +206,11 @@ enum class UnknownTypesBehavior {
     FAIL,
 }
 
+// eventually we'll put some parameters in here (e.g. CDC deletes as soft vs hard delete)
+// and should switch it to a data class.
+// but for now, that would be a compiler error, so just use a normal class.
+class DedupBehavior
+
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
     configContents: String,
@@ -195,7 +235,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * retroactive schemas: writing a new file without a column has no effect on older files.
      */
     val isStreamSchemaRetroactive: Boolean,
-    val supportsDedup: Boolean,
+    val dedupBehavior: DedupBehavior?,
     val stringifySchemalessObjects: Boolean,
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
@@ -216,6 +256,8 @@ abstract class BasicFunctionalityIntegrationTest(
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    // Which medium to use as your input source for the test
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -226,6 +268,7 @@ abstract class BasicFunctionalityIntegrationTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
+        dataChannelMedium = dataChannelMedium,
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
@@ -262,13 +305,15 @@ abstract class BasicFunctionalityIntegrationTest(
                                         AirbyteRecordMessageMetaChange.Reason
                                             .SOURCE_FIELD_SIZE_LIMITATION
                                 )
-                            )
+                            ),
+                        checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
                         streamName = "test_stream",
                         streamNamespace = randomizedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(),
                     )
                 ),
             )
@@ -288,9 +333,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
+                            checkpointKey = checkpointKeyForMedium(),
                         )
                         .asProtocolMessage(),
-                    stateMessages.first()
+                    stateMessages.first(),
                 )
             },
             {
@@ -345,14 +391,31 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                isFileBased = true,
+                includeFiles = true,
             )
-        val fileMessage =
-            DestinationFile.AirbyteRecordMessageFile(
-                fileUrl = "/tmp/test_file",
-                bytes = 1234L,
-                fileRelativePath = "path/to/file",
-                modified = 4321L,
-                sourceFileUrl = "file://path/to/source",
+
+        val sourcePath = "path/to/file"
+        // these must match the values hard-coded in DockerizedDestination
+        val stagingDir = "tmp"
+        val fileName = "test_file"
+        val fileContents = "123"
+
+        val fileReference =
+            AirbyteRecordMessageFileReference()
+                .withSourceFileRelativePath(sourcePath)
+                .withStagingFileUrl("/$stagingDir/$fileName")
+                .withFileSizeBytes(1234L)
+
+        val input =
+            InputRecord(
+                namespace = randomizedNamespace,
+                name = "test_stream_file",
+                data = """{"id": 5678}""",
+                emittedAtMs = 1234,
+                changes = mutableListOf(),
+                fileReference = fileReference,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
 
         val messages =
@@ -360,16 +423,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 updatedConfig,
                 stream,
                 listOf(
-                    InputFile(
-                        stream = stream,
-                        emittedAtMs = 1234,
-                        fileMessage = fileMessage,
-                    ),
+                    input,
                     InputStreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(),
                     )
                 ),
                 useFileTransfer = true,
@@ -389,6 +449,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(),
                     )
                     .asProtocolMessage(),
                 stateMessages.first()
@@ -398,13 +459,14 @@ abstract class BasicFunctionalityIntegrationTest(
         val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
-        assertEquals(listOf("123"), fileContent)
+        assertEquals(fileContents, fileContent[sourcePath])
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
     @Test
     open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
+            assumeTrue(verifyDataWriting)
             val stream =
                 DestinationStream(
                     DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -424,13 +486,15 @@ abstract class BasicFunctionalityIntegrationTest(
                             name = "test_stream",
                             data = """{"id": 12}""",
                             emittedAtMs = 1234,
+                            checkpointId = checkpointKeyForMedium()?.checkpointId
                         )
                     ),
                     StreamCheckpoint(
                         streamNamespace = randomizedNamespace,
                         streamName = "test_stream",
                         blob = """{"foo": "bar1"}""",
-                        sourceRecordCount = 1
+                        sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium()
                     ),
                     allowGracefulShutdown = false,
                 )
@@ -518,18 +582,21 @@ abstract class BasicFunctionalityIntegrationTest(
                     name = stream1.descriptor.name,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
                     emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     namespace = streamWithDefaultNamespace.descriptor.namespace,
                     name = streamWithDefaultNamespace.descriptor.name,
                     data = """{"id": 91011}""",
                     emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             )
         )
@@ -633,6 +700,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             // "order" is a reserved word in many sql engines
                             "order" to stringType,
                             "ProperCase" to stringType,
+                            "Foo.Bar" to stringType,
                         )
                     ),
                     // this is apparently trying to test for reserved words?
@@ -665,6 +733,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     emittedAtMs = 1234,
                     meta = null,
                     serialized = "",
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             }
         runSync(updatedConfig, catalog, messages)
@@ -694,6 +763,84 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * [testFunkyCharacters] runs using APPEND streams, so it can run on all destinations. But we
+     * should also test that funky characters in the PK/cursor behave correctly.
+     *
+     * This test just runs a single DEDUP stream, whose PK+cursor include various special
+     * characters.
+     */
+    @Test
+    open fun testFunkyCharactersDedup() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                importType =
+                    Dedupe(
+                        // the actual string here is id~!@#$%^&*()`[]{}|;':",./<>?
+                        // note: no `\` character, because it causes significant problems in some
+                        // destinations (T+D destinations with noncompliant JSONPath
+                        // implementations,
+                        // e.g. bigquery)
+                        primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+                        cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id~!@#\$%^&*()`[]{}|;':\",./<>?" to intType,
+                                "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to timestamptzType,
+                                "name~!@#\$%^&*()`[]{}|;':\",./<>?" to stringType,
+                            )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """
+                    {
+                      "id~!@#${'$'}%^&*()`[]{}|;':\",./<>?": 1,
+                      "updated_at~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "2000-01-01T00:00:00Z",
+                      "name~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "Alice1"
+                    }""".trimIndent(),
+                    emittedAtMs = 1000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice has only the newer record, and Bob also exists
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id~!@#\$%^&*()`[]{}|;':\",./<>?" to 1,
+                            "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to
+                                TimestampWithTimezoneValue("2000-01-01T00:00:00Z"),
+                            "name~!@#\$%^&*()`[]{}|;':\",./<>?" to "Alice1",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+            cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
+        )
+    }
+
     @Test
     open fun testTruncateRefresh() {
         assumeTrue(verifyDataWriting)
@@ -715,6 +862,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -728,6 +876,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -766,6 +915,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         fun makeOutputRecord(
             id: Int,
@@ -849,6 +999,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream2.descriptor.name,
                 """{}""",
                 sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
             ),
             allowGracefulShutdown = false,
         )
@@ -935,6 +1086,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         fun makeOutputRecord(
             id: Int,
@@ -979,6 +1131,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream.descriptor.name,
                 """{}""",
                 sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
             ),
             allowGracefulShutdown = false,
         )
@@ -1056,6 +1209,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         fun makeOutputRecord(
             id: Int,
@@ -1140,6 +1294,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream2.descriptor.name,
                 """{}""",
                 sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
             ),
             allowGracefulShutdown = false,
         )
@@ -1255,6 +1410,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1268,6 +1424,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 5678L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1324,6 +1481,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
                     emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1340,7 +1498,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 2345,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1359,7 +1518,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 2345,
                     generationId = 0,
                     data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
@@ -1408,6 +1567,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
                     emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1427,6 +1587,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
                     emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1459,6 +1620,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
                     emittedAtMs = 5678L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1487,7 +1649,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testDedup() {
-        assumeTrue(supportsDedup)
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1517,6 +1680,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "test_stream",
                 data,
                 emittedAtMs = extractedAt,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
 
         val sync1Stream = makeStream(syncId = 42)
@@ -1629,7 +1793,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testDedupWithStringKey() {
-        assumeTrue(supportsDedup)
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1659,6 +1824,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "test_stream",
                 data,
                 emittedAtMs = extractedAt,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
 
         val sync1Stream = makeStream(syncId = 42)
@@ -1769,6 +1935,60 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testDedupNoCursor() {
+        assumeTrue(verifyDataWriting && dedupBehavior != null)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    namespace = randomizedNamespace,
+                    name = "test_stream",
+                    data = """{"id": 1234, "name": "a"}""",
+                    emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                ),
+            ),
+        )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    namespace = randomizedNamespace,
+                    name = "test_stream",
+                    data = """{"id": 1234, "name": "b"}""",
+                    emittedAtMs = 5678,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 0,
+                    data = mapOf("id" to 1234, "name" to "b"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
+                ),
+            ),
+            stream,
+            listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     /**
      * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
      * Verify that we overwrite everything correctly.
@@ -1778,7 +1998,8 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     @Test
     open fun testDedupChangeCursor() {
-        assumeTrue(verifyDataWriting && supportsDedup)
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
         fun makeStream(cursor: String) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1798,7 +2019,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        fun makeRecord(cursorName: String) =
+        fun makeRecord(cursorName: String, emittedAtMs: Long) =
             InputRecord(
                 randomizedNamespace,
                 "test_stream",
@@ -1806,16 +2027,21 @@ abstract class BasicFunctionalityIntegrationTest(
                 // this is unrealistic (extractedAt should always increase between syncs),
                 // but it lets us force the dedupe behavior to rely solely on the cursor column,
                 // instead of being able to fallback onto extractedAt.
-                emittedAtMs = 100,
+                emittedAtMs = emittedAtMs,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
-        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(
+            updatedConfig,
+            makeStream("cursor1"),
+            listOf(makeRecord("cursor1", emittedAtMs = 100)),
+        )
         val stream2 = makeStream("cursor2")
-        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2", emittedAtMs = 200)))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 OutputRecord(
-                    extractedAt = 100,
+                    extractedAt = 200,
                     generationId = 42,
                     data =
                         mapOf(
@@ -1864,6 +2090,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream_$i",
                     """{"id": 1, "name": "foo_$i"}""",
                     emittedAtMs = 100,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             }
         // Just verify that we don't crash.
@@ -1918,6 +2145,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "test_stream",
                 data,
                 emittedAtMs = 100,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         runSync(
             updatedConfig,
@@ -1963,13 +2191,16 @@ abstract class BasicFunctionalityIntegrationTest(
                 // 99999999999999999999999999999999 is out of range for int64.
                 // 50000.0000000000000001 can't be represented as a standard float64,
                 // and gets rounded off.
+                // 1e39 is greater than the typical max 1e39-1 for database/warehouse destinations
+                // (decimal points are to force jackson to recognize it as a decimal)
                 makeRecord(
                     """
                         {
                           "id": 4,
                           "struct": {"foo": 50000.0000000000000001},
                           "number": 50000.0000000000000001,
-                          "integer": 99999999999999999999999999999999
+                          "integer": 99999999999999999999999999999999,
+                          "number": 1.0000000000000000000000000000000000000000e39
                         }
                     """.trimIndent(),
                 ),
@@ -1992,10 +2223,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
                 // Another record that verifies numeric behavior.
                 // -99999999999999999999999999999999 is out of range for int64.
+                // -1e39 is out of range for many database/warehouse destinations,
+                // where the maximum precision of a numeric type is 38.
                 makeRecord(
                     """
                         {
                           "id": 6,
+                          "number": -2.0000000000000000000000000000000000000000e39,
                           "integer": -99999999999999999999999999999999
                         }
                     """.trimIndent(),
@@ -2014,6 +2248,28 @@ abstract class BasicFunctionalityIntegrationTest(
                         }
                     """.trimIndent()
                 ),
+                // lol, more numbers
+                // it's surprisingly easy to handle zero / negative numbers wrong
+                // in particular, if you compare `value < Double.MIN_VALUE`, you will be sad
+                // and should instead do `value < -Double.MAX_VALUE`
+                makeRecord(
+                    """
+                        {
+                          "id": 8,
+                          "integer": 0,
+                          "number": 0.0
+                        }
+                    """.trimIndent(),
+                ),
+                makeRecord(
+                    """
+                        {
+                          "id": 9,
+                          "integer": -1,
+                          "number": -1.0
+                        }
+                    """.trimIndent(),
+                ),
             ),
         )
 
@@ -2022,6 +2278,9 @@ abstract class BasicFunctionalityIntegrationTest(
         val positiveBigInt: BigInteger?
         val bigIntChanges: List<Change>
         val negativeBigInt: BigInteger?
+        val positiveBigNumber: BigDecimal?
+        val bigNumberChanges: List<Change>
+        val negativeBigNumber: BigDecimal?
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
@@ -2058,6 +2317,26 @@ abstract class BasicFunctionalityIntegrationTest(
                             )
                         )
                     }
+                if (allTypesBehavior.numberCanBeLarge) {
+                    positiveBigNumber = BigDecimal("1e39")
+                    negativeBigNumber = BigDecimal("-2e39")
+                } else {
+                    positiveBigNumber = null
+                    negativeBigNumber = null
+                }
+                bigNumberChanges =
+                    if (allTypesBehavior.numberCanBeLarge) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            Change(
+                                "number",
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
+                        )
+                    }
                 badValuesData =
                     mapOf(
                         "id" to 5,
@@ -2072,7 +2351,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "boolean" to null,
                         "timestamp_with_timezone" to null,
                         "timestamp_without_timezone" to null,
-                        "time_with_timezone" to null,
+                        "time_with_timezone" to
+                            timetz(
+                                "\"foo\"",
+                                null,
+                            ),
                         "time_without_timezone" to null,
                         "date" to null,
                     )
@@ -2080,17 +2363,27 @@ abstract class BasicFunctionalityIntegrationTest(
                     (stream.schema as ObjectType)
                         .properties
                         .keys
+                        .asSequence()
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
                         .map { key ->
-                            Change(
-                                key,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR,
-                            )
+                            val change =
+                                Change(
+                                    key,
+                                    AirbyteRecordMessageMetaChange.Change.NULLED,
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR,
+                                )
+                            // this is kind of dumb, see
+                            // https://github.com/airbytehq/airbyte-internal-issues/issues/12715
+                            if (key == "time_with_timezone") {
+                                timetzChange(change)
+                            } else {
+                                change
+                            }
                         }
+                        .filterNotNull()
                         .filter {
                             !allTypesBehavior.convertAllValuesToString || it.field != "string"
                         }
@@ -2102,6 +2395,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 positiveBigInt = BigInteger("99999999999999999999999999999999")
                 negativeBigInt = BigInteger("-99999999999999999999999999999999")
                 bigIntChanges = emptyList()
+                positiveBigNumber = BigDecimal("1e39")
+                negativeBigNumber = BigDecimal("-2e39")
+                bigNumberChanges = emptyList()
                 badValuesData =
                     // note that the values have different types than what's declared in the schema
                     mapOf(
@@ -2136,7 +2432,11 @@ abstract class BasicFunctionalityIntegrationTest(
                                 OffsetDateTime.parse("2023-01-23T11:34:56-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:56"),
-                            "time_with_timezone" to OffsetTime.parse("11:34:56-01:00"),
+                            "time_with_timezone" to
+                                timetz(
+                                    "\"11:34:56-01:00\"",
+                                    OffsetTime.parse("11:34:56-01:00"),
+                                ),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
                         ),
@@ -2175,8 +2475,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
                             "integer" to positiveBigInt,
+                            "number" to positiveBigNumber,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                    airbyteMeta =
+                        OutputRecord.Meta(syncId = 42, changes = bigNumberChanges + bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
@@ -2191,8 +2493,10 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 6,
                             "integer" to negativeBigInt,
+                            "number" to negativeBigNumber,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                    airbyteMeta =
+                        OutputRecord.Meta(syncId = 42, changes = bigNumberChanges + bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
@@ -2204,8 +2508,34 @@ abstract class BasicFunctionalityIntegrationTest(
                                 OffsetDateTime.parse("2023-01-23T11:34:00-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:00"),
-                            "time_with_timezone" to OffsetTime.parse("11:34:00-01:00"),
+                            "time_with_timezone" to
+                                timetz(
+                                    "\"11:34:00-01:00\"",
+                                    OffsetTime.parse("11:34:00-01:00"),
+                                ),
                             "time_without_timezone" to LocalTime.parse("12:34:00"),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 8,
+                            "integer" to 0,
+                            "number" to 0.0,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 9,
+                            "integer" to -1,
+                            "number" to -1.0,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -2272,6 +2602,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ]
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     randomizedNamespace,
@@ -2286,6 +2617,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schemaless_array": []
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     randomizedNamespace,
@@ -2300,6 +2632,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schemaless_array": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             )
         )
@@ -2449,6 +2782,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "name": "ex falso quodlibet"
                         }""".trimIndent(),
                         emittedAtMs = 1602637589100,
+                        checkpointId = checkpointKeyForMedium()?.checkpointId
                     )
                 )
             )
@@ -2635,6 +2969,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "union_of_objects_with_properties_nonoverlapping": { "id": 30, "name": "Phil", "flagged": false, "description":"Very Phil" }
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     randomizedNamespace,
@@ -2649,6 +2984,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "union_of_objects_with_properties_contradicting": { "id": "seal-one-hippity", "name": "James" }
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     randomizedNamespace,
@@ -2663,6 +2999,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "union_of_objects_with_properties_contradicting": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             )
         )
@@ -2799,6 +3136,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * Verify that we can handle a stream with 0 columns. This is... not particularly useful, but
      * happens sometimes.
      */
+    @Test
     open fun testNoColumns() {
         assumeTrue(verifyDataWriting)
         val stream =
@@ -2819,23 +3157,53 @@ abstract class BasicFunctionalityIntegrationTest(
                     "test_stream",
                     """{"foo": "bar"}""",
                     emittedAtMs = 1000L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        val expectedFirstRecord =
+            OutputRecord(
+                extractedAt = 1000L,
+                generationId = 42,
+                data =
+                    if (preserveUndeclaredFields) {
+                        mapOf("foo" to "bar")
+                    } else {
+                        emptyMap()
+                    },
+                airbyteMeta = OutputRecord.Meta(syncId = 42),
+            )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(expectedFirstRecord),
+            stream,
+            primaryKey = listOf(),
+            cursor = null,
+        )
+        // Run a second sync to catch bugs in schema change detection.
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{}""",
+                    emittedAtMs = 2000L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
+                expectedFirstRecord,
                 OutputRecord(
-                    extractedAt = 1000L,
+                    extractedAt = 2000L,
                     generationId = 42,
-                    data =
-                        if (preserveUndeclaredFields) {
-                            mapOf("foo" to "bar")
-                        } else {
-                            emptyMap()
-                        },
+                    data = emptyMap(),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
+                ),
             ),
             stream,
             primaryKey = listOf(),
@@ -2866,7 +3234,44 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    open fun testTruncateRefreshNoData() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId,
+                minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
+        runSync(updatedConfig, finalStream, emptyList())
+        dumpAndDiffRecords(
+            parsedConfig,
+            emptyList(),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
     open fun testClear() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -2877,7 +3282,11 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         assertDoesNotThrow {
-            runSync(updatedConfig, stream, messages = listOf(InputGlobalCheckpoint(null)))
+            runSync(
+                updatedConfig,
+                stream,
+                messages = listOf(InputGlobalCheckpoint(null, checkpointKeyForMedium()))
+            )
         }
     }
 
@@ -2898,10 +3307,54 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
+    private fun timetz(originalValue: String, parsedValue: Any?): Any? =
+        when (allTypesBehavior) {
+            is StronglyTyped ->
+                expect(originalValue, parsedValue, allTypesBehavior.timeWithTimezoneBehavior)
+            Untyped -> expect(originalValue, parsedValue, SimpleValueBehavior.PASS_THROUGH)
+        }
+    private fun timetzChange(change: Change?) =
+        when (allTypesBehavior) {
+            is StronglyTyped -> expectChange(change, allTypesBehavior.timeWithTimezoneBehavior)
+            Untyped -> expectChange(change, SimpleValueBehavior.PASS_THROUGH)
+        }
+
+    private fun expect(
+        originalValue: String,
+        parsedValue: Any?,
+        behavior: SimpleValueBehavior
+    ): Any? {
+        val passthroughValue = originalValue.deserializeToNode().toAirbyteValue()
+        return when (behavior) {
+            SimpleValueBehavior.PASS_THROUGH -> passthroughValue
+            SimpleValueBehavior.VALIDATE_AND_PASS_THROUGH -> {
+                if (parsedValue != null) {
+                    passthroughValue
+                } else {
+                    null
+                }
+            }
+            SimpleValueBehavior.STRONGLY_TYPE -> parsedValue
+        }
+    }
+    private fun expectChange(change: Change?, behavior: SimpleValueBehavior) =
+        when (behavior) {
+            SimpleValueBehavior.PASS_THROUGH -> null
+            SimpleValueBehavior.VALIDATE_AND_PASS_THROUGH,
+            SimpleValueBehavior.STRONGLY_TYPE -> change
+        }
+
     companion object {
         val intType = FieldType(IntegerType, nullable = true)
         private val numberType = FieldType(NumberType, nullable = true)
         val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
+    }
+
+    private fun checkpointKeyForMedium(): CheckpointKey? {
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> null
+            DataChannelMedium.SOCKETS -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
+        }
     }
 }

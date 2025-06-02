@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
+# Python connector Dockerfile for Airbyte
+
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE} AS builder
+ARG BASE_IMAGE
+ARG CONNECTOR_NAME
+ARG EXTRA_PREREQS_SCRIPT=""
+
+WORKDIR /airbyte/integration_code
+
+COPY . ./
+
+# Conditionally copy and execute the extra build script if provided
+RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
+        cp ${EXTRA_PREREQS_SCRIPT} ./extra_prereqs_script && \
+        ./extra_prereqs_script; \
+    fi
+
+# TODO: Pre-install uv on the base image to speed up the build.
+#       (uv is still faster even with the extra step.)
+RUN pip install --no-cache-dir uv
+RUN python -m uv pip install --no-cache-dir .
+
+FROM ${BASE_IMAGE}
+ARG CONNECTOR_NAME
+ARG BASE_IMAGE
+
+WORKDIR /airbyte/integration_code
+
+COPY --from=builder /usr/local /usr/local
+COPY --chmod=755 <<EOT /entrypoint.sh
+#!/usr/bin/env bash
+set -e
+
+${CONNECTOR_NAME} "\$\@"
+EOT
+
+ENV AIRBYTE_ENTRYPOINT="/entrypoint.sh"
+ENTRYPOINT ["/entrypoint.sh"]
