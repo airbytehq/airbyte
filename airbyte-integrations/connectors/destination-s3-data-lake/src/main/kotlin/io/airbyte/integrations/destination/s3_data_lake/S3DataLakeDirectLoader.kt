@@ -71,6 +71,10 @@ class S3DataLakeDirectLoader(
     private val log = KotlinLogging.logger {}
     private var dataSize = 0L
 
+    init {
+        log.info { "Noop change" }
+    }
+
     companion object {
         val commitLock: Any = Any()
     }
