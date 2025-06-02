@@ -271,8 +271,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path:
-            - ""
+          field_path: []
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['site_urls'] }}"
