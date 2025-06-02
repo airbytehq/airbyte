@@ -39,11 +39,38 @@ def name_conversion(text: str) -> str:
 
 def experimental_name_conversion(text: str) -> str:
     """
-    Convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
-    Removes leading/trailing spaces, combines number-word pairs (e.g., '50th' -> '50th'),
-    letter-number pairs (e.g., 'Q3' -> 'Q3'), and removes special characters without adding underscores.
-    Spaces are converted to underscores for snake_case. Preserves spaces between numbers and words.
+    Converts a string to a normalized, snake_case identifier for destination compatibility.
+
+    Checks Performed:
+      1. Removes leading and trailing spaces.
+         - Example: "EXAMPLE Domain " -> "example_domain"
+      2. Combines number-word pairs (e.g., "50th Percentile" -> "50th_percentile").
+      3. Removes all special characters (e.g., "Example ID*" -> "example_id").
+      4. Combines letter-number pairs (e.g., "Q3 2023" -> "q3_2023").
+      5. Preserves spaces between numbers and words as underscores.
+         - Example: "App Loading Milestone 1 (All)" -> "app_loading_milestone_1_all"
+      6. Handles sequences of special characters and spaces correctly, ensuring no extra or trailing underscores.
+         - Example: "Example (ID)" -> "example_id"
+
+    Additional Details:
+      - All output is lowercased.
+      - Digits are allowed at the start of the result in this version(e.g., "1MyName" -> "1my_name").
+      - Multiple spaces or special characters are collapsed/removed, not replaced with underscores.
+      - Only single underscores are used to separate tokens.
+
+    Examples:
+        "X9 D(a)ta" -> "x9_data"
+        "1MyName" -> "1my_name"
+        "Q3 2023" -> "q3_2023"
+        "EXAMPLE Domain " -> "example_domain"
+        "50th Percentile" -> "50th_percentile"
+        "Example ID*" -> "example_id"
+        "App Loading Milestone 1 (All)" -> "app_loading_milestone_1_all"
+        "Example (ID)" -> "example_id"
     """
+    # Remove all non-alphanumeric and non-space characters (symbols)
+    text = re.sub(r"[^\w\s]", "", text)
+
     # Step 1: Tokenization
     tokens = []
     for m in TOKEN_PATTERN.finditer(text):
@@ -77,11 +104,7 @@ def experimental_name_conversion(text: str) -> str:
     if len(combined_tokens) >= 3:
         combined_tokens = combined_tokens[:1] + [t for t in combined_tokens[1:-1] if t] + combined_tokens[-1:]
 
-    # Step 4: Handle leading digits
-    if combined_tokens and combined_tokens[0].isdigit():
-        combined_tokens.insert(0, "")
-
-    # Step 5: Join and convert to lowercase
+    # Step 4: Join and convert to lowercase
     result = DEFAULT_SEPARATOR.join(combined_tokens)
     return result.lower()
 
@@ -101,6 +124,7 @@ def experimental_safe_name_conversion(text: str) -> str:
     new = experimental_name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
+    print(f"experimental_safe_name_conversion: {text} -> {new}")
     return new
 
 
