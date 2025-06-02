@@ -146,6 +146,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 4.1.1   | 2025-06-02 | [60976](https://github.com/airbytehq/airbyte/pull/60976) | Optimize requests made to Instagram Graph API |
 | 4.1.0-rc.1   | 2025-05-27 | [60848](https://github.com/airbytehq/airbyte/pull/60848) | Add `views` metric to `StoryInsights` and `MediaInsights` streams. |
 | 4.0.5 | 2025-05-10 | [59798](https://github.com/airbytehq/airbyte/pull/59798) | Update dependencies |
 | 4.0.4 | 2025-05-03 | [59243](https://github.com/airbytehq/airbyte/pull/59243) | Update dependencies |
