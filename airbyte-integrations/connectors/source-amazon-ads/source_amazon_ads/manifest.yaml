@@ -1313,7 +1313,7 @@ definitions:
     sponsored_brands_campaigns_report_stream:
       type: DeclarativeStream
       name: sponsored_brands_campaigns_report_stream
-      primary_key: ["date", "campaignId"]
+      primary_key: ["reportDate", "campaignId"]
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
@@ -1330,43 +1330,36 @@ definitions:
               adProduct: SPONSORED_BRANDS
               groupBy: ["campaign"]
               columns:
-                - "profileId"
+                - "startDate"
+                - "endDate"
                 - "addToCart"
                 - "addToCartClicks"
                 - "addToCartRate"
                 - "addToList"
                 - "addToListFromClicks"
-                - "royaltyQualifiedBorrows"
                 - "brandedSearches"
                 - "brandedSearchesClicks"
-                - "campaignBudgetAmount"
                 - "campaignBudgetCurrencyCode"
-                - "campaignBudgetType"
                 - "campaignId"
                 - "campaignName"
-                - "campaignStatus"
                 - "clicks"
                 - "cost"
                 - "costType"
-                - "date"
                 - "detailPageViews"
                 - "detailPageViewsClicks"
                 - "eCPAddToCart"
+                - "eCPBrandSearch"
                 - "impressions"
-                - "newToBrandDetailPageViewRate"
-                - "newToBrandDetailPageViews"
-                - "newToBrandDetailPageViewsClicks"
-                - "newToBrandECPDetailPageView"
+                - "impressionsViews"
+                - "leadFormOpens"
+                - "leads"
+                - "linkOuts"
                 - "newToBrandPurchases"
                 - "newToBrandPurchasesClicks"
-                - "newToBrandPurchasesPercentage"
-                - "newToBrandPurchasesRate"
                 - "newToBrandSales"
                 - "newToBrandSalesClicks"
-                - "newToBrandSalesPercentage"
                 - "newToBrandUnitsSold"
                 - "newToBrandUnitsSoldClicks"
-                - "newToBrandUnitsSoldPercentage"
                 - "purchases"
                 - "purchasesClicks"
                 - "purchasesPromoted"
@@ -1388,22 +1381,8 @@ definitions:
                 - "viewClickThroughRate"
                 - "qualifiedBorrows"
                 - "qualifiedBorrowsFromClicks"
-                - "qualifiedBorrowsFromViews"
+                - "royaltyQualifiedBorrows"
                 - "royaltyQualifiedBorrowsFromClicks"
-                - "royaltyQualifiedBorrowsFromViews"
-                - "brandedSearchesViews"
-                - "brandedSearchRate"
-                - "eCPBrandSearch"
-                - "impressionsViews"
-                - "leadFormOpens"
-                - "leads"
-                - "linkOuts"
-                - "purchasesPromotedClicks"
-                - "salesPromotedClicks"
-                - "cumulativeReach"
-                - "impressionsFrequencyAverage"
-                - "newToBrandDetailPageViewClicks"
-                - "newToBrandDetailPageViewViews"
               reportTypeId: sbCampaigns
               filters: []
               timeUnit: SUMMARY
@@ -1411,7 +1390,7 @@ definitions:
     sponsored_brands_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_brands_campaigns_report_stream_daily
-      primary_key: ["date", "campaignId"]
+      primary_key: ["reportDate", "campaignId"]
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
@@ -1428,7 +1407,7 @@ definitions:
               adProduct: SPONSORED_BRANDS
               groupBy: ["campaign"]
               columns:
-                - "profileId"
+                - "date"
                 - "addToCart"
                 - "addToCartClicks"
                 - "addToCartRate"
@@ -1437,41 +1416,33 @@ definitions:
                 - "royaltyQualifiedBorrows"
                 - "brandedSearches"
                 - "brandedSearchesClicks"
-                - "campaignBudgetAmount"
                 - "campaignBudgetCurrencyCode"
-                - "campaignBudgetType"
                 - "campaignId"
                 - "campaignName"
-                - "campaignStatus"
                 - "clicks"
                 - "cost"
                 - "costType"
-                - "date"
                 - "detailPageViews"
                 - "detailPageViewsClicks"
                 - "eCPAddToCart"
+                - "eCPBrandSearch"
                 - "impressions"
-                - "newToBrandDetailPageViewRate"
-                - "newToBrandDetailPageViews"
-                - "newToBrandDetailPageViewsClicks"
-                - "newToBrandECPDetailPageView"
+                - "impressionsViews"
+                - "leadFormOpens"
+                - "leads"
+                - "linkOuts"
                 - "newToBrandPurchases"
                 - "newToBrandPurchasesClicks"
-                - "newToBrandPurchasesPercentage"
-                - "newToBrandPurchasesRate"
                 - "newToBrandSales"
                 - "newToBrandSalesClicks"
-                - "newToBrandSalesPercentage"
                 - "newToBrandUnitsSold"
                 - "newToBrandUnitsSoldClicks"
-                - "newToBrandUnitsSoldPercentage"
                 - "purchases"
                 - "purchasesClicks"
-                - "purchasesPromoted"
+                - "purchasesPromotedClicks"
                 - "sales"
                 - "salesClicks"
-                - "salesPromoted"
-                - "topOfSearchImpressionShare"
+                - "salesPromotedClicks"
                 - "unitsSold"
                 - "unitsSoldClicks"
                 - "video5SecondViewRate"
@@ -1482,31 +1453,18 @@ definitions:
                 - "videoThirdQuartileViews"
                 - "videoUnmutes"
                 - "viewabilityRate"
-                - "viewableImpressions"
                 - "viewClickThroughRate"
-                - "qualifiedBorrows"
-                - "qualifiedBorrowsFromClicks"
-                - "qualifiedBorrowsFromViews"
-                - "royaltyQualifiedBorrowsFromClicks"
-                - "royaltyQualifiedBorrowsFromViews"
-                - "brandedSearchesViews"
-                - "brandedSearchRate"
-                - "eCPBrandSearch"
-                - "impressionsViews"
-                - "leadFormOpens"
-                - "leads"
-                - "linkOuts"
-                - "purchasesPromotedClicks"
-                - "salesPromotedClicks"
                 - "cumulativeReach"
                 - "impressionsFrequencyAverage"
                 - "newToBrandDetailPageViewClicks"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
                 - "newToBrandDetailPageViewViews"
+                - "newToBrandECPDetailPageView"
               reportTypeId: sbCampaigns
               filters: []
               timeUnit: DAILY
               format: GZIP_JSON
-
     sponsored_display_campaigns_report_stream:
       type: DeclarativeStream
       name: sponsored_display_campaigns_report_stream
@@ -1562,6 +1520,7 @@ definitions:
                   "linkOuts",
                   "newToBrandPurchases",
                   "newToBrandPurchasesClicks",
+                  "newToBrandSales",
                   "newToBrandSalesClicks",
                   "newToBrandUnitsSold",
                   "newToBrandUnitsSoldClicks",
@@ -1591,7 +1550,6 @@ definitions:
                   "newToBrandDetailPageViews",
                   "newToBrandDetailPageViewViews",
                   "newToBrandECPDetailPageView",
-                  "newToBrandSales",
                 ]
               reportTypeId: sdCampaigns
               filters: []

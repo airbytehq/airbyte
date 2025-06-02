@@ -71,7 +71,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["reportDate"],
-        "source_defined_primary_key": [["profileId"], ["reportDate"]]
+        "source_defined_primary_key": [["reportDate"], ["campaignId"], ["profileId"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -83,7 +83,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["reportDate"],
-        "source_defined_primary_key": [["profileId"], ["reportDate"]]
+        "source_defined_primary_key": [["reportDate"], ["campaignId"], ["profileId"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
