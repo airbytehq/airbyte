@@ -10,10 +10,10 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWri
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickHouseSpecification
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
-import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickHouseDirectLoadSqlTableOperations
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlTableOperations
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
@@ -24,11 +24,11 @@ import jakarta.inject.Singleton
 class ClickhouseBeanFactory {
 
     @Singleton
-    fun clickHouseDirectLoadSqlTableOperations(
+    fun clickhouseDirectLoadSqlTableOperations(
         clickhouseClient: Client,
         sqlGenerator: ClickhouseDirectLoadSqlGenerator,
         destinationHandler: ClickhouseDatabaseHandler,
-    ): DirectLoadTableSqlOperations = ClickHouseDirectLoadSqlTableOperations(
+    ): DirectLoadTableSqlOperations = ClickhouseDirectLoadSqlTableOperations(
         clickhouseClient,
         sqlGenerator,
         destinationHandler,
@@ -73,7 +73,7 @@ class ClickhouseBeanFactory {
     @Singleton
     fun clickhouseConfiguration(
         configFactory: ClickhouseConfigurationFactory,
-        specFactory: ConfigurationSpecificationSupplier<ClickHouseSpecification>,
+        specFactory: ConfigurationSpecificationSupplier<ClickhouseSpecification>,
     ): ClickhouseConfiguration {
         val spec = specFactory.get()
 

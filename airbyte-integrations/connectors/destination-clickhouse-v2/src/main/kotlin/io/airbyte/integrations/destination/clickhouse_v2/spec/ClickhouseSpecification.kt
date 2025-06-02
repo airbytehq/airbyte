@@ -10,7 +10,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickHouseSpecification: ConfigurationSpecification() {
+class ClickhouseSpecification: ConfigurationSpecification() {
     @get:JsonSchemaTitle("Hostname")
     @get:JsonPropertyDescription("Hostname of the database.")
     @get:JsonProperty("hostname")
