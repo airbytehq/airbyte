@@ -173,7 +173,7 @@ class SourceBingAds(YamlDeclarativeSource):
         reports = (
             "AgeGenderAudienceReport",
             "AccountImpressionPerformanceReport",
-            "AccountPerformanceReport",
+            # "AccountPerformanceReport",
             "AudiencePerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",

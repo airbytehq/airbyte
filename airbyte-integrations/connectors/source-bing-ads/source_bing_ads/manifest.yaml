@@ -238,7 +238,7 @@ definitions:
         field_pointers: []
   account_performance_report_daily_stream:
     type: DeclarativeStream
-    name: account_performance_report_daily_lowcode
+    name: account_performance_report_daily
     primary_key:
       - AccountId
       - TimePeriod
