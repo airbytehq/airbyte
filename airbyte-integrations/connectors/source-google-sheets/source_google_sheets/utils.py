@@ -124,7 +124,6 @@ def experimental_safe_name_conversion(text: str) -> str:
     new = experimental_name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
-    print(f"experimental_safe_name_conversion: {text} -> {new}")
     return new
 
 
