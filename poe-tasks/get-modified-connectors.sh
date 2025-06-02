@@ -10,6 +10,7 @@ DEFAULT_BRANCH="master"
 JAVA=false
 NO_JAVA=false
 JSON=false
+PREV_COMMIT=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
@@ -23,6 +24,9 @@ while [[ $# -gt 0 ]]; do
     --json|json)
       JSON=true
       ;;
+    --prev-commit|--compare-prev)
+      PREV_COMMIT=true
+      ;;
     *)
       echo "Unknown argument: $1" >&2;
       exit 1
@@ -31,8 +35,13 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-# 1) update remote default branch quietly
-git fetch --quiet origin $DEFAULT_BRANCH
+# 1) Fetch the latest from the default branch (using the correct remote)
+if git remote get-url upstream &>/dev/null; then
+  REMOTE="upstream"
+else
+  REMOTE="origin"
+fi
+git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
 
 # 2) set up ignore patterns
 ignore_patterns=(
@@ -44,10 +53,22 @@ ignore_patterns=(
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
 
 # 3) collect all file changes
-committed=$(git diff --name-only origin/"$DEFAULT_BRANCH"...HEAD)
-staged=$(git diff --cached --name-only)
-unstaged=$(git diff --name-only)
-untracked=$(git ls-files --others --exclude-standard)
+if $PREV_COMMIT; then
+  # Compare only the last commit; diff-tree is faster and more precise.
+  # Intended for master, where we diff the current squashed commit against the previous squashed commit.
+  committed=$(git diff-tree --no-commit-id -r --name-only HEAD)
+  staged=""
+  unstaged=""
+  untracked=""
+else
+  # Default behavior
+  # This is for a PR branch.
+  git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
+  committed=$(git diff --name-only "${REMOTE}/${DEFAULT_BRANCH}"...HEAD)
+  staged=$(git diff --cached --name-only)
+  unstaged=$(git diff --name-only)
+  untracked=$(git ls-files --others --exclude-standard)
+fi
 
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")

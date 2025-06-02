@@ -49,6 +49,11 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.26      | 2025-05-27 | [60938](https://github.com/airbytehq/airbyte/pull/60938) | Revert to base 2.0.1, test default IPC Options                                               |
+| 0.7.25      | 2025-05-15 | [60312](https://github.com/airbytehq/airbyte/pull/60312) | Migrate to base 2.0.2.                                                                       |
+| 0.7.24      | 2025-05-15 | [60301](https://github.com/airbytehq/airbyte/pull/60301) | Add support for file-based syncs                                                             |
+| 0.7.23      | 2025-05-09 | [59766](https://github.com/airbytehq/airbyte/pull/59766) | Test publishing in new flow.                                                                 |
+| 0.7.22      | 2025-05-09 | [59759](https://github.com/airbytehq/airbyte/pull/59759) | Migrate to new flow.                                                                         |
 | 0.7.21      | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | CDK: bugfixes                                                                                |
 | 0.7.20      | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue               |
 | 0.7.19      | 2025-03-13 | [55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue               |
