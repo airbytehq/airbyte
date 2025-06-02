@@ -92,7 +92,9 @@ class InputConsumerTask(
                                 reserved.replace(message)
                             )
                         Undefined -> log.warn { "Unhandled message: $message" }
-                        Ignored -> { /* do nothing */ }
+                        Ignored -> {
+                            /* do nothing */
+                        }
                     }
                     unopenedStreams
                 }

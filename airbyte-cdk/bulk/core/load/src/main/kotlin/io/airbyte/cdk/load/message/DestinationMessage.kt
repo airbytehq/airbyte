@@ -581,10 +581,10 @@ data object Undefined : DestinationMessage {
 }
 
 /**
- * For messages we recognize but do not want to process. Different from [Undefined] mainly in
- * that we don't log a warning.
+ * For messages we recognize but do not want to process. Different from [Undefined] mainly in that
+ * we don't log a warning.
  */
-data object Ignored: DestinationMessage {
+data object Ignored : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
         throw NotImplementedError(
             "Ignored messages cannot be safely converted back to a protocol object.",

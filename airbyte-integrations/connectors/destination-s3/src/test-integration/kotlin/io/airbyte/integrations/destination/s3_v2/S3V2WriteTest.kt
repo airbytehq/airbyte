@@ -545,7 +545,7 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
         mismatchedTypesUnrepresentable = true,
         dataChannelMedium = DataChannelMedium.SOCKET,
         dataChannelFormat = DataChannelFormat.PROTOBUF,
-    ){
+    ) {
     @Test
     @Disabled("Clear will never run in socket mode")
     override fun testClear() {

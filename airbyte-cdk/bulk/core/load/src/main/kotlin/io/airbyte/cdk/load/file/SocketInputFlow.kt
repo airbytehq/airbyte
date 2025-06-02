@@ -45,7 +45,9 @@ class SocketInputFlow(
                                 memoryManager.reserve(message.serializedSizeBytes, message)
                             )
                         Undefined -> log.warn { "Unhandled message: $message" }
-                        Ignored -> { /* do nothing */ }
+                        Ignored -> {
+                            /* do nothing */
+                        }
                     }
                 }
             }
