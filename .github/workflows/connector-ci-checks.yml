@@ -170,11 +170,16 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
-      - name: Install and Join Tailscale
+      - name: Install Tailscale
         if: failure()
         shell: bash
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: Join Tailnet
+        if: failure()
+        shell: bash
+        run: |
           sudo tailscale up \
             --authkey=${{ secrets.TAILSCALE_AUTHKEY }} \
             --hostname=ci-runner-${{ github.run_id }} \
