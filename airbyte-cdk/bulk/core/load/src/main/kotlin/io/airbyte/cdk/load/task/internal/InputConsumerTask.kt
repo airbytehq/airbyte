@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
+import io.airbyte.cdk.load.message.Ignored
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -90,7 +91,8 @@ class InputConsumerTask(
                             pipelineEventBookkeepingRouter.handleCheckpoint(
                                 reserved.replace(message)
                             )
-                        is Undefined -> log.warn { "Unhandled message: $message" }
+                        Undefined -> log.warn { "Unhandled message: $message" }
+                        Ignored -> { /* do nothing */ }
                     }
                     unopenedStreams
                 }

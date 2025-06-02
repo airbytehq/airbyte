@@ -137,7 +137,8 @@ class DestinationMessageFactory(
                         else -> Undefined
                     }
                 } else {
-                    Undefined
+                    // Ignore other TRACE message types
+                    Ignored
                 }
             }
             AirbyteMessage.Type.STATE -> {
