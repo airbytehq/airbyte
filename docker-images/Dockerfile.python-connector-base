@@ -47,8 +47,9 @@ RUN apt-get update && \
 # NLTK data directory (this may not be needed)
 # ENV NLTK_DATA_DIR="/usr/share/nltk_data"
 # RUN mkdir -p 755 ${NLTK_DATA_DIR}
-# TODO: add nltk data to the base image s
+# TODO: remove this block if not needed. If it is needed, finish copying over from Airbyte CI.
 
+# Set a whole bunch of permissions for the non-root user (delete this block if not needed)
 # RUN mkdir --mode 755 /airbyte && \
 #     mkdir --mode 755 /custom_cache && \
 #     mkdir -p 755 /usr/share/nltk_data && \
