@@ -31,6 +31,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.models.airbyte_protocol_serializers import custom_type_resolver
+from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
@@ -81,9 +82,63 @@ def validated_sql_name(sql_name: Any) -> str:
     raise ValueError(f"Invalid SQL name: {sql_name}")
 
 
+class UnicodeAwareNormalizer:
+    """Normalizer that preserves Unicode characters while following LowerCaseNormalizer behavior for ASCII."""
+
+    def normalize(self, name: str) -> str:
+        """
+        Normalize name while preserving Unicode characters.
+
+        Behavior:
+        - Converts ASCII letters to lowercase
+        - Replaces whitespace with underscores
+        - Preserves Unicode letters and numbers
+        - Adds underscore prefix if name starts with ASCII digit
+        - Replaces other special characters with underscores
+        """
+        if not name:
+            raise exc.AirbyteNameNormalizationError(
+                "Name cannot be empty after normalization.",
+                raw_name=name,
+                normalization_result="",
+            )
+
+        import unicodedata
+
+        # Convert to lowercase (handles both ASCII and Unicode)
+        result = name.lower()
+
+        # Replace whitespace with underscores
+        result = re.sub(r"\s+", "_", result)
+
+        # Replace special characters (non-letters, non-digits, non-underscores) with underscores
+        # But preserve Unicode letters and digits using Unicode-aware regex
+        result = re.sub(r"[^\w]", "_", result, flags=re.UNICODE)
+
+        # Collapse multiple consecutive underscores
+        result = re.sub(r"_+", "_", result)
+
+        # Remove leading/trailing underscores
+        result = result.strip("_")
+
+        # Add underscore prefix if starts with ASCII digit (following LowerCaseNormalizer behavior)
+        if result and result[0].isdigit():
+            result = "_" + result
+
+        # Final validation
+        if not result:
+            raise exc.AirbyteNameNormalizationError(
+                "Name cannot be empty after normalization.",
+                raw_name=name,
+                normalization_result=result,
+            )
+
+        return result
+
+
 class DestinationMotherDuck(Destination):
     type_converter_class = SQLTypeConverter
-    normalizer = LowerCaseNormalizer
+    normalizer = UnicodeAwareNormalizer
 
     @staticmethod
     def _is_motherduck(path: str | None) -> bool:
@@ -133,7 +188,7 @@ class DestinationMotherDuck(Destination):
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                f"destination_path={destination_path} is not a valid path. A valid path shall start with /local or no / prefix"
             )
 
         return destination_path

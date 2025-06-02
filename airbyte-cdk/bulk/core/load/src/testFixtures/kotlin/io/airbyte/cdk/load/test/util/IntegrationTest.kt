@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -196,6 +197,7 @@ abstract class IntegrationTest(
      * [AirbyteStreamStatus] messages unless [streamStatus] is set to `null` (unless you actually
      * want to send multiple stream status messages).
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun runSync(
         configContents: String,
         catalog: DestinationCatalog,
@@ -242,7 +244,8 @@ abstract class IntegrationTest(
                 catalog.streams.forEach {
                     destination.sendMessage(
                         DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                            .asProtocolMessage()
+                            .asProtocolMessage(),
+                        broadcast = true
                     )
                 }
             }
@@ -266,6 +269,7 @@ abstract class IntegrationTest(
      * using this method would take significantly longer, because they would need to push 100MB
      * (ish) to the destination before it would ack a state message.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun runSyncUntilStateAck(
         configContents: String,
         stream: DestinationStream,
@@ -328,6 +332,8 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
+        const val NUM_SOCKETS = 2
+
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
