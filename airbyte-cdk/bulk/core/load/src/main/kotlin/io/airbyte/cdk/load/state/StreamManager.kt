@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.max
 import kotlinx.coroutines.CompletableDeferred
 
 sealed interface StreamResult
@@ -206,12 +207,24 @@ class StreamManager(
         return CheckpointValue(records = count)
     }
 
+    fun setReadCountForCheckpointFromState(
+        checkpointId: CheckpointId,
+        checkpointValue: CheckpointValue
+    ) {
+        check(requireCheckpointKeyOnState) {
+            "Cannot set read count for checkpoint when requireCheckpointKeyOnState is false"
+        }
+        recordsReadPerCheckpoint[checkpointId] = checkpointValue
+    }
+
     /**
      * True if persisted counts associated with the index [checkpointId] are equal to the number of
      * records read.
      */
     fun areRecordsPersistedForCheckpoint(checkpointId: CheckpointId): Boolean {
-        val readCount = recordsReadPerCheckpoint[checkpointId] ?: CheckpointValue(records = 0)
+        val readCount =
+            recordsReadPerCheckpoint[checkpointId]
+                ?: throw IllegalStateException("No read count for checkpoint $checkpointId.")
 
         val persistedCount = countByStateForCheckpoint(checkpointId, BatchState.PERSISTED)
         val completedCount = countByStateForCheckpoint(checkpointId, BatchState.COMPLETE)
@@ -255,5 +268,13 @@ class StreamManager(
      */
     fun hadNonzeroRecords(): Boolean {
         return recordCount.get() > 0
+    }
+
+    fun persistedRecordCountForCheckpoint(checkpointId: CheckpointId): Long {
+        val persistedCount =
+            checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.records ?: 0L
+        val completeCount =
+            checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.records ?: 0L
+        return max(persistedCount, completeCount)
     }
 }

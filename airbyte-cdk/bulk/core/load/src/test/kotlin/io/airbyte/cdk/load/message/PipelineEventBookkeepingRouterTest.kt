@@ -23,6 +23,7 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PipelineEventBookkeepingRouterTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
@@ -132,12 +133,13 @@ class PipelineEventBookkeepingRouterTest {
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
         every { streamManager.markCheckpoint() } returns Pair(0L, 1L)
 
+        val sourceStats = CheckpointMessage.Stats(recordCount = 0)
         router.handleCheckpoint(
             reservationManager.reserve(
                 1,
                 StreamCheckpoint(
                     checkpointMessage,
-                    null,
+                    sourceStats,
                     null,
                     emptyMap(),
                     0,
@@ -148,7 +150,7 @@ class PipelineEventBookkeepingRouterTest {
         val global =
             GlobalCheckpoint(
                 null,
-                null,
+                sourceStats,
                 null,
                 emptyList(),
                 emptyMap(),
@@ -176,4 +178,54 @@ class PipelineEventBookkeepingRouterTest {
 
         coVerify(exactly = 1) { streamManager.markEndOfStream(any()) }
     }
+
+    @Test
+    fun `router throws if stream counts are not present when key and index are provided`() =
+        runTest {
+            val router = makeBookkeepingRouter(1)
+            val reservationManager = ReservationManager(1)
+
+            // Attempt to handle a record with a checkpoint key and index but no stream counts
+            assertThrows<IllegalStateException> {
+                router.handleCheckpoint(
+                    reservationManager.reserve(
+                        1,
+                        StreamCheckpoint(
+                            mockk(relaxed = true),
+                            null,
+                            null,
+                            emptyMap(),
+                            0L,
+                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
+                        )
+                    )
+                )
+            }
+        }
+
+    @Test
+    fun `router throws if global counts are not present when key and index are provided`() =
+        runTest {
+            val router = makeBookkeepingRouter(1)
+            val reservationManager = ReservationManager(1)
+
+            // Attempt to handle a global checkpoint with a key and index but no counts
+            assertThrows<IllegalStateException> {
+                router.handleCheckpoint(
+                    reservationManager.reserve(
+                        1,
+                        GlobalCheckpoint(
+                            null,
+                            null,
+                            null,
+                            emptyList(),
+                            emptyMap(),
+                            null,
+                            0L,
+                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
+                        )
+                    )
+                )
+            }
+        }
 }
