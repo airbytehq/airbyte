@@ -170,6 +170,33 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Install Tailscale
+        if: failure()
+        shell: bash
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: Join Tailnet
+        if: failure()
+        shell: bash
+        run: |
+          sudo tailscale up \
+            --authkey=${{ secrets.TAILSCALE_AUTHKEY }} \
+            --hostname=ci-runner-${{ github.run_id }} \
+            --ssh \
+            --advertise-tags=tag:ci \
+            --accept-routes=false \
+            --reset
+
+      - name: Sleep for SSH Debugging (Failure Only)
+        if: failure()
+        shell: bash
+        run: |
+          echo "Build failed. SSH access enabled via Tailscale."
+          echo "ssh command: ci-runner-${{ github.run_id }}"
+          echo "Sleeping for 3 hours for debugging access..."
+          sleep 7200
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if running from a fork.
