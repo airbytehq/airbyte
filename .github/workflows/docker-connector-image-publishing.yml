@@ -1,4 +1,4 @@
-name: Docker Connector Image Publishing (On-Demand)
+name: Docker Image Publishing (On-Demand)
 on:
   workflow_dispatch:
     inputs:
@@ -45,6 +45,9 @@ jobs:
     name: Build and Publish ${{ github.event.inputs.connector-type }} Base Image
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.image-type == 'base' }}
+    environment:
+      name: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}
+      url: https://${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}/${{ github.event.inputs.connector-type }}-connector-base
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

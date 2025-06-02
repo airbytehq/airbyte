@@ -14,7 +14,7 @@ application {
 
 dependencies {
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
-    implementation 'com.jcraft:jsch:0.1.55'
+    implementation 'com.github.mwiede:jsch:2.27.0'
 
     testImplementation 'org.testcontainers:testcontainers:1.19.4'
 }
