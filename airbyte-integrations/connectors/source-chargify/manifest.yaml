@@ -59,7 +59,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or \"2020-01-01\" }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -119,7 +119,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or \"2020-01-01\" }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -179,7 +179,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or \"2020-01-01\" }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -243,7 +243,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or \"2020-01-01\" }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -307,7 +307,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or \"2020-01-01\" }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -405,7 +405,6 @@ spec:
     required:
       - api_key
       - domain
-      - start_date
     properties:
       api_key:
         type: string
