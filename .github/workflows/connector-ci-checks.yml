@@ -204,7 +204,7 @@ jobs:
         uses: LouisBrunner/checks-action@v2.0.0
         with:
           name: ${{ job.name }}
-          repo: "airbytehq/airbyte"  # Post to the main repo, not the fork
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
           sha: ${{ inputs.gitref }}
           status: completed
           conclusion: ${{ job.status }}
@@ -333,7 +333,7 @@ jobs:
         uses: LouisBrunner/checks-action@v2.0.0
         with:
           name: ${{ job.name }}
-          repo: "airbytehq/airbyte"  # Post to the main repo, not the fork
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
           sha: ${{ inputs.gitref }}
           status: completed
           conclusion: ${{ job.status }}
