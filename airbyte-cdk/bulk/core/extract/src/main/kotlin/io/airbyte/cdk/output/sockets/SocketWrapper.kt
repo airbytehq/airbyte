@@ -55,7 +55,8 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
         try {
             // Ensure the socket is still open and writable
             outputStream?.write(0)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdownSocket()
             socketStatus.set(SOCKET_ERROR)
         }
