@@ -300,12 +300,6 @@ class SearchAnalyticsByDate(SearchAnalytics):
     dimensions = ["date"]
 
 
-class SearchAnalyticsByDevice(SearchAnalytics):
-    primary_key = ["site_url", "date", "device", "search_type"]
-    search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "device"]
-
-
 class SearchAnalyticsByPage(SearchAnalytics):
     primary_key = ["site_url", "date", "page", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
