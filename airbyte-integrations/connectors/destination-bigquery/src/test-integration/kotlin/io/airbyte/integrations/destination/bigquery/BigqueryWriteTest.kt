@@ -204,8 +204,9 @@ class Gcs :
         BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
         CdcDeletionMode.HARD_DELETE,
     ) {
+
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }

@@ -15,6 +15,10 @@ import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -29,6 +33,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 
 object LIMITS {
     // Maximum value for BIGINT in SQL Server
@@ -67,6 +72,15 @@ object LIMITS {
 }
 
 class BigQueryCSVRowGenerator {
+    companion object {
+        // BigQuery requires TIME values in HH:mm:ss format, even if seconds are zero
+        private val BIGQUERY_TIME_FORMATTER =
+            DateTimeFormatterBuilder().appendPattern("HH:mm:ss").toFormatter()
+
+        private val BIGQUERY_TIME_WITH_TIMEZONE_FORMATTER =
+            DateTimeFormatterBuilder().appendPattern("HH:mm:ss").appendOffsetId().toFormatter()
+    }
+
     fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
         val enrichedRecord =
             record.asEnrichedDestinationRecordAirbyteValue(
@@ -90,14 +104,28 @@ class BigQueryCSVRowGenerator {
                         StringValue(
                             (actualValue as TimestampWithTimezoneValue)
                                 .value
-                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                                .format(DateTimeFormatter.ISO_DATE_TIME)
                         )
                 is TimestampTypeWithoutTimezone ->
                     value.abValue =
                         StringValue(
                             (actualValue as TimestampWithoutTimezoneValue)
                                 .value
-                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                                .format(DateTimeFormatter.ISO_DATE_TIME)
+                        )
+                is TimeTypeWithTimezone ->
+                    value.abValue =
+                        StringValue(
+                            (actualValue as TimeWithTimezoneValue)
+                                .value
+                                .format(BIGQUERY_TIME_WITH_TIMEZONE_FORMATTER)
+                        )
+                is TimeTypeWithoutTimezone ->
+                    value.abValue =
+                        StringValue(
+                            (actualValue as TimeWithoutTimezoneValue)
+                                .value
+                                .format(BIGQUERY_TIME_FORMATTER)
                         )
 
                 // serialize complex types to string

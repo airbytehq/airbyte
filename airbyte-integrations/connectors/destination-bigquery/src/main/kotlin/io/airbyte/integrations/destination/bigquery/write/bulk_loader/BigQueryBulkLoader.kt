@@ -45,7 +45,6 @@ class BigQueryBulkLoader(
                 .setSkipLeadingRows(1)
                 .setAllowQuotedNewLines(true) // safe for long JSON strings
                 .setAllowJaggedRows(true)
-                .setNullMarker(BigQueryConsts.NULL_MARKER)
                 .build()
 
         val configuration =
@@ -54,6 +53,7 @@ class BigQueryBulkLoader(
                 .setSchema(schema)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
                 .setJobTimeoutMs(600000L) // 10 min timeout
+                .setNullMarker(BigQueryConsts.NULL_MARKER)
                 .build()
 
         val loadJob = bigQueryClient.create(JobInfo.of(configuration))
