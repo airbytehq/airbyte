@@ -40,8 +40,9 @@ class MigrateApiKey:
 
     @classmethod
     def _migrate_api_key(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        config[cls.migrate_to_key] = {cls.migrate_from_key: config[cls.migrate_from_key], "auth_method": "api_key"}
-        return config
+        config_dict = dict(config)
+        config_dict[cls.migrate_to_key] = {cls.migrate_from_key: config_dict[cls.migrate_from_key], "auth_method": "api_key"}
+        return config_dict
 
     @classmethod
     def _modify_and_save(cls, config_path: str, source: SourceAirtable, config: Mapping[str, Any]) -> Mapping[str, Any]:
