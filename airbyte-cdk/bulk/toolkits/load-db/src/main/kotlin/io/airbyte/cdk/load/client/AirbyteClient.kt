@@ -59,6 +59,8 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
+//        TODO: Add namespace to table name properly — CH doesn't like periods
+//        val finalTableId = tableName.toPrettyString(QUOTE)
 
         return return Sql.of(
             """
@@ -72,10 +74,6 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
             ${getCreateTableSuffix()}
             """.trimIndent()
         )
-    }
-
-    open fun createNamespace(namespace: String): String {
-        return "CREATE DATABASE IF NOT EXISTS `$namespace` "
     }
 
     protected open fun getCreateTableSuffix(): String = ""
