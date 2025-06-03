@@ -329,162 +329,147 @@ definitions:
             path:
               - AccountId
             value: |
-              {{ record.get('AccountId') | int if record.get('AccountId') | default('') | trim else none }}
+              {{ record['AccountId'] | int if record.get('AccountId') else none }}
           - type: AddedFieldDefinition
             path:
               - PhoneImpressions
             value: |
-              {{ record.get('PhoneImpressions') | int if record.get('PhoneImpressions') | default('') | trim else none }}
+              {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
           - type: AddedFieldDefinition
             path:
               - PhoneCalls
             value: |
-              {{ record.get('PhoneCalls') | int if record.get('PhoneCalls') | default('') | trim else none }}
+              {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
           - type: AddedFieldDefinition
             path:
               - Clicks
             value: |
-              {{ record.get('Clicks') | int if record.get('Clicks') | default('') | trim else none }}
+              {{ record['Clicks'] | int if record.get('Clicks') else 0 }}
           - type: AddedFieldDefinition
             path:
               - Ctr
             value: |
-              {{ record.get('Ctr') | replace('%', '') | float if record.get('Ctr') | default('') | trim else none }}
+              {% set v = record.get('Ctr') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - Spend
             value: |
-              {{ record.get('Spend') | float if record.get('Spend') | default('') | trim else none }}
+              {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - Impressions
             value: |
-              {{ record.get('Impressions') | int if record.get('Impressions') | default('') | trim else none }}
+              {{ record['Impressions'] | int if record.get('Impressions') else 0 }}
           - type: AddedFieldDefinition
             path:
               - CostPerConversion
             value: |
-              {% set cost_per_conversion = record.get('CostPerConversion') | default('') | trim %}
-              {% if cost_per_conversion and cost_per_conversion | float >= 0.0 -%}
-              {{ cost_per_conversion | float }}
-              {%- else -%}
-              {{ none }}
-              {%- endif %}
+              {% set v = record.get('CostPerConversion') %}
+              {{ v | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - Ptr
             value: |
-              {%- set ptr = record.get('Ptr') | default('') | trim -%}
-              {%- if ptr and ptr | replace('%', '') | float > 0.0 -%}
-              {{ ptr | replace('%', '') | float }}
-              {%- else -%}
-              {{ none }}
-              {%- endif %}
+              {% set v = record.get('Ptr') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - Assists
             value: |
-              {{ record.get('Assists') | int if record.get('Assists') | default('') | trim else none }}
+              {{ record['Assists'] | int if record.get('Assists') else 0 }}
           - type: AddedFieldDefinition
             path:
               - ReturnOnAdSpend
             value: |
-              {{ record.get('ReturnOnAdSpend') | float if record.get('ReturnOnAdSpend') | default('') | trim else none }}
+              {% set v = record.get('ReturnOnAdSpend') %}
+              {{ v | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - CostPerAssist
             value: |
-              {%- set cost_per_assist = record.get('CostPerAssist') | default('') | trim -%}
-              {%- if cost_per_assist and cost_per_assist | float >= 0.0 -%}
-              {{ cost_per_assist | float }}
-              {%- else -%}
-              {{ none }}
-              {%- endif %}
+              {% set v = record.get('CostPerAssist') %}
+              {{ v | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - AverageCpc
             value: |
-              {{ record.get('AverageCpc') | float if record.get('AverageCpc') | default('') | trim else none }}
+              {{ record['AverageCpc'] | float if record.get('AverageCpc') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - AveragePosition
             value: |
-              {{ record.get('AveragePosition') | float if record.get('AveragePosition') | default('') | trim else none }}
+              {{ record['AveragePosition'] | float if record.get('AveragePosition') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - AverageCpm
             value: |
-              {{ record.get('AverageCpm') | float if record.get('AverageCpm') | default('') | trim else none }}
+              {{ record['AverageCpm'] | float if record.get('AverageCpm') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - Conversions
             value: |
-              {{ record.get('Conversions') | float if record.get('Conversions') | default('') | trim else none }}
+              {{ record['Conversions'] | float if record.get('Conversions') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - ConversionsQualified
             value: |
-              {{ record.get('ConversionsQualified') | float if record.get('ConversionsQualified') | default('') | trim else none }}
+              {{ record['ConversionsQualified'] | float if record.get('ConversionsQualified') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - ConversionRate
             value: |
-              {{ record.get('ConversionRate') | replace('%', '') | float if record.get('ConversionRate') | default('') | trim else none }}
+              {% set v = record.get('ConversionRate') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - LowQualityClicks
             value: |
-              {{ record.get('LowQualityClicks') | int if record.get('LowQualityClicks') | default('') | trim else none }}
+              {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
           - type: AddedFieldDefinition
             path:
               - LowQualityClicksPercent
             value: |
-              {{ record.get('LowQualityClicksPercent') | replace('%', '') | float if record.get('LowQualityClicksPercent') | default('') | trim else none }}
+              {% set v = record.get('LowQualityClicksPercent') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - LowQualityImpressions
             value: |
-              {{ record.get('LowQualityImpressions') | int if record.get('LowQualityImpressions') | default('') | trim else none }}
+              {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
           - type: AddedFieldDefinition
             path:
               - LowQualitySophisticatedClicks
             value: |
-              {{ record.get('LowQualitySophisticatedClicks') | int if record.get('LowQualitySophisticatedClicks') | default('') | trim else none }}
+              {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
           - type: AddedFieldDefinition
             path:
               - LowQualityConversions
             value: |
-              {{ record.get('LowQualityConversions') | int if record.get('LowQualityConversions') | default('') | trim else none }}
+              {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
           - type: AddedFieldDefinition
             path:
               - LowQualityConversionRate
             value: |
-              {{ record.get('LowQualityConversionRate') | replace('%', '') | float if record.get('LowQualityConversionRate') | default('') | trim else none }}
+              {% set v = record.get('LowQualityConversionRate') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - Revenue
             value: |
-              {{ record.get('Revenue') | replace(',', '') | float if record.get('Revenue') | default('') | trim else none }}
+              {{ record['Revenue'] | replace(',', '') | float if record.get('Revenue') else 0.0 }}
           - type: AddedFieldDefinition
             path:
               - RevenuePerConversion
             value: |
-              {%- set revenue_per_conversion = record.get('RevenuePerConversion') | default('') | trim -%}
-              {%- if revenue_per_conversion and revenue_per_conversion | replace(',', '') | float >= 0.0 -%}
-              {{ revenue_per_conversion | replace(',', '') | float }}
-              {%- else -%}
-              {{ none }}
-              {%- endif %}
+              {% set v = record.get('RevenuePerConversion') %}
+              {{ v | replace(',', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
               - RevenuePerAssist
             value: |
-              {%- set revenue_per_assist = record.get('RevenuePerAssist') | default('') | trim -%}
-              {%- if revenue_per_assist and revenue_per_assist | replace(',', '') | float >= 0.0 -%}
-              {{ revenue_per_assist | replace(',', '') | float }}
-              {%- else -%}
-              {{ none }}
-              {%- endif %}
+              {% set v = record.get('RevenuePerAssist') %}
+              {{ v | replace(',', '') | float if v is not none and v != "" else None }}
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
