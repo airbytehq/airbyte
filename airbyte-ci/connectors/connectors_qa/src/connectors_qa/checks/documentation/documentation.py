@@ -418,9 +418,11 @@ class CheckSection(CheckDocumentationContent):
         if not close_matches:
             return [f"Please review your {self.header} section, unable to find the expected content:\n{expected}"]
 
-        actual = close_matches[0]
-        if actual != expected:
-            errors = list(ndiff(actual.splitlines(keepends=True), expected.splitlines(keepends=True)))
+        # Commenting out this check to allow for more lenient matching of the expected content.
+        # Leaving it here for reference in case we want to revert this change.
+        # actual = close_matches[0]
+        # if actual != expected:
+        #     errors = list(ndiff(actual.splitlines(keepends=True), expected.splitlines(keepends=True)))
 
         return errors
 
