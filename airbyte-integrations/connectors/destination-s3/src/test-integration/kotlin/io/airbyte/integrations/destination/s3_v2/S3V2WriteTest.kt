@@ -523,7 +523,8 @@ class S3V2WriteTestJsonUncompressedSockets :
         dataChannelMedium = DataChannelMedium.SOCKETS
     ) {
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
     }
 }
