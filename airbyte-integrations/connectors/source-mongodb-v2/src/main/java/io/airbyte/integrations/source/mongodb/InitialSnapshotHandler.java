@@ -62,12 +62,12 @@ public class InitialSnapshotHandler {
 
     return streams
         .stream()
+        .filter(airbyteStream -> airbyteStream.getStream().getNamespace().equals(database.getName()))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var namespace = airbyteStream.getStream().getNamespace();
           final var collection = database.getCollection(collectionName);
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
-
           final var idTypes = aggregateIdField(collection);
           if (idTypes.size() > 1) {
             LOGGER.warn("The _id fields in this collection are not consistently typed, which may lead to data loss (collection = {}).",
