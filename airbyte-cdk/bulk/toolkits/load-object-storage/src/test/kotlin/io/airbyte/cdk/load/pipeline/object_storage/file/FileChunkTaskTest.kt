@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.pipline.object_storage.file.FileHandle
 import io.airbyte.cdk.load.pipline.object_storage.file.FileHandleFactory
 import io.airbyte.cdk.load.pipline.object_storage.file.UploadIdGenerator
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -155,13 +156,13 @@ class FileChunkTaskTest<T> {
 
         val input =
             PipelineMessage(
-                checkpointCounts = mapOf(CheckpointId("1") to 2),
+                checkpointCounts = mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                 key = key,
                 value = record,
                 postProcessingCallback = {},
                 context =
                     PipelineContext(
-                        mapOf(CheckpointId("1") to 2),
+                        mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                         record,
                     )
             )

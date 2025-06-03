@@ -209,14 +209,12 @@ class StreamManager(
 
     fun incrementCheckpointCounts(
         state: BatchState,
-        checkpointCounts: Map<CheckpointId, Pair<Long, Long>>,
+        checkpointCounts: Map<CheckpointId, CheckpointValue>,
     ) {
         val idToValue = checkpointCountsByState.getOrPut(state) { ConcurrentHashMap() }
 
         checkpointCounts.forEach { (checkpointId, count) ->
-            idToValue.merge(checkpointId, CheckpointValue(count.first, count.second)) { old, new ->
-                old.plus(new)
-            }
+            idToValue.merge(checkpointId, count) { old, new -> old.plus(new) }
         }
     }
 

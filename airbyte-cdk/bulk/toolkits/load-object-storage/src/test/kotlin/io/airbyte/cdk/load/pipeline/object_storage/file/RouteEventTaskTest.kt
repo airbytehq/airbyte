@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventTask
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -76,7 +77,7 @@ class RouteEventTaskTest {
             val stream = Fixtures.stream(includeFiles = true)
             val key = StreamKey(stream.descriptor)
             val record = Fixtures.record()
-            val checkpoints = mapOf(CheckpointId("1") to 2L)
+            val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
             val releaseMemCallback: (suspend () -> Unit) = mockk(relaxed = true)
 
             val input =
@@ -92,7 +93,7 @@ class RouteEventTaskTest {
 
             val expectedContext =
                 PipelineContext(
-                    mapOf(CheckpointId("1") to 2),
+                    mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                     record,
                 )
 
@@ -127,7 +128,7 @@ class RouteEventTaskTest {
         val stream = Fixtures.stream(includeFiles = false)
         val key = StreamKey(stream.descriptor)
         val record = Fixtures.record()
-        val checkpoints = mapOf(CheckpointId("1") to 2L)
+        val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
 
         val input =
             PipelineMessage(

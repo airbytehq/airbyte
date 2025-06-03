@@ -104,7 +104,7 @@ class PipelineEventBookkeepingRouter(
                 val checkpointId =
                     record.checkpointId ?: manager.inferNextCheckpointKey().checkpointId
                 PipelineMessage(
-                    mapOf(checkpointId to Pair(1, record.serializedSizeBytes)),
+                    mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.descriptor),
                     record,
                     postProcessingCallback
