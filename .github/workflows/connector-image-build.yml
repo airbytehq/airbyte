@@ -1,7 +1,6 @@
 name: Connector Image Build
 
 on:
-
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
   workflow_call:
