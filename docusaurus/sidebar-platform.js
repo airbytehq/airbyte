@@ -297,7 +297,11 @@ module.exports = {
         },
         {
           type: "category",
-          label: "Moving Data",
+          label: "Move data",
+          link: {
+            type: "doc",
+            id: "move-data/readme",
+          },
           items: [
             "using-airbyte/getting-started/add-a-source",
             "using-airbyte/getting-started/add-a-destination",

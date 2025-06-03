@@ -5,7 +5,7 @@ products: all
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Set up a Connection
+# Connections and streams
 
 Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the setup by creating your very first connection!
 
