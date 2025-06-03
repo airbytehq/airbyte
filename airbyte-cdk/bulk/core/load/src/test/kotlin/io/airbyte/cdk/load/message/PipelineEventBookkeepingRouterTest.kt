@@ -64,7 +64,7 @@ class PipelineEventBookkeepingRouterTest {
 
         val event =
             router.handleStreamMessage(
-                DestinationRecord(stream1, mockk(relaxed = true), mockk(relaxed = true), 0L, null),
+                DestinationRecord(stream1, mockk(relaxed = true), 0L, null),
                 unopenedStreams = mutableSetOf(),
             ) as PipelineMessage
 
@@ -82,13 +82,7 @@ class PipelineEventBookkeepingRouterTest {
 
             val event =
                 router.handleStreamMessage(
-                    DestinationRecord(
-                        stream1,
-                        mockk(relaxed = true),
-                        mockk(relaxed = true),
-                        0L,
-                        CheckpointId("bar")
-                    ),
+                    DestinationRecord(stream1, mockk(relaxed = true), 0L, CheckpointId("bar")),
                     unopenedStreams = mutableSetOf(),
                 ) as PipelineMessage
 

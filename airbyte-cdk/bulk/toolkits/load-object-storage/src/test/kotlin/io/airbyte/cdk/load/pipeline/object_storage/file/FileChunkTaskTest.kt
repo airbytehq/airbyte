@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PartFactory
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -222,7 +223,7 @@ class FileChunkTaskTest<T> {
             schema.properties[COLUMN_NAME_AIRBYTE_FILE_PATH]
         )
         assertContains(
-            Jsons.serialize(record.asRawJson()),
+            Jsons.serialize(record.asJsonRecord()),
             """"$COLUMN_NAME_AIRBYTE_FILE_PATH":"$myFilePath""""
         )
     }
@@ -268,8 +269,7 @@ class FileChunkTaskTest<T> {
         ) =
             DestinationRecordRaw(
                 stream = stream,
-                rawData = message,
-                schema = schema,
+                rawData = DestinationRecordJsonSource(message),
                 serializedSizeBytes = 0L
             )
     }
