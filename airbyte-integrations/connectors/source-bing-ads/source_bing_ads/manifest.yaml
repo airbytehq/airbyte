@@ -296,6 +296,8 @@ definitions:
               - Conversions
               - ConversionsQualified
               - ConversionRate
+              - CostPerAssist
+              - CostPerConversion
               - LowQualityClicks
               - LowQualityClicksPercent
               - LowQualityImpressions
@@ -303,6 +305,9 @@ definitions:
               - LowQualityConversions
               - LowQualityConversionRate
               - Revenue
+              - RevenuePerAssist
+              - RevenuePerConversion
+              - Ptr
             Scope:
               AccountIds:
                 - "{{ stream_partition['account_id'] }}"
