@@ -293,6 +293,7 @@ class CheckpointManager<T>(
         return true
     }
 
+    @Suppress("UNCHECKED_CAST")
     private suspend fun sendStateMessage(
         checkpointMessage: T,
         checkpointKey: CheckpointKey,
@@ -301,14 +302,14 @@ class CheckpointManager<T>(
         totalBytes: Long
     ) {
         streamCheckpoints.forEach { stream -> lastCheckpointKeyEmitted[stream] = checkpointKey }
-
-        if (checkpointMessage is Reserved<*> && checkpointMessage.value is CheckpointMessage) {
-            checkpointMessage.value.withTotalRecords(totalRecords)
-            checkpointMessage.value.withTotalBytes(totalBytes)
-        }
-
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-        outputConsumer.invoke(checkpointMessage)
+        if (checkpointMessage is Reserved<*> && checkpointMessage.value is CheckpointMessage) {
+            val updated =
+                checkpointMessage.value.withTotalRecords(totalRecords).withTotalBytes(totalBytes)
+            outputConsumer.invoke(checkpointMessage.replace(updated) as T)
+        } else {
+            outputConsumer.invoke(checkpointMessage)
+        }
     }
 
     suspend fun awaitAllCheckpointsFlushed() {
