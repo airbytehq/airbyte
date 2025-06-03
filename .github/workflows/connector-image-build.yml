@@ -60,6 +60,7 @@ jobs:
       - name: Resolve Vars
         id: vars
         run: |
+          set -eu
           # Detect connector root directory:
           CONNECTOR_ROOT="airbyte-integrations/connectors/${{ inputs.connector }}"
           echo "connector-root=$CONNECTOR_ROOT" | tee -a $GITHUB_OUTPUT
