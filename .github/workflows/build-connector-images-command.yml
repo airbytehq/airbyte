@@ -43,6 +43,14 @@ jobs:
           echo "image-name=ghcr.io/airbytehq/${{ inputs.repo || github.repository }}:${{ inputs.gitref || github.ref_name }}" >> $GITHUB_OUTPUT
           echo "pr-number=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}" >> $GITHUB_OUTPUT
 
+      - name: Repo Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.repository }}
+          ref: ${{ inputs.gitref || github.ref_name }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history
+          fetch-depth: 0
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
