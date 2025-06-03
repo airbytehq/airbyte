@@ -31,6 +31,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.mockk.mockk
@@ -687,5 +688,16 @@ class DestinationMessageTest {
         assertEquals(100L, streamCheckpoint.serializedSizeBytes)
         assertEquals(2L, streamCheckpoint.sourceStats?.recordCount)
         assertEquals(blob1, streamCheckpoint.asProtocolMessage().state.stream.streamState)
+    }
+
+    @Test
+    fun `message factory creates heartbeat from protobuf heartbeat`() {
+        val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
+        val heartbeatMessage =
+            AirbyteMessageProtobuf.newBuilder()
+                .setProbe(AirbyteProbeMessageProtobuf.newBuilder().build())
+                .build()
+        val message = factory.fromAirbyteProtobufMessage(heartbeatMessage, 0L)
+        Assertions.assertTrue(message is ProbeMessage)
     }
 }

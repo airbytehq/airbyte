@@ -236,10 +236,19 @@ class DestinationMessageFactory(
                 serializedSizeBytes,
                 CheckpointId(message.record.partitionId)
             )
+        } else if (message.hasProbe()) {
+            ProbeMessage
         } else {
-            throw IllegalArgumentException(
-                "AirbyteMessage must contain either a record or a serialized control message"
-            )
+            throw IllegalArgumentException("AirbyteMessage must contain a payload.")
         }
+    }
+}
+
+data object ProbeMessage : DestinationMessage {
+    override fun asProtocolMessage(): AirbyteMessage {
+        throw UnsupportedOperationException(
+            "ProbeMessage cannot be converted to AirbyteMessage. " +
+                "It is only used by the source to verify that the data channel is open."
+        )
     }
 }
