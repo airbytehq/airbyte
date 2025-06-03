@@ -2,7 +2,6 @@ package io.airbyte.integrations.destination.clickhouse_v2
 
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
@@ -36,11 +35,8 @@ class ClickhouseBeanFactory {
     )
 
     @Singleton
-    fun stateGatherer(airbyteClient: AirbyteClient,
-                      clickhouseConfiguration: ClickhouseConfiguration): DatabaseInitialStatusGatherer<DirectLoadInitialStatus> =
-        ClickhouseDirectLoadDatabaseInitialStatusGatherer(
-            airbyteClient,
-            clickhouseConfiguration,
+    fun stateGatherer(clickhouseClient: Client) = ClickhouseDirectLoadDatabaseInitialStatusGatherer(
+        clickhouseClient,
     )
 
     @Singleton
