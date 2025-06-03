@@ -1,7 +1,6 @@
 package io.airbyte.integrations.destination.clickhouse_v2
 
 import com.clickhouse.client.api.Client
-import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
@@ -37,7 +36,7 @@ class ClickhouseBeanFactory {
     )
 
     @Singleton
-    fun stateGatherer(airbyteClient: AirbyteClient<ClickHouseDataType>,
+    fun stateGatherer(airbyteClient: AirbyteClient,
                       clickhouseConfiguration: ClickhouseConfiguration): DatabaseInitialStatusGatherer<DirectLoadInitialStatus> =
         ClickhouseDirectLoadDatabaseInitialStatusGatherer(
             airbyteClient,
@@ -54,7 +53,7 @@ class ClickhouseBeanFactory {
         streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     ): DestinationWriter {
         return DirectLoadTableWriter(
-            internalNamespace = "default",
+            internalNamespace = "_internal",
             names = names,
             stateGatherer = stateGatherer,
             destinationHandler = destinationHandler,

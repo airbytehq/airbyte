@@ -2,98 +2,27 @@ package io.airbyte.integrations.destination.clickhouse_v2.client
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
-import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.load.client.AirbyteClient
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
-import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 val log = KotlinLogging.logger {  }
 
 @Singleton
-class ClickhouseAirbyteClient(private val client: Client,
-    private val configuration: ClickhouseConfiguration
-    ): AirbyteClient<ClickHouseDataType>() {
-    override fun getNumberOfRecordsInTable(table: String): Long {
+class ClickhouseAirbyteClient(private val client: Client): AirbyteClient() {
+    override fun getNumberOfRecordsInTable(database: String, table: String): Long {
         try {
-            val response = client.query("SELECT count(1) cnt FROM ${getDatabaseName()}.$table;").get()
+            val response = client.query("SELECT count(1) cnt FROM $database.$table;").get()
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
             reader.next()
             val count = reader.getLong("cnt")
             return count
         } catch (e: Exception) {
             // TODO: That's sus
-            log.error(e) { "Error while getting number of records in table ${getDatabaseName()}.$table: ${e.message}" }
-            log.info { "Table: ${getDatabaseName()}.$table doesn't exist, return 0 record." }
+            log.error { "Error while getting number of records in table $database.$table: ${e.message}" }
+            log.info { "Table: $database.$table doesn't exist, return 0 record." }
             return 0L
         }
     }
-
-    /**
-     * Executes a query against the ClickHouse database. The response of the query is not returned.
-     *
-     * @param query The SQL query to execute.
-     * @return A boolean indicating whether the query was executed successfully.
-     */
-    override fun executeQuery(query: String): Boolean {
-        try {
-            client.execute(query).get()
-            return true
-        } catch (e: Exception) {
-            log.error(e) { "Fail to run query." }
-            return false
-        }
-    }
-
-    override fun getCreateTableSuffix(): String {
-        return """
-            ENGINE = MergeTree()
-            ORDER BY ();
-        """.trimIndent()
-    }
-
-    override fun getDatabaseName(): String = configuration.resolvedDatabase
-
-    override fun toDialectType(type: AirbyteType): ClickHouseDataType =
-        when (type) {
-            BooleanType -> ClickHouseDataType.Bool
-            DateType -> ClickHouseDataType.Date
-            IntegerType -> ClickHouseDataType.Int64
-            NumberType -> ClickHouseDataType.Int256
-            StringType -> ClickHouseDataType.String
-            TimeTypeWithTimezone -> ClickHouseDataType.String
-            TimeTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            is ArrayType,
-            ArrayTypeWithoutSchema,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> ClickHouseDataType.JSON
-            is UnionType ->
-                if (type.isLegacyUnion) {
-                    ClickhouseDirectLoadSqlGenerator.toDialectType(type.chooseType())
-                } else {
-                    ClickHouseDataType.JSON
-                }
-            is UnknownType -> ClickHouseDataType.JSON
-        }
 }
