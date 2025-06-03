@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-weaviate"
-version = "0.2.58"
+version = "0.2.59"
 description = "Airbyte destination implementation for Weaviate."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
