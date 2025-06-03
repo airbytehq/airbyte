@@ -1,7 +1,6 @@
 name: Airbyte CI for Connector Contributions
-# This workflow is used to run connector tests for contributors.
+# This workflow is used to run connector image builds.
 # It can be triggered manually via slash command or workflow dispatch.
-# It also will run on push events to forks, if the fork has "BYO Secrets" defined.
 
 on:
   workflow_dispatch:
