@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
           echo "image-name=ghcr.io/airbytehq/${{ inputs.repo || github.repository }}:${{ inputs.gitref || github.ref_name }}" >> $GITHUB_OUTPUT
-          echo "pr-number=${{ inputs.pr || github.event.pull_request.number || '' }}" >> $GITHUB_OUTPUT
+          echo "pr-number=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}" >> $GITHUB_OUTPUT
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
