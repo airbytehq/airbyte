@@ -70,7 +70,7 @@ This is the directory to which temporary files will be mounted, including the `c
 
 ## Only write file artifacts to directories permitted by the base image
 
-The connector code must only write only to directories permitted within the connector's base image.
+The connector code must only write to directories permitted within the connector's base image.
 
 For a list of permitted write directories, please consult the base image definitions in the [`airbytehq/airbyte` repo](https://github.com/airbytehq/airbyte), under the [`docker-images` directory](https://github.com/airbytehq/airbyte/tree/master/docker-images).
 
