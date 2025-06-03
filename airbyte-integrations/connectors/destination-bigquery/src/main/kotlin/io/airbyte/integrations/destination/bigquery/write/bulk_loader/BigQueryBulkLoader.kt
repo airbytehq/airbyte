@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupin
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
+import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
@@ -44,6 +45,7 @@ class BigQueryBulkLoader(
                 .setSkipLeadingRows(1)
                 .setAllowQuotedNewLines(true) // safe for long JSON strings
                 .setAllowJaggedRows(true)
+                .setNullMarker(BigQueryConsts.NULL_MARKER)
                 .build()
 
         val configuration =
