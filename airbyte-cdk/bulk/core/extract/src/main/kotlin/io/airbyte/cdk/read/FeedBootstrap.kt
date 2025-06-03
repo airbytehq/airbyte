@@ -79,6 +79,9 @@ sealed class FeedBootstrap<T : Feed>(
         StreamRecordConsumer {
         val outputer: OutputConsumer = boostedOutputConsumer ?: outputConsumer
 
+        override fun close() {
+            outputer.close()
+        }
 
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
@@ -253,6 +256,7 @@ interface StreamRecordConsumer {
     val stream: Stream
 
     fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
+    fun close()
 }
 
 /**

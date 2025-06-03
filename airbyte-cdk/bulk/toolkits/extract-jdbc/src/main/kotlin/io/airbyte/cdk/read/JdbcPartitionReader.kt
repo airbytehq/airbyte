@@ -91,6 +91,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     override fun releaseResources() {
+        streamRecordConsumer.close() // TEMP
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
         partitionId = generatePartitionId(4)
     }
