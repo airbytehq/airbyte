@@ -81,7 +81,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 @Suppress("UNCHECKED_CAST")
                 val socketWrapper: SocketWrapper =
                     (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
-                boostedOutputConsumer = boostedOutputConsumerFactory?.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
+                boostedOutputConsumer = boostedOutputConsumerFactory.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
                 boostedOutputConsumer
             }
         })
