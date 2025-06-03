@@ -13,7 +13,14 @@ class AirbyteOkHttpClient(client: OkHttpClient, retryPolicy: RetryPolicy<okhttp3
     private val policy = retryPolicy
 
     override fun sendRequest(request: Request): Response {
-        val okhttpRequest: okhttp3.Request = okhttp3.Request.Builder().url(request.url).method(request.method.toString(), request.body?.toRequestBody()).build()
+        // FIXME consider request.query and request.params. Until then, maybe we should remove them from `Request` to avoid any confusion?
+        val okhttpRequest: okhttp3.Request = okhttp3.Request.Builder()
+            .url(request.url)
+            .method(request.method.toString(), request.body?.toRequestBody())
+            .apply {
+                request.headers.forEach { header -> addHeader(header.key, header.value) }
+            }
+            .build()
         val response: okhttp3.Response = FailsafeCall.with(policy).compose(client.newCall(okhttpRequest)).execute()
         return Response(response.code, response.headers.toMultimap(), response.body?.source())
     }

@@ -33,6 +33,7 @@ data class DestinationStream(
     val isFileBased: Boolean = false,
     // whether we will move the file (in addition to the metadata)
     val includeFiles: Boolean = false,
+    val destinationObjectName: String? = null
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -85,6 +86,13 @@ data class DestinationStream(
                     Overwrite -> {
                         destinationSyncMode = DestinationSyncMode.OVERWRITE
                     }
+
+                    is Update -> {
+                        destinationSyncMode = DestinationSyncMode.UPDATE
+                    }
+                    is SoftDelete -> {
+                        destinationSyncMode = DestinationSyncMode.SOFT_DELETE
+                    }
                 }
             }
 
@@ -115,6 +123,9 @@ class DestinationStreamFactory(
                     DestinationSyncMode.OVERWRITE -> Overwrite
                     DestinationSyncMode.APPEND_DEDUP ->
                         Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
+
+                    DestinationSyncMode.UPDATE -> TODO()
+                    DestinationSyncMode.SOFT_DELETE -> TODO()
                 },
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
@@ -122,6 +133,7 @@ class DestinationStreamFactory(
             schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
             isFileBased = stream.stream.isFileBased ?: false,
             includeFiles = stream.includeFiles ?: false,
+            destinationObjectName = stream.destinationObjectName ?: null
         )
     }
 }
@@ -155,3 +167,11 @@ data class Dedupe(
  */
 // TODO should this even exist?
 data object Overwrite : ImportType
+
+data class Update(
+    val matchingKey: List<String>,
+) : ImportType
+
+data class SoftDelete(
+    val matchingKey: List<String>,
+) : ImportType

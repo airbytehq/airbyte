@@ -8,12 +8,13 @@ import java.nio.charset.StandardCharsets
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 
-
-class CsvDecoder {  // FIXME not used yet but should be eventually for shelby
+class CsvDecoder(private val csvFormat: CSVFormat = CSVFormat.Builder.create().setRecordSeparator("\n").setHeader().build()) {
     private val mapper: ObjectMapper  = ObjectMapper()
 
-    fun decode(response: Response): Iterable<JsonNode> {
-        val parser = CSVParser(InputStreamReader(response.body!!.inputStream(), StandardCharsets.UTF_8), CSVFormat.DEFAULT)
-        return parser.map { mapper.convertValue(it.toMap(), JsonNode::class.java) }  // FIXME validate if we close the buffer here
+    fun decode(response: Response): Sequence<JsonNode> {
+        val parser = CSVParser(InputStreamReader(response.body!!.inputStream(), StandardCharsets.UTF_8),
+            csvFormat
+        )
+        return parser.use { parser -> parser.asSequence().map { csvRecord -> mapper.convertValue(csvRecord.toMap(), JsonNode::class.java) } }
     }
 }

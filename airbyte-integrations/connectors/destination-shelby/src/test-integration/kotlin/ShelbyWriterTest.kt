@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
@@ -51,7 +52,7 @@ class ShelbyWriterTest(
     allTypesBehavior = Untyped,
     verifyDataWriting = false,
     isStreamSchemaRetroactive = false,
-    supportsDedup = false,
+    dedupBehavior = DedupBehavior(),
     stringifySchemalessObjects = true,
     schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
     schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,

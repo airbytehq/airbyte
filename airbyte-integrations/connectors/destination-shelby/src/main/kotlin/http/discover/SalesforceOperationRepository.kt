@@ -1,7 +1,11 @@
-package io.airbyte.cdk.load.http
+package io.airbyte.integrations.destination.shelby.http.discover
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.load.http.HttpClient
+import io.airbyte.cdk.load.http.Request
+import io.airbyte.cdk.load.http.RequestMethod
+import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.DestinationOperation

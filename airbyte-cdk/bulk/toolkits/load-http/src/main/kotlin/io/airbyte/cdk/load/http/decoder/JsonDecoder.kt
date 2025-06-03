@@ -6,6 +6,6 @@ import io.airbyte.cdk.util.Jsons
 
 class JsonDecoder {
     fun decode(response: Response): JsonNode {
-        return Jsons.readTree(response.body!!.readByteArray())  // FIXME validate if we close the buffer here
+        return Jsons.readTree(response.body?.use { it.readByteArray() })
     }
 }

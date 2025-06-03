@@ -1,5 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 
     api("org.apache.commons:commons-csv:1.11.0")  // FIXME to confirm if we better improve the csv toolkit or to import this directly here
 
