@@ -73,8 +73,7 @@ class DestinationCheckerSync<C : DestinationConfiguration>(
 
             pipe.println(
                 InputRecord(
-                        mockStream.descriptor.namespace,
-                        mockStream.descriptor.name,
+                        mockStream,
                         """{"test": 42}""",
                         System.currentTimeMillis(),
                     )

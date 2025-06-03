@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
+import io.airbyte.cdk.load.message.Ignored
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
@@ -44,6 +45,9 @@ class SocketInputFlow(
                                 memoryManager.reserve(message.serializedSizeBytes, message)
                             )
                         Undefined -> log.warn { "Unhandled message: $message" }
+                        Ignored -> {
+                            /* do nothing */
+                        }
                     }
                 }
             }
