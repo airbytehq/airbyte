@@ -230,6 +230,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 1.6.0-rc.2 | 2025-06-03 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate search_analytics_by_device to low-code |
 | 1.6.0-rc.1 | 2025-06-02 | [60928](https://github.com/airbytehq/airbyte/pull/60928) | Migrate search_analytics_by_country to low-code |
 | 1.5.18  | 2025-05-28 | [54426](https://github.com/airbytehq/airbyte/pull/58121) | Prevent KeyError raise on check connetion when account does not have access to any site. Better Error message  |
 | 1.5.17 | 2025-05-10 | [54946](https://github.com/airbytehq/airbyte/pull/54946) | Update dependencies |
