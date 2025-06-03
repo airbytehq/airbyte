@@ -46,7 +46,6 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref }}
-          # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 1
 
       - name: Install the latest version of uv
