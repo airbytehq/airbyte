@@ -325,11 +325,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path:
-              - AccountId
-            value: |
-              {{ record['AccountId'] | int if record.get('AccountId') else none }}
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
           - type: AddedFieldDefinition
             path:
               - PhoneImpressions
@@ -342,84 +340,9 @@ definitions:
               {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
           - type: AddedFieldDefinition
             path:
-              - Clicks
-            value: |
-              {{ record['Clicks'] | int if record.get('Clicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Ctr
-            value: |
-              {% set v = record.get('Ctr') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - Spend
-            value: |
-              {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Impressions
-            value: |
-              {{ record['Impressions'] | int if record.get('Impressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - CostPerConversion
-            value: |
-              {% set v = record.get('CostPerConversion') %}
-              {{ v | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
               - Ptr
             value: |
               {% set v = record.get('Ptr') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - Assists
-            value: |
-              {{ record['Assists'] | int if record.get('Assists') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - ReturnOnAdSpend
-            value: |
-              {% set v = record.get('ReturnOnAdSpend') %}
-              {{ v | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - CostPerAssist
-            value: |
-              {% set v = record.get('CostPerAssist') %}
-              {{ v | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - AverageCpc
-            value: |
-              {{ record['AverageCpc'] | float if record.get('AverageCpc') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - AveragePosition
-            value: |
-              {{ record['AveragePosition'] | float if record.get('AveragePosition') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - AverageCpm
-            value: |
-              {{ record['AverageCpm'] | float if record.get('AverageCpm') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Conversions
-            value: |
-              {{ record['Conversions'] | float if record.get('Conversions') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - ConversionsQualified
-            value: |
-              {{ record['ConversionsQualified'] | float if record.get('ConversionsQualified') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - ConversionRate
-            value: |
-              {% set v = record.get('ConversionRate') %}
               {{ v | replace('%', '') | float if v is not none and v != "" else None }}
           - type: AddedFieldDefinition
             path:
@@ -453,23 +376,6 @@ definitions:
             value: |
               {% set v = record.get('LowQualityConversionRate') %}
               {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - Revenue
-            value: |
-              {{ record['Revenue'] | replace(',', '') | float if record.get('Revenue') else 0.0 }}
-          - type: AddedFieldDefinition
-            path:
-              - RevenuePerConversion
-            value: |
-              {% set v = record.get('RevenuePerConversion') %}
-              {{ v | replace(',', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - RevenuePerAssist
-            value: |
-              {% set v = record.get('RevenuePerAssist') %}
-              {{ v | replace(',', '') | float if v is not none and v != "" else None }}
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
@@ -598,6 +504,9 @@ definitions:
               {{ time_period }}
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: RemoveFields
         field_pointers:
@@ -711,6 +620,9 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
@@ -827,6 +739,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: AddFields
         fields:
@@ -939,6 +854,9 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
@@ -1062,27 +980,108 @@ definitions:
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S+00:00') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
   transformations:
-    # not used in hourly stream
-    ad_performance_report_transformations:
-      - type: AddedFieldDefinition
-        path:
-          - AbsoluteTopImpressionRatePercent
-        value: |
-          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - TopImpressionRatePercent
-        value: |
-          {% set v = record.get('TopImpressionRatePercent') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-    # used in all ad performance streams
-    ad_performance_report_common_transformations:
+    # Shared by multiple performance report streams (account + ad)
+    performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
           - AccountId
         value: |
           {{ record['AccountId'] | int if record.get('AccountId') else none }}
+      - type: AddedFieldDefinition
+        path:
+          - Assists
+        value: |
+          {{ record['Assists'] | int if record.get('Assists') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AverageCpc
+        value: |
+          {{ record['AverageCpc'] | float if record.get('AverageCpc') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AverageCpm
+        value: |
+          {{ record['AverageCpm'] | float if record.get('AverageCpm') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AveragePosition
+        value: |
+          {{ record['AveragePosition'] | float if record.get('AveragePosition') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - Clicks
+        value: |
+          {{ record['Clicks'] | int if record.get('Clicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Conversions
+        value: |
+          {{ record['Conversions'] | float if record.get('Conversions') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionsQualified
+        value: |
+          {{ record['ConversionsQualified'] | float if record.get('ConversionsQualified') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - CostPerAssist
+        value: |
+          {% set v = record.get('CostPerAssist') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - CostPerConversion
+        value: |
+          {% set v = record.get('CostPerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Impressions
+        value: |
+          {{ record['Impressions'] | int if record.get('Impressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ReturnOnAdSpend
+        value: |
+          {% set v = record.get('ReturnOnAdSpend') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Revenue
+        value: |
+          {{ record['Revenue'] | replace(',', '') | float if record.get('Revenue') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - RevenuePerAssist
+        value: |
+          {% set v = record.get('RevenuePerAssist') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - RevenuePerConversion
+        value: |
+          {% set v = record.get('RevenuePerConversion') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Spend
+        value: |
+          {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
+
+    # used in all ad performance report streams
+    ad_performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
           - AdGroupId
@@ -1110,9 +1109,6 @@ definitions:
         value: |
           {% set v = record.get('AllReturnOnAdSpend') %}
           {{ v | float if v is not none and v != "" else None }}
-        # to remove the comma, specifically found for the AllRevenue field, but adding to the other revenue fields as well.
-        # ref: https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#formatversion
-      # format 2.0 is supposed to set things like 3,071.00 to 3071.00 but this is not always the case so im adding a "replace"
       - type: AddedFieldDefinition
         path:
           - AllRevenue
@@ -1120,84 +1116,14 @@ definitions:
           {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
       - type: AddedFieldDefinition
         path:
-          - Assists
-        value: |
-          {{ record['Assists'] | int if record.get('Assists') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AverageCpc
-        value: |
-          {{ record['AverageCpc'] | float if record.get('AverageCpc') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AverageCpm
-        value: |
-          {{ record['AverageCpm'] | float if record.get('AverageCpm') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AveragePosition
-        value: |
-          {{ record['AveragePosition'] | float if record.get('AveragePosition') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
           - CampaignId
         value: |
           {{ record['CampaignId'] | int if record.get('CampaignId') else 0 }}
       - type: AddedFieldDefinition
         path:
-          - Clicks
-        value: |
-          {{ record['Clicks'] | int if record.get('Clicks') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - ConversionRate
-        value: |
-          {% set v = record.get('ConversionRate') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - Conversions
-        value: |
-          {{ record['Conversions'] | float if record.get('Conversions') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - ConversionsQualified
-        value: |
-          {{ record['ConversionsQualified'] | float if record.get('ConversionsQualified') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - Ctr
-        value: |
-          {% set v = record.get('Ctr') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - Impressions
-        value: |
-          {{ record['Impressions'] | int if record.get('Impressions') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - ReturnOnAdSpend
-        value: |
-          {% set v = record.get('ReturnOnAdSpend') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - Revenue
-        value: |
-          {{ record['Revenue'] | replace(',', '') | float if record.get('Revenue') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - Spend
-        value: |
-          {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
           - ViewThroughConversions
         value: |
           {{ record['ViewThroughConversions'] | int if record.get('ViewThroughConversions') else 0 }}
-
-      # Comparing to SOAP version following fields are not present in records if there is no data:
       - type: AddedFieldDefinition
         path:
           - AllCostPerConversion
@@ -1210,30 +1136,6 @@ definitions:
         value: |
           {% set v = record.get('AllRevenuePerConversion') %}
           {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - CostPerAssist
-        value: |
-          {% set v = record.get('CostPerAssist') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - CostPerConversion
-        value: |
-          {% set v = record.get('CostPerConversion') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - RevenuePerAssist
-        value: |
-          {% set v = record.get('RevenuePerAssist') %}
-          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - RevenuePerConversion
-        value: |
-          {% set v = record.get('RevenuePerConversion') %}
-          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - ViewThroughConversionsQualified
@@ -1266,6 +1168,22 @@ definitions:
           - AdDescription2
         value: |
           {{ record['AdDescription2'] if record.get('AdDescription2') else none }}
+
+    # used in ad performance report streams (except hourly
+    ad_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/campaigns_stream"
