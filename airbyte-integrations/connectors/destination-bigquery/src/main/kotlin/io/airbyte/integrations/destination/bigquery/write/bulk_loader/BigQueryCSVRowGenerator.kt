@@ -104,7 +104,7 @@ class BigQueryCSVRowGenerator {
                         StringValue(
                             (actualValue as TimestampWithTimezoneValue)
                                 .value
-                                .format(DateTimeFormatter.ISO_DATE_TIME)
+                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                         )
                 is TimestampTypeWithoutTimezone ->
                     value.abValue =
@@ -118,14 +118,14 @@ class BigQueryCSVRowGenerator {
                         StringValue(
                             (actualValue as TimeWithTimezoneValue)
                                 .value
-                                .format(BIGQUERY_TIME_WITH_TIMEZONE_FORMATTER)
+                                .format(DateTimeFormatter.ISO_OFFSET_TIME)
                         )
                 is TimeTypeWithoutTimezone ->
                     value.abValue =
                         StringValue(
                             (actualValue as TimeWithoutTimezoneValue)
                                 .value
-                                .format(BIGQUERY_TIME_FORMATTER)
+                                .format((DateTimeFormatter.ISO_LOCAL_TIME))
                         )
 
                 // serialize complex types to string
