@@ -50,6 +50,33 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
+      - name: Get run URL
+        id: run-url
+        run: |
+          echo "url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Add comment to PR with build link (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > 🚀 Connector CI build started... [Check build progress][1]
+
+            [1]: ${{ steps.run-url.outputs.url }}
+
+      - name: Add comment to PR with build link (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != ''
+        id: pr-comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > 🚀 Connector CI build started... [Check build progress][1]
+
+            [1]: ${{ steps.run-url.outputs.url }}
+
       - name: Checkout Current Branch
         uses: actions/checkout@v4
         with:
@@ -100,6 +127,7 @@ jobs:
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      pr-comment-id: ${{ steps.pr-comment.outputs.comment-id }}
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
@@ -219,11 +247,33 @@ jobs:
 
   jvm-connectors-test-summary:
     name: JVM Connector Test Summary Check
-    needs: [jvm-connectors-test-matrix]
+    needs: [jvm-connectors-test-matrix, generate-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
         run: echo "✅ All JVM connector tests completed successfully (or nothing to test)."
+
+      - name: Update PR comment with JVM test status (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > ✅ JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Update PR comment with JVM test status (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ needs.generate-matrix.outputs.pr-comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > ✅ JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   non-jvm-connectors-test-matrix:
     needs: [generate-matrix]
@@ -324,11 +374,33 @@ jobs:
 
   non-jvm-connectors-test-summary:
     name: Non-JVM Connector Test Summary Check
-    needs: [non-jvm-connectors-test-matrix]
+    needs: [non-jvm-connectors-test-matrix, generate-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
         run: echo "✅ All non-JVM connector tests completed successfully (or nothing to test)."
+
+      - name: Update PR comment with non-JVM test status (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > ✅ Non-JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Update PR comment with non-JVM test status (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ needs.generate-matrix.outputs.pr-comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > ✅ Non-JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   # Lint and format checks
 
@@ -467,3 +539,45 @@ jobs:
     steps:
       - name: Report Summary
         run: echo "✅ All Pre-Release Checks completed successfully (or nothing to check)."
+
+  final-summary:
+    name: Final Build Summary
+    needs: [jvm-connectors-test-summary, non-jvm-connectors-test-summary, lint-summary, pre-release-checks-summary]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Determine build status
+        id: status
+        run: |
+          if [[ "${{ needs.jvm-connectors-test-summary.result }}" == "success" && \
+                "${{ needs.non-jvm-connectors-test-summary.result }}" == "success" && \
+                "${{ needs.lint-summary.result }}" == "success" && \
+                "${{ contains(needs.*.result, 'failure') }}" == "false" ]]; then
+            echo "result=success" >> $GITHUB_OUTPUT
+            echo "icon=✅" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+            echo "icon=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update PR comment with final build status (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > ${{ steps.status.outputs.icon }} Connector CI build ${{ steps.status.outputs.result }}. [View complete results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Update PR comment with final build status (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ needs.generate-matrix.outputs.pr-comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > ${{ steps.status.outputs.icon }} Connector CI build ${{ steps.status.outputs.result }}. [View complete results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

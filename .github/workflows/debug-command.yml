@@ -22,13 +22,23 @@ jobs:
   debug:
     runs-on: ubuntu-24.04
     steps:
+      - name: Get run URL
+        id: run-url
+        run: |
+          echo "url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
       - name: Update comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > Debug command received. Enabling SSH access via Tailscale...
             > This will run the connector tests and enable SSH access regardless of test success or failure.
+            > [View debug workflow run][1]
+            >
+            > The connector-ci-checks workflow will be triggered with debug mode enabled.
+
+            [1]: ${{ steps.run-url.outputs.url }}
 
       - name: Trigger connector-ci-checks workflow
         uses: benc-uk/workflow-dispatch@v1
