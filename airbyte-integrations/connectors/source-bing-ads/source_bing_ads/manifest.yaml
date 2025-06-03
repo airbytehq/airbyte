@@ -688,7 +688,7 @@ definitions:
               {{ v | replace('%', '') | float if v is not none and v != "" else None }}
   account_performance_report_monthly_stream:
     type: DeclarativeStream
-    name: ad_performance_report_monthly
+    name: account_performance_report_monthly
     primary_key:
       - AccountId
       - TimePeriod
