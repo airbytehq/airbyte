@@ -354,6 +354,108 @@ definitions:
       - type: CustomStateMigration
         class_name: source_google_search_console.components.NestedSubstreamStateMigration
 
+  search_analytics_by_page_stream:
+    type: DeclarativeStream
+    name: search_analytics_by_page
+    primary_key:
+      - site_url
+      - date
+      - page
+      - search_type
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        http_method: POST
+        authenticator: "#/definitions/selective_authenticator"
+        request_headers:
+          Content-Type: "application/json"
+        request_body_json:
+          startDate: "{{ stream_interval.get('start_time') }}"
+          endDate: "{{ stream_interval.get('end_time') }}"
+          dimensions: ["date", "page"]
+          type: "{{ stream_partition.get('search_type') }}"
+          aggregationType: auto
+          dataState: "{{ config.get('data_state', 'final') }}"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: startRow
+          inject_into: body_json
+        page_size_option:
+          type: RequestOption
+          field_name: rowLimit
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 25000
+          inject_on_first_request: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+        - type: ListPartitionRouter
+          values:
+            - web
+            - news
+            - image
+            - video
+            - discover
+            - googleNews
+          cursor_field: search_type
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2021-01-01') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+      step: P3D
+      cursor_granularity: P1D
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
+              - search_type
+            value: "{{ stream_partition['search_type'] }}"
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - page
+            value: "{{ record['keys'][1] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search_analytics_by_page"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+
   sites_stream:
     type: DeclarativeStream
     name: sites
@@ -409,6 +511,7 @@ streams:
   - "#/definitions/search_analytics_by_country_stream"
   - "#/definitions/search_analytics_by_date_stream"
   - "#/definitions/search_analytics_by_device_stream"
+  - "#/definitions/search_analytics_by_page_stream"
   - "#/definitions/sites_stream"
   - "#/definitions/sitemaps_stream"
 
@@ -527,6 +630,37 @@ schemas:
         multipleOf: 1e-25
       position:
         description: "The average position of the site's URLs in search results for the given query or queries."
+        type: ["null", "number"]
+        multipleOf: 1e-25
+  search_analytics_by_page:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      site_url:
+        description: "The URL of the site for which the search analytics data is being reported."
+        type: ["null", "string"]
+      search_type:
+        description: "The type of search query that led to the page being displayed in search results."
+        type: ["null", "string"]
+      date:
+        description: "The date for which the search analytics data is reported."
+        type: ["null", "string"]
+        format: "date"
+      page:
+        description: "The URL of the specific page being analyzed for search analytics data."
+        type: ["null", "string"]
+      clicks:
+        description: "The number of times a user clicked on the search result linking to the page."
+        type: ["null", "integer"]
+      impressions:
+        description: "The number of times a page from the site appeared in the search results viewed by users."
+        type: ["null", "integer"]
+      ctr:
+        description: "Click-through rate (CTR) is the ratio of clicks to impressions, indicating the effectiveness of the page in generating clicks."
+        type: ["null", "number"]
+        multipleOf: 1e-25
+      position:
+        description: "The average position at which the page appeared in search results."
         type: ["null", "number"]
         multipleOf: 1e-25
   sites:
