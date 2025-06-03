@@ -28,6 +28,7 @@ jobs:
             bump-bulk-cdk-and-release-connectors
             bump-cdk-version-and-merge
             bump-version
+            build-connector-images
             connector-performance
             format-fix
             poe
