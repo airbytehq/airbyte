@@ -59,8 +59,7 @@ class StreamManager(
 
     private val nextInferredCheckpointIndex = AtomicInteger(1)
     private val lastCheckpointRecordIndex = AtomicLong(0L)
-    private val lastCheckpointByteIndex = AtomicLong(0L)
-    private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, CheckpointValue> =
+    private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> =
         ConcurrentHashMap()
     private val checkpointCountsByState:
         ConcurrentHashMap<BatchState, ConcurrentHashMap<CheckpointId, CheckpointValue>> =
@@ -144,20 +143,14 @@ class StreamManager(
         val recordIndex = recordCount.get()
         val count = recordIndex - lastCheckpointRecordIndex.getAndSet(recordIndex)
 
-        val byteIndex = byteCount.get()
-        val bytes = byteIndex - lastCheckpointByteIndex.getAndSet(byteIndex)
-
         val checkpointIndex = nextInferredCheckpointIndex.getAndIncrement()
         val checkpointId = CheckpointId(checkpointIndex.toString())
 
-        recordsReadPerCheckpoint.merge(
-            checkpointId,
-            CheckpointValue(records = count, serializedBytes = bytes)
-        ) { old, _ ->
-            if (old.records > 0) {
+        recordsReadPerCheckpoint.merge(checkpointId, count) { old, _ ->
+            if (old > 0) {
                 throw IllegalStateException("Checkpoint $old already exists")
             }
-            CheckpointValue(records = count, serializedBytes = bytes)
+            count
         }
 
         return Pair(recordIndex, count)
@@ -247,14 +240,11 @@ class StreamManager(
         return CheckpointValue(records = records, serializedBytes = bytes)
     }
 
-    fun setReadCountForCheckpointFromState(
-        checkpointId: CheckpointId,
-        checkpointValue: CheckpointValue
-    ) {
+    fun setReadCountForCheckpointFromState(checkpointId: CheckpointId, records: Long) {
         check(requireCheckpointKeyOnState) {
             "Cannot set read count for checkpoint when requireCheckpointKeyOnState is false"
         }
-        recordsReadPerCheckpoint[checkpointId] = checkpointValue
+        recordsReadPerCheckpoint[checkpointId] = records
     }
 
     /**
@@ -269,12 +259,12 @@ class StreamManager(
         val persistedCount = countByStateForCheckpoint(checkpointId, BatchState.PERSISTED)
         val completedCount = countByStateForCheckpoint(checkpointId, BatchState.COMPLETE)
 
-        if (persistedCount == readCount) {
+        if (persistedCount.records == readCount) {
             return true
         }
 
         // Completed implies persisted.
-        return completedCount == readCount
+        return completedCount.records == readCount
     }
 
     /**

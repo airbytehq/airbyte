@@ -185,7 +185,7 @@ class PipelineEventBookkeepingRouter(
                                 )
                         syncManager.setGlobalReadCountForCheckpoint(
                             checkpoint.checkpointKey!!.checkpointId,
-                            CheckpointValue(sourceCounts)
+                            sourceCounts
                         )
                         Pair(checkpoint.checkpointKey!!, sourceCounts)
                     }
@@ -218,7 +218,7 @@ class PipelineEventBookkeepingRouter(
                     )
             manager.setReadCountForCheckpointFromState(
                 checkpoint.checkpointKey!!.checkpointId,
-                CheckpointValue(sourceCounts)
+                sourceCounts
             )
             Pair(checkpoint.checkpointKey!!, sourceCounts)
         }
