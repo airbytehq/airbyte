@@ -21,4 +21,5 @@ object BigQueryConsts {
     const val RAW_DATA_DATASET = "raw_data_dataset"
     const val CDC_DELETION_MODE: String = "cdc_deletion_mode"
     const val NAMESPACE_PREFIX: String = "n"
+    const val NULL_MARKER: String = "\\N"
 }
