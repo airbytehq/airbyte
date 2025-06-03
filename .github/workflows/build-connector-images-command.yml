@@ -3,6 +3,12 @@ name: Connector Image Builds
 # It can be triggered manually via slash command or workflow dispatch.
 
 on:
+  # For testing:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - '**/ci/*-build-connector-images*'
+
   workflow_dispatch:
     inputs:
       repo:
@@ -21,12 +27,6 @@ on:
         description: "The pull request number, if applicable"
         required: false
         type: number
-
-  # For testing:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - "*/ci/*-build-connector-images*"
 
 jobs:
   init-workflow:
