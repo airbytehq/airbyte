@@ -23,11 +23,20 @@ on:
       comment-id:
         type: string
         required: false
-        description: "The ID of the comment triggering the workflow. Unused as of now."
+        description: "The ID of the comment triggering the workflow."
       pr:
         type: string
         required: false
-        description: "The pull request number, if applicable. Unused as of now."
+        description: "The pull request number, if applicable."
+      slash_command:
+        type: string
+        required: false
+        description: "The slash command that triggered the workflow."
+      debug:
+        type: boolean
+        required: false
+        default: false
+        description: "Enable SSH access via Tailscale for debugging."
 
 permissions:
   # Allow the workflow to read contents
@@ -171,13 +180,13 @@ jobs:
         run: poe test-integration-tests
 
       - name: Install Tailscale
-        if: failure()
+        if: inputs.debug
         shell: bash
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
 
       - name: Join Tailnet
-        if: failure()
+        if: inputs.debug
         shell: bash
         run: |
           sudo tailscale up \
@@ -188,11 +197,11 @@ jobs:
             --accept-routes=false \
             --reset
 
-      - name: Sleep for SSH Debugging (Failure Only)
-        if: failure()
+      - name: Sleep for SSH Debugging (Debug Command)
+        if: inputs.debug
         shell: bash
         run: |
-          echo "Build failed. SSH access enabled via Tailscale."
+          echo "Debug mode enabled. SSH access enabled via Tailscale."
           echo "ssh command: ci-runner-${{ github.run_id }}"
           echo "Sleeping for 3 hours for debugging access..."
           sleep 7200

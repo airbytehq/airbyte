@@ -29,6 +29,7 @@ jobs:
             bump-cdk-version-and-merge
             bump-version
             connector-performance
+            debug
             format-fix
             poe
             publish-java-cdk

@@ -1,0 +1,46 @@
+name: Debug Command
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Repository name'
+        required: true
+      gitref:
+        description: 'Git reference'
+        required: true
+      comment-id:
+        description: 'Comment ID'
+        required: true
+      pr:
+        description: 'PR number'
+        required: false
+      slash_command:
+        description: 'Slash command'
+        required: true
+
+jobs:
+  debug:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Update comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > Debug command received. Enabling SSH access via Tailscale...
+            > This will run the connector tests and enable SSH access regardless of test success or failure.
+
+      - name: Trigger connector-ci-checks workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: connector-ci-checks.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: |
+            {
+              "repo": "${{ github.event.inputs.repo }}",
+              "gitref": "${{ github.event.inputs.gitref }}",
+              "comment-id": "${{ github.event.inputs.comment-id }}",
+              "pr": "${{ github.event.inputs.pr }}",
+              "slash_command": "${{ github.event.inputs.slash_command }}",
+              "debug": "true"
+            }
