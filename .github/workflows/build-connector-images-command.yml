@@ -86,7 +86,7 @@ jobs:
       fail-fast: false # Don't stop on first failure
     with:
       repo: "${{ inputs.repo || github.repository }}"
-      gitref: "${{ inputs.gitref || github.ref_name }}"
+      gitref: "${{ inputs.gitref || '' }}"
       comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
       pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
       connector: ${{ matrix.connector }}
