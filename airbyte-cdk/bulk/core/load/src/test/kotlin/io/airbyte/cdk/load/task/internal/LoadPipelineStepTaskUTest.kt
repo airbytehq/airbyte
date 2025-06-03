@@ -42,7 +42,6 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -108,7 +107,7 @@ class LoadPipelineStepTaskUTest {
     private fun messageEvent(
         key: StreamKey,
         value: String,
-        counts: Map<Int, Long> = emptyMap()
+        counts: Map<Int, Pair<Long, Long>> = emptyMap()
     ): PipelineEvent<StreamKey, String> =
         PipelineMessage(counts.mapKeys { CheckpointId(it.key.toString()) }, key, value)
     private fun endOfStreamEvent(key: StreamKey): PipelineEvent<StreamKey, String> =
@@ -390,10 +389,18 @@ class LoadPipelineStepTaskUTest {
                 // Emit 10 messages for stream1, 10 messages for stream2
                 repeat(12) {
                     collector.emit(
-                        messageEvent(key1, "stream1_value", mapOf(it / 6 to it.toLong()))
+                        messageEvent(
+                            key1,
+                            "stream1_value",
+                            mapOf(it / 6 to Pair(it.toLong(), it.toLong()))
+                        )
                     ) // 0 -> 15, 1 -> 51
                     collector.emit(
-                        messageEvent(key2, "stream2_value", mapOf((it / 4) + 1 to it.toLong()))
+                        messageEvent(
+                            key2,
+                            "stream2_value",
+                            mapOf((it / 4) + 1 to Pair(it.toLong(), it.toLong()))
+                        )
                     ) // 1 -> 6, 2 -> 22, 3 -> 38
                 }
 
@@ -409,20 +416,24 @@ class LoadPipelineStepTaskUTest {
         val expectedBatchUpdateStream1 =
             BatchStateUpdate(
                 key1.stream,
-                mapOf(CheckpointId("0") to 15L, CheckpointId("1") to 51L),
+                mapOf(CheckpointId("0") to Pair(15L, 15L), CheckpointId("1") to Pair(51L, 51L)),
                 BatchState.COMPLETE,
                 taskId,
                 part,
-                inputCount = 12L
+                inputRecordCount = 12L
             )
         val expectedBatchUpdateStream2 =
             BatchStateUpdate(
                 key2.stream,
-                mapOf(CheckpointId("1") to 6L, CheckpointId("2") to 22L, CheckpointId("3") to 38L),
+                mapOf(
+                    CheckpointId("1") to Pair(6L, 6L),
+                    CheckpointId("2") to Pair(22L, 22L),
+                    CheckpointId("3") to Pair(38L, 38L)
+                ),
                 BatchState.PERSISTED,
                 taskId,
                 part,
-                inputCount = 12L
+                inputRecordCount = 12L
             )
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream1) }
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream2) }
@@ -644,6 +655,7 @@ class LoadPipelineStepTaskUTest {
             streamKey,
             mapOf(),
             true,
+            1,
             1,
             context,
         )

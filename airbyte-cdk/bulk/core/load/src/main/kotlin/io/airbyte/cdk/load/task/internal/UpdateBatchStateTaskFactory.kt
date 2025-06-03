@@ -36,7 +36,7 @@ class UpdateBatchStateTask(
                 when (message) {
                     is BatchStateUpdate -> {
                         log.info {
-                            "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
+                            "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputRecordCount})"
                         }
                         manager.incrementCheckpointCounts(
                             message.state,

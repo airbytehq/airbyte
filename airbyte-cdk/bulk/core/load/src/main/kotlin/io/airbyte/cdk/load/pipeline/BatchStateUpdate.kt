@@ -17,11 +17,12 @@ sealed interface BatchUpdate {
 
 data class BatchStateUpdate(
     override val stream: DestinationStream.Descriptor,
-    val checkpointCounts: Map<CheckpointId, Long>,
+    val checkpointCounts: Map<CheckpointId, Pair<Long, Long>>,
     val state: BatchState,
     override val taskName: String,
     override val part: Int,
-    val inputCount: Long = 0L
+    val inputRecordCount: Long = 0L,
+    val inputByteCount: Long = 0L
 ) : BatchUpdate
 
 data class BatchEndOfStream(

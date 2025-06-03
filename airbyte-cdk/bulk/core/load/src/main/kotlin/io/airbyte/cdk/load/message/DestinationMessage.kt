@@ -538,12 +538,12 @@ data class DestinationFileStreamIncomplete(
         statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
-private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
-
-private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
-
 /** State. */
 sealed interface CheckpointMessage : DestinationMessage {
+    companion object {
+        private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
+        private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
+    }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
         val stream: DestinationStream.Descriptor,

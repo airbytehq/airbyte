@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.task.internal
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.PipelineInputEvent
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -46,8 +47,9 @@ import kotlinx.coroutines.flow.fold
  */
 data class StateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
-    val checkpointCounts: MutableMap<CheckpointId, Long> = mutableMapOf(),
-    val inputCount: Long = 0,
+    val checkpointCounts: MutableMap<CheckpointId, Pair<Long, Long>> = mutableMapOf(),
+    val inputRecordCount: Long = 0,
+    val inputByteCount: Long = 0,
     val createdAtMs: Long = System.currentTimeMillis()
 ) : AutoCloseable {
     override fun close() {
@@ -109,10 +111,12 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             ) {
                                 // Pick the key with the highest input count
                                 val (key, state) =
-                                    stateStore.stateWithCounts.maxByOrNull { it.value.inputCount }!!
+                                    stateStore.stateWithCounts.maxByOrNull {
+                                        it.value.inputRecordCount
+                                    }!!
                                 stateStore.stateWithCounts.remove(key)
                                 log.info {
-                                    "Saw greater than $maxNumConcurrentKeys keys, evicting highest accumulating $key (inputs=${state.inputCount})"
+                                    "Saw greater than $maxNumConcurrentKeys keys, evicting highest accumulating $key (inputs=${state.inputRecordCount})"
                                 }
 
                                 val output = batchAccumulator.finish(state.accumulatorState)
@@ -120,7 +124,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                     key,
                                     state.checkpointCounts,
                                     output.output,
-                                    state.inputCount
+                                    state.inputRecordCount,
+                                    state.inputByteCount
                                 )
 
                                 state.close()
@@ -135,7 +140,28 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                         accumulatorState = batchAccumulator.start(input.key, part)
                                     )
                                 }
-                                .let { it.copy(inputCount = it.inputCount + 1) }
+                                .let { it.copy(inputRecordCount = it.inputRecordCount + 1) }
+                                .let {
+                                    when (input.value) {
+                                        is DestinationRecordRaw -> {
+                                            it.copy(
+                                                inputByteCount =
+                                                    it.inputByteCount +
+                                                        input.value.serializedSizeBytes
+                                            )
+                                        }
+                                        is DestinationRecord -> {
+                                            it.copy(
+                                                inputByteCount =
+                                                    it.inputByteCount +
+                                                        input.value.serializedSizeBytes
+                                            )
+                                        }
+                                        else -> {
+                                            it
+                                        }
+                                    }
+                                }
 
                         // Accumulate the input and get the new state and output.
                         val result =
@@ -150,7 +176,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         } // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
                             stateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new ->
-                                old + new
+                                Pair(old.first + new.first, old.second + new.second)
                             }
                         }
 
@@ -160,7 +186,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 // Possibly force an output (and if so, discard the state)
                                 if (
                                     flushStrategy?.shouldFlush(
-                                        stateWithCounts.inputCount,
+                                        stateWithCounts.inputRecordCount,
                                         System.currentTimeMillis() - stateWithCounts.createdAtMs
                                     ) == true
                                 ) {
@@ -175,20 +201,24 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             }
 
                         // Publish the output if there is one & reset the input count
-                        val inputCount =
+                        val inputCount: Pair<Long, Long> =
                             if (finalAccOutput != null) {
                                 // Publish the emitted output w/ bookkeeping counts & clear.
                                 handleOutput(
                                     input.key,
                                     stateWithCounts.checkpointCounts,
                                     finalAccOutput,
-                                    stateWithCounts.inputCount,
+                                    stateWithCounts.inputRecordCount,
+                                    stateWithCounts.inputByteCount,
                                     input.context,
                                 )
                                 stateWithCounts.checkpointCounts.clear()
-                                0
+                                Pair(0, 0)
                             } else {
-                                stateWithCounts.inputCount
+                                Pair(
+                                    stateWithCounts.inputRecordCount,
+                                    stateWithCounts.inputByteCount
+                                )
                             }
 
                         // Update the state if `accept` returned a new state, otherwise evict.
@@ -197,11 +227,12 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             stateStore.stateWithCounts[input.key] =
                                 stateWithCounts.copy(
                                     accumulatorState = finalAccState,
-                                    inputCount = inputCount
+                                    inputRecordCount = inputCount.first,
+                                    inputByteCount = inputCount.second
                                 )
                         } else {
                             stateStore.stateWithCounts.remove(input.key)?.let {
-                                check(inputCount == 0L || it.checkpointCounts.isEmpty()) {
+                                check(inputCount.first == 0L || it.checkpointCounts.isEmpty()) {
                                     "State evicted with unhandled input ($inputCount) or checkpoint counts(${it.checkpointCounts})"
                                 }
                                 stateWithCounts.close()
@@ -248,7 +279,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             val keysToRemove =
                                 stateStore.stateWithCounts
                                     .filter { (_, v) ->
-                                        strategy.shouldFlush(v.inputCount, now - v.createdAtMs)
+                                        strategy.shouldFlush(
+                                            v.inputRecordCount,
+                                            now - v.createdAtMs
+                                        )
                                     }
                                     .keys
                             finishKeys(stateStore, keysToRemove, "flush strategy")
@@ -280,7 +314,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     key,
                     stateWithCounts.checkpointCounts,
                     output,
-                    stateWithCounts.inputCount,
+                    stateWithCounts.inputRecordCount,
+                    stateWithCounts.inputByteCount
                 )
                 stateWithCounts.close()
             }
@@ -290,9 +325,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     @VisibleForTesting
     suspend fun handleOutput(
         inputKey: K1,
-        checkpointCounts: Map<CheckpointId, Long>,
+        checkpointCounts: Map<CheckpointId, Pair<Long, Long>>,
         output: U,
-        inputCount: Long,
+        inputRecordCount: Long,
+        inputByteCount: Long,
         context: PipelineContext? = null,
     ) {
 
@@ -314,7 +350,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     state = output.state,
                     taskName = stepId,
                     part = part,
-                    inputCount = inputCount
+                    inputRecordCount = inputRecordCount,
+                    inputByteCount = inputByteCount
                 )
             batchUpdateQueue.publish(update)
         }

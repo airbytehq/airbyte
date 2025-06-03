@@ -75,6 +75,8 @@ class CheckpointManager<T>(
     private val log = KotlinLogging.logger {}
     private val storedCheckpointsLock = Mutex()
     private val lastFlushTimeMs = AtomicLong(0L)
+    private val committedCount: ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue> =
+        ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>()
 
     data class GlobalCheckpoint<T>(val checkpointMessage: T)
 
@@ -156,10 +158,52 @@ class CheckpointManager<T>(
                 }
             if (allStreamsPersisted) {
                 log.info { "Flushing global checkpoint with key ${head.key}" }
+
+                var totalRecords: Long = 0
+                var totalBytes: Long = 0
+                if (
+                    head.value.checkpointMessage is Reserved<*> &&
+                        (head.value.checkpointMessage as Reserved<*>).value is CheckpointMessage
+                ) {
+                    if (
+                        ((head.value.checkpointMessage as Reserved<CheckpointMessage>))
+                            .value
+                            .checkpointKey != null
+                    ) {
+                        val checkpointId =
+                            (head.value.checkpointMessage as CheckpointMessage)
+                                .checkpointKey!!
+                                .checkpointId
+                        catalog.streams.map { stream ->
+                            val totalRecordsForStream: Long
+                            val totalBytesForStream: Long
+                            val count =
+                                syncManager
+                                    .getStreamManager(stream.descriptor)
+                                    .committedCount(checkpointId)
+                            if (committedCount.containsKey(stream.descriptor)) {
+                                val get = committedCount[stream.descriptor]!!
+                                totalRecordsForStream = count.records + get.records
+                                totalBytesForStream = count.serializedBytes + get.serializedBytes
+                                committedCount[stream.descriptor] =
+                                    CheckpointValue(totalRecordsForStream, totalBytesForStream)
+                            } else {
+                                totalRecordsForStream = count.records
+                                totalBytesForStream = count.serializedBytes
+                                committedCount[stream.descriptor] = count
+                            }
+                            totalRecords += totalRecordsForStream
+                            totalBytes += totalBytesForStream
+                        }
+                    }
+                }
+
                 sendStateMessage(
                     head.value.checkpointMessage,
                     head.key,
-                    catalog.streams.map { it.descriptor }
+                    catalog.streams.map { it.descriptor },
+                    totalRecords,
+                    totalBytes
                 )
                 globalCheckpoints.remove(
                     head.key
@@ -198,7 +242,28 @@ class CheckpointManager<T>(
                     log.info {
                         "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey"
                     }
-                    sendStateMessage(nextMessage, nextCheckpointKey, listOf(stream.descriptor))
+                    val totalRecords: Long
+                    val totalBytes: Long
+                    val count = manager.committedCount(nextCheckpointKey.checkpointId)
+                    if (committedCount.containsKey(stream.descriptor)) {
+                        val get = committedCount[stream.descriptor]!!
+                        totalRecords = count.records + get.records
+                        totalBytes = count.serializedBytes + get.serializedBytes
+                        committedCount[stream.descriptor] =
+                            CheckpointValue(totalRecords, totalBytes)
+                    } else {
+                        totalBytes = count.serializedBytes
+                        totalRecords = count.records
+                        committedCount[stream.descriptor] = count
+                    }
+
+                    sendStateMessage(
+                        nextMessage,
+                        nextCheckpointKey,
+                        listOf(stream.descriptor),
+                        totalRecords,
+                        totalBytes,
+                    )
                     // don't remove until after we've successfully sent
                     streamCheckpoints.remove(nextCheckpointKey)
                 } else {
@@ -233,9 +298,16 @@ class CheckpointManager<T>(
     private suspend fun sendStateMessage(
         checkpointMessage: T,
         checkpointKey: CheckpointKey,
-        streamCheckpoints: List<DestinationStream.Descriptor>
+        streamCheckpoints: List<DestinationStream.Descriptor>,
+        totalRecords: Long,
+        totalBytes: Long
     ) {
         streamCheckpoints.forEach { stream -> lastCheckpointKeyEmitted[stream] = checkpointKey }
+
+        if (checkpointMessage is Reserved<*> && checkpointMessage.value is CheckpointMessage) {
+            checkpointMessage.value.withTotalRecords(totalRecords)
+            checkpointMessage.value.withTotalBytes(totalBytes)
+        }
 
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
         outputConsumer.invoke(checkpointMessage)

@@ -84,7 +84,7 @@ class FilePartAccumulatorLegacy(
         val objectKey = ObjectKey(streamDescriptor, part.key)
         val countMap =
             if (part.isFinal) {
-                mapOf(checkpointId to 1L)
+                mapOf(checkpointId to Pair(1L, 1L))
             } else {
                 emptyMap()
             }
