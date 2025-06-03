@@ -30,8 +30,7 @@ import jakarta.inject.Singleton
 val log = KotlinLogging.logger {  }
 
 @Singleton
-class ClickhouseAirbyteClient(private val client: Client,
-    private val configuration: ClickhouseConfiguration
+class ClickhouseAirbyteClient(private val client: Client
     ): AirbyteClient<ClickHouseDataType>() {
     override fun getNumberOfRecordsInTable(tableName: TableName): Long? {
         try {
