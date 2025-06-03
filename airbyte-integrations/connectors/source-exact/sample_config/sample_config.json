@@ -1,0 +1,13 @@
+{
+  "base_url": "https://exact.nl",
+  "divisions": [
+    "123"
+  ],
+  "credentials": {
+    "client_id": "string",
+    "client_secret": "string",
+    "access_token": "string",
+    "refresh_token": "string",
+    "token_expiry_date": "string"
+  }
+}
