@@ -32,7 +32,7 @@ val log = KotlinLogging.logger {  }
 class ClickhouseAirbyteClient(private val client: Client,
     private val configuration: ClickhouseConfiguration
     ): AirbyteClient<ClickHouseDataType>() {
-    override fun getNumberOfRecordsInTable(table: String): Long {
+    override fun getNumberOfRecordsInTable(table: String): Long? {
         try {
             val response = client.query("SELECT count(1) cnt FROM ${getDatabaseName()}.$table;").get()
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
@@ -40,10 +40,7 @@ class ClickhouseAirbyteClient(private val client: Client,
             val count = reader.getLong("cnt")
             return count
         } catch (e: Exception) {
-            // TODO: That's sus
-            log.error(e) { "Error while getting number of records in table ${getDatabaseName()}.$table: ${e.message}" }
-            log.info { "Table: ${getDatabaseName()}.$table doesn't exist, return 0 record." }
-            return 0L
+            return null
         }
     }
 
@@ -55,6 +52,7 @@ class ClickhouseAirbyteClient(private val client: Client,
      */
     override fun executeQuery(query: String): Boolean {
         try {
+            log.error { "Executing query: $query" }
             client.execute(query).get()
             return true
         } catch (e: Exception) {

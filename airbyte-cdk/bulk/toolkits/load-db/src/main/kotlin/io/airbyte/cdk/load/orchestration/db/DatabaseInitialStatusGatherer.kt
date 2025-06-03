@@ -52,10 +52,16 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
         return map
     }
 
-    private fun getTableStatus(tableName: TableName): DirectLoadTableStatus {
-        return if (airbyteClient.getNumberOfRecordsInTable(tableName.name) == 0L) {
+    private fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
+        val numberOfRecords: Long? = airbyteClient.getNumberOfRecordsInTable(tableName.name)
+        return if (numberOfRecords == null) {
+            // Missing table
+            null
+        } else if (numberOfRecords == 0L) {
+            // Empty Table
             DirectLoadTableStatus(isEmpty = true)
         } else {
+            // Non-empty Table
             DirectLoadTableStatus(isEmpty = false)
         }
     }
