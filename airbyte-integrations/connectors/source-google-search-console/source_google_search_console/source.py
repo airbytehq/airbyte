@@ -25,7 +25,6 @@ from source_google_search_console.service_account_authenticator import ServiceAc
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
     SearchAnalyticsByCustomDimensions,
-    SearchAnalyticsByQuery,
     SearchAnalyticsKeywordPageReport,
     SearchAnalyticsKeywordSiteReportByPage,
     SearchAnalyticsKeywordSiteReportBySite,
@@ -149,7 +148,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
 
         streams.extend(
             [
-                SearchAnalyticsByQuery(**stream_config),
                 SearchAnalyticsAllFields(**stream_config),
                 SearchAnalyticsKeywordPageReport(**stream_config),
                 SearchAnalyticsPageReport(**stream_config),

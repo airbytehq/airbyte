@@ -294,11 +294,6 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
             yield record
 
 
-class SearchAnalyticsByQuery(SearchAnalytics):
-    primary_key = ["site_url", "date", "query", "search_type"]
-    dimensions = ["date", "query"]
-
-
 class SearchAnalyticsAllFields(SearchAnalytics):
     primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "page", "query"]
