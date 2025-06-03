@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
+import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -50,4 +51,21 @@ interface DirectLoadSqlGenerator {
     ): Sql
 
     fun dropTable(tableName: TableName): Sql
+}
+
+abstract class BaseDirectLoadSqlGenerator<DestinationDataType: Enum<DestinationDataType>>(
+    private val airbyteClient: AirbyteClient<DestinationDataType>) : DirectLoadSqlGenerator {
+    override fun createTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean,
+    ): Sql {
+        return airbyteClient.getCreateTableStatement(
+            stream,
+            tableName,
+            columnNameMapping,
+            replace
+        )
+    }
 }
