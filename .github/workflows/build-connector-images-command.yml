@@ -3,11 +3,9 @@ name: Connector Image Builds
 # It can be triggered manually via slash command or workflow dispatch.
 
 on:
-  # For testing:
+  # For testing (TODO: comment out the below before merging):
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - '**/ci/**'
 
   workflow_dispatch:
     inputs:
