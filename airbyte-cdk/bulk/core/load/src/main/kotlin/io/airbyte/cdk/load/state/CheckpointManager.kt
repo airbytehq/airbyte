@@ -183,17 +183,13 @@ class CheckpointManager<T>(
                             .value
                             .checkpointKey != null
                     ) {
-                        val checkpointId =
-                            (head.value.checkpointMessage as CheckpointMessage)
-                                .checkpointKey!!
-                                .checkpointId
                         catalog.streams.map { stream ->
                             val totalRecordsForStream: Long
                             val totalBytesForStream: Long
                             val count =
                                 syncManager
                                     .getStreamManager(stream.descriptor)
-                                    .committedCount(checkpointId)
+                                    .committedCount(head.key.checkpointId)
                             if (committedCount.containsKey(stream.descriptor)) {
                                 val get = committedCount[stream.descriptor]!!
                                 totalRecordsForStream = count.records + get.records
