@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.DataChannelReader
 import io.airbyte.cdk.load.file.JSONLDataChannelReader
+import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationMessageFactory
@@ -93,7 +94,7 @@ class DataChannelBeanFactory {
             DataChannelMedium.STDIO -> {
                 if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
             }
-            DataChannelMedium.SOCKETS -> {
+            DataChannelMedium.SOCKET -> {
                 dataChannelSocketPaths.size
             }
         }
@@ -107,7 +108,7 @@ class DataChannelBeanFactory {
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> 1
-            DataChannelMedium.SOCKETS -> numInputPartitions
+            DataChannelMedium.SOCKET -> numInputPartitions
         }
     }
 
@@ -121,7 +122,7 @@ class DataChannelBeanFactory {
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     fun requireCheckpointIdOnRecord(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
-    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKETS
+    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKET
 
     /**
      * PRIVATE: Do not use outside this factory.
@@ -158,10 +159,17 @@ class DataChannelBeanFactory {
     @Singleton
     fun dataChannelReader(
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
-        destinationMessageFactory: DestinationMessageFactory
+        destinationMessageFactory: DestinationMessageFactory,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ) =
         when (dataChannelFormat) {
             DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
+            DataChannelFormat.PROTOBUF -> {
+                check(dataChannelMedium == DataChannelMedium.SOCKET) {
+                    "PROTOBUF data channel format is only supported for SOCKETS medium."
+                }
+                ProtobufDataChannelReader(destinationMessageFactory)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported data channel format: $dataChannelFormat"
@@ -195,7 +203,7 @@ class DataChannelBeanFactory {
                 }
                 return pipelineInputQueue.asOrderedFlows()
             }
-            DataChannelMedium.SOCKETS -> {
+            DataChannelMedium.SOCKET -> {
                 socketPaths
                     .map { path ->
                         val socket =

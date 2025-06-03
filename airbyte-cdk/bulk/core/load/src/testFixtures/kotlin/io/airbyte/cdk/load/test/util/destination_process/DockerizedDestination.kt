@@ -9,21 +9,21 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.TcpPortReserver
+import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.NUM_SOCKETS
 import io.airbyte.cdk.load.test.util.rotate
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedWriter
 import java.io.File
-import java.io.OutputStreamWriter
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
@@ -51,12 +51,13 @@ class DockerizedDestination(
     private val useFileTransfer: Boolean,
     private val envVars: Map<String, String>,
     override val dataChannelMedium: DataChannelMedium,
+    val dataChannelFormat: DataChannelFormat,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
     private var sidecarProcess: Process? = null
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
-    private val destinationDataChannels: Array<BufferedWriter>
+    private val destinationDataChannels: Array<OutputStream>
     // We use this suffix as part of the docker container name.
     // We'll also add it to the log prefix, which helps with debugging tests
     // that launch multiple containers.
@@ -82,19 +83,14 @@ class DockerizedDestination(
         // Annoyingly, the process's stdin is called "outputStream"
         destinationDataChannels =
             when (dataChannelMedium) {
-                DataChannelMedium.STDIO ->
-                    arrayOf(
-                        BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
-                    )
-                DataChannelMedium.SOCKETS -> {
+                DataChannelMedium.STDIO -> arrayOf(process.outputStream)
+                DataChannelMedium.SOCKET -> {
                     (0 until NUM_SOCKETS)
                         .map {
                             val sidecarPort = TcpPortReserver.findAvailablePort()
                             sidecarProcess = startSidecar(sidecarPort, makeSocketPath(it), it)
 
-                            val tcpSocketWriter =
-                                TCPSocketWriter("localhost", sidecarPort, awaitFirstWrite = true)
-                            BufferedWriter(OutputStreamWriter(tcpSocketWriter))
+                            TCPSocketWriter("localhost", sidecarPort, awaitFirstWrite = true)
                         }
                         .toTypedArray()
                 }
@@ -158,10 +154,12 @@ class DockerizedDestination(
 
         val socketPaths = (0 until NUM_SOCKETS).joinToString(",") { makeSocketPath(it) }
         val socketPathEnvVarsMaybe =
-            if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+            if (dataChannelMedium == DataChannelMedium.SOCKET) {
                 listOf(
                     "-e",
-                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKETS}",
+                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKET}",
+                    "-e",
+                    "${EnvVarConstants.DATA_CHANNEL_FORMAT.environmentVariable}=$dataChannelFormat",
                     "-e",
                     "${EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS.environmentVariable}=$socketPaths",
                 )
@@ -286,7 +284,7 @@ class DockerizedDestination(
     }
 
     private suspend fun awaitReadyForSendingMessages() {
-        if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
             destinationAwaitingSocketConnection.await()
         }
     }
@@ -381,7 +379,7 @@ class DockerizedDestination(
             }
     }
 
-    override suspend fun sendMessage(message: AirbyteMessage, broadcast: Boolean) {
+    override suspend fun sendMessage(message: InputMessage, broadcast: Boolean) {
         awaitReadyForSendingMessages()
         val dataChannels =
             if (broadcast) {
@@ -391,17 +389,14 @@ class DockerizedDestination(
                     destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)]
                 )
             }
-        dataChannels.forEach {
-            it.write(message.serializeToString())
-            it.newLine()
-        }
+        dataChannels.forEach { message.writeProtocolMessage(dataChannelFormat, it) }
     }
 
     override suspend fun sendMessage(string: String) {
         awaitReadyForSendingMessages()
         destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)].let {
-            it.write(string)
-            it.newLine()
+            it.write(string.toByteArray(Charsets.UTF_8))
+            it.write('\n'.code)
         }
     }
 
@@ -433,7 +428,7 @@ class DockerizedDestination(
         }
     }
 
-    override fun kill() {
+    override suspend fun kill() {
         process.destroyForcibly()
     }
 
@@ -454,6 +449,7 @@ class DockerizedDestinationFactory(
         useFileTransfer: Boolean,
         micronautProperties: Map<Property, String>,
         dataChannelMedium: DataChannelMedium,
+        dataChannelFormat: DataChannelFormat,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -465,6 +461,7 @@ class DockerizedDestinationFactory(
             useFileTransfer,
             micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             dataChannelMedium,
+            dataChannelFormat,
             *featureFlags,
         )
     }
