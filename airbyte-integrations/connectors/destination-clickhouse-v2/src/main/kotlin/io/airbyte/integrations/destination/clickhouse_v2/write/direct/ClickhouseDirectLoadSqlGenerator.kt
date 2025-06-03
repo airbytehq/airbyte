@@ -28,9 +28,7 @@ import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.BaseDirectLoadSqlGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
-import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseAirbyteClient
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -40,8 +38,47 @@ private val log = KotlinLogging.logger {}
 @Singleton
 class ClickhouseDirectLoadSqlGenerator(
     private val config: ClickhouseConfiguration,
-    client: ClickhouseAirbyteClient,
-) : BaseDirectLoadSqlGenerator<ClickHouseDataType>(client) {
+) : DirectLoadSqlGenerator {
+    override fun createTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean,
+    ): Sql {
+        log.error { "Creating table for stream ${stream.descriptor.name} with columns: ${columnNameMapping.values.joinToString(", ")}" }
+        fun columnsAndTypes(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping
+        ): String =
+            stream.schema
+                .asColumns()
+                .map { (fieldName, type) ->
+                    val columnName = columnNameMapping[fieldName]!!
+                    val typeName = toDialectType(type.type).name
+                    "`$columnName` $typeName"
+                }
+                .joinToString(",\n")
+
+        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+
+        val forceCreateTable = if (replace) "OR REPLACE" else ""
+//        TODO: Add namespace to table name properly — CH doesn't like periods
+//        val finalTableId = tableName.toPrettyString(QUOTE)
+        val finalTableId = tableName.name
+        return Sql.of(
+            """
+            CREATE $forceCreateTable TABLE `${config.resolvedDatabase}`.$finalTableId (
+              _airbyte_raw_id String NOT NULL,
+              _airbyte_extracted_at DateTime64(3) NOT NULL,
+              _airbyte_meta String NOT NULL,
+              _airbyte_generation_id UInt32,
+              $columnDeclarations
+            )
+            ENGINE = MergeTree ORDER BY ()
+            """.trimIndent()
+        )
+    }
+
     // TODO: implement this.
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
         throw NotImplementedError(
