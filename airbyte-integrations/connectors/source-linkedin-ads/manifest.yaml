@@ -455,8 +455,8 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("paging", {}).get("start", {}) + response.get("paging", {}).get("count", {}) }}'
-            stop_condition: '{{ response.get("paging", {}).get("total", {}) == 0 }}'
+            cursor_value: "{{ response.get('paging', {}).get('start', 0) + response.get('paging', {}).get('count', 0) }}"
+            stop_condition: "{{ response.get('paging', {}).get('total', 0) == 0 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -507,8 +507,8 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("paging", {}).get("start", {}) + response.get("paging", {}).get("count", {}) }}'
-            stop_condition: '{{ response.get("paging", {}).get("total", {}) == 0 }}'
+            cursor_value: "{{ response.get('paging', {}).get('start', 0) + response.get('paging', {}).get('count', 0) }}"
+            stop_condition: "{{ response.get('paging', {}).get('total', 0) == 0 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
