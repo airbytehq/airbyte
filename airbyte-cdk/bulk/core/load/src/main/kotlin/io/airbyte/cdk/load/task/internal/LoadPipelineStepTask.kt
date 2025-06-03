@@ -137,6 +137,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 }
                                 .let { it.copy(inputCount = it.inputCount + 1) }
 
+                        KotlinLogging.logger {  }.error { input.value }
                         // Accumulate the input and get the new state and output.
                         val result =
                             batchAccumulator.accept(
