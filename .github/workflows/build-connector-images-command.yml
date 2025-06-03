@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.repository }}
-          ref: ${{ inputs.gitref || github.ref_name }}
+          ref: ${{ inputs.gitref || '' }}
           # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 0
 
