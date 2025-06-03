@@ -63,8 +63,6 @@ jobs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
 
   call-connector-ci-build:
-    # Run always for 'workflow_dispatch' events.
-    # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
     name: "Call Connector CI Build"
     uses: ./.github/workflows/connector-image-build.yml
     needs: [init-workflow]
