@@ -5,6 +5,7 @@ import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
 
@@ -14,15 +15,19 @@ class ClickhouseDatabaseHandler(private val clickhouseClient: Client): DatabaseH
         val statement =
             java.lang.String.join("\n", sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION"))
         log.error { "Executing SQL: $statement" }
-        clickhouseClient.execute(statement)
+        clickhouseClient.execute(statement).get()
     }
 
     override suspend fun createNamespaces(namespaces: Collection<String>) {
+        log.error { "Namespaces to create: ${namespaces.size}" }
         namespaces.forEach { namespace ->
-            {
-                // ClickHouse does not have a concept of namespaces, so we can ignore this.
-                log.info { "Ignoring create namespace request for ClickHouse: $namespace" }
-            }
+                log.error { "Ignoring create namespace request for ClickHouse: $namespace" }
+            val statement = getDatabaseStatement(namespace)
+            clickhouseClient.execute(statement).await()
         }
+    }
+
+    private fun getDatabaseStatement(namespace: String): String {
+        return "CREATE DATABASE IF NOT EXISTS `$namespace` "
     }
 }
