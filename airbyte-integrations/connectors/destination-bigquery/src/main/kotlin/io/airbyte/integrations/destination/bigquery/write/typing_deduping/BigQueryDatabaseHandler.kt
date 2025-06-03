@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.QueryJobConfiguration
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
 class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocation: String) :
     DatabaseHandler {
     /**
