@@ -236,6 +236,171 @@ definitions:
         class_name: source_bing_ads.components.BingAdsCampaignsRecordTransformer
       - type: RemoveFields
         field_pointers: []
+
+  # Report Streams
+
+  ## Account Performance Reports
+  account_performance_report_hourly_stream:
+    type: DeclarativeStream
+    name: account_performance_report_hourly
+    primary_key:
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AccountPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AccountPerformanceReportRequest
+            Aggregation: Hourly
+            Columns:
+              - AccountId
+              - TimePeriod
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Network
+              - DeliveredMatchType
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - AccountName
+              - AccountNumber
+              - PhoneImpressions
+              - PhoneCalls
+              - Clicks
+              - Ctr
+              - Spend
+              - Impressions
+              - Assists
+              - ReturnOnAdSpend
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - Conversions
+              - ConversionsQualified
+              - ConversionRate
+              - CostPerAssist
+              - CostPerConversion
+              - LowQualityClicks
+              - LowQualityClicksPercent
+              - LowQualityImpressions
+              - LowQualitySophisticatedClicks
+              - LowQualityConversions
+              - LowQualityConversionRate
+              - Revenue
+              - RevenuePerAssist
+              - RevenuePerConversion
+              - Ptr
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              ReportTimeZone: "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - TimePeriod
+            #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+            #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+            value: |
+              {%- set parts = record.TimePeriod.split('|') -%}
+              {%- set time_period = record.TimePeriod -%}
+              {%- set date_part = '' -%}
+              {%- set hour_part = 0 -%}
+              {%- if parts|length > 1 -%}
+                {%- set date_part = parts[0] -%}
+                {%- set hour_part = parts[1]|int -%}
+                {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
+              {%- endif -%}
+              {{ time_period }}
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - PhoneImpressions
+            value: |
+              {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - PhoneCalls
+            value: |
+              {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - Ptr
+            value: |
+              {% set v = record.get('Ptr') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityClicks
+            value: |
+              {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityClicksPercent
+            value: |
+              {% set v = record.get('LowQualityClicksPercent') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityImpressions
+            value: |
+              {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualitySophisticatedClicks
+            value: |
+              {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityConversions
+            value: |
+              {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - LowQualityConversionRate
+            value: |
+              {% set v = record.get('LowQualityConversionRate') %}
+              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
   account_performance_report_daily_stream:
     type: DeclarativeStream
     name: account_performance_report_daily
@@ -665,6 +830,7 @@ definitions:
               {% set v = record.get('LowQualityConversionRate') %}
               {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
+  ## Ad Performance Reports
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
@@ -1476,6 +1642,7 @@ definitions:
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/campaigns_stream"
+  - $ref: "#/definitions/account_performance_report_hourly_stream"
   - $ref: "#/definitions/account_performance_report_daily_stream"
   - $ref: "#/definitions/account_performance_report_weekly_stream"
   - $ref: "#/definitions/account_performance_report_monthly_stream"
