@@ -695,12 +695,21 @@ spec:
             - type: ConfigAddFields
               fields:
                 - type: AddedFieldDefinition
+                  path: ["api_key"]
+                  value: "{{ config.get('credentials', {}).get('api_key') }}"
+              condition: "{{ not config.get('api_key') and config.get('credentials', {}).get('api_key') }}"
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
                   path: ["credentials", "api_key"]
                   value: "{{ config['api_key'] }}"
+              condition: "{{ config.get('api_key') and not config.get('credentials', {}).get('api_key')}}"
+            - type: ConfigAddFields
+              fields:
                 - type: AddedFieldDefinition
                   path: ["credentials", "auth_method"]
                   value: "api_key"
-              condition: "{{ not config.get('credentials', {}).get('api_key') and not config.get('credentials', {}).get('auth_method') }}"
+              condition: "{{ config.get('api_key') and not config.get('credentials', {}).get('auth_method') }}"
 
 schemas:
   bases:
