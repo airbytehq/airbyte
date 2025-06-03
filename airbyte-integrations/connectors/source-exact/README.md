@@ -12,5 +12,12 @@
 
 ```
 poetry run source-exact spec
-python run source-exact check --config secrets/config.json
+poetry run source-exact check --config secrets/config.json
+poetry run source-exact discover --config secrets/config.json
+```
+
+### Optional flags
+
+```
+--debug
 ```
