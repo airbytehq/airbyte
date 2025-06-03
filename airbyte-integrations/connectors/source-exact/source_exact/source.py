@@ -1,8 +1,9 @@
 import logging
 
+from source_exact.streams import CRMAccountClassifications, ExactStream
+
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, Status
 from airbyte_cdk.sources import AbstractSource
-from source_exact.streams import ExactStream
 
 
 class SourceExact(AbstractSource):
@@ -15,7 +16,7 @@ class SourceExact(AbstractSource):
         return True, None
 
     def streams(self, config) -> list[ExactStream]:
-        pass
+        return [CRMAccountClassifications(config),]
 
     def discover(
         self, logger: logging.Logger, config

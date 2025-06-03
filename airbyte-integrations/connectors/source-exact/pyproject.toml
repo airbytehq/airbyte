@@ -9,7 +9,8 @@ license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "airbyte-cdk (>=6.48.16,<7.0.0)"
+    "airbyte-cdk (>=6.48.16,<7.0.0)",
+    "pendulum (>=3.1.0,<4.0.0)"
 ]
 
 
