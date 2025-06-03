@@ -53,7 +53,7 @@ jobs:
             > **Connector Image Build Started**
             >
             > - This workflow will build the connector image and run basic tests.
-            > - The connector image(s) will be pushed to the GitHub Container Registry.
+            > - The connector image(s) will be pushed to the [GitHub Container Registry](https://github.com/orgs/airbytehq/packages).
             >
             > [Check job output.](${{ steps.job-vars.outputs.run-url }})
 
