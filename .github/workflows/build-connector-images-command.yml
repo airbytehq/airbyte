@@ -7,7 +7,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - '**'
+      - '**/ci/**'
 
   workflow_dispatch:
     inputs:
@@ -43,20 +43,6 @@ jobs:
           echo "image-name=ghcr.io/airbytehq/${{ inputs.repo || github.repository }}:${{ inputs.gitref || github.ref_name }}" >> $GITHUB_OUTPUT
           echo "pr-number=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}" >> $GITHUB_OUTPUT
 
-      - name: Repo Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.repo || github.repository }}
-          ref: ${{ inputs.gitref || github.ref_name }}
-          # Use fetch-depth: 0 to ensure we can access the full commit history
-          fetch-depth: 0
-
-      - name: Generate Connector Matrix from Changes
-        id: generate-matrix
-        run: |
-          # Get the list of modified connectors
-          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
-
       - name: Append start comment
         id: append-start-comment
         uses: peter-evans/create-or-update-comment@v4
@@ -72,6 +58,20 @@ jobs:
             > - The connector image(s) will be pushed to the GitHub Container Registry.
             >
             > [Check job output.](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Repo Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.repository }}
+          ref: ${{ inputs.gitref || github.ref_name }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history
+          fetch-depth: 0
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: |
+          # Get the list of modified connectors
+          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
