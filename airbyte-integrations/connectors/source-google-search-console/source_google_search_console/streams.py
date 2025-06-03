@@ -294,11 +294,6 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
             yield record
 
 
-class SearchAnalyticsAllFields(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
-    dimensions = ["date", "country", "device", "page", "query"]
-
-
 class SearchAppearance(SearchAnalytics):
     """
     Dimension searchAppearance can't be used with other dimension.

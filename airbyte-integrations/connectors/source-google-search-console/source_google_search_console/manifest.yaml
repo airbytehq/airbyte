@@ -39,6 +39,118 @@ definitions:
       Client: "#/definitions/oauth_authenticator"
       Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
 
+  search_analytics_all_fields_stream:
+    type: DeclarativeStream
+    name: search_analytics_all_fields
+    primary_key:
+      - site_url
+      - date
+      - country
+      - device
+      - query
+      - page
+      - search_type
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        http_method: POST
+        authenticator: "#/definitions/selective_authenticator"
+        request_headers:
+          Content-Type: "application/json"
+        request_body_json:
+          startDate: "{{ stream_interval.get('start_time') }}"
+          endDate: "{{ stream_interval.get('end_time') }}"
+          dimensions: ["date", "country", "device", "page", "query"]
+          type: "{{ stream_partition.get('search_type') }}"
+          aggregationType: auto
+          dataState: "{{ config.get('data_state', 'final') }}"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: startRow
+          inject_into: body_json
+        page_size_option:
+          type: RequestOption
+          field_name: rowLimit
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 25000
+          inject_on_first_request: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+        - type: ListPartitionRouter
+          values:
+            - web
+            - news
+            - image
+            - video
+          cursor_field: search_type
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2021-01-01') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+      step: P3D
+      cursor_granularity: P1D
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
+              - search_type
+            value: "{{ stream_partition['search_type'] }}"
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - page
+            value: "{{ record['keys'][3] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][4] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search_analytics_all_fields"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+
   search_analytics_by_country_stream:
     type: DeclarativeStream
     name: search_analytics_by_country
@@ -608,6 +720,7 @@ definitions:
         $ref: "#/schemas/sitemaps"
 
 streams:
+  - "#/definitions/search_analytics_all_fields_stream"
   - "#/definitions/search_analytics_by_country_stream"
   - "#/definitions/search_analytics_by_date_stream"
   - "#/definitions/search_analytics_by_device_stream"
@@ -617,6 +730,46 @@ streams:
   - "#/definitions/sitemaps_stream"
 
 schemas:
+  search_analytics_all_fields:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      site_url:
+        description: "The URL of the site from which the data originates."
+        type: ["null", "string"]
+      search_type:
+        description: "The type of search (e.g., web, image, video) that triggered the search result."
+        type: ["null", "string"]
+      date:
+        description: "The date when the search query occurred."
+        type: ["null", "string"]
+        format: "date"
+      country:
+        description: "The country from which the search query originated."
+        type: ["null", "string"]
+      device:
+        description: "The type of device used by the user (e.g., desktop, mobile)."
+        type: ["null", "string"]
+      page:
+        description: "The page URL that appeared in the search results."
+        type: ["null", "string"]
+      query:
+        description: "The search query entered by the user."
+        type: ["null", "string"]
+      clicks:
+        description: "The number of times users clicked on the search result for a specific query."
+        type: ["null", "integer"]
+      impressions:
+        description: "The number of times a search result appeared in response to a query."
+        type: ["null", "integer"]
+      ctr:
+        description: "Click-through rate, calculated as clicks divided by impressions."
+        type: ["null", "number"]
+        multipleOf: 1e-25
+      position:
+        description: "The average position of the search result on the search engine results page."
+        type: ["null", "number"]
+        multipleOf: 1e-25
   search_analytics_by_country:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
