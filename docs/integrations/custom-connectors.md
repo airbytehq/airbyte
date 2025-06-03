@@ -25,11 +25,16 @@ It's easy to build your own connectors for Airbyte. You can learn how to build n
 While the guides in the link above are specific to the languages used most frequently to write integrations, **Airbyte connectors can be written in any language**. Please reach out to us if you'd like help developing connectors in other languages.
 
 :::caution
-If you don't use one of the official development options, remember to set the `AIRBYTE_ENTRYPOINT` environment variable to your Docker image's entrypoint!
-Otherwise, your connector will not run correctly.
-:::
+We strongly recommend creating new connectors using the [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or one of the Airbyte CDKs.
 
-Learn how to upload Docker-based custom connectors [here](../../platform/operator-guides/using-custom-connectors/)
+While it is not recommended to build Docker images from scratch, it can be useful to build a custom Docker image if you cannot use the Connector Builder, and if you need to use a language other than Python or CDK.
+
+See the following guides for more information on building custom Airbyte Docker images:
+
+- [Using Custom Connectors](../platform/operator-guides/using-custom-connectors)
+- [Airbyte Docker Protocol](../platform/understanding-airbyte/airbyte-protocol-docker)
+
+:::
 
 ## Upgrading a connector
 
