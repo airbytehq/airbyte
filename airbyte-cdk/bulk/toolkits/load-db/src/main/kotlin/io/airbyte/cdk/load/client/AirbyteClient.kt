@@ -16,7 +16,7 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
      * @return The number of records in the specified table.
      */
     // TODO: missing namespace
-    abstract fun getNumberOfRecordsInTable(table: String): Long?
+    abstract fun getNumberOfRecordsInTable(tableName: TableName): Long?
 
     /**
      * Executes a query against the database.
@@ -25,8 +25,6 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
      * @return A boolean indicating whether the query was executed successfully.
      */
     protected abstract fun executeQuery(query: String): Boolean
-
-    protected abstract fun getDatabaseName(): String
 
     open fun copyTable(columnNameMapping: ColumnNameMapping,
                        sourceTableName: TableName,
@@ -63,13 +61,10 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 //        TODO: Add namespace to table name properly — CH doesn't like periods
 //        val finalTableId = tableName.toPrettyString(QUOTE)
-        val finalTableId = tableName.name
-
-        log.error { "Creating table: $finalTableId" }
 
         return return Sql.of(
             """
-            CREATE $forceCreateTable TABLE `${getDatabaseName()}`.$finalTableId (
+            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
               _airbyte_raw_id String NOT NULL,
               _airbyte_extracted_at DateTime64(3) NOT NULL,
               _airbyte_meta String NOT NULL,
