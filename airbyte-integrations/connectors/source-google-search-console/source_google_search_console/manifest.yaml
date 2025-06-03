@@ -278,7 +278,7 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters.get('dimensions') }}"
           type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: "{{ parameters.get('aggregationType') }}" # this will need to be tweaked dynamically to handle when we receive a 400 error
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
           dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
       paginator:
