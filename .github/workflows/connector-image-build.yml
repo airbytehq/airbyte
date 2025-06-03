@@ -49,6 +49,14 @@ jobs:
           # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 1
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
       - name: Resolve Vars
         id: vars
         run: |
