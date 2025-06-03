@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,9 +32,9 @@ val log = KotlinLogging.logger {  }
 class ClickhouseAirbyteClient(private val client: Client,
     private val configuration: ClickhouseConfiguration
     ): AirbyteClient<ClickHouseDataType>() {
-    override fun getNumberOfRecordsInTable(tableName: TableName): Long? {
+    override fun getNumberOfRecordsInTable(table: String): Long? {
         try {
-            val response = client.query("SELECT count(1) cnt FROM `${tableName.namespace}`.`${tableName.name}`;").get()
+            val response = client.query("SELECT count(1) cnt FROM ${getDatabaseName()}.$table;").get()
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
             reader.next()
             val count = reader.getLong("cnt")
@@ -53,6 +52,7 @@ class ClickhouseAirbyteClient(private val client: Client,
      */
     override fun executeQuery(query: String): Boolean {
         try {
+            log.error { "Executing query: $query" }
             client.execute(query).get()
             return true
         } catch (e: Exception) {
@@ -67,6 +67,8 @@ class ClickhouseAirbyteClient(private val client: Client,
             ORDER BY ();
         """.trimIndent()
     }
+
+    override fun getDatabaseName(): String = configuration.resolvedDatabase
 
     override fun toDialectType(type: AirbyteType): ClickHouseDataType =
         when (type) {

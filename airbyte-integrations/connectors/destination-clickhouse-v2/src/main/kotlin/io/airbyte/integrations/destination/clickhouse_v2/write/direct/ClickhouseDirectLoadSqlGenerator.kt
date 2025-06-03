@@ -42,6 +42,7 @@ class ClickhouseDirectLoadSqlGenerator(
     private val config: ClickhouseConfiguration,
     client: ClickhouseAirbyteClient,
 ) : BaseDirectLoadSqlGenerator<ClickHouseDataType>(client) {
+    // TODO: Namespace
 
     override fun upsertTable(
         stream: DestinationStream,
@@ -113,10 +114,11 @@ class ClickhouseDirectLoadSqlGenerator(
                 val column = columnNameMapping[fieldName]!!
                 "`$column` = new_record.`$column`,"
             }
+        val targetTableId = targetTableName.toPrettyString(QUOTE)
 
         return Sql.of(
             """
-               MERGE `${targetTableName.namespace}`.`${targetTableName.name}` target_table
+               MERGE `${config.resolvedDatabase}`.$targetTableId target_table
                USING (
                  $selectSourceRecords
                ) new_record
@@ -146,7 +148,8 @@ class ClickhouseDirectLoadSqlGenerator(
     }
 
     override fun dropTable(tableName: TableName): Sql {
-        return Sql.of("""DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;""")
+        val tableId = tableName.toPrettyString(QUOTE)
+        return Sql.of("""DROP TABLE IF EXISTS `${config.resolvedDatabase}`.$tableId;""")
     }
 
     /**
@@ -193,7 +196,7 @@ class ClickhouseDirectLoadSqlGenerator(
                    _airbyte_raw_id,
                    _airbyte_extracted_at,
                    _airbyte_generation_id
-                 FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
+                 FROM `${config.resolvedDatabase}`.${sourceTableName.toPrettyString(QUOTE)}
                ), numbered_rows AS (
                  SELECT *, row_number() OVER (
                    PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
@@ -207,6 +210,8 @@ class ClickhouseDirectLoadSqlGenerator(
     }
 
     companion object {
+        const val QUOTE: String = "`"
+
         fun toDialectType(type: AirbyteType): ClickHouseDataType =
             when (type) {
                 BooleanType -> ClickHouseDataType.Bool

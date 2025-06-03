@@ -77,7 +77,7 @@ abstract class BaseDirectLoadSqlGenerator<DestinationDataType: Enum<DestinationD
             )
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql =
         Sql.transactionally(listOf(
-            "DROP TABLE IF EXISTS `${targetTableName.namespace}`.`${targetTableName.name}",
-            "ALTER TABLE `${sourceTableName.namespace}`.`${sourceTableName.name}` RENAME TO `${targetTableName.namespace}${targetTableName.name}`",
+            "DROP TABLE IF EXISTS `${targetTableName.name}",
+            "ALTER TABLE `${sourceTableName.name}` RENAME TO `${targetTableName.name}`",
         ))
 }
