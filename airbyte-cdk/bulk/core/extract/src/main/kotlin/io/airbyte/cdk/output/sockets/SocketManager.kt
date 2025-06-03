@@ -3,15 +3,20 @@ package io.airbyte.cdk.output.sockets
 import io.airbyte.cdk.command.Configuration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 
+const val DATA_CHANNEL_PROPERTY_PREFIX = "airbyte.connector.data-channel"
+const val MEDIUM_PROPERTY = "$DATA_CHANNEL_PROPERTY_PREFIX.medium"
+//const val SOCKET_PATHS_PROPERTY = "${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths"
+
 @Singleton
-@Requires(bean = SourceConfiguration::class, beanProperty = "boostedMode", value = "true")
-class SocketManager(private val socketPaths: List<String>, socketFactory: SocketWrapperFactory) {
-    @Inject constructor(socketFactory: SocketWrapperFactory, config: SourceConfiguration) :
-        this(List(config.numSockets) { config.socketFilePathBase.replace("#", "$it") }, socketFactory) // TEMP: read paths from env var
+@Requires(property = MEDIUM_PROPERTY, value = "SOCKET")
+class SocketManager(
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}") socketPaths: List<String>,
+    socketFactory: SocketWrapperFactory,) {
 
     val sockets: List<SocketWrapper>
     init {

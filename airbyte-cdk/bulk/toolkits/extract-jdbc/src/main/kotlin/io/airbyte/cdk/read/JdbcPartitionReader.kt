@@ -51,9 +51,10 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val resourceTypes = when (sharedState.configuration.boostedMode) {
-            true -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
-            false -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+        val resourceTypes = when (boostedOutputConsumerFactory) {
+            null -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+            else -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
+
         }
         val acquiredResources: Map<ResourceType, AcquiredResources> =
             partition.tryAcquireResourcesForReader(resourceTypes)
@@ -68,11 +69,11 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
     fun initStreamRecordConsumer() : StreamRecordConsumer =
         streamState.streamFeedBootstrap.streamRecordConsumer(
-        when (sharedState.configuration.boostedMode) {
-            false -> {
+        when (boostedOutputConsumerFactory) {
+            null -> {
                 null
             }
-            true -> {
+            else -> {
                 val acquireSocketResource: AcquiredResources? =
                     acquiredResources.get().getOrElse(ResourceType.RESOURCE_OUTPUT_SOCKET) {
                         throw IllegalStateException("No socket resource acquired for partition reader")

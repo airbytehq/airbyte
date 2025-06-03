@@ -66,6 +66,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+connectorIPCOptions:
+  dataChannel:
+    version: "1.0.0"
+    supportedSerialization: ["JSONL"]
+    supportedTransport: ["SOCKET","STDIO"]
   releases:
     breakingChanges:
       3.0.0:

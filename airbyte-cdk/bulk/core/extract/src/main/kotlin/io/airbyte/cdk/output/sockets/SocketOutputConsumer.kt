@@ -22,10 +22,10 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.outputStream
 
 @Factory
-@Requires(bean = SourceConfiguration::class, beanProperty = "boostedMode", value = "true")
+@Requires(property = MEDIUM_PROPERTY, value = "SOCKET")
 class BoostedOutputConsumerFactory(
     val clock: Clock,
-    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
+    @Value("\${${CONNECTOR_OUTPUT_PREFIX}.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
 ) {
 
