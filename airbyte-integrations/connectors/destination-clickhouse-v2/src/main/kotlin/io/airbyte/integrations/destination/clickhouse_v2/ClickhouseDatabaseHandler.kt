@@ -14,7 +14,7 @@ private val log = KotlinLogging.logger {}
 
 @Singleton
 class ClickhouseDatabaseHandler(private val clickhouseClient: Client,
-    private val client: ClickhouseAirbyteClient
+    client: ClickhouseAirbyteClient
     ): BaseDatabaseHandler<ClickHouseDataType>(client) {
     override fun execute(sql: Sql) {
         val statement =
