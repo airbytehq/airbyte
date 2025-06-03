@@ -68,7 +68,7 @@ object LIMITS {
 
 class BigQueryCSVRowGenerator {
     fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
-        val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
 
         enrichedRecord.declaredFields.values.forEach { value ->
             if (value.abValue is NullValue) {
