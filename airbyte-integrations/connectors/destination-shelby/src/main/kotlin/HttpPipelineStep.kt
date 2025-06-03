@@ -20,7 +20,6 @@ import io.airbyte.cdk.load.pipeline.IntermediateOutput
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
-import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,7 +27,6 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.QuoteMode
@@ -39,8 +37,9 @@ class FlattenQueueAdapter<K : WithStream, T>(
     override val partitions = queue.partitions
 
     override fun consume(partition: Int): Flow<PipelineEvent<K, HttpStepOutput<T>>> {
-        KotlinLogging.logger {  }.error { "consume $partition??" }
-        return flowOf()
+        throw IllegalStateException(
+            "Trying to consume from the adapter instead of the underlying queue"
+        )
     }
 
     override suspend fun close() {
@@ -97,15 +96,11 @@ class FlattenQueueAdapter<K : WithStream, T>(
 }
 
 class NoopPartitioner : OutputPartitioner<StreamKey, DestinationRecordRaw,
-    ObjectKey, HttpStepOutput<DestinationRecordRaw>> {
-    override fun getOutputKey(inputKey: StreamKey, output: HttpStepOutput<DestinationRecordRaw>): ObjectKey {
-        return ObjectKey(
-            stream = inputKey.stream,
-            objectKey = "yo",
-            )
-    }
+    StreamKey, HttpStepOutput<DestinationRecordRaw>> {
+    override fun getOutputKey(inputKey: StreamKey, output: HttpStepOutput<DestinationRecordRaw>):
+        StreamKey = StreamKey(stream = inputKey.stream)
 
-    override fun getPart(outputKey: ObjectKey, inputPart: Int, numParts: Int): Int {
+    override fun getPart(outputKey: StreamKey, inputPart: Int, numParts: Int): Int {
         return inputPart
     }
 }
@@ -117,7 +112,7 @@ data class HttpStepOutput<T>(
 
 class HttpPipelineStep(
     override val numWorkers: Int,
-    private val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, DestinationRecordRaw>>,
+    private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
 ) : LoadPipelineStep {
     override fun taskForPartition(partition: Int): Task {
@@ -125,8 +120,6 @@ class HttpPipelineStep(
             batchAccumulator = HttpAccumulator(),
             outputPartitioner = NoopPartitioner(),
             outputQueue = FlattenQueueAdapter(outputQueue),
-//            outputQueue = null,
-//            outputPartitioner = null,
             part = partition,
             numWorkers = numWorkers,
         )
@@ -178,9 +171,8 @@ BatchAccumulator<
         state.printer.flush()
         if (state.outputStream.size() > 100) {
             sendData(state)
-//            // TODO check if upload was succesful
-//            return NoOutput(HttpRequestState.new())
-//            return FinalOutput(HttpStepOutput(BatchState.PERSISTED))
+//            // TODO check if upload was successful
+//            return FinalOutput(HttpStepOutput(BatchState.COMPLETE))
             return IntermediateOutput(HttpRequestState.new(), HttpStepOutput(BatchState.LOADED, state.records))
         } else {
             return NoOutput(state)
@@ -195,6 +187,7 @@ BatchAccumulator<
     override suspend fun finish(state: HttpRequestState): FinalOutput<HttpRequestState, HttpStepOutput<DestinationRecordRaw>> {
         KotlinLogging.logger {  }.error { "Finish" }
         sendData(state)
+        // TODO check if upload was successful
         return FinalOutput(HttpStepOutput(BatchState.COMPLETE))
     }
 }
