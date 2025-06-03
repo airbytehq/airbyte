@@ -28,7 +28,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
     SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
-    SearchAnalyticsByDevice,
     SearchAnalyticsByPage,
     SearchAnalyticsByQuery,
     SearchAnalyticsKeywordPageReport,
@@ -154,7 +153,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
 
         streams.extend(
             [
-                SearchAnalyticsByDevice(**stream_config),
                 SearchAnalyticsByDate(**stream_config),
                 SearchAnalyticsByQuery(**stream_config),
                 SearchAnalyticsByPage(**stream_config),
