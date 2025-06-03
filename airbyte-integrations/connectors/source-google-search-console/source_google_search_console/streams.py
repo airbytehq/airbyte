@@ -294,12 +294,6 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
             yield record
 
 
-class SearchAnalyticsByDate(SearchAnalytics):
-    primary_key = ["site_url", "date", "search_type"]
-    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
-    dimensions = ["date"]
-
-
 class SearchAnalyticsByPage(SearchAnalytics):
     primary_key = ["site_url", "date", "page", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
