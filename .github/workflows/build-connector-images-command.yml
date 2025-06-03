@@ -26,7 +26,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - */ci/*-build-connector-images*
+      - "*/ci/*-build-connector-images*"
 
 jobs:
   init-workflow:
