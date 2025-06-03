@@ -1478,6 +1478,7 @@ streams:
   - $ref: "#/definitions/campaigns_stream"
   - $ref: "#/definitions/account_performance_report_daily_stream"
   - $ref: "#/definitions/account_performance_report_weekly_stream"
+  - $ref: "#/definitions/account_performance_report_monthly_stream"
   - $ref: "#/definitions/ad_performance_report_hourly_stream"
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
