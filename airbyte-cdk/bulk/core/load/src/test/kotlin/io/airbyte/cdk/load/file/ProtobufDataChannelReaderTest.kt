@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.file
 
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.mockk.every
@@ -48,5 +49,19 @@ class ProtobufDataChannelReaderTest {
         verifySequence {
             (0 until 10).forEach { factory.fromAirbyteProtobufMessage(getMessage(it), any()) }
         }
+    }
+
+    @Test
+    fun `empty heartbeat payload writes correctly`() {
+        val reader = ProtobufDataChannelReader(factory)
+        val outputStream = ByteArrayOutputStream()
+        AirbyteMessageProtobuf.newBuilder()
+            .setProbe(AirbyteProbeMessageProtobuf.newBuilder().build())
+            .build()
+            .writeDelimitedTo(outputStream)
+        outputStream.flush()
+        val bytes = outputStream.toByteArray()
+        val inputStream = bytes.inputStream()
+        reader.read(inputStream).toList().also { Assertions.assertEquals(1, it.size) }
     }
 }
