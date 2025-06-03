@@ -177,7 +177,16 @@ class PipelineEventBookkeepingRouter(
                         val totalCounts = streamWithKeyAndCount.sumOf { (_, count) -> count }
                         Pair(singleKey, totalCounts)
                     } else {
-                        Pair(checkpoint.checkpointKey!!, checkpoint.sourceStats?.recordCount ?: 0L)
+                        val sourceCounts =
+                            checkpoint.sourceStats?.recordCount
+                                ?: throw IllegalStateException(
+                                    "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
+                                )
+                        syncManager.setGlobalReadCountForCheckpoint(
+                            checkpoint.checkpointKey!!.checkpointId,
+                            CheckpointValue(sourceCounts)
+                        )
+                        Pair(checkpoint.checkpointKey!!, sourceCounts)
                     }
 
                 val messageWithCount =
@@ -201,7 +210,16 @@ class PipelineEventBookkeepingRouter(
             val (_, countSinceLast) = manager.markCheckpoint()
             Pair(key, countSinceLast)
         } else {
-            Pair(checkpoint.checkpointKey!!, checkpoint.sourceStats?.recordCount ?: 0L)
+            val sourceCounts =
+                checkpoint.sourceStats?.recordCount
+                    ?: throw IllegalStateException(
+                        "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
+                    )
+            manager.setReadCountForCheckpointFromState(
+                checkpoint.checkpointKey!!.checkpointId,
+                CheckpointValue(sourceCounts)
+            )
+            Pair(checkpoint.checkpointKey!!, sourceCounts)
         }
     }
 

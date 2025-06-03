@@ -2,6 +2,7 @@ data:
   ab_internal:
     ql: 300
     sl: 300
+    requireVersionIncrementsInPullRequests: false
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
