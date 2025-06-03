@@ -65,8 +65,8 @@ Send a POST request to /v1/regions/.
 ```bash
 curl --request POST \
   --url https://example.com/api/public/v1/regions \
-  --header 'authorization: Bearer $TOKEN' \
-  --header 'content-type: application/json' \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   --data '{
   "name": "aws-us-east-1",
   "organizationId": "00000000-0000-0000-0000-000000000000"
@@ -115,10 +115,10 @@ Send a POST request to /v1/dataplanes.
 
 ```bash
 curl -X POST https://example.com/api/public/v1/dataplanes \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
-    "name": "My Data Plane"
+    "name": "My Data Plane",
     "regionId": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319"
   }'
 ```
@@ -167,8 +167,8 @@ Send a POST request to /v1/workspaces/
 
 ```bash
 curl -X POST "https://example.com/api/public/v1/workspaces" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
     "name": "My New Workspace",
     "dataResidency": "auto"
@@ -212,8 +212,8 @@ Send a PATCH request to /v1/workspaces/`{workspaceId}`
 
 ```bash
 curl -X PATCH "https://example.com/api/public/v1/workspaces/{workspaceId}" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
     "name": "Updated Workspace Name",
     "dataResidency": "us-west"
