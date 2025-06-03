@@ -35,7 +35,7 @@ fun interface DatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatu
 }
 
 abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatus>(
-    private val airbyteClient: AirbyteClient,
+    private val airbyteClient: AirbyteClient<*>,
     private val tableDatabase: String,
     private val internalTableDataset: String)
     : DatabaseInitialStatusGatherer<InitialStatus> {
@@ -53,7 +53,7 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
     }
 
     private fun getTableStatus(tableName: TableName): DirectLoadTableStatus {
-        return if (airbyteClient.getNumberOfRecordsInTable(tableDatabase, tableName.name) == 0L) {
+        return if (airbyteClient.getNumberOfRecordsInTable(tableName.name) == 0L) {
             DirectLoadTableStatus(isEmpty = true)
         } else {
             DirectLoadTableStatus(isEmpty = false)
