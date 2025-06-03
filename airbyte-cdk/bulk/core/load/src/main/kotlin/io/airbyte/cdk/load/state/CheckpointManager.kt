@@ -174,37 +174,26 @@ class CheckpointManager<T>(
 
                 var totalRecords: Long = 0
                 var totalBytes: Long = 0
-                if (
-                    head.value.checkpointMessage is Reserved<*> &&
-                        (head.value.checkpointMessage as Reserved<*>).value is CheckpointMessage
-                ) {
-                    if (
-                        ((head.value.checkpointMessage as Reserved<CheckpointMessage>))
-                            .value
-                            .checkpointKey != null
-                    ) {
-                        catalog.streams.map { stream ->
-                            val totalRecordsForStream: Long
-                            val totalBytesForStream: Long
-                            val count =
-                                syncManager
-                                    .getStreamManager(stream.descriptor)
-                                    .committedCount(head.key.checkpointId)
-                            if (committedCount.containsKey(stream.descriptor)) {
-                                val get = committedCount[stream.descriptor]!!
-                                totalRecordsForStream = count.records + get.records
-                                totalBytesForStream = count.serializedBytes + get.serializedBytes
-                                committedCount[stream.descriptor] =
-                                    CheckpointValue(totalRecordsForStream, totalBytesForStream)
-                            } else {
-                                totalRecordsForStream = count.records
-                                totalBytesForStream = count.serializedBytes
-                                committedCount[stream.descriptor] = count
-                            }
-                            totalRecords += totalRecordsForStream
-                            totalBytes += totalBytesForStream
-                        }
+                catalog.streams.map { stream ->
+                    val totalRecordsForStream: Long
+                    val totalBytesForStream: Long
+                    val count =
+                        syncManager
+                            .getStreamManager(stream.descriptor)
+                            .committedCount(head.key.checkpointId)
+                    if (committedCount.containsKey(stream.descriptor)) {
+                        val get = committedCount[stream.descriptor]!!
+                        totalRecordsForStream = count.records + get.records
+                        totalBytesForStream = count.serializedBytes + get.serializedBytes
+                        committedCount[stream.descriptor] =
+                            CheckpointValue(totalRecordsForStream, totalBytesForStream)
+                    } else {
+                        totalRecordsForStream = count.records
+                        totalBytesForStream = count.serializedBytes
+                        committedCount[stream.descriptor] = count
                     }
+                    totalRecords += totalRecordsForStream
+                    totalBytes += totalBytesForStream
                 }
 
                 sendStateMessage(
