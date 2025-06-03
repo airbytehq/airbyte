@@ -7,7 +7,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - '*/ci/*-build-connector-images*'
+      - '**/ci/**'
 
   workflow_dispatch:
     inputs:
