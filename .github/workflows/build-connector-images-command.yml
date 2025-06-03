@@ -1,4 +1,4 @@
-name: Airbyte CI for Connector Contributions
+name: Connector Image Builds
 # This workflow is used to run connector image builds.
 # It can be triggered manually via slash command or workflow dispatch.
 
