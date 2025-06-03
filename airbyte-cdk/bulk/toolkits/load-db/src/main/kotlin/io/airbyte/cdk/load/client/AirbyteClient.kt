@@ -1,7 +1,6 @@
 package io.airbyte.cdk.load.client
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.log
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -16,7 +15,7 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
      * @return The number of records in the specified table.
      */
     // TODO: missing namespace
-    abstract fun getNumberOfRecordsInTable(table: String): Long?
+    abstract fun getNumberOfRecordsInTable(table: String): Long
 
     /**
      * Executes a query against the database.
@@ -28,32 +27,6 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
 
     protected abstract fun getDatabaseName(): String
 
-    open fun copyTable(columnNameMapping: ColumnNameMapping,
-                       sourceTableName: TableName,
-                       targetTableName: TableName): Sql {
-        val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
-        return Sql.of(
-            // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
-            """
-            INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
-            (
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            )
-            SELECT
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent()
-        )
-    }
-
     open fun getCreateTableStatement(stream: DestinationStream,
                                                    tableName: TableName,
                                                    columnNameMapping: ColumnNameMapping,
@@ -64,8 +37,6 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
 //        TODO: Add namespace to table name properly — CH doesn't like periods
 //        val finalTableId = tableName.toPrettyString(QUOTE)
         val finalTableId = tableName.name
-
-        log.error { "Creating table: $finalTableId" }
 
         return return Sql.of(
             """
