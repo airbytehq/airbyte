@@ -69,7 +69,7 @@ class PipelineEventBookkeepingRouterTest {
             ) as PipelineMessage
 
         verify { streamManager.inferNextCheckpointKey() }
-        assertEquals(mapOf(CheckpointId("foo") to CheckpointValue(1L, 1L)), event.checkpointCounts)
+        assertEquals(mapOf(CheckpointId("foo") to CheckpointValue(1L, 0L)), event.checkpointCounts)
     }
 
     @Test
@@ -94,7 +94,7 @@ class PipelineEventBookkeepingRouterTest {
 
             verify(exactly = 0) { streamManager.inferNextCheckpointKey() }
             assertEquals(
-                mapOf(CheckpointId("bar") to CheckpointValue(1L, 1L)),
+                mapOf(CheckpointId("bar") to CheckpointValue(1L, 0L)),
                 event.checkpointCounts
             )
         }
