@@ -30,7 +30,7 @@ class MockDestinationWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        Thread.sleep(5000)
+        Thread.sleep(1000)
         throw RuntimeException("lol, lmao")
     }
 }
