@@ -25,9 +25,11 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun clickhouseDirectLoadSqlTableOperations(
+        clickhouseClient: Client,
         sqlGenerator: ClickhouseDirectLoadSqlGenerator,
         destinationHandler: ClickhouseDatabaseHandler,
     ): DirectLoadTableSqlOperations = ClickhouseDirectLoadSqlTableOperations(
+        clickhouseClient,
         sqlGenerator,
         destinationHandler,
     )

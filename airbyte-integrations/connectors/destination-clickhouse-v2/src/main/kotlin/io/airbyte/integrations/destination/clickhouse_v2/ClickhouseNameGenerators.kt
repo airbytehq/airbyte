@@ -9,7 +9,6 @@ import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigur
 import jakarta.inject.Singleton
 import java.util.Locale
 
-// Unused but needed by another bean
 @Singleton
 class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration): RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
@@ -19,16 +18,16 @@ class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration): Raw
         )
 }
 
-@Singleton
-class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfiguration) : FinalTableNameGenerator {
+@javax.inject.Singleton
+class ClickhouseFinalTableNameGenerator(val config: ClickhouseConfiguration) : FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
-            namespace = streamDescriptor.namespace ?: config.resolvedDatabase,
-            name = streamDescriptor.name,
+            config.resolvedDatabase,
+            streamDescriptor.name,
         )
 }
 
-@Singleton
+@javax.inject.Singleton
 class ClickhouseColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
