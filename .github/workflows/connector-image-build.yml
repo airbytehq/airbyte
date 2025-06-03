@@ -65,8 +65,8 @@ jobs:
           echo "connector-root=$CONNECTOR_ROOT" | tee -a $GITHUB_OUTPUT
           cd $CONNECTOR_ROOT
           # Read connector language and base image:
-          echo "connector-language=$(poe get-language)" | tee -a $GITHUB_OUTPUT
-          echo "connector-base-image=$(poe get-base-image)" | tee -a $GITHUB_OUTPUT
+          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
+          echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
 
       # Java deps
       - uses: actions/setup-java@v4
