@@ -42,40 +42,7 @@ class ClickhouseDirectLoadSqlGenerator(
     private val config: ClickhouseConfiguration,
     client: ClickhouseAirbyteClient,
 ) : BaseDirectLoadSqlGenerator<ClickHouseDataType>(client) {
-    // TODO: implement this.
-    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
-        throw NotImplementedError(
-            "This method is implemented using a native bigquery API call in BigqueryDirectLoadSqlTableOperations"
-        )
-    }
-
-    override fun copyTable(
-        columnNameMapping: ColumnNameMapping,
-        sourceTableName: TableName,
-        targetTableName: TableName
-    ): Sql {
-        val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
-        return Sql.of(
-            // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
-            """
-            INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
-            (
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            )
-            SELECT
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent()
-        )
-    }
+    // TODO: Namespace
 
     override fun upsertTable(
         stream: DestinationStream,

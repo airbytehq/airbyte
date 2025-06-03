@@ -60,12 +60,24 @@ abstract class BaseDirectLoadSqlGenerator<DestinationDataType: Enum<DestinationD
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
-    ): Sql {
-        return airbyteClient.getCreateTableStatement(
+    ): Sql = airbyteClient.getCreateTableStatement(
             stream,
             tableName,
             columnNameMapping,
-            replace
+            replace,
         )
-    }
+
+    override fun copyTable(columnNameMapping: ColumnNameMapping,
+                           sourceTableName: TableName,
+                           targetTableName: TableName): Sql =
+        airbyteClient.copyTable(
+            columnNameMapping,
+            sourceTableName,
+            targetTableName,
+            )
+    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql =
+        Sql.transactionally(listOf(
+            "DROP TABLE IF EXISTS `${targetTableName.name}",
+            "ALTER TABLE `${sourceTableName.name}` RENAME TO `${targetTableName.name}`",
+        ))
 }
