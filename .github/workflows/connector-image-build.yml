@@ -24,7 +24,7 @@ on:
       connector:
         type: string
         required: true
-        description: "The name of the connector to build and test."
+        description: "The name of the connector to build and test. If empty, this is a no-op."
 
 permissions:
   contents: read
@@ -36,6 +36,7 @@ permissions:
 jobs:
   build-connector-image:
     runs-on: ubuntu-24.04
+    if: inputs.connector
     environment:
       name: ghcr.io/airbytehq
       url: https://ghcr.io/airbytehq/${{ inputs.connector }}
