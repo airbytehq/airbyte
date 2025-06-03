@@ -425,12 +425,12 @@ class EntitySchemaNormalization(TypeTransformer):
 
         try:
             return ab_datetime_parse(datetime_str)
-        except (ValueError, TypeError) as ex:
+        except (ValueError, TypeError, OverflowError) as ex:
             logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
 
         try:
             return ab_datetime_parse(int(datetime_str) // 1000)
-        except (ValueError, TypeError) as ex:
+        except (ValueError, TypeError, OverflowError) as ex:
             logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
 
         return None
