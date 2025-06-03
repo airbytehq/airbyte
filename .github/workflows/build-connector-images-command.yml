@@ -25,8 +25,8 @@ on:
   push:
 
 jobs:
-  post-start-comment:
-    name: "Post Start Comment"
+  init-workflow:
+    name: "Initialize Workflow"
     runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
@@ -36,6 +36,13 @@ jobs:
         # current repository, not the one with the commit being tested.
         run: |
           echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "image-name=ghcr.io/airbytehq/${{ inputs.repo || github.repository }}:${{ inputs.gitref || github.ref_name }}" >> $GITHUB_OUTPUT
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: |
+          # Get the list of modified connectors
+          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
       - name: Append start comment
         uses: peter-evans/create-or-update-comment@v4
@@ -47,42 +54,36 @@ jobs:
           body: |
             > **Connector Image Build Started**
             >
+            > - This workflow will build the connector image and run basic tests.
+            > - The connector image(s) will be pushed to the GitHub Container Registry.
+            >
             > [Check job output.](${{ steps.job-vars.outputs.run-url }})
 
-  call-connector-ci-tests:
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+
+  call-connector-ci-build:
     # Run always for 'workflow_dispatch' events.
     # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
-    name: "Call Connector CI Tests"
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'push' &&
-        github.repository != 'airbytehq/airbyte' &&
-        vars.GCP_PROJECT_ID != ''
-      )
-    uses: ./.github/workflows/connector-ci-checks.yml
+    name: "Call Connector CI Build"
+    uses: ./.github/workflows/connector-image-build.yml
+    needs: [init-workflow]
+    strategy:
+      matrix: ${{ fromJson(needs.init-workflow.outputs.connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
     with:
       repo: "${{ inputs.repo || github.repository }}"
       gitref: "${{ inputs.gitref || github.ref_name }}"
       comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
       pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
+      connector: ${{ matrix.connector }}
     secrets: inherit
 
   post-end-comment:
     name: "Post Completion Comment"
-    needs: call-connector-ci-tests
+    needs: call-connector-ci-build
     runs-on: ubuntu-24.04
-    if: >
-      always() &&
-      inputs.comment-id &&
-      (
-        github.event_name == 'workflow_dispatch' ||
-        (
-          github.event_name == 'push' &&
-          github.repository != 'airbytehq/airbyte' &&
-          vars.GCP_PROJECT_ID != ''
-        )
-      )
     steps:
       - name: Append end comment
         uses: peter-evans/create-or-update-comment@v4
@@ -90,4 +91,4 @@ jobs:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
           body: |
-            > Connector CI Tests job completed. See logs for details.
+            > Connector Image Builds job completed. See logs for details.
