@@ -14,9 +14,16 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
+import jakarta.annotation.Nullable
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.delay
+
+private const val STATS_FREQ_QUALIFIER = "statsEmissionFrequencyOverride"
+private const val DEFAULT_DELAY_MS = 60_000L
 
 @Singleton
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
@@ -24,42 +31,55 @@ class StatsEmitter(
     private val syncManager: SyncManager,
     private val catalog: DestinationCatalog,
     private val outputConsumer: DummyStatsMessageConsumer,
+    @Nullable @Named(STATS_FREQ_QUALIFIER) private val emissionFrequencyMillis: Long? = null
 ) : Task {
+    private val freq: Long = emissionFrequencyMillis ?: DEFAULT_DELAY_MS
 
     companion object {
         private const val DEST_EMITTED_RECORDS_COUNT = "emittedRecordsCount"
         private const val DEST_EMITTED_BYTES_COUNT = "emittedBytesCount"
         private val EMPTY_JSON = Jsons.emptyObject()
-        private val EMISSION_FREQUENCY_IN_MILLIS = java.time.Duration.ofMinutes(1).toMillis()
     }
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
         while (true) {
-            catalog.streams.forEach {
-                val manager = syncManager.getStreamManager(it.descriptor)
+            catalog.streams.forEach { stream ->
+                val manager = syncManager.getStreamManager(stream.descriptor)
+
+                if (manager.receivedStreamComplete()) return@forEach
+
                 val recordsRead = manager.readCount()
                 val bytesRead = manager.byteCount()
 
                 // TODO: Think about namespace mapping
-                val dummyMessage =
+                val statsMessage =
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
                             AirbyteRecordMessage()
-                                .withNamespace(it.descriptor.namespace)
-                                .withStream(it.descriptor.name)
+                                .withNamespace(stream.descriptor.namespace)
+                                .withStream(stream.descriptor.name)
                                 .withData(EMPTY_JSON)
                                 .withAdditionalProperty(DEST_EMITTED_RECORDS_COUNT, recordsRead)
                                 .withAdditionalProperty(DEST_EMITTED_BYTES_COUNT, bytesRead),
                         )
 
-                outputConsumer.invoke(dummyMessage)
-                delay(EMISSION_FREQUENCY_IN_MILLIS)
+                outputConsumer.invoke(statsMessage)
             }
+            delay(freq)
         }
     }
+}
+
+@Factory
+class FrequencyFactory {
+    @Singleton
+    @Named(STATS_FREQ_QUALIFIER)
+    fun statsEmissionFrequency(
+        @Value("\${airbyte.stats.emission-frequency-ms:$DEFAULT_DELAY_MS}") millis: Long
+    ): Long = millis
 }
 
 @SuppressFBWarnings(
