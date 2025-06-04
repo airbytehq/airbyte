@@ -323,6 +323,10 @@ module.exports = {
         },
         {
           type: "doc",
+          id: "using-airbyte/sync-files-and-records",
+        },
+        {
+          type: "doc",
           id: "using-airbyte/delivery-methods",
         },
         {
