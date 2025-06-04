@@ -711,6 +711,46 @@ definitions:
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
+  labels_stream:
+    type: DeclarativeStream
+    name: labels
+    primary_key: Id
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/labels.json"
+    retriever:
+      $ref: "#/definitions/basic_bulk_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_bulk_async_retriever/creation_requester"
+        request_body_json:
+          AccountIds: "['{{ stream_partition['account_id'] }}']"
+          DataScope: EntityData
+          DownloadEntities: ["Labels"]
+          DownloadFileType: Csv
+          FormatVersion: "'6.0'"
+          # Typically, you request a full download the first time you call the operation by setting this element to null.
+          # If you set a date and time that is more than 30 days ago, an error will be returned.
+          # ref: https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest#request-body
+          LastSyncTimeInUTC: >-
+            {%- set _start_date = stream_interval.get('start_time') -%}
+            {%- set min_available_date = format_datetime(now_utc() - duration('P30D'), '%Y-%m-%d') -%}
+            {{ str_to_datetime(_start_date).isoformat('T', 'milliseconds') if _start_date and format_datetime(_start_date, '%Y-%m-%d') >= min_available_date else "" }}
+          CompressionType: GZip
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - "Account Id"
+            value: "{{ stream_partition['account_id'] }}"
+      - type: CustomTransformation
+        class_name: source_bing_ads.components.BulkDatetimeToRFC3339
+      - type: RemoveFields
+        field_pointers:
+          - ["Type"]
+    incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -764,6 +804,71 @@ definitions:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
       path: Reporting/v13/GenerateReport/Submit
+      http_method: POST
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      authenticator: "#/definitions/authenticator"
+  basic_bulk_async_retriever:
+    type: AsyncRetriever
+    partition_router:
+      $ref: "#/definitions/account_substream_partition_router"
+    status_mapping:
+      failed:
+        - Failed
+        - FailedFullSyncRequired
+      running:
+        - InProgress
+      completed:
+        - Completed
+      timeout: []
+    download_target_extractor:
+      type: DpathExtractor
+      field_path:
+        - ResultFileUrl
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record['Type'] not in ['Format Version', 'Account']}}"
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - RequestStatus
+    polling_requester:
+      # https://learn.microsoft.com/en-ie/advertising/bulk-service/getbulkdownloadstatus?view=bingads-13&tabs=prod&pivots=rest
+      type: HttpRequester
+      url_base: https://bulk.api.bingads.microsoft.com/
+      path: Bulk/v13/BulkDownloadStatus/Query
+      http_method: POST
+      authenticator: "#/definitions/authenticator"
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      request_body_json:
+        RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
+    download_requester:
+      type: HttpRequester
+      url_base: "{{download_target}}"
+      http_method: GET
+    download_decoder:
+      type: GzipDecoder
+      decoder:
+        type: CsvDecoder
+        encoding: "utf-8-sig"
+        set_empty_cell_to_none: true
+    creation_requester:
+      # https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest
+      type: HttpRequester
+      url_base: https://bulk.api.bingads.microsoft.com/
+      path: Bulk/v13/Campaigns/DownloadByAccountIds
       http_method: POST
       request_headers:
         Content-Type: application/json
@@ -827,6 +932,18 @@ definitions:
       # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S+00:00') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+  incremental_bulk_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: "Modified Time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%_ms%z"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      # falling back 1 year as anyway we will leave empty LastSyncTimeInUTC for dates > 30 Days
+      datetime: '{{ config["reports_start_date"] if config.get("reports_start_date") else format_datetime(now_utc() - duration("P1Y"), "%Y-%m-%d") }}'
+      datetime_format: "%Y-%m-%d"
   transformations:
     # not used in hourly stream
     ad_performance_report_transformations:
@@ -1039,6 +1156,7 @@ streams:
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
   - $ref: "#/definitions/ad_performance_report_monthly_stream"
+  - $ref: "#/definitions/labels_stream"
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
