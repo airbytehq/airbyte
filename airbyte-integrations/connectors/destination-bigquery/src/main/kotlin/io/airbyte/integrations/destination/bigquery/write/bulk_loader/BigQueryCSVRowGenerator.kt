@@ -37,7 +37,7 @@ import java.math.BigInteger
 import java.time.format.DateTimeFormatter
 
 object LIMITS {
-    // Maximum value for BIGINT in SQL Server
+    // Maximum value for BIGINT in BigQuery
     private val MAX_BIGINT = BigInteger("9223372036854775807")
     private val MIN_BIGINT = BigInteger("-9223372036854775808")
 
