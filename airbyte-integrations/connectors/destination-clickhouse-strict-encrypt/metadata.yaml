@@ -1,4 +1,6 @@
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   registryOverrides:
     cloud:
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.

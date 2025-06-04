@@ -1,4 +1,6 @@
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: api
   connectorType: destination
   definitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
