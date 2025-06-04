@@ -199,8 +199,9 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 2.0.1 | 2025-06-04 | [61369](https://github.com/airbytehq/airbyte/pull/61369) | Do not pin on 1.5.17 |
 | 2.0.0 | 2025-05-27 | [60252](https://github.com/airbytehq/airbyte/pull/60252) | Add support for multiple databases |
-| 1.5.19  | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311) | Migrate to new Gradle flow                                                                                |
+| 1.5.19 | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311) | Migrate to new Gradle flow |
 | 1.5.18 | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
 | 1.5.17 | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery |
 | 1.5.16 | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973) | Update logging configuration. |
