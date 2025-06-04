@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations
 
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import kotlinx.coroutines.coroutineScope
@@ -23,9 +24,9 @@ interface DirectLoadTableTempTableNameMigration {
 }
 
 class DefaultDirectLoadTableTempTableNameMigration(
-    private val internalNamespace: String,
     private val tableExistenceChecker: DirectLoadTableExistenceChecker,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DirectLoadTableTempTableNameMigration {
     override suspend fun execute(names: TableCatalog) {
         val oldTempNameToNewTempName =
@@ -33,8 +34,7 @@ class DefaultDirectLoadTableTempTableNameMigration(
                 .map { (_, tableNameInfo) ->
                     val realTableName = tableNameInfo.tableNames.finalTableName!!
                     val oldTempTableName = realTableName.asOldStyleTempTable()
-                    val newTempTableName =
-                        realTableName.asTempTable(internalNamespace = internalNamespace)
+                    val newTempTableName = tempTableNameGenerator.generate(realTableName)
                     oldTempTableName to newTempTableName
                 }
                 .toMap()
@@ -44,8 +44,7 @@ class DefaultDirectLoadTableTempTableNameMigration(
             for (oldTempTableName in existingOldTempTables) {
                 launch {
                     val realTableName = oldTempNameToNewTempName[oldTempTableName]!!
-                    val tempTableName =
-                        realTableName.asTempTable(internalNamespace = internalNamespace)
+                    val tempTableName = tempTableNameGenerator.generate(realTableName)
                     sqlTableOperations.overwriteTable(oldTempTableName, tempTableName)
                 }
             }

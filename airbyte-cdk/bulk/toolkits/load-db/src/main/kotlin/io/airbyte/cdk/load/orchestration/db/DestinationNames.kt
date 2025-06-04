@@ -38,29 +38,38 @@ data class TableName(val namespace: String, val name: String) {
     fun toPrettyString(quote: String = "", suffix: String = "") =
         "$quote$namespace$quote.$quote$name$suffix$quote"
 
-    /**
-     * better handling for temp table names - e.g. postgres has a 64-char table name limit, so we
-     * want to avoid running into that
-     *
-     * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
-     * [asOldStyleTempTable] instead
-     */
-    fun asTempTable(internalNamespace: String, length: Int = 32) =
+    fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
+}
+
+fun interface TempTableNameGenerator {
+    fun generate(originalName: TableName): TableName
+}
+
+/**
+ * better handling for temp table names - e.g. postgres has a 64-char table name limit, so we want
+ * to avoid running into that
+ *
+ * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
+ * [TableName.asOldStyleTempTable] instead
+ */
+class DefaultTempTableNameGenerator(
+    private val internalNamespace: String,
+    private val length: Int = 32
+) : TempTableNameGenerator {
+    override fun generate(originalName: TableName) =
         TableName(
             name =
                 // sha256 might start with a digit, so prefix with a letter
                 ("a" +
                         DigestUtils.sha256Hex(
                             TypingDedupingUtil.concatenateRawTableName(
-                                namespace,
-                                name + TMP_TABLE_SUFFIX
+                                originalName.namespace,
+                                originalName.name + TMP_TABLE_SUFFIX
                             )
                         ))
                     .substring(length),
             namespace = internalNamespace,
         )
-
-    fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
 }
 
 /**

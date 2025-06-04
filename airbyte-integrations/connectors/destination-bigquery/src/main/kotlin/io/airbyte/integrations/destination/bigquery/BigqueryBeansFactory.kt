@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.BigQueryOptions
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
@@ -116,13 +117,16 @@ class BigqueryBeansFactory {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
+            val tempTableNameGenerator =
+                DefaultTempTableNameGenerator(internalNamespace = config.internalTableDataset)
+
             return DirectLoadTableWriter(
                 internalNamespace = config.internalTableDataset,
                 names = names,
                 stateGatherer =
                     BigqueryDirectLoadDatabaseInitialStatusGatherer(
                         bigquery,
-                        internalTableDataset = config.internalTableDataset,
+                        tempTableNameGenerator
                     ),
                 destinationHandler = destinationHandler,
                 nativeTableOperations =
@@ -132,15 +136,17 @@ class BigqueryBeansFactory {
                         destinationHandler,
                         projectId = config.projectId,
                         internalTableDataset = config.internalTableDataset,
+                        tempTableNameGenerator,
                     ),
                 sqlTableOperations = sqlTableOperations,
                 streamStateStore = streamStateStore,
                 directLoadTableTempTableNameMigration =
                     DefaultDirectLoadTableTempTableNameMigration(
-                        internalNamespace = config.internalTableDataset,
                         BigqueryDirectLoadTableExistenceChecker(bigquery),
                         sqlTableOperations,
+                        tempTableNameGenerator,
                     ),
+                tempTableNameGenerator,
             )
         }
     }
