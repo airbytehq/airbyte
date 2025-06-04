@@ -21,7 +21,7 @@ class ProtobufDataChannelReader(private val destinationMessageFactory: Destinati
         val countingInputStream = CountingInputStream(inputStream)
         var count = countingInputStream.count
         while (true) {
-            val protoMessage = parser.parseDelimitedFrom(inputStream) ?: break
+            val protoMessage = parser.parseDelimitedFrom(countingInputStream) ?: break
             val newCount = countingInputStream.count
             val serializedSizeBytes = newCount - count
             count = newCount

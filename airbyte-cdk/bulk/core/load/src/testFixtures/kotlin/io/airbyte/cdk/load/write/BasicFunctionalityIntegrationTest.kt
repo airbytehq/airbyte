@@ -341,7 +341,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = 234L
+                            totalBytes = expectedBytesForMediumAndFormat(234L, 253L, 59L)
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -462,6 +462,9 @@ abstract class BasicFunctionalityIntegrationTest(
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
+                        // Files doesn't need these, but they get added anyway
+                        totalRecords = 1,
+                        totalBytes = 267L
                     )
                     .asProtocolMessage(),
                 stateMessages.first()
@@ -3344,6 +3347,23 @@ abstract class BasicFunctionalityIntegrationTest(
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> null
             DataChannelMedium.SOCKET -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
+        }
+    }
+
+    /** Jsonl is bigger for sockets than stdio because there are extra fields. */
+    private fun expectedBytesForMediumAndFormat(
+        bytesForStdio: Long,
+        bytesForSocketJsonl: Long,
+        bytesForSocketProtobuf: Long
+    ): Long {
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> bytesForStdio
+            DataChannelMedium.SOCKET ->
+                when (dataChannelFormat) {
+                    DataChannelFormat.JSONL -> bytesForSocketJsonl
+                    DataChannelFormat.PROTOBUF -> bytesForSocketProtobuf
+                    DataChannelFormat.FLATBUFFERS -> TODO()
+                }
         }
     }
 }
