@@ -186,6 +186,30 @@ jobs:
     needs: [jvm-connectors-test-matrix]
     runs-on: ubuntu-24.04
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      # Post completion status to the PR.
+      # This is required because otherwise slash commands won't automatically
+      # update the PR checks status.
+      - name: Create Check Status
+        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: ${{ job.name }}
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
+          sha: ${{ inputs.gitref }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}
+
       - name: Report Test Summary
         run: echo "✅ All JVM connector tests completed successfully (or nothing to test)."
 
@@ -291,6 +315,30 @@ jobs:
     needs: [non-jvm-connectors-test-matrix]
     runs-on: ubuntu-24.04
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      # Post completion status to the PR.
+      # This is required because otherwise slash commands won't automatically
+      # update the PR checks status.
+      - name: Create Check Status
+        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: ${{ job.name }}
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
+          sha: ${{ inputs.gitref }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}
+
       - name: Report Test Summary
         run: echo "✅ All non-JVM connector tests completed successfully (or nothing to test)."
 
