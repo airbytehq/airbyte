@@ -183,16 +183,18 @@ class DataChannelBeanFactory {
     fun dataChannelReader(
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
         destinationMessageFactory: DestinationMessageFactory,
-        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        //@Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ) =
         when (dataChannelFormat) {
+            // TEMP: TODO: DO NOT MERGE: Force JSONL for testing
+            DataChannelFormat.PROTOBUF,
             DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
-            DataChannelFormat.PROTOBUF -> {
-                check(dataChannelMedium == DataChannelMedium.SOCKET) {
-                    "PROTOBUF data channel format is only supported for SOCKETS medium."
-                }
-                ProtobufDataChannelReader(destinationMessageFactory)
-            }
+//            DataChannelFormat.PROTOBUF -> {
+//                check(dataChannelMedium == DataChannelMedium.SOCKET) {
+//                    "PROTOBUF data channel format is only supported for SOCKETS medium."
+//                }
+//                ProtobufDataChannelReader(destinationMessageFactory)
+//            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported data channel format: $dataChannelFormat"
