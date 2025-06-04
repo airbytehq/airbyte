@@ -67,7 +67,7 @@ jobs:
           # Read connector language and base image:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
-          PR_NUMBER=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}
+          PR_NUMBER=${{ inputs.pr || github.event.pull_request.number }}
           IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}"
           echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
           echo "image-pr-num-tag=${IMAGE_PR_NUM_TAG}" | tee -a $GITHUB_OUTPUT
