@@ -15,7 +15,6 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
      * @param table The name of the table.
      * @return The number of records in the specified table.
      */
-    // TODO: missing namespace
     abstract fun getNumberOfRecordsInTable(tableName: TableName): Long?
 
     /**
