@@ -22,7 +22,7 @@ If you are still unsure where to retrieve these values, please [watch this video
 
 
 ### .Env
-Once you have the credentials, create a new `.env` file, based on `.env.example` container within the repo. Set the following keys to the values from above:
+Once you have the credentials, create a new `.env` file, based on `.env.example` container within the [sample app repo](https://github.com/airbytehq/embedded-sampleweb-nodejs). You will also need this .env file in the next step, when configuring the web app. Go ahead and set the following keys in the .env to the values you obtained above:
 
 <pre>
 AIRBYTE_ORGANIZATION_ID=your_organization_id
@@ -33,7 +33,7 @@ AIRBYTE_CLIENT_SECRET=your_client_secret
 ### Configure S3 for storing users
 Users created via Embedded will be stored in S3 buckets managed by you. Once you have the `.env` created with Airbyte credentials, go ahead and create an [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html) and add the following values to the `.env`:
 
-`
+
 # AWS Credentials
 <pre>
 AWS_ACCESS_KEY=your_aws_access_key
@@ -47,7 +47,7 @@ S3_BUCKET_PREFIX=your_s3_bucket_prefix
 
 Next, configure Airbyte to use the S3 bucket. Create a new shell script, <pre>setup.sh</pre> with the following code. From the command line, execute the following script to create the required connection. You can also retrieve the code from [this repo](https://github.com/airbytehq/embedded-sampleweb-nodejs/blob/main/setup.sh).
 
-`
+```
 #!/bin/bash
 
 # Enable debug mode to show commands as they execute
@@ -143,10 +143,12 @@ echo "=== Setup Complete ==="
 # Disable debug mode
 set +x
 
-`
-<pre>
+```
+
+Run the script from the command line:
+```
 $ ./setup.sh
-</pre>
+```
 
 Once you see confirmation that the connection was set up correctly, your Airbyte Embedded environment is ready to go!
 
