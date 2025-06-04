@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -68,7 +69,7 @@ class PipelineEventBookkeepingRouterTest {
             ) as PipelineMessage
 
         verify { streamManager.inferNextCheckpointKey() }
-        assertEquals(mapOf(CheckpointId("foo") to 1L), event.checkpointCounts)
+        assertEquals(mapOf(CheckpointId("foo") to CheckpointValue(1L, 0L)), event.checkpointCounts)
     }
 
     @Test
@@ -86,7 +87,10 @@ class PipelineEventBookkeepingRouterTest {
                 ) as PipelineMessage
 
             verify(exactly = 0) { streamManager.inferNextCheckpointKey() }
-            assertEquals(mapOf(CheckpointId("bar") to 1L), event.checkpointCounts)
+            assertEquals(
+                mapOf(CheckpointId("bar") to CheckpointValue(1L, 0L)),
+                event.checkpointCounts
+            )
         }
 
     @Test

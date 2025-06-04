@@ -98,12 +98,13 @@ class PipelineEventBookkeepingRouter(
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
+                manager.incrementByteCount(record.serializedSizeBytes)
                 // Fallback to the manager if the record doesn't have a checkpointId
                 // This should only happen in STDIO mode.
                 val checkpointId =
                     record.checkpointId ?: manager.inferNextCheckpointKey().checkpointId
                 PipelineMessage(
-                    mapOf(checkpointId to 1),
+                    mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.descriptor),
                     record,
                     postProcessingCallback
@@ -184,7 +185,7 @@ class PipelineEventBookkeepingRouter(
                                 )
                         syncManager.setGlobalReadCountForCheckpoint(
                             checkpoint.checkpointKey!!.checkpointId,
-                            CheckpointValue(sourceCounts)
+                            sourceCounts
                         )
                         Pair(checkpoint.checkpointKey!!, sourceCounts)
                     }
@@ -217,7 +218,7 @@ class PipelineEventBookkeepingRouter(
                     )
             manager.setReadCountForCheckpointFromState(
                 checkpoint.checkpointKey!!.checkpointId,
-                CheckpointValue(sourceCounts)
+                sourceCounts
             )
             Pair(checkpoint.checkpointKey!!, sourceCounts)
         }
