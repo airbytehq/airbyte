@@ -76,6 +76,5 @@ class ClickhouseDirectLoader(
     }
 
     // this is always called on complete
-    override fun close() {
-    }
+    override fun close() {}
 }
