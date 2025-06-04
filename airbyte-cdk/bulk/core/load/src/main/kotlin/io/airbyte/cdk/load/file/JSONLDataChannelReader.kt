@@ -23,7 +23,7 @@ class JSONLDataChannelReader(private val destinationMessageFactory: DestinationM
             .map {
                 val serializedSize = parser.currentLocation().byteOffset - bytesRead
                 bytesRead += serializedSize
-                destinationMessageFactory.fromAirbyteMessage(it, serializedSize)
+                destinationMessageFactory.fromAirbyteProtocolMessage(it, serializedSize)
             }
     }
 }
