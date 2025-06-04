@@ -61,7 +61,7 @@ class ClickhouseDirectLoader(
             log.error { "Beginning insert of $recordCount rows into ${descriptor.name}" }
 
             val insertResult = clickhouseClient.insert(
-                descriptor.name,
+                "`${descriptor.namespace}`.`${descriptor.name}`",
                 jsonBytes,
                 ClickHouseFormat.JSONEachRow
             ).await()
