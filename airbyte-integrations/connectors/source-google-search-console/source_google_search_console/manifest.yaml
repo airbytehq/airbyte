@@ -208,7 +208,7 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
         request_headers:
@@ -277,10 +277,20 @@ definitions:
           startDate: "{{ stream_interval.get('start_time') }}"
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters.get('dimensions') }}"
-          type: "{{ stream_partition.get('search_type') }}"
+          type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
           aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
           dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 400
+              error_message: >-
+                Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
+                'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -355,7 +365,7 @@ definitions:
             value: "{{ stream_partition['site_url'] }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -379,7 +389,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/search_analytics_keyword_site_report_by_page"
+        $ref: "#/schemas/search_analytics_keyword_page_report"
     $parameters:
       aggregationType: auto
       dimensions:
@@ -407,7 +417,7 @@ definitions:
             value: "{{ stream_partition['site_url'] }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -455,7 +465,7 @@ definitions:
             value: "{{ stream_partition['site_url'] }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -476,7 +486,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/search_analytics_keyword_site_report_by_page"
+        $ref: "#/schemas/search_analytics_keyword_site_report_by_site"
     $parameters:
       aggregationType: byProperty
       dimensions:
