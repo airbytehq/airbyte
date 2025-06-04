@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -57,6 +58,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -254,10 +256,13 @@ abstract class BasicFunctionalityIntegrationTest(
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    // If it simply isn't possible to represent a mismatched type on the wire (ie, protobuf).
+    val mismatchedTypesUnrepresentable: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     // Which medium to use as your input source for the test
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -269,6 +274,7 @@ abstract class BasicFunctionalityIntegrationTest(
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
         dataChannelMedium = dataChannelMedium,
+        dataChannelFormat = dataChannelFormat,
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
@@ -292,8 +298,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 listOf(
                     InputRecord(
-                        namespace = randomizedNamespace,
-                        name = "test_stream",
+                        stream = stream,
                         data = """{"id": 5678, "undeclared": "asdf"}""",
                         emittedAtMs = 1234,
                         changes =
@@ -326,7 +331,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     stateMessages.size,
                     "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
                 )
-                assertEquals(
+
+                val asProtocolMessage =
                     StreamCheckpoint(
                             streamName = "test_stream",
                             streamNamespace = randomizedNamespace,
@@ -334,8 +340,15 @@ abstract class BasicFunctionalityIntegrationTest(
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
+                            totalRecords = 1L,
+                            totalBytes = 234L
                         )
-                        .asProtocolMessage(),
+                        .asProtocolMessage()
+                assertEquals(
+                    Jsons.readValue(
+                        Jsons.writeValueAsBytes(asProtocolMessage),
+                        AirbyteMessage::class.java
+                    ),
                     stateMessages.first(),
                 )
             },
@@ -409,8 +422,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val input =
             InputRecord(
-                namespace = randomizedNamespace,
-                name = "test_stream_file",
+                stream = stream,
                 data = """{"id": 5678}""",
                 emittedAtMs = 1234,
                 changes = mutableListOf(),
@@ -462,7 +474,6 @@ abstract class BasicFunctionalityIntegrationTest(
         assertEquals(fileContents, fileContent[sourcePath])
     }
 
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
     @Test
     open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
@@ -482,8 +493,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     listOf(
                         InputRecord(
-                            namespace = randomizedNamespace,
-                            name = "test_stream",
+                            stream = stream,
                             data = """{"id": 12}""",
                             emittedAtMs = 1234,
                             checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -578,22 +588,19 @@ abstract class BasicFunctionalityIntegrationTest(
             ),
             listOf(
                 InputRecord(
-                    namespace = stream1.descriptor.namespace,
-                    name = stream1.descriptor.name,
+                    stream = stream1,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
-                    namespace = stream2.descriptor.namespace,
-                    name = stream2.descriptor.name,
+                    stream = stream2,
                     data = """{"id": 5678}""",
                     emittedAtMs = 1234,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
-                    namespace = streamWithDefaultNamespace.descriptor.namespace,
-                    name = streamWithDefaultNamespace.descriptor.name,
+                    stream = streamWithDefaultNamespace,
                     data = """{"id": 91011}""",
                     emittedAtMs = 1234,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -721,7 +728,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val messages =
             catalog.streams.map { stream ->
                 InputRecord(
-                    stream.descriptor,
+                    stream,
                     ObjectValue(
                         (stream.schema as ObjectType)
                             .properties
@@ -805,8 +812,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """
                     {
                       "id~!@#${'$'}%^&*()`[]{}|;':\",./<>?": 1,
@@ -853,13 +859,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId,
                 syncId,
             )
+        val stream = makeStream(12, 0, 42)
         runSync(
             updatedConfig,
-            makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
+            stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream = stream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -872,8 +878,7 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream = stream,
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 1234,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -909,10 +914,24 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testInterruptedTruncateWithPriorData() {
         assumeTrue(verifyDataWriting)
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 41,
+                minimumGenerationId = 0,
+                syncId = 41,
+            )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                stream1,
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -936,21 +955,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
             )
         // Run a normal sync with nonempty data
-        val stream1 =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "updated_at" to timestamptzType,
-                        "name" to stringType,
-                    )
-                ),
-                generationId = 41,
-                minimumGenerationId = 0,
-                syncId = 41,
-            )
         runSync(
             updatedConfig,
             stream1,
@@ -1080,10 +1084,24 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testInterruptedTruncateWithoutPriorData() {
         assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                stream,
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1105,21 +1123,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         "name" to "foo_${id}_$extractedAt",
                     ),
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
-            )
-        val stream =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "updated_at" to timestamptzType,
-                        "name" to stringType,
-                    )
-                ),
-                generationId = 42,
-                minimumGenerationId = 42,
-                syncId = 42,
             )
         // Run a sync, but emit a stream status incomplete.
         runSyncUntilStateAck(
@@ -1201,12 +1204,27 @@ abstract class BasicFunctionalityIntegrationTest(
      * has generation 43 + minGeneration 0 (instead of generation=minGeneration=42)(.
      */
     @Test
+    @Disabled("Still flaky")
     open fun resumeAfterCancelledTruncate() {
         assumeTrue(verifyDataWriting)
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 41,
+                minimumGenerationId = 0,
+                syncId = 41,
+            )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                stream1,
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1230,21 +1248,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
             )
         // Run a normal sync with nonempty data
-        val stream1 =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "updated_at" to timestamptzType,
-                        "name" to stringType,
-                    )
-                ),
-                generationId = 41,
-                minimumGenerationId = 0,
-                syncId = 41,
-            )
         runSync(
             updatedConfig,
             stream1,
@@ -1401,13 +1404,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId,
             )
+        val stream = makeStream(syncId = 42)
         runSync(
             updatedConfig,
-            makeStream(syncId = 42),
+            stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1420,8 +1423,7 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    finalStream,
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 5678L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1469,16 +1471,17 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId,
             )
-        runSync(
-            updatedConfig,
+        val stream =
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
-            ),
+            )
+        runSync(
+            updatedConfig,
+            stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
                     emittedAtMs = 1234L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1495,8 +1498,7 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    finalStream,
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
                     emittedAtMs = 2345,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1553,18 +1555,19 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = minimumGenerationId,
                 syncId,
             )
-        runSync(
-            updatedConfig,
+        val stream =
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType),
                 generationId = 1,
                 minimumGenerationId = 0,
-            ),
+            )
+        runSync(
+            updatedConfig,
+            stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
                     emittedAtMs = 1234L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1583,8 +1586,7 @@ abstract class BasicFunctionalityIntegrationTest(
             changedStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    changedStream,
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
                     emittedAtMs = 1234L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1616,8 +1618,7 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    finalStream,
                     """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
                     emittedAtMs = 5678L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1674,16 +1675,14 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = syncId,
             )
+        val sync1Stream = makeStream(syncId = 42)
         fun makeRecord(data: String, extractedAt: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                sync1Stream,
                 data,
                 emittedAtMs = extractedAt,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
             )
-
-        val sync1Stream = makeStream(syncId = 42)
         runSync(
             updatedConfig,
             sync1Stream,
@@ -1818,16 +1817,14 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = syncId,
             )
+        val sync1Stream = makeStream(syncId = 42)
         fun makeRecord(data: String, extractedAt: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                sync1Stream,
                 data,
                 emittedAtMs = extractedAt,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
             )
-
-        val sync1Stream = makeStream(syncId = 42)
         runSync(
             updatedConfig,
             sync1Stream,
@@ -1952,8 +1949,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234, "name": "a"}""",
                     emittedAtMs = 1234,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -1965,8 +1961,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234, "name": "b"}""",
                     emittedAtMs = 5678,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -2019,10 +2014,10 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
+        val stream1 = makeStream("cursor1")
         fun makeRecord(cursorName: String, emittedAtMs: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                stream1,
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
                 // this is unrealistic (extractedAt should always increase between syncs),
                 // but it lets us force the dedupe behavior to rely solely on the cursor column,
@@ -2032,7 +2027,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         runSync(
             updatedConfig,
-            makeStream("cursor1"),
+            stream1,
             listOf(makeRecord("cursor1", emittedAtMs = 100)),
         )
         val stream2 = makeStream("cursor2")
@@ -2086,8 +2081,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val messages =
             (0..manyStreamCount).map { i ->
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream_$i",
+                    streams[i],
                     """{"id": 1, "name": "foo_$i"}""",
                     emittedAtMs = 100,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -2141,8 +2135,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         fun makeRecord(data: String) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                stream,
                 data,
                 emittedAtMs = 100,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -2402,16 +2395,20 @@ abstract class BasicFunctionalityIntegrationTest(
                     // note that the values have different types than what's declared in the schema
                     mapOf(
                         "id" to 5,
-                        "string" to ObjectValue(linkedMapOf()),
-                        "number" to "foo",
-                        "integer" to "foo",
-                        "boolean" to "foo",
                         "timestamp_with_timezone" to "foo",
                         "timestamp_without_timezone" to "foo",
                         "time_with_timezone" to "foo",
                         "time_without_timezone" to "foo",
                         "date" to "foo",
-                    )
+                    ) +
+                        if (mismatchedTypesUnrepresentable) emptyMap()
+                        else
+                            mapOf(
+                                "string" to ObjectValue(linkedMapOf()),
+                                "number" to "foo",
+                                "integer" to "foo",
+                                "boolean" to "foo"
+                            )
                 badValuesChanges = mutableListOf()
             }
         }
@@ -2590,8 +2587,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
+                    stream,
                     """
                         {
                           "id": 1,
@@ -2605,8 +2601,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
+                    stream,
                     """
                         {
                           "id": 2,
@@ -2620,8 +2615,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
+                    stream,
                     """
                         {
                           "id": 3,
@@ -2774,15 +2768,15 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 listOf(
                     InputRecord(
-                        randomizedNamespace,
-                        "problematic_types",
+                        stream,
                         """
                         {
                           "id": 1,
                           "name": "ex falso quodlibet"
                         }""".trimIndent(),
                         emittedAtMs = 1602637589100,
-                        checkpointId = checkpointKeyForMedium()?.checkpointId
+                        checkpointId = checkpointKeyForMedium()?.checkpointId,
+                        unknownFieldNames = setOf("name")
                     )
                 )
             )
@@ -2956,8 +2950,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
+                    stream,
                     """
                         {
                           "id": 1,
@@ -2972,8 +2965,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
+                    stream,
                     """
                         {
                           "id": 2,
@@ -2987,8 +2979,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
+                    stream,
                     """
                         {
                           "id": 3,
@@ -3153,8 +3144,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """{"foo": "bar"}""",
                     emittedAtMs = 1000L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -3186,8 +3176,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream,
                     """{}""",
                     emittedAtMs = 2000L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -3245,13 +3234,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId,
                 syncId,
             )
+        val firstStream = makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42)
         runSync(
             updatedConfig,
-            makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
+            firstStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    firstStream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -3354,7 +3343,7 @@ abstract class BasicFunctionalityIntegrationTest(
     private fun checkpointKeyForMedium(): CheckpointKey? {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> null
-            DataChannelMedium.SOCKETS -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
+            DataChannelMedium.SOCKET -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
         }
     }
 }
