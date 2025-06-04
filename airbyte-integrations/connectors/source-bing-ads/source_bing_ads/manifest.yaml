@@ -352,54 +352,7 @@ definitions:
           $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path:
-              - PhoneImpressions
-            value: |
-              {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - PhoneCalls
-            value: |
-              {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Ptr
-            value: |
-              {% set v = record.get('Ptr') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicks
-            value: |
-              {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicksPercent
-            value: |
-              {% set v = record.get('LowQualityClicksPercent') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityImpressions
-            value: |
-              {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualitySophisticatedClicks
-            value: |
-              {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversions
-            value: |
-              {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversionRate
-            value: |
-              {% set v = record.get('LowQualityConversionRate') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
 
   account_performance_report_daily_stream:
     type: DeclarativeStream
@@ -495,54 +448,8 @@ definitions:
           $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path:
-              - PhoneImpressions
-            value: |
-              {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - PhoneCalls
-            value: |
-              {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Ptr
-            value: |
-              {% set v = record.get('Ptr') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicks
-            value: |
-              {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicksPercent
-            value: |
-              {% set v = record.get('LowQualityClicksPercent') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityImpressions
-            value: |
-              {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualitySophisticatedClicks
-            value: |
-              {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversions
-            value: |
-              {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversionRate
-            value: |
-              {% set v = record.get('LowQualityConversionRate') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+
   account_performance_report_weekly_stream:
     type: DeclarativeStream
     name: account_performance_report_weekly
@@ -638,54 +545,8 @@ definitions:
           $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path:
-              - PhoneImpressions
-            value: |
-              {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - PhoneCalls
-            value: |
-              {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Ptr
-            value: |
-              {% set v = record.get('Ptr') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicks
-            value: |
-              {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicksPercent
-            value: |
-              {% set v = record.get('LowQualityClicksPercent') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityImpressions
-            value: |
-              {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualitySophisticatedClicks
-            value: |
-              {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversions
-            value: |
-              {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversionRate
-            value: |
-              {% set v = record.get('LowQualityConversionRate') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+
   account_performance_report_monthly_stream:
     type: DeclarativeStream
     name: account_performance_report_monthly
@@ -781,54 +642,7 @@ definitions:
           $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path:
-              - PhoneImpressions
-            value: |
-              {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - PhoneCalls
-            value: |
-              {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - Ptr
-            value: |
-              {% set v = record.get('Ptr') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicks
-            value: |
-              {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityClicksPercent
-            value: |
-              {% set v = record.get('LowQualityClicksPercent') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityImpressions
-            value: |
-              {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualitySophisticatedClicks
-            value: |
-              {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversions
-            value: |
-              {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
-          - type: AddedFieldDefinition
-            path:
-              - LowQualityConversionRate
-            value: |
-              {% set v = record.get('LowQualityConversionRate') %}
-              {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
 
   ## Ad Performance Reports
   ad_performance_report_hourly_stream:
@@ -1535,6 +1349,57 @@ definitions:
         value: |
           {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
 
+    # used in all account performance report streams
+    account_performance_report_common_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - PhoneImpressions
+        value: |
+          {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - PhoneCalls
+        value: |
+          {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - Ptr
+        value: |
+          {% set v = record.get('Ptr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicks
+        value: |
+          {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicksPercent
+        value: |
+          {% set v = record.get('LowQualityClicksPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityImpressions
+        value: |
+          {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualitySophisticatedClicks
+        value: |
+          {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversions
+        value: |
+          {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversionRate
+        value: |
+          {% set v = record.get('LowQualityConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
     # used in all ad performance report streams
     ad_performance_report_common_transformations:
       - type: AddedFieldDefinition
@@ -1624,7 +1489,7 @@ definitions:
         value: |
           {{ record['AdDescription2'] if record.get('AdDescription2') else none }}
 
-    # used in ad performance report streams (except hourly
+    # used in ad performance report streams (except hourly)
     ad_performance_report_transformations:
       - type: AddedFieldDefinition
         path:
