@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.StatsEmitter
 import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
@@ -78,6 +79,7 @@ class DestinationTaskLauncher(
     private val inputConsumerTask: InputConsumerTask? = null,
     private val heartbeatTask: HeartbeatTask? = null,
     private val updateBatchTask: UpdateBatchStateTaskFactory,
+    private val statsEmitter: StatsEmitter? = null,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
@@ -175,6 +177,11 @@ class DestinationTaskLauncher(
         launch(updateBatchTask.make(this))
         heartbeatTask?.let {
             log.info { "Launching heartbeat task" }
+            launch(it)
+        }
+
+        statsEmitter?.let {
+            log.info { "Launching Stats emtiter task" }
             launch(it)
         }
 
