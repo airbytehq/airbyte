@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.51.0.post4.dev15422454178"
+version = "6.51.0.post6.dev15454977850"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.51.0.post4.dev15422454178-py3-none-any.whl", hash = "sha256:afaaf1906ae54c3f3a1acf60c60671973aee20e4a0107f60cea2e19daa35838b"},
-    {file = "airbyte_cdk-6.51.0.post4.dev15422454178.tar.gz", hash = "sha256:7193707208b5972a2eddb3db4b4517a1de157151d02c22c665f04518e9e86c04"},
+    {file = "airbyte_cdk-6.51.0.post6.dev15454977850-py3-none-any.whl", hash = "sha256:522e2ff059a2b4f2ad8ec690909719cc91e4497723d3ee9af37a4c97d5d0dda4"},
+    {file = "airbyte_cdk-6.51.0.post6.dev15454977850.tar.gz", hash = "sha256:409aae3cfd1c06aacc9c490b9c749e3652326cd169ab4313807493b20969586b"},
 ]
 
 [package.dependencies]
@@ -858,13 +858,13 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "joblib"
-version = "1.5.0"
+version = "1.5.1"
 description = "Lightweight pipelining with Python functions"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "joblib-1.5.0-py3-none-any.whl", hash = "sha256:206144b320246485b712fc8cc51f017de58225fa8b414a1fe1764a7231aca491"},
-    {file = "joblib-1.5.0.tar.gz", hash = "sha256:d8757f955389a3dd7a23152e43bc297c2e0c2d3060056dad0feefc88a06939b5"},
+    {file = "joblib-1.5.1-py3-none-any.whl", hash = "sha256:4719a31f054c7d766948dcd83e9613686b27114f190f717cec7eaa2084f8a74a"},
+    {file = "joblib-1.5.1.tar.gz", hash = "sha256:f4f86e351f39fe3d0d32a9f2c3d8af1ee4cec285aafcb27003dda5205576b444"},
 ]
 
 [[package]]
@@ -2518,4 +2518,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "4ea912c4402a114a3824b154afdd123feb309f0d53073bdeffe3192a3f61646a"
+content-hash = "37131bbd8cac90dd579bcfbaefad56f00eb86589c0a8686f20bcf8999014c57b"
