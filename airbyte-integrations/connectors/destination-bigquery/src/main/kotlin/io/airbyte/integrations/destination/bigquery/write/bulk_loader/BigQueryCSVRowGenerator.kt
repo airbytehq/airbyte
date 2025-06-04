@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITHOUT_TIMEZONE_FORMATTER
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITH_TIMEZONE_FORMATTER
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
@@ -37,23 +38,12 @@ import java.math.BigInteger
 import java.time.format.DateTimeFormatter
 
 object LIMITS {
-    // Maximum value for BIGINT in BigQuery
-    private val MAX_BIGINT = BigInteger("9223372036854775807")
-    private val MIN_BIGINT = BigInteger("-9223372036854775808")
-
-    // see MssqlType. We currently use precision=38, scale=9.
-    private val NUMERIC_SCALE = BigDecimal("1e9")
-    private val MAX_NUMERIC: BigDecimal =
-        BigDecimal("1e38").minus(BigDecimal.ONE).divide(NUMERIC_SCALE)
-    private val MIN_NUMERIC: BigDecimal =
-        BigDecimal("-1e38").plus(BigDecimal.ONE).divide(NUMERIC_SCALE)
-
     val TRUE = IntegerValue(1)
     val FALSE = IntegerValue(0)
 
     fun validateNumber(value: EnrichedAirbyteValue): BigDecimal? {
         val numValue = (value.abValue as NumberValue).value
-        return if (numValue < MIN_NUMERIC || MAX_NUMERIC < numValue) {
+        return if (numValue < BigQueryRecordFormatter.MIN_NUMERIC || BigQueryRecordFormatter.MAX_NUMERIC < numValue) {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
         } else {
@@ -63,7 +53,7 @@ object LIMITS {
 
     fun validateInteger(value: EnrichedAirbyteValue): BigInteger? {
         val intValue = (value.abValue as IntegerValue).value
-        return if (intValue < MIN_BIGINT || MAX_BIGINT < intValue) {
+        return if (intValue < BigQueryRecordFormatter.INT64_MIN_VALUE || BigQueryRecordFormatter.INT64_MAX_VALUE < intValue) {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
         } else {
