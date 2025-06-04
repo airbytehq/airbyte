@@ -405,7 +405,7 @@ class CheckSection(CheckDocumentationContent):
                 return [f"Documentation does not have {self.header} section."]
             return []
 
-        errors = []
+        errors: List[str] = []
 
         expected = TemplateContent(connector.name_from_metadata).section(self.header)[self.expected_section_index]  # type: ignore
         actual_contents = documentation.section(self.header)
