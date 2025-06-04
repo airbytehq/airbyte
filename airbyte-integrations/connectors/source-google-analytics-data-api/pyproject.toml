@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.8.0"
+version = "2.8.0-rc.1"
 name = "source-google-analytics-data-api"
 description = "Source implementation for Google Analytics Data Api."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_google_analytics_data_api"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = { version = "6.52.0.dev1", allow-prereleases = true }
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-google-analytics-data-api = "source_google_analytics_data_api.run:run"
