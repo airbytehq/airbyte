@@ -66,10 +66,4 @@ class KeyValueExtractor(RecordExtractor):
         keys = list(self.keys_extractor.extract_records(response))
         values = self.values_extractor.extract_records(response)
 
-        has_more_chunks = True
-        while has_more_chunks:
-            chunk = list(islice(values, len(keys)))
-            if len(chunk) == 0:
-                has_more_chunks = False
-            else:
-                yield dict(zip(keys, chunk))
+        yield dict(zip(keys, values))

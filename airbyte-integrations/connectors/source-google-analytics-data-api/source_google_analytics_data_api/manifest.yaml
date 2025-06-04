@@ -9,14 +9,14 @@ check:
 
 definitions:
   streams:
-    google_analytics_stream:
+    google_analytics_stream_template:
       type: DeclarativeStream
-      name: google_analytics_stream
+      name: google_analytics_stream_template
       retriever:
         type: SimpleRetriever
-        requester:
+        requester:   # the dynamic stream will override request_body_json
           $ref: "#/definitions/base_requester"
-          path: PLACEHOLDER
+          path: PLACEHOLDER  # the dynamic stream will override this value
           http_method: POST
         record_selector:
           type: RecordSelector
@@ -58,7 +58,7 @@ definitions:
                     - value
           transform_before_filtering: true
           schema_normalization: Default
-        paginator:
+        paginator:  # the dynamic stream will override this value
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
@@ -68,14 +68,14 @@ definitions:
             type: CursorPagination
             cursor_value: '{{ response.get("offset", {}) }}'
             stop_condition: '{{ not response.get("offset", {}) }}'
-      transformations: []
+      transformations: []  # the dynamic stream will override this value
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
           type: SimpleRetriever
           requester:
             $ref: "#/definitions/base_requester"
-            path: PLACEHOLDER
+            path: PLACEHOLDER  # the dynamic stream will override this value
             http_method: GET
           record_selector:
             type: RecordSelector
@@ -84,7 +84,7 @@ definitions:
               field_path: []
         schema_filter:
           type: RecordFilter
-          condition: PLACEHOLDER
+          condition: PLACEHOLDER  # the dynamic stream will override this value
         schema_transformations: []
         schema_type_identifier:
           type: SchemaTypeIdentifier
@@ -189,7 +189,7 @@ definitions:
 dynamic_streams:
   - type: DynamicDeclarativeStream
     stream_template:
-      $ref: "#/definitions/streams/google_analytics_stream"
+      $ref: "#/definitions/streams/google_analytics_stream_template"
     components_resolver:
       type: ConfigComponentsResolver
       stream_config:
@@ -856,6 +856,8 @@ dynamic_streams:
           configs_pointer:
             - property_ids
       components_mapping:
+        # This mapping configures the base request body with dimensions, metrics, keepEmptyRows and quota settings,
+        # conditionally update params for pivots and cohort
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "request_body_json"]
           create_or_update: True
@@ -871,7 +873,7 @@ dynamic_streams:
               {% else %}
               limit: 250000
               {% endif %}
-              {% if not (cohort and cohort.get("enabled") in [True, "true", "True"]) %}
+              {% if not (cohort and cohort.get("enabled")) %}
               dateRanges: []
               {% else %}
               cohortSpec: {
@@ -880,6 +882,7 @@ dynamic_streams:
                 {% endfor %}
               }
               {% endif %}
+        # This mapping update pagination conditionally as pivots are not support pagination
         - type: ComponentMappingDefinition
           field_path: ["retriever", "paginator"]
           create_or_update: True
@@ -897,6 +900,10 @@ dynamic_streams:
                 cursor_value: "{% raw %}{{ response.get('offset', {}) }}{% endraw %}"
                 stop_condition: "{% raw %}{{ not response.get('offset', {}) }}{% endraw %}"
             {% endif %}
+        # This mapping defines the configuration path for the stream.
+        # Property sets are stored as a list under the `source_config_1` key,
+        # which is the second entry in the stream configs list.
+        # Access other entries with the pattern `source_config_<index>`.
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "path"]
           value: >
@@ -905,12 +912,18 @@ dynamic_streams:
             {% else %}
             "properties/{{ components_values['source_config_1'][1] }}:runReport"
             {% endif %}
+        # This mapping defines path for the schema loader and paste property_id for each stream
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "retriever", "requester", "path"]
           value: "properties/{{ components_values['source_config_1'][1] }}/metadata"
+        # NOTE: Yes, this is weird, but it exists solely for backward-compatibility.
+        # When the config contains multiple property IDs, it keeps the
+        # first stream as <report_name>, and names each additional stream
+        # <report_name>Property<property_id>.
         - type: ComponentMappingDefinition
           field_path: ["**", "name"]
           value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
+        # This mapping add transformation that add property_id and date slice value to record
         - type: ComponentMappingDefinition
           field_path: ["transformations"]
           create_or_update: True
@@ -923,7 +936,7 @@ dynamic_streams:
                     value_type: string
 
             {% set cohort = components_values.get("cohortSpec") %}
-            {% if not (cohort and cohort.get("enabled") in [True, "true", "True"]) %}
+            {% if not (cohort and cohort.get("enabled")) %}
               - type: AddFields
                 fields:
                   - path: [ "startDate" ]
@@ -933,12 +946,16 @@ dynamic_streams:
                   - path: [ "endDate" ]
                     value: "{% raw %}{{ stream_slice.end_time or format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}{% endraw %}"
             {% endif %}
+        # This mapping adds metrics to the request parameters, but first transforms
+        # them from a list of values into a list of dicts (e.g., {'name': <metric_name>})
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "request_body_json", "metrics"]
           value: >
             [{% for metric in components_values["metrics"] %}
                 {"name": "{{ metric }}"}{% if not loop.last %},{% endif %}
               {% endfor %}]
+        # This mapping adds dimensions to the request parameters, but first transforms
+        # them from a list of values into a list of dicts (e.g., {'name': <dimension_name>})
         - type: ComponentMappingDefinition
           field_path:
             ["retriever", "requester", "request_body_json", "dimensions"]
@@ -946,6 +963,8 @@ dynamic_streams:
             [{% for dimension in components_values["dimensions"] %}
                 {"name": "{{ dimension }}"}{% if not loop.last %},{% endif %}
               {% endfor %}]
+        # Since the Google Analytics API requires defining dateRanges for requests,
+        # we need to set up a single slice of query parameters here for full-refresh streams only
         - type: ComponentMappingDefinition
           field_path:
             ["retriever", "requester", "request_body_json", "dateRanges"]
@@ -967,6 +986,9 @@ dynamic_streams:
               - startDate: "{{ '{{ stream_slice.start_time }}' }}"
                 endDate: "{{ '{{ stream_slice.end_time }}' }}"
             {% endif %}
+        # This mapping adds the incremental_sync component for streams that support incremental loads.
+        # It is enabled if any of the following fields are present in the dimensions list:
+        # "date", "yearWeek", "yearMonth", or "year"
         - type: ComponentMappingDefinition
           field_path: ["incremental_sync"]
           create_or_update: True
@@ -982,7 +1004,7 @@ dynamic_streams:
               {% endif %}
             {% endfor %}
 
-            {% if ns.cursor and not (cohort and cohort.get("enabled") in [True, "true", "True"]) %}
+            {% if ns.cursor and not (cohort and cohort.get("enabled")) %}
               type: DatetimeBasedCursor
               cursor_field: {{ ns.cursor }}
               lookback_window: "P{{ config.get('lookback_window', 0) }}D"
@@ -1000,11 +1022,16 @@ dynamic_streams:
                 datetime: "{% raw %}{{ format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}{% endraw %}"
                 datetime_format: "%Y-%m-%d"
             {% endif %}
+        # This is a pretty tricky part where we have two levels of interpolation.
+        # First, we resolve components_values["metrics"] at the stream-template parsing level.
+        # Then, after creating the stream instance, we resolve and send information using the record,
+        # where the record represents the final schema field definition
+        # (e.g., {<field_name>: [None, <data_type>]} for schema filtering).
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "schema_filter", "condition"]
           value: >
             {{ '{{ record[0] in ' ~ (components_values["metrics"] | tojson) ~ ' }}' }}
-
+        # This adds a schema transformation to include a field that was added previously.
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "schema_transformations"]
           create_or_update: True
@@ -1020,7 +1047,7 @@ dynamic_streams:
                     - path: [ "property_id" ]
                       value: "{{ {'type': ['string']} }}"
             {% set cohort = components_values.get("cohortSpec") %}
-            {% if not (cohort and cohort.get("enabled") in [True, "true", "True"]) %}
+            {% if not (cohort and cohort.get("enabled")) %}
                 - type: AddFields
                   fields:
                     - path: [ "startDate" ]
