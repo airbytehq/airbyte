@@ -746,6 +746,11 @@ definitions:
             path:
               - "Account Id"
             value: "{{ stream_partition['account_id'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - Id
+            value: |
+              {{ record['Id'] | int if record.get('Id') else none }}
       - type: CustomTransformation
         class_name: source_bing_ads.components.BulkDatetimeToRFC3339
       - type: RemoveFields
