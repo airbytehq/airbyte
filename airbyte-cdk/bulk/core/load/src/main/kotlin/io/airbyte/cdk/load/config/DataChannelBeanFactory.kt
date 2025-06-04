@@ -125,6 +125,7 @@ class DataChannelBeanFactory {
         return dataChannelMedium == DataChannelMedium.SOCKET
     }
 
+    @Singleton
     @Named("logPerNRecords")
     fun logPerNRecords(
         @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")

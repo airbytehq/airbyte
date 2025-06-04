@@ -7,14 +7,21 @@ package io.airbyte.cdk.load.config
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.ReservationManager
+import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.reflect.jvm.internal.impl.util.Check
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
@@ -47,6 +54,20 @@ class SyncBeanFactory {
         }
         return ReservationManager(reservation.bytesReserved)
     }
+
+    @Singleton
+    fun checkpointManager(
+        catalog: DestinationCatalog,
+        syncManager: SyncManager,
+        outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
+        timeProvider: TimeProvider,
+    ): CheckpointManager<Reserved<CheckpointMessage>> =
+        CheckpointManager(
+            catalog,
+            syncManager,
+            outputConsumer,
+            timeProvider,
+        )
 
     /* ********************
      * ASYNCHRONOUS QUEUES

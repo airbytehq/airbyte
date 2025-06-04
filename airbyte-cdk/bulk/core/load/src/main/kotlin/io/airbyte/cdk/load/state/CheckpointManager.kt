@@ -65,7 +65,6 @@ data class CheckpointKey(
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-@Singleton
 class CheckpointManager<T>(
     val catalog: DestinationCatalog,
     val syncManager: SyncManager,
@@ -332,7 +331,7 @@ class CheckpointManager<T>(
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-class FreeingCheckpointConsumer(private val consumer: OutputConsumer) :
+class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
     suspend (Reserved<CheckpointMessage>) -> Unit {
     override suspend fun invoke(message: Reserved<CheckpointMessage>) {
         message.use {

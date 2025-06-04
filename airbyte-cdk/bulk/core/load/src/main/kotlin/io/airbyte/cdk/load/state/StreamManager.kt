@@ -307,6 +307,6 @@ class StreamManager(
     }
 
     fun readCountForCheckpoint(checkpointId: CheckpointId): Long? {
-        return recordsReadPerCheckpoint[checkpointId]?.records
+        return recordsReadPerCheckpoint[checkpointId]
     }
 }
