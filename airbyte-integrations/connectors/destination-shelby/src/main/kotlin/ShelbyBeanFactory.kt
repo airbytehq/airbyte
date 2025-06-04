@@ -35,7 +35,7 @@ class ShelbyBeanFactory {
     fun discover() = ShelbyDiscoverer()
 
     @Singleton
-    fun getConfig(config: DestinationConfiguration) = config as ShelbyConfiguration
+    fun getConfig(config: DestinationConfiguration) = config as ShelbyConfiguration<*>
 
     @Singleton
     fun objectLoader(): ObjectLoader = object : ObjectLoader {
