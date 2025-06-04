@@ -46,6 +46,7 @@ abstract class IcebergWriteTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
         micronautProperties = micronautProperties,
         isStreamSchemaRetroactive = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
         dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
