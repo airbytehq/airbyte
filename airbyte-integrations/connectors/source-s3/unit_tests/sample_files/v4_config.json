@@ -7,7 +7,7 @@
   "streams": [
     {
       "name": "cloudtrail",
-      "globs": ["AWSLogs/038462792154/CloudTrail/us-west-1/2024/12/08/*.json.gz"],
+      "globs": ["AWSLogs/038462792154/CloudTrail/us-east-1/2025/04/08/*.json.gz"],
       "format": {
         "filetype": "jsonl"
       },
