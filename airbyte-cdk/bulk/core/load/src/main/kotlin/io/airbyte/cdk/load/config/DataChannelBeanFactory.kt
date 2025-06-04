@@ -125,6 +125,15 @@ class DataChannelBeanFactory {
         return dataChannelMedium == DataChannelMedium.SOCKET
     }
 
+    @Named("logPerNRecords")
+    fun logPerNRecords(
+        @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")
+        logPerNRecords: Long
+    ): Long {
+        log.info { "Logging every $logPerNRecords records" }
+        return logPerNRecords
+    }
+
     /**
      * Because sockets uses multiple threads, state must be kept coherent by
      * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
@@ -208,6 +217,7 @@ class DataChannelBeanFactory {
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
+        @Named("logPerNRecords") logPerNRecords: Long,
     ): Array<Flow<PipelineInputEvent>> {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -231,6 +241,7 @@ class DataChannelBeanFactory {
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
                             queueMemoryManager,
+                            logPerNRecords
                         )
                     }
                     .toTypedArray()

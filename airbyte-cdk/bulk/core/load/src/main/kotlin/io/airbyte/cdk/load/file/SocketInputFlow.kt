@@ -28,6 +28,7 @@ class SocketInputFlow(
     private val inputFormatReader: DataChannelReader,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
     private val memoryManager: ReservationManager,
+    private val logPerNRecords: Long = 100_000L
 ) : Flow<PipelineInputEvent> {
     private val log = KotlinLogging.logger {}
 
@@ -40,7 +41,7 @@ class SocketInputFlow(
                 var messagesRead = 0L
                 inputFormatReader.read(inputStream).forEach { message ->
                     messagesRead++
-                    if (messagesRead % 100_000L == 0L) {
+                    if (messagesRead % logPerNRecords == 0L) {
                         log.info { "Read $messagesRead messages from ${socket.socketPath}" }
                     }
 
