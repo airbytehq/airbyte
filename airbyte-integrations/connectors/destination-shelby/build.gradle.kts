@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.ir.backend.js.compile
+
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
@@ -9,7 +11,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-csv", "load-object-storage")
+    toolkits = listOf("load-csv", "load-http", "load-object-storage")
     cdk = "local"
 }
 
@@ -51,6 +53,11 @@ dependencies {
     implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
     implementation("io.micronaut:micronaut-inject:4.7.12")
     implementation("org.apache.commons:commons-lang3:3.17.0")
+
+    // FIXME not sure why but these were not picked as transient dependencies so I copied/pasted them from load-http
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("dev.failsafe:failsafe:3.3.2")
+    implementation("dev.failsafe:failsafe-okhttp:3.3.2")
 
     testImplementation("io.mockk:mockk:1.13.16")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
