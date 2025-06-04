@@ -29,6 +29,8 @@ import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITHOUT_TIMEZONE_FORMATTER
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITH_TIMEZONE_FORMATTER
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -72,15 +74,6 @@ object LIMITS {
 }
 
 class BigQueryCSVRowGenerator {
-    companion object {
-        // BigQuery requires TIME values in HH:mm:ss format, even if seconds are zero
-        private val BIGQUERY_TIME_FORMATTER =
-            DateTimeFormatterBuilder().appendPattern("HH:mm:ss").toFormatter()
-
-        private val BIGQUERY_TIME_WITH_TIMEZONE_FORMATTER =
-            DateTimeFormatterBuilder().appendPattern("HH:mm:ss").appendOffsetId().toFormatter()
-    }
-
     fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
         val enrichedRecord =
             record.asEnrichedDestinationRecordAirbyteValue(
@@ -118,14 +111,14 @@ class BigQueryCSVRowGenerator {
                         StringValue(
                             (actualValue as TimeWithTimezoneValue)
                                 .value
-                                .format(DateTimeFormatter.ISO_OFFSET_TIME)
+                                .format(TIME_WITH_TIMEZONE_FORMATTER)
                         )
                 is TimeTypeWithoutTimezone ->
                     value.abValue =
                         StringValue(
                             (actualValue as TimeWithoutTimezoneValue)
                                 .value
-                                .format((DateTimeFormatter.ISO_LOCAL_TIME))
+                                .format(TIME_WITHOUT_TIMEZONE_FORMATTER)
                         )
 
                 // serialize complex types to string

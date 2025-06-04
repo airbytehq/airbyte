@@ -15,7 +15,11 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -135,16 +139,21 @@ class BigQueryRecordFormatter(
                             // then, populate the record.
                             // Bigquery has some strict requirements for datetime / time formatting,
                             // so handle that here.
-                            when (bigqueryType) {
-                                StandardSQLTypeName.DATETIME ->
+                            when (value.type) {
+                                TimestampTypeWithoutTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
                                         DATETIME_FORMATTER.format(
                                             (value.abValue as TimestampWithoutTimezoneValue).value
                                         )
-                                StandardSQLTypeName.TIME ->
+                                TimeTypeWithoutTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
-                                        TIME_FORMATTER.format(
+                                        TIME_WITHOUT_TIMEZONE_FORMATTER.format(
                                             (value.abValue as TimeWithoutTimezoneValue).value
+                                        )
+                                TimeTypeWithTimezone ->
+                                    outputRecord[columnNameMapping[key]!!] =
+                                        TIME_WITH_TIMEZONE_FORMATTER.format(
+                                            (value.abValue as TimeWithTimezoneValue).value
                                         )
                                 else -> outputRecord[columnNameMapping[key]!!] = value.abValue
                             }
@@ -199,7 +208,8 @@ class BigQueryRecordFormatter(
                 .appendLiteral(' ')
                 .append(DateTimeFormatter.ISO_LOCAL_TIME)
                 .toFormatter()
-        private val TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_TIME
+        val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
+        val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_TIME
 
         // This is the schema used to represent the final raw table
         val SCHEMA_V2: Schema =
