@@ -22,8 +22,7 @@ data class BatchStateUpdate(
     val state: BatchState,
     override val taskName: String,
     override val part: Int,
-    val inputRecordCount: Long = 0L,
-    val inputByteCount: Long = 0L
+    val inputCount: Long = 0L
 ) : BatchUpdate
 
 data class BatchEndOfStream(
