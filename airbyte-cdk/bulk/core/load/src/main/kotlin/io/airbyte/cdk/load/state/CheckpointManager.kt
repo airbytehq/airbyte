@@ -65,7 +65,6 @@ data class CheckpointKey(
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-@Singleton
 class CheckpointManager<T>(
     val catalog: DestinationCatalog,
     val syncManager: SyncManager,
@@ -198,7 +197,7 @@ class CheckpointManager<T>(
                     head.key
                 ) // don't remove until after we've successfully sent
             } else {
-                log.info { "Not flushing global checkpoint with key: ${head.key}" }
+                log.info { "Not flushing global checkpoint ${head.key}:" }
                 break
             }
         }
@@ -253,7 +252,15 @@ class CheckpointManager<T>(
                     // don't remove until after we've successfully sent
                     streamCheckpoints.remove(nextCheckpointKey)
                 } else {
-                    log.info { "Not flushing next checkpoint for index $nextCheckpointKey" }
+                    log.info {
+                        val expectedCount =
+                            manager.readCountForCheckpoint(nextCheckpointKey.checkpointId)
+                        val committedCount =
+                            manager.persistedRecordCountForCheckpoint(
+                                nextCheckpointKey.checkpointId
+                            )
+                        "Not flushing next checkpoint for index $nextCheckpointKey (committed $committedCount records of expected $expectedCount)"
+                    }
                     break
                 }
             }
@@ -324,7 +331,7 @@ class CheckpointManager<T>(
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-class FreeingCheckpointConsumer(private val consumer: OutputConsumer) :
+class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
     suspend (Reserved<CheckpointMessage>) -> Unit {
     override suspend fun invoke(message: Reserved<CheckpointMessage>) {
         message.use {

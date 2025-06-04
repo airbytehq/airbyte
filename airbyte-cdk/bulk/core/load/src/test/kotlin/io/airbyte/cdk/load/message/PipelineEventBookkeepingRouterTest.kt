@@ -38,14 +38,15 @@ class PipelineEventBookkeepingRouterTest {
     private val stream1 =
         DestinationStream(DestinationStream.Descriptor("test", "stream"), mockk(), mockk(), 1, 1, 1)
 
-    private fun makeBookkeepingRouter(numDataChannels: Int) =
+    private fun makeBookkeepingRouter(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
         PipelineEventBookkeepingRouter(
             catalog,
             syncManager,
             checkpointQueue,
             openStreamQueue,
             fileTransferQueue,
-            numDataChannels
+            numDataChannels,
+            markEndOfStreamAtEnd
         )
 
     @BeforeEach
@@ -57,7 +58,10 @@ class PipelineEventBookkeepingRouterTest {
 
     @Test
     fun `router uses inferred checkpoint when checkpoint id not available on record`() = runTest {
-        val router = makeBookkeepingRouter(1)
+        val router =
+            makeBookkeepingRouter(
+                1,
+            )
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -163,8 +167,8 @@ class PipelineEventBookkeepingRouterTest {
     }
 
     @Test
-    fun `router does not close the stream until all channels set end-of-stream`() = runTest {
-        val router = makeBookkeepingRouter(2)
+    fun `router does not close the stream if forcing close at end of stream`() = runTest {
+        val router = makeBookkeepingRouter(2, markEndOfStreamAtEnd = true)
 
         // Send a record to the first channel
         val eos = DestinationRecordStreamComplete(stream1, 0L)
@@ -173,6 +177,14 @@ class PipelineEventBookkeepingRouterTest {
         coVerify(exactly = 0) { streamManager.markEndOfStream(any()) }
 
         router.handleStreamMessage(eos, unopenedStreams = mutableSetOf())
+
+        coVerify(exactly = 0) { streamManager.markEndOfStream(any()) }
+
+        router.close()
+
+        coVerify(exactly = 0) { streamManager.markEndOfStream(any()) }
+
+        router.close()
 
         coVerify(exactly = 1) { streamManager.markEndOfStream(any()) }
     }
