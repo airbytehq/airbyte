@@ -52,7 +52,8 @@ class ClickhouseBeanFactory {
         streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     ): DestinationWriter {
         return DirectLoadTableWriter(
-            internalNamespace = "default",
+            // TODO: get the internal namespace from the configuration
+            internalNamespace = "airbyte_internal",
             names = names,
             stateGatherer = stateGatherer,
             destinationHandler = destinationHandler,
