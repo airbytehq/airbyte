@@ -137,7 +137,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 4.5.2 | 2025-06-04 | [61355](https://github.com/airbytehq/airbyte/pull/61355) | fix: source-airtable patch vulnerabilities |
+| 4.5.2 | 2025-06-04 | [61355](https://github.com/airbytehq/airbyte/pull/61355) | Update dependencies |
 | 4.5.1 | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null |
 | 4.5.0 | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version. |
 | 4.5.0-rc.4 | 2025-02-04 | [53156](https://github.com/airbytehq/airbyte/pull/53156) | Add default type for `rollup`, `lookuo` and `multiplelookup`, add new type `manualSort` |
