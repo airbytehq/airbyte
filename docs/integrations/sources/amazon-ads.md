@@ -157,6 +157,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.2.3 | 2025-05-17 | [60633](https://github.com/airbytehq/airbyte/pull/60633) | Update dependencies |
 | 7.2.2 | 2025-05-10 | [59332](https://github.com/airbytehq/airbyte/pull/59332) | Update dependencies |
 | 7.2.1 | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
 | 7.2.0 | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time. |
