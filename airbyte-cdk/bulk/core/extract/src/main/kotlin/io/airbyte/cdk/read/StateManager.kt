@@ -4,11 +4,13 @@ package io.airbyte.cdk.read
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.read.StateForCheckpoint
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
+import kotlin.collections.List
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
 class StateManager(
@@ -85,22 +87,32 @@ class StateManager(
      * are emitted).
      */
     fun checkpoint(): List<AirbyteStateMessage> {
+        val a: List<AirbyteStateMessage> = listOfNotNull(global?.checkpoint())
+        val b: List<AirbyteStateMessage> = nonGlobal
+            .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } }.flatten()// TEMP
+        return a + b
+/*
         return listOfNotNull(global?.checkpoint()) +
             nonGlobal
-                .mapNotNull { it.value.checkpoint() }
-                .filter { it.stream.streamState.isNull.not() }
+                .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } } // TEMP
+*/
+
     }
 
+    data class StateForCheckpointWithPartitionId(
+        val pendingState: OpaqueStateValue,
+        val partitionId: String?,
+        val pendingNumRecords: Long,
+        var id: Int, // TEMP
+)
+
+    }
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
         initialState: OpaqueStateValue?,
-    ) : StateManagerScopedToFeed {
+    ) : StateManager.StateManagerScopedToFeed {
         private var currentStateValue: OpaqueStateValue? = initialState
-        private var pendingStateValue: OpaqueStateValue? = null
-        private var pendingNumRecords: Long = 0L
-        private var partitionId: String? = null
-        private var id: Int = 0 // TEMP
-
+        private var pendingStateValues: MutableList<StateManager.StateForCheckpointWithPartitionId> = mutableListOf()
         @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
 
         @Synchronized
@@ -110,20 +122,14 @@ class StateManager(
             partitionId: String?,
             id: Int
         ) {
-            pendingStateValue = state
-            pendingNumRecords += numRecords
-            this.partitionId = partitionId
-            this.id = id
+            pendingStateValues.add(StateManager.StateForCheckpointWithPartitionId(state, partitionId, numRecords, id))
 
         }
 
         @Synchronized
         override fun reset() {
             currentStateValue = null
-            pendingStateValue = null
-            pendingNumRecords = 0L
-            partitionId = null
-            id = 0
+            pendingStateValues.clear()
         }
 
         /**
@@ -137,35 +143,36 @@ class StateManager(
          * may be required when emitting Airbyte STATE messages of type GLOBAL.
          */
         @Synchronized
-        fun takeForCheckpoint(): StateForCheckpoint {
+        fun takeForCheckpoint(): List<StateForCheckpoint> {
+            val freshStates = mutableListOf<StateForCheckpoint>()
             // Check if there is a pending state value or not.
             // If not, then set() HASN'T been called since the last call to takeForCheckpoint(),
             // because set() can only accept non-null state values.
             //
             // This means that there is nothing worth checkpointing for this particular feed.
             // In that case, exit early with the current state value.
-            val freshStateValue: OpaqueStateValue =
-                pendingStateValue ?: return Stale(currentStateValue, partitionId, id)
-            // This point is reached in the case where there is a pending state value.
-            // This means that set() HAS been called since the last call to takeForCheckpoint().
-            //
-            // Keep a copy of the total number of records registered in all calls to set() since the
-            // last call to takeForCheckpoint(), this number will be returned.
-            val freshNumRecords: Long = pendingNumRecords
-            // Update current state value.
-            currentStateValue = freshStateValue
-            // Reset the pending state, which will be overwritten by the next call to set().
-            pendingStateValue = null
-            pendingNumRecords = 0L
+            pendingStateValues.ifEmpty { return listOf(Stale(currentStateValue, null, 0)) } // TODO: check here if id is always 0
+            pendingStateValues.forEach {
+                val freshStateValue: OpaqueStateValue = it.pendingState
+                val currentPartitionId: String? = it.partitionId
+                // Update current state value.
+                currentStateValue = freshStateValue
+                // This point is reached in the case where there is a pending state value.
+                // This means that set() HAS been called since the last call to takeForCheckpoint().
+                //
+                // Keep a copy of the total number of records registered in all calls to set() since the
+                // last call to takeForCheckpoint(), this number will be returned.
+                val freshNumRecords: Long = it.pendingNumRecords
+                val currentId: Int = it.id
+                freshStates.add(Fresh(freshStateValue, freshNumRecords, currentPartitionId, currentId))
+            }
 
-            val currentPartitionId: String? = partitionId
-            partitionId = null
+            // Reset the pending states, which will be overwritten by the next call to set().
+            pendingStateValues.clear()
 
-            val currentId: Int = id
-            id = 0
             // Return the latest state value as well as the total number of records seen since the
             // last call to takeForCheckpoint().
-            return Fresh(freshStateValue, freshNumRecords, currentPartitionId, currentId)
+            return freshStates
         }
     }
 
@@ -214,13 +221,13 @@ class StateManager(
         fun checkpoint(): AirbyteStateMessage? {
             var shouldCheckpoint = false
             var totalNumRecords = 0L
-            val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
+            val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().get(0)
             totalNumRecords += globalStateForCheckpoint.numRecords
             if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
             val streamStates = mutableListOf<AirbyteStreamState>()
             for ((_, streamStateManager) in streamStateManagers) {
                 val streamStateForCheckpoint: StateForCheckpoint =
-                    streamStateManager.takeForCheckpoint()
+                    streamStateManager.takeForCheckpoint().get(0) // TODO: check here for CDC
                 totalNumRecords += streamStateForCheckpoint.numRecords
                 if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
                 val streamID: StreamIdentifier = streamStateManager.feed.id
@@ -260,27 +267,34 @@ class StateManager(
         stream: Stream,
         initialState: OpaqueStateValue?,
     ) : BaseStateManager<Stream>(stream, initialState) {
-        fun checkpoint(): AirbyteStateMessage? {
-            val streamStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
-            if (streamStateForCheckpoint is Stale) {
+        fun checkpoint(): List<AirbyteStateMessage>? {
+            val streamStatesForCheckpoint: List<StateForCheckpoint> = takeForCheckpoint()
+            if (streamStatesForCheckpoint.size == 1 && streamStatesForCheckpoint.get(0) is Stale) {
                 return null
             }
-            val airbyteStreamState =
-                AirbyteStreamState()
-                    .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStreamState(
-                        streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+            val stateMessages: MutableList<AirbyteStateMessage> = mutableListOf<AirbyteStateMessage>()
+            streamStatesForCheckpoint.forEach {
+                val airbyteStreamState =
+                    AirbyteStreamState()
+                        .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
+                        .withStreamState(
+                            it.opaqueStateValue ?: Jsons.objectNode()
+                        )
+                val airbyteStateMessage = AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                    .withStream(airbyteStreamState)
+                    .withSourceStats(
+                        AirbyteStateStats()
+                            .withRecordCount(it.numRecords.toDouble())
                     )
+                    .withAdditionalProperty("id", it.id)
+                    .apply { it.partitionId?.let { withAdditionalProperty("partition_id", it) } }
+                stateMessages.add(airbyteStateMessage)
+            }
 
-            return AirbyteStateMessage()
-                .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                .withStream(airbyteStreamState)
-                .withSourceStats(
-                    AirbyteStateStats()
-                        .withRecordCount(streamStateForCheckpoint.numRecords.toDouble())
-                )
-                .withAdditionalProperty("id", streamStateForCheckpoint.id)
-                .apply { streamStateForCheckpoint.partitionId?.let { withAdditionalProperty("partition_id", it) } }
+            return stateMessages.ifEmpty {
+                null // If no state messages were created, return null.
+            }
         }
     }
-}
+//}
