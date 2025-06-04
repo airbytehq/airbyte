@@ -67,6 +67,11 @@ jobs:
           # Read connector language and base image:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
+          PR_NUMBER=${{ inputs.pr || github.event.pull_request.number }}
+          IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}"
+          echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
+          echo "image-pr-num-tag=${IMAGE_PR_NUM_TAG}" | tee -a $GITHUB_OUTPUT
+          echo "image-build-num-tag=${IMAGE_PR_NUM_TAG}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
 
       # Java deps
       - uses: actions/setup-java@v4
@@ -106,8 +111,8 @@ jobs:
           file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-language }}-connector
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }}
-            ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+            ${{ steps.vars.outputs.image-pr-num-tag }}
+            ${{ steps.vars.outputs.image-build-num-tag }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
             CONNECTOR_NAME=${{ inputs.connector }}
@@ -117,13 +122,13 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }} \
+            ${{ steps.vars.outputs.image-build-num-tag }} \
             spec
 
       - name: Run ${{ inputs.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          image: "${{ steps.vars.outputs.image-build-num-tag }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
