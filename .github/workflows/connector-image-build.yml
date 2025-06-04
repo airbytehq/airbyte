@@ -68,9 +68,10 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
           PR_NUMBER=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}
+          IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}"
           echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
-          echo "image-pr-tag=draft-pr-${PR_NUMBER}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
-          echo "image-build-num-tag=ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+          echo "image-pr-num-tag=${IMAGE_PR_NUM_TAG}" | tee -a $GITHUB_OUTPUT
+          echo "image-build-num-tag=${IMAGE_PR_NUM_TAG}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
 
       # Java deps
       - uses: actions/setup-java@v4
@@ -110,7 +111,7 @@ jobs:
           file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-language }}-connector
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ steps.vars.outputs.image-pr-tag }}
+            ${{ steps.vars.outputs.image-pr-num-tag }}
             ${{ steps.vars.outputs.image-build-num-tag }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
