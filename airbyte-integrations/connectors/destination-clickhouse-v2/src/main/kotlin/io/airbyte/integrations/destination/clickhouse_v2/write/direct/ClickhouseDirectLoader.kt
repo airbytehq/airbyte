@@ -58,15 +58,15 @@ class ClickhouseDirectLoader(
     private suspend fun flush() {
             val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
             buffer = ByteArrayOutputStream()
-            log.error { "Beginning insert of $recordCount rows into ${descriptor.name}" }
+            log.info { "Beginning insert of $recordCount rows into ${descriptor.name}" }
 
             val insertResult = clickhouseClient.insert(
-                descriptor.name,
+                "`${descriptor.namespace}`.`${descriptor.name}`",
                 jsonBytes,
                 ClickHouseFormat.JSONEachRow
             ).await()
 
-            log.error { "Finished insert of ${insertResult.writtenRows} rows into ${descriptor.name}" }
+            log.info { "Finished insert of ${insertResult.writtenRows} rows into ${descriptor.name}" }
             recordCount = 0
         }
 
