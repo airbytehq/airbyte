@@ -5,6 +5,7 @@
 
 import logging
 
+import pytest
 from source_instagram.source import SourceInstagram
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
@@ -33,9 +34,25 @@ account_url_response = {
 }
 
 
-def test_check_connection_ok(api, requests_mock, some_config):
-    requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
+@pytest.fixture
+def mock_facebook_api_calls(requests_mock, some_config):
+    """Fixture to mock both Facebook API calls needed for connection checks"""
+    # Mock the URL with access token parameter as it would be in the actual request
+    url_with_token = f"{account_url}&access_token={some_config['access_token']}"
+    requests_mock.register_uri("GET", url_with_token, [{"json": account_url_response}])
+
+    # Mock the declarative stream API call from manifest.yaml - WITHOUT access token as shown in error
+    api_stream_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account&limit=100"
+    requests_mock.register_uri(
+        "GET", api_stream_url, json={"data": [{"id": "page_id", "instagram_business_account": {"id": "instagram_business_account_id"}}]}
+    )
+    return requests_mock
+
+
+def test_check_connection_ok(api, mock_facebook_api_calls, some_config):
     ok, error_msg = SourceInstagram(config=some_config, catalog=None, state=None).check_connection(logger, config=some_config)
+    if not ok:
+        print(f"Connection failed with error: {error_msg}")
     assert ok
     assert not error_msg
 
@@ -57,8 +74,7 @@ def test_check_connection_invalid_config_future_date(api, some_config_future_dat
     assert error_msg
 
 
-def test_check_connection_no_date_config(api, requests_mock, some_config):
-    requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
+def test_check_connection_no_date_config(api, mock_facebook_api_calls, some_config):
     some_config.pop("start_date")
     ok, error_msg = SourceInstagram(config=some_config, catalog=None, state=None).check_connection(logger, config=some_config)
 
