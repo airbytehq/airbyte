@@ -5,7 +5,7 @@ name: Connector Image Builds
 on:
   # # For testing (TODO: comment out the below before merging):
   # pull_request:
-  #  types: [opened, synchronize, reopened]
+  #   types: [opened, synchronize, reopened]
 
   workflow_dispatch:
     inputs:
