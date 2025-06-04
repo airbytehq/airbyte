@@ -35,7 +35,6 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
 
 object LIMITS {
     // Maximum value for BIGINT in SQL Server
