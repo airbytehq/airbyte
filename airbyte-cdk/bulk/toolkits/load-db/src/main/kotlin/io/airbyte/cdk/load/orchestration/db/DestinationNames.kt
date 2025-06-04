@@ -47,29 +47,54 @@ fun interface TempTableNameGenerator {
 
 /**
  * better handling for temp table names - e.g. postgres has a 64-char table name limit, so we want
- * to avoid running into that
+ * to avoid running into that. This method generates a table name with (by default) at most 64
+ * characters (`4 * affixLength + 2 * affixSeparator.length + hashLength`).
  *
  * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
  * [TableName.asOldStyleTempTable] instead
  */
 class DefaultTempTableNameGenerator(
     private val internalNamespace: String,
-    private val length: Int = 32
+    private val affixLength: Int = 8,
+    private val affixSeparator: String = "",
+    private val hashLength: Int = 32,
 ) : TempTableNameGenerator {
-    override fun generate(originalName: TableName) =
-        TableName(
-            name =
-                // sha256 might start with a digit, so prefix with a letter
-                ("a" +
-                        DigestUtils.sha256Hex(
-                            TypingDedupingUtil.concatenateRawTableName(
-                                originalName.namespace,
-                                originalName.name + TMP_TABLE_SUFFIX
-                            )
-                        ))
-                    .substring(length),
+    override fun generate(originalName: TableName): TableName {
+        val shortNamespace =
+            originalName.namespace.takeFirstAndLastNChars(affixLength, separator = affixSeparator)
+        val shortName =
+            originalName.name.takeFirstAndLastNChars(affixLength, separator = affixSeparator)
+        val hash =
+            DigestUtils.sha256Hex(
+                    TypingDedupingUtil.concatenateRawTableName(
+                        originalName.namespace,
+                        originalName.name + TMP_TABLE_SUFFIX,
+                    ),
+                )
+                .substring(hashLength)
+        return TableName(
+            name = "$shortNamespace$shortName$hash",
             namespace = internalNamespace,
         )
+    }
+
+    /**
+     * Examples:
+     * * `"123456".takeFirstAndALastNChars(1, "_") = "1_6"`
+     * * `"123456".takeFirstAndALastNChars(2, "_") = "12_56"`
+     * * `"123456".takeFirstAndALastNChars(3, "_") = "123456"`
+     * * `"123456".takeFirstAndALastNChars(4, "_") = "123456"`
+     */
+    private fun String.takeFirstAndLastNChars(n: Int, separator: String): String {
+        if (length <= 2 * n) {
+            // if the entire string fits within the prefix+suffix substrings,
+            // then just return the original string.
+            return this
+        }
+        val prefix = substring(0, n)
+        val suffix = substring(length - n, length)
+        return "$prefix$separator$suffix"
+    }
 }
 
 /**
