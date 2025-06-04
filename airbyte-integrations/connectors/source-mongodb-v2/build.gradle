@@ -58,7 +58,6 @@ dependencies {
     debeziumTestImplementation 'io.debezium:debezium-embedded:2.6.0.Final'
     debeziumTestImplementation 'io.debezium:debezium-connector-mongodb:2.6.0.Final'
     debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
-    debeziumTestImplementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
 }
 
 /*

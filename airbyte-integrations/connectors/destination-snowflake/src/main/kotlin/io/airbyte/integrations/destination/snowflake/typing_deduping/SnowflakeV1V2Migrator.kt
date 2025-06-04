@@ -3,7 +3,6 @@
  */
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
@@ -18,7 +17,6 @@ import net.snowflake.client.jdbc.SnowflakeSQLException
 
 private val LOGGER = KotlinLogging.logger {}
 
-@SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class SnowflakeV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,

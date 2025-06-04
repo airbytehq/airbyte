@@ -49,7 +49,6 @@ dependencies {
     implementation("com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
-    implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
     implementation("io.micronaut:micronaut-inject:4.7.12")
     implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("org.apache.commons:commons-lang3:3.17.0")

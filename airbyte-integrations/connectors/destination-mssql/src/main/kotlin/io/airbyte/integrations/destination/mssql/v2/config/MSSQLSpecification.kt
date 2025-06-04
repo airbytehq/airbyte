@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -19,7 +18,6 @@ import jakarta.inject.Singleton
 
 @Singleton
 @JsonSchemaTitle("MSSQL Destination Specification")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription("The host name of the MSSQL database.")

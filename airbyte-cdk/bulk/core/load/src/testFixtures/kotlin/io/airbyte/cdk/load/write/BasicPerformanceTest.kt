@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.write
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -116,7 +115,6 @@ data class PerformanceTestSummary(
 typealias ValidationFunction = (List<PerformanceTestSummary>) -> Unit
 
 @Suppress("SameParameterValue")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", justification = "Micronaut DI")
 @ExtendWith(SystemStubsExtension::class)
 abstract class BasicPerformanceTest(
     val defaultRecordsToInsert: Long,

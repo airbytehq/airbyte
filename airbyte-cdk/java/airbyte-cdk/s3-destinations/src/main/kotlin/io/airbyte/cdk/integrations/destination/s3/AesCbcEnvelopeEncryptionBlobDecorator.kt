@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.s3
 
 import com.google.common.annotations.VisibleForTesting
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.OutputStream
 import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
@@ -71,7 +70,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         ),
     )
 
-    @SuppressFBWarnings(
         value = ["PADORA", "CIPINT"],
         justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
     )
@@ -97,7 +95,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         }
     }
 
-    @SuppressFBWarnings(
         value = ["CIPINT", "SECECB"],
         justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
     )

@@ -20,7 +20,6 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.net.url.Url
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
@@ -51,7 +50,6 @@ interface S3Client : ObjectStorageClient<S3Object>
  * However, there's a bug that can cause hard failures under high-concurrency. (Partial workaround
  * in place https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817).
  */
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class S3KotlinClient(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     val bucketConfig: S3BucketConfiguration,

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -34,7 +33,6 @@ class MockDestinationWriter(
     }
 }
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {

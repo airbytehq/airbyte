@@ -3,7 +3,6 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.separately
@@ -95,7 +94,6 @@ class DefaultTyperDeduperTest {
 
     // Something about the Mockito.when(...).thenReturn(initialStates) call is tripping spotbugs,
     // even though we're not doing an explicit null check anywhere. So suppress it.
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {

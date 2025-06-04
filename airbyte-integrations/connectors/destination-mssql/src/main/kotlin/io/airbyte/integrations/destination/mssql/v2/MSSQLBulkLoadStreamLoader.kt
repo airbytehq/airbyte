@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.state.StreamProcessingFailed
@@ -12,7 +11,6 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class MSSQLBulkLoadStreamLoader(
     override val stream: DestinationStream,
     dataSource: DataSource,

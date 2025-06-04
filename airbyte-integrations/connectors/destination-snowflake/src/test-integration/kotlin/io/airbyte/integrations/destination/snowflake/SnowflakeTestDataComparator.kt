@@ -3,7 +3,6 @@
  */
 package io.airbyte.integrations.destination.snowflake
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import java.time.LocalDate
@@ -14,7 +13,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class SnowflakeTestDataComparator : AdvancedTestDataComparator() {
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun resolveIdentifier(identifier: String?): List<String?> {
         val result: MutableList<String?> = ArrayList()
         val resolved = NAME_TRANSFORMER.getIdentifier(identifier!!)

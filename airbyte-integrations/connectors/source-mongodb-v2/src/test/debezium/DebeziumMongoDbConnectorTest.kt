@@ -8,7 +8,6 @@ import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.ReadPreference
 import com.mongodb.client.MongoClients
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.debezium.connector.mongodb.MongoDbConnector
 import io.debezium.connector.mongodb.ResumeTokens
 import io.debezium.engine.DebeziumEngine
@@ -271,7 +270,6 @@ internal constructor(
             return cdcWorkingDir.resolve("offset.txt")
         }
 
-    @SuppressFBWarnings("OBJECT_DESERIALIZATION")
     private fun readOffsetFile(path: Path) {
         LOGGER.info("Reading contents of offset file '{}'...", path)
         try {

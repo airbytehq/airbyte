@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.source.jdbc.test
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DataSourceFactory.create
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
@@ -34,7 +33,6 @@ private val LOGGER = KotlinLogging.logger {}
 // todo (cgardens) - this needs more love and thought. we should be able to test this without having
 // to rewrite so much data. it is enough for now to sanity check that our JdbcSources can actually
 // handle more data than fits in memory.
-@SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
         "The static variables are updated in sub classes for convenience, and cannot be final."

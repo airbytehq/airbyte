@@ -1,12 +1,8 @@
-import com.github.spotbugs.snom.Confidence
-import com.github.spotbugs.snom.Effort
-import com.github.spotbugs.snom.SpotBugsTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.spotbugs' version '6.0.7'
     id 'org.jetbrains.kotlin.jvm' version '2.0.0'
     id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
 }
@@ -15,7 +11,6 @@ allprojects {
     apply plugin: 'base'
     apply plugin: 'java'
     apply plugin: 'java-test-fixtures'
-    apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'com.google.devtools.ksp'
     apply plugin: 'idea'
@@ -107,7 +102,7 @@ allprojects {
         }
     }
 
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy {
             preferProjectModules()
         }
@@ -120,14 +115,6 @@ allprojects {
         }
     }
 
-    spotbugs {
-        ignoreFailures = false
-        effort = Effort.valueOf('MAX')
-        excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
-        reportLevel = Confidence.valueOf('HIGH')
-        showProgress = false
-        toolVersion = '4.8.3'
-    }
 
     test {
         useJUnitPlatform()
@@ -219,18 +206,8 @@ allprojects {
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
 
-        // Spotbugs dependencies.
-        def vSpotbugs = "4.8.3"
-        implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
-    tasks.withType(SpotBugsTask).configureEach {
-        // Reports can be found under each subproject in build/spotbugs/
-        reports {
-            xml.required = false
-            html.required = true
-        }
-    }
 
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')

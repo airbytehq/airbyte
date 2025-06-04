@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -58,7 +57,6 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
 // Thanks, spotbugs.
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", justification = "Micronaut DI")
 @ExtendWith(SystemStubsExtension::class)
 abstract class IntegrationTest(
     additionalMicronautEnvs: List<String>,

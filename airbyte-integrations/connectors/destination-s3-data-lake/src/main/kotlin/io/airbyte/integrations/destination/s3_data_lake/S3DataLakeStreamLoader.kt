@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
@@ -21,7 +20,6 @@ import org.apache.iceberg.UpdateSchema
 
 private val logger = KotlinLogging.logger {}
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
@@ -44,7 +42,6 @@ class S3DataLakeStreamLoader(
         }
     private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
 
-    @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
         "something about the `table` lateinit var is confusing spotbugs"
     )

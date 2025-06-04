@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.pipeline.db
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.WithBatchState
@@ -22,7 +21,6 @@ import jakarta.inject.Singleton
 
 @Singleton
 @Requires(bean = BulkLoaderFactory::class)
-@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 class BulkLoaderTableLoader<K : WithStream, T : RemoteObject<*>>(
     val bulkLoader: BulkLoaderFactory<K, T>
 ) :

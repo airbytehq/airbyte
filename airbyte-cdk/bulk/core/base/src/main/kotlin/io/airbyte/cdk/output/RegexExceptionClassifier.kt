@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.output
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.micronaut.context.annotation.EachProperty
 import io.micronaut.context.annotation.Parameter
 import io.micronaut.context.annotation.Requires
@@ -30,7 +29,6 @@ class RegexExceptionClassifier(
 
 /** Micronaut configuration object for [RuleBasedExceptionClassifier] rules. */
 @EachProperty("${REGEX_CLASSIFIER_PREFIX}.rules", list = true)
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class RegexExceptionClassifierRule(
     @param:Parameter override val ordinal: Int,
 ) : RuleBasedExceptionClassifier.Rule {

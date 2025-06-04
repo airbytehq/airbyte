@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.source.jdbc.test
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
 /** Tests that should be run on all Sources that extend the AbstractJdbcSource. */
-@SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
         "The static variables are updated in subclasses for convenience, and cannot be final.",

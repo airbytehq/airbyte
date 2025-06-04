@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.jdbc
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.IOException
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -88,7 +87,6 @@ class SSLCertificateUtilsTest {
         Assertions.assertNotNull(exception)
     }
 
-    @SuppressFBWarnings("HARD_CODE_PASSWORD")
     @Throws(
         KeyStoreException::class,
         IOException::class,

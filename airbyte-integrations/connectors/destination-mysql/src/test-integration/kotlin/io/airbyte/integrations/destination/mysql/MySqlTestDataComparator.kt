@@ -3,7 +3,6 @@
  */
 package io.airbyte.integrations.destination.mysql
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import java.time.LocalDate
@@ -13,7 +12,6 @@ import java.util.*
 class MySqlTestDataComparator : AdvancedTestDataComparator() {
     private val namingResolver: StandardNameTransformer = MySQLNameTransformer()
 
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun resolveIdentifier(identifier: String?): List<String?> {
         val result: MutableList<String?> = ArrayList()
         val resolved = namingResolver.getIdentifier(identifier!!)

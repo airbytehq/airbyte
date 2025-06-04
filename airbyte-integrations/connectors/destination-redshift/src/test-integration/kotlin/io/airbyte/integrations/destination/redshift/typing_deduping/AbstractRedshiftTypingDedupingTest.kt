@@ -5,7 +5,6 @@ package io.airbyte.integrations.destination.redshift.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest
@@ -34,7 +33,6 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
     override val imageName: String
         get() = "airbyte/destination-redshift:dev"
 
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun getDataSource(config: JsonNode?): DataSource? {
         return RedshiftDestination().getDataSource(config!!)
     }

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.OnEndOfSync
@@ -82,7 +81,6 @@ class FrequencyFactory {
     ): Long = millis
 }
 
-@SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system",
 )

@@ -3,7 +3,6 @@
  */
 package io.airbyte.integrations.destination.mysql
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
@@ -19,7 +18,6 @@ import java.util.stream.IntStream
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 
-@SuppressFBWarnings(
     value = ["SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"],
     justification =
         "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement."

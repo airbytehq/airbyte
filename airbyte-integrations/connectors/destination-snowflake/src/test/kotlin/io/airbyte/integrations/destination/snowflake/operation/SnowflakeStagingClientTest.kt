@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.operation
 
 import com.fasterxml.jackson.databind.JsonNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.exceptions.ConfigErrorException
@@ -36,7 +35,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
-@SuppressFBWarnings("BC_IMPOSSIBLE_CAST")
 class SnowflakeStagingClientTest {
 
     @Nested
