@@ -12,10 +12,12 @@ Thank you for your contribution from **{{ .repo_name }}**! We're excited to have
 ### PR Slash Commands
 
 As needed or by request, Airbyte Maintainers can execute the following slash commands on your PR:
+
 - `/format-fix` - Fixes most formatting issues.
 - `/bump-version` - Bumps connector versions.
 - `/run-connector-tests` - Runs connector tests.
 - `/run-cat-tests` - Runs CAT tests.
+- `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 
 If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
 

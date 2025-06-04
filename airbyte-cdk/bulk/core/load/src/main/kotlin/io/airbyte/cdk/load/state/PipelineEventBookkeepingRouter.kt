@@ -98,12 +98,13 @@ class PipelineEventBookkeepingRouter(
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
+                manager.incrementByteCount(record.serializedSizeBytes)
                 // Fallback to the manager if the record doesn't have a checkpointId
                 // This should only happen in STDIO mode.
                 val checkpointId =
                     record.checkpointId ?: manager.inferNextCheckpointKey().checkpointId
                 PipelineMessage(
-                    mapOf(checkpointId to 1),
+                    mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.descriptor),
                     record,
                     postProcessingCallback
@@ -177,7 +178,16 @@ class PipelineEventBookkeepingRouter(
                         val totalCounts = streamWithKeyAndCount.sumOf { (_, count) -> count }
                         Pair(singleKey, totalCounts)
                     } else {
-                        Pair(checkpoint.checkpointKey!!, checkpoint.sourceStats?.recordCount ?: 0L)
+                        val sourceCounts =
+                            checkpoint.sourceStats?.recordCount
+                                ?: throw IllegalStateException(
+                                    "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
+                                )
+                        syncManager.setGlobalReadCountForCheckpoint(
+                            checkpoint.checkpointKey!!.checkpointId,
+                            sourceCounts
+                        )
+                        Pair(checkpoint.checkpointKey!!, sourceCounts)
                     }
 
                 val messageWithCount =
@@ -201,7 +211,16 @@ class PipelineEventBookkeepingRouter(
             val (_, countSinceLast) = manager.markCheckpoint()
             Pair(key, countSinceLast)
         } else {
-            Pair(checkpoint.checkpointKey!!, checkpoint.sourceStats?.recordCount ?: 0L)
+            val sourceCounts =
+                checkpoint.sourceStats?.recordCount
+                    ?: throw IllegalStateException(
+                        "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
+                    )
+            manager.setReadCountForCheckpointFromState(
+                checkpoint.checkpointKey!!.checkpointId,
+                sourceCounts
+            )
+            Pair(checkpoint.checkpointKey!!, sourceCounts)
         }
     }
 
