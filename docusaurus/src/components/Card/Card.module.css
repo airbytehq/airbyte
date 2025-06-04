@@ -30,25 +30,20 @@
   align-items: center;
   gap: 8px;
   width: fit-content;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .cardCtaPrimary {
   background-color: var(--color-dark-blue-700);
   color: var(--color-white);
 }
-.cardCtaPrimary a {
-  text-decoration: none;
-  color: var(--color-white);
-}
 
 .cardCtaSecondary {
   border: 1px solid var(--color-grey-500);
   color: var(--color-grey-500);
-}
-
-.cardCtaSecondary a {
-  color: var(--color-grey-500);
-  text-decoration: none;
+  background-color: transparent;
 }
 
 .cardIcon {
