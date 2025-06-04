@@ -325,9 +325,6 @@ class CheckpointManager<T>(
     }
 }
 
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system"
-)
 @Singleton
 class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
     suspend (Reserved<CheckpointMessage>) -> Unit {

@@ -36,10 +36,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
 /** Tests that should be run on all Sources that extend the AbstractJdbcSource. */
-    value = ["MS_SHOULD_BE_FINAL"],
-    justification =
-        "The static variables are updated in subclasses for convenience, and cannot be final.",
-)
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T = createTestDatabase()
 

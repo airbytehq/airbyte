@@ -64,9 +64,6 @@ import kotlinx.coroutines.channels.Channel
  * // TODO: Capture failures, retry, and call into close(failure=true) if can't recover.
  */
 @Singleton
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "arguments are guaranteed to be non-null by Kotlin's type system"
-)
 class DestinationTaskLauncher(
     private val taskScopeProvider: TaskScopeProvider,
     private val catalog: DestinationCatalog,

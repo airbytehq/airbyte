@@ -42,9 +42,6 @@ class S3DataLakeStreamLoader(
         }
     private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
 
-        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        "something about the `table` lateinit var is confusing spotbugs"
-    )
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)

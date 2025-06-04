@@ -33,10 +33,6 @@ private val LOGGER = KotlinLogging.logger {}
 // todo (cgardens) - this needs more love and thought. we should be able to test this without having
 // to rewrite so much data. it is enough for now to sanity check that our JdbcSources can actually
 // handle more data than fits in memory.
-    value = ["MS_SHOULD_BE_FINAL"],
-    justification =
-        "The static variables are updated in sub classes for convenience, and cannot be final."
-)
 abstract class JdbcStressTest {
     private var bitSet: BitSet? = null
     private lateinit var config: JsonNode

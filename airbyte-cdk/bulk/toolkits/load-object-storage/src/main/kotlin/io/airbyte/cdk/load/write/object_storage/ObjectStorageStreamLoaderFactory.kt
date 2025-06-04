@@ -31,9 +31,6 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     }
 }
 
-    value = ["NP_NONNULL_PARAM_VIOLATION", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
-    justification = "Kotlin async continuation"
-)
 class ObjectStorageStreamLoader<T : RemoteObject<*>>(
     override val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,

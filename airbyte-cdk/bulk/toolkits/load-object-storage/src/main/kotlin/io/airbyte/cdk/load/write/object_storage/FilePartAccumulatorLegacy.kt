@@ -22,9 +22,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "state is guaranteed to be non-null by Kotlin's type system"
-)
 class FilePartAccumulatorLegacy(
     private val pathFactory: ObjectStoragePathFactory,
     private val stream: DestinationStream,

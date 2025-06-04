@@ -23,9 +23,6 @@ data class DestinationFailure(
 ) : DestinationResult
 
 @Singleton
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "exception is guaranteed to be non-null by Kotlin's type system"
-)
 class SyncManager(
     val catalog: DestinationCatalog,
     @Named("requireCheckpointIdOnRecordAndKeyOnState") requireCheckpointIndexOnState: Boolean

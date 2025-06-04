@@ -33,9 +33,6 @@ import kotlinx.coroutines.flow.fold
  *
  * TODO: Handle other message types.
  */
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system"
-)
 class InputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,

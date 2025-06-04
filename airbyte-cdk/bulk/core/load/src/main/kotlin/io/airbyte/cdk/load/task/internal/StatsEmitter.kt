@@ -81,9 +81,6 @@ class FrequencyFactory {
     ): Long = millis
 }
 
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system",
-)
 @Singleton
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
 class DummyStatsMessageConsumer(private val consumer: OutputConsumer) :

@@ -70,9 +70,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         ),
     )
 
-        value = ["PADORA", "CIPINT"],
-        justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
-    )
     override fun wrap(stream: OutputStream): OutputStream {
         try {
             val dataCipher = Cipher.getInstance(CONTENT_ENCRYPTING_CIPHER_ALGO)
@@ -95,9 +92,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         }
     }
 
-        value = ["CIPINT", "SECECB"],
-        justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
-    )
     override fun updateMetadata(
         metadata: MutableMap<String, String>,
         metadataKeyMapping: Map<String, String>

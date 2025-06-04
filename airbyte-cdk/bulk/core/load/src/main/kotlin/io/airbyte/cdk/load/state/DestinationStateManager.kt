@@ -16,9 +16,6 @@ interface DestinationStateManager<T : DestinationState> {
     suspend fun persistState(stream: DestinationStream)
 }
 
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "state is guaranteed to be non-null by Kotlin's type system"
-)
 @Singleton
 @Secondary
 class DefaultDestinationStateManager<T : DestinationState>(
