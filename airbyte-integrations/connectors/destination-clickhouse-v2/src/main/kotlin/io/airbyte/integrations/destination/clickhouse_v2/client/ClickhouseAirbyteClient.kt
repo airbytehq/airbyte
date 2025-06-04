@@ -44,6 +44,21 @@ class ClickhouseAirbyteClient(private val client: Client
         }
     }
 
+    override fun getGenerationId(tableName: TableName): Long {
+        try {
+            val generationAlias = "generation"
+            val response = client.query("SELECT _airbyte_generation_id $generationAlias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1;").get()
+            val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
+            reader.next()
+            val generation = reader.getLong(generationAlias)
+            return generation
+        } catch (e: Exception) {
+            log.error(e) { "Failed to retrieve the generation Id" }
+            // TODO: open question: Do we need to raise an error here or just return 0?
+            return 0;
+        }
+    }
+
     /**
      * Executes a query against the ClickHouse database. The response of the query is not returned.
      *

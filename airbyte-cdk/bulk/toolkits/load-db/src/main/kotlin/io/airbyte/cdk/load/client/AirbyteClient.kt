@@ -17,14 +17,6 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
      */
     abstract fun getNumberOfRecordsInTable(tableName: TableName): Long?
 
-    /**
-     * Executes a query against the database.
-     *
-     * @param query The SQL query to execute.
-     * @return A boolean indicating whether the query was executed successfully.
-     */
-    protected abstract fun executeQuery(query: String): Boolean
-
     open fun copyTable(columnNameMapping: ColumnNameMapping,
                        sourceTableName: TableName,
                        targetTableName: TableName): Sql {
@@ -77,6 +69,8 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
         return "CREATE DATABASE IF NOT EXISTS `$namespace` "
     }
 
+    abstract fun getGenerationId(tableName: TableName): Long
+
     protected open fun getCreateTableSuffix(): String = ""
 
     protected open fun columnsAndTypes(
@@ -93,4 +87,12 @@ abstract class AirbyteClient<DestinationDataType: Enum<DestinationDataType>>() {
             .joinToString(",\n")
 
     protected abstract fun toDialectType(type: AirbyteType): DestinationDataType
+
+    /**
+     * Executes a query against the database.
+     *
+     * @param query The SQL query to execute.
+     * @return A boolean indicating whether the query was executed successfully.
+     */
+    protected abstract fun executeQuery(query: String): Boolean
 }
