@@ -96,7 +96,7 @@ jobs:
 
       - name: Append failure comment
         uses: peter-evans/create-or-update-comment@v4
-        if: failure()
+        if: ${{ failure() }}
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: confused
