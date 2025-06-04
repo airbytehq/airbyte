@@ -75,7 +75,7 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
+The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
@@ -137,6 +137,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.5.2      | 2025-06-03 | [61342](https://github.com/airbytehq/airbyte/pull/61342) | Update base image to python-connector-base:4.0.0 and fix CDK breaking changes          |
 | 4.5.1      | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null                      |
 | 4.5.0      | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version.                               |
 | 4.5.0-rc.4 | 2025-02-04 | [53156](https://github.com/airbytehq/airbyte/pull/53156) | Add default type for `rollup`, `lookuo` and `multiplelookup`, add new type `manualSort` |
