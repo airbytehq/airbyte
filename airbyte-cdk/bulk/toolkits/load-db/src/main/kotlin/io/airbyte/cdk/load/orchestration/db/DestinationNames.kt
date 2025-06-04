@@ -23,10 +23,6 @@ data class TableNames(
         }
     }
 
-    fun hasNamingConflictWith(other: TableNames) =
-        this.rawTableName.hasNamingConflictWith(other.rawTableName) ||
-            this.finalTableName.hasNamingConflictWith(other.finalTableName)
-
     fun toPrettyString() =
         "Raw table: ${rawTableName?.toPrettyString()}; Final table: ${finalTableName?.toPrettyString()}"
 
@@ -65,13 +61,6 @@ data class TableName(val namespace: String, val name: String) {
         )
 
     fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
-}
-
-fun TableName?.hasNamingConflictWith(other: TableName?): Boolean {
-    if (this == null || other == null) {
-        return false
-    }
-    return this.namespace == other.namespace && this.name == other.name
 }
 
 /**
