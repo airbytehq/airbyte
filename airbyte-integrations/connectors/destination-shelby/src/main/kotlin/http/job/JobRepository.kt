@@ -18,6 +18,11 @@ import io.airbyte.cdk.util.Jsons
 private val TERMINAL_STATES: Set<String> = setOf("Aborted", "Failed", "JobComplete")
 private val FAILED_STATES: Set<String> = setOf("Aborted", "Failed")
 
+private const val SALESFORCE_INSERT_OPERATION = "insert"
+private const val SALESFORCE_UPDATE_OPERATION = "update"
+private const val SALESFORCE_UPSERT_OPERATION = "upsert"
+private const val SALESFORCE_SOFT_DELETE_OPERATION = "delete"
+
 class JobRepository(httpClient: HttpClient, baseUrl: String) {
     private val httpClient: HttpClient = httpClient
     private val baseUrl: String = baseUrl
@@ -119,10 +124,10 @@ class JobRepository(httpClient: HttpClient, baseUrl: String) {
 
     private fun assembleOperation(importType: ImportType): String {
         return when (importType) {
-            is Append -> "insert"
-            is Dedupe -> "upsert"
-            is Update -> "update"
-            is SoftDelete -> "delete"
+            is Append -> SALESFORCE_INSERT_OPERATION
+            is Dedupe -> SALESFORCE_UPSERT_OPERATION
+            is Update -> SALESFORCE_UPDATE_OPERATION
+            is SoftDelete -> SALESFORCE_SOFT_DELETE_OPERATION
              else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
     }
