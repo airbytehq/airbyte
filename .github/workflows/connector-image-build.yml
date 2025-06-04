@@ -67,6 +67,8 @@ jobs:
           # Read connector language and base image:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
+          echo "image-pr-tag=draft-pr-${{ inputs.pr }}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+          echo "image-build-num-tag=ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ inputs.pr }}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
 
       # Java deps
       - uses: actions/setup-java@v4
@@ -106,8 +108,8 @@ jobs:
           file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-language }}-connector
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }}
-            ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+            ${{ steps.vars.outputs.image-pr-tag }}
+            ${{ steps.vars.outputs.image-build-num-tag }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
             CONNECTOR_NAME=${{ inputs.connector }}
@@ -117,13 +119,13 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }} \
+            ${{ steps.vars.outputs.image-build-num-tag }} \
             spec
 
       - name: Run ${{ inputs.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          image: "${{ steps.vars.outputs.image-build-num-tag }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
