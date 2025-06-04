@@ -23,6 +23,5 @@ class BigqueryCheckCleaner : CheckCleaner<BigqueryConfiguration> {
                 BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor).toTableId()
             )
             ?.delete()
-        bq.getDataset(stream.descriptor.namespace)?.delete()
     }
 }

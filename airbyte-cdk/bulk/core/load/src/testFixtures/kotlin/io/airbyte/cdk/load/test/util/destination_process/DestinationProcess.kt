@@ -7,7 +7,9 @@ package io.airbyte.cdk.load.test.util.destination_process
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -33,9 +35,13 @@ interface DestinationProcess {
      */
     suspend fun run()
 
+    /**
+     * Sending raw strings is not recommended now that we're using multiple serialization formats,
+     * unless you're trying to send a poison pill.
+     */
     suspend fun sendMessage(string: String)
-    suspend fun sendMessage(message: AirbyteMessage, broadcast: Boolean = false)
-    suspend fun sendMessages(vararg messages: AirbyteMessage) {
+    suspend fun sendMessage(message: InputMessage, broadcast: Boolean = false)
+    suspend fun sendMessages(vararg messages: InputMessage) {
         messages.forEach { sendMessage(it) }
     }
 
@@ -48,7 +54,7 @@ interface DestinationProcess {
     suspend fun shutdown()
 
     /** Terminate the destination as immediately as possible. */
-    fun kill()
+    suspend fun kill()
 
     fun verifyFileDeleted()
 }
@@ -73,6 +79,7 @@ abstract class DestinationProcessFactory {
         useFileTransfer: Boolean = false,
         micronautProperties: Map<Property, String> = emptyMap(),
         dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+        dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 
