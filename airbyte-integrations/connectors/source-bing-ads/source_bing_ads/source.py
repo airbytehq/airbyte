@@ -179,7 +179,7 @@ class SourceBingAds(YamlDeclarativeSource):
             "AdGroupPerformanceReport",
             # "AdPerformanceReport",
             "AdGroupImpressionPerformanceReport",
-            "CampaignPerformanceReport",
+            # "CampaignPerformanceReport",
             "CampaignImpressionPerformanceReport",
             "GeographicPerformanceReport",
             "GoalsAndFunnelsReport",
