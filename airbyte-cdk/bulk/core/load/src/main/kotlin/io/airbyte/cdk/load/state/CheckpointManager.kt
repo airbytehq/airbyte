@@ -147,13 +147,26 @@ class CheckpointManager<T>(
         }
         while (!globalCheckpoints.isEmpty()) {
             val head = globalCheckpoints.firstEntry() ?: break
-            val allStreamsPersisted =
+            val previousStateEmitted =
                 catalog.streams.all { stream ->
-                    wasPreviousStateEmitted(stream.descriptor, head.key.checkpointIndex) &&
-                        syncManager
-                            .getStreamManager(stream.descriptor)
-                            .areRecordsPersistedForCheckpoint(head.key.checkpointId)
+                    wasPreviousStateEmitted(stream.descriptor, head.key.checkpointIndex)
                 }
+            if (!previousStateEmitted) {
+                log.info { "State for checkpoint before ${head.key} has not been emitted yet." }
+                break
+            }
+
+            val allStreamsPersisted =
+                if (syncManager.hasGlobalCount(head.key.checkpointId)) {
+                    syncManager.areAllStreamsPersistedForGlobalCheckpoint(head.key.checkpointId)
+                } else {
+                    catalog.streams.all {
+                        syncManager
+                            .getStreamManager(it.descriptor)
+                            .areRecordsPersistedForCheckpoint(head.key.checkpointId)
+                    }
+                }
+
             if (allStreamsPersisted) {
                 log.info { "Flushing global checkpoint with key ${head.key}" }
                 sendStateMessage(
