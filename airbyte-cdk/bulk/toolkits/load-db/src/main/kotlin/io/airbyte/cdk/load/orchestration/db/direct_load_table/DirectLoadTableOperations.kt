@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
+import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
@@ -28,6 +29,12 @@ interface DirectLoadTableNativeOperations {
      * These records predate the refreshes project.
      */
     fun getGenerationId(tableName: TableName): Long
+}
+
+abstract class BaseDirectLoadTableNativeOperations<DestinationDataType: Enum<DestinationDataType>>(
+    private val airbyteClient: AirbyteClient<DestinationDataType>): DirectLoadTableNativeOperations {
+    override fun getGenerationId(tableName: TableName): Long =
+        airbyteClient.getGenerationId(tableName)
 }
 
 /**

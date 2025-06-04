@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
+import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -50,4 +51,33 @@ interface DirectLoadSqlGenerator {
     ): Sql
 
     fun dropTable(tableName: TableName): Sql
+}
+
+abstract class BaseDirectLoadSqlGenerator<DestinationDataType: Enum<DestinationDataType>>(
+    private val airbyteClient: AirbyteClient<DestinationDataType>) : DirectLoadSqlGenerator {
+    override fun createTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean,
+    ): Sql = airbyteClient.getCreateTableStatement(
+            stream,
+            tableName,
+            columnNameMapping,
+            replace,
+        )
+
+    override fun copyTable(columnNameMapping: ColumnNameMapping,
+                           sourceTableName: TableName,
+                           targetTableName: TableName): Sql =
+        airbyteClient.copyTable(
+            columnNameMapping,
+            sourceTableName,
+            targetTableName,
+            )
+    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql =
+        Sql.transactionally(listOf(
+            "DROP TABLE IF EXISTS `${targetTableName.namespace}`.`${targetTableName.name}",
+            "ALTER TABLE `${sourceTableName.namespace}`.`${sourceTableName.name}` RENAME TO `${targetTableName.namespace}${targetTableName.name}`",
+        ))
 }

@@ -28,7 +28,9 @@ import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.BaseDirectLoadSqlGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseAirbyteClient
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -38,81 +40,8 @@ private val log = KotlinLogging.logger {}
 @Singleton
 class ClickhouseDirectLoadSqlGenerator(
     private val config: ClickhouseConfiguration,
-) : DirectLoadSqlGenerator {
-    override fun createTable(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping,
-        replace: Boolean,
-    ): Sql {
-        log.error { "Creating table for stream ${stream.descriptor.name} with columns: ${columnNameMapping.values.joinToString(", ")}" }
-        fun columnsAndTypes(
-            stream: DestinationStream,
-            columnNameMapping: ColumnNameMapping
-        ): String =
-            stream.schema
-                .asColumns()
-                .map { (fieldName, type) ->
-                    val columnName = columnNameMapping[fieldName]!!
-                    val typeName = toDialectType(type.type).name
-                    "`$columnName` $typeName"
-                }
-                .joinToString(",\n")
-
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
-
-        val forceCreateTable = if (replace) "OR REPLACE" else ""
-//        TODO: Add namespace to table name properly — CH doesn't like periods
-//        val finalTableId = tableName.toPrettyString(QUOTE)
-        val finalTableId = tableName.name
-        return Sql.of(
-            """
-            CREATE $forceCreateTable TABLE `${config.resolvedDatabase}`.$finalTableId (
-              _airbyte_raw_id String NOT NULL,
-              _airbyte_extracted_at DateTime64(3) NOT NULL,
-              _airbyte_meta String NOT NULL,
-              _airbyte_generation_id UInt32,
-              $columnDeclarations
-            )
-            ENGINE = MergeTree ORDER BY ()
-            """.trimIndent()
-        )
-    }
-
-    // TODO: implement this.
-    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
-        throw NotImplementedError(
-            "This method is implemented using a native bigquery API call in BigqueryDirectLoadSqlTableOperations"
-        )
-    }
-
-    override fun copyTable(
-        columnNameMapping: ColumnNameMapping,
-        sourceTableName: TableName,
-        targetTableName: TableName
-    ): Sql {
-        val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
-        return Sql.of(
-            // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
-            """
-            INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
-            (
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            )
-            SELECT
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id,
-                $columnNames
-            FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent()
-        )
-    }
+    client: ClickhouseAirbyteClient,
+) : BaseDirectLoadSqlGenerator<ClickHouseDataType>(client) {
 
     override fun upsertTable(
         stream: DestinationStream,
@@ -184,11 +113,10 @@ class ClickhouseDirectLoadSqlGenerator(
                 val column = columnNameMapping[fieldName]!!
                 "`$column` = new_record.`$column`,"
             }
-        val targetTableId = targetTableName.toPrettyString(QUOTE)
 
         return Sql.of(
             """
-               MERGE `${config.resolvedDatabase}`.$targetTableId target_table
+               MERGE `${targetTableName.namespace}`.`${targetTableName.name}` target_table
                USING (
                  $selectSourceRecords
                ) new_record
@@ -218,8 +146,7 @@ class ClickhouseDirectLoadSqlGenerator(
     }
 
     override fun dropTable(tableName: TableName): Sql {
-        val tableId = tableName.toPrettyString(QUOTE)
-        return Sql.of("""DROP TABLE IF EXISTS `${config.resolvedDatabase}`.$tableId;""")
+        return Sql.of("""DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;""")
     }
 
     /**
@@ -266,7 +193,7 @@ class ClickhouseDirectLoadSqlGenerator(
                    _airbyte_raw_id,
                    _airbyte_extracted_at,
                    _airbyte_generation_id
-                 FROM `${config.resolvedDatabase}`.${sourceTableName.toPrettyString(QUOTE)}
+                 FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
                ), numbered_rows AS (
                  SELECT *, row_number() OVER (
                    PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
@@ -280,8 +207,6 @@ class ClickhouseDirectLoadSqlGenerator(
     }
 
     companion object {
-        const val QUOTE: String = "`"
-
         fun toDialectType(type: AirbyteType): ClickHouseDataType =
             when (type) {
                 BooleanType -> ClickHouseDataType.Bool

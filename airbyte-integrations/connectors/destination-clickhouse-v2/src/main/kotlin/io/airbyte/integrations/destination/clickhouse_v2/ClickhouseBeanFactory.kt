@@ -1,7 +1,9 @@
 package io.airbyte.integrations.destination.clickhouse_v2
 
 import com.clickhouse.client.api.Client
+import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
@@ -23,18 +25,19 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun clickhouseDirectLoadSqlTableOperations(
-        clickhouseClient: Client,
         sqlGenerator: ClickhouseDirectLoadSqlGenerator,
         destinationHandler: ClickhouseDatabaseHandler,
     ): DirectLoadTableSqlOperations = ClickhouseDirectLoadSqlTableOperations(
-        clickhouseClient,
         sqlGenerator,
         destinationHandler,
     )
 
     @Singleton
-    fun stateGatherer(clickhouseClient: Client) = ClickhouseDirectLoadDatabaseInitialStatusGatherer(
-        clickhouseClient,
+    fun stateGatherer(airbyteClient: AirbyteClient<ClickHouseDataType>,
+                      clickhouseConfiguration: ClickhouseConfiguration): DatabaseInitialStatusGatherer<DirectLoadInitialStatus> =
+        ClickhouseDirectLoadDatabaseInitialStatusGatherer(
+            airbyteClient,
+            clickhouseConfiguration,
     )
 
     @Singleton
@@ -47,7 +50,8 @@ class ClickhouseBeanFactory {
         streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     ): DestinationWriter {
         return DirectLoadTableWriter(
-            internalNamespace = "_internal",
+            // TODO: get the internal namespace from the configuration
+            internalNamespace = "airbyte_internal",
             names = names,
             stateGatherer = stateGatherer,
             destinationHandler = destinationHandler,
