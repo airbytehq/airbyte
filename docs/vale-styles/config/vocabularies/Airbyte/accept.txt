@@ -48,6 +48,7 @@ CSV
 CSVs
 API
 APIs
+SSO
 
 # Airbyte connectors
 
@@ -58,6 +59,8 @@ S3 Data Lake
 
 Glue
 [Gg]raph[Qq][Ll]
+Okta
+Entra ID
 \bDocker(?:'s)?\b
 
 # Acceptable non-words that shouldn't trigger spellcheck
