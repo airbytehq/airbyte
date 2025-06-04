@@ -198,7 +198,7 @@ class CheckpointManager<T>(
                     head.key
                 ) // don't remove until after we've successfully sent
             } else {
-                log.info { "Not flushing global checkpoint with key: ${head.key}" }
+                log.info { "Not flushing global checkpoint ${head.key}:" }
                 break
             }
         }
@@ -253,7 +253,15 @@ class CheckpointManager<T>(
                     // don't remove until after we've successfully sent
                     streamCheckpoints.remove(nextCheckpointKey)
                 } else {
-                    log.info { "Not flushing next checkpoint for index $nextCheckpointKey" }
+                    log.info {
+                        val expectedCount =
+                            manager.readCountForCheckpoint(nextCheckpointKey.checkpointId)
+                        val committedCount =
+                            manager.persistedRecordCountForCheckpoint(
+                                nextCheckpointKey.checkpointId
+                            )
+                        "Not flushing next checkpoint for index $nextCheckpointKey (committed $committedCount records of expected $expectedCount)"
+                    }
                     break
                 }
             }

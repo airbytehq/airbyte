@@ -112,6 +112,19 @@ class DataChannelBeanFactory {
         }
     }
 
+    @Singleton
+    @Named("markEndOfStreamAtEndOfSync")
+    fun markEndOfStreamAtEndOfSync(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean {
+        // For STDIO, we mark the end of stream when we get the message.
+        // For SOCKETs, source will only send end-of-stream on one socket (which is useless),
+        // so to avoid constantly syncing across threads we'll mark end of stream at the end of
+        // the sync. This means that the last checkpoint might not be flushed until end-of-sync,
+        // but it's possible that this happens already anyway.
+        return dataChannelMedium == DataChannelMedium.SOCKET
+    }
+
     /**
      * Because sockets uses multiple threads, state must be kept coherent by
      * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
