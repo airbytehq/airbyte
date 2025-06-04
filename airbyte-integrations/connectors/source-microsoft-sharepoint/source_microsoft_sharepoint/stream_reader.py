@@ -36,6 +36,7 @@ from .utils import (
     execute_query_with_retry,
     filter_http_urls,
     get_site_prefix,
+    iterate_collection,
 )
 
 
@@ -231,7 +232,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
     def _list_directories_and_files(self, root_folder, path) -> Iterable[MicrosoftSharePointRemoteFile]:
         """Enumerates folders and files starting from a root folder."""
-        drive_items = execute_query_with_retry(root_folder.children.get())
+        drive_items = iterate_collection(root_folder.children)
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
@@ -243,7 +244,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                     created_at=item.properties["createdDateTime"],
                 )
             else:
-                yield from self._list_directories_and_files(item, item_path)
+                yield from self._list_directories_and_files(root_folder=item, path=item_path)
         yield from []
 
     def _get_files_by_drive_name(self, drives, folder_path) -> Iterable[MicrosoftSharePointRemoteFile]:
