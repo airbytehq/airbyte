@@ -61,9 +61,9 @@ class TestInstagramSource:
             )
 
             assert stream_name == "user_insights", f"each state message should reference 'user_insights' stream, got {stream_name} instead"
-            assert isinstance(stream_state, AirbyteStateBlob), (
-                f"Stream state should be type AirbyteStateBlob, got {type(stream_state)} instead"
-            )
+            assert isinstance(
+                stream_state, AirbyteStateBlob
+            ), f"Stream state should be type AirbyteStateBlob, got {type(stream_state)} instead"
             assert state_keys_count == 2, f"Stream state should contain 2 partition keys, got {state_keys_count} instead"
 
     @staticmethod
