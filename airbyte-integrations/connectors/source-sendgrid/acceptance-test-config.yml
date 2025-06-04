@@ -45,6 +45,8 @@ acceptance_tests:
             bypass_reason: "can not populate"
           - name: bounces
             bypass_reason: "can not populate"
+          - name: messages
+            bypass_reason: "can not populate"
         fail_on_extra_columns: false
   incremental:
     tests:
