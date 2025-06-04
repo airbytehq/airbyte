@@ -1248,6 +1248,40 @@ definitions:
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - QualityScore
+            value: |
+              {% set value = record.get('QualityScore') %}
+              {{ value | float if value is not none and value != "--" else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AdRelevance
+            value: |
+              {% set value = record.get('AdRelevance') %}
+              {{ value | float if value is not none and value != "--" else none }}
+          - type: AddedFieldDefinition
+            path:
+              - LandingPageExperience
+            value: |
+              {% set value = record.get('LandingPageExperience') %}
+              {{ value | float if value is not none and value != "--" else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: |
+              {{ record['AccountId'] | int if record.get('AccountId') else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CampaignId
+            value: |
+              {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
+              
+              
+              
               
   basic_async_retriever:
     type: AsyncRetriever
@@ -1358,6 +1392,7 @@ definitions:
       decoder:
         type: CsvDecoder
         encoding: "utf-8-sig"
+        set_empty_cell_to_none: true
     creation_requester:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
