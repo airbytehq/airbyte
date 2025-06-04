@@ -27,9 +27,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsKeywordPageReport,
     SearchAnalyticsKeywordSiteReportByPage,
     SearchAnalyticsKeywordSiteReportBySite,
-    SearchAnalyticsPageReport,
-    SearchAnalyticsSiteReportByPage,
-    SearchAnalyticsSiteReportBySite,
 )
 
 
@@ -148,9 +145,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         streams.extend(
             [
                 SearchAnalyticsKeywordPageReport(**stream_config),
-                SearchAnalyticsPageReport(**stream_config),
-                SearchAnalyticsSiteReportBySite(**stream_config),
-                SearchAnalyticsSiteReportByPage(**stream_config),
                 SearchAnalyticsKeywordSiteReportByPage(**stream_config),
                 SearchAnalyticsKeywordSiteReportBySite(**stream_config),
             ]

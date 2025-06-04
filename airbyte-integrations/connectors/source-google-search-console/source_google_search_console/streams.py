@@ -359,25 +359,6 @@ class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     aggregation_type = QueryAggregationType.by_property
 
 
-class SearchAnalyticsSiteReportBySite(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "search_type"]
-    dimensions = ["date", "country", "device"]
-    aggregation_type = QueryAggregationType.by_property
-
-
-class SearchAnalyticsSiteReportByPage(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "search_type"]
-    search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device"]
-    aggregation_type = QueryAggregationType.by_page
-
-
-class SearchAnalyticsPageReport(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "search_type", "page"]
-    search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device", "page"]
-
-
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     # `date` is a cursor field therefore should be mandatory
     DEFAULT_DIMENSIONS = ["date"]
