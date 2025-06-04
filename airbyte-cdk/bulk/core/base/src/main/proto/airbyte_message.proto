@@ -15,5 +15,11 @@ message AirbyteMessageProtobuf {
   oneof type {
     AirbyteRecordMessageProtobuf record = 1;
     string airbyte_protocol_message = 2;
+    AirbyteProbeMessageProtobuf probe = 3;
   }
+};
+
+// An empty payload the source might send to check whether the socket is still alive.
+// The destination will treat is as a heartbeat internally but won't rely on it.
+message AirbyteProbeMessageProtobuf {
 };

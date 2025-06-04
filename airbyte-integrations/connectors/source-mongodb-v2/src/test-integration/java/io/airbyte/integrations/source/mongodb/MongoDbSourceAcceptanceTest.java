@@ -112,7 +112,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
     final ObjectNode databaseConfig = (ObjectNode) config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
-    databaseConfig.put(MongoConstants.DATABASE_CONFIGURATION_KEY, databaseName);
+    databaseConfig.putArray(MongoConstants.DATABASE_CONFIGURATION_KEY).add(databaseName);
     databaseConfig.put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
     databaseConfig.put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
     ((ObjectNode) config).put(DATABASE_CONFIG_CONFIGURATION_KEY, databaseConfig);
@@ -505,8 +505,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
+    final String serverId = config.get(DATABASE_CONFIG_CONFIGURATION_KEY).get("connection_string").asText();
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(databaseName, INVALID_RESUME_TOKEN));
+        MongoDbDebeziumStateUtil.formatState(serverId, INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
@@ -525,7 +526,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
     final MongoDbCdcTargetPosition targetPosition =
-        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(databaseName),
+            List.of(getConfiguredCatalog().getStreams())));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -553,8 +555,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   void testIsSameOffset() {
     final MongoDbCdcTargetPosition targetPosition =
-        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(databaseName),
+            List.of(getConfiguredCatalog().getStreams())));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(databaseName),
+        List.of(getConfiguredCatalog().getStreams()));
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
