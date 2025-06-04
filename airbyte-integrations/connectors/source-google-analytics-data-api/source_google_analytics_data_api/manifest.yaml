@@ -871,7 +871,7 @@ dynamic_streams:
               {% if pivots %}
               pivots: {{ pivots }}
               {% else %}
-              limit: 250000
+              limit: 100000
               {% endif %}
               {% if not (cohort and cohort.get("enabled")) %}
               dateRanges: []
