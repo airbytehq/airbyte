@@ -102,3 +102,115 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
 8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
+
+# Fabrix
+
+## AWS Role Assumption for Running Locally
+
+When running the S3 connector locally using launch.json, you need to assume the AWS role `arn:aws:iam::794038212761:role/FabrixScanner`.
+
+Since the dev container doesn't have AWS CLI installed, you'll need to run the assume-role command from a terminal outside the dev container (e.g., your host machine), then copy the credentials to the dev container.
+
+**From your host machine terminal (or any terminal with AWS CLI):**
+
+```bash
+# Run this one-liner to generate export commands
+aws sts assume-role --role-arn arn:aws:iam::794038212761:role/FabrixScanner --role-session-name s3-connector-dev | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\"\(.AccessKeyId)\"\nexport AWS_SECRET_ACCESS_KEY=\"\(.SecretAccessKey)\"\nexport AWS_SESSION_TOKEN=\"\(.SessionToken)\""'
+```
+
+This will output three export commands that you can copy and paste directly into your dev container terminal:
+```bash
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_SESSION_TOKEN="..."
+```
+
+Simply copy the entire output and paste it into your dev container terminal to set up the credentials.
+
+Alternatively, you can use tools like `aws-vault` or `aws-sso-util` on your host machine to manage the role assumption.
+
+## Fabrix Build
+
+Run from Devcontainer (so airbyte-ci is runnable)
+
+Build for arm
+```bash
+airbyte-ci connectors --name=source-s3 build --architecture linux/arm64 -t arm
+```
+
+Build for AMD64
+```bash
+airbyte-ci connectors --name=source-s3 build --architecture linux/amd64 -t amd
+```
+
+Export images to files - Extract for dev container to local docker for ECR push
+
+```bash
+# Export ARM image to tar file
+docker save airbyte/source-s3:arm -o s3-connector-arm.tar
+
+# Export AMD64 image to tar file
+docker save airbyte/source-s3:amd -o s3-connector-amd.tar
+
+# You can then copy these tar files to your host machine and load them into Docker
+# On your host machine:
+docker load -i s3-connector-arm.tar
+docker load -i s3-connector-amd.tar
+```
+
+## Push to ECR
+
+After loading the Docker images, you can tag and push them to your ECR repository:
+
+```bash
+# Login to ECR (ensure AWS credentials are configured)
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 794038212761.dkr.ecr.us-east-1.amazonaws.com
+
+# Version tag to use
+VERSION="1.0.0"
+
+# Tag and push ARM image with version and 'arm' tag
+docker tag airbyte/source-s3:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-arm
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-arm
+
+# Also push as 'arm' tag for latest reference
+docker tag airbyte/source-s3:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:arm
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:arm
+
+# Tag and push AMD64 image with version and 'amd' tag
+docker tag airbyte/source-s3:amd 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-amd
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-amd
+
+# Also push as 'amd' tag for latest reference
+docker tag airbyte/source-s3:amd 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:amd
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:amd
+
+# Create and push a multi-architecture manifest
+# This will create a manifest that points to both ARM and AMD images and selects the right one based on the cluster's architecture
+docker manifest create 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION} \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-arm \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-amd
+
+# Annotate the manifest with architecture information
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION} \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-arm --os linux --arch arm64
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION} \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}-amd --os linux --arch amd64
+
+# Push the manifest
+docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:${VERSION}
+
+# Also create a 'latest' manifest for convenience
+docker manifest create 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:latest \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:arm \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:amd
+
+# Annotate the latest manifest
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:latest \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:arm --os linux --arch arm64
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:latest \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:amd --os linux --arch amd64
+
+# Push the latest manifest
+docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker:latest
+```

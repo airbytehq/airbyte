@@ -1017,3 +1017,46 @@ class Describe(Stream):
         """
         for sobject in self.sobjects_to_describe:
             yield self.sf_api.describe(sobject=sobject)
+
+
+class EventLogFileEventsStream(IncrementalRestSalesforceStream):
+    """
+    Special stream to expand EventLogFile: fetch CSV content for each record and yield each line as a separate record.
+    """
+    def __init__(self, replication_key: str = "LogDate", **kwargs):
+        super().__init__(replication_key=replication_key, **kwargs)
+        
+    def read_records(
+        self,
+        sync_mode,
+        cursor_field=None,
+        stream_slice=None,
+        stream_state=None,
+    ):
+        # first get the list of EventLogFile metadata records
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            log_file_path = record.get("LogFile")
+            if not log_file_path:
+                continue
+            # Store slice information to use for state management
+            self._slice = stream_slice
+            # download the CSV file using HttpClient to include auth
+            url = f"{self.url_base}{log_file_path}"
+            # send_request returns (prepared_request, response)
+            _, resp = self._http_client.send_request(
+                http_method="GET",
+                url=url,
+                headers=dict(self.request_headers(stream_state=stream_state, stream_slice=stream_slice)),
+                params=None,
+                json=None,
+                data=None,
+                request_kwargs={}
+            )
+            resp.encoding = self.encoding
+            # parse CSV and yield each row as an individual record
+            reader = csv.DictReader(resp.text.splitlines())
+            for row in reader:
+                new_record = record.copy()
+                # Add event_log_id to the new record
+                new_record['data'] = row
+                yield new_record

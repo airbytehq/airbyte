@@ -6,7 +6,6 @@ import logging
 import time
 from datetime import datetime
 from io import IOBase
-from os import getenv
 from typing import Dict, Iterable, List, Optional, Set, cast
 
 import boto3.session
@@ -27,9 +26,6 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
-
-
-AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
@@ -64,7 +60,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             # list or read files.
             raise ValueError("Source config is missing; cannot create the S3 client.")
 
-        if self._s3_client is None:
+        if self._s3_client is None: 
             client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
 
             # Set the region_name if it's provided in the config
@@ -74,12 +70,17 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             if self.config.role_arn:
                 self._s3_client = self._get_iam_s3_client(client_kv_args)
             else:
-                self._s3_client = boto3.client(
-                    "s3",
-                    aws_access_key_id=self.config.aws_access_key_id,
-                    aws_secret_access_key=self.config.aws_secret_access_key,
-                    **client_kv_args,
-                )
+                # Only use explicit credentials if provided
+                if self.config.aws_access_key_id and self.config.aws_secret_access_key:
+                    self._s3_client = boto3.client(
+                        "s3",
+                        aws_access_key_id=self.config.aws_access_key_id,
+                        aws_secret_access_key=self.config.aws_secret_access_key,
+                        **client_kv_args,
+                    )
+                else:
+                    # Use environment variables or instance profile credentials
+                    self._s3_client = boto3.client("s3", **client_kv_args)
 
         return self._s3_client
 
@@ -89,26 +90,31 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         the authentication process by assuming an IAM role, optionally using an external ID for enhanced security.
         The obtained credentials are set to auto-refresh upon expiration, ensuring uninterrupted access to the S3 service.
 
+        This method uses the current role (from environment variables or from the EKS pod's role) when performing
+        assume role operations, rather than requiring explicit access keys.
+
         :param client_kv_args: A dictionary of key-value pairs for the boto3 S3 client constructor.
         :return: An instance of a boto3 S3 client with the assumed role credentials.
 
         The method assumes a role specified in the `self.config.role_arn` and creates a session with the S3 service.
-        If `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable is set, it will be used during the role assumption for additional security.
+        If `external_id` is set in the config, it will be used during the role assumption for additional security.
         """
 
         def refresh():
+            # Use the current role (from environment variables or instance profile)
+            # to assume the specified role instead of using explicit credentials
             client = boto3.client("sts")
-            if AWS_EXTERNAL_ID:
-                role = client.assume_role(
-                    RoleArn=self.config.role_arn,
-                    RoleSessionName="airbyte-source-s3",
-                    ExternalId=AWS_EXTERNAL_ID,
-                )
-            else:
-                role = client.assume_role(
-                    RoleArn=self.config.role_arn,
-                    RoleSessionName="airbyte-source-s3",
-                )
+            
+            assume_role_params = {
+                "RoleArn": self.config.role_arn,
+                "RoleSessionName": "airbyte-source-s3",
+            }
+            
+            # Add external ID if specified
+            if self.config.external_id:
+                assume_role_params["ExternalId"] = self.config.external_id
+            
+            role = client.assume_role(**assume_role_params)
 
             creds = role.get("Credentials", {})
             return {

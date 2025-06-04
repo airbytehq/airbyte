@@ -42,11 +42,11 @@ from .streams import (
     BulkSalesforceStream,
     BulkSalesforceSubStream,
     Describe,
+    EventLogFileEventsStream,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
     RestSalesforceSubStream,
 )
-
 
 _DEFAULT_CONCURRENCY = 10
 _MAX_CONCURRENCY = 10
@@ -168,6 +168,12 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             stream_kwargs["stream_slice_step"] = config.get("stream_slice_step", "P30D")
         else:
             stream_class = full_refresh
+        # use custom EventLogFileEventsStream to expand CSV lines only for the events wrapper
+        if stream_name == "EventLogFile":
+            stream_class = EventLogFileEventsStream
+            # drop args not supported by HttpStream
+            stream_kwargs.pop("replication_key", None)
+            stream_kwargs.pop("stream_slice_step", None)
 
         return stream_class, stream_kwargs
 

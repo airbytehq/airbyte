@@ -40,6 +40,14 @@ class Config(AbstractFileBasedSpec):
         f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
         order=6,
     )
+    
+    external_id: Optional[str] = Field(
+        title="External ID",
+        default=None,
+        description="External ID to use when assuming a role. This is used for cross-account access using the role_arn parameter.",
+        airbyte_secret=True,
+        order=7,
+    )
 
     aws_secret_access_key: Optional[str] = Field(
         title="AWS Secret Access Key",
@@ -73,6 +81,14 @@ class Config(AbstractFileBasedSpec):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
+    )
+
+    flatten_records_key: Optional[str] = Field(
+        title="Flatten Records Key",
+        default=None,
+        description="If your JSON/JSONL files contain an array of records under a specific key (e.g., 'Records' in CloudTrail logs), specify that key here. Each record in the array will be emitted as an individual record with all relevant metadata preserved.",
+        examples=["Records"],
+        order=8,
     )
 
     @root_validator

@@ -1,10 +1,16 @@
 {
-  "bucket": "a-bucket",
+  "bucket": "aws-cloudtrail-logs-038462792154-50c30d32",
+  "region_name": "us-east-1",
+  "role_arn": "arn:aws:iam::038462792154:role/FabrixScannerReadOnly",
+  "external_id": "f713a95c39cdd5741dc67f6b",
+  "flatten_records_key":"Records",
   "streams": [
     {
-      "name": "output-stream-name",
-      "format": { "filetype": "csv" },
-      "file_type": "csv",
+      "name": "cloudtrail",
+      "globs": ["AWSLogs/038462792154/CloudTrail/us-west-1/2024/12/08/*.json.gz"],
+      "format": {
+        "filetype": "jsonl"
+      },
       "validation_policy": "Emit Record"
     }
   ]
