@@ -31,7 +31,7 @@ const Link = ({ children, href, variant = "primary" }) => {
   };
 
   return (
-    <button className={`${styles.cardCta} ${linkClass}`} onClick={handleClick}>
+    <button className={`${styles.cardCta} ${linkClass}`} onClick={handleClick} role="link">
       {children}
       <FontAwesomeIcon icon={faArrowRight} />
     </button>
