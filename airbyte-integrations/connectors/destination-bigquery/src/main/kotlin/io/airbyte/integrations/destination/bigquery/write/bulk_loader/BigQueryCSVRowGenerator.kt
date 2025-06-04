@@ -31,7 +31,6 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITHOUT_TIMEZONE_FORMATTER
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITH_TIMEZONE_FORMATTER
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger

@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.CSVFormattingWriter
@@ -38,9 +37,8 @@ class BigQueryObjectStorageFormattingWriter(
 }
 
 @Singleton
-class BigQueryObjectStorageFormattingWriterFactory(
-    private val config: BigqueryConfiguration
-) : ObjectStorageFormattingWriterFactory {
+class BigQueryObjectStorageFormattingWriterFactory(private val config: BigqueryConfiguration) :
+    ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
         outputStream: OutputStream,
