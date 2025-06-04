@@ -112,6 +112,29 @@ class DataChannelBeanFactory {
         }
     }
 
+    @Singleton
+    @Named("markEndOfStreamAtEndOfSync")
+    fun markEndOfStreamAtEndOfSync(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean {
+        // For STDIO, we mark the end of stream when we get the message.
+        // For SOCKETs, source will only send end-of-stream on one socket (which is useless),
+        // so to avoid constantly syncing across threads we'll mark end of stream at the end of
+        // the sync. This means that the last checkpoint might not be flushed until end-of-sync,
+        // but it's possible that this happens already anyway.
+        return dataChannelMedium == DataChannelMedium.SOCKET
+    }
+
+    @Singleton
+    @Named("logPerNRecords")
+    fun logPerNRecords(
+        @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")
+        logPerNRecords: Long
+    ): Long {
+        log.info { "Logging every $logPerNRecords records" }
+        return logPerNRecords
+    }
+
     /**
      * Because sockets uses multiple threads, state must be kept coherent by
      * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
@@ -195,6 +218,7 @@ class DataChannelBeanFactory {
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
+        @Named("logPerNRecords") logPerNRecords: Long,
     ): Array<Flow<PipelineInputEvent>> {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -218,6 +242,7 @@ class DataChannelBeanFactory {
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
                             queueMemoryManager,
+                            logPerNRecords
                         )
                     }
                     .toTypedArray()

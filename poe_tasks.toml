@@ -66,3 +66,10 @@ args = [
   { name = "destination", positional = true, help = "Name of the destination (e.g., 'motherduck')" },
   { name = "task_and_args", positional = true, multiple = true, help = "Task name and its arguments" }
 ]
+
+[tasks.dummy-change]
+help = "A task to add a dummy change to the specified connector."
+shell = "echo '# Dummy change (revert-me)' >> ${POE_ROOT}/airbyte-integrations/connectors/${connector}/metadata.yaml"
+args = [
+  { name = "connector", positional = true, help = "Name of the connector to add a dummy change to (e.g., 'source-hardcoded-records')" },
+]

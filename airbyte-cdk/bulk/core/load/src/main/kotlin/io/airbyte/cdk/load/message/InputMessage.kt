@@ -87,7 +87,7 @@ data class InputRecord(
         data = JsonToAirbyteValue().convert(data.deserializeToNode()),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
-        serialized = "",
+        serialized = data,
         fileReference,
         checkpointId,
         unknownFieldNames
