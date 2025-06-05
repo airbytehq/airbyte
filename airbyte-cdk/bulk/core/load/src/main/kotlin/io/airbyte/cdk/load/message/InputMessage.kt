@@ -195,10 +195,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
         checkpointKey: CheckpointKey? = null,
     ) : this(
         StreamCheckpoint(
-            Checkpoint(
-                stream,
-                state = blob.deserializeToNode()
-            ),
+            Checkpoint(stream, state = blob.deserializeToNode()),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),

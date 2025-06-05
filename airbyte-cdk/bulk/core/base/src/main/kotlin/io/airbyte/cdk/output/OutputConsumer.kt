@@ -155,7 +155,10 @@ private class StdoutOutputConsumer(
         // Using println is not particularly efficient, however.
         // To improve performance, this method accumulates RECORD messages into a buffer
         // before writing them to standard output in a batch.
-        if (airbyteMessage.type == AirbyteMessage.Type.RECORD && airbyteMessage.record.additionalProperties[IS_DUMMY_STATS_MESSAGE] != true) {
+        if (
+            airbyteMessage.type == AirbyteMessage.Type.RECORD &&
+                airbyteMessage.record.additionalProperties[IS_DUMMY_STATS_MESSAGE] != true
+        ) {
             // RECORD messages undergo a different serialization scheme.
             accept(airbyteMessage.record)
         } else {

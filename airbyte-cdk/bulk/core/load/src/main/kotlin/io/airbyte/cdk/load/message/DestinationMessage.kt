@@ -468,15 +468,17 @@ sealed interface CheckpointMessage : DestinationMessage {
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState().withStreamDescriptor(
-                StreamDescriptor()
-                    .withNamespace(stream.unmappedNamespace)
-                    .withName(stream.unmappedName)
-            ).also {
-                if (state != null) {
-                    it.streamState = state
+            AirbyteStreamState()
+                .withStreamDescriptor(
+                    StreamDescriptor()
+                        .withNamespace(stream.unmappedNamespace)
+                        .withName(stream.unmappedName)
+                )
+                .also {
+                    if (state != null) {
+                        it.streamState = state
+                    }
                 }
-            }
     }
 
     val checkpointKey: CheckpointKey?

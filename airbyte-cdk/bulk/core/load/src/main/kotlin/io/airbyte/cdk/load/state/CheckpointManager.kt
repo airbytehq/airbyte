@@ -332,12 +332,17 @@ class CheckpointManager<T>(
 class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
     suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit {
     private val log = KotlinLogging.logger {}
-    override suspend fun invoke(message: Reserved<CheckpointMessage>, totalRecords: Long, totalBytes: Long) {
+    override suspend fun invoke(
+        message: Reserved<CheckpointMessage>,
+        totalRecords: Long,
+        totalBytes: Long
+    ) {
         message.use {
-            val outMessage = it.value
-                .withTotalRecords(totalRecords = totalRecords)
-                .withTotalBytes(totalBytes = totalBytes)
-                .asProtocolMessage()
+            val outMessage =
+                it.value
+                    .withTotalRecords(totalRecords = totalRecords)
+                    .withTotalBytes(totalBytes = totalBytes)
+                    .asProtocolMessage()
             log.info { "TMP: Writing state message to STDOUT: $outMessage" }
             consumer.accept(outMessage)
         }

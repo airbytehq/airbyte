@@ -113,7 +113,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -139,7 +139,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
