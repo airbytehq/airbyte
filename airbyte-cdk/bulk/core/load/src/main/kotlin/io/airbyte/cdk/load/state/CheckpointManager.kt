@@ -235,12 +235,12 @@ class CheckpointManager<T>(
                     manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
                 if (persisted) {
 
-                    log.info {
-                        "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey"
-                    }
-
                     val delta = manager.committedCount(nextCheckpointKey.checkpointId)
                     val aggregate = committedCount.increment(stream.descriptor, delta)
+
+                    log.info {
+                        "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey:${aggregate.records} records, ${aggregate.serializedBytes} bytes"
+                    }
 
                     sendStateMessage(
                         nextMessage,
