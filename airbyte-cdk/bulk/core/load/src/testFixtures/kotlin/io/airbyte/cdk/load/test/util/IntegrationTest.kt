@@ -76,7 +76,7 @@ abstract class IntegrationTest(
         LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
             .format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
-    val randomizedNamespace = "default"
+    val randomizedNamespace = "test$timestampString$randomSuffix"
 
     // junit is a bit wonky with injecting TestInfo.
     // You can declare it as a constructor param, but you get a TestInfo instance

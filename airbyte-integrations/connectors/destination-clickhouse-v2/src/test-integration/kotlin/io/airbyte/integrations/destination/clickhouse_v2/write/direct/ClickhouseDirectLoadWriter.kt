@@ -145,7 +145,7 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
 
 class ClickhouseDataCleaner(): DestinationCleaner {
     override fun cleanup() {
-        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
     }
 
 }

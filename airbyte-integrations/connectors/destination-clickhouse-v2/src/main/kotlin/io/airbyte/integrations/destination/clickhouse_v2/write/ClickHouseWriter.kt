@@ -24,13 +24,14 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ClickHouseWriter(
-    private val internalNamespace: String,
+    /// private val internalNamespace: String,
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val clickhouseClient: ClickhouseAirbyteClient
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
+    private val internalNamespace: String = "airbyte_internal"
 
     override suspend fun setup() {
         names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }

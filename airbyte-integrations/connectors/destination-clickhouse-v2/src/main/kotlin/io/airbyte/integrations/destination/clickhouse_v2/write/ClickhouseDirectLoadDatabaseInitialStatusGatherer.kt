@@ -11,9 +11,9 @@ class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
     airbyteClient: AirbyteClient,
     clickhouseConfiguration: ClickhouseConfiguration,
     // TODO: Change that; maybe create a bean for it?
-    internalTableDataset: String = "default",
+    // internalTableDataset: String = "default",
 ) : BaseDatabaseInitialStatusGatherer<DirectLoadInitialStatus>(
     airbyteClient,
     clickhouseConfiguration.resolvedDatabase,
-    internalTableDataset,
+    "airbyte_internal" // internalTableDataset,
 )
