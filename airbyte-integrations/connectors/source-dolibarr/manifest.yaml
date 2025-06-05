@@ -54,8 +54,8 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_modification
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%s"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
