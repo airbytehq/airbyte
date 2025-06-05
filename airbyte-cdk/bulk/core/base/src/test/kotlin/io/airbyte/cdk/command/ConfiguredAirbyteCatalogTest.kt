@@ -4,7 +4,7 @@ package io.airbyte.cdk.command
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
-import io.airbyte.protocol.models.Field
+import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
