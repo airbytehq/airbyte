@@ -35,7 +35,7 @@ import java.util.function.Consumer
 @DefaultImplementation(StdoutOutputConsumer::class)
 abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
     companion object {
-        const val IS_DUMMY_STATS_MESSAGE = "is_dummy_stats_message"
+        const val IS_DUMMY_STATS_MESSAGE = "isDummyStatsMessage"
     }
 
     /**
