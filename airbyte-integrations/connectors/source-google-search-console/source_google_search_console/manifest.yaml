@@ -338,13 +338,6 @@ definitions:
         datetime_format: "%Y-%m-%d"
       step: P3D
       cursor_granularity: P1D
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/search_analytics_keyword_site_report_by_page"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
 
   search_analytics_keyword_page_report_stream:
     $ref: "#/definitions/base_search_analytics_keyword_stream"
