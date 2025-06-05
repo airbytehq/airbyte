@@ -17,6 +17,8 @@ concurrency:
   # This prevents avoid leakage of image artifacts across job runs:
   cancel-in-progress: true
 
+# dummy change (should not trigger vercel)
+
 permissions:
   contents: read
   packages: write # allow pushing to GHCR
