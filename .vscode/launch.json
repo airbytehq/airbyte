@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "AWS IAM: Spec",
+            "type": "python",
+            "request": "launch",
+            "module": "source_aws_iam.run",
+            "args": [
+                "spec"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "AWS IAM: Check",
+            "type": "python",
+            "request": "launch",
+            "module": "source_aws_iam.run",
+            "args": [
+                "check",
+                "--config",
+                "integration_tests/sample_config.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal"
+        }
+    ]
+}
