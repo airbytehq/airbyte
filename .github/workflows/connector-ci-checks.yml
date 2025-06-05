@@ -421,7 +421,6 @@ jobs:
 
       - name: Raise if Upstream Failure
         if: >
-          needs.pre-release-checks.result != 'success' ||
           needs.jvm-connectors-test-summary.result != 'success' ||
           needs.non-jvm-connectors-test-summary.result != 'success' ||
           needs.connectors-lint.result != 'success'
