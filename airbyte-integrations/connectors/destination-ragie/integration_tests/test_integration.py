@@ -8,7 +8,6 @@ import uuid
 from typing import Any, Dict
 
 import pytest
-
 from destination_ragie.client import RagieClient
 from destination_ragie.config import RagieConfig
 from destination_ragie.destination import DestinationRagie
