@@ -57,7 +57,7 @@ class RawSchemaParser:
         raw_schema_data: MutableMapping[Any, Any],
         schema_pointer: List[Union[InterpolatedString, str]],
         key_pointer: List[Union[InterpolatedString, str]],
-        names_conversion: bool
+        names_conversion: bool,
     ):
         """
         1. Parses sheet headers from the provided raw schema. This method assumes that data is contiguous
@@ -159,9 +159,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         schema_type_identifier = parameters["schema_type_identifier"]
         names_conversion = self.config.get("names_conversion", False)
         self._indexed_properties_to_match = self.extract_properties_to_match(
-            parameters["properties_to_match"],
-            schema_type_identifier,
-            names_conversion=names_conversion
+            parameters["properties_to_match"], schema_type_identifier, names_conversion=names_conversion
         )
 
     def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion):
@@ -213,6 +211,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
                     )
 
 
+@dataclass
 class DpathSchemaExtractor(DpathExtractor, RawSchemaParser):
     """
     Makes names conversion and parses sheet headers from the provided row.

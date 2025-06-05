@@ -41,6 +41,7 @@ connectionSpecification:
       description: >-
         Removes leading and trailing underscores from column names. Does not remove leading underscores from column names that start with a number.
         Example: "50th Percentile? "→ "_50_th_percentile"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
       default: false
     combine_number_word_pairs:
       type: boolean
@@ -48,6 +49,7 @@ connectionSpecification:
       description: >-
         Combines adjacent numbers and words.
         Example: "50th Percentile?" → "_50th_percentile_"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
       default: false
     remove_special_characters:
       type: boolean
@@ -55,6 +57,7 @@ connectionSpecification:
       description: >-
         Removes all special characters from column names.
         Example: "Example ID*" → "example_id"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
       default: false
     combine_letter_number_pairs:
       type: boolean
@@ -62,22 +65,16 @@ connectionSpecification:
       description: >-
         Combines adjacent letters and numbers.
         Example: "Q3 2023" → "q3_2023"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
       default: false
     allow_leading_numbers:
       type: boolean
       title: Allow Leading Numbers
       description: >-
         Allows column names to start with numbers.
-        Example: "50th Percentile" → "50th_percentile"
+        Example: "50th Percentile" → "50_th_percentile"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
       default: false
-    experimental_names_conversion:
-      type: boolean
-      title: Experimental Convert Column Names to SQL-Compliant Format
-      description: >-
-        Adds additional sanitization to column names before converting to SQL-compliant format, such as removing leading and trailing spaces.
-        This option may change behavior in the future, which may cause column names to update in your destination on future updates.
-        Due to this, it is recommended that you also change the "Detect and propagate schema changes" to "Approve all changes myself" in the connection advances settings.
-        If enabled, this option will supersede the `Convert Column Names to SQL-Compliant Format` option.
     credentials:
       type: object
       title: Authentication

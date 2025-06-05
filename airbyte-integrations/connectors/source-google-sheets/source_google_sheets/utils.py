@@ -4,6 +4,7 @@
 
 
 import re
+
 import unidecode
 from requests.status_codes import codes as status_codes
 
@@ -35,14 +36,15 @@ def name_conversion(text: str) -> str:
     text = text.lower()
     return text
 
+
 def safe_name_conversion(text: str) -> str:
     if not text:
         return text
     new = name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
-    print(f"Converted '{text}' to '{new}'")
     return new
+
 
 def granular_name_conversion(
     text: str,
@@ -62,9 +64,7 @@ def granular_name_conversion(
         if m.group("NoToken") is None:
             tokens.append(m.group(0))
         else:
-            for char in m.group(0):
-                if char.isspace():
-                    tokens.append("")
+            tokens.append("")
 
     # Combine tokens as per flags
     combined_tokens = []
@@ -78,7 +78,8 @@ def granular_name_conversion(
             and tokens[i + 1]
             and tokens[i + 1].isdigit()
         ):
-            combined_tokens.append(tokens[i] + tokens[i + 1])
+            combined = tokens[i] + tokens[i + 1]
+            combined_tokens.append(combined)
             i += 2
         elif (
             combine_number_word_pairs
@@ -88,36 +89,45 @@ def granular_name_conversion(
             and tokens[i + 1]
             and tokens[i + 1].isalpha()
         ):
-            combined_tokens.append(tokens[i] + tokens[i + 1])
+            combined = tokens[i] + tokens[i + 1]
+            combined_tokens.append(combined)
             i += 2
         else:
             combined_tokens.append(tokens[i])
             i += 1
 
-    # Remove empty tokens in the middle (optional, matches legacy)
-    if len(combined_tokens) >= 3:
-        combined_tokens = combined_tokens[:1] + [t for t in combined_tokens[1:-1] if t] + combined_tokens[-1:]
+    # Find indices of first and last non-empty tokens
+    first_non_empty = next((i for i, t in enumerate(combined_tokens) if t), len(combined_tokens))
+    last_non_empty = next((i for i, t in reversed(list(enumerate(combined_tokens))) if t), -1)
 
-    # Only remove leading/trailing empty tokens if flag is set
+    # Process tokens: keep leading/trailing empty tokens, remove empty tokens in middle
+    if first_non_empty < len(combined_tokens):
+        leading = combined_tokens[:first_non_empty]
+        middle = [t for t in combined_tokens[first_non_empty : last_non_empty + 1] if t]
+        trailing = combined_tokens[last_non_empty + 1 :]
+        processed_tokens = leading + middle + trailing
+    else:
+        processed_tokens = combined_tokens  # All tokens are empty
+
+    # Join tokens with underscores
+    result = DEFAULT_SEPARATOR.join(processed_tokens)
+
+    # Apply remove_leading_trailing_underscores on the final string
     if remove_leading_trailing_underscores:
-        while combined_tokens and combined_tokens[0] == "":
-            combined_tokens.pop(0)
-        while combined_tokens and combined_tokens[-1] == "":
-            combined_tokens.pop()
+        result = result.strip(DEFAULT_SEPARATOR)
 
-    # Handle leading numbers
-    if not allow_leading_numbers and combined_tokens and combined_tokens[0].isdigit():
-        combined_tokens.insert(0, "")
+    # Handle leading numbers after underscore removal
+    if not allow_leading_numbers and result and result[0].isdigit():
+        result = DEFAULT_SEPARATOR + result
 
-    result = DEFAULT_SEPARATOR.join(combined_tokens).lower()
-    return result
+    final_result = result.lower()
+    return final_result
 
 
 def granular_safe_name_conversion(text: str, **kwargs) -> str:
     new = granular_name_conversion(text, **kwargs)
     if not new or new == "_":
         raise Exception(f"initial string '{text}' converted to empty")
-    print(f"Converted '{text}' to '{new}'")
     return new
 
 

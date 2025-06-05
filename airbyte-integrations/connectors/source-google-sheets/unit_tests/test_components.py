@@ -108,13 +108,12 @@ def test_dpath_schema_extractor(body, expected_records: List):
 
 
 @pytest.mark.parametrize(
-    "raw_schema_data, expected_data, names_conversion, experimental_names_conversion",
+    "raw_schema_data, expected_data, names_conversion",
     [
         # Basic header handling
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
-            False,
             False,
         ),
         # Duplicate headers
@@ -122,12 +121,10 @@ def test_dpath_schema_extractor(body, expected_records: List):
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
             [(2, "h3", {"formattedValue": "h3"})],
             False,
-            False,
         ),
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"})],
-            False,
             False,
         ),
         # Blank values and whitespace
@@ -135,18 +132,15 @@ def test_dpath_schema_extractor(body, expected_records: List):
             {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"})],
             False,
-            False,
         ),
         (
             {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
             [],
             False,
-            False,
         ),
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"})],
-            False,
             False,
         ),
     ],
@@ -159,15 +153,14 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_whitespace_terminates_row",
     ],
 )
-def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion, experimental_names_conversion):
+def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion):
     extractor = RawSchemaParser()
-    extractor.config = {"names_conversion": names_conversion, "experimental_names_conversion": experimental_names_conversion}
+    extractor.config = {"names_conversion": names_conversion}
     parsed_data = extractor.parse_raw_schema_values(
         raw_schema_data,
         schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
         key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
         names_conversion=names_conversion,
-        experimental_names_conversion=experimental_names_conversion,
     )
     assert parsed_data == expected_data
 
@@ -192,7 +185,8 @@ def test_row_contains_relevant_data(values, relevant_indices, expected_response)
     assert is_row_empty == expected_response
 
 
-def remove_leading_trailing_underscores():
+# Tests for granular_name_conversion
+def test_remove_leading_trailing_underscores():
     assert granular_name_conversion(" EXAMPLE Domain ", remove_leading_trailing_underscores=True) == "example_domain"
 
 
@@ -201,7 +195,7 @@ def test_remove_special_characters():
 
 
 def test_combine_number_word_pairs():
-    assert granular_name_conversion("50th Percentile", combine_number_word_pairs=True) == "50th_percentile"
+    assert granular_name_conversion("50th Percentile", combine_number_word_pairs=True) == "_50th_percentile"
 
 
 def test_combine_letter_number_pairs():
@@ -213,19 +207,63 @@ def test_allow_leading_numbers():
 
 
 def test_combined_flags():
-    assert granular_name_conversion(
-        " Example ID*",
-        remove_leading_trailing_underscores=True,
-        remove_special_characters=True,
-    ) == "example_id"
+    assert (
+        granular_name_conversion(
+            " Example ID*",
+            remove_leading_trailing_underscores=True,
+            remove_special_characters=True,
+        )
+        == "example_id"
+    )
 
 
 def test_all_flags():
-    assert granular_name_conversion(
-        "  23Full1st(1)test 123aaa     *! ",
-        remove_leading_trailing_underscores=True,
-        remove_special_characters=True,
-        combine_number_word_pairs=True,
-        combine_letter_number_pairs=True,
-        allow_leading_numbers=True,
-    ) == "23full_1st_1test_123aaa"
+    assert (
+        granular_name_conversion(
+            "  23Full1st(1)test 123aaa     *! ",
+            remove_leading_trailing_underscores=True,
+            remove_special_characters=True,
+            combine_number_word_pairs=True,
+            combine_letter_number_pairs=True,
+            allow_leading_numbers=True,
+        )
+        == "23full_1st_1test_123aaa"
+    )
+
+
+def test_multiple_consecutive_special_characters():
+    assert granular_name_conversion("a!!b", remove_special_characters=False) == "a_b"
+    assert granular_name_conversion("a!!b", remove_special_characters=True) == "ab"
+
+
+def test_starting_with_number():
+    assert granular_name_conversion("123abc", allow_leading_numbers=False) == "_123_abc"
+    assert granular_name_conversion("123abc", allow_leading_numbers=True) == "123_abc"
+
+
+def test_mixed_case_and_special_characters():
+    assert granular_name_conversion("Test_Name!123", remove_special_characters=False) == "test_name_123"
+    assert granular_name_conversion("Test_Name!123", remove_special_characters=True) == "test_name_123"
+
+
+def test_leading_special_characters():
+    assert granular_name_conversion("*M1k", remove_special_characters=False, combine_letter_number_pairs=True) == "_m1_k"
+    assert granular_name_conversion("*M1k", remove_special_characters=True, combine_letter_number_pairs=True) == "m1_k"
+
+
+def test_trailing_special_characters():
+    assert granular_name_conversion("M1k*", remove_special_characters=False, combine_letter_number_pairs=True) == "m1_k_"
+    assert granular_name_conversion("M1k*", remove_special_characters=True, combine_letter_number_pairs=True) == "m1_k"
+
+
+def test_multiple_flags_with_special_characters():
+    assert (
+        granular_name_conversion(
+            "  *50th Percentile! ",
+            remove_leading_trailing_underscores=True,
+            remove_special_characters=True,
+            combine_number_word_pairs=True,
+            allow_leading_numbers=True,
+        )
+        == "50th_percentile"
+    )

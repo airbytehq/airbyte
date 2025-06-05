@@ -129,48 +129,71 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 </FieldAnchor>
 <HideInUI>
 
-### Configuration Options
+## Configuration Options
 
-The Google Sheets connector offers two optional settings to customize how column names from your spreadsheet are handled:
+### Google Sheets Connector Column Name Conversion
 
-- **Convert Column Names to SQL-Compliant Format**:
-  - **Description**: When turned on (off by default), this converts column names to be compatible with SQL databases.
+The Google Sheets connector offers options to customize how column names from your spreadsheet are converted to be SQL-compliant. These settings can be configured in the Airbyte UI when setting up the connector.
 
-- **Experimental Column Names to SQL-Compliant Format**:
-  - **Description**: When turned on (off by default), this adds extra checks to clean up column names, overriding the standard conversion if both are enabled. Note that this is an experimental feature, and its behavior may change in future updates, which could affect your column names. To avoid unexpected changes, set the connection’s "Detect and propagate schema changes" to "Approve all changes myself" in the advanced connector settings.
+---
 
-  - **Checks Performed**:
-    1. **Removes leading and trailing spaces**  
-       - Example: `"EXAMPLE Domain "` → `"example_domain"`
-    2. **Combines number-word pairs**  
-       - Example: `"50th Percentile"` → `"50th_percentile"`
-    3. **Removes all special characters**  
-       - Example: `"Example ID*"` → `"example_id"`
-    4. **Combines letter-number pairs**  
-       - Example: `"Q3 2023"` → `"q3_2023"`
-    5. **Converts spaces between words and numbers to underscores**  
-       - Example: `"App Loading Milestone 1 (All)"` → `"app_loading_milestone_1_all"`
-    6. **Handles sequences of special characters and spaces, ensuring no extra or trailing underscores**  
-       - Example: `"Example (ID)"` → `"example_id"`
+#### 1. Convert Column Names to SQL-Compliant Format
+- **Description**: When enabled, this converts column names to a format compatible with SQL databases (e.g., lowercasing, replacing spaces with underscores). This is the primary toggle required to enable any column name conversion.
+- **Default**: Off
 
-- **Additional Details**:
-    - All output is lowercased.
-    - Digits are allowed at the start of the result (e.g., `"1MyName"` → `"1my_name"`).
-    - Multiple spaces or special characters are collapsed/removed, not replaced with underscores.
-    - Only single underscores are used to separate tokens.
-    - The result is always SQL-friendly and readable.
+---
 
-- **More Examples**:
-    - `"X9 D(a)ta"` → `"x9_data"`
-    - `"1MyName"` → `"1my_name"`
-    - `"Q3 2023"` → `"q3_2023"`
-    - `"EXAMPLE Domain "` → `"example_domain"`
-    - `"50th Percentile"` → `"50th_percentile"`
-    - `"Example ID*"` → `"example_id"`
-    - `"App Loading Milestone 1 (All)"` → `"app_loading_milestone_1_all"`
-    - `"Example (ID)"` → `"example_id"`
+#### 2. Additional Conversion Options
+The following options allow you to fine-tune the column name conversion process. They only take effect if "Convert Column Names to SQL-Compliant Format" is enabled.
 
-  These options can be enabled in the Airbyte UI when setting up the Google Sheets destination connector.
+- **Remove Leading and Trailing Underscores**
+  - **Description**: Removes leading and trailing underscores from column names. Note that leading underscores are preserved for column names starting with a number if "Allow Leading Numbers" is disabled.
+  - **Example**:  
+    - Input: `"  EXAMPLE Domain  "`  
+    - Output: `"example_domain"`
+  - **Default**: Off
+
+- **Combine Number-Word Pairs**
+  - **Description**: Combines adjacent numbers and words into a single token without separators.
+  - **Example**:  
+    - Input: `"50th Percentile"`  
+    - Output: `"50th_percentile"` (if "Allow Leading Numbers" is enabled)  
+    - Output: `"_50th_percentile"` (if "Allow Leading Numbers" is disabled)
+  - **Default**: Off
+
+- **Remove All Special Characters**
+  - **Description**: Removes all special characters (e.g., `*`, `?`, `!`, `$`, `%`, `(`, `)`) from column names.
+  - **Example**:  
+    - Input: `"Example ID*"`  
+    - Output: `"example_id"`
+  - **Default**: Off
+
+- **Combine Letter-Number Pairs**
+  - **Description**: Combines adjacent letters and numbers into a single token without separators.
+  - **Example**:  
+    - Input: `"Q3 2023"`  
+    - Output: `"q3_2023"`
+  - **Default**: Off
+
+- **Allow Leading Numbers**
+  - **Description**: Allows column names to start with numbers. If disabled, a leading underscore is added to column names that begin with a number.
+  - **Example**:  
+    - Input: `"50th Percentile"`  
+    - Output: `"50th_percentile"` (if enabled)  
+    - Output: `"_50th_percentile"` (if disabled)
+  - **Default**: Off
+
+---
+
+#### Additional Details
+- All converted column names are lowercased.
+- Multiple spaces or special characters are collapsed or removed, not replaced with multiple underscores.
+- Only single underscores are used to separate tokens.
+- The result is always SQL-friendly and readable.
+
+---
+
+These options provide flexibility to tailor column name conversions to your specific database requirements. Adjust them as needed in the Airbyte UI when configuring the Google Sheets connector.
 
 ## Supported sync modes
 
@@ -230,7 +253,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.0 | 2025-06-03 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added optional experimental name conversion setting with enhanced sanitization for column names. |
+| 0.10.0 | 2025-06-05 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additonal sanitzation flags when using Convert Column Names to SQL-Compliant Format (names_conversion)|
 | 0.9.6 | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets |
 | 0.9.5 | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`|
 | 0.9.4 | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies |
