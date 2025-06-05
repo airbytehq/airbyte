@@ -22,16 +22,16 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Products list | product_id | DefaultPaginator | ✅ |  ❌  |
+| Products list | product_id | DefaultPaginator | ✅ |  ✅  |
 | Products category id list |  | No pagination | ✅ |  ❌  |
-| Product categories list | category_id | DefaultPaginator | ✅ |  ❌  |
-| Customer invoices list | invoice_id | DefaultPaginator | ✅ |  ❌  |
+| Product categories list | category_id | DefaultPaginator | ✅ |  ✅  |
+| Customer invoices list | invoice_id | DefaultPaginator | ✅ |  ✅  |
 | Customer invoices lines list |  | No pagination | ✅ |  ❌  |
-| Customers list | customer_id | DefaultPaginator | ✅ |  ❌  |
-| Supplier invoices list | supp_invoice_id | DefaultPaginator | ✅ |  ❌  |
+| Customers list | customer_id | DefaultPaginator | ✅ |  ✅  |
+| Supplier invoices list | supp_invoice_id | DefaultPaginator | ✅ |  ✅  |
 | Supplier invoices lines list |  | No pagination | ✅ |  ❌  |
-| Suppliers list | supplier_id | DefaultPaginator | ✅ |  ❌  |
-| Internal Users | user_id | DefaultPaginator | ✅ |  ❌  |
+| Suppliers list | supplier_id | DefaultPaginator | ✅ |  ✅  |
+| Internal Users | user_id | DefaultPaginator | ✅ |  ✅  |
 | Company profile data |  | No pagination | ✅ |  ❌  |
 | Customer invoices payments list | ref | No pagination | ✅ |  ❌  |
 | Supplier invoices payments list | ref | No pagination | ✅ |  ❌  |
@@ -43,7 +43,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.0.0 | 2025-06-05 | [61388](https://github.com/airbytehq/airbyte/pull/61388)| Implements incremental sync in all applicable parent streams, improves the performance and efficiency of data extraction |
+| 1.0.0 | 2025-06-05 | [61388](https://github.com/airbytehq/airbyte/pull/61388)| Implements incremental sync in all applicable parent streams, improves the performance and efficiency of data extraction, compatible with Dolibarr 21.0.0 or higher versions |
 | 0.0.1 | 2025-05-20 | | Initial release by [@leonmm2](https://github.com/leonmm2) via Connector Builder |
 
 </details>
