@@ -213,8 +213,9 @@ class DestinationMessageFactory(
                 namespace = streamState.streamDescriptor.namespace,
                 name = streamState.streamDescriptor.name
             )
+        val stream = catalog.getStream(descriptor)
         return CheckpointMessage.Checkpoint(
-            stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
+            stream = stream,
             state = runCatching { streamState.streamState }.getOrNull(),
         )
     }

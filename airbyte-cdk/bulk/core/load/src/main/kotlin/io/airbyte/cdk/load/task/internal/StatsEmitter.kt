@@ -60,8 +60,8 @@ class StatsEmitter(
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
                             AirbyteRecordMessage()
-                                .withNamespace(stream.descriptor.namespace)
-                                .withStream(stream.descriptor.name)
+                                .withNamespace(stream.unmappedNamespace)
+                                .withStream(stream.unmappedName)
                                 .withData(EMPTY_JSON)
                                 .withAdditionalProperty(DEST_EMITTED_RECORDS_COUNT, recordsRead)
                                 .withAdditionalProperty(DEST_EMITTED_BYTES_COUNT, bytesRead),
