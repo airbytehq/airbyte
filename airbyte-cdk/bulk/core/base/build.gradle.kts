@@ -3,7 +3,62 @@ import io.netifi.flatbuffers.plugin.tasks.FlatBuffers
 
 plugins {
     id("de.undercouch.download") version ("5.6.0")
+    id("com.google.protobuf") version("0.9.4")
     id("io.netifi.flatbuffers") version("1.0.7")
+}
+
+kotlin {
+    sourceSets {
+        // grab the “main” sourceSet
+        val main by getting {
+            // add each generated folder
+            kotlin.srcDir(layout.buildDirectory.dir("generated/source/proto/main/grpc"))
+            kotlin.srcDir(layout.buildDirectory.dir("generated/source/proto/main/grpckt"))
+            kotlin.srcDir(layout.buildDirectory.dir("generated/source/proto/main/kotlin"))
+            kotlin.srcDir(layout.buildDirectory.dir("generated/source/proto/main/java"))
+        }
+    }
+}
+
+sourceSets {
+    val main by getting {
+        // add your proto folder
+        proto {
+            srcDir("$projectDir/src/main/proto")
+        }
+    }
+}
+
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.30.0"
+    }
+    plugins {
+        create("grpc") {
+            // Java gRPC stub generator
+            artifact = "io.grpc:protoc-gen-grpc-java:1.71.0"
+        }
+        create("grpckt") {
+            // Kotlin gRPC stub generator
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
+        }
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("kotlin")    // the Kotlin builtin
+            }
+            task.plugins {
+                create("grpc")      // wire in the Java gRPC plugin
+                create("grpckt")    // wire in the Kotlin gRPC plugin
+            }
+        }
+    }
+}
+
+tasks.withType<Copy>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 val flatBuffersArchive = "fbs/fbs.zip"
@@ -35,6 +90,7 @@ dependencies {
     api("org.apache.mina:mina-core:2.0.27") // for fixing vulnerability of sshd-mina
     api("org.apache.sshd:sshd-mina:2.13.2")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    api("com.google.protobuf:protobuf-kotlin:4.30.0")
 
     implementation("com.datadoghq:dd-trace-api:1.39.0")
     implementation("com.datadoghq:dd-trace-ot:1.39.0")
@@ -52,6 +108,8 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
     implementation("net.i2p.crypto:eddsa:0.3.0")
     implementation("org.openapi4j:openapi-schema-validator:1.0.7")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.1")
+    implementation("io.grpc:grpc-protobuf:1.71.0")
 
     // this is only needed because of exclusions in airbyte-protocol
     runtimeOnly("com.google.guava:guava:33.3.0-jre")
