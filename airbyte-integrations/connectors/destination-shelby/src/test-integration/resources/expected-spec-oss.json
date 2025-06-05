@@ -27,7 +27,7 @@
         "airbyte_secret" : true
       },
       "is_sandbox" : {
-        "type" : "string",
+        "type" : "boolean",
         "description" : "Toggle if you're using a <a href=\"https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5\">Salesforce Sandbox</a>.",
         "title" : "Is Sandbox",
         "order" : 3,

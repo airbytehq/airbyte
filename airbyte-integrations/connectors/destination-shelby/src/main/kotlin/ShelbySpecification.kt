@@ -41,7 +41,7 @@ class ShelbySpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("is_sandbox")
     @get:JsonSchemaInject(json = """{"order": 3, "default": false}""")
-    val isSandbox: String = ""
+    val isSandbox: Boolean = false
 
     @get:JsonProperty("Auth Type")
     @get:JsonSchemaInject(json = """{"const": "Client"}""")
