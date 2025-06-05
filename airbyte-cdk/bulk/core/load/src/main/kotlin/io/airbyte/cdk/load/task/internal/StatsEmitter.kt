@@ -14,6 +14,7 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
@@ -90,7 +91,9 @@ class FrequencyFactory {
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
 class DummyStatsMessageConsumer(private val consumer: OutputConsumer) :
     suspend (AirbyteMessage) -> Unit {
+    private val log = KotlinLogging.logger {}
     override suspend fun invoke(message: AirbyteMessage) {
+        log.info { "TMP: Writing dummy stats message: $message" }
         consumer.accept(message)
     }
 }
