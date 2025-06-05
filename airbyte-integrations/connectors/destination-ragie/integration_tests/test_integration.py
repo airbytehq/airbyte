@@ -1,20 +1,20 @@
-import uuid
-import pytest
 import time
+import uuid
+
+import pytest
+from destination_ragie.destination import DestinationRagie
 
 from airbyte_cdk.models import (
-    Type,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    AirbyteStream,
-    SyncMode,
-    DestinationSyncMode,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+    Type,
 )
-
-from destination_ragie.destination import DestinationRagie
 
 
 def make_record(stream_name: str, data: dict) -> AirbyteMessage:

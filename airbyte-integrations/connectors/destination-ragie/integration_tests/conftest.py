@@ -1,5 +1,7 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 
 @pytest.fixture(autouse=True)
 def mock_ragie_client():
