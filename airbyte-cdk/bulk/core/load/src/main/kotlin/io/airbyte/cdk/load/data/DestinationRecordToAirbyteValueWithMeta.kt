@@ -29,7 +29,8 @@ class DestinationRecordToAirbyteValueWithMeta(
         val properties =
             linkedMapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue(UUID.randomUUID().toString()),
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT to getEmittedAtMs(emittedAtMs, extractedAtAsTimestampWithTimezone),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to
+                    getEmittedAtMs(emittedAtMs, extractedAtAsTimestampWithTimezone),
                 Meta.COLUMN_NAME_AB_META to
                     ObjectValue(
                         linkedMapOf(

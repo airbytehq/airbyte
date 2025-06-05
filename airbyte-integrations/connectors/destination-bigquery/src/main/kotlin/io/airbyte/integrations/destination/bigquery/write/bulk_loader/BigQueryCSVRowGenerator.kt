@@ -43,7 +43,10 @@ object LIMITS {
 
     fun validateNumber(value: EnrichedAirbyteValue): BigDecimal? {
         val numValue = (value.abValue as NumberValue).value
-        return if (numValue < BigQueryRecordFormatter.MIN_NUMERIC || BigQueryRecordFormatter.MAX_NUMERIC < numValue) {
+        return if (
+            numValue < BigQueryRecordFormatter.MIN_NUMERIC ||
+                BigQueryRecordFormatter.MAX_NUMERIC < numValue
+        ) {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
         } else {
@@ -53,7 +56,10 @@ object LIMITS {
 
     fun validateInteger(value: EnrichedAirbyteValue): BigInteger? {
         val intValue = (value.abValue as IntegerValue).value
-        return if (intValue < BigQueryRecordFormatter.INT64_MIN_VALUE || BigQueryRecordFormatter.INT64_MAX_VALUE < intValue) {
+        return if (
+            intValue < BigQueryRecordFormatter.INT64_MIN_VALUE ||
+                BigQueryRecordFormatter.INT64_MAX_VALUE < intValue
+        ) {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
         } else {
