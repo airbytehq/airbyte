@@ -371,12 +371,30 @@ definitions:
             path:
               - _tmp_Headlines_AssetLink
             value: "{{ record.get('Headlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Images_AssetLink
+            value: "{{ record.get('Images') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_LongHeadlines_AssetLink
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Videos_AssetLink
+            value: "{{ record.get('Videos') }}"
+          - type: AddedFieldDefinition
+            path:
+              - ForwardCompatibilityMap
+            value: "{{ record.get('ForwardCompatibilityMap') if record.get('ForwardCompatibilityMap') and record.get('ForwardCompatibilityMap') | length > 0 else none }}"
       - type: RemoveFields
         field_pointers:
           - - Descriptions
           - - FinalMobileUrls
           - - FinalUrls
           - - Headlines
+          - - Images
+          - - LongHeadlines
+          - - Videos
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -399,12 +417,30 @@ definitions:
               - Headlines
               - AssetLink
             value: "{{ record.get('_tmp_Headlines_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Images
+              - AssetLink
+            value: "{{ record.get('_tmp_Images_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - LongHeadlines
+              - AssetLink
+            value: "{{ record.get('_tmp_Images_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Videos
+              - AssetLink
+            value: "{{ record.get('_tmp_Videos_AssetLink') }}"
       - type: RemoveFields
         field_pointers:
           - - _tmp_Descriptions_AssetLink
           - - _tmp_FinalMobileUrls_string
           - - _tmp_FinalUrls_string
           - - _tmp_Headlines_AssetLink
+          - - _tmp_Images_AssetLink
+          - - _tmp_LongHeadlines_AssetLink
+          - - _tmp_Videos_AssetLink
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
