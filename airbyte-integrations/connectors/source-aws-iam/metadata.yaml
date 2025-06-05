@@ -1,0 +1,13 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  name: AWS IAM
+  dockerRepository: airbyte/source-aws-iam
+  githubIssueLabel: source-aws-iam
+  icon: icon.svg
+  license: MIT
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aws-iam
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"
