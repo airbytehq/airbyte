@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
 data class CheckTestConfig(
-    val configContents: String,
+    var configContents: String,
     val featureFlags: Set<FeatureFlag> = emptySet(),
     val name: String? = null,
 )

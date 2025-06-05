@@ -7,11 +7,12 @@ import jakarta.inject.Singleton
 data class ClickhouseConfiguration(
     val hostname: String,
     val port: String,
+    val protocol: String,
     val database: String,
     val username: String,
     val password: String,
 ): DestinationConfiguration() {
-    val endpoint = "https://$hostname:$port"
+    val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
 
     object Defaults {
@@ -26,6 +27,7 @@ class ClickhouseConfigurationFactory :
         ClickhouseConfiguration(
             pojo.hostname,
             pojo.port,
+            pojo.protocol.value,
             pojo.database,
             pojo.username,
             pojo.password,

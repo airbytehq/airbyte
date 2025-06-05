@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.clickhouse_v2
 
 import com.clickhouse.client.api.Client
+import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.client.AirbyteClient
@@ -71,6 +72,10 @@ class ClickhouseBeanFactory {
             .setUsername(config.username)
             .setPassword(config.password)
             .setDefaultDatabase(config.resolvedDatabase)
+            // This disables all the retries. It is needed because clickhouse doesn't return a proper
+            // error when the endpoint in incorrect. It does returns when the username or password is incorrect.
+            // This behavior can be seen in the test [ClickhouseCheckTest]
+            .retryOnFailures(ClientFaultCause.None)
             .build()
     }
 
