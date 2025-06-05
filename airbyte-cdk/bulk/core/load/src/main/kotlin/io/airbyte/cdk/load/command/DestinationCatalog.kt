@@ -67,6 +67,7 @@ class DefaultDestinationCatalogFactory {
         streamFactory: DestinationStreamFactory,
         @Value("\${${Operation.PROPERTY}}") operation: String,
         @Named("checkNamespace") checkNamespace: String?,
+        namespaceMapper: NamespaceMapper
     ): DestinationCatalog {
         if (operation == "check") {
             // generate a string like "20240523"
@@ -77,7 +78,8 @@ class DefaultDestinationCatalogFactory {
             return DestinationCatalog(
                 listOf(
                     DestinationStream(
-                        descriptor = DestinationStream.Descriptor(namespace, "test$date$random"),
+                        unmappedNamespace = namespace,
+                        unmappedName = "test$date$random",
                         importType = Append,
                         schema =
                             ObjectType(
@@ -86,6 +88,7 @@ class DefaultDestinationCatalogFactory {
                         generationId = 1,
                         minimumGenerationId = 0,
                         syncId = 1,
+                        namespaceMapper = namespaceMapper
                     )
                 )
             )

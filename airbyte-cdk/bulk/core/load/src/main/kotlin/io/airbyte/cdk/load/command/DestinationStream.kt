@@ -25,7 +25,8 @@ import jakarta.inject.Singleton
  * TODO: Add dedicated schema type, converted from json-schema.
  */
 data class DestinationStream(
-    val descriptor: Descriptor,
+    val unmappedNamespace: String?,
+    val unmappedName: String,
     val importType: ImportType,
     val schema: AirbyteType,
     val generationId: Long,
@@ -35,7 +36,10 @@ data class DestinationStream(
     val isFileBased: Boolean = false,
     // whether we will move the file (in addition to the metadata)
     val includeFiles: Boolean = false,
+    private val namespaceMapper: NamespaceMapper
 ) {
+    val descriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
+
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
             StreamDescriptor().withName(name).also {
@@ -95,8 +99,8 @@ data class DestinationStream(
         ConfiguredAirbyteStream()
             .withStream(
                 AirbyteStream()
-                    .withNamespace(descriptor.namespace)
-                    .withName(descriptor.name)
+                    .withNamespace(unmappedNamespace)
+                    .withName(unmappedName)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
                     .withIsFileBased(isFileBased)
             )
@@ -132,14 +136,13 @@ data class DestinationStream(
 @Singleton
 class DestinationStreamFactory(
     private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
+    private val namespaceMapper: NamespaceMapper
 ) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
         return DestinationStream(
-            descriptor =
-                DestinationStream.Descriptor(
-                    namespace = stream.stream.namespace,
-                    name = stream.stream.name
-                ),
+            unmappedNamespace = stream.stream.namespace,
+            unmappedName = stream.stream.name,
+            namespaceMapper = namespaceMapper,
             importType =
                 when (stream.destinationSyncMode) {
                     null -> throw IllegalArgumentException("Destination sync mode was null")

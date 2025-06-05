@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -22,7 +23,8 @@ class DestinationMessageFactory(
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    private val namespaceMapper: NamespaceMapper
 ) {
 
     fun fromAirbyteProtocolMessage(
@@ -46,11 +48,12 @@ class DestinationMessageFactory(
 
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
-                val stream =
-                    catalog.getStream(
+                val descriptor =
+                    namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream,
+                        name = message.record.stream
                     )
+                val stream = catalog.getStream(descriptor)
                 if (fileTransferEnabled) {
                     try {
                         @Suppress("UNCHECKED_CAST")
@@ -104,11 +107,12 @@ class DestinationMessageFactory(
                     message.trace.type == null ||
                         message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
                 ) {
-                    val stream =
-                        catalog.getStream(
+                    val descriptor =
+                        namespaceMapper.map(
                             namespace = status.streamDescriptor.namespace,
                             name = status.streamDescriptor.name,
                         )
+                    val stream = catalog.getStream(descriptor)
                     when (status.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE ->
                             if (fileTransferEnabled) {
@@ -204,7 +208,11 @@ class DestinationMessageFactory(
     private fun fromAirbyteStreamState(
         streamState: AirbyteStreamState
     ): CheckpointMessage.Checkpoint {
-        val descriptor = streamState.streamDescriptor
+        val descriptor =
+            namespaceMapper.map(
+                namespace = streamState.streamDescriptor.namespace,
+                name = streamState.streamDescriptor.name
+            )
         return CheckpointMessage.Checkpoint(
             stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
             state = runCatching { streamState.streamState }.getOrNull(),
@@ -221,15 +229,17 @@ class DestinationMessageFactory(
                 Jsons.readValue(message.airbyteProtocolMessage, AirbyteMessage::class.java)
             fromAirbyteProtocolMessage(airbyteMessage, serializedSizeBytes)
         } else if (message.hasRecord()) {
-            val stream =
-                catalog.getStream(
-                    message.record.streamName,
-                    if (message.record.hasStreamNamespace()) {
-                        message.record.streamNamespace // defaults to "", not null
-                    } else {
-                        null
-                    }
+            val descriptor =
+                namespaceMapper.map(
+                    namespace =
+                        if (message.record.hasStreamNamespace()) {
+                            message.record.streamNamespace // defaults to "", not null
+                        } else {
+                            null
+                        },
+                    name = message.record.streamName
                 )
+            val stream = catalog.getStream(descriptor)
             DestinationRecord(
                 stream,
                 DestinationRecordProtobufSource(message),

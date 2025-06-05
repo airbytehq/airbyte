@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.pipeline.object_storage.file
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -72,7 +73,7 @@ class ForwardFileRecordTaskTest {
     fun `forwards end of stream`() = runTest {
         val input =
             PipelineEndOfStream<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>(
-                Fixtures.descriptor
+                Fixtures.unmappedDescriptor
             )
         task.handleEvent(input)
 
@@ -148,7 +149,7 @@ class ForwardFileRecordTaskTest {
     }
 
     object Fixtures {
-        val descriptor = DestinationStream.Descriptor("namespace-1", "name-1")
+        val unmappedDescriptor = DestinationStream.Descriptor("namespace-1", "name-1")
 
         private fun message() =
             AirbyteMessage()
@@ -165,13 +166,15 @@ class ForwardFileRecordTaskTest {
 
         fun stream(includeFiles: Boolean = true, schema: ObjectType = schema()) =
             DestinationStream(
-                descriptor = descriptor,
+                unmappedNamespace = unmappedDescriptor.namespace,
+                unmappedName = unmappedDescriptor.name,
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
+                namespaceMapper = NamespaceMapper()
             )
 
         fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.pipeline.object_storage.file
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -114,7 +115,7 @@ class RouteEventTaskTest {
     @Test
     fun `routes end of stream for streams with includes files to file queue`() = runTest {
         val stream = Fixtures.stream(includeFiles = true)
-        val key = StreamKey(Fixtures.descriptor)
+        val key = StreamKey(Fixtures.unmappedDescriptor)
 
         val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
         every { catalog.getStream(key.stream) } returns stream
@@ -147,7 +148,7 @@ class RouteEventTaskTest {
     @Test
     fun `routes end of stream for non-file streams to record queue`() = runTest {
         val stream = Fixtures.stream(includeFiles = false)
-        val key = StreamKey(Fixtures.descriptor)
+        val key = StreamKey(Fixtures.unmappedDescriptor)
 
         val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
         every { catalog.getStream(key.stream) } returns stream
@@ -167,7 +168,7 @@ class RouteEventTaskTest {
     }
 
     object Fixtures {
-        val descriptor = DestinationStream.Descriptor("namespace-1", "name-1")
+        val unmappedDescriptor = DestinationStream.Descriptor("namespace-1", "name-1")
 
         private fun message() =
             AirbyteMessage()
@@ -184,13 +185,15 @@ class RouteEventTaskTest {
 
         fun stream(includeFiles: Boolean = true, schema: ObjectType = schema()) =
             DestinationStream(
-                descriptor = descriptor,
+                unmappedNamespace = unmappedDescriptor.namespace,
+                unmappedName = unmappedDescriptor.name,
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
+                namespaceMapper = NamespaceMapper()
             )
 
         fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =

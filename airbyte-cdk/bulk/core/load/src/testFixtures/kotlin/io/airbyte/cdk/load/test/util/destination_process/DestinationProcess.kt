@@ -9,6 +9,8 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -80,6 +82,8 @@ abstract class DestinationProcessFactory {
         micronautProperties: Map<Property, String> = emptyMap(),
         dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
         dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+        namespaceMappingConfig: NamespaceMappingConfig =
+            NamespaceMappingConfig(NamespaceDefinitionType.SOURCE),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 
