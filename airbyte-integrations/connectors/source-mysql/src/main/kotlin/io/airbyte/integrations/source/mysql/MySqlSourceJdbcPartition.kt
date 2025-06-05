@@ -206,11 +206,15 @@ class MySqlSourceJdbcRfrSnapshotPartition(
     // in RFR case.
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
-                primaryKey = checkpointColumns,
-                primaryKeyCheckpoint =
-                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
-            )
+            when (upperBound) {
+                null -> MySqlSourceJdbcStreamStateValue.snapshotCompleted
+                else -> MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
+                    primaryKey = checkpointColumns,
+                    primaryKeyCheckpoint =
+                        checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
+                )
+            }
+
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(

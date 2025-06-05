@@ -261,7 +261,8 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkValue == upperBound.asText()) {
+                if (sv.pkValue == upperBound.asText()
+                    || sv.pkValue == null) {
                     return null
                 }
                 val pkLowerBound: JsonNode =
