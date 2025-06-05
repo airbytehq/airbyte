@@ -1596,12 +1596,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(isStreamSchemaRetroactiveForUnknownTypeToString)
         fun makeStream(schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
+                namespaceMapper = namespaceMapperForMedium(),
             )
 
         val stream1 =
@@ -2137,7 +2139,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(dedupBehavior != null)
         fun makeStream(secondPk: String) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Dedupe(
                     primaryKey = listOf(listOf("id1"), listOf(secondPk)),
                     cursor = listOf("updated_at"),
@@ -2155,6 +2158,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
             )
         fun makeRecord(stream: DestinationStream, secondPk: String, emittedAtMs: Long) =
             InputRecord(
