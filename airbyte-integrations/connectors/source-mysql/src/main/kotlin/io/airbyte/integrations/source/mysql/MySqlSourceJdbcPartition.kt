@@ -211,7 +211,7 @@ class MySqlSourceJdbcRfrSnapshotPartition(
                 else -> MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
                     primaryKey = checkpointColumns,
                     primaryKeyCheckpoint =
-                        checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
+                        checkpointColumns.map { upperBound.get(0) },
                 )
             }
 
