@@ -1,0 +1,88 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "role",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "saml_provider",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user_inline_policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "role_inline_policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+} 

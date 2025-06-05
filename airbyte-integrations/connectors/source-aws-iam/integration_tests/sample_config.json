@@ -1,4 +1,4 @@
 {
-  "role_arn": "<ROLE_ARN>",
-  "external_id": "<EXTERNAL_ID>"
+  "role_arn": "arn:aws:iam::174522763890:role/FabrixScannerReadOnly",
+  "external_id": "99225dda35cd4c5791c2f16a"
 }

@@ -24,6 +24,21 @@
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "AWS IAM: Read",
+            "type": "python",
+            "request": "launch",
+            "module": "source_aws_iam.run",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal"
         }
     ]
 }
