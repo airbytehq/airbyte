@@ -295,6 +295,10 @@ definitions:
             path:
               - CustomerId
             value: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - ForwardCompatibilityMap
+            value: "{{ record.get('ForwardCompatibilityMap') if record.get('ForwardCompatibilityMap') and record.get('ForwardCompatibilityMap') | length > 0 else none }}"
   ads_stream:
     type: DeclarativeStream
     name: ads
