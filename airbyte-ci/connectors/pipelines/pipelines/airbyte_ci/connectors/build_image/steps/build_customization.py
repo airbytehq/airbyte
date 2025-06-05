@@ -1,3 +1,4 @@
+
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
@@ -57,13 +58,13 @@ def get_main_file_name(connector: Connector) -> str:
 
 def get_entrypoint(connector: Connector) -> List[str]:
     main_file_name = get_main_file_name(connector)
-    return ["python", f"/airbyte/integration_code/{main_file_name}"]
+    # adding a random comment to trigger the airbyte-ci build again
+    return ["ddtrace-run", "python", f"/airbyte/integration_code/{main_file_name}"]
 
 
 def apply_airbyte_entrypoint(connector_container: Container, connector: Connector) -> Container:
     entrypoint = get_entrypoint(connector)
-
-    return connector_container.with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint)).with_entrypoint(entrypoint)
+    return connector_container.with_env_variable("DD_PROFILING_ENABLED", "true").with_env_variable("DD_TRACE_SQLITE3_ENABLED", "false").with_env_variable("DD_PROFILING_TIMELINE_ENABLED","true").with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint)).with_entrypoint(entrypoint)
 
 
 async def pre_install_hooks(connector: Connector, base_container: Container, logger: Logger) -> Container:
