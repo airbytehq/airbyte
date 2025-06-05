@@ -96,7 +96,8 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        TODO("Not yet implemented")
+        // TODO: ("Not yet implemented")
+        // ensure transitioning from dedupe to non-dedupe and back works
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
