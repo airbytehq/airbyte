@@ -119,6 +119,10 @@ definitions:
             http_method: GET
           record_selector:
             type: RecordSelector
+            record_filter:
+              condition: "{{ record['id'] == parameters.table_id }}"
+              $parameters:
+                table_id: ""
             extractor:
               type: DpathExtractor
               field_path:
