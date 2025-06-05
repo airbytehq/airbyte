@@ -3,6 +3,7 @@
  */
 package io.airbyte.integrations.destination.bigquery.formatter
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.QueryParameterValue
 import com.google.cloud.bigquery.Schema
@@ -20,9 +21,9 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
 import java.time.LocalDate
@@ -50,7 +51,7 @@ class BigQueryRecordFormatter(
                 // in legacy raw tables mode, we only need to look at the airbyte fields.
                 // and we just dump the actual data fields into the output record
                 // as a JSON blob.
-                outputRecord[Meta.COLUMN_NAME_DATA] = record.asRawJson().serializeToString()
+                outputRecord[Meta.COLUMN_NAME_DATA] = record.asJsonRecord().serializeToString()
                 enrichedRecord.airbyteMetaFields
             } else {
                 // but in direct-load mode, we do actually need to look at all the fields.
@@ -159,12 +160,12 @@ class BigQueryRecordFormatter(
                 // this is a hack - in legacy mode, we don't do any in-connector validation
                 // so we just need to pass through the original record's airbyte_meta.
                 // so we completely ignore `value.abValue` here.
-                if (record.rawData.record.meta == null) {
-                    record.rawData.record.meta = AirbyteRecordMessageMeta()
-                    record.rawData.record.meta.changes = emptyList()
-                }
-                record.rawData.record.meta.additionalProperties["sync_id"] = record.stream.syncId
-                record.rawData.record.meta.serializeToString()
+                // (this is also probably hilariously slow, and it would be more efficient to just
+                // construct the string ourselves. but legacy raw tables isn't a mode we want to put
+                // a ton of effort into anyway)
+                val metaNode = Jsons.valueToTree(record.rawData.sourceMeta) as ObjectNode
+                metaNode.put("sync_id", record.stream.syncId)
+                metaNode.serializeToString()
             } else {
                 (enrichedRecord.airbyteMeta.abValue as ObjectValue).values
             }
