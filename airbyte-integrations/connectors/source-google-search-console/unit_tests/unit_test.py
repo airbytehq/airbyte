@@ -238,7 +238,12 @@ def test_streams(config_gen):
     source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
     streams = source.streams(config)
     assert len(streams) == 15
-    streams = source.streams(config_gen(custom_reports_array=...))
+
+
+def test_streams_without_custom_reports(config_gen):
+    config = config_gen(custom_reports_array=...)
+    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    streams = source.streams(config)
     assert len(streams) == 14
 
 

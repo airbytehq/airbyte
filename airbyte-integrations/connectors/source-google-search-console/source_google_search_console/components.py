@@ -135,8 +135,11 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
 @dataclass
 class CustomReportSchemaLoader(SchemaLoader):
     """
-    Custom schema loader for custom reports which is needed because Google Search Console's
-    reports schema
+    Custom schema loader is needed because Google Search Console's custom reports streams
+    because the schema is dependent on which dimensions are selected in the config. Right now,
+    only DynamicSchemaLoader which is based on the response from an API endpoint supports
+    remapping of types to Airbyte schema types. This CustomReportSchemaLoader functions
+    more like a static schema loader and so we must perform the remapping in this custom component.
     """
 
     DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
