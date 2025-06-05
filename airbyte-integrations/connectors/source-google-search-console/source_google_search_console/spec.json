@@ -157,6 +157,16 @@
         "examples": ["final", "all"],
         "default": "final",
         "order": 6
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 100,
+        "default": 40,
+        "examples": [30, 40, 50],
+        "description": "The number of worker threads to use for the sync. For more details on Google Search Console rate limits, refer to the <a href=\"https://developers.google.com/webmaster-tools/limits\">docs</a>.",
+        "order": 7
       }
     }
   },

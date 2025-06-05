@@ -904,6 +904,22 @@ streams:
   - "#/definitions/sites_stream"
   - "#/definitions/sitemaps_stream"
 
+# Google Search Console has three layers of quotas that dictate rate limiting at the
+# user making requests, site being requested, and developer console key used.
+# https://developers.google.com/webmaster-tools/limits#qps-quota
+# - Per Site Quota: 1,200 req/min (20 req/sec)
+# - Per User Quota: 1,200 req/min (20 req/sec)
+# - Per Project Quota: 30,000,000 req/day (350 req/sec) / 40,000 req/min (60 req/sec)
+#
+# The most likely upper bound is based on the user quota since it is the lowest and the
+# same authenticated user account may hit multiple site urls. The default is set to 40
+# which equates to one request every 2 seconds which seems like a fair baseline.
+#
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 40) }}"
+  max_concurrency: 100
+
 schemas:
   search_analytics_all_fields:
     $schema: "http://json-schema.org/draft-07/schema#"
