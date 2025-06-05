@@ -333,6 +333,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.5      | 2025-06-02 | [61326](https://github.com/airbytehq/airbyte/pull/61326) | Additional change for millisecond float timestamps |
 | 5.8.4      | 2025-05-30 | [61013](https://github.com/airbytehq/airbyte/pull/61013) | Fix Typo|
 | 5.8.3      | 2025-05-30 | [61007](https://github.com/airbytehq/airbyte/pull/61007) | Bump memory on Check to 1600mi|
 | 5.8.2      | 2025-05-29 | [60962](https://github.com/airbytehq/airbyte/pull/60962) | Fix bug to allow millisecond timestamps coming in as a float string to be parsed into a datetime.                                                                                                                                                                    |

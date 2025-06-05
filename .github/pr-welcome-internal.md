@@ -19,5 +19,6 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - `/format-fix` - Fixes most formatting issues.
 - `/bump-version` - Bumps connector versions.
 - `/run-cat-tests` - Runs legacy CAT tests (Connector Acceptance Tests)
+- `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-internal.md)
