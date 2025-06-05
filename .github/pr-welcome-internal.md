@@ -19,6 +19,7 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - `/format-fix` - Fixes most formatting issues.
 - `/bump-version` - Bumps connector versions.
   - You can specify a custom changelog by passing `changelog`. Example: `/bump-version changelog="My cool update"`
+  - Leaving the changelog arg blank will auto-populate the changelog from the PR title.
 - `/run-cat-tests` - Runs legacy CAT tests (Connector Acceptance Tests)
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 
