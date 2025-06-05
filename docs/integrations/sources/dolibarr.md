@@ -18,6 +18,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `my_dolibarr_domain_url` | `string` | `my_dolibarr_domain/url`. Enter your `domain/dolibarr_url` without `https://` Example: `mydomain.com/dolibarr` |  |
+| `start_date` | `date` | Earliest start date of synchronization in source data in format `YYYY-MM-DDTHH:mm:ssZ` Enter the earliest modification date of data you want to incrementally synchronize |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
