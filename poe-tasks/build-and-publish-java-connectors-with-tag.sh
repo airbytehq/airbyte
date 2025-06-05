@@ -31,6 +31,7 @@ declare -A rollout_map=(
   [destination-postgres]=1
   [destination-s3-data-lake]=1
   [destination-elasticsearch]=1
+  [destination-elasticsearch-strict-encrypt]=1
   [source-e2e-test]=1
   [source-postgres]=1
   [source-mysql]=1
