@@ -3,3 +3,4 @@
 # need any of it at runtime.
 data:
   dockerRepository: "airbyte/fake-destination"
+  documentationUrl: https://example.com/integrations/destinations/fake-destination

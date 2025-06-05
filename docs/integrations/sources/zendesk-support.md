@@ -189,6 +189,10 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.9.1 | 2025-05-10 | [60014](https://github.com/airbytehq/airbyte/pull/60014) | Update dependencies |
+| 4.9.0 | 2025-05-05 | [56419](https://github.com/airbytehq/airbyte/pull/56419) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
+| 4.8.7 | 2025-05-04 | [59531](https://github.com/airbytehq/airbyte/pull/59531) | Update dependencies |
+| 4.8.6 | 2025-04-26 | [58917](https://github.com/airbytehq/airbyte/pull/58917) | Update dependencies |
 | 4.8.5 | 2025-04-19 | [58547](https://github.com/airbytehq/airbyte/pull/58547) | Update dependencies |
 | 4.8.4 | 2025-04-13 | [58042](https://github.com/airbytehq/airbyte/pull/58042) | Update dependencies |
 | 4.8.3 | 2025-04-05 | [57389](https://github.com/airbytehq/airbyte/pull/57389) | Update dependencies |

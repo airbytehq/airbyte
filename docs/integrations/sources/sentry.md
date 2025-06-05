@@ -65,6 +65,11 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.8.11 | 2025-05-24 | [60461](https://github.com/airbytehq/airbyte/pull/60461) | Update dependencies |
+| 0.8.10 | 2025-05-15 | [60295](https://github.com/airbytehq/airbyte/pull/60295) | Fix missing records for events stream |
+| 0.8.9 | 2025-05-10 | [60171](https://github.com/airbytehq/airbyte/pull/60171) | Update dependencies |
+| 0.8.8 | 2025-05-04 | [59571](https://github.com/airbytehq/airbyte/pull/59571) | Update dependencies |
+| 0.8.7 | 2025-04-27 | [58970](https://github.com/airbytehq/airbyte/pull/58970) | Update dependencies |
 | 0.8.6 | 2025-04-19 | [58446](https://github.com/airbytehq/airbyte/pull/58446) | Update dependencies |
 | 0.8.5 | 2025-04-12 | [57927](https://github.com/airbytehq/airbyte/pull/57927) | Update dependencies |
 | 0.8.4 | 2025-04-05 | [57473](https://github.com/airbytehq/airbyte/pull/57473) | Update dependencies |

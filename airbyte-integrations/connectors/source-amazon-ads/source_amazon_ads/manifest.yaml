@@ -1,4 +1,4 @@
-version: 6.5.0
+version: 6.45.10
 
 type: DeclarativeSource
 
@@ -6,6 +6,8 @@ check:
   type: CheckStream
   stream_names:
     - streams
+
+max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count', 10) }}"
 
 definitions:
   sponsored_product_ad_group_error_handler:
@@ -2979,7 +2981,7 @@ definitions:
         - timeout
       completed:
         - COMPLETED
-    urls_extractor:
+    download_target_extractor:
       type: DpathExtractor
       field_path:
         - url
@@ -3029,7 +3031,7 @@ definitions:
         $ref: "#/definitions/report_creation_error_handler"
     polling_requester:
       type: HttpRequester
-      path: /reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      path: /reporting/reports/{{ creation_response['reportId'] }}
       url_base: >-
         {%- set URL_MAPPING = {
             "NA": "https://advertising-api.amazon.com/",
@@ -3040,23 +3042,29 @@ definitions:
       authenticator: "#/definitions/oauth_authenticator"
       http_method: GET
       request_headers:
-        Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+        # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+        # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+        Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       error_handler:
         $ref: "#/definitions/report_polling_error_handler"
 
     download_requester:
       type: HttpRequester
-      path: "{{stream_slice.extra_fields['url']}}"
+      path: "{{ download_target }}"
       url_base: ""
       http_method: GET
       authenticator:
         type: NoAuth
     download_decoder:
+      # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+      # https://github.com/airbytehq/airbyte/issues/56988
       type: GzipDecoder
       decoder:
-        type: JsonDecoder
-        encoding: utf
+        type: GzipDecoder
+        decoder:
+          type: JsonDecoder
+          encoding: utf
     download_extractor:
       type: DpathExtractor
       field_path: []

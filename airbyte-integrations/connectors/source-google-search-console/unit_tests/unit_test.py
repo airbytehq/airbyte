@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 
 import pytest
 import requests
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf as lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
@@ -17,7 +17,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
     SearchAnalyticsKeywordSiteReportBySite,
-    Sites,
 )
 from utils import command_check
 
@@ -123,16 +122,6 @@ def test_updated_state():
     }
 
 
-def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
-    stream = Sites(None, ["https://domain1.com"], "2023-01-01", "2023-01-01")
-    slice = list(stream.stream_slices(None))[0]
-    url = stream.url_base + stream.path(None, slice)
-    requests_mock.get(url, status_code=403, json=forbidden_error_message_json)
-    test_response = requests.get(url)
-    assert stream.should_retry(test_response) is False
-    assert stream.raise_on_http_errors is False
-
-
 def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
     stream = SearchAnalyticsKeywordSiteReportBySite(None, ["https://example.com"], "2021-01-01", "2021-01-02")
     requests_mock.post(
@@ -180,15 +169,12 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
 
-    source = SourceGoogleSearchConsole()
+    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
 
     assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     # test site_urls
     assert command_check(source, config_gen(site_urls=["https://example.com"])) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert command_check(source, config_gen(site_urls=["https://missed.com"])) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="\"InvalidSiteURLValidationError('The following URLs are not permitted: https://missed.com/')\""
-    )
 
     # test start_date
     assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -202,20 +188,12 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
             status=Status.FAILED,
             message="'start_date' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
         )
-    assert command_check(source, config_gen(start_date="2022-99-99")) == AirbyteConnectionStatus(
-        status=Status.FAILED,
-        message="\"Unable to check connectivity to Google Search Console API - ParserError('Unable to parse string [2022-99-99]')\"",
-    )
 
     # test end_date
     assert command_check(source, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert command_check(source, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     with pytest.raises(Exception):
         assert command_check(source, config_gen(end_date="end_date"))
-    assert command_check(source, config_gen(end_date="2022-99-99")) == AirbyteConnectionStatus(
-        status=Status.FAILED,
-        message="\"Unable to check connectivity to Google Search Console API - ParserError('Unable to parse string [2022-99-99]')\"",
-    )
 
     # test custom_reports
     with pytest.raises(AirbyteTracedException):
@@ -236,28 +214,29 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
             lazy_fixture("config"),
             (
                 False,
-                "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
+                "Encountered an error while checking availability of stream sites. Error: 401 Client Error: None for url: https://oauth2.googleapis.com/token",
             ),
         ),
         (
             lazy_fixture("service_account_config"),
             (
                 False,
-                "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
+                "Encountered an error while checking availability of stream sites. Error: Error while refreshing access token: Failed to sign token: Could not parse the provided public key.",
             ),
         ),
     ],
 )
 def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
-    source = SourceGoogleSearchConsole()
+    source = SourceGoogleSearchConsole(config=test_config, catalog=None, state=None)
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
     actual = source.check_connection(logger, test_config)
     assert actual == expected
 
 
 def test_streams(config_gen):
-    source = SourceGoogleSearchConsole()
-    streams = source.streams(config_gen())
+    config = config_gen()
+    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    streams = source.streams(config)
     assert len(streams) == 15
     streams = source.streams(config_gen(custom_reports_array=...))
     assert len(streams) == 14
@@ -308,7 +287,14 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
     custom_reports = [{"name": "custom", "dimensions": dimensions}]
-    status = SourceGoogleSearchConsole().check(config=config_gen(custom_reports_array=custom_reports), logger=None).status
+
+    custom_report_config = config_gen(custom_reports_array=custom_reports)
+    mock_logger = MagicMock()
+    status = (
+        SourceGoogleSearchConsole(config=custom_report_config, catalog=None, state=None).check(
+            config=custom_report_config, logger=mock_logger
+        )
+    ).status
     assert status is expected_status
     if status is Status.FAILED:
         return

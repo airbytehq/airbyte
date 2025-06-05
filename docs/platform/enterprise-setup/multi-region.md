@@ -65,8 +65,8 @@ Send a POST request to /v1/regions/.
 ```bash
 curl --request POST \
   --url https://example.com/api/public/v1/regions \
-  --header 'authorization: Bearer $TOKEN' \
-  --header 'content-type: application/json' \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   --data '{
   "name": "aws-us-east-1",
   "organizationId": "00000000-0000-0000-0000-000000000000"
@@ -111,16 +111,16 @@ Once you have a region, you create a data plane within it.
 <details>
   <summary>Request</summary>
 
-Send a POST request to /v1/regions/`<REGION_ID>`/dataplanes.
+Send a POST request to /v1/dataplanes.
 
 ```bash
-curl --request POST \
-  --url https://example.com/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes \
-  --header 'authorization: Bearer $TOKEN' \
-  --header 'content-type: application/json' \
-  --data '{
-  "name": "aws-us-west-3-dp-8"
-}'
+curl -X POST https://example.com/api/public/v1/dataplanes \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
+  -d '{
+    "name": "My Data Plane",
+    "regionId": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319"
+  }'
 ```
 
 Include the following parameters in your request.
@@ -128,9 +128,9 @@ Include the following parameters in your request.
 | Body parameter | Required? | Description                                                                                                         |
 | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
 | `name`         | Required  | The name of your data plane. For simplicity, you might want to name it based on the region in which you created it. |
-| `enabled`      | Optional  | Defaults to true. Set this to `false` if you don't want this data plane enabled.                                        |
+| `regionId`     | Optional  | The region this data plane belongs to.                                                                              |
 
-For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/dataplanes#/).
 
 </details>
 
@@ -167,8 +167,8 @@ Send a POST request to /v1/workspaces/
 
 ```bash
 curl -X POST "https://example.com/api/public/v1/workspaces" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
     "name": "My New Workspace",
     "dataResidency": "auto"
@@ -212,8 +212,8 @@ Send a PATCH request to /v1/workspaces/`{workspaceId}`
 
 ```bash
 curl -X PATCH "https://example.com/api/public/v1/workspaces/{workspaceId}" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
     "name": "Updated Workspace Name",
     "dataResidency": "us-west"

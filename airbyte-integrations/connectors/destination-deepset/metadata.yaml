@@ -14,7 +14,7 @@ data:
     - suite: acceptanceTests
   connectorType: destination
   dockerRepository: airbyte/destination-deepset
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.8
   license: MIT
   documentationUrl: https://docs.airbyte.com/integrations/destinations/deepset
   githubIssueLabel: destination-deepset

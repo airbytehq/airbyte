@@ -1,0 +1,341 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - sites
+
+definitions:
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config.get('authorization', {}).get('client_id') }}"
+    client_secret: "{{ config.get('authorization', {}).get('client_secret') }}"
+    refresh_token: "{{ config.get('authorization', {}).get('refresh_token') }}"
+    token_refresh_endpoint: "https://oauth2.googleapis.com/token"
+
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      type: JwtAuthenticator
+      secret_key: "{{ json_loads(config.get('authorization', {}).get('service_account_info', {})).get('private_key') }}"
+      algorithm: "RS256"
+      token_duration: 3600
+      jwt_payload:
+        aud: "{{ json_loads(config.get('authorization', {}).get('service_account_info', {})).get('token_uri') }}"
+        iss: "{{ json_loads(config.get('authorization', {}).get('service_account_info', {})).get('client_email') }}"
+      additional_jwt_payload:
+        scope: "https://www.googleapis.com/auth/webmasters.readonly"
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["authorization", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
+
+  search_analytics_by_country_stream:
+    type: DeclarativeStream
+    name: search_analytics_by_country
+    primary_key:
+      - site_url
+      - date
+      - country
+      - search_type
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        http_method: POST
+        authenticator: "#/definitions/selective_authenticator"
+        request_headers:
+          Content-Type: "application/json"
+        request_body_json:
+          startDate: "{{ stream_interval.get('start_time') }}"
+          endDate: "{{ stream_interval.get('end_time') }}"
+          dimensions: ["date", "country"]
+          type: "{{ stream_partition.get('search_type') }}"
+          aggregationType: auto
+          dataState: "{{ config.get('data_state', 'final') }}"
+        # Currently relying on the default error handler behavior. Two pieces of functionality not covered are
+        # - Silently skipping over 403 permissions errors and relying on partial success reporting
+        # - Retrying 400 errors with aggregation_type=auto instead of failing outright
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: startRow
+          inject_into: body_json
+        page_size_option:
+          type: RequestOption
+          field_name: rowLimit
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 25000
+          inject_on_first_request: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+        - type: ListPartitionRouter
+          values:
+            - web
+            - news
+            - image
+            - video
+            - discover
+            - googleNews
+          cursor_field: search_type
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2021-01-01') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+      step: P3D
+      cursor_granularity: P1D
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
+              - search_type
+            value: "{{ stream_partition['search_type'] }}"
+      # The values in the 'keys' array in the record correspond to the same order that the dimensions
+      # are requested in the API request. For example, if the request body was `dimensions: ["date", "country"]`,
+      # then the first value of `keys` is placed under the `date` field. These arrays are always be the same length
+      # After extracting the keys, the `keys` array is removed from the record.
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search_analytics_by_country"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+
+  sites_stream:
+    type: DeclarativeStream
+    name: sites
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
+        http_method: GET
+        authenticator: "#/definitions/selective_authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/sites"
+
+  sitemaps_stream:
+    type: DeclarativeStream
+    name: sitemaps
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/sitemaps"
+        http_method: GET
+        authenticator: "#/definitions/selective_authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "sitemap"
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/sitemaps"
+
+streams:
+  - "#/definitions/search_analytics_by_country_stream"
+  - "#/definitions/sites_stream"
+  - "#/definitions/sitemaps_stream"
+
+schemas:
+  search_analytics_by_country:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      site_url:
+        description: The URL of the site for which the search analytics data is being reported.
+        type:
+          - "null"
+          - string
+      search_type:
+        description: >-
+          The type of search (web search, image search, video search, etc.) for
+          which the data is being reported.
+        type:
+          - "null"
+          - string
+      date:
+        description: The date for which the search analytics data is being reported.
+        type:
+          - "null"
+          - string
+        format: date
+      country:
+        description: The country for which the search analytics data is being reported.
+        type:
+          - "null"
+          - string
+      clicks:
+        description: >-
+          The number of times users clicked on the search result for a specific
+          country.
+        type:
+          - "null"
+          - integer
+      impressions:
+        description: >-
+          The total number of times a search result was shown in search results for
+          a specific country.
+        type:
+          - "null"
+          - integer
+      ctr:
+        description: >-
+          The click-through rate, i.e., the ratio of clicks to impressions for a
+          specific country.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+      position:
+        description: >-
+          The average position at which the site's search result appeared for a
+          specific country.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+  sites:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      siteUrl:
+        description: "The URL of the site data being fetched"
+        type: ["null", "string"]
+      permissionLevel:
+        description: "The user's permission level for the site (owner, full, restricted, etc.)"
+        type: ["null", "string"]
+  sitemaps:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      path:
+        description: "Path to the sitemap file"
+        type:
+          - "null"
+          - string
+      lastSubmitted:
+        description: "Timestamp when the sitemap was last submitted"
+        type:
+          - "null"
+          - string
+        format: date-time
+      isPending:
+        description: "Flag indicating if the sitemap is pending for processing"
+        type:
+          - "null"
+          - boolean
+      isSitemapsIndex:
+        description: "Flag indicating if the data represents a sitemap index"
+        type:
+          - "null"
+          - boolean
+      type:
+        description: "Type of the sitemap"
+        type:
+          - "null"
+          - string
+      lastDownloaded:
+        description: "Timestamp when the sitemap was last downloaded"
+        type:
+          - "null"
+          - string
+        format: date-time
+      warnings:
+        description: "Warnings encountered while processing the sitemaps"
+        type:
+          - "null"
+          - string
+      errors:
+        description: "Errors encountered while processing the sitemaps"
+        type:
+          - "null"
+          - string
+      contents:
+        description: "Data related to the sitemap contents"
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              description: "Type of the sitemap content"
+              type:
+                - "null"
+                - string
+            submitted:
+              description: "Number of submitted sitemap URLs"
+              type:
+                - "null"
+                - string
+            indexed:
+              description: "Number of indexed sitemap URLs"
+              type:
+                - "null"
+                - string

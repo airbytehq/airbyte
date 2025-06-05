@@ -64,6 +64,8 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.22 | 2025-05-10 | [59262](https://github.com/airbytehq/airbyte/pull/59262) | Update dependencies |
+| 0.2.21 | 2025-04-26 | [58805](https://github.com/airbytehq/airbyte/pull/58805) | Update dependencies |
 | 0.2.20 | 2025-04-19 | [58212](https://github.com/airbytehq/airbyte/pull/58212) | Update dependencies |
 | 0.2.19 | 2025-04-12 | [57739](https://github.com/airbytehq/airbyte/pull/57739) | Update dependencies |
 | 0.2.18 | 2025-04-05 | [57097](https://github.com/airbytehq/airbyte/pull/57097) | Update dependencies |

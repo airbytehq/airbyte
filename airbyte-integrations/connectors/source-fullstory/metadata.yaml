@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
-  dockerImageTag: 0.2.19
+  dockerImageTag: 0.2.23
   dockerRepository: airbyte/source-fullstory
   githubIssueLabel: source-fullstory
   icon: fullstory.svg
@@ -37,5 +37,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.7@sha256:dc01ec948ba69f93615cbe4f421bf99f4236107dea44feb6cb244f3d9dc09366
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
 metadataSpecVersion: "1.0"

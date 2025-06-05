@@ -36,6 +36,10 @@ It provides streams like agents, builds, audit, analytics etc.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2025-05-24 | [60360](https://github.com/airbytehq/airbyte/pull/60360) | Update dependencies |
+| 0.0.23 | 2025-05-10 | [59939](https://github.com/airbytehq/airbyte/pull/59939) | Update dependencies |
+| 0.0.22 | 2025-05-03 | [59417](https://github.com/airbytehq/airbyte/pull/59417) | Update dependencies |
+| 0.0.21 | 2025-04-26 | [58868](https://github.com/airbytehq/airbyte/pull/58868) | Update dependencies |
 | 0.0.20 | 2025-04-19 | [58346](https://github.com/airbytehq/airbyte/pull/58346) | Update dependencies |
 | 0.0.19 | 2025-04-12 | [57778](https://github.com/airbytehq/airbyte/pull/57778) | Update dependencies |
 | 0.0.18 | 2025-04-05 | [57275](https://github.com/airbytehq/airbyte/pull/57275) | Update dependencies |
