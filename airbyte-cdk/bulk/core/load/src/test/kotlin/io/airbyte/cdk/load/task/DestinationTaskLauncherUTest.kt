@@ -71,6 +71,7 @@ class DestinationTaskLauncherUTest {
             inputConsumerTask,
             heartbeatTask = mockk(relaxed = true),
             updateBatchTask = mockk(relaxed = true),
+            statsEmitter = mockk(relaxed = true),
             setupTaskFactory,
             openStreamTask,
             closeStreamTaskFactory,

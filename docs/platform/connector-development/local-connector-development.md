@@ -2,6 +2,12 @@
 
 This document outlines the tools needed to develop connectors locally, and how to use each tool.
 
+:::tip
+**Using Connector Builder**
+
+For most cases, when building new source connectors, we recommend starting with our [**Low-Code Connector Builder**](./connector-builder-ui/overview) instead of starting from the development tools described here. The Connector Builder provides the most streamlined experience for building new connectors, with little or no code, and directly within the Airbyte web interface.
+:::
+
 ## Tooling
 
 When developing connectors locally, you'll want to ensure the following tools are installed:
@@ -10,6 +16,7 @@ When developing connectors locally, you'll want to ensure the following tools ar
 1. [`uv`](#uv) - Used for installing Python-based CLI apps, such as `Poe`.
 1. [`docker`](#docker) - Used when building and running connector container images.
 1. [`gradle`](#gradle) - Required when working with Java and Kotlin connectors.
+1. [Airbyte CDKs](#airbyte-connector-development-kits-cdks) - The Airbyte Connector Development Kit (CDK) tools, including the [`airbyte-cdk` CLI](#the-airbyte-cdk-cli).
 1. [`airbyte-ci` (deprecated)](#airbyte-ci-deprecated) - Used for a large number of tasks such as building and publishing.
 
 ### Poe the Poet
@@ -65,6 +72,29 @@ Using this syntax you can avoid the long task prefixes such as typing `gradle :i
 
 :::
 
+### Airbyte Connector Development Kits (CDKs)
+
+What we loosely refer to as the "Airbyte CDK" is actually a combination of several CDKs and tools:
+
+1. [**Python CDK**](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html) - A developer kit that includes the foundation for low-code and no-code connectors, as well as several other Python-based implementations.
+1. **File CDK** - A CDK for building file-based source connectors, built on the Python CDK.
+1. **Airbyte CDK CLI** - A command line interface (CLI) for performing common connector-related tasks, built into the Python CDK. (See [below](#the-airbyte-cdk-cli) for installation instructions.)
+
+For high-throughput connectors, we also use:
+
+1. **Bulk Load CDK** - A set of libraries and resources for building destinations using the Kotlin language.
+1. **Bulk Extract CDK** - A set of libraries and resources for building sources using the Kotlin language.
+
+#### The `airbyte-cdk` CLI
+
+To install the `airbyte-cdk` CLI, first install `uv` using the instructions above. Then you can install or upgrade the `airbyte-cdk` CLI using:
+
+```bash
+uv install --upgrade 'airbyte-cdk[dev]'
+```
+
+For a list of available commands in the `airbyte-cdk` CLI, run `airbyte-cdk --help`.
+
 ### airbyte-ci (deprecated)
 
 Airbyte CI `(airbyte-ci`) is a Dagger-based tool for accomplishing specific tasks. See `airbyte-ci --help` for a list of commands you can run.
@@ -119,34 +149,42 @@ airbyte-cdk secrets list
 
 The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
 
-## Managing Connector Secrets
+## Managing Connector Secrets in GSM
 
-Airbyte expects secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
+Airbyte tools and CI workflows will expect secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
 
-1. Each secret should have a label called "`connector: <connector-name>`" indicating the name of the connector that the secret pertains to.
-2. Each secret must be a fully formed JSON config object.
-3. If more than one secret is provided, a label "`filename: <config-file-basename>`" should be set, indicating the filename with the "`.json`" suffix removed. (Google Secrets Manager does not support including the "`.`" character in label text.)
-4. To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
-5. Your fork repo should declare a secret called `GCP_GSM_CREDENTIALS` which contains the JSON text of your GCP credentials file, along with a repo variable or repo secret called `GCP_PROJECT_ID`, which contains the name of your GCP project containing your integration test credentials.
-6. When testing locally, the secrets should be saved to the corresponding file names (including the `.json` suffix for each file) within the `secrets` directory inside your connector directory.
-7. The `secrets` directory should be automatically excluded from git based upon the repo `.gitignore` rules, but please confirm this is true in your case, applying due caution whenever handling sensitive credentials.
+1. Each secret value stored in GSM must be a fully formed JSON config object.
+   - For the purpose of this section, the term "connector secret" is interchangeable with "connector config" containing one or more sensitive values.
+2. Each connector secret value stored in GSM should have two labels:
+   1. `connector: <connector-name>`: indicates the name of the connector that the secret pertains to.
+      - For example, `connector: source-s3` will be used when testing the S3 source connector.
+   2. `filename: <use-case-name>`: The use case name or scenario name that is being declared.
+      - Common `filename` values are: `config` (default), `invalid_config`, `oauth_config`, etc.
+      - When fetching secrets locally, the label `filename: oauth_config` value will result in a config file being fetched with the name `secrets/oauth_config.json`.
+      - Note: Google Secrets Manager does not support including the "`.`" character in label text, which is why the label should always be stored without the `.json` suffix.
+3. Airbyte tooling will authenticate to your GSM instance using the following two env vars:
+   1. `GCP_PROJECT_ID` - This is your alphanumeric project name, which tells Airbyte which project ID to authenticate against when fetching secrets.
+      - Airbyte CI workflows will look for this value as a [**repo-level variable**](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#creating-configuration-variables-for-a-repository) with the same name.
+   1. `GCP_GSM_CREDENTIALS` - A variable containing the GCP credentials JSON text for your service account.
+      - Airbyte CI workflows will look for this value as a [**repo-level secret**](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions) with the same name.
 
-Example:
+### Understanding the required secrets for testing
 
-If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
+To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
 
-1. Locally, we should have two files saved within the cloned repo directory, for local testing:
-   1. `airbyte-integrations/connectors/source-example/secrets/config.json`
-   2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
-2. Our Google Secrets Manager (GSM) account should have the following secrets declared:
-   1. `SOURCE_EXAMPLE_CONFIG_CREDS` with labels:
-      - `connector: source-example`
-      - `filename: config`
-   2. `SOURCE_EXAMPLE_CONFIG_OAUTH_CREDS` with labels:
-      - `connector: source-example`
-      - `filename: oauth_config`
-3. Our fork should have a repo variable or repo secret named `GCP_PROJECT_ID`, which contains the name of the GCP project that contains my integration test credentials.
-4. Our fork should have a `GCP_GSM_CREDENTIALS` secret set, which contains credentials for a GCP service account with read access to the above-mentioned secrets.
+### Fetching and Listing Connector Secrets Locally
+
+To view a list of secrets, or to fetch them locally, you can use the [Airbyte CDK CLI](#the-airbyte-cdk-cli):
+
+- `airbyte-cdk secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
+- `airbyte-cdk secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
+  - Note: The `secrets list` command is purely a metadata operation; no secrets are downloaded to your machine locally when running this step.
+- `airbyte-cdk secrets fetch`
+  - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them available for local connector testing.
+
+:::caution
+The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that this is true for your case, and please always use caution whenever handling sensitive credentials.
+:::
 
 ## PR Slash Commands
 
@@ -155,6 +193,8 @@ Maintainers can execute any of the following connector admin commands upon reque
 - `/bump-version` - Run the bump version command, which advances the connector version(s) and adds a changelog entry for any modified connector(s).
 - `/format-fix` - Fixes any formatting issues.
 - `/run-connector-tests` - Run the connector tests for any modified connectors.
+- `/run-cat-tests` - Run the legacy connector acceptance tests (CAT) for any modified connectors. This is helpful if the connector has poor test coverage overall.
+- `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/poe` - Run a Poe task.
 
 When working on PRs from forks, maintainers can apply `/format-fix` to help expedite formatting fixes, and `/run-connector-tests` if the fork does not have sufficient secrets bootstrapping or other permissions needed to fully test the connector changes.

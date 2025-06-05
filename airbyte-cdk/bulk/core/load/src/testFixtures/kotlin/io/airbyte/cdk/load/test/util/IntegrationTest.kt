@@ -10,17 +10,26 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputMessage
+import io.airbyte.cdk.load.message.InputMessageOther
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.InputStreamCheckpoint
+import io.airbyte.cdk.load.message.InputStreamComplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
+import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -30,6 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -63,6 +73,8 @@ abstract class IntegrationTest(
     val nullEqualsUnset: Boolean = false,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val micronautProperties: Map<Property, String> = emptyMap(),
+    val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -194,6 +206,7 @@ abstract class IntegrationTest(
      * [AirbyteStreamStatus] messages unless [streamStatus] is set to `null` (unless you actually
      * want to send multiple stream status messages).
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun runSync(
         configContents: String,
         catalog: DestinationCatalog,
@@ -221,30 +234,34 @@ abstract class IntegrationTest(
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
+        namespaceMappingConfig: NamespaceMappingConfig? = null,
     ): List<AirbyteMessage> {
         destinationProcessFactory.testName = testPrettyName
-        val fileTransferProperty =
-            if (useFileTransfer) {
-                mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")
-            } else {
-                emptyMap()
-            }
+
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties = micronautProperties + fileTransferProperty,
+                micronautProperties = micronautProperties,
+                dataChannelMedium = dataChannelMedium,
+                dataChannelFormat = dataChannelFormat,
+                namespaceMappingConfig = namespaceMappingConfig
+                        ?: NamespaceMappingConfig(
+                            NamespaceDefinitionType.SOURCE,
+                        ),
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
-            messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
+            messages.forEach { destination.sendMessage(it) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                            .asProtocolMessage()
+                        InputStreamComplete(
+                            DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                        ),
+                        broadcast = true
                     )
                 }
             }
@@ -268,6 +285,7 @@ abstract class IntegrationTest(
      * using this method would take significantly longer, because they would need to push 100MB
      * (ish) to the destination before it would ack a state message.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun runSyncUntilStateAck(
         configContents: String,
         stream: DestinationStream,
@@ -283,6 +301,8 @@ abstract class IntegrationTest(
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
                 micronautProperties = micronautProperties + micronautPropertyEnableMicrobatching,
+                dataChannelMedium = dataChannelMedium,
+                dataChannelFormat = dataChannelFormat,
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -295,13 +315,24 @@ abstract class IntegrationTest(
                     destination.run()
                 }
             }
-            records.forEach { destination.sendMessage(it.asProtocolMessage()) }
-            destination.sendMessage(inputStateMessage.asProtocolMessage())
+            records.forEach { destination.sendMessage(it) }
+            destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
+            val noopTraceMessage =
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.ANALYTICS)
+                            .withAnalytics(
+                                AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
+                            )
+                            .withEmittedAt(System.currentTimeMillis().toDouble())
+                    )
 
             val deferred = async {
                 val outputStateMessage: AirbyteStateMessage
                 while (true) {
-                    destination.sendMessage("")
+                    destination.sendMessage(InputMessageOther(noopTraceMessage), false)
                     val returnedMessages = destination.readMessages()
                     if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
                         outputStateMessage =
@@ -329,6 +360,8 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
+        const val NUM_SOCKETS = 2
+
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")

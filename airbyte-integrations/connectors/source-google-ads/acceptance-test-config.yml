@@ -46,6 +46,8 @@ acceptance_tests:
             bypass_reason: "No data for this date range, tested in previous config"
           - name: "topic_view"
             bypass_reason: "No data for this date range, tested in integration tests"
+          - name: "click_view"
+            bypass_reason: "Temporarily disabled until we find non-sensitive data to include in expected_records"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

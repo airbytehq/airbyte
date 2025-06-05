@@ -27,7 +27,7 @@
 
 [tasks]
 
-get-language = "echo 'java'" # Use with -qq to get just the language name
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
 fetch-secrets = "airbyte-cdk secrets fetch"
 
 install = [
@@ -69,3 +69,17 @@ ${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_an
 args = [
   { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }
 ]
+
+# Generic tasks (same across all connector types)
+
+[tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

@@ -6,30 +6,37 @@ package io.airbyte.cdk.load.config
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.file.ClientSocket
+import io.airbyte.cdk.load.file.DataChannelReader
+import io.airbyte.cdk.load.file.JSONLDataChannelReader
+import io.airbyte.cdk.load.file.ProtobufDataChannelReader
+import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
-import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.InputPartitioner
-import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.cdk.load.state.CheckpointManager
+import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
+import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.write.LoadStrategy
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.File
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 
@@ -38,6 +45,8 @@ typealias PipelineInputEvent = PipelineEvent<StreamKey, DestinationRecordRaw>
 /** Responsible for all wiring that depends directly on the data channel medium. */
 @Factory
 class DataChannelBeanFactory {
+    private val log = KotlinLogging.logger {}
+
     /**
      * The medium uses for the data channel. One of [DataChannelMedium]. This value is determined
      * here in order to have a single source of truth.
@@ -45,10 +54,30 @@ class DataChannelBeanFactory {
     @Singleton
     @Named("dataChannelMedium")
     fun dataChannelMedium(
-        @Value("\${airbyte.destination.core.data-channel-medium}")
+        @Value("\${airbyte.destination.core.data-channel.medium}")
         dataChannelMedium: DataChannelMedium
     ): DataChannelMedium {
+        log.info { "Using data channel medium $dataChannelMedium" }
         return dataChannelMedium
+    }
+
+    @Singleton
+    @Named("dataChannelSocketPaths")
+    fun dataChannelSocketPaths(
+        @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>
+    ): List<String> {
+        log.info { "Using socket paths $socketPaths" }
+        return socketPaths
+    }
+
+    @Singleton
+    @Named("dataChannelFormat")
+    fun dataChannelFormat(
+        @Value("\${airbyte.destination.core.data-channel.format}")
+        dataChannelFormat: DataChannelFormat
+    ): DataChannelFormat {
+        log.info { "Using data channel format $dataChannelFormat" }
+        return dataChannelFormat
     }
 
     /**
@@ -61,9 +90,65 @@ class DataChannelBeanFactory {
     fun numInputPartitions(
         loadStrategy: LoadStrategy? = null,
         @Named("isFileTransfer") isFileTransfer: Boolean = false,
+        dataChannelMedium: DataChannelMedium,
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
     ): Int {
-        return if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> {
+                if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
+            }
+            DataChannelMedium.SOCKET -> {
+                dataChannelSocketPaths.size
+            }
+        }
     }
+
+    @Singleton
+    @Named("numDataChannels")
+    fun numDataChannels(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Named("numInputPartitions") numInputPartitions: Int
+    ): Int {
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> 1
+            DataChannelMedium.SOCKET -> numInputPartitions
+        }
+    }
+
+    @Singleton
+    @Named("markEndOfStreamAtEndOfSync")
+    fun markEndOfStreamAtEndOfSync(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean {
+        // For STDIO, we mark the end of stream when we get the message.
+        // For SOCKETs, source will only send end-of-stream on one socket (which is useless),
+        // so to avoid constantly syncing across threads we'll mark end of stream at the end of
+        // the sync. This means that the last checkpoint might not be flushed until end-of-sync,
+        // but it's possible that this happens already anyway.
+        return dataChannelMedium == DataChannelMedium.SOCKET
+    }
+
+    @Singleton
+    @Named("logPerNRecords")
+    fun logPerNRecords(
+        @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")
+        logPerNRecords: Long
+    ): Long {
+        log.info { "Logging every $logPerNRecords records" }
+        return logPerNRecords
+    }
+
+    /**
+     * Because sockets uses multiple threads, state must be kept coherent by
+     * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
+     * `additionalProperties['partition_id']`)
+     * - ordering AirbyteStateMessages by CheckpointIndex (from `additionalProperties['id']`)
+     */
+    @Singleton
+    @Named("requireCheckpointIdOnRecordAndKeyOnState")
+    fun requireCheckpointIdOnRecord(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKET
 
     /**
      * PRIVATE: Do not use outside this factory.
@@ -75,7 +160,7 @@ class DataChannelBeanFactory {
      */
     @Singleton
     @Named("_pipelineInputQueue")
-    @Requires(property = "airbyte.destination.core.data-channel-medium", value = "STDIO")
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     fun pipelineInputQueue(
         @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineInputEvent> {
@@ -97,6 +182,26 @@ class DataChannelBeanFactory {
         return MultiProducerChannel(1, channel, "fileMessageQueue")
     }
 
+    @Singleton
+    fun dataChannelReader(
+        @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
+        destinationMessageFactory: DestinationMessageFactory,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+    ) =
+        when (dataChannelFormat) {
+            DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
+            DataChannelFormat.PROTOBUF -> {
+                check(dataChannelMedium == DataChannelMedium.SOCKET) {
+                    "PROTOBUF data channel format is only supported for SOCKETS medium."
+                }
+                ProtobufDataChannelReader(destinationMessageFactory)
+            }
+            else ->
+                throw IllegalArgumentException(
+                    "Unsupported data channel format: $dataChannelFormat"
+                )
+        }
+
     /**
      * The input flows from which the pipeline will read. The size of the array will always be equal
      * to @Named("numInputPartitions")[numInputPartitions].
@@ -104,19 +209,47 @@ class DataChannelBeanFactory {
     @Singleton
     @Named("dataChannelInputFlows")
     fun dataChannelInputFlows(
+        catalog: DestinationCatalog,
+        @Named("globalMemoryManager") queueMemoryManager: ReservationManager,
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineInputEvent>? = null,
-        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+        dataChannelMedium: DataChannelMedium,
+        dataChannelReader: DataChannelReader,
+        pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
+        @Named("dataChannelSocketPaths") socketPaths: List<String>,
+        @Value("\${airbyte.destination.core.data-channel.socket-buffer-size-bytes}")
+        bufferSizeBytes: Int,
+        @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
+        socketConnectionTimeoutMs: Long,
+        @Named("logPerNRecords") logPerNRecords: Long,
     ): Array<Flow<PipelineInputEvent>> {
-        when (dataChannelMedium) {
+        return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
                 check(pipelineInputQueue != null) {
                     "Pipeline input queue is not initialized. This should never happen in STDIO mode."
                 }
                 return pipelineInputQueue.asOrderedFlows()
             }
-            DataChannelMedium.SOCKETS ->
-                throw NotImplementedError("Socket data channel medium is not implemented yet.")
+            DataChannelMedium.SOCKET -> {
+                socketPaths
+                    .map { path ->
+                        val socket =
+                            ClientSocket(
+                                path,
+                                bufferSizeBytes,
+                                connectTimeoutMs = socketConnectionTimeoutMs,
+                            )
+                        SocketInputFlow(
+                            catalog,
+                            socket,
+                            dataChannelReader,
+                            pipelineEventBookkeepingRouter,
+                            queueMemoryManager,
+                            logPerNRecords
+                        )
+                    }
+                    .toTypedArray()
+            }
         }
     }
 
@@ -124,18 +257,15 @@ class DataChannelBeanFactory {
      * Sockets will be implemented as cold flows, so a task is only needed for reading from STDIO.
      */
     @Singleton
-    @Requires(property = "airbyte.destination.core.data-channel-medium", value = "STDIO")
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     fun stdioInputConsumerTask(
         catalog: DestinationCatalog,
         inputFlow: ReservingDeserializingInputFlow,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-        syncManager: SyncManager,
-        @Named("fileMessageQueue") fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>? =
             null,
         partitioner: InputPartitioner,
-        openStreamQueue: QueueWriter<DestinationStream>
+        pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
     ): InputConsumerTask {
         check(pipelineInputQueue != null) {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
@@ -143,12 +273,9 @@ class DataChannelBeanFactory {
         return InputConsumerTask(
             catalog,
             inputFlow,
-            checkpointQueue,
-            syncManager,
-            fileTransferQueue,
             pipelineInputQueue,
             partitioner,
-            openStreamQueue
+            pipelineEventBookkeepingRouter
         )
     }
 
@@ -157,15 +284,42 @@ class DataChannelBeanFactory {
      * in the readers.
      */
     @Singleton
-    @Requires(property = "airbyte.destination.core.data-channel-medium", value = "STDIO")
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     fun stdioHeartbeatTask(
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineInputEvent>? = null,
-        config: DestinationConfiguration
+        config: DestinationConfiguration,
+        checkpointManager: CheckpointManager<*>,
     ): HeartbeatTask {
         check(pipelineInputQueue != null) {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
         }
-        return HeartbeatTask(config, pipelineInputQueue)
+        return HeartbeatTask(config, pipelineInputQueue, checkpointManager)
+    }
+
+    @Singleton
+    fun namespaceMapper(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Value("\${airbyte.destination.core.mappers.namespace-mapping-config-path}")
+        namespaceMappingConfigPath: String
+    ): NamespaceMapper {
+        when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> {
+                // Source is effectively "identity." In STDIO mode, we just take
+                // what we're given.
+                return NamespaceMapper(NamespaceDefinitionType.SOURCE)
+            }
+            DataChannelMedium.SOCKET -> {
+                val config =
+                    File(namespaceMappingConfigPath)
+                        .readText(Charsets.UTF_8)
+                        .deserializeToClass(NamespaceMappingConfig::class.java)
+                return NamespaceMapper(
+                    namespaceDefinitionType = config.namespaceDefinitionType,
+                    namespaceFormat = config.namespaceFormat,
+                    streamPrefix = config.streamPrefix
+                )
+            }
+        }
     }
 }
