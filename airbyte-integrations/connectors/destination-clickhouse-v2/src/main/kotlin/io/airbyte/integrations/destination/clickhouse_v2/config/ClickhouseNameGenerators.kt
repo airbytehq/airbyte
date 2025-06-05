@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.clickhouse_v2
+package io.airbyte.integrations.destination.clickhouse_v2.config
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator

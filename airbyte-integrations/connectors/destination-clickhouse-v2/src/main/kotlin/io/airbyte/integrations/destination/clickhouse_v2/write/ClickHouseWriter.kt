@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse_v2.write.direct
+package io.airbyte.integrations.destination.clickhouse_v2.write
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.Append
