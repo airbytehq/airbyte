@@ -13,7 +13,7 @@ data:
   definitionId: c0b24000-d34d-b33f-fea7-6b96dc0e5f0d
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/destination-shelby
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/shelby
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/destination-salesforce
   githubIssueLabel: destination-shelby
   icon: icon.svg
   license: ELv2
