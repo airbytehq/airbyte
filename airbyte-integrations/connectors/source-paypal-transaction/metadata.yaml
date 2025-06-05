@@ -7,7 +7,7 @@ data:
       - api-m.paypal.com
       - api-m.sandbox.paypal.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.54.4@sha256:6177615d13513525cf4cd342eee9990967128911d9bb4c4d0f0ad20ac676d0f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.54.5@sha256:5b8f4596a135164653317b88c841c9caacc4673b8a77f87344bd1f9b24680fc1
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
