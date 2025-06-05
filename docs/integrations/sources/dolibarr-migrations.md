@@ -1,4 +1,4 @@
-# Migration Guide for Source Dolibarr
+# Dolibarr Migration Guide
 
 ## Breaking Changes in Version 1.0.0
 
