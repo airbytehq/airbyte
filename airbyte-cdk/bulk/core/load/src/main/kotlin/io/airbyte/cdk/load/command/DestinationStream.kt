@@ -182,8 +182,8 @@ data class Dedupe(
  * This is mostly relevant for Activation Destinations.
  *
  * In the context of non API destination, this is a legacy destination sync mode. Modern
- * destinations depend on platform to set overwrite/record-retaining behavior via the
- * generationId / minimumGenerationId parameters, and should treat this as equivalent to Append.
+ * destinations depend on platform to set overwrite/record-retaining behavior via the generationId /
+ * minimumGenerationId parameters, and should treat this as equivalent to Append.
  *
  * [Overwrite] is approximately equivalent to an [Append] sync, with nonzeao generationId equal to
  * minimumGenerationId.
@@ -191,4 +191,5 @@ data class Dedupe(
 data object Overwrite : ImportType
 
 data object Upsert : ImportType
+
 data object SoftDelete : ImportType
