@@ -378,6 +378,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - _tmp_LongHeadlines_AssetLink
+            value: "{{ record.get('LongHeadlines') }}"
           - type: AddedFieldDefinition
             path:
               - _tmp_Videos_AssetLink
