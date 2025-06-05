@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValueProxy
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -42,7 +44,39 @@ data class DestinationStream(
                 }
             }
 
-        fun toPrettyString() = "$namespace.$name"
+        fun toPrettyString(): String {
+            return if (namespace == null) name else "$namespace.$name"
+        }
+    }
+
+    /**
+     * Provides the schema in a stable order, which can be used to query the AirbyteValueProxy
+     * representation of the data provided by DestinationRecordRaw. This can also be used to build a
+     * header/ordered schema as needed.
+     *
+     * NOTE: That for sockets this will align with the wire order of the files. This relies on that
+     * source and destination will receive the same schema. (Either because mappers will be applied
+     * in the CDK, or because mappers that can't be will trigger a fallback to the old path.)
+     *
+     * Connector Devs who build against this are guaranteed to get the best possible performance for
+     * sockets, possibly at the expense of performance on non-socket syncs.
+     */
+    val airbyteValueProxyFieldAccessors: Array<AirbyteValueProxy.FieldAccessor> by lazy {
+        if (schema is ObjectType) {
+            schema.properties
+                .toList()
+                .sortedBy { (name, _) -> name }
+                .mapIndexed { index, namedType ->
+                    AirbyteValueProxy.FieldAccessor(
+                        index = index,
+                        name = namedType.first,
+                        type = namedType.second.type
+                    )
+                }
+                .toTypedArray()
+        } else {
+            emptyArray()
+        }
     }
 
     /**

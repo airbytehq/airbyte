@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   detect-changes:
-    name: Detect changes in connector base image Dockerfiles
+    name: Detect Changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -242,7 +242,8 @@ jobs:
       fail-fast: false
       matrix:
         connector:
-          - source-hubspot
+          - source-google-drive
+          - source-s3
           - source-salesforce
           - source-shopify
           - destination-motherduck

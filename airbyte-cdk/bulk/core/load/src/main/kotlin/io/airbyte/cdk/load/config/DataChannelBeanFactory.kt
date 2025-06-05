@@ -9,8 +9,10 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.DataChannelReader
 import io.airbyte.cdk.load.file.JSONLDataChannelReader
+import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MultiProducerChannel
@@ -85,18 +87,65 @@ class DataChannelBeanFactory {
     fun numInputPartitions(
         loadStrategy: LoadStrategy? = null,
         @Named("isFileTransfer") isFileTransfer: Boolean = false,
-        dataChannelMedium: DataChannelMedium
+        dataChannelMedium: DataChannelMedium,
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
                 if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
             }
-            DataChannelMedium.SOCKETS -> {
-                // For the first cut we'll limit ourselves to 1
-                1
+            DataChannelMedium.SOCKET -> {
+                dataChannelSocketPaths.size
             }
         }
     }
+
+    @Singleton
+    @Named("numDataChannels")
+    fun numDataChannels(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Named("numInputPartitions") numInputPartitions: Int
+    ): Int {
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> 1
+            DataChannelMedium.SOCKET -> numInputPartitions
+        }
+    }
+
+    @Singleton
+    @Named("markEndOfStreamAtEndOfSync")
+    fun markEndOfStreamAtEndOfSync(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean {
+        // For STDIO, we mark the end of stream when we get the message.
+        // For SOCKETs, source will only send end-of-stream on one socket (which is useless),
+        // so to avoid constantly syncing across threads we'll mark end of stream at the end of
+        // the sync. This means that the last checkpoint might not be flushed until end-of-sync,
+        // but it's possible that this happens already anyway.
+        return dataChannelMedium == DataChannelMedium.SOCKET
+    }
+
+    @Singleton
+    @Named("logPerNRecords")
+    fun logPerNRecords(
+        @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")
+        logPerNRecords: Long
+    ): Long {
+        log.info { "Logging every $logPerNRecords records" }
+        return logPerNRecords
+    }
+
+    /**
+     * Because sockets uses multiple threads, state must be kept coherent by
+     * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
+     * `additionalProperties['partition_id']`)
+     * - ordering AirbyteStateMessages by CheckpointIndex (from `additionalProperties['id']`)
+     */
+    @Singleton
+    @Named("requireCheckpointIdOnRecordAndKeyOnState")
+    fun requireCheckpointIdOnRecord(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKET
 
     /**
      * PRIVATE: Do not use outside this factory.
@@ -133,10 +182,17 @@ class DataChannelBeanFactory {
     @Singleton
     fun dataChannelReader(
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
-        catalog: DestinationCatalog
+        destinationMessageFactory: DestinationMessageFactory,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ) =
         when (dataChannelFormat) {
-            DataChannelFormat.JSONL -> JSONLDataChannelReader(catalog)
+            DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
+            DataChannelFormat.PROTOBUF -> {
+                check(dataChannelMedium == DataChannelMedium.SOCKET) {
+                    "PROTOBUF data channel format is only supported for SOCKETS medium."
+                }
+                ProtobufDataChannelReader(destinationMessageFactory)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported data channel format: $dataChannelFormat"
@@ -157,12 +213,12 @@ class DataChannelBeanFactory {
         dataChannelMedium: DataChannelMedium,
         dataChannelReader: DataChannelReader,
         pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
-        @Named("numInputPartitions") numInputPartitions: Int,
         @Named("dataChannelSocketPaths") socketPaths: List<String>,
         @Value("\${airbyte.destination.core.data-channel.socket-buffer-size-bytes}")
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
+        @Named("logPerNRecords") logPerNRecords: Long,
     ): Array<Flow<PipelineInputEvent>> {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -171,24 +227,22 @@ class DataChannelBeanFactory {
                 }
                 return pipelineInputQueue.asOrderedFlows()
             }
-            DataChannelMedium.SOCKETS -> {
-                check(socketPaths.size == numInputPartitions) {
-                    "Socket paths size (${socketPaths.size}) does not match number of input partitions ($numInputPartitions)"
-                }
+            DataChannelMedium.SOCKET -> {
                 socketPaths
                     .map { path ->
                         val socket =
                             ClientSocket(
                                 path,
                                 bufferSizeBytes,
-                                socketConnectionTimeoutMs,
+                                connectTimeoutMs = socketConnectionTimeoutMs,
                             )
                         SocketInputFlow(
                             catalog,
                             socket,
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
-                            queueMemoryManager
+                            queueMemoryManager,
+                            logPerNRecords
                         )
                     }
                     .toTypedArray()

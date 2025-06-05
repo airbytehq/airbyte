@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PartFactory
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -30,6 +31,7 @@ import io.airbyte.cdk.load.pipline.object_storage.file.FileHandle
 import io.airbyte.cdk.load.pipline.object_storage.file.FileHandleFactory
 import io.airbyte.cdk.load.pipline.object_storage.file.UploadIdGenerator
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -155,13 +157,13 @@ class FileChunkTaskTest<T> {
 
         val input =
             PipelineMessage(
-                checkpointCounts = mapOf(CheckpointId(1) to 2),
+                checkpointCounts = mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                 key = key,
                 value = record,
                 postProcessingCallback = {},
                 context =
                     PipelineContext(
-                        mapOf(CheckpointId(1) to 2),
+                        mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                         record,
                     )
             )
@@ -221,7 +223,7 @@ class FileChunkTaskTest<T> {
             schema.properties[COLUMN_NAME_AIRBYTE_FILE_PATH]
         )
         assertContains(
-            Jsons.serialize(record.asRawJson()),
+            Jsons.serialize(record.asJsonRecord()),
             """"$COLUMN_NAME_AIRBYTE_FILE_PATH":"$myFilePath""""
         )
     }
@@ -267,8 +269,7 @@ class FileChunkTaskTest<T> {
         ) =
             DestinationRecordRaw(
                 stream = stream,
-                rawData = message,
-                schema = schema,
+                rawData = DestinationRecordJsonSource(message),
                 serializedSizeBytes = 0L
             )
     }

@@ -4,17 +4,15 @@
 
 package io.airbyte.cdk.load.file
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.io.InputStream
 
-class JSONLDataChannelReader(catalog: DestinationCatalog) : DataChannelReader {
+class JSONLDataChannelReader(private val destinationMessageFactory: DestinationMessageFactory) :
+    DataChannelReader {
     // NOTE: Presumes that legacy file transfer is not compatible with sockets.
-    private val destinationMessageFactory: DestinationMessageFactory =
-        DestinationMessageFactory(catalog, fileTransferEnabled = false)
     private var bytesRead: Long = 0
 
     override fun read(inputStream: InputStream): Sequence<DestinationMessage> {
@@ -25,7 +23,7 @@ class JSONLDataChannelReader(catalog: DestinationCatalog) : DataChannelReader {
             .map {
                 val serializedSize = parser.currentLocation().byteOffset - bytesRead
                 bytesRead += serializedSize
-                destinationMessageFactory.fromAirbyteMessage(it, serializedSize)
+                destinationMessageFactory.fromAirbyteProtocolMessage(it, serializedSize)
             }
     }
 }

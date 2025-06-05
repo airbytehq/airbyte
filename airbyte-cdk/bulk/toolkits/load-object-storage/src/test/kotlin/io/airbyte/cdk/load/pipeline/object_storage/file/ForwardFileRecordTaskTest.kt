@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -22,6 +23,7 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordTask
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -92,7 +94,7 @@ class ForwardFileRecordTaskTest {
             val key = StreamKey(stream.descriptor)
             val context =
                 PipelineContext(
-                    mapOf(CheckpointId(123) to 14L),
+                    mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
                     Fixtures.record(),
                 )
             val result =
@@ -118,7 +120,7 @@ class ForwardFileRecordTaskTest {
         val key = StreamKey(stream.descriptor)
         val context =
             PipelineContext(
-                mapOf(CheckpointId(123) to 14L),
+                mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
                 Fixtures.record(),
             )
         val result =
@@ -172,15 +174,10 @@ class ForwardFileRecordTaskTest {
                 includeFiles = includeFiles,
             )
 
-        fun record(
-            message: AirbyteMessage = message(),
-            schema: ObjectType = schema(),
-            stream: DestinationStream = stream()
-        ) =
+        fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =
             DestinationRecordRaw(
                 stream = stream,
-                rawData = message,
-                schema = schema,
+                rawData = DestinationRecordJsonSource(message),
                 serializedSizeBytes = 0L
             )
     }

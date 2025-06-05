@@ -281,9 +281,13 @@ const ConnectorMetadataCallout = ({
       </MetadataStat>
       {supportLevel !== "archived" && (
         <MetadataStat label="Connector Version">
-          <a href={github_url} target="_blank">
-            {dockerImageTag}&nbsp;
-          </a>
+          {!isEnterprise && github_url ? (
+            <a href={github_url} target="_blank">
+              {dockerImageTag}&nbsp;
+            </a>
+          ) : (
+            <span>{dockerImageTag}</span>
+          )}
           {lastUpdated && (
             <span>{`(last updated ${dayjs(lastUpdated).fromNow()})`}</span>
           )}
@@ -358,7 +362,6 @@ export const HeaderDecoration = ({
   lastUpdated,
   definitionId,
 }) => {
-  console.log("definitionId", definitionId);
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
