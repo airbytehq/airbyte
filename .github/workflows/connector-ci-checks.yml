@@ -403,8 +403,8 @@ jobs:
     name: Connector CI Checks Summary
     if: always()
     needs:
-      - jvm-connectors-test-summary
-      - non-jvm-connectors-test-summary
+      - jvm-connectors-test-matrix
+      - non-jvm-connectors-test-matrix
       - pre-release-checks
       - connectors-lint-matrix
     runs-on: ubuntu-24.04
