@@ -34,5 +34,6 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
 | 0.0.1 | 2025-05-20 | | Initial release by [@leonmm2](https://github.com/leonmm2) via Connector Builder |
+| 1.0.0 | 2025-06-05 | 61388 | Implements incremental sync in all applicable parent streams, improves the performance and efficiency of data extraction |
 
 </details>
