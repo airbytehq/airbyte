@@ -3,7 +3,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.check
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.check.DestinationChecker
-import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseBeanFactory
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseBeanFactory
 import io.airbyte.integrations.destination.clickhouse_v2.check.ClickhouseChecker.Constants.TEST_DATA
 import io.airbyte.integrations.destination.clickhouse_v2.client.log
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration

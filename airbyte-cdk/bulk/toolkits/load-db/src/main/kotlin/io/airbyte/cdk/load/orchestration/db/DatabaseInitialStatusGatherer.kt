@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -35,10 +34,10 @@ fun interface DatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatu
 }
 
 abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatus>(
-    private val airbyteClient: AirbyteClient<*>,
+    private val airbyteClient: AirbyteClient,
     private val tableDatabase: String,
-    private val internalTableDataset: String)
-    : DatabaseInitialStatusGatherer<InitialStatus> {
+    private val internalTableDataset: String
+) : DatabaseInitialStatusGatherer<InitialStatus> {
     override suspend fun gatherInitialStatus(streams: TableCatalog): Map<DestinationStream, InitialStatus> {
         val map = ConcurrentHashMap<DestinationStream, InitialStatus>(streams.size)
         coroutineScope {
@@ -52,30 +51,28 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
         return map
     }
 
-    private fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
-        val numberOfRecords: Long? = airbyteClient.getNumberOfRecordsInTable(tableName)
-        return if (numberOfRecords == null) {
+    private suspend fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
+        val numberOfRecords: Long? = airbyteClient.countTable(tableName)
+        return when (numberOfRecords) {
             // Missing table
-            null
-        } else if (numberOfRecords == 0L) {
+            null -> null
             // Empty Table
-            DirectLoadTableStatus(isEmpty = true)
-        } else {
+            0L -> DirectLoadTableStatus(isEmpty = true)
             // Non-empty Table
-            DirectLoadTableStatus(isEmpty = false)
+            else -> DirectLoadTableStatus(isEmpty = false)
         }
     }
 
-    private fun getInitialStatus(tableName: TableName): InitialStatus {
+    private suspend fun getInitialStatus(tableName: TableName): InitialStatus {
         return DirectLoadInitialStatus(
             realTable = getTableStatus(tableName),
             // TODO this feels sketchy. We maybe should compute the temp table name
             //   in DirectLoadTableWriter, then pass that down to the status
             //   gatherer (and wherever else we're using it)?
             tempTable =
-            getTableStatus(
-                tableName.asTempTable(internalNamespace = internalTableDataset)
-            ),
+                getTableStatus(
+                    tableName.asTempTable(internalNamespace = internalTableDataset),
+                ),
         ) as InitialStatus
     }
 }
