@@ -19,7 +19,7 @@ data:
   definitionId: 10c2652f-00cf-421a-bd16-7758357e5d99
   dockerImageTag: 1.0.0
   breakingChanges:
-        - description: "Updated parent streams with incremental sync and descendent sortfield with date modified parameter as required for no date filter endpoints of the API"
+    - description: "Updated parent streams with incremental sync and descendent sortfield with date modified parameter as required for no date filter endpoints of the API"
   dockerRepository: airbyte/source-dolibarr
   githubIssueLabel: source-dolibarr
   icon: icon.svg
