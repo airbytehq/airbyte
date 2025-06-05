@@ -3,5 +3,8 @@ package io.airbyte.integrations.destination.shelby
 import io.airbyte.cdk.load.command.DestinationConfiguration
 
 data class ShelbyConfiguration(
-    val something: String? = null,
+    val clientId: String,
+    val clientSecret: String,
+    val refreshToken: String,
+    val isSandbox: Boolean,
 ) : DestinationConfiguration()
