@@ -38,14 +38,4 @@ class ClickhouseCheckTest: CheckIntegrationTest<ClickhouseSpecification>(
             ClickhouseContainerHelper.start()
         }
     }
-
-    @Test
-    override fun testSuccessConfigs() {
-        super.testSuccessConfigs()
-    }
-
-    @Test
-    override fun testFailConfigs() {
-        super.testFailConfigs()
-    }
 }
