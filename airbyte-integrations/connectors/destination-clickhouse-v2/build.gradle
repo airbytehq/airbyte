@@ -39,4 +39,5 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestImplementation 'org.testcontainers:clickhouse:1.21.1'
+    integrationTestImplementation 'com.clickhouse:client-v2:0.8.6'
 }

@@ -32,4 +32,18 @@ class ClickhouseConfigurationFactory :
             pojo.username,
             pojo.password,
         )
+
+    fun makeWithOverrides(
+    spec: ClickhouseSpecification,
+    overrides: Map<String, String> = emptyMap()
+    ): ClickhouseConfiguration {
+        return ClickhouseConfiguration(
+            hostname = overrides.getOrDefault("hostname", spec.hostname),
+            port = overrides.getOrDefault("port", spec.port),
+            protocol = overrides.getOrDefault("protocol", spec.protocol.value),
+            database = overrides.getOrDefault("database", spec.database),
+            password = overrides.getOrDefault("password", spec.password),
+            username = overrides.getOrDefault("username", spec.username),
+            )
+    }
 }

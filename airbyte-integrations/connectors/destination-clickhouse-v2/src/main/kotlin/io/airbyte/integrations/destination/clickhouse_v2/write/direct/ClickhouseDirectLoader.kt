@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.Constants.DELIMITER
+import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
