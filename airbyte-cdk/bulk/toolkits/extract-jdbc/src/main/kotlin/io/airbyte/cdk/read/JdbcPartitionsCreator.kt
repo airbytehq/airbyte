@@ -67,7 +67,7 @@ abstract class JdbcPartitionsCreator<
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
             selectQuerier.executeQuery(cursorUpperBoundQuery).use {
-                if (it.hasNext()) it.next().data else null
+                if (it.hasNext()) it.next().data.toJson(Jsons.objectNode()) else null
             }
         if (record == null) {
             streamState.cursorUpperBound = Jsons.nullNode()
@@ -104,7 +104,7 @@ abstract class JdbcPartitionsCreator<
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
             selectQuerier.executeQuery(samplingQuery).use {
                 for (row in it) {
-                    values.add(recordMapper(row.data))
+                    values.add(recordMapper(row.data.toJson(Jsons.objectNode())))
                 }
             }
             if (values.size < sharedState.maxSampleSize) {

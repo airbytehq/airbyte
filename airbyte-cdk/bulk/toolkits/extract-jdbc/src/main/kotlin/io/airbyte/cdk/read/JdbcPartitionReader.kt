@@ -7,6 +7,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.SocketWrapper
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import java.time.Duration
@@ -87,7 +88,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         })
 
     fun out(row: SelectQuerier.ResultRow) {
-        streamRecordConsumer.accept(row.data, row.changes)
+        streamRecordConsumer.accept(row.data.toJson(Jsons.objectNode()), row.changes)
     }
 
     override fun releaseResources() {
@@ -195,7 +196,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    lastRecord.set(row.data)
+                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()
