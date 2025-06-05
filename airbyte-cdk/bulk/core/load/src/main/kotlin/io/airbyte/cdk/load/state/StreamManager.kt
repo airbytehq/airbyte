@@ -305,4 +305,8 @@ class StreamManager(
             checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.records ?: 0L
         return max(persistedCount, completeCount)
     }
+
+    fun readCountForCheckpoint(checkpointId: CheckpointId): Long? {
+        return recordsReadPerCheckpoint[checkpointId]
+    }
 }
