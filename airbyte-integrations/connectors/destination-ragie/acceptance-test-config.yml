@@ -2,4 +2,4 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: integration_tests/spec.json
-connector_image: airbyte/destination-pinecone:dev
+connector_image: airbyte/destination-ragie
