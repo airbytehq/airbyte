@@ -204,6 +204,135 @@ streams:
   - "#/definitions/sites_stream"
   - "#/definitions/sitemaps_stream"
 
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: DeclarativeStream
+      name: search_analytics_by_custom_dimensions # This will be replaced by the name of the custom report
+      primary_key: # This will be replaced by the dimensions of the custom report
+        - site_url
+        - search_type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.googleapis.com/webmasters/v3
+          path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+          http_method: POST
+          authenticator: "#/definitions/selective_authenticator"
+          request_headers:
+            Content-Type: "application/json"
+          request_body_json:
+            startDate: "{{ stream_interval.get('start_time') }}"
+            endDate: "{{ stream_interval.get('end_time') }}"
+            dimensions: ["date", "country"] # This will be replaced by the dimensions of the custom report
+            type: "{{ stream_partition.get('search_type') }}"
+            aggregationType: auto
+            dataState: "{{ config.get('data_state', 'final') }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: startRow
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_name: rowLimit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25000
+            inject_on_first_request: true
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rows
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config['site_urls'] }}"
+            cursor_field: site_url
+          - type: ListPartitionRouter
+            values:
+              - web
+              - news
+              - image
+              - video
+            cursor_field: search_type
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2021-01-01') }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('end_date', today_utc()) }}"
+          datetime_format: "%Y-%m-%d"
+        step: P3D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - site_url
+              value: "{{ stream_partition['site_url'] }}"
+            - path:
+                - search_type
+              value: "{{ stream_partition['search_type'] }}"
+        - type: CustomTransformation
+          class_name: source_google_search_console.components.CustomReportExtractDimensionsFromKeys
+          dimensions: # This will be replaced by the dimensions of the custom report
+            - date
+            - country
+      schema_loader:
+        type: CustomSchemaLoader
+        class_name: source_google_search_console.components.CustomReportSchemaLoader
+        dimensions: [] # This will be replaced by the dimensions of the custom report
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - custom_reports_array
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            # - "**" # is this needed
+            - name
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - primary_key
+          value: "{{ components_values['dimensions'] + ['site_url', 'search_type'] }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - request_body_json
+            - dimensions
+          # `date` is a cursor field therefore should be a mandatory dimension if not already present
+          value: "{{ components_values['dimensions'] + (['date'] if 'date' not in components_values['dimensions'] else []) }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - transformations
+            - "1"
+            - dimensions
+          value: "{{ components_values['dimensions'] + (['date'] if 'date' not in components_values['dimensions'] else []) }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - dimensions
+          value: "{{ components_values['dimensions'] + (['date'] if 'date' not in components_values['dimensions'] else []) }}"
+
 schemas:
   search_analytics_by_country:
     $schema: "http://json-schema.org/draft-07/schema#"

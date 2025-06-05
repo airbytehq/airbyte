@@ -168,15 +168,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
             ]
         )
 
-        streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
-
         return streams
-
-    def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
-        return [
-            type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in config.get("custom_reports_array", [])
-        ]
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
