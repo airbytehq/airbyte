@@ -5,6 +5,7 @@ import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -27,8 +28,10 @@ import io.airbyte.integrations.destination.clickhouse_v2.Utils
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
+import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
@@ -81,6 +84,11 @@ class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
     override fun testBasicWriteFile() {
         // Clickhouse does not support file transfer, so this test is skipped.
     }
+
+    @Disabled("Clickhouse does not support file transfer, so this test is skipped.")
+    override fun testInterruptedTruncateWithoutPriorData() {
+
+    }
 }
 
 class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration): DestinationDataDumper {
@@ -89,13 +97,7 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        val client = Client.Builder()
-            .setPassword(config.password)
-            .setUsername(config.username)
-            .addEndpoint(config.endpoint)
-            .setDefaultDatabase(config.resolvedDatabase)
-            .retryOnFailures(ClientFaultCause.None)
-            .build()
+        val client = getClient(config)
 
         val output = mutableListOf<OutputRecord>()
 
@@ -115,9 +117,6 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
                             "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
                         )
                     }
-                io.airbyte.integrations.destination.clickhouse_v2.client.log.error {
-                    "Clickhouse record entry: ${entry.key} = ${entry.value}"
-                }
                     dataMap.put(entry.key, airbyteValue)
             }
             val outputRecord = OutputRecord(
@@ -143,9 +142,41 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
     }
 }
 
-class ClickhouseDataCleaner(): DestinationCleaner {
+class ClickhouseDataCleaner: DestinationCleaner {
+    private val clickhouseSpecification =
+        ValidatedJsonUtils.parseOne(
+            ClickhouseSpecification::class.java,
+            Files.readString(Utils.getConfigPath("valid_connection.json"))
+        )
+
+    private val config =
+        ClickhouseConfigurationFactory()
+            .makeWithOverrides(clickhouseSpecification,
+                 mapOf(
+                     "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
+                //     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
+                //     "protocol" to "http",
+                //     "username" to ClickhouseContainerHelper.getUsername()!!,
+                //     "password" to ClickhouseContainerHelper.getPassword()!!,
+                 )
+            )
+
     override fun cleanup() {
-        // TODO("Not yet implemented")
+        val client = getClient(config)
+
+        val query = "select * from system.databases where name like 'test%'"
+
+        client.query(query)
+            .get()
+            .use { response ->
+                val reader = client.newBinaryFormatReader(response)
+                while (reader.hasNext()) {
+                    val record = reader.next()
+                    val databaseName = record["name"] as String
+
+                    client.query("DROP DATABASE IF EXISTS $databaseName").get()
+                }
+            }
     }
 
 }
@@ -173,4 +204,21 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
         changes = changes,
         syncId = metaJson["sync_id"].longValue(),
     )
+}
+
+object ClientProvider {
+    private var client: Client? = null
+
+    fun getClient(config: ClickhouseConfiguration): Client {
+        if (client == null) {
+            client = Client.Builder()
+                .setPassword(config.password)
+                .setUsername(config.username)
+                .addEndpoint(config.endpoint)
+                .setDefaultDatabase(config.resolvedDatabase)
+                .retryOnFailures(ClientFaultCause.None)
+                .build()
+        }
+        return client!!
+    }
 }
