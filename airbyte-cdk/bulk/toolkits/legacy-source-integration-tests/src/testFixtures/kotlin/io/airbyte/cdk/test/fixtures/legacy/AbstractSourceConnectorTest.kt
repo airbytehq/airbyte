@@ -242,12 +242,7 @@ abstract class AbstractSourceConnectorTest {
             WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
                 .withState(if (state == null) null else State().withState(state))
-                .withCatalog(
-                    convertProtocolObject(
-                        catalog,
-                        ConfiguredAirbyteCatalog::class.java
-                    )
-                )
+                .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
 
         val source: AirbyteSource =
             DefaultAirbyteSource(
@@ -285,12 +280,7 @@ abstract class AbstractSourceConnectorTest {
             WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
                 .withState(if (state == null) null else State().withState(state))
-                .withCatalog(
-                    convertProtocolObject(
-                        catalog,
-                        ConfiguredAirbyteCatalog::class.java
-                    )
-                )
+                .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
 
         val source = prepareAirbyteSource()
         source.start(sourceConfig, jobRoot)
