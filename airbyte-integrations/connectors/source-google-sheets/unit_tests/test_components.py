@@ -12,6 +12,7 @@ import requests
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.components import DpathSchemaExtractor, DpathSchemaMatchingExtractor
 from source_google_sheets.components.extractors import RawSchemaParser
+from source_google_sheets.utils import granular_name_conversion
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.models import SyncMode
@@ -148,95 +149,6 @@ def test_dpath_schema_extractor(body, expected_records: List):
             False,
             False,
         ),
-        # Experimental name conversion: basic case
-        (
-            {"values": [{"formattedValue": "AMPED Domain "}, {"formattedValue": "50th Percentile"}, {"formattedValue": "Normal Header"}]},
-            [
-                (0, "amped_domain", {"formattedValue": "AMPED Domain "}),
-                (1, "50th_percentile", {"formattedValue": "50th Percentile"}),
-                (2, "normal_header", {"formattedValue": "Normal Header"}),
-            ],
-            False,
-            True,
-        ),
-        # Special characters
-        (
-            {"values": [{"formattedValue": "Customer ID*"}, {"formattedValue": "Order#"}, {"formattedValue": "Price!"}]},
-            [
-                (0, "customer_id", {"formattedValue": "Customer ID*"}),
-                (1, "order", {"formattedValue": "Order#"}),
-                (2, "price", {"formattedValue": "Price!"}),
-            ],
-            False,
-            True,
-        ),
-        # Leading and trailing spaces
-        (
-            {"values": [{"formattedValue": "  Leading Space"}, {"formattedValue": "Trailing Space  "}, {"formattedValue": "  Both  "}]},
-            [
-                (0, "leading_space", {"formattedValue": "  Leading Space"}),
-                (1, "trailing_space", {"formattedValue": "Trailing Space  "}),
-                (2, "both", {"formattedValue": "  Both  "}),
-            ],
-            False,
-            True,
-        ),
-        # Consecutive spaces and special characters
-        (
-            {"values": [{"formattedValue": "Word  ?!"}, {"formattedValue": "Multi   Space"}, {"formattedValue": "@@Item@@"}]},
-            [
-                (0, "word", {"formattedValue": "Word  ?!"}),
-                (1, "multi_space", {"formattedValue": "Multi   Space"}),
-                (2, "item", {"formattedValue": "@@Item@@"}),
-            ],
-            False,
-            True,
-        ),
-        # Letter-number and number-word pairs
-        (
-            {"values": [{"formattedValue": "Q3 2023"}, {"formattedValue": "A1 Test"}, {"formattedValue": "X9 Data"}]},
-            [
-                (0, "q3_2023", {"formattedValue": "Q3 2023"}),
-                (1, "a1_test", {"formattedValue": "A1 Test"}),
-                (2, "x9_data", {"formattedValue": "X9 Data"}),
-            ],
-            False,
-            True,
-        ),
-        (
-            {"values": [{"formattedValue": "50th Percentile"}, {"formattedValue": "1st Place"}, {"formattedValue": "3rd Rank"}]},
-            [
-                (0, "50th_percentile", {"formattedValue": "50th Percentile"}),
-                (1, "1st_place", {"formattedValue": "1st Place"}),
-                (2, "3rd_rank", {"formattedValue": "3rd Rank"}),
-            ],
-            False,
-            True,
-        ),
-        (
-            {"values": [{"formattedValue": "App Loading Milestone 1 (All) - 80th Percentile"}]},
-            [(0, "app_loading_milestone_1_all_80th_percentile", {"formattedValue": "App Loading Milestone 1 (All) - 80th Percentile"})],
-            False,
-            True,
-        ),
-        (
-            {"values": [{"formattedValue": "50th Percentile"}]},
-            [(0, "50th_percentile", {"formattedValue": "50th Percentile"})],
-            False,
-            True,
-        ),
-        (
-            {"values": [{"formattedValue": "Q3 2023"}]},
-            [(0, "q3_2023", {"formattedValue": "Q3 2023"})],
-            False,
-            True,
-        ),
-        (
-            {"values": [{"formattedValue": "Q 3 2023"}]},
-            [(0, "q_3_2023", {"formattedValue": "Q 3 2023"})],
-            False,
-            True,
-        ),
     ],
     ids=[
         "test_headers",
@@ -245,16 +157,6 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_blank_values_terminate_row",
         "test_is_row_empty_with_empty_row",
         "test_whitespace_terminates_row",
-        "test_experimental_names_conversion",
-        "test_special_characters",
-        "test_leading_trailing_spaces",
-        "test_consecutive_spaces_special_chars",
-        "test_letter_number_pairs",
-        "test_number_word_pairs",
-        "test_preserve_space_between_number_and_word",
-        "test_combine_adjacent_number_word_pair",
-        "test_combine_adjacent_letter_number_pair",
-        "test_preserve_space_in_letter_number_pair",
     ],
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion, experimental_names_conversion):
@@ -288,3 +190,42 @@ def test_is_row_empty(values, expected_response):
 def test_row_contains_relevant_data(values, relevant_indices, expected_response):
     is_row_empty = DpathSchemaMatchingExtractor.row_contains_relevant_data(values, relevant_indices)
     assert is_row_empty == expected_response
+
+
+def remove_leading_trailing_underscores():
+    assert granular_name_conversion(" EXAMPLE Domain ", remove_leading_trailing_underscores=True) == "example_domain"
+
+
+def test_remove_special_characters():
+    assert granular_name_conversion("Example ID*", remove_special_characters=True) == "example_id"
+
+
+def test_combine_number_word_pairs():
+    assert granular_name_conversion("50th Percentile", combine_number_word_pairs=True) == "50th_percentile"
+
+
+def test_combine_letter_number_pairs():
+    assert granular_name_conversion("Q3 2023", combine_letter_number_pairs=True) == "q3_2023"
+
+
+def test_allow_leading_numbers():
+    assert granular_name_conversion("50th Percentile", allow_leading_numbers=True, combine_number_word_pairs=True) == "50th_percentile"
+
+
+def test_combined_flags():
+    assert granular_name_conversion(
+        " Example ID*",
+        remove_leading_trailing_underscores=True,
+        remove_special_characters=True,
+    ) == "example_id"
+
+
+def test_all_flags():
+    assert granular_name_conversion(
+        "  23Full1st(1)test 123aaa     *! ",
+        remove_leading_trailing_underscores=True,
+        remove_special_characters=True,
+        combine_number_word_pairs=True,
+        combine_letter_number_pairs=True,
+        allow_leading_numbers=True,
+    ) == "23full_1st_1test_123aaa"
