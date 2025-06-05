@@ -202,7 +202,8 @@ private class StdoutOutputConsumer(
         // - the "meta" field is often unset.
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
-        val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
+        val template: RecordTemplate =
+            getOrCreateRecordTemplate(record.stream, record.namespace, record)
         synchronized(this) {
             // Write a newline character to the buffer if it's not empty.
             withLockMaybeWriteNewline()
@@ -232,7 +233,11 @@ private class StdoutOutputConsumer(
 
     private val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
 
-    private fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
+    private fun getOrCreateRecordTemplate(
+        stream: String,
+        namespace: String?,
+        record: AirbyteRecordMessage
+    ): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
                 unNamespacedTemplates
@@ -240,7 +245,7 @@ private class StdoutOutputConsumer(
                 namespacedTemplates.getOrPut(namespace) { StreamToTemplateMap() }
             }
         return streamToTemplateMap.getOrPut(stream) {
-            RecordTemplate.create(stream, namespace, recordEmittedAt)
+            RecordTemplate.create(stream, namespace, recordEmittedAt, record)
         }
     }
 
@@ -261,7 +266,12 @@ private class RecordTemplate(
     val suffix: ByteArray,
 ) {
     companion object {
-        fun create(stream: String, namespace: String?, emittedAt: Instant): RecordTemplate {
+        fun create(
+            stream: String,
+            namespace: String?,
+            emittedAt: Instant,
+            record: AirbyteRecordMessage
+        ): RecordTemplate {
             // Generate a dummy AirbyteRecordMessage instance for the given args
             // using an empty object (i.e. '{}') for the "data" field value.
             val recordMessage =
@@ -270,6 +280,11 @@ private class RecordTemplate(
                     .withNamespace(namespace)
                     .withEmittedAt(emittedAt.toEpochMilli())
                     .withData(Jsons.objectNode())
+            if (record.additionalProperties.isNotEmpty()) {
+                record.additionalProperties.forEach { (key, value) ->
+                    recordMessage.additionalProperties[key] = value
+                }
+            }
             // Generate the corresponding dummy AirbyteMessage instance.
             val airbyteMessage =
                 AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(recordMessage)
