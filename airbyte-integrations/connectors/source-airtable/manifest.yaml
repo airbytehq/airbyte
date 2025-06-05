@@ -119,10 +119,6 @@ definitions:
             http_method: GET
           record_selector:
             type: RecordSelector
-            record_filter:
-              condition: "{{ record['id'] == parameters.table_id }}"
-            $parameters:
-              table_id: ""
             extractor:
               type: DpathExtractor
               field_path:
@@ -558,9 +554,9 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - transformations
-            - 0
+            - "0"
             - fields
-            - 0
+            - "0"
             - value
           value: "{{ components_values.name }}"
         - type: ComponentMappingDefinition
