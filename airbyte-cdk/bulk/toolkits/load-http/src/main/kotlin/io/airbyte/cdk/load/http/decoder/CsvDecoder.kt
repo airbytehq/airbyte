@@ -15,6 +15,6 @@ class CsvDecoder(private val csvFormat: CSVFormat = CSVFormat.Builder.create().s
         val parser = CSVParser(InputStreamReader(response.body!!.inputStream(), StandardCharsets.UTF_8),
             csvFormat
         )
-        return parser.use { parser -> parser.asSequence().map { csvRecord -> mapper.convertValue(csvRecord.toMap(), JsonNode::class.java) } }
+        return parser.use { it.asSequence().map { csvRecord -> mapper.convertValue(csvRecord.toMap(), JsonNode::class.java) } }
     }
 }
