@@ -714,6 +714,7 @@ definitions:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
   # bulk streams
   labels_stream:
+    # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
     type: DeclarativeStream
     name: labels
     primary_key: Id
@@ -871,7 +872,8 @@ definitions:
       decoder:
         type: CsvDecoder
         encoding: "utf-8-sig"
-        set_empty_cell_to_none: true
+        set_values_to_none:
+          - ""
     creation_requester:
       # https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest
       type: HttpRequester
