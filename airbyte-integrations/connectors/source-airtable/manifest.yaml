@@ -558,9 +558,9 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - transformations
-            - "0"
+            - 0
             - fields
-            - "0"
+            - 0
             - value
           value: "{{ components_values.name }}"
         - type: ComponentMappingDefinition
