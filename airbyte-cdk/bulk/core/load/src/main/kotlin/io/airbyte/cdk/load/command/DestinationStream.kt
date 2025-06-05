@@ -117,6 +117,8 @@ data class DestinationStream(
                     Overwrite -> {
                         destinationSyncMode = DestinationSyncMode.OVERWRITE
                     }
+                    SoftDelete -> DestinationSyncMode.SOFT_DELETE
+                    Upsert -> DestinationSyncMode.UPDATE
                 }
             }
 
@@ -147,6 +149,8 @@ class DestinationStreamFactory(
                     DestinationSyncMode.OVERWRITE -> Overwrite
                     DestinationSyncMode.APPEND_DEDUP ->
                         Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
+                    DestinationSyncMode.UPDATE -> Upsert
+                    DestinationSyncMode.SOFT_DELETE -> SoftDelete
                 },
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
