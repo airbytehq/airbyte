@@ -6,9 +6,11 @@ package io.airbyte.cdk.load.config
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.DataChannelReader
 import io.airbyte.cdk.load.file.JSONLDataChannelReader
+import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationMessageFactory
@@ -26,6 +28,7 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
+import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -33,6 +36,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.File
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 
@@ -93,7 +97,7 @@ class DataChannelBeanFactory {
             DataChannelMedium.STDIO -> {
                 if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1
             }
-            DataChannelMedium.SOCKETS -> {
+            DataChannelMedium.SOCKET -> {
                 dataChannelSocketPaths.size
             }
         }
@@ -107,8 +111,31 @@ class DataChannelBeanFactory {
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> 1
-            DataChannelMedium.SOCKETS -> numInputPartitions
+            DataChannelMedium.SOCKET -> numInputPartitions
         }
+    }
+
+    @Singleton
+    @Named("markEndOfStreamAtEndOfSync")
+    fun markEndOfStreamAtEndOfSync(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
+    ): Boolean {
+        // For STDIO, we mark the end of stream when we get the message.
+        // For SOCKETs, source will only send end-of-stream on one socket (which is useless),
+        // so to avoid constantly syncing across threads we'll mark end of stream at the end of
+        // the sync. This means that the last checkpoint might not be flushed until end-of-sync,
+        // but it's possible that this happens already anyway.
+        return dataChannelMedium == DataChannelMedium.SOCKET
+    }
+
+    @Singleton
+    @Named("logPerNRecords")
+    fun logPerNRecords(
+        @Value("\${airbyte.destination.core.data-channel.log-per-n-records:100000}")
+        logPerNRecords: Long
+    ): Long {
+        log.info { "Logging every $logPerNRecords records" }
+        return logPerNRecords
     }
 
     /**
@@ -121,7 +148,7 @@ class DataChannelBeanFactory {
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     fun requireCheckpointIdOnRecord(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
-    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKETS
+    ): Boolean = dataChannelMedium == DataChannelMedium.SOCKET
 
     /**
      * PRIVATE: Do not use outside this factory.
@@ -158,10 +185,17 @@ class DataChannelBeanFactory {
     @Singleton
     fun dataChannelReader(
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
-        destinationMessageFactory: DestinationMessageFactory
+        destinationMessageFactory: DestinationMessageFactory,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ) =
         when (dataChannelFormat) {
             DataChannelFormat.JSONL -> JSONLDataChannelReader(destinationMessageFactory)
+            DataChannelFormat.PROTOBUF -> {
+                check(dataChannelMedium == DataChannelMedium.SOCKET) {
+                    "PROTOBUF data channel format is only supported for SOCKETS medium."
+                }
+                ProtobufDataChannelReader(destinationMessageFactory)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported data channel format: $dataChannelFormat"
@@ -187,6 +221,7 @@ class DataChannelBeanFactory {
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
+        @Named("logPerNRecords") logPerNRecords: Long,
     ): Array<Flow<PipelineInputEvent>> {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -195,7 +230,7 @@ class DataChannelBeanFactory {
                 }
                 return pipelineInputQueue.asOrderedFlows()
             }
-            DataChannelMedium.SOCKETS -> {
+            DataChannelMedium.SOCKET -> {
                 socketPaths
                     .map { path ->
                         val socket =
@@ -210,6 +245,7 @@ class DataChannelBeanFactory {
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
                             queueMemoryManager,
+                            logPerNRecords
                         )
                     }
                     .toTypedArray()
@@ -259,5 +295,31 @@ class DataChannelBeanFactory {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
         }
         return HeartbeatTask(config, pipelineInputQueue, checkpointManager)
+    }
+
+    @Singleton
+    fun namespaceMapper(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Value("\${airbyte.destination.core.mappers.namespace-mapping-config-path}")
+        namespaceMappingConfigPath: String
+    ): NamespaceMapper {
+        when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> {
+                // Source is effectively "identity." In STDIO mode, we just take
+                // what we're given.
+                return NamespaceMapper(NamespaceDefinitionType.SOURCE)
+            }
+            DataChannelMedium.SOCKET -> {
+                val config =
+                    File(namespaceMappingConfigPath)
+                        .readText(Charsets.UTF_8)
+                        .deserializeToClass(NamespaceMappingConfig::class.java)
+                return NamespaceMapper(
+                    namespaceDefinitionType = config.namespaceDefinitionType,
+                    namespaceFormat = config.namespaceFormat,
+                    streamPrefix = config.streamPrefix
+                )
+            }
+        }
     }
 }

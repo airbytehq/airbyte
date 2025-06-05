@@ -131,7 +131,7 @@ class FileChunkTask<T>(
             (stream.schema as? ObjectType)
                 ?.properties
                 ?.put(COLUMN_NAME_AIRBYTE_FILE_PATH, FieldType(StringType, nullable = true))
-            asRawJson().let { jsonNode ->
+            asJsonRecord().let { jsonNode ->
                 (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
             }
         }
