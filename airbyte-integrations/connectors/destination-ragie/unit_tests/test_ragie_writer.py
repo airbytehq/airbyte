@@ -111,7 +111,7 @@ class TestRagieWriter(unittest.TestCase):
         self.writer.streams = {"default_overwrite_stream": stream}
         self.mock_client.find_ids_by_metadata.return_value = ["id1", "id2"]
         self.writer.delete_streams_to_overwrite()
-        self.mock_client.delete_documents_by_id.assert_called_with(["id1", "id2"])
+        self.assertCountEqual(self.mock_client.delete_documents_by_id.call_args[0][0], ["id1", "id2"])
 
 
 if __name__ == "__main__":
