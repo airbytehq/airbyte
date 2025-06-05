@@ -177,13 +177,18 @@ data class Dedupe(
      */
     val cursor: List<String>,
 ) : ImportType
+
 /**
- * A legacy destination sync mode. Modern destinations depend on platform to set
- * overwrite/record-retaining behavior via the generationId / minimumGenerationId parameters, and
- * should treat this as equivalent to Append.
+ * This is mostly relevant for Activation Destinations.
+ *
+ * In the context of non API destination, this is a legacy destination sync mode. Modern
+ * destinations depend on platform to set overwrite/record-retaining behavior via the
+ * generationId / minimumGenerationId parameters, and should treat this as equivalent to Append.
  *
  * [Overwrite] is approximately equivalent to an [Append] sync, with nonzeao generationId equal to
  * minimumGenerationId.
  */
-// TODO should this even exist?
 data object Overwrite : ImportType
+
+data object Upsert : ImportType
+data object SoftDelete : ImportType

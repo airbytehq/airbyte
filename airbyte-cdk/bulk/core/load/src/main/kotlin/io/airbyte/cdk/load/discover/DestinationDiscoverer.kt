@@ -1,6 +1,7 @@
 package io.airbyte.cdk.load.discover
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 
 /**
  * A discover operation that is run before the destination is used.
@@ -14,6 +15,6 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
  * * Implementors should not inject configuration; only use the config passed in [discover].
  */
 interface DestinationDiscoverer<C : DestinationConfiguration> {
-    fun discover(config: C)
+    fun discover(config: C): DestinationDiscoverCatalog
     fun cleanup(config: C) {}
 }

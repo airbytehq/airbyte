@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.airbyte.protocol.models.v0.DestinationCatalog
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -104,6 +105,14 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
             AirbyteTraceMessage()
                 .withType(AirbyteTraceMessage.Type.ANALYTICS)
                 .withAnalytics(analytics),
+        )
+    }
+
+    fun accept(destinationCatalog: DestinationCatalog) {
+        accept(
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.DESTINATION_CATALOG)
+                .withDestinationCatalog(destinationCatalog)
         )
     }
 }
