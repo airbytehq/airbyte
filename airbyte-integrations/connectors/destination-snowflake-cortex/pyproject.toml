@@ -16,6 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
 include = "destination_snowflake_cortex"
 
+[tool.poetry.dependencies]
+jaraco-functools = "^4.1.0"
 [tool.poetry.dependencies.airbyte-cdk]
 # Version cnstrained by PyAirbyte (`airbyte`) version
 version = ">=1.0"
