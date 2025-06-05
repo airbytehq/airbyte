@@ -63,6 +63,7 @@ class StatsEmitter(
                                 .withNamespace(stream.unmappedNamespace)
                                 .withStream(stream.unmappedName)
                                 .withData(EMPTY_JSON)
+                                .withAdditionalProperty(OutputConsumer.IS_DUMMY_STATS_MESSAGE, true)
                                 .withAdditionalProperty(DEST_EMITTED_RECORDS_COUNT, recordsRead)
                                 .withAdditionalProperty(DEST_EMITTED_BYTES_COUNT, bytesRead),
                         )
