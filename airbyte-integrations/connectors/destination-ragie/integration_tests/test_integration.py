@@ -108,10 +108,7 @@ def patch_ragie_client_methods(has_real_creds):
             mock_instance.delete_documents_by_id.return_value = None
 
             # Fix: mock check_connection to return proper AirbyteConnectionStatus instance
-            mock_instance.check_connection.return_value = AirbyteConnectionStatus(
-                status=Status.SUCCEEDED,
-                message="Connection successful"
-            )
+            mock_instance.check_connection.return_value = AirbyteConnectionStatus(status=Status.SUCCEEDED, message="Connection successful")
             yield
     else:
         yield
@@ -127,7 +124,7 @@ def test_check_connection(config):
     "invalid_api_key",
     [
         ("invalid_key"),
-        (""), 
+        (""),
         (None),
     ],
 )
