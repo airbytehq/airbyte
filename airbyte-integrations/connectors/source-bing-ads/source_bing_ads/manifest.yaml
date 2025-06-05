@@ -278,7 +278,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ "AdGroups" ]
+          field_path: ["AdGroups"]
         schema_normalization: Default
     transformations:
       - type: AddFields
@@ -338,7 +338,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ "Ads" ]
+          field_path: ["Ads"]
         schema_normalization: Default
     transformations:
       - type: AddFields
