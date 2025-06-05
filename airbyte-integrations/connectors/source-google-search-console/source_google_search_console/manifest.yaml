@@ -39,17 +39,8 @@ definitions:
       Client: "#/definitions/oauth_authenticator"
       Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
 
-  search_analytics_all_fields_stream:
+  base_search_analytics_stream:
     type: DeclarativeStream
-    name: search_analytics_all_fields
-    primary_key:
-      - site_url
-      - date
-      - country
-      - device
-      - query
-      - page
-      - search_type
     retriever:
       type: SimpleRetriever
       requester:
@@ -63,9 +54,9 @@ definitions:
         request_body_json:
           startDate: "{{ stream_interval.get('start_time') }}"
           endDate: "{{ stream_interval.get('end_time') }}"
-          dimensions: ["date", "country", "device", "page", "query"]
+          dimensions: "{{ parameters['dimensions'] }}"
           type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: auto
+          aggregationType: "{{ parameters['aggregation_type'] }}"
           dataState: "{{ config.get('data_state', 'final') }}"
       paginator:
         type: DefaultPaginator
@@ -92,28 +83,23 @@ definitions:
           values: "{{ config['site_urls'] }}"
           cursor_field: site_url
         - type: ListPartitionRouter
-          values:
-            - web
-            - news
-            - image
-            - video
+          values: "{{ parameters['search_types'] }}"
           cursor_field: search_type
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2021-01-01') }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-      step: P3D
-      cursor_granularity: P1D
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+
+  search_analytics_all_fields_stream:
+    $ref: "#/definitions/base_search_analytics_stream"
+    name: search_analytics_all_fields
+    primary_key:
+      - site_url
+      - date
+      - country
+      - device
+      - query
+      - page
+      - search_type
     transformations:
       - type: AddFields
         fields:
@@ -147,87 +133,28 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_all_fields"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    $parameters:
+      dimensions:
+        - date
+        - country
+        - device
+        - page
+        - query
+      aggregation_type: auto
+      search_types:
+        - web
+        - news
+        - image
+        - video
 
   search_analytics_by_country_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/base_search_analytics_stream"
     name: search_analytics_by_country
     primary_key:
       - site_url
       - date
       - country
       - search_type
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
-        http_method: POST
-        authenticator: "#/definitions/selective_authenticator"
-        request_headers:
-          Content-Type: "application/json"
-        request_body_json:
-          startDate: "{{ stream_interval.get('start_time') }}"
-          endDate: "{{ stream_interval.get('end_time') }}"
-          dimensions: ["date", "country"]
-          type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: auto
-          dataState: "{{ config.get('data_state', 'final') }}"
-        # Currently relying on the default error handler behavior. Two pieces of functionality not covered are
-        # - Silently skipping over 403 permissions errors and relying on partial success reporting
-        # - Retrying 400 errors with aggregation_type=auto instead of failing
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: startRow
-          inject_into: body_json
-        page_size_option:
-          type: RequestOption
-          field_name: rowLimit
-          inject_into: body_json
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 25000
-          inject_on_first_request: true
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - rows
-      partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
-        - type: ListPartitionRouter
-          values:
-            - web
-            - news
-            - image
-            - video
-            - discover
-            - googleNews
-          cursor_field: search_type
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2021-01-01') }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-      step: P3D
-      cursor_granularity: P1D
     transformations:
       - type: AddFields
         fields:
@@ -256,83 +183,26 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_by_country"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    $parameters:
+      dimensions:
+        - date
+        - country
+      aggregation_type: auto
+      search_types:
+        - web
+        - news
+        - image
+        - video
+        - discover
+        - googleNews
 
   search_analytics_by_date_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/base_search_analytics_stream"
     name: search_analytics_by_date
     primary_key:
       - site_url
       - date
       - search_type
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
-        http_method: POST
-        authenticator: "#/definitions/selective_authenticator"
-        request_headers:
-          Content-Type: "application/json"
-        request_body_json:
-          startDate: "{{ stream_interval.get('start_time') }}"
-          endDate: "{{ stream_interval.get('end_time') }}"
-          dimensions: ["date"]
-          type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: auto
-          dataState: "{{ config.get('data_state', 'final') }}"
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: startRow
-          inject_into: body_json
-        page_size_option:
-          type: RequestOption
-          field_name: rowLimit
-          inject_into: body_json
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 25000
-          inject_on_first_request: true
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - rows
-      partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
-        - type: ListPartitionRouter
-          values:
-            - web
-            - news
-            - image
-            - video
-            - discover
-            - googleNews
-          cursor_field: search_type
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2021-01-01') }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-      step: P3D
-      cursor_granularity: P1D
     transformations:
       - type: AddFields
         fields:
@@ -354,86 +224,26 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_by_date"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    $parameters:
+      dimensions:
+        - date
+      aggregation_type: auto
+      search_types:
+        - web
+        - news
+        - image
+        - video
+        - discover
+        - googleNews
 
   search_analytics_by_device_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/base_search_analytics_stream"
     name: search_analytics_by_device
     primary_key:
       - site_url
       - date
       - device
       - search_type
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
-        http_method: POST
-        authenticator: "#/definitions/selective_authenticator"
-        request_headers:
-          Content-Type: "application/json"
-        request_body_json:
-          startDate: "{{ stream_interval.get('start_time') }}"
-          endDate: "{{ stream_interval.get('end_time') }}"
-          dimensions: ["date", "device"]
-          type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: auto
-          dataState: "{{ config.get('data_state', 'final') }}"
-        # Currently relying on the default error handler behavior. Two pieces of functionality not covered are
-        # - Silently skipping over 403 permissions errors and relying on partial success reporting
-        # - Retrying 400 errors with aggregation_type=auto instead of failing outright
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: startRow
-          inject_into: body_json
-        page_size_option:
-          type: RequestOption
-          field_name: rowLimit
-          inject_into: body_json
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 25000
-          inject_on_first_request: true
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - rows
-      partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
-        - type: ListPartitionRouter
-          values:
-            - web
-            - news
-            - image
-            - video
-            - googleNews
-          cursor_field: search_type
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2021-01-01') }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-      step: P3D
-      cursor_granularity: P1D
     transformations:
       - type: AddFields
         fields:
@@ -462,84 +272,26 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_by_device"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    $parameters:
+      dimensions:
+        - date
+        - device
+      aggregation_type: auto
+      search_types:
+        - web
+        - news
+        - image
+        - video
+        - googleNews
 
   search_analytics_by_page_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/base_search_analytics_stream"
     name: search_analytics_by_page
     primary_key:
       - site_url
       - date
       - page
       - search_type
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
-        http_method: POST
-        authenticator: "#/definitions/selective_authenticator"
-        request_headers:
-          Content-Type: "application/json"
-        request_body_json:
-          startDate: "{{ stream_interval.get('start_time') }}"
-          endDate: "{{ stream_interval.get('end_time') }}"
-          dimensions: ["date", "page"]
-          type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: auto
-          dataState: "{{ config.get('data_state', 'final') }}"
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: startRow
-          inject_into: body_json
-        page_size_option:
-          type: RequestOption
-          field_name: rowLimit
-          inject_into: body_json
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 25000
-          inject_on_first_request: true
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - rows
-      partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
-        - type: ListPartitionRouter
-          values:
-            - web
-            - news
-            - image
-            - video
-            - discover
-            - googleNews
-          cursor_field: search_type
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2021-01-01') }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-      step: P3D
-      cursor_granularity: P1D
     transformations:
       - type: AddFields
         fields:
@@ -564,82 +316,27 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_by_page"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    $parameters:
+      dimensions:
+        - date
+        - page
+      aggregation_type: auto
+      search_types:
+        - web
+        - news
+        - image
+        - video
+        - discover
+        - googleNews
 
   search_analytics_by_query_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/base_search_analytics_stream"
     name: search_analytics_by_query
     primary_key:
       - site_url
       - date
       - query
       - search_type
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
-        http_method: POST
-        authenticator: "#/definitions/selective_authenticator"
-        request_headers:
-          Content-Type: "application/json"
-        request_body_json:
-          startDate: "{{ stream_interval.get('start_time') }}"
-          endDate: "{{ stream_interval.get('end_time') }}"
-          dimensions: ["date", "query"]
-          type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: auto
-          dataState: "{{ config.get('data_state', 'final') }}"
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          field_name: startRow
-          inject_into: body_json
-        page_size_option:
-          type: RequestOption
-          field_name: rowLimit
-          inject_into: body_json
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 25000
-          inject_on_first_request: true
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - rows
-      partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
-        - type: ListPartitionRouter
-          values:
-            - web
-            - news
-            - image
-            - video
-          cursor_field: search_type
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2021-01-01') }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-      step: P3D
-      cursor_granularity: P1D
     transformations:
       - type: AddFields
         fields:
@@ -664,9 +361,16 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/search_analytics_by_query"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+    $parameters:
+      dimensions:
+        - date
+        - query
+      aggregation_type: auto
+      search_types:
+        - web
+        - news
+        - image
+        - video
 
   sites_stream:
     type: DeclarativeStream
