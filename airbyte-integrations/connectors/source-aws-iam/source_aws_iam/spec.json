@@ -19,6 +19,15 @@
         "description": "External ID used when assuming the role.",
         "airbyte_secret": true,
         "order": 1
+      },
+      "num_workers": {
+        "title": "Number of Workers",
+        "type": "integer",
+        "description": "Number of concurrent workers for fetching IAM data. Higher values may improve performance but could hit AWS rate limits.",
+        "default": 5,
+        "minimum": 1,
+        "maximum": 10,
+        "order": 2
       }
     }
   }
