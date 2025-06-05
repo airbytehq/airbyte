@@ -25,4 +25,5 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.16.0'
 
     testImplementation 'org.testcontainers:mongodb:1.19.0'
+    testImplementation 'org.testcontainers:jdbc:1.19.0'
 }
