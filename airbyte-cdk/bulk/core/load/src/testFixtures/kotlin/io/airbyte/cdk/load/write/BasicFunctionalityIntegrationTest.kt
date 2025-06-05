@@ -62,7 +62,6 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -1612,8 +1611,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream1,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream1,
                     """{"id": 42, "a": "foo1", "b": "bar1"}""",
                     emittedAtMs = 100,
                 ),
@@ -1628,8 +1626,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    stream2,
                     """{"id": 43, "a": "foo2", "b": "bar2"}""",
                     emittedAtMs = 200,
                 )
@@ -2159,21 +2156,26 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        fun makeRecord(secondPk: String, emittedAtMs: Long) =
+        fun makeRecord(stream: DestinationStream, secondPk: String, emittedAtMs: Long) =
             InputRecord(
-                randomizedNamespace,
-                "test_stream",
+                stream,
                 data =
                     """{"id1": 1, "$secondPk": 200, "updated_at": 1, "name": "foo_$emittedAtMs"}""",
                 emittedAtMs = emittedAtMs,
             )
+
+        val stream1 = makeStream(secondPk = "id2")
         runSync(
             updatedConfig,
-            makeStream(secondPk = "id2"),
-            listOf(makeRecord(secondPk = "id2", emittedAtMs = 100)),
+            stream1,
+            listOf(makeRecord(stream1, secondPk = "id2", emittedAtMs = 100)),
         )
         val stream2 = makeStream(secondPk = "id3")
-        runSync(updatedConfig, stream2, listOf(makeRecord(secondPk = "id3", emittedAtMs = 200)))
+        runSync(
+            updatedConfig,
+            stream2,
+            listOf(makeRecord(stream2, secondPk = "id3", emittedAtMs = 200))
+        )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
