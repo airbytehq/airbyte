@@ -261,7 +261,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.11.0-rc.1 | 2025-06-04 | [61325](https://github.com/airbytehq/airbyte/pull/61325) | Migrate `account_performance_report` streams to manifest |
+| 2.11.0-rc.1 | 2025-06-09 | [61325](https://github.com/airbytehq/airbyte/pull/61325) | Migrate `account_performance_report` streams and `labels` stream to manifest |
 | 2.10.0 | 2025-06-02 | [61329](https://github.com/airbytehq/airbyte/pull/61329) | Promoting release candidate 2.10.0-rc.1 to a main version. |
 | 2.10.0-rc.1 | 2025-06-01 | [59750](https://github.com/airbytehq/airbyte/pull/59750) | Migrate `ad_performance_reports` and `campaigns` streams to manifest |
 | 2.9.4 | 2025-05-29 | [60909](https://github.com/airbytehq/airbyte/pull/60909) | Remove account records if duplicated caused by predicate |
