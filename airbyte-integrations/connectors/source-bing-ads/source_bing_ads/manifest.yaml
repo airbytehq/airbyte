@@ -1253,24 +1253,6 @@ definitions:
         fields:
           - type: AddedFieldDefinition
             path:
-              - QualityScore
-            value: |
-              {% set value = record.get('QualityScore') %}
-              {{ value | float if value is not none and value != "--" else none }}
-          - type: AddedFieldDefinition
-            path:
-              - AdRelevance
-            value: |
-              {% set value = record.get('AdRelevance') %}
-              {{ value | float if value is not none and value != "--" else none }}
-          - type: AddedFieldDefinition
-            path:
-              - LandingPageExperience
-            value: |
-              {% set value = record.get('LandingPageExperience') %}
-              {{ value | float if value is not none and value != "--" else none }}
-          - type: AddedFieldDefinition
-            path:
               - AccountId
             value: |
               {{ record['AccountId'] | int if record.get('AccountId') else none }}
@@ -1392,7 +1374,9 @@ definitions:
       decoder:
         type: CsvDecoder
         encoding: "utf-8-sig"
-        set_empty_cell_to_none: true
+        set_values_to_none:
+          - ""
+          - "--"
     creation_requester:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
