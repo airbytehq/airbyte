@@ -54,6 +54,30 @@ def granular_name_conversion(
     combine_letter_number_pairs: bool = False,
     allow_leading_numbers: bool = False,
 ) -> str:
+    """
+    Converts a string into a normalized, SQL-compliant name using a set of configurable options.
+
+    Args:
+        text: The input string to convert.
+        remove_leading_trailing_underscores: If True, removes underscores at the start/end of the result.
+        combine_number_word_pairs: If True, combines adjacent number and word tokens (e.g., "50 th" -> "50th").
+        remove_special_characters: If True, removes all special characters from the input.
+        combine_letter_number_pairs: If True, combines adjacent letter and number tokens (e.g., "Q 3" -> "Q3").
+        allow_leading_numbers: If False, prepends an underscore if the result starts with a number.
+
+    Returns:
+        The normalized, SQL-compliant string.
+
+    Steps:
+    1. Transliterates the input text to ASCII using unidecode.
+    2. Optionally removes special characters if remove_special_characters is True.
+    3. Splits the text into tokens using a regex pattern that separates words, numbers, and non-alphanumeric characters.
+    4. Optionally combines adjacent letter+number or number+word tokens based on flags.
+    5. Removes empty tokens in the middle, but keeps leading/trailing empty tokens for underscore placement.
+    6. Optionally strips leading/trailing underscores if remove_leading_trailing_underscores is True.
+    7. Optionally prepends an underscore if the result starts with a number and allow_leading_numbers is False.
+    8. Returns the final string in lowercase.
+    """
     text = unidecode.unidecode(text)
 
     if remove_special_characters:
@@ -125,6 +149,12 @@ def granular_name_conversion(
 
 
 def granular_safe_name_conversion(text: str, **kwargs) -> str:
+    """
+    Converts text to a safe name using granular_name_conversion with the provided keyword arguments.
+    Raises an exception if the result is empty or "_". Unlike safe_name_conversion,
+    this function also rejects "_" as a valid result, since granular_name_conversion
+    may return "_" for certain inputs (e.g., "*").
+    """
     new = granular_name_conversion(text, **kwargs)
     if not new or new == "_":
         raise Exception(f"initial string '{text}' converted to empty")
