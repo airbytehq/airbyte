@@ -353,26 +353,11 @@ class FeedReader(
 
             while (messagesQueue.isNotEmpty()) {
                 val stateMessage = messagesQueue.removeFirst()
-                when (stateMessage) {
-                    is AirbyteStateMessage -> {
-                        when (finalCheckpoint) {
-                            true -> boostedOutputConsumer?.accept(stateMessage)
-                            false -> PartitionReader.pendingStates.add(stateMessage)
-                        }
-                        root.outputConsumer.accept(stateMessage)
-                    }
-/*                    is AirbyteStreamStatusTraceMessage -> {
-                        when (finalCheckpoint) {
-                            true -> boostedOutputConsumer?.accept(stateMessage)
-                            false -> PartitionReader.pendingStates.add(stateMessage)
-                        }
-                        root.outputConsumer.accept(stateMessage)
-                    }*/
-                    else -> {
-                        log.warn { "Unknown state message type: ${stateMessage::class}" }
-                        continue // Skip unknown state messages.
-                    }
+                when (finalCheckpoint) {
+                    true -> boostedOutputConsumer?.accept(stateMessage)
+                    false -> PartitionReader.pendingStates.add(stateMessage)
                 }
+                root.outputConsumer.accept(stateMessage)
             }
 
             while (pendingMessageQueue.isNotEmpty()) {
