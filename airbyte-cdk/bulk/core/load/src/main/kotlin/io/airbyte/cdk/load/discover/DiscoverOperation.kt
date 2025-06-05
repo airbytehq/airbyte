@@ -8,6 +8,7 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
@@ -21,7 +22,6 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.DestinationCatalog as ProtocolDestinationCatalog
 import io.airbyte.protocol.models.v0.DestinationOperation as ProtocolDestinationOperation
 import io.airbyte.protocol.models.v0.DestinationSyncMode as ProtocolDestinationSyncMode
-import io.airbyte.cdk.load.command.Dedupe
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
