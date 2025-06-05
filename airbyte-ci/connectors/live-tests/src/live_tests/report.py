@@ -165,6 +165,8 @@ class PrivateDetailsReport(BaseReport):
 class TestReport(BaseReport):
     TEMPLATE_NAME = "report.html.j2"
 
+    print("ehllo")
+
     def __init__(self, path: Path, pytest_config: Config, private_details_url: Optional[str] = None) -> None:
         self.private_details_url = private_details_url
         self.test_results: list[dict[str, Any]] = []
