@@ -18,8 +18,8 @@ interface DatabaseHandler {
     suspend fun createNamespaces(namespaces: Collection<String>)
 }
 
-abstract class BaseDatabaseHandler<DestinationDataType: Enum<DestinationDataType>>(
-    private val airbyteClient: AirbyteClient<DestinationDataType>) : DatabaseHandler {
+abstract class BaseDatabaseHandler(
+    private val airbyteClient: AirbyteClient) : DatabaseHandler {
     override suspend fun createNamespaces(namespaces: Collection<String>) {
         namespaces.forEach { namespace ->
             airbyteClient.createNamespace(namespace)

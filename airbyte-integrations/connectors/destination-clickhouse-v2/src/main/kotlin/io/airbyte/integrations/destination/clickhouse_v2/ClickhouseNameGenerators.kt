@@ -11,7 +11,8 @@ import java.util.Locale
 
 // Unused but needed by another bean
 @Singleton
-class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration): RawTableNameGenerator {
+class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration) :
+    RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
         TableName(
             config.resolvedDatabase,
@@ -20,7 +21,8 @@ class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration): Raw
 }
 
 @Singleton
-class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfiguration) : FinalTableNameGenerator {
+class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfiguration) :
+    FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
             namespace = streamDescriptor.namespace ?: config.resolvedDatabase,
@@ -32,7 +34,7 @@ class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfigurat
 class ClickhouseColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
-           column,
+            column,
             column.lowercase(Locale.getDefault()),
         )
     }
