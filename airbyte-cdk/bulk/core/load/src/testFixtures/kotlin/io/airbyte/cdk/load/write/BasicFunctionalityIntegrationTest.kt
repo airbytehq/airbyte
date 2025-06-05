@@ -258,6 +258,16 @@ abstract class BasicFunctionalityIntegrationTest(
      * destination doesn't have any interesting behavior in schema change scenarios.
      */
     val isStreamSchemaRetroactive: Boolean,
+    /**
+     * Similar to [isStreamSchemaRetroactive], but specifically for altering a column from UNKNOWN
+     * to STRING.
+     *
+     * Destinations which represent UnknownType as a STRING column, and JSON-serialize all UNKNOWN
+     * values, should set this to `false`. In these destinations, altering a column between
+     * unknown/json will not be retroactive (because we have no way to recognize which columns were
+     * STRING vs UNKNOWN).
+     */
+    val isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     val dedupBehavior: DedupBehavior?,
     val stringifySchemalessObjects: Boolean,
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
@@ -1584,6 +1594,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testAppendJsonSchemaEvolution() {
         assumeTrue(verifyDataWriting)
         assumeTrue(isStreamSchemaRetroactive)
+        assumeTrue(isStreamSchemaRetroactiveForUnknownTypeToString)
         fun makeStream(schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
