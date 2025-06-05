@@ -421,8 +421,8 @@ jobs:
 
       - name: Raise if Upstream Failure
         if: >
-          needs.jvm-connectors-test-summary.result != 'success' ||
-          needs.non-jvm-connectors-test-summary.result != 'success' ||
+          needs.jvm-connectors-test.result != 'success' ||
+          needs.non-jvm-connectors-test.result != 'success' ||
           needs.connectors-lint.result != 'success'
         run: |
           echo "❌ Some Checks failed. Marking summary as failed"
