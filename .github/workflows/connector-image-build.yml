@@ -1,0 +1,134 @@
+name: Connector Image Build
+
+on:
+  # Available as a reusable workflow
+  # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
+  workflow_call:
+    inputs:
+      repo:
+        type: string
+        required: false
+        description: "The repository name"
+      gitref:
+        type: string
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        type: string
+        required: false
+        description: "The ID of the comment triggering the workflow. Unused as of now."
+      pr:
+        type: string
+        required: false
+        description: "The pull request number, if applicable. Unused as of now."
+      connector:
+        type: string
+        required: true
+        description: "The name of the connector to build and test. If empty, this is a no-op."
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+  checks: write
+  packages: write
+
+jobs:
+  build-connector-image:
+    runs-on: ubuntu-24.04
+    if: inputs.connector
+    environment:
+      name: ghcr.io/airbytehq
+      url: https://ghcr.io/airbytehq/${{ inputs.connector }}
+    steps:
+      - name: Checkout Current Branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref }}
+          fetch-depth: 1
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Resolve Vars
+        id: vars
+        run: |
+          set -eu
+          # Detect connector root directory:
+          CONNECTOR_ROOT="airbyte-integrations/connectors/${{ inputs.connector }}"
+          echo "connector-root=$CONNECTOR_ROOT" | tee -a $GITHUB_OUTPUT
+          cd $CONNECTOR_ROOT
+          # Read connector language and base image:
+          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
+          echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
+          PR_NUMBER=${{ inputs.pr || github.event.pull_request.number }}
+          IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}"
+          echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
+          echo "image-pr-num-tag=${IMAGE_PR_NUM_TAG}" | tee -a $GITHUB_OUTPUT
+          echo "image-build-num-tag=${IMAGE_PR_NUM_TAG}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        if: ${{ steps.vars.outputs.connector-language == 'java' }}
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v4
+        if: ${{ steps.vars.outputs.connector-language == 'java' }}
+        with:
+          cache-read-only: false
+          cache-write-only: false
+          add-job-summary: "on-failure"
+
+      - name: Build Connector Tarball
+        if: ${{ steps.vars.outputs.connector-language == 'java' }}
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ inputs.connector }}:distTar
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Connector Image
+        id: build-connector-image
+        uses: docker/build-push-action@v5
+        with:
+          context: airbyte-integrations/connectors/${{ inputs.connector }}
+          file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-language }}-connector
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ steps.vars.outputs.image-pr-num-tag }}
+            ${{ steps.vars.outputs.image-build-num-tag }}
+          build-args: |
+            BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
+            CONNECTOR_NAME=${{ inputs.connector }}
+          push: true
+
+      - name: Run `spec` Image Test
+        run: |
+          docker run \
+            --rm \
+            ${{ steps.vars.outputs.image-build-num-tag }} \
+            spec
+
+      - name: Run ${{ inputs.connector }} Image Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "${{ steps.vars.outputs.image-build-num-tag }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: false

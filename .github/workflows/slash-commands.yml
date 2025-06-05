@@ -24,17 +24,18 @@ jobs:
           issue-type: both
 
           commands: |
+            approve-regression-tests
             bump-bulk-cdk-and-release-connectors
-            bump-version
             bump-cdk-version-and-merge
+            bump-version
+            build-connector-images
+            connector-performance
             format-fix
-            test
+            poe
+            publish-java-cdk
+            run-cat-tests
             run-connector-tests
             test-performance
-            publish-java-cdk
-            connector-performance
-            approve-regression-tests
-            poe
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.
