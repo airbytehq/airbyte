@@ -1,40 +1,108 @@
 package io.airbyte.integrations.destination.clickhouse_v2.client
 
-import com.clickhouse.client.api.Client
+import com.clickhouse.client.api.Client as ClickHouseClientRaw
+import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
-import com.clickhouse.data.ClickHouseDataType
+import com.clickhouse.client.api.query.QueryResponse
 import io.airbyte.cdk.load.client.AirbyteClient
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
-import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoadSqlGenerator
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlinx.coroutines.future.await
 
-val log = KotlinLogging.logger {  }
+val log = KotlinLogging.logger {}
 
 @Singleton
-class ClickhouseAirbyteClient(private val client: Client
-    ): AirbyteClient<ClickHouseDataType>() {
-    override fun getNumberOfRecordsInTable(tableName: TableName): Long? {
+class ClickhouseAirbyteClient(
+    private val client: ClickHouseClientRaw,
+    private val sqlGenerator: ClickhouseSqlGenerator,
+) : AirbyteClient,
+    DirectLoadTableSqlOperations,
+    DirectLoadTableNativeOperations {
+
+    override suspend fun createNamespace(namespace: String) {
+        val statement = sqlGenerator.createNamespace(namespace)
+
+        execute(statement)
+    }
+
+    override suspend fun createTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean
+    ) {
+        execute(
+            sqlGenerator.createTable(
+                stream,
+                tableName,
+                columnNameMapping,
+                replace,
+            ),
+        )
+    }
+
+    override suspend fun dropTable(tableName: TableName) {
+        execute(
+            sqlGenerator.dropTable(tableName)
+        )
+    }
+
+    override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
+        execute(
+            sqlGenerator.wrapInTransaction(
+                sqlGenerator.dropTable(targetTableName),
+                sqlGenerator.swapTable(sourceTableName, targetTableName),
+            ),
+        )
+    }
+
+    override suspend fun copyTable(
+        columnNameMapping: ColumnNameMapping,
+        sourceTableName: TableName,
+        targetTableName: TableName
+    ) {
+        execute(
+            sqlGenerator.copyTable(
+                columnNameMapping,
+                sourceTableName,
+                targetTableName,
+            ),
+        )
+    }
+
+    override suspend fun upsertTable(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        sourceTableName: TableName,
+        targetTableName: TableName
+    ) {
+        execute(
+            sqlGenerator.upsertTable(
+                stream,
+                columnNameMapping,
+                sourceTableName,
+                targetTableName,
+            ),
+        )
+    }
+
+    override suspend fun ensureSchemaMatches(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun countTable(tableName: TableName): Long? {
         try {
-            val response = client.query("SELECT count(1) cnt FROM `${tableName.namespace}`.`${tableName.name}`;").get()
+            val sql = sqlGenerator.countTable(tableName, "cnt")
+            val response = query(sql)
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
             reader.next()
             val count = reader.getLong("cnt")
@@ -44,13 +112,13 @@ class ClickhouseAirbyteClient(private val client: Client
         }
     }
 
-    override fun getGenerationId(tableName: TableName): Long {
+    override suspend fun getGenerationId(tableName: TableName): Long {
         try {
-            val generationAlias = "generation"
-            val response = client.query("SELECT _airbyte_generation_id $generationAlias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1;").get()
+            val sql = sqlGenerator.getGenerationId(tableName, "generation")
+            val response = query(sql)
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
             reader.next()
-            val generation = reader.getLong(generationAlias)
+            val generation = reader.getLong("generation")
             return generation
         } catch (e: Exception) {
             log.error(e) { "Failed to retrieve the generation Id" }
@@ -59,51 +127,11 @@ class ClickhouseAirbyteClient(private val client: Client
         }
     }
 
-    /**
-     * Executes a query against the ClickHouse database. The response of the query is not returned.
-     *
-     * @param query The SQL query to execute.
-     * @return A boolean indicating whether the query was executed successfully.
-     */
-    override fun executeQuery(query: String): Boolean {
-        try {
-            client.execute(query).get()
-            return true
-        } catch (e: Exception) {
-            log.error(e) { "Fail to run query." }
-            return false
-        }
+    private suspend fun execute(query: String): CommandResponse {
+        return client.execute(query).await()
     }
 
-    override fun getCreateTableSuffix(): String {
-        return """
-            ENGINE = MergeTree()
-            ORDER BY ();
-        """.trimIndent()
+    private suspend fun query(query: String): QueryResponse {
+        return client.query(query).await()
     }
-
-    override fun toDialectType(type: AirbyteType): ClickHouseDataType =
-        when (type) {
-            BooleanType -> ClickHouseDataType.Bool
-            DateType -> ClickHouseDataType.Date
-            IntegerType -> ClickHouseDataType.Int64
-            NumberType -> ClickHouseDataType.Int256
-            StringType -> ClickHouseDataType.String
-            TimeTypeWithTimezone -> ClickHouseDataType.String
-            TimeTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            is ArrayType,
-            ArrayTypeWithoutSchema,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> ClickHouseDataType.JSON
-            is UnionType ->
-                if (type.isLegacyUnion) {
-                    ClickhouseDirectLoadSqlGenerator.toDialectType(type.chooseType())
-                } else {
-                    ClickHouseDataType.JSON
-                }
-            is UnknownType -> ClickHouseDataType.JSON
-        }
 }
