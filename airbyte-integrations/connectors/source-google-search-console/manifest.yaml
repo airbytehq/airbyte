@@ -8,8 +8,9 @@ check:
     - sites
 
 spec:
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
-  connectionSpecification:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/google-search-console
+  connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: Google Search Console Spec
     type: object
@@ -249,65 +250,67 @@ spec:
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
-                path: "custom_reports_array"
+                path: ["custom_reports_array"]
                 value: "{{ json.loads(config['custom_reports']) }}"
-                condition: "{{ isinstance(config.get('custom_reports'), str)  }}"
+            condition: "{{ isinstance(config.get('custom_reports'), str)  }}"
+          - type: ConfigAddFields
+            fields:
               - type: AddedFieldDefinition
-                path: "custom_reports_array"
+                path: ["custom_reports_array"]
                 value: "{{ config['custom_reports'] }}"
-                condition: "{{ isinstance(config.get('custom_reports'), list) }}"
+            condition: "{{ isinstance(config.get('custom_reports'), list) }}"
     validations:
       - type: DpathValidator
         field_path: ["custom_reports_array"]
         validation_strategy:
-          - type: ValidateAdheresToSchema
-            base_schema:
-              type: array
-              items:
-                type: object
-                required:
-                  - name
-                  - dimensions
-                properties:
-                  dimensions:
-                    type: array
-                    items:
-                      type: string
-                      minLength: 1
-                  name:
+          type: ValidateAdheresToSchema
+          base_schema:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - dimensions
+              properties:
+                dimensions:
+                  type: array
+                  items:
                     type: string
                     minLength: 1
+                name:
+                  type: string
+                  minLength: 1
       - type: DpathValidator
         field_path: ["custom_reports_array", "*", "dimensions"]
         validation_strategy:
-          - type: ValidateAdheresToSchema
-            base_schema:
-              country:
-                - country:
-                    type:
-                      - "null"
-                      - string
-              date:
-                - date:
-                    format: date
-                    type:
-                      - "null"
-                      - string
-              device:
-                - device:
-                    type:
-                      - "null"
-                      - string
-              page:
-                - page:
-                    type:
-                      - "null"
-                      - string
-              query:
-                - query:
-                    type:
-                      - "null"
-                      - string
+          type: ValidateAdheresToSchema
+          base_schema:
+            country:
+              - country:
+                  type:
+                    - "null"
+                    - string
+            date:
+              - date:
+                  format: date
+                  type:
+                    - "null"
+                    - string
+            device:
+              - device:
+                  type:
+                    - "null"
+                    - string
+            page:
+              - page:
+                  type:
+                    - "null"
+                    - string
+            query:
+              - query:
+                  type:
+                    - "null"
+                    - string
 
 definitions:
   oauth_authenticator:
@@ -358,7 +361,7 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters['dimensions'] }}"
           type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
+          aggregationType: "{{ parameters['aggregation_type'] }}"
           dataState: "{{ config.get('data_state', 'final') }}"
       paginator:
         type: DefaultPaginator
@@ -405,7 +408,7 @@ definitions:
       cursor_granularity: P1D
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+        class_name: source_declarative_manifest.components.NestedSubstreamStateMigration
 
   search_analytics_all_fields_stream:
     $ref: "#/definitions/base_search_analytics_stream"
@@ -423,10 +426,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -458,7 +461,7 @@ definitions:
         - device
         - page
         - query
-      aggregationType: auto
+      aggregation_type: auto
       search_types:
         - web
         - news
@@ -478,10 +481,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('search_type') }}"
       # The values in the 'keys' array in the record correspond to the same order that the dimensions
       # are requested in the API request. For example, if the request body was `dimensions: ["date", "country"]`,
       # then the first value of `keys` is placed under the `date` field. These arrays are always be the same length
@@ -505,7 +508,7 @@ definitions:
       dimensions:
         - date
         - country
-      aggregationType: auto
+      aggregation_type: auto
       search_types:
         - web
         - news
@@ -526,10 +529,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -545,7 +548,7 @@ definitions:
     $parameters:
       dimensions:
         - date
-      aggregationType: auto
+      aggregation_type: auto
       search_types:
         - web
         - news
@@ -567,10 +570,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('search_type') }}"
       # The values in the 'keys' array in the record correspond to the same order that the dimensions
       # are requested in the API request. For example, if the request body was `dimensions: ["date", "device"]`,
       # then the first value of `keys` is placed under the `date` field. These arrays are always be the same length
@@ -594,7 +597,7 @@ definitions:
       dimensions:
         - date
         - device
-      aggregationType: auto
+      aggregation_type: auto
       search_types:
         - web
         - news
@@ -615,10 +618,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition['search_type'] }}"
+            value: "{{ stream_partition.get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -638,7 +641,7 @@ definitions:
       dimensions:
         - date
         - page
-      aggregationType: auto
+      aggregation_type: auto
       search_types:
         - web
         - news
@@ -683,7 +686,7 @@ definitions:
       dimensions:
         - date
         - query
-      aggregationType: auto
+      aggregation_type: auto
       search_types:
         - web
         - news
@@ -1283,17 +1286,17 @@ dynamic_streams:
                 - search_type
               value: "{{ stream_partition['search_type'] }}"
         - type: CustomTransformation
-          class_name: source_google_search_console.components.CustomReportExtractDimensionsFromKeys
+          class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
           dimensions: # This will be replaced by the dimensions of the custom report
             - date
             - country
       schema_loader:
         type: CustomSchemaLoader
-        class_name: source_google_search_console.components.CustomReportSchemaLoader
+        class_name: source_declarative_manifest.components.CustomReportSchemaLoader
         dimensions: [] # This will be replaced by the dimensions of the custom report
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_google_search_console.components.NestedSubstreamStateMigration
+          class_name: source_declarative_manifest.components.NestedSubstreamStateMigration
     components_resolver:
       type: ConfigComponentsResolver
       stream_config:
@@ -1381,11 +1384,11 @@ schemas:
       ctr:
         description: "Click-through rate, calculated as clicks divided by impressions."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position of the search result on the search engine results page."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_country:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -1396,9 +1399,7 @@ schemas:
           - "null"
           - string
       search_type:
-        description: >-
-          The type of search (web search, image search, video search, etc.) for
-          which the data is being reported.
+        description: The type of search (web search, image search, video search, etc.) for which the data is being reported.
         type:
           - "null"
           - string
@@ -1414,31 +1415,23 @@ schemas:
           - "null"
           - string
       clicks:
-        description: >-
-          The number of times users clicked on the search result for a specific
-          country.
+        description: The number of times users clicked on the search result for a specific country.
         type:
           - "null"
           - integer
       impressions:
-        description: >-
-          The total number of times a search result was shown in search results for
-          a specific country.
+        description: The total number of times a search result was shown in search results for a specific country.
         type:
           - "null"
           - integer
       ctr:
-        description: >-
-          The click-through rate, i.e., the ratio of clicks to impressions for a
-          specific country.
+        description: The click-through rate, i.e., the ratio of clicks to impressions for a specific country.
         type:
           - "null"
           - number
         multipleOf: 1.e-25
       position:
-        description: >-
-          The average position at which the site's search result appeared for a
-          specific country.
+        description: The average position at which the site's search result appeared for a specific country.
         type:
           - "null"
           - number
@@ -1466,11 +1459,11 @@ schemas:
       ctr:
         description: "The click-through rate (CTR) represents the percentage of total impressions that resulted in a click to the site URL."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position of the site URL in the search results pages for the specific date."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_device:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
@@ -1497,11 +1490,11 @@ schemas:
       ctr:
         description: "Click-through rate represents the ratio of clicks to impressions, showing the effectiveness of your site in attracting clicks from search results."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position of the site's URLs in search results for the given query or queries."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_page:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -1528,11 +1521,11 @@ schemas:
       ctr:
         description: "Click-through rate (CTR) is the ratio of clicks to impressions, indicating the effectiveness of the page in generating clicks."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position at which the page appeared in search results."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_query:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -1559,11 +1552,11 @@ schemas:
       ctr:
         description: "The click-through rate (percentage) for the specific query, calculated as clicks divided by impressions."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position at which the search result appeared for the specific query."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_page_report:
     $schema: "https://json-schema.org/draft-07/schema#"
     type: object
