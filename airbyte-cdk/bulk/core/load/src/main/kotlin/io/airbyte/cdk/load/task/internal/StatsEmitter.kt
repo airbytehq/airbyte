@@ -94,7 +94,6 @@ class DummyStatsMessageConsumer(private val consumer: OutputConsumer) :
     suspend (AirbyteMessage) -> Unit {
     private val log = KotlinLogging.logger {}
     override suspend fun invoke(message: AirbyteMessage) {
-        log.info { "TMP: Writing dummy stats message: $message" }
         consumer.accept(message)
     }
 }

@@ -343,7 +343,6 @@ class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) 
                     .withTotalRecords(totalRecords = totalRecords)
                     .withTotalBytes(totalBytes = totalBytes)
                     .asProtocolMessage()
-            log.info { "TMP: Writing state message to STDOUT: $outMessage" }
             consumer.accept(outMessage)
         }
     }
