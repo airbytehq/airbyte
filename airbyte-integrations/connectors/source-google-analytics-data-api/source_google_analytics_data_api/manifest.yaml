@@ -14,9 +14,9 @@ definitions:
       name: google_analytics_stream_template
       retriever:
         type: SimpleRetriever
-        requester:   # the dynamic stream will override request_body_json
+        requester: # the dynamic stream will override request_body_json
           $ref: "#/definitions/base_requester"
-          path: PLACEHOLDER  # the dynamic stream will override this value
+          path: PLACEHOLDER # the dynamic stream will override this value
           http_method: POST
         record_selector:
           type: RecordSelector
@@ -58,7 +58,7 @@ definitions:
                     - value
           transform_before_filtering: true
           schema_normalization: Default
-        paginator:  # the dynamic stream will override this value
+        paginator: # the dynamic stream will override this value
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
@@ -68,14 +68,14 @@ definitions:
             type: CursorPagination
             cursor_value: '{{ response.get("offset", {}) }}'
             stop_condition: '{{ not response.get("offset", {}) }}'
-      transformations: []  # the dynamic stream will override this value
+      transformations: [] # the dynamic stream will override this value
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
           type: SimpleRetriever
           requester:
             $ref: "#/definitions/base_requester"
-            path: PLACEHOLDER  # the dynamic stream will override this value
+            path: PLACEHOLDER # the dynamic stream will override this value
             http_method: GET
           record_selector:
             type: RecordSelector
@@ -84,7 +84,7 @@ definitions:
               field_path: []
         schema_filter:
           type: RecordFilter
-          condition: PLACEHOLDER  # the dynamic stream will override this value
+          condition: PLACEHOLDER # the dynamic stream will override this value
         schema_transformations: []
         schema_type_identifier:
           type: SchemaTypeIdentifier
