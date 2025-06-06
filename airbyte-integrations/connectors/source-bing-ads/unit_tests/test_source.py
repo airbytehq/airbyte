@@ -267,21 +267,23 @@ def test_transform(mock_auth_token, config):
     record = {"AdFormatPreference": "All", "DevicePreference": 0, "EditorialStatus": "ActiveLimited", "FinalAppUrls": None}
     ads_stream = find_stream("ads", config)
     expected_record = {
+        "AccountId": 909090,
         "AdFormatPreference": "All",
+        "AdGroupId": 90909090,
+        "CustomerId": 9090909,
+        "Descriptions": None,
         "DevicePreference": 0,
         "EditorialStatus": "ActiveLimited",
         "FinalAppUrls": None,
-        "AccountId": 909090,
-        "AdGroupId": 90909090,
-        "CustomerId": 9090909,
+        "FinalMobileUrls": None,
+        "FinalUrls": None,
         "ForwardCompatibilityMap": None,
-        "Descriptions": {"AssetLink": None},
-        "FinalMobileUrls": {"string": None},
-        "FinalUrls": {"string": None},
-        "Headlines": {"AssetLink": None},
-        "Images": {"AssetLink": None},
-        "LongHeadlines": {"AssetLink": None},
-        "Videos": {"AssetLink": None},
+        "Headlines": None,
+        "Images": None,
+        "LongHeadlines": None,
+        "Path1": None,
+        "Path2": None,
+        "Videos": None,
     }
     transformed_record = list(
         ads_stream.retriever.record_selector.filter_and_transform(
