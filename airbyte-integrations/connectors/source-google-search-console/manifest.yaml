@@ -251,14 +251,8 @@ spec:
             fields:
               - type: AddedFieldDefinition
                 path: ["custom_reports_array"]
-                value: "{{ json.loads(config['custom_reports']) }}"
-            condition: "{{ isinstance(config.get('custom_reports'), str)  }}"
-          - type: ConfigAddFields
-            fields:
-              - type: AddedFieldDefinition
-                path: ["custom_reports_array"]
                 value: "{{ config['custom_reports'] }}"
-            condition: "{{ isinstance(config.get('custom_reports'), list) }}"
+            condition: "{{ config.get('custom_reports') }}"
     validations:
       - type: DpathValidator
         field_path: ["custom_reports_array"]
