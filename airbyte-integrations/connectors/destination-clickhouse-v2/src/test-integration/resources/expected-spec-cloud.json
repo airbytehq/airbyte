@@ -23,7 +23,8 @@
         "enum" : [ "http", "https" ],
         "description" : "HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443",
         "title" : "Protocol",
-        "order" : 2
+        "order" : 2,
+        "airbyte_hidden" : true
       },
       "database" : {
         "type" : "string",
