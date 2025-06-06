@@ -923,7 +923,9 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path: ["**", "name"]
           value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
-        # This mapping add transformation that add property_id and date slice value to record
+        # This mapping add transformation that add property_id and date slice value to record.
+        # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
+        # it doesn't exist in this context yet as we populate the template
         - type: ComponentMappingDefinition
           field_path: ["transformations"]
           create_or_update: True
@@ -1012,6 +1014,9 @@ dynamic_streams:
               cursor_granularity: PT1S
               cursor_datetime_formats:
                 - "%Y%m%d"
+                - "%Y%m"
+                - "%Y%W"
+                - "%Y"
               datetime_format: "%Y-%m-%d"
               start_datetime:
                 type: MinMaxDatetime
@@ -1022,11 +1027,15 @@ dynamic_streams:
                 datetime: "{% raw %}{{ format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}{% endraw %}"
                 datetime_format: "%Y-%m-%d"
             {% endif %}
-        # This is a pretty tricky part where we have two levels of interpolation.
-        # First, we resolve components_values["metrics"] at the stream-template parsing level.
-        # Then, after creating the stream instance, we resolve and send information using the record,
-        # where the record represents the final schema field definition
-        # (e.g., {<field_name>: [None, <data_type>]} for schema filtering).
+        # This section is a bit tricky due to two levels of interpolation:
+        # 1. At the stream-template parsing level, we resolve components_values["metrics"].
+        # 2. After creating the stream instance, we perform a second interpolation using the record,
+        #    which represents the final schema field definition
+        #    (e.g., {<field_name>: [None, <data_type>]} for schema filtering).
+        #
+        # Note: We deliberately avoid interpolating the record during template building,
+        # since it doesn't exist at that point. However, it will be used later as part of
+        # the filter expression during the sync.
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "schema_filter", "condition"]
           value: >

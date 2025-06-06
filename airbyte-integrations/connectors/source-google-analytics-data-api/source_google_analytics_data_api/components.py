@@ -63,7 +63,7 @@ class KeyValueExtractor(RecordExtractor):
     values_extractor: RecordExtractor
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        keys = list(self.keys_extractor.extract_records(response))
+        keys = self.keys_extractor.extract_records(response)
         values = self.values_extractor.extract_records(response)
 
         yield dict(zip(keys, values))
