@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -252,16 +253,16 @@ private class StdoutOutputConsumer(
     }
 }
 
-private typealias StreamToTemplateMap = ConcurrentHashMap<String, RecordTemplate>
+typealias StreamToTemplateMap = ConcurrentHashMap<String, RecordTemplate>
 
-private class RecordTemplate(
+class RecordTemplate(
     /** [prefix] is '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":' */
     val prefix: ByteArray,
     /** [suffix] is ',"emitted_at":...}}' */
     val suffix: ByteArray,
 ) {
     companion object {
-        fun create(stream: String, namespace: String?, emittedAt: Instant): RecordTemplate {
+        fun create(stream: String, namespace: String?, emittedAt: Instant, additionalProperties: Map<String, String> = emptyMap(),): RecordTemplate {
             // Generate a dummy AirbyteRecordMessage instance for the given args
             // using an empty object (i.e. '{}') for the "data" field value.
             val recordMessage =
@@ -270,6 +271,10 @@ private class RecordTemplate(
                     .withNamespace(namespace)
                     .withEmittedAt(emittedAt.toEpochMilli())
                     .withData(Jsons.objectNode())
+
+            for (additionalProperty in additionalProperties) {
+                recordMessage.withAdditionalProperty(additionalProperty.key, additionalProperty.value)
+            }
             // Generate the corresponding dummy AirbyteMessage instance.
             val airbyteMessage =
                 AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(recordMessage)
@@ -296,3 +301,6 @@ private class PrintStreamFactory {
 
     @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
 }
+
+
+
