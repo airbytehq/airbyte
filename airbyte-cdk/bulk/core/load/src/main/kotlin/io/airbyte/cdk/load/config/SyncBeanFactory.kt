@@ -15,13 +15,11 @@ import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.reflect.jvm.internal.impl.util.Check
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
@@ -59,7 +57,7 @@ class SyncBeanFactory {
     fun checkpointManager(
         catalog: DestinationCatalog,
         syncManager: SyncManager,
-        outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
+        outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit,
         timeProvider: TimeProvider,
     ): CheckpointManager<Reserved<CheckpointMessage>> =
         CheckpointManager(

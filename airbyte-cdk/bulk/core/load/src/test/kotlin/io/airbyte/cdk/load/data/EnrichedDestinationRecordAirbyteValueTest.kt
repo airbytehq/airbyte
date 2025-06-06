@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
@@ -17,12 +18,14 @@ class EnrichedDestinationRecordAirbyteValueTest {
 
     private val destinationStream =
         DestinationStream(
-            descriptor = DestinationStream.Descriptor("test_namespace", "test_stream"),
+            unmappedNamespace = "test_namespace",
+            unmappedName = "test_stream",
             importType = Append,
             schema = ObjectTypeWithoutSchema,
             generationId = 42L,
             minimumGenerationId = 10L,
-            syncId = 100L
+            syncId = 100L,
+            namespaceMapper = NamespaceMapper()
         )
 
     private val emittedAtMs = 1234567890L
