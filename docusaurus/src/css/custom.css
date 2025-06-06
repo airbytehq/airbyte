@@ -384,6 +384,7 @@ nav a.navbar__link--active {
 
 .MarkpromptContentDialog {
   --markprompt-text-size: 1em !important;
+  --markprompt-text-size-code: 1em !important;
 }
 
 .MarkpromptPrompt {
