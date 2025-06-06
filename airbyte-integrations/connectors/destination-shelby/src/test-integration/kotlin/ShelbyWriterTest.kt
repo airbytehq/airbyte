@@ -1,8 +1,12 @@
+package io.airbyte.integrations.destination.shelby
+
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
@@ -14,12 +18,19 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import io.airbyte.integrations.destination.shelby.ShelbySpecification
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.micronaut.context.annotation.Factory
+import jakarta.inject.Singleton
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+
+@Factory
+class ShelbyTestingOverrideFactory {
+    @Singleton
+    fun objectClient(): ObjectStorageClient<*> = MockObjectStorageClient()
+}
 
 class ShelbyDataDumper : DestinationDataDumper {
     override fun dumpRecords(
@@ -43,7 +54,12 @@ object ShelbyDataCleaner : DestinationCleaner {
 
 class ShelbyWriterTest(
 ) : BasicFunctionalityIntegrationTest(
-    configContents = "{}",
+    configContents = """{
+        |"format":{"format_type":"CSV","flattening":"Root level flattening"},
+        |"s3_bucket_name":"yolo",
+        |"s3_bucket_path":"yoloo",
+        |"s3_bucket_region":"us-west-1"
+        |}""".trimMargin(),
     configSpecClass = ShelbySpecification::class.java,
     dataDumper = ShelbyDataDumper(),
     destinationCleaner = ShelbyDataCleaner,
@@ -51,13 +67,14 @@ class ShelbyWriterTest(
     allTypesBehavior = Untyped,
     verifyDataWriting = false,
     isStreamSchemaRetroactive = false,
-    supportsDedup = false,
     stringifySchemalessObjects = true,
     schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
     schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
     unionBehavior = UnionBehavior.STRINGIFY,
     preserveUndeclaredFields = true,
     supportFileTransfer = false,
+    dedupBehavior = null,
+    additionalMicronautEnvs = ShelbyDestination.additionalMicronautEnvs,
 ) {
 
     fun record(id: Int) = InputRecord(

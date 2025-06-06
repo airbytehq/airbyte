@@ -48,7 +48,7 @@ class ShelbyLoader : DirectLoader {
     }
 }
 
-@Singleton
+//@Singleton
 class ShelbyLoaderFactory: DirectLoaderFactory<ShelbyLoader> {
     override fun create(streamDescriptor: DestinationStream.Descriptor, part: Int): ShelbyLoader {
         KotlinLogging.logger {  }.error { "Creating a ShelbyLoader for $streamDescriptor $part" }

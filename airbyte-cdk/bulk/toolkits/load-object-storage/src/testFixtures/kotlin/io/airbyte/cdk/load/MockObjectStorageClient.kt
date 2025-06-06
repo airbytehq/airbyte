@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.io.InputStream
@@ -20,6 +21,31 @@ class MockRemoteObject(
     val data: ByteArray,
     val metadata: Map<String, String> = emptyMap()
 ) : RemoteObject<Int>
+
+class MockObjectStreamingUpload(
+    private val client: MockObjectStorageClient,
+    private val key: String,
+    private val metadata: Map<String, String>,
+) : StreamingUpload<MockRemoteObject> {
+    private val parts: MutableList<Pair<Int, ByteArray>> = mutableListOf()
+    override suspend fun uploadPart(part: ByteArray, index: Int) {
+        parts.add(index to part)
+        updateRemoteStorage()
+    }
+
+    override suspend fun complete(): MockRemoteObject {
+        updateRemoteStorage()
+        return client.get(key).also {
+            KotlinLogging.logger {  }.error { "Completing $key\n${it.data.decodeToString()}" }
+        }
+    }
+
+    private suspend fun updateRemoteStorage() {
+        parts.sortBy { it.first }
+        val data = parts.map { it.second }.reduce { acc, bytes -> acc + bytes }
+        client.put(key, data)
+    }
+}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 @Singleton
@@ -49,6 +75,8 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
         return block(remoteObject.data.inputStream())
     }
 
+    fun get(key: String): MockRemoteObject = objects[key] ?: throw IllegalArgumentException("Object $key not found")
+
     override suspend fun getMetadata(key: String): Map<String, String> {
         return objects[key]?.metadata ?: emptyMap()
     }
@@ -71,6 +99,6 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<MockRemoteObject> {
-        TODO("Not yet implemented")
+        return MockObjectStreamingUpload(this, key, metadata)
     }
 }
