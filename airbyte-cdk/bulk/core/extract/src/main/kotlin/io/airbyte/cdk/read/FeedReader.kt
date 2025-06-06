@@ -319,8 +319,10 @@ class FeedReader(
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
 
         try {
-            val stateMessages: MutableList</*AirbyteStateMessage*/Any> = root.stateManager.checkpoint().toMutableList()
+            val stateMessages: MutableList<AirbyteStateMessage> = root.stateManager.checkpoint().toMutableList()
+            val messagesQueue = ArrayDeque<AirbyteStateMessage>(stateMessages)
             var boostedOutputConsumer: BoostedOutputConsumer? = null
+            var pendingMessageQueue = ArrayDeque<Any>()
             if (finalCheckpoint) {
                 val acqs = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
                 acquiredSocket =
@@ -332,34 +334,54 @@ class FeedReader(
 
                 var s = PartitionReader.pendingStates.poll()
                 while (s != null) {
-//                    boostedOutputConsumer?.accept(s)
-                    stateMessages.add(s)
+//                    messagesQueue.addFirst(s)
+                    pendingMessageQueue.add(s)
                     s = PartitionReader.pendingStates.poll()
                 }
             }
 
-            if (stateMessages.isEmpty()) {
+            if (finalCheckpoint && boostedOutputConsumer == null) {
+                log.warn { "No boosted output consumer available for final checkpoint." }
                 return
             }
+
+            if (messagesQueue.isEmpty() && pendingMessageQueue.isEmpty()) {
+                return
+            }
+
             log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-            for (stateMessage in stateMessages) {
-                when (stateMessage) {
+
+            while (messagesQueue.isNotEmpty()) {
+                val stateMessage = messagesQueue.removeFirst()
+                when (finalCheckpoint) {
+                    true -> boostedOutputConsumer?.accept(stateMessage)
+                    false -> PartitionReader.pendingStates.add(stateMessage)
+                }
+                root.outputConsumer.accept(stateMessage)
+            }
+
+            while (pendingMessageQueue.isNotEmpty()) {
+                val message = pendingMessageQueue.removeFirst()
+                when (message) {
                     is AirbyteStateMessage -> {
-                        if (finalCheckpoint) boostedOutputConsumer?.accept(stateMessage)
-                        root.outputConsumer.accept(stateMessage)
+                        when (finalCheckpoint) {
+                            true -> boostedOutputConsumer?.accept(message)
+                            false -> PartitionReader.pendingStates.add(message)
+                        }
                     }
                     is AirbyteStreamStatusTraceMessage -> {
-                        if (finalCheckpoint) boostedOutputConsumer?.accept(stateMessage)
-                        root.outputConsumer.accept(stateMessage)
+                        when (finalCheckpoint) {
+                            true -> boostedOutputConsumer?.accept(message)
+                            false -> PartitionReader.pendingStates.add(message)
+                        }
                     }
                     else -> {
-                        log.warn { "Unknown state message type: ${stateMessage::class}" }
+                        log.warn { "Unknown state message type: ${message::class}" }
                         continue // Skip unknown state messages.
                     }
                 }
-                if (finalCheckpoint.not()) PartitionReader.pendingStates.add(stateMessage)
-
             }
+
         } finally {
             acquiredSocket?.close()
         }

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.pipeline.object_storage.file
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -31,6 +32,7 @@ import io.airbyte.cdk.load.pipline.object_storage.file.FileHandle
 import io.airbyte.cdk.load.pipline.object_storage.file.FileHandleFactory
 import io.airbyte.cdk.load.pipline.object_storage.file.UploadIdGenerator
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -99,12 +101,13 @@ class FileChunkTaskTest<T> {
 
     @Test
     fun `forwards end of stream on output queue`() = runTest {
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(Fixtures.descriptor)
+        val input =
+            PipelineEndOfStream<StreamKey, DestinationRecordRaw>(Fixtures.unmappedDescriptor)
         task.handleEvent(input)
 
         val expected =
             PipelineEndOfStream<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>(
-                Fixtures.descriptor
+                Fixtures.unmappedDescriptor
             )
         coVerify { partQueue.broadcast(eq(expected)) }
     }
@@ -120,7 +123,7 @@ class FileChunkTaskTest<T> {
 
     @Test
     fun `chunks the referenced file into parts, emits them and deletes the local file`() = runTest {
-        val key = StreamKey(Fixtures.descriptor)
+        val key = StreamKey(Fixtures.unmappedDescriptor)
         val record = Fixtures.record()
 
         every { catalog.getStream(key.stream) } returns Fixtures.stream()
@@ -156,13 +159,13 @@ class FileChunkTaskTest<T> {
 
         val input =
             PipelineMessage(
-                checkpointCounts = mapOf(CheckpointId("1") to 2),
+                checkpointCounts = mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                 key = key,
                 value = record,
                 postProcessingCallback = {},
                 context =
                     PipelineContext(
-                        mapOf(CheckpointId("1") to 2),
+                        mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                         record,
                     )
             )
@@ -190,7 +193,7 @@ class FileChunkTaskTest<T> {
         val expectedPart3 =
             ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes3, true))
 
-        val output = ObjectKey(Fixtures.descriptor, expectedFinalPath, uploadId)
+        val output = ObjectKey(Fixtures.unmappedDescriptor, expectedFinalPath, uploadId)
 
         val outputMessage1 =
             PipelineMessage(emptyMap(), output, expectedPart1, context = input.context)
@@ -228,7 +231,8 @@ class FileChunkTaskTest<T> {
     }
 
     object Fixtures {
-        val descriptor = DestinationStream.Descriptor("namespace-1", "name-1")
+        val unmappedDescriptor =
+            DestinationStream.Descriptor(namespace = "namespace-1", name = "name-1")
 
         val fileReference =
             AirbyteRecordMessageFileReference()
@@ -252,13 +256,15 @@ class FileChunkTaskTest<T> {
 
         fun stream(schema: ObjectType = schema()) =
             DestinationStream(
-                descriptor = descriptor,
+                unmappedNamespace = unmappedDescriptor.namespace,
+                unmappedName = unmappedDescriptor.name,
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 3,
                 schema = schema,
                 includeFiles = true,
+                namespaceMapper = NamespaceMapper()
             )
 
         fun record(

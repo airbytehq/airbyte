@@ -87,7 +87,8 @@ class DestinationCatalogTest {
     fun roundTrip() {
         val streamFactory =
             DestinationStreamFactory(
-                JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT)
+                JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT),
+                namespaceMapper = NamespaceMapper()
             )
         val catalogFactory = DefaultDestinationCatalogFactory()
         val destinationCatalog =
@@ -96,6 +97,7 @@ class DestinationCatalogTest {
                 streamFactory,
                 operation = "write",
                 checkNamespace = null,
+                namespaceMapper = NamespaceMapper()
             )
         assertEquals(originalCatalog, destinationCatalog.asProtocolObject())
     }
@@ -104,7 +106,8 @@ class DestinationCatalogTest {
     fun proxyOrderedSchema() {
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor("namespace", "name"),
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
@@ -118,7 +121,8 @@ class DestinationCatalogTest {
                                 "y" to FieldType(BooleanType, nullable = true),
                                 "x" to FieldType(IntegerType, nullable = true),
                             )
-                    )
+                    ),
+                namespaceMapper = NamespaceMapper()
             )
         val expectedOrderedSchema =
             arrayOf(
