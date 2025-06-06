@@ -95,4 +95,4 @@ def test_config_is_reverted():
 def test_should_not_migrate_new_config():
     new_config = load_config(NEW_TEST_CONFIG_PATH)
     migration_instance = MigrateCustomReports()
-    assert not migration_instance.should_migrate(new_config)
+    assert not migration_instance.should_migrate(new_config)``

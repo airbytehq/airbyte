@@ -24,9 +24,6 @@ from source_google_search_console.exceptions import (
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsByCustomDimensions,
-    SearchAnalyticsKeywordPageReport,
-    SearchAnalyticsKeywordSiteReportByPage,
-    SearchAnalyticsKeywordSiteReportBySite,
 )
 
 
@@ -141,14 +138,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         stream_config = self.get_stream_kwargs(config)
 
         streams = super().streams(config=config)
-
-        streams.extend(
-            [
-                SearchAnalyticsKeywordPageReport(**stream_config),
-                SearchAnalyticsKeywordSiteReportByPage(**stream_config),
-                SearchAnalyticsKeywordSiteReportBySite(**stream_config),
-            ]
-        )
 
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
 

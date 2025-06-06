@@ -64,22 +64,6 @@ public class MongoDbCdcInitializer {
     this(new MongoDbDebeziumStateUtil());
   }
 
-  /**
-   * Generates the list of stream iterators based on the configured catalog and stream state. This
-   * list will include any initial snapshot iterators, followed by incremental iterators, where
-   * applicable.
-   *
-   * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
-   * @param cdcMetadataInjector The {@link MongoDbCdcConnectorMetadataInjector} used to add metadata
-   *        to generated records.
-   * @param streams The configured Airbyte catalog of streams for the source.
-   * @param stateManager The {@link MongoDbStateManager} that provides state information used for
-   *        iterator selection.
-   * @param emittedAt The timestamp of the sync.
-   * @param config The configuration of the source.
-   * @return The list of stream iterators with initial snapshot iterators before any incremental
-   *         iterators.
-   */
   public List<AutoCloseableIterator<AirbyteMessage>> createCdcIterators(
                                                                         final MongoClient mongoClient,
                                                                         final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector,
@@ -92,21 +76,30 @@ public class MongoDbCdcInitializer {
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
     // #35059: debezium heartbeats are not sent on the expected interval. this is
     // a workaround to allow making subsequent wait time configurable.
-    final Duration subsequentRecordWaitTime = firstRecordWaitTime;
-    LOGGER.info("Subsequent cdc record wait time: {} seconds", subsequentRecordWaitTime);
+    LOGGER.info("Subsequent cdc record wait time: {} seconds", firstRecordWaitTime);
     final Duration initialLoadTimeout = InitialLoadTimeoutUtil.getInitialLoadTimeout(config.rawConfig());
 
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
-    final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
-
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     logOplogInfo(mongoClient);
 
+    final List<String> databaseNames = config.getDatabaseNames();
+    final List<List<ConfiguredAirbyteStream>> streamsByDatabase = new ArrayList<>();
+    for (String databaseName : databaseNames) {
+      List<ConfiguredAirbyteStream> s = streams.stream()
+          .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
+          .map(Jsons::clone)
+          .toList();
+      streamsByDatabase.add(s);
+    }
+    // calculate the initial resume token for all the collections discovered for the input databases.
     final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
+        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+
+    final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
 
     final MongoDbCdcState cdcState =
         (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
@@ -127,7 +120,7 @@ public class MongoDbCdcInitializer {
 
     final boolean savedOffsetIsValid =
         optSavedOffset
-            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseName, incrementalOnlyStreamsCatalog))
+            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseNames, streamsByDatabase))
             .isPresent();
 
     if (!savedOffsetIsValid) {
@@ -136,7 +129,6 @@ public class MongoDbCdcInitializer {
         throw new ConfigErrorException(
             "Saved offset is not valid. Please reset the connection, and then increase oplog retention and/or increase sync frequency to prevent his from happening in the future. See https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams for more details");
       }
-
       LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
@@ -170,9 +162,12 @@ public class MongoDbCdcInitializer {
         .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
         .map(stream -> stream.getStream().getNamespace() + "\\." + stream.getStream().getName()).toList();
 
-    final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
-        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),
-            config, false, false, emittedAt, Optional.of(initialLoadTimeout));
+    final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators = new ArrayList<>();
+    for (int i = 0; i < databaseNames.size(); i++) {
+      initialSnapshotIterators
+          .addAll(initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseNames.get(i)),
+              config, false, false, emittedAt, Optional.of(initialLoadTimeout)));
+    }
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, queueSize, false);
@@ -267,6 +262,11 @@ public class MongoDbCdcInitializer {
     }
   }
 
+  /**
+   * Logs oplog information such as max size and free space.
+   *
+   * @param mongoClient The MongoDB client used to connect to the database.
+   */
   private void logOplogInfo(final MongoClient mongoClient) {
     try {
       final MongoDatabase localDatabase = mongoClient.getDatabase("local");
