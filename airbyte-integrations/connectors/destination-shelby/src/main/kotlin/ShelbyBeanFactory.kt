@@ -1,9 +1,6 @@
 package io.airbyte.integrations.destination.shelby
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
-import io.airbyte.cdk.load.file.object_storage.DefaultObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -54,14 +51,6 @@ class ShelbyBeanFactory {
             1,
             1,
             100000,
-        )
-
-    @Singleton
-    fun objectStorageFormattingWriterFactory(): DefaultObjectStorageFormattingWriterFactory =
-        DefaultObjectStorageFormattingWriterFactory(
-            object : ObjectStorageFormatConfigurationProvider {
-                override val objectStorageFormatConfiguration = JsonFormatConfiguration()
-            }
         )
 
     @Named("partFormatterStep")

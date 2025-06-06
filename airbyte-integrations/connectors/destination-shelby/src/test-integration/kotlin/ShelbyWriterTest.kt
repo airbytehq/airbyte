@@ -1,14 +1,12 @@
 package io.airbyte.integrations.destination.shelby
 
-import InMemoryObjectStorageClient
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
-import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
@@ -20,14 +18,10 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import io.airbyte.integrations.destination.shelby.ShelbyDestination
-import io.airbyte.integrations.destination.shelby.ShelbySpecification
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import java.io.InputStream
-import kotlinx.coroutines.flow.Flow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.assertAll
 @Factory
 class ShelbyTestingOverrideFactory {
     @Singleton
-    fun <T : RemoteObject<*>> objectClient(): ObjectStorageClient<T> = InMemoryObjectStorageClient()
+    fun objectClient(): ObjectStorageClient<*> = MockObjectStorageClient()
 }
 
 class ShelbyDataDumper : DestinationDataDumper {
@@ -60,7 +54,12 @@ object ShelbyDataCleaner : DestinationCleaner {
 
 class ShelbyWriterTest(
 ) : BasicFunctionalityIntegrationTest(
-    configContents = "{}",
+    configContents = """{
+        |"format":{"format_type":"CSV","flattening":"Root level flattening"},
+        |"s3_bucket_name":"yolo",
+        |"s3_bucket_path":"yoloo",
+        |"s3_bucket_region":"us-west-1"
+        |}""".trimMargin(),
     configSpecClass = ShelbySpecification::class.java,
     dataDumper = ShelbyDataDumper(),
     destinationCleaner = ShelbyDataCleaner,

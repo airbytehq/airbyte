@@ -5,10 +5,11 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
-import io.airbyte.cdk.load.command.object_storage.DeprecatedJsonFormatSpecification
-import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecificationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 import io.airbyte.cdk.load.command.s3.S3PathSpecification
@@ -25,7 +26,8 @@ class ShelbySpecification :
     AWSArnRoleSpecification,
     S3BucketSpecification,
     S3PathSpecification,
-    ObjectStorageCompressionSpecificationProvider
+    ObjectStorageCompressionSpecificationProvider,
+    ObjectStorageFormatSpecificationProvider
 {
     @get:JsonSchemaInject(
         json =
@@ -70,6 +72,9 @@ class ShelbySpecification :
     override val fileNamePattern: String? = null
 
     @get:JsonSchemaInject(json = """{"order":9}""")
+    override val format: ObjectStorageFormatSpecification = CSVFormatSpecification()
+
+    @get:JsonSchemaInject(json = """{"order":10}""")
     override val compression: ObjectStorageCompressionSpecification? = null
 }
 

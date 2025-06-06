@@ -26,6 +26,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
+import kotlin.random.Random
 import kotlinx.coroutines.flow.Flow
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
@@ -170,9 +171,11 @@ BatchAccumulator<
         state.printer.printRecord((input.asDestinationRecordAirbyteValue().data as ObjectValue).toCsvRecord(schema))
         state.printer.flush()
         if (state.outputStream.size() > 100) {
-            sendData(state)
-//            // TODO check if upload was successful
-//            return FinalOutput(HttpStepOutput(BatchState.COMPLETE))
+            // TODO check if upload was successful
+            if (Random.nextBoolean()) {
+                sendData(state)
+                return FinalOutput(HttpStepOutput(BatchState.COMPLETE))
+            }
             return IntermediateOutput(HttpRequestState.new(), HttpStepOutput(BatchState.LOADED, state.records))
         } else {
             return NoOutput(state)
