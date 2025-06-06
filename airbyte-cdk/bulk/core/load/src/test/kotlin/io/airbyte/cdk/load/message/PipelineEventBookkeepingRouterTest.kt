@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -36,7 +37,16 @@ class PipelineEventBookkeepingRouterTest {
     @MockK(relaxed = true) lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
 
     private val stream1 =
-        DestinationStream(DestinationStream.Descriptor("test", "stream"), mockk(), mockk(), 1, 1, 1)
+        DestinationStream(
+            unmappedNamespace = "test",
+            unmappedName = "stream",
+            mockk(),
+            mockk(),
+            1,
+            1,
+            1,
+            namespaceMapper = NamespaceMapper()
+        )
 
     private fun makeBookkeepingRouter(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
         PipelineEventBookkeepingRouter(
@@ -103,7 +113,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -129,7 +139,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
