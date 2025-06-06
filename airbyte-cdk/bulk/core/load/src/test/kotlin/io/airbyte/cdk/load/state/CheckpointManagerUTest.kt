@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.state
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -29,22 +30,26 @@ class CheckpointManagerUTest {
 
     private val stream1 =
         DestinationStream(
-            DestinationStream.Descriptor("test", "stream1"),
+            unmappedNamespace = "test",
+            unmappedName = "stream1",
             importType = Append,
             schema = ObjectTypeWithEmptySchema,
             generationId = 10L,
             minimumGenerationId = 10L,
-            syncId = 101L
+            syncId = 101L,
+            namespaceMapper = NamespaceMapper()
         )
 
     private val stream2 =
         DestinationStream(
-            DestinationStream.Descriptor("test", "stream2"),
+            unmappedNamespace = "test",
+            unmappedName = "stream2",
             importType = Append,
             schema = ObjectTypeWithEmptySchema,
             generationId = 10L,
             minimumGenerationId = 10L,
-            syncId = 101L
+            syncId = 101L,
+            namespaceMapper = NamespaceMapper()
         )
 
     @BeforeEach

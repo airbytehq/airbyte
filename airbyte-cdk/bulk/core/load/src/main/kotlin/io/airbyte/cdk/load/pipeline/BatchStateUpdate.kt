@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.pipeline
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 
 /** Used internally by the CDK to track record ranges to ack. */
 sealed interface BatchUpdate {
@@ -17,7 +18,7 @@ sealed interface BatchUpdate {
 
 data class BatchStateUpdate(
     override val stream: DestinationStream.Descriptor,
-    val checkpointCounts: Map<CheckpointId, Long>,
+    val checkpointCounts: Map<CheckpointId, CheckpointValue>,
     val state: BatchState,
     override val taskName: String,
     override val part: Int,
