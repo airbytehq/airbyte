@@ -1,7 +1,9 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.http
 
-import okhttp3.RequestBody.Companion.toRequestBody
-
 interface HttpClient {
-  fun sendRequest(request: Request): Response
+    fun sendRequest(request: Request): Response
 }

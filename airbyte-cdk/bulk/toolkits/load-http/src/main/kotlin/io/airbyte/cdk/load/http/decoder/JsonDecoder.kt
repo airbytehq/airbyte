@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.http.decoder
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -7,6 +11,10 @@ import java.io.InputStreamReader
 
 class JsonDecoder {
     fun decode(response: Response): JsonNode {
-        return Jsons.readTree(response.body?.let { body -> InputStreamReader(body).use { reader -> reader.readText() } })
+        return Jsons.readTree(
+            response.body?.let { body ->
+                InputStreamReader(body).use { reader -> reader.readText() }
+            }
+        )
     }
 }

@@ -19,13 +19,11 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-
 const val AN_ACCESS_TOKEN = "an_access_token"
 const val A_CLIENT_ID = "a_client_id"
 const val A_CLIENT_SECRET = "a_client_secret"
 const val A_ENDPOINT = "https://a-endpoint.com"
 const val A_REFRESH_TOKEN = "a_refresh_token"
-
 
 class OAuthAuthenticatorTest {
 
@@ -34,7 +32,14 @@ class OAuthAuthenticatorTest {
 
     @BeforeEach
     fun setup() {
-        authenticator = OAuthAuthenticator(A_ENDPOINT, A_CLIENT_ID, A_CLIENT_SECRET, A_REFRESH_TOKEN, httpClient)
+        authenticator =
+            OAuthAuthenticator(
+                A_ENDPOINT,
+                A_CLIENT_ID,
+                A_CLIENT_SECRET,
+                A_REFRESH_TOKEN,
+                httpClient
+            )
     }
 
     @Test
@@ -46,7 +51,9 @@ class OAuthAuthenticatorTest {
 
         authenticator.intercept(chain)
 
-        verify(exactly = 1) { builder.addHeader(HttpHeaders.AUTHORIZATION, "Bearer an_access_token") }
+        verify(exactly = 1) {
+            builder.addHeader(HttpHeaders.AUTHORIZATION, "Bearer an_access_token")
+        }
     }
 
     @Test
@@ -63,15 +70,18 @@ class OAuthAuthenticatorTest {
     }
 
     private fun mockCall(originalRequest: Request) {
-        val oauthResponse: Response = Response.Builder()
-            .request(originalRequest)
-            .code(200)
-            .protocol(Protocol.HTTP_2)
-            .message("success")
-            .body(
-                "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".toResponseBody("application/json".toMediaType()),
-            )
-            .build()
+        val oauthResponse: Response =
+            Response.Builder()
+                .request(originalRequest)
+                .code(200)
+                .protocol(Protocol.HTTP_2)
+                .message("success")
+                .body(
+                    "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".toResponseBody(
+                        "application/json".toMediaType()
+                    ),
+                )
+                .build()
         val call: Call = mockk()
         every { httpClient.newCall(any()) } returns (call)
         every { call.execute() } returns (oauthResponse)
@@ -85,7 +95,7 @@ class OAuthAuthenticatorTest {
         return builder
     }
 
-    private fun mockChain(request: Request) : Interceptor.Chain {
+    private fun mockChain(request: Request): Interceptor.Chain {
         val chain: Interceptor.Chain = mockk()
         every { chain.request() } returns (request)
         every { chain.proceed(any()) } returns (mockk<Response>())

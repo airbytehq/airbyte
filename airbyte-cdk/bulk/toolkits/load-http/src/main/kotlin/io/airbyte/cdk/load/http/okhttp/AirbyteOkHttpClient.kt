@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.http.okhttp
 
 import dev.failsafe.RetryPolicy
@@ -10,33 +14,39 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 
-class AirbyteOkHttpClient(client: OkHttpClient, retryPolicy: RetryPolicy<okhttp3.Response>): HttpClient {
-    private val client: OkHttpClient = client;
+class AirbyteOkHttpClient(client: OkHttpClient, retryPolicy: RetryPolicy<okhttp3.Response>) :
+    HttpClient {
+    private val client: OkHttpClient = client
     private val policy = retryPolicy
 
     override fun sendRequest(request: Request): Response {
         val url = createUrl(request)
 
-        val okhttpRequest: okhttp3.Request = okhttp3.Request.Builder()
-            .url(url)
-            .method(request.method.toString(), request.body?.toRequestBody())
-            .apply {
-                request.headers.forEach { header -> addHeader(header.key, header.value) }
-            }
-            .build()
-        val response: okhttp3.Response = FailsafeCall.with(policy).compose(client.newCall(okhttpRequest)).execute()
-        return Response(response.code, response.headers.toMultimap(), response.body?.let { OkHttpResponseBody(it) })
+        val okhttpRequest: okhttp3.Request =
+            okhttp3.Request.Builder()
+                .url(url)
+                .method(request.method.toString(), request.body?.toRequestBody())
+                .apply { request.headers.forEach { header -> addHeader(header.key, header.value) } }
+                .build()
+        val response: okhttp3.Response =
+            FailsafeCall.with(policy).compose(client.newCall(okhttpRequest)).execute()
+        return Response(
+            response.code,
+            response.headers.toMultimap(),
+            response.body?.let { OkHttpResponseBody(it) }
+        )
     }
 
     private fun createUrl(request: Request): HttpUrl {
-        val urlBuilder = request.url.toHttpUrlOrNull()?.let { it.newBuilder() }
-            ?: throw IllegalStateException("Request URL ${request.url} is invalid.")
-        return urlBuilder.apply {
-            request.query.forEach { query ->
-                query.value.forEach { queryValue ->
-                    addQueryParameter(query.key, queryValue)
+        val urlBuilder =
+            request.url.toHttpUrlOrNull()?.let { it.newBuilder() }
+                ?: throw IllegalStateException("Request URL ${request.url} is invalid.")
+        return urlBuilder
+            .apply {
+                request.query.forEach { query ->
+                    query.value.forEach { queryValue -> addQueryParameter(query.key, queryValue) }
                 }
             }
-        }.build()
+            .build()
     }
 }
