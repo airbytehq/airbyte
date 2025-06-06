@@ -2,27 +2,25 @@
 products: embedded
 ---
 
-
-
 # Prerequisites and setup
 
 This guide walks you through how to configure Airbyte Embedded and run the Embedded Widget in a [sample Node.js app](https://github.com/airbytehq/embedded-sampleweb-nodejs). Before you can start using Embedded, please complete the following one-time setup process.
 
+## Airbyte credentials
 
-### Airbyte credentials
 To use Airbyte Embedded, must have an active Airbyte Cloud, or OSS, instance with Embedded enabled. (Please [contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) if you would like to sign up for Airbyte Embedded).
-Once you have you your Airbyte instance available, log in and note down the following values. You will need these to configure the webapp and one-time setup.
+Once you have you your Airbyte instance available, log in and note down the following values. You need these to configure the web app and one-time setup.
 
-- Orangization Id: Unique identifier to your Airbyte instance. Obtained via Settings > Embedded
-- Client Id: Unique API id. Obtained via Settings > Applications > Create Application
-- Client Secret: Secret key for authentication . Obtained via Settings > Applications 
-- External User Id: A unique identifier you create and assign when generating an Embedded Widget. It's the identifier used to differentiate between unique users. You should create one unique identifier for each of your users. For testing, you may set it to 0.
+- Organization ID: Unique identifier to your Airbyte instance. Obtained via Settings > Embedded.
+- Client ID: Unique API id. Obtained via Settings > Applications > Create Application.
+- Client Secret: Secret key for authentication . Obtained via Settings > Applications.
+- External User ID: A unique identifier you create and assign when generating an Embedded Widget. It's the identifier used to differentiate between unique users. You should create one unique identifier for each of your users. For testing, you may set it to 0.
 
 If you are still unsure where to retrieve these values, please [watch this video](https://youtu.be/H6ik3HAj0iY) for a walkthrough.
 
+## Create a .env file
 
-### .Env
-Once you have the credentials, create a new `.env` file, based on `.env.example` container within the [sample app repo](https://github.com/airbytehq/embedded-sampleweb-nodejs). You will also need this .env file in the next step, when configuring the web app. Go ahead and set the following keys in the .env to the values you obtained above:
+Once you have the credentials, create a new `.env` file, based on the `.env.example` container within the [sample app repo](https://github.com/airbytehq/embedded-sampleweb-nodejs). You also need this .env file in the next step, when configuring the web app. Go ahead and set the following keys in the .env to the values you obtained in the preceding section.
 
 <pre>
 AIRBYTE_ORGANIZATION_ID=your_organization_id
@@ -30,12 +28,13 @@ AIRBYTE_CLIENT_ID=your_client_id
 AIRBYTE_CLIENT_SECRET=your_client_secret
 </pre>
 
-### Configure S3 for storing users
-Users created via Embedded will be stored in S3 buckets managed by you. Once you have the `.env` created with Airbyte credentials, go ahead and create an [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html) and add the following values to the `.env`:
+## Configure S3 for storing users
 
+Users created via Embedded are stored in S3 buckets managed by you. Once you have the `.env` created with Airbyte credentials, go ahead and create an [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html) and add the following values to the `.env`:
 
-# AWS Credentials
-<pre>
+### AWS credentials
+
+```text
 AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
 
@@ -43,11 +42,11 @@ AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
 S3_BUCKET=your_s3_bucket_name
 S3_BUCKET_REGION=your_s3_bucket_region
 S3_BUCKET_PREFIX=your_s3_bucket_prefix
-</pre>
+```
 
 Next, configure Airbyte to use the S3 bucket. Create a new shell script, <pre>setup.sh</pre> with the following code. From the command line, execute the following script to create the required connection. You can also retrieve the code from [this repo](https://github.com/airbytehq/embedded-sampleweb-nodejs/blob/main/setup.sh).
 
-```
+```bash
 #!/bin/bash
 
 # Enable debug mode to show commands as they execute
@@ -142,16 +141,15 @@ echo "=== Setup Complete ==="
 
 # Disable debug mode
 set +x
-
 ```
 
 Run the script from the command line:
-```
-$ ./setup.sh
+
+```bash
+./setup.sh
 ```
 
-Once you see confirmation that the connection was set up correctly, your Airbyte Embedded environment is ready to go!
-
+Once you see confirmation that you set up the connection correctly, your Airbyte Embedded environment is ready to go.
 
 ## Install node.js and npm
 
