@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValueProxy
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -23,7 +25,8 @@ import jakarta.inject.Singleton
  * TODO: Add dedicated schema type, converted from json-schema.
  */
 data class DestinationStream(
-    val descriptor: Descriptor,
+    val unmappedNamespace: String?,
+    val unmappedName: String,
     val importType: ImportType,
     val schema: AirbyteType,
     val generationId: Long,
@@ -33,7 +36,10 @@ data class DestinationStream(
     val isFileBased: Boolean = false,
     // whether we will move the file (in addition to the metadata)
     val includeFiles: Boolean = false,
+    private val namespaceMapper: NamespaceMapper
 ) {
+    val descriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
+
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
             StreamDescriptor().withName(name).also {
@@ -44,6 +50,36 @@ data class DestinationStream(
 
         fun toPrettyString(): String {
             return if (namespace == null) name else "$namespace.$name"
+        }
+    }
+
+    /**
+     * Provides the schema in a stable order, which can be used to query the AirbyteValueProxy
+     * representation of the data provided by DestinationRecordRaw. This can also be used to build a
+     * header/ordered schema as needed.
+     *
+     * NOTE: That for sockets this will align with the wire order of the files. This relies on that
+     * source and destination will receive the same schema. (Either because mappers will be applied
+     * in the CDK, or because mappers that can't be will trigger a fallback to the old path.)
+     *
+     * Connector Devs who build against this are guaranteed to get the best possible performance for
+     * sockets, possibly at the expense of performance on non-socket syncs.
+     */
+    val airbyteValueProxyFieldAccessors: Array<AirbyteValueProxy.FieldAccessor> by lazy {
+        if (schema is ObjectType) {
+            schema.properties
+                .toList()
+                .sortedBy { (name, _) -> name }
+                .mapIndexed { index, namedType ->
+                    AirbyteValueProxy.FieldAccessor(
+                        index = index,
+                        name = namedType.first,
+                        type = namedType.second.type
+                    )
+                }
+                .toTypedArray()
+        } else {
+            emptyArray()
         }
     }
 
@@ -63,8 +99,8 @@ data class DestinationStream(
         ConfiguredAirbyteStream()
             .withStream(
                 AirbyteStream()
-                    .withNamespace(descriptor.namespace)
-                    .withName(descriptor.name)
+                    .withNamespace(unmappedNamespace)
+                    .withName(unmappedName)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
                     .withIsFileBased(isFileBased)
             )
@@ -100,14 +136,13 @@ data class DestinationStream(
 @Singleton
 class DestinationStreamFactory(
     private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
+    private val namespaceMapper: NamespaceMapper
 ) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
         return DestinationStream(
-            descriptor =
-                DestinationStream.Descriptor(
-                    namespace = stream.stream.namespace,
-                    name = stream.stream.name
-                ),
+            unmappedNamespace = stream.stream.namespace,
+            unmappedName = stream.stream.name,
+            namespaceMapper = namespaceMapper,
             importType =
                 when (stream.destinationSyncMode) {
                     null -> throw IllegalArgumentException("Destination sync mode was null")

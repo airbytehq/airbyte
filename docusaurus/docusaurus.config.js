@@ -102,7 +102,14 @@ const config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        editUrl: ({version, docPath}) => {
+          if (version === 'current') { // For the "next" (unreleased) version
+            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
+          } 
+          else { // For released versions
+            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
+          }
+        },
         remarkPlugins: [
           docsHeaderDecoration,
           enterpriseDocsHeaderInformation,

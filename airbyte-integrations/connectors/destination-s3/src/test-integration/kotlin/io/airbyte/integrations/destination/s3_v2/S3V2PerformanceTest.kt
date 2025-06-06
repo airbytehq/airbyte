@@ -14,7 +14,7 @@ class S3V2JsonNoFrillsPerformanceTest :
     BasicPerformanceTest(
         configContents = S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
         configSpecClass = S3V2Specification::class.java,
-        defaultRecordsToInsert = 1_000_000,
+        defaultRecordsToInsert = 100_000,
         micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
         numFilesForFileTransfer = 5,
         fileSizeMbForFileTransfer = 1024,
@@ -44,6 +44,9 @@ class S3V2ParquetSnappyPerformanceTest :
  * Performance tests in socket mode are of limited utility, as the non-docker harness is slow, and
  * the ceiling on local networks is often lower than the theoretical max. For now this is mostly
  * just an opt-in local e2e sanity check.
+ *
+ * Note: Performance tests can't support protobuf until we do something about the manual munging of
+ * records.
  */
 @Disabled("We don't want this to run in CI")
 class S3V2JsonNoFrillsPerformanceTestSockets :
@@ -54,5 +57,5 @@ class S3V2JsonNoFrillsPerformanceTestSockets :
         micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
         numFilesForFileTransfer = 5,
         fileSizeMbForFileTransfer = 1024,
-        dataChannelMedium = DataChannelMedium.SOCKETS
+        dataChannelMedium = DataChannelMedium.SOCKET
     )

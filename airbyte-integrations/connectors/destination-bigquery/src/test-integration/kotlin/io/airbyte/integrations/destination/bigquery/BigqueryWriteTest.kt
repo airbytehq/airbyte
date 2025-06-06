@@ -121,8 +121,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                 ),
@@ -139,8 +138,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 5678,
                 ),
@@ -206,8 +204,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                 ),
@@ -224,8 +221,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream = stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 5678,
                 ),

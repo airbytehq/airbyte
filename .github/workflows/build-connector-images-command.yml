@@ -1,0 +1,106 @@
+name: Connector Image Builds
+# This workflow is used to run connector image builds.
+# It can be triggered manually via slash command or workflow dispatch.
+
+on:
+  # # For testing (TODO: comment out the below before merging):
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "The repository name"
+        required: false
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+
+jobs:
+  init-workflow:
+    name: "Initialize Workflow"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get job variables
+        id: job-vars
+        # Create the job run variables.
+        # We intentionally ignore `inputs.repo` because the check run will be run on the
+        # current repository, not the one with the commit being tested.
+        run: |
+          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "image-name=ghcr.io/airbytehq/${{ inputs.repo || github.repository }}:${{ inputs.gitref || github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "pr-number=${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr }}" >> $GITHUB_OUTPUT
+
+      - name: Append start comment
+        id: append-start-comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: success()
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ steps.job-vars.outputs.pr-number }}
+          reactions: "+1"
+          body: |
+            > **Connector Image Build Started**
+            >
+            > - This workflow will build the connector image and run basic tests.
+            > - The connector image(s) will be pushed to the [GitHub Container Registry](https://github.com/orgs/airbytehq/packages).
+            >
+            > [Check job output.](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Repo Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.repository }}
+          ref: ${{ inputs.gitref || '' }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history
+          fetch-depth: 0
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: |
+          # Get the list of modified connectors
+          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      pr-number: ${{ steps.job-vars.outputs.pr-number }}
+      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
+
+  call-connector-ci-build:
+    name: "Call Connector CI Build"
+    uses: ./.github/workflows/connector-image-build.yml
+    needs: [init-workflow]
+    strategy:
+      matrix: ${{ fromJson(needs.init-workflow.outputs.connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    with:
+      repo: "${{ inputs.repo || github.repository }}"
+      gitref: "${{ inputs.gitref || '' }}"
+      comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
+      pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
+      connector: ${{ matrix.connector }}
+    secrets: inherit
+
+  post-end-comment:
+    name: "Post Completion Comment"
+    needs: [init-workflow, call-connector-ci-build]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Append end comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ needs.init-workflow.outputs.comment-id }}
+          issue-number: ${{ needs.init-workflow.outputs.pr-number }}
+          body: |
+            > Connector Image Builds job completed. See logs for details.

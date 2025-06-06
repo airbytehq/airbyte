@@ -157,6 +157,13 @@
         "examples": ["final", "all"],
         "default": "final",
         "order": 6
+      },
+      "always_use_aggregation_type_auto": {
+        "type": "boolean",
+        "title": "Always Use Aggregation Type Auto",
+        "description": "Some search analytics streams fail with a 400 error if the specified `aggregationType` is not supported. This is customer implementation dependent and if this error is encountered, enable this setting which will override the existing `aggregationType` to use `auto` which should resolve the stream errors.",
+        "default": false,
+        "order": 7
       }
     }
   },

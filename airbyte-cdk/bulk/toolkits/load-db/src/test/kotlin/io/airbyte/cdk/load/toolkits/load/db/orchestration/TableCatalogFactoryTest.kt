@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.toolkits.load.db.orchestration
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
@@ -241,12 +242,14 @@ class TableCatalogFactoryTest {
         schema: AirbyteType = ObjectType(linkedMapOf())
     ): DestinationStream {
         return DestinationStream(
-            descriptor = DestinationStream.Descriptor(namespace, name),
+            unmappedNamespace = namespace,
+            unmappedName = name,
             importType = Append,
             schema = schema,
             generationId = 1L,
             minimumGenerationId = 0L,
-            syncId = 0L
+            syncId = 0L,
+            namespaceMapper = NamespaceMapper()
         )
     }
 }

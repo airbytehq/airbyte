@@ -39,5 +39,8 @@ set -e
 ${CONNECTOR_NAME} "\$\@"
 EOT
 
+# Set the non-root user
+USER airbyte
+
 ENV AIRBYTE_ENTRYPOINT="/entrypoint.sh"
 ENTRYPOINT ["/entrypoint.sh"]
