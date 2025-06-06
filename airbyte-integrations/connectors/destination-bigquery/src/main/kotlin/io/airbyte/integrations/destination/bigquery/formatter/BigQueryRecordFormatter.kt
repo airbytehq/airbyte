@@ -27,7 +27,6 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.integrations.destination.bigquery.write.bulk_loader.LIMITS.NUMERIC_SCALE
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
