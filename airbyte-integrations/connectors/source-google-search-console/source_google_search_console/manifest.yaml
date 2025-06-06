@@ -434,7 +434,6 @@ definitions:
         - country
         - device
         - page
-      aggregationType: byPage
       search_types:
         - web
         - news
@@ -533,7 +532,6 @@ definitions:
         - date
         - country
         - device
-        - query
       search_types:
         - web
         - news
