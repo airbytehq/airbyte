@@ -11,10 +11,8 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
@@ -110,13 +108,6 @@ class PipelineEventBookkeepingRouter(
                 }
                 PipelineEndOfStream(stream.descriptor)
             }
-            is DestinationRecordStreamIncomplete -> {
-                log.info { "Read INCOMPLETE for stream ${stream.descriptor}" }
-                if (!markEndOfStreamAtEndOfSync) {
-                    manager.markEndOfStream(false)
-                }
-                PipelineEndOfStream(stream.descriptor)
-            }
 
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
@@ -132,10 +123,6 @@ class PipelineEventBookkeepingRouter(
                 fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
                 PipelineHeartbeat()
             }
-            is DestinationFileStreamIncomplete ->
-                throw IllegalStateException(
-                    "File stream ${stream.descriptor} failed upstream, cannot continue."
-                )
         }
     }
 
