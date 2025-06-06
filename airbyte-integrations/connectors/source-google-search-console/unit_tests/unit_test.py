@@ -13,13 +13,14 @@ from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
     GoogleSearchConsole,
-    SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
 )
-from utils import command_check
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .conftest import find_stream
+from .utils import command_check
 
 
 logger = logging.getLogger("airbyte")
@@ -283,7 +284,7 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     assert status is expected_status
     if status is Status.FAILED:
         return
-    stream = SearchAnalyticsByCustomDimensions(dimensions, None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
+    stream = find_stream("custom", custom_report_config)
     schema = stream.get_json_schema()
     assert set(schema["properties"]) == set(schema_props)
     assert set(stream.primary_key) == set(primary_key)

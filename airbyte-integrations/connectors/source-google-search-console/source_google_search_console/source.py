@@ -34,6 +34,14 @@ from source_google_search_console.streams import (
 )
 
 
+DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
+    "country": [{"country": {"type": ["null", "string"]}}],
+    "date": [{"date": {"type": ["null", "string"], "format": "date"}}],
+    "device": [{"device": {"type": ["null", "string"]}}],
+    "page": [{"page": {"type": ["null", "string"]}}],
+    "query": [{"query": {"type": ["null", "string"]}}],
+}
+
 custom_reports_schema = {
     "type": "array",
     "items": {
@@ -100,7 +108,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
             jsonschema.validate(config["custom_reports_array"], custom_reports_schema)
             for report in config["custom_reports_array"]:
                 for dimension in report["dimensions"]:
-                    if dimension not in SearchAnalyticsByCustomDimensions.DIMENSION_TO_PROPERTY_SCHEMA_MAP:
+                    if dimension not in DIMENSION_TO_PROPERTY_SCHEMA_MAP:
                         message = f"dimension: '{dimension}' not found"
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config

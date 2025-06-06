@@ -607,7 +607,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - primary_key
-          value: "{{ components_values['dimensions'] + ['site_url', 'search_type'] }}"
+          value: "{{ components_values['dimensions'] + (['date'] if 'date' not in components_values['dimensions'] else []) + ['site_url', 'search_type'] }}"
         - type: ComponentMappingDefinition
           field_path:
             - retriever
