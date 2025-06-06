@@ -11,9 +11,12 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -73,6 +76,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
@@ -285,12 +289,14 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testBasicWrite() {
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val messages =
             runSync(
@@ -314,8 +320,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -334,14 +339,13 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 val asProtocolMessage =
                     StreamCheckpoint(
-                            streamName = "test_stream",
-                            streamNamespace = randomizedNamespace,
+                            stream = stream,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(234L, 253L, 59L)
+                            totalBytes = expectedBytesForMediumAndFormat(234L, 254L, 59L)
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -398,7 +402,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(supportFileTransfer)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),
+                randomizedNamespace,
+                "test_stream_file",
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -406,6 +411,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
                 isFileBased = true,
                 includeFiles = true,
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         val sourcePath = "path/to/file"
@@ -437,8 +443,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     input,
                     InputStreamCheckpoint(
-                        streamName = stream.descriptor.name,
-                        streamNamespace = stream.descriptor.namespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -456,8 +461,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
             assertEquals(
                 StreamCheckpoint(
-                        streamName = stream.descriptor.name,
-                        streamNamespace = stream.descriptor.namespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
@@ -466,8 +470,9 @@ abstract class BasicFunctionalityIntegrationTest(
                         totalRecords = 1,
                         totalBytes = 267L
                     )
-                    .asProtocolMessage(),
-                stateMessages.first()
+                    .asProtocolMessage()
+                    .serializeToString(),
+                stateMessages.first().serializeToString()
             )
         })
 
@@ -483,12 +488,14 @@ abstract class BasicFunctionalityIntegrationTest(
             assumeTrue(verifyDataWriting)
             val stream =
                 DestinationStream(
-                    DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                    randomizedNamespace,
+                    "test_stream",
                     Append,
                     ObjectType(linkedMapOf("id" to intType)),
                     generationId = 0,
                     minimumGenerationId = 0,
                     syncId = 42,
+                    namespaceMapper = namespaceMapperForMedium()
                 )
             val stateMessage =
                 runSyncUntilStateAck(
@@ -503,8 +510,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         )
                     ),
                     StreamCheckpoint(
-                        streamNamespace = randomizedNamespace,
-                        streamName = "test_stream",
+                        stream = stream,
                         blob = """{"foo": "bar1"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium()
@@ -568,12 +574,14 @@ abstract class BasicFunctionalityIntegrationTest(
                 // namespace=null natively.
                 // Otherwise, multiple test runs would write to `<null>.test_stream`.
                 // Now, they instead write to `<null>.test_stream_test20250123abcd`.
-                DestinationStream.Descriptor(namespace, "test_stream_$randomizedNamespace"),
+                namespace,
+                "test_stream_$randomizedNamespace",
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
@@ -654,12 +662,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             airbyteMeta = OutputRecord.Meta(syncId = 42)
                         )
                     ),
-                    streamWithDefaultNamespace.copy(
-                        descriptor =
-                            streamWithDefaultNamespace.descriptor.copy(
-                                namespace = actualDefaultNamespace
-                            )
-                    ),
+                    streamWithDefaultNamespace.copy(unmappedNamespace = actualDefaultNamespace),
                     listOf(listOf("id")),
                     cursor = null
                 )
@@ -676,12 +679,14 @@ abstract class BasicFunctionalityIntegrationTest(
             namespaceSuffix: String = "",
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
+                randomizedNamespace + namespaceSuffix,
+                name,
                 Append,
                 ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         // Catalog with some weird schemas.
         // Every stream has an int `id`, and maybe some string fields.
@@ -786,7 +791,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(dedupBehavior != null)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 importType =
                     Dedupe(
                         // the actual string here is id~!@#$%^&*()`[]{}|;':",./<>?
@@ -809,6 +815,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -855,12 +862,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId,
                 minimumGenerationId,
                 syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val stream = makeStream(12, 0, 42)
         runSync(
@@ -919,7 +928,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream1 =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -931,6 +941,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 41,
                 minimumGenerationId = 0,
                 syncId = 41,
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -1002,8 +1013,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream2.descriptor.name,
+                stream2,
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
@@ -1089,7 +1099,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -1101,6 +1112,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 42,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -1133,8 +1145,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream.descriptor.name,
+                stream,
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
@@ -1212,7 +1223,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream1 =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -1224,6 +1236,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 41,
                 minimumGenerationId = 0,
                 syncId = 41,
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -1296,8 +1309,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream2.descriptor.name,
+                stream2,
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
@@ -1400,12 +1412,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         fun makeStream(syncId: Long) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val stream = makeStream(syncId = 42)
         runSync(
@@ -1467,12 +1481,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val stream =
             makeStream(
@@ -1551,12 +1567,14 @@ abstract class BasicFunctionalityIntegrationTest(
             minimumGenerationId: Long,
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(schema),
                 generationId = generationId,
                 minimumGenerationId = minimumGenerationId,
                 syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val stream =
             makeStream(
@@ -1657,7 +1675,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 importType =
                     Dedupe(
                         primaryKey = listOf(listOf("id1"), listOf("id2")),
@@ -1677,6 +1696,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val sync1Stream = makeStream(syncId = 42)
         fun makeRecord(data: String, extractedAt: Long) =
@@ -1799,7 +1819,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 importType =
                     Dedupe(
                         primaryKey = listOf(listOf("id1"), listOf("id2")),
@@ -1819,6 +1840,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val sync1Stream = makeStream(syncId = 42)
         fun makeRecord(data: String, extractedAt: Long) =
@@ -1940,12 +1962,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting && dedupBehavior != null)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
                 ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -2000,7 +2024,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(dedupBehavior != null)
         fun makeStream(cursor: String) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Dedupe(
                     primaryKey = listOf(listOf("id")),
                     cursor = listOf(cursor),
@@ -2016,6 +2041,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val stream1 = makeStream("cursor1")
         fun makeRecord(cursorName: String, emittedAtMs: Long) =
@@ -2073,12 +2099,14 @@ abstract class BasicFunctionalityIntegrationTest(
         val streams =
             (0..manyStreamCount).map { i ->
                 DestinationStream(
-                    DestinationStream.Descriptor(randomizedNamespace, "test_stream_$i"),
+                    unmappedNamespace = randomizedNamespace,
+                    unmappedName = "test_stream_$i",
                     Append,
                     ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                     generationId = 42,
                     minimumGenerationId = 42,
                     syncId = 42,
+                    namespaceMapper = namespaceMapperForMedium()
                 )
             }
         val messages =
@@ -2107,7 +2135,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -2135,6 +2164,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeRecord(data: String) =
             InputRecord(
@@ -2560,7 +2590,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "problematic_types",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -2584,6 +2615,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -2746,7 +2778,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "problematic_types",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -2763,6 +2796,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         fun runSync() =
@@ -2850,7 +2884,8 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "problematic_types",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -2947,6 +2982,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -3135,12 +3171,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Append,
                 ObjectType(linkedMapOf()),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -3208,12 +3246,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
             )
         assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
         dumpAndDiffRecords(
@@ -3230,12 +3270,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId,
                 minimumGenerationId,
                 syncId,
+                namespaceMapper = namespaceMapperForMedium()
             )
         val firstStream = makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42)
         runSync(
@@ -3266,12 +3308,14 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                randomizedNamespace,
+                "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
             )
         assertDoesNotThrow {
             runSync(
@@ -3279,6 +3323,132 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 messages = listOf(InputGlobalCheckpoint(null, checkpointKeyForMedium()))
             )
+        }
+    }
+
+    private fun testNamespaceMapping(
+        namespaceMappingConfig: NamespaceMappingConfig,
+        namespaceValidator: (String?, String?, String, String) -> Unit
+    ) {
+        assumeTrue(dataChannelMedium == DataChannelMedium.SOCKET)
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream__$randomizedNamespace", // in case namespace == null
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+                namespaceMapper =
+                    NamespaceMapper(
+                        namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
+                        streamPrefix = namespaceMappingConfig.streamPrefix,
+                        namespaceFormat = namespaceMappingConfig.namespaceFormat
+                    )
+            )
+        namespaceValidator(
+            stream.unmappedNamespace,
+            stream.descriptor.namespace,
+            stream.unmappedName,
+            stream.descriptor.name,
+        )
+        runSync(
+            updatedConfig,
+            DestinationCatalog(listOf(stream)),
+            listOf(
+                InputRecord(
+                    stream,
+                    """{"id": 42}""",
+                    emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            ),
+            useFileTransfer = false,
+            destinationProcessFactory = destinationProcessFactory,
+            namespaceMappingConfig = namespaceMappingConfig
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234L,
+                    generationId = 1,
+                    data = mapOf("id" to 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testNamespaceMappingDestinationNoPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION)
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For destination namespace mapping, the namespace should be the unmapped name.
+            assertNull(mappedNamespace)
+            assertEquals(unmappedName, mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingDestinationWithPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.DESTINATION,
+                streamPrefix = "prefix_",
+            )
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For destination namespace mapping, the namespace should be the unmapped name.
+            assertNull(mappedNamespace)
+            assertEquals("prefix_$unmappedName", mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingSourceWithPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.SOURCE,
+                streamPrefix = "prefix_",
+            )
+        ) { unmappedNamespace, mappedNamespace, unmappedName, mappedName ->
+            // For source namespace mapping, the namespace should be the unmapped namespace.
+            assertEquals(unmappedNamespace, mappedNamespace)
+            assertEquals("prefix_$unmappedName", mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingCustomFormatNoPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
+                namespaceFormat = "custom_\${SOURCE_NAMESPACE}_namespace",
+            )
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For custom namespace mapping, the namespace should be the custom format.
+            assertEquals("custom_${randomizedNamespace}_namespace", mappedNamespace)
+            assertEquals(unmappedName, mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingCustomFormatNoMacroWithPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
+                namespaceFormat = "custom_$randomizedNamespace",
+                streamPrefix = "prefix_",
+            )
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For custom namespace mapping, the namespace should be the custom format.
+            assertEquals("custom_${randomizedNamespace}", mappedNamespace)
+            assertEquals("prefix_$unmappedName", mappedName)
         }
     }
 
@@ -3364,6 +3534,16 @@ abstract class BasicFunctionalityIntegrationTest(
                     DataChannelFormat.PROTOBUF -> bytesForSocketProtobuf
                     DataChannelFormat.FLATBUFFERS -> TODO()
                 }
+        }
+    }
+
+    protected fun namespaceMapperForMedium(): NamespaceMapper {
+        return when (dataChannelMedium) {
+            DataChannelMedium.STDIO ->
+                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+            // TODO: Return something more dynamic? Based on the test?
+            DataChannelMedium.SOCKET ->
+                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
         }
     }
 }

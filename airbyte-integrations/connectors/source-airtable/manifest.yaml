@@ -121,8 +121,8 @@ definitions:
             type: RecordSelector
             record_filter:
               condition: "{{ record['id'] == parameters.table_id }}"
-            $parameters:
-              table_id: ""
+              $parameters:
+                table_id: ""
             extractor:
               type: DpathExtractor
               field_path:
@@ -697,13 +697,13 @@ spec:
                 - type: AddedFieldDefinition
                   path: ["credentials", "api_key"]
                   value: "{{ config['api_key'] }}"
-              condition: "{{ config.get('api_key') and not config.get('credentials', {}).get('api_key')}}"
+              condition: "{{ config.get('api_key', False) }}"
             - type: ConfigAddFields
               fields:
                 - type: AddedFieldDefinition
                   path: ["credentials", "auth_method"]
                   value: "api_key"
-              condition: "{{ config.get('api_key') and not config.get('credentials', {}).get('auth_method') }}"
+              condition: "{{ config.get('api_key', False) }}"
 
 schemas:
   bases:
