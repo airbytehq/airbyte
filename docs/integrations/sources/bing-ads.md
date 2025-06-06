@@ -251,6 +251,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Bulk streams (Ad Group Labels,App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budgets) will ignore (default none) the LastSyncTimeInUTC for dates > 30 days ago, which also will cause request a full download.
 
 </details>
 
