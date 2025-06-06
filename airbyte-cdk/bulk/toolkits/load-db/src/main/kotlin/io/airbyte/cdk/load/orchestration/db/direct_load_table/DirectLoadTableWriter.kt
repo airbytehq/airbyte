@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations.DirectLoadTableTempTableNameMigration
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -31,6 +32,7 @@ class DirectLoadTableWriter(
     private val sqlTableOperations: DirectLoadTableSqlOperations,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val directLoadTableTempTableNameMigration: DirectLoadTableTempTableNameMigration?,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {
@@ -48,7 +50,7 @@ class DirectLoadTableWriter(
         val initialStatus = initialStatuses[stream]!!
         val tableNameInfo = names[stream]!!
         val realTableName = tableNameInfo.tableNames.finalTableName!!
-        val tempTableName = realTableName.asTempTable(internalNamespace = internalNamespace)
+        val tempTableName = tempTableNameGenerator.generate(realTableName)
         val columnNameMapping = tableNameInfo.columnNameMapping
         return when (stream.minimumGenerationId) {
             0L ->
@@ -95,13 +97,13 @@ class DirectLoadTableWriter(
                         DirectLoadTableDedupTruncateStreamLoader(
                             stream,
                             initialStatus,
-                            internalNamespace = internalNamespace,
                             realTableName = realTableName,
                             tempTableName = tempTableName,
                             columnNameMapping,
                             nativeTableOperations,
                             sqlTableOperations,
                             streamStateStore,
+                            tempTableNameGenerator,
                         )
                 }
             else ->
