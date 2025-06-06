@@ -3,14 +3,14 @@
 #
 
 import json
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import urlparse
 
 import jsonschema
 import pendulum
 import requests
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -24,7 +24,6 @@ from source_google_search_console.exceptions import (
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
-    SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
     SearchAnalyticsByDevice,
     SearchAnalyticsByPage,
