@@ -320,8 +320,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -340,14 +339,13 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 val asProtocolMessage =
                     StreamCheckpoint(
-                            streamName = "test_stream",
-                            streamNamespace = randomizedNamespace,
+                            stream = stream,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(234L, 253L, 59L)
+                            totalBytes = expectedBytesForMediumAndFormat(234L, 254L, 59L)
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -445,8 +443,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     input,
                     InputStreamCheckpoint(
-                        streamName = stream.descriptor.name,
-                        streamNamespace = stream.descriptor.namespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -464,8 +461,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
             assertEquals(
                 StreamCheckpoint(
-                        streamName = stream.descriptor.name,
-                        streamNamespace = stream.descriptor.namespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
@@ -514,8 +510,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         )
                     ),
                     StreamCheckpoint(
-                        streamNamespace = randomizedNamespace,
-                        streamName = "test_stream",
+                        stream = stream,
                         blob = """{"foo": "bar1"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium()
@@ -1018,8 +1013,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream2.descriptor.name,
+                stream2,
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
@@ -1151,8 +1145,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream.descriptor.name,
+                stream,
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
@@ -1316,8 +1309,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream2.descriptor.name,
+                stream2,
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
