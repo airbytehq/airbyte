@@ -377,15 +377,15 @@ abstract class BasicFunctionalityIntegrationTest(
                                     OutputRecord.Meta(
                                         changes =
                                             mutableListOf(
-                                            //     Change(
-                                            //         field = "foo",
-                                            //         change =
-                                            //             AirbyteRecordMessageMetaChange.Change
-                                            //                 .NULLED,
-                                            //         reason =
-                                            //             AirbyteRecordMessageMetaChange.Reason
-                                            //                 .SOURCE_FIELD_SIZE_LIMITATION
-                                            //     )
+                                                 Change(
+                                                     field = "foo",
+                                                     change =
+                                                         AirbyteRecordMessageMetaChange.Change
+                                                             .NULLED,
+                                                     reason =
+                                                         AirbyteRecordMessageMetaChange.Reason
+                                                             .SOURCE_FIELD_SIZE_LIMITATION
+                                                 )
                                             ),
                                         syncId = null
                                     )
