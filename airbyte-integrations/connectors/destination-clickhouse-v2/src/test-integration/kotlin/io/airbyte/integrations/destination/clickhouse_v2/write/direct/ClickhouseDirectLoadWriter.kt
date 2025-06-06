@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
@@ -10,7 +14,6 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
@@ -38,7 +41,6 @@ import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClientProv
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
-import java.nio.file.Path
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
@@ -47,35 +49,35 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
-    configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
-    configSpecClass = ClickhouseSpecification::class.java,
-    dataDumper = ClickhouseDataDumper { spec ->
-        ClickhouseConfigurationFactory().makeWithOverrides(
-            spec as ClickhouseSpecification,
-            mapOf()
-        )
-    },
-    destinationCleaner = ClickhouseDataCleaner,
-    isStreamSchemaRetroactive = true,
-    dedupBehavior = DedupBehavior(),
-    stringifySchemalessObjects = true,
-    schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-    schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-    unionBehavior = UnionBehavior.STRINGIFY,
-    preserveUndeclaredFields = false,
-    supportFileTransfer = false,
-    commitDataIncrementally = true,
-    allTypesBehavior =
-    StronglyTyped(
-        integerCanBeLarge = false,
-        numberCanBeLarge = false,
-        nestedFloatLosesPrecision = false,
-    ),
-    unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
-    nullEqualsUnset = true,
-    configUpdater = ClickhouseConfigUpdater(),
-) {
+class ClickhouseDirectLoadWriter :
+    BasicFunctionalityIntegrationTest(
+        configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
+        configSpecClass = ClickhouseSpecification::class.java,
+        dataDumper =
+            ClickhouseDataDumper { spec ->
+                ClickhouseConfigurationFactory()
+                    .makeWithOverrides(spec as ClickhouseSpecification, mapOf())
+            },
+        destinationCleaner = ClickhouseDataCleaner,
+        isStreamSchemaRetroactive = true,
+        dedupBehavior = DedupBehavior(),
+        stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        unionBehavior = UnionBehavior.STRINGIFY,
+        preserveUndeclaredFields = false,
+        supportFileTransfer = false,
+        commitDataIncrementally = true,
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = false,
+                numberCanBeLarge = false,
+                nestedFloatLosesPrecision = false,
+            ),
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        nullEqualsUnset = true,
+        configUpdater = ClickhouseConfigUpdater(),
+    ) {
     companion object {
         @JvmStatic
         @BeforeAll
@@ -89,101 +91,53 @@ class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
         // Clickhouse does not support file transfer, so this test is skipped.
     }
 
-    @Disabled()
-    override fun testInterruptedTruncateWithoutPriorData() {
-    }
+    @Disabled() override fun testInterruptedTruncateWithoutPriorData() {}
 
-    @Disabled
-    override fun testNoColumns() {
-    }
+    @Disabled override fun testNoColumns() {}
 
-    @Disabled
-    override fun testTruncateRefresh() {
-    }
+    @Disabled override fun testTruncateRefresh() {}
 
-    @Disabled
-    override fun testDedupWithStringKey() {
-    }
+    @Disabled override fun testDedupWithStringKey() {}
 
-    @Disabled
-    override fun testDedupChangeCursor() {
-    }
+    @Disabled override fun testDedupChangeCursor() {}
 
-    @Disabled
-    override fun testBasicTypes() {
-    }
+    @Disabled override fun testBasicTypes() {}
 
-    @Disabled
-    override fun testDedupChangePk() {
-    }
+    @Disabled override fun testDedupChangePk() {}
 
-    @Disabled
-    override fun testClear() {
-    }
+    @Disabled override fun testClear() {}
 
-    @Disabled
-    override fun testDedup() {
-    }
+    @Disabled override fun testDedup() {}
 
-    @Disabled
-    override fun testTruncateRefreshNoData() {
-    }
+    @Disabled override fun testTruncateRefreshNoData() {}
 
-    @Disabled
-    override fun testManyStreamsCompletion() {
-    }
+    @Disabled override fun testManyStreamsCompletion() {}
 
-    @Disabled
-    override fun testInterruptedTruncateWithPriorData() {
-    }
+    @Disabled override fun testInterruptedTruncateWithPriorData() {}
 
-    @Disabled
-    override fun testContainerTypes() {
-    }
+    @Disabled override fun testContainerTypes() {}
 
-    @Disabled
-    override fun testFunkyCharacters() {
-    }
+    @Disabled override fun testFunkyCharacters() {}
 
-    @Disabled
-    override fun testNamespaces() {
-    }
+    @Disabled override fun testNamespaces() {}
 
-    @Disabled
-    override fun resumeAfterCancelledTruncate() {
-    }
+    @Disabled override fun resumeAfterCancelledTruncate() {}
 
-    @Disabled
-    override fun testUnknownTypes() {
-    }
+    @Disabled override fun testUnknownTypes() {}
 
-    @Disabled
-    override fun testAppendJsonSchemaEvolution() {
-    }
+    @Disabled override fun testAppendJsonSchemaEvolution() {}
 
-    @Disabled
-    override fun testFunkyCharactersDedup() {
-    }
+    @Disabled override fun testFunkyCharactersDedup() {}
 
-    @Disabled
-    override fun testAppendSchemaEvolution() {
-    }
+    @Disabled override fun testAppendSchemaEvolution() {}
 
-    @Disabled
-    override fun testNoData() {
-    }
+    @Disabled override fun testNoData() {}
 
-    @Disabled
-    override fun testDedupNoCursor() {
-    }
+    @Disabled override fun testDedupNoCursor() {}
 
-    @Disabled
-    override fun testOverwriteSchemaEvolution() {
-    }
+    @Disabled override fun testOverwriteSchemaEvolution() {}
 
-    @Disabled
-    override fun testUnions() {
-    }
+    @Disabled override fun testUnions() {}
 
     @Test
     // Copy pasted to disable the meta test until we fix it
@@ -208,15 +162,15 @@ class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
                         data = """{"id": 5678, "undeclared": "asdf"}""",
                         emittedAtMs = 1234,
                         changes =
-                        mutableListOf(
-                            Meta.Change(
-                                field = "foo",
-                                change = AirbyteRecordMessageMetaChange.Change.NULLED,
-                                reason =
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .SOURCE_FIELD_SIZE_LIMITATION
+                            mutableListOf(
+                                Meta.Change(
+                                    field = "foo",
+                                    change = AirbyteRecordMessageMetaChange.Change.NULLED,
+                                    reason =
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .SOURCE_FIELD_SIZE_LIMITATION
+                                )
                             )
-                        )
                     ),
                     InputStreamCheckpoint(
                         streamName = "test_stream",
@@ -237,12 +191,12 @@ class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
                 )
                 Assertions.assertEquals(
                     StreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 1,
-                        destinationRecordCount = 1,
-                    )
+                            streamName = "test_stream",
+                            streamNamespace = randomizedNamespace,
+                            blob = """{"foo": "bar"}""",
+                            sourceRecordCount = 1,
+                            destinationRecordCount = 1,
+                        )
                         .asProtocolMessage(),
                     stateMessages.first()
                 )
@@ -256,27 +210,27 @@ class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
                                 extractedAt = 1234,
                                 generationId = 0,
                                 data =
-                                if (preserveUndeclaredFields) {
-                                    mapOf("id" to 5678, "undeclared" to "asdf")
-                                } else {
-                                    mapOf("id" to 5678)
-                                },
+                                    if (preserveUndeclaredFields) {
+                                        mapOf("id" to 5678, "undeclared" to "asdf")
+                                    } else {
+                                        mapOf("id" to 5678)
+                                    },
                                 airbyteMeta =
-                                OutputRecord.Meta(
-                                    changes =
-                                    mutableListOf(
-                                        //     Change(
-                                        //         field = "foo",
-                                        //         change =
-                                        //             AirbyteRecordMessageMetaChange.Change
-                                        //                 .NULLED,
-                                        //         reason =
-                                        //             AirbyteRecordMessageMetaChange.Reason
-                                        //                 .SOURCE_FIELD_SIZE_LIMITATION
-                                        //     )
-                                    ),
-                                    syncId = null
-                                )
+                                    OutputRecord.Meta(
+                                        changes =
+                                            mutableListOf(
+                                                //     Change(
+                                                //         field = "foo",
+                                                //         change =
+                                                //             AirbyteRecordMessageMetaChange.Change
+                                                //                 .NULLED,
+                                                //         reason =
+                                                //             AirbyteRecordMessageMetaChange.Reason
+                                                //                 .SOURCE_FIELD_SIZE_LIMITATION
+                                                //     )
+                                                ),
+                                        syncId = null
+                                    )
                             )
                         ),
                         stream,
@@ -351,7 +305,9 @@ class ClickhouseDirectLoadWriter: BasicFunctionalityIntegrationTest(
     }
 }
 
-class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration): DestinationDataDumper {
+class ClickhouseDataDumper(
+    private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration
+) : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
@@ -361,8 +317,12 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
 
         val output = mutableListOf<OutputRecord>()
 
-        val response = client.query("SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}")
-            .get()
+        val response =
+            client
+                .query(
+                    "SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}"
+                )
+                .get()
 
         val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
         while (reader.hasNext()) {
@@ -371,24 +331,29 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .map { entry ->
-                    val airbyteValue = when (entry.value) {
-                        is Long -> IntegerValue(entry.value as Long)
-                        is String -> StringValue(entry.value as String)
-                        else -> throw UnsupportedOperationException(
-                            "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
-                        )
-                    }
+                    val airbyteValue =
+                        when (entry.value) {
+                            is Long -> IntegerValue(entry.value as Long)
+                            is String -> StringValue(entry.value as String)
+                            else ->
+                                throw UnsupportedOperationException(
+                                    "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
+                                )
+                        }
                     dataMap.put(entry.key, airbyteValue)
-            }
-            val outputRecord = OutputRecord(
-                rawId = record[Meta.COLUMN_NAME_AB_RAW_ID] as String,
-                extractedAt =
-                (record[Meta.COLUMN_NAME_AB_EXTRACTED_AT] as ZonedDateTime).toInstant().toEpochMilli(),
-                loadedAt = null,
-                generationId = record[Meta.COLUMN_NAME_AB_GENERATION_ID] as Long,
-                data = ObjectValue(dataMap),
-                airbyteMeta = stringToMeta(record[Meta.COLUMN_NAME_AB_META] as String),
-            )
+                }
+            val outputRecord =
+                OutputRecord(
+                    rawId = record[Meta.COLUMN_NAME_AB_RAW_ID] as String,
+                    extractedAt =
+                        (record[Meta.COLUMN_NAME_AB_EXTRACTED_AT] as ZonedDateTime)
+                            .toInstant()
+                            .toEpochMilli(),
+                    loadedAt = null,
+                    generationId = record[Meta.COLUMN_NAME_AB_GENERATION_ID] as Long,
+                    data = ObjectValue(dataMap),
+                    airbyteMeta = stringToMeta(record[Meta.COLUMN_NAME_AB_META] as String),
+                )
             output.add(outputRecord)
         }
 
@@ -403,7 +368,7 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
     }
 }
 
-object ClickhouseDataCleaner: DestinationCleaner {
+object ClickhouseDataCleaner : DestinationCleaner {
     private val clickhouseSpecification =
         ValidatedJsonUtils.parseOne(
             ClickhouseSpecification::class.java,
@@ -412,14 +377,15 @@ object ClickhouseDataCleaner: DestinationCleaner {
 
     private val config =
         ClickhouseConfigurationFactory()
-            .makeWithOverrides(clickhouseSpecification,
-                 mapOf(
-                     "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
-                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
-                     "protocol" to "http",
-                     "username" to ClickhouseContainerHelper.getUsername()!!,
-                     "password" to ClickhouseContainerHelper.getPassword()!!,
-                 )
+            .makeWithOverrides(
+                clickhouseSpecification,
+                mapOf(
+                    "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
+                    "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
+                    "protocol" to "http",
+                    "username" to ClickhouseContainerHelper.getUsername()!!,
+                    "password" to ClickhouseContainerHelper.getPassword()!!,
+                )
             )
 
     override fun cleanup() {
@@ -427,19 +393,16 @@ object ClickhouseDataCleaner: DestinationCleaner {
 
         val query = "select * from system.databases where name like 'test%'"
 
-        client.query(query)
-            .get()
-            .use { response ->
-                val reader = client.newBinaryFormatReader(response)
-                while (reader.hasNext()) {
-                    val record = reader.next()
-                    val databaseName = record["name"] as String
+        client.query(query).get().use { response ->
+            val reader = client.newBinaryFormatReader(response)
+            while (reader.hasNext()) {
+                val record = reader.next()
+                val databaseName = record["name"] as String
 
-                    client.query("DROP DATABASE IF EXISTS $databaseName").get()
-                }
+                client.query("DROP DATABASE IF EXISTS $databaseName").get()
             }
+        }
     }
-
 }
 
 fun stringToMeta(metaAsString: String): OutputRecord.Meta {
@@ -456,8 +419,9 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
             Meta.Change(
                 field = change["field"].textValue(),
                 change =
-                AirbyteRecordMessageMetaChange.Change.fromValue(change["change"].textValue()),
-                reason = AirbyteRecordMessageMetaChange.Reason.fromValue(change["reason"].textValue()),
+                    AirbyteRecordMessageMetaChange.Change.fromValue(change["change"].textValue()),
+                reason =
+                    AirbyteRecordMessageMetaChange.Reason.fromValue(change["reason"].textValue()),
             )
         }
 
@@ -472,13 +436,14 @@ object ClientProvider {
 
     fun getClient(config: ClickhouseConfiguration): Client {
         if (client == null) {
-            client = Client.Builder()
-                .setPassword(config.password)
-                .setUsername(config.username)
-                .addEndpoint(config.endpoint)
-                .setDefaultDatabase(config.resolvedDatabase)
-                .retryOnFailures(ClientFaultCause.None)
-                .build()
+            client =
+                Client.Builder()
+                    .setPassword(config.password)
+                    .setUsername(config.username)
+                    .addEndpoint(config.endpoint)
+                    .setDefaultDatabase(config.resolvedDatabase)
+                    .retryOnFailures(ClientFaultCause.None)
+                    .build()
         }
         return client!!
     }

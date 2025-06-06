@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.write
 
 import io.airbyte.cdk.load.client.AirbyteClient
@@ -13,8 +17,9 @@ class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
     clickhouseConfiguration: ClickhouseConfiguration,
     // TODO: Change that; maybe create a bean for it?
     @Named("internalNamespace") internalNamespace: String,
-) : BaseDatabaseInitialStatusGatherer<DirectLoadInitialStatus>(
-    airbyteClient,
-    clickhouseConfiguration.resolvedDatabase,
-    internalNamespace,
-)
+) :
+    BaseDatabaseInitialStatusGatherer<DirectLoadInitialStatus>(
+        airbyteClient,
+        clickhouseConfiguration.resolvedDatabase,
+        internalNamespace,
+    )

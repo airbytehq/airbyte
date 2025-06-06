@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -11,7 +15,7 @@ data class ClickhouseConfiguration(
     val database: String,
     val username: String,
     val password: String,
-): DestinationConfiguration() {
+) : DestinationConfiguration() {
     val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
 
@@ -23,7 +27,9 @@ data class ClickhouseConfiguration(
 @Singleton
 class ClickhouseConfigurationFactory :
     DestinationConfigurationFactory<ClickhouseSpecification, ClickhouseConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: ClickhouseSpecification): ClickhouseConfiguration =
+    override fun makeWithoutExceptionHandling(
+        pojo: ClickhouseSpecification
+    ): ClickhouseConfiguration =
         ClickhouseConfiguration(
             pojo.hostname,
             pojo.port,
@@ -34,8 +40,8 @@ class ClickhouseConfigurationFactory :
         )
 
     fun makeWithOverrides(
-    spec: ClickhouseSpecification,
-    overrides: Map<String, String> = emptyMap()
+        spec: ClickhouseSpecification,
+        overrides: Map<String, String> = emptyMap()
     ): ClickhouseConfiguration {
         return ClickhouseConfiguration(
             hostname = overrides.getOrDefault("hostname", spec.hostname),
@@ -44,6 +50,6 @@ class ClickhouseConfigurationFactory :
             database = overrides.getOrDefault("database", spec.database),
             password = overrides.getOrDefault("password", spec.password),
             username = overrides.getOrDefault("username", spec.username),
-            )
+        )
     }
 }
