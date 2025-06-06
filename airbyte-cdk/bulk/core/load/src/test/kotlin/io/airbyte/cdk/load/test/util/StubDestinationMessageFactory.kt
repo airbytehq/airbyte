@@ -65,10 +65,7 @@ object StubDestinationMessageFactory {
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
         return StreamCheckpoint(
             checkpoint =
-                CheckpointMessage.Checkpoint(
-                    stream.descriptor,
-                    JsonNodeFactory.instance.objectNode()
-                ),
+                CheckpointMessage.Checkpoint(stream, JsonNodeFactory.instance.objectNode()),
             sourceStats = CheckpointMessage.Stats(recordCount),
             serializedSizeBytes = 0L
         )
