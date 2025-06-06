@@ -57,7 +57,7 @@ class SyncBeanFactory {
     fun checkpointManager(
         catalog: DestinationCatalog,
         syncManager: SyncManager,
-        outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
+        outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit,
         timeProvider: TimeProvider,
     ): CheckpointManager<Reserved<CheckpointMessage>> =
         CheckpointManager(

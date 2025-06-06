@@ -188,18 +188,14 @@ sealed interface InputCheckpoint : InputMessage
 
 data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckpoint {
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        stream: DestinationStream,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
     ) : this(
         StreamCheckpoint(
-            Checkpoint(
-                DestinationStream.Descriptor(streamNamespace, streamName),
-                state = blob.deserializeToNode()
-            ),
+            Checkpoint(stream, state = blob.deserializeToNode()),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
