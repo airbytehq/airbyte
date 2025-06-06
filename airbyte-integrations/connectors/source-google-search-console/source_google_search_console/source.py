@@ -22,16 +22,6 @@ from source_google_search_console.exceptions import (
     UnidentifiedError,
 )
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
-from source_google_search_console.streams import (
-    SearchAnalyticsAllFields,
-    SearchAnalyticsByDate,
-    SearchAnalyticsByDevice,
-    SearchAnalyticsByPage,
-    SearchAnalyticsByQuery,
-    SearchAnalyticsPageReport,
-    SearchAnalyticsSiteReportByPage,
-    SearchAnalyticsSiteReportBySite,
-)
 
 
 DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
@@ -152,22 +142,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
-        streams = super().streams(config=config)
-
-        streams.extend(
-            [
-                SearchAnalyticsByDevice(**stream_config),
-                SearchAnalyticsByDate(**stream_config),
-                SearchAnalyticsByQuery(**stream_config),
-                SearchAnalyticsByPage(**stream_config),
-                SearchAnalyticsAllFields(**stream_config),
-                SearchAnalyticsPageReport(**stream_config),
-                SearchAnalyticsSiteReportBySite(**stream_config),
-                SearchAnalyticsSiteReportByPage(**stream_config),
-            ]
-        )
-
-        return streams
+        return super().streams(config=config)
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {

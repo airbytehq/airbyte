@@ -1,10 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-import logging
 from unittest.mock import MagicMock, patch
-from urllib.parse import quote_plus
 
 import pytest
 import requests
@@ -13,7 +10,6 @@ from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
     GoogleSearchConsole,
-    SearchAnalyticsByDate,
 )
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
