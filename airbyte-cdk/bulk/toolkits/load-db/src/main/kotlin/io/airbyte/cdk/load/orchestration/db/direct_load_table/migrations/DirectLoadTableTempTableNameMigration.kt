@@ -8,8 +8,11 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * check for the existence of an old-named temp table (`foo_airbyte_tmp`) and move it to a new-style
@@ -45,6 +48,9 @@ class DefaultDirectLoadTableTempTableNameMigration(
                 launch {
                     val realTableName = oldTempNameToNewTempName[oldTempTableName]!!
                     val tempTableName = tempTableNameGenerator.generate(realTableName)
+                    logger.info {
+                        "Detected old-style temp table $oldTempTableName. Moving it to new-style temp table $tempTableName."
+                    }
                     sqlTableOperations.overwriteTable(oldTempTableName, tempTableName)
                 }
             }
