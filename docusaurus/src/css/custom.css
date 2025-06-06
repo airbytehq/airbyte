@@ -362,3 +362,22 @@ nav a.navbar__link--active {
 .MarkpromptOverlay {
   z-index: 201 !important;
 }
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  max-width: 580px !important;
+}
+
+.MarkpromptMessageAvatarContainer {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatarImage {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatar {
+  width: 48px !important;
+  height: 48px !important;
+}
