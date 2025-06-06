@@ -13,7 +13,6 @@ import requests
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_search_console.exceptions import (
@@ -22,16 +21,6 @@ from source_google_search_console.exceptions import (
     UnidentifiedError,
 )
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
-from source_google_search_console.streams import (
-    SearchAnalyticsAllFields,
-    SearchAnalyticsByDate,
-    SearchAnalyticsByDevice,
-    SearchAnalyticsByPage,
-    SearchAnalyticsByQuery,
-    SearchAnalyticsPageReport,
-    SearchAnalyticsSiteReportByPage,
-    SearchAnalyticsSiteReportBySite,
-)
 
 
 DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
@@ -135,62 +124,3 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         invalid_site_url = set(site_urls) - remote_site_urls
         if invalid_site_url:
             raise InvalidSiteURLValidationError(invalid_site_url)
-
-    def get_client_auth_header(self, auth: Oauth2Authenticator) -> Mapping[str, Any]:
-        try:
-            return auth.get_auth_header()
-        except requests.exceptions.HTTPError as e:
-            return {
-                "code": e.response.status_code,
-                "error": e.response.json(),
-            }
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        config = self._validate_and_transform(config)
-        stream_config = self.get_stream_kwargs(config)
-
-        streams = super().streams(config=config)
-
-        streams.extend(
-            [
-                SearchAnalyticsByDevice(**stream_config),
-                SearchAnalyticsByDate(**stream_config),
-                SearchAnalyticsByQuery(**stream_config),
-                SearchAnalyticsByPage(**stream_config),
-                SearchAnalyticsAllFields(**stream_config),
-                SearchAnalyticsPageReport(**stream_config),
-                SearchAnalyticsSiteReportBySite(**stream_config),
-                SearchAnalyticsSiteReportByPage(**stream_config),
-            ]
-        )
-
-        return streams
-
-    def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            "site_urls": config["site_urls"],
-            "start_date": config.get("start_date", "2021-01-01"),  # `2021-01-01` is the default value
-            "end_date": config["end_date"],
-            "authenticator": self.get_authenticator(config),
-            "data_state": config["data_state"],
-        }
-
-    def get_authenticator(self, config):
-        authorization = config["authorization"]
-        auth_type = authorization["auth_type"]
-
-        if auth_type == "Client":
-            return Oauth2Authenticator(
-                token_refresh_endpoint="https://oauth2.googleapis.com/token",
-                client_secret=authorization["client_secret"],
-                client_id=authorization["client_id"],
-                refresh_token=authorization["refresh_token"],
-            )
-        elif auth_type == "Service":
-            return ServiceAccountAuthenticator(
-                service_account_info=authorization["service_account_info"],
-                email=authorization["email"],
-            )
