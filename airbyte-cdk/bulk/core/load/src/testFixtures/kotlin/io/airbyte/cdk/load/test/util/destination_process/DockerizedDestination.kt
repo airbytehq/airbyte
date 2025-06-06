@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.file.TcpPortReserver
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.NUM_SOCKETS
@@ -26,9 +27,11 @@ import java.io.File
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Clock
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.io.path.outputStream
 import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +55,7 @@ class DockerizedDestination(
     private val envVars: Map<String, String>,
     override val dataChannelMedium: DataChannelMedium,
     val dataChannelFormat: DataChannelFormat,
+    val namespaceMappingConfig: NamespaceMappingConfig,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
@@ -152,6 +156,12 @@ class DockerizedDestination(
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
 
+        val containerNamespaceMapperConfigPath =
+            Paths.get(containerDataRoot, "namespace-mapper-config.json")
+        val hostNamespaceMapperConfigPath = workspaceRoot.resolve("namespace-mapper-config.json")
+        hostNamespaceMapperConfigPath.outputStream().use {
+            it.write(namespaceMappingConfig.serializeToJsonBytes())
+        }
         val socketPaths = (0 until NUM_SOCKETS).joinToString(",") { makeSocketPath(it) }
         val socketPathEnvVarsMaybe =
             if (dataChannelMedium == DataChannelMedium.SOCKET) {
@@ -162,6 +172,8 @@ class DockerizedDestination(
                     "${EnvVarConstants.DATA_CHANNEL_FORMAT.environmentVariable}=$dataChannelFormat",
                     "-e",
                     "${EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS.environmentVariable}=$socketPaths",
+                    "-e",
+                    "${EnvVarConstants.NAMESPACE_MAPPER_CONFIG_PATH.environmentVariable}=$containerNamespaceMapperConfigPath",
                 )
             } else {
                 emptyList()
@@ -450,6 +462,7 @@ class DockerizedDestinationFactory(
         micronautProperties: Map<Property, String>,
         dataChannelMedium: DataChannelMedium,
         dataChannelFormat: DataChannelFormat,
+        namespaceMappingConfig: NamespaceMappingConfig,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -462,6 +475,7 @@ class DockerizedDestinationFactory(
             micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             dataChannelMedium,
             dataChannelFormat,
+            namespaceMappingConfig = namespaceMappingConfig,
             *featureFlags,
         )
     }
