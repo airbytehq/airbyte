@@ -5,4 +5,4 @@ scope: sentence
 ignorecase: true
 nonword: true
 tokens:
-  - '\w[^.?]*$'
+  - '\w[^.?:"]*$'

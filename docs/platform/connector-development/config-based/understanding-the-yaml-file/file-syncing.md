@@ -1,10 +1,14 @@
 # File syncing
 
-File syncing enables connectors to download and transfer files from APIs to destinations. This experimental feature supports files up to 1.5GB and handles various file formats including documents, images, and structured data. File syncing is particularly useful for APIs that return file download URLs rather than file content directly.
+File syncing enables connectors to download and transfer files from API sources. This capability supports files up to 1.5-GB and handles file formats including documents, images, and structured data. File syncing is particularly useful for API endpoints that return files.
+
+:::info
+File syncing is experimental. It isn't available in the Connector Builder UI. You must implement this using manifest.yaml files in a manifest-only or hybrid connector.
+:::
 
 ## Overview
 
-File syncing works in these steps:
+File syncing works in these steps.
 
 1. Extracting file download URLs from API response records
 
@@ -62,7 +66,7 @@ file_uploader:
 
 ### `type`
 
-Must be set to `FileUploader` to enable file syncing functionality.
+Set to `FileUploader` to enable file syncing capability.
 
 ### `requester`
 
@@ -76,15 +80,15 @@ Extracts the file download URL from each record. Uses DPath syntax to specify th
 
 ### `file_extractor`
 
-Extracts file content from the HTTP response when the entire response body is not the file. Useful when the API wraps file content in a JSON response.
+Extracts file content from the HTTP response when the entire response body isn't the file. Useful when the API wraps file content in a JSON response.
 
 ### `filename_extractor`
 
-Customizes file naming using Jinja templating with access to record data and configuration. If not provided, a random UUID is used as the filename.
+Customizes file naming using Jinja templating with access to record data and configuration. If not provided, Airbyte uses a random UUID as the filename.
 
 ## File storage and metadata
 
-Downloaded files are stored in a temporary directory structure organized by stream name. Each record receives additional metadata fields:
+Airbyte stores downloaded files in a temporary directory structure organized by stream name. Each record receives these additional metadata fields.
 
 - `file_reference.staging_file_url`: Local path to the downloaded file
 - `file_reference.source_file_relative_path`: Relative path for organization
@@ -94,9 +98,30 @@ Downloaded files are stored in a temporary directory structure organized by stre
 
 File downloads support independent authentication from the main API requests. This allows downloading files from different domains or services that require separate credentials.
 
+## File size limitation
+
+Supports files up to 1.5-GB in size. Files larger than that are not synced.
+
+## Format compatibility
+
+Works with any file format since it handles files as binary data. Common examples:
+
+- Documents (PDF, DOCX, TXT)
+- Images (PNG, JPG, GIF)
+- Structured data (CSV, JSON, XML)
+- Archives (ZIP, TAR)
+
+## Dynamic URL handling
+
+The `url_base` can use the special `{{download_target}}` placeholder to dynamically set the base URL from the extracted download URL, enabling downloads from multiple domains.
+
+## Custom file naming
+
+The `filename_extractor` supports Jinja templating with access to record data, allowing organized file storage with meaningful names and directory structures.
+
 ## Usage example
 
-Here's how Zendesk Support uses file syncing for article attachments:
+Here's how the [Zendesk Support connector](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-zendesk-support/source_zendesk_support/manifest.yaml) uses file syncing for article attachments.
 
 ```yaml title="manifest.yaml"
 streams:
@@ -135,53 +160,3 @@ streams:
         field_path: ["content_url"]
       filename_extractor: "{{ record.id }}/{{ record.file_name }}/"
 ```
-
-## Key features
-
-### File size support
-
-Supports files up to 1.5GB in size, making it suitable for large documents, images, and data files.
-
-### Format compatibility
-
-Works with any file format since it handles files as binary data. Commonly used for:
-
-- Documents (PDF, DOCX, TXT)
-- Images (PNG, JPG, GIF)
-- Structured data (CSV, JSON, XML)
-- Archives (ZIP, TAR)
-
-### Dynamic URL handling
-
-The `url_base` can use the special `{{download_target}}` placeholder to dynamically set the base URL from the extracted download URL, enabling downloads from multiple domains.
-
-### Custom file naming
-
-The `filename_extractor` supports Jinja templating with access to record data, allowing organized file storage with meaningful names and directory structures.
-
-## Limitations
-
-### Connector Builder UI
-
-File syncing is **not available** in the Connector Builder UI. This feature requires:
-
-- Direct implementation using manifest.yaml files
-- Cannot be configured through the visual interface
-- Must be implemented as a manifest-only or hybrid connector
-
-### Implementation requirements
-
-File syncing requires the Low-Code CDK and cannot be used with:
-
-- Pure Python CDK implementations without declarative components
-- Connectors built entirely through the Connector Builder UI
-- File-based CDK (which has separate file handling capabilities)
-
-### Performance considerations
-
-Large files and high-volume file downloads can impact sync performance. Consider:
-
-- File size limits for your use case
-- Network bandwidth requirements
-- Destination storage capacity
-- Sync timeout configurations
