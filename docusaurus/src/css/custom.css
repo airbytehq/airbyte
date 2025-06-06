@@ -385,3 +385,7 @@ nav a.navbar__link--active {
 .MarkpromptContentDialog {
   --markprompt-text-size: 1em !important;
 }
+
+.MarkpromptPrompt {
+  padding-block: 0.35rem !important;
+}
