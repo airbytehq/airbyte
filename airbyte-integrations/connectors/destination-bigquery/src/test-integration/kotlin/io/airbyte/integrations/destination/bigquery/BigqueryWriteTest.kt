@@ -120,42 +120,19 @@ class StandardInsertRawOverrideRawTables :
             rawDatasetId = RAW_DATASET_OVERRIDE,
             disableTypingDeduping = true,
         ),
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-    @Test
-    override fun testAppendSchemaEvolution() {
-        super.testAppendSchemaEvolution()
-    }
-}
+    )
 
 class StandardInsertRawOverride :
     BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
         CdcDeletionMode.HARD_DELETE,
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-}
+    )
 
 class StandardInsert :
     BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.standardInsertConfig,
         CdcDeletionMode.HARD_DELETE,
-    ) {
-    @Test
-    override fun testAppendJsonSchemaEvolution() {
-        super.testAppendJsonSchemaEvolution()
-    }
-}
+    )
 
 class StandardInsertCdcSoftDeletes :
     BigqueryDirectLoadWriteTest(
@@ -178,12 +155,7 @@ class GcsRawOverrideRawTables :
             rawDatasetId = RAW_DATASET_OVERRIDE,
             disableTypingDeduping = true,
         ),
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+    )
 
 class GcsRawOverride :
     BigqueryDirectLoadWriteTest(
@@ -192,20 +164,10 @@ class GcsRawOverride :
             rawDatasetId = RAW_DATASET_OVERRIDE,
         ),
         CdcDeletionMode.HARD_DELETE,
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+    )
 
 class Gcs :
     BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
         CdcDeletionMode.HARD_DELETE,
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+    )
