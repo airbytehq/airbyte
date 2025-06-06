@@ -284,3 +284,10 @@ always_include_properties:
 ```
 
 These properties are automatically added to each chunk and don't count toward the property limit.
+
+## Related Documentation
+
+For more information on related low-code CDK features, see:
+- [Pagination](./pagination.md) - For handling paginated API responses
+- [Partition Router](./partition-router.md) - For splitting data requests across multiple partitions
+- [Record Selector](./record-selector.md) - For extracting records from API responses
