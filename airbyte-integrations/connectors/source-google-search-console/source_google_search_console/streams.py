@@ -294,53 +294,6 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
             yield record
 
 
-class SearchAnalyticsByDate(SearchAnalytics):
-    primary_key = ["site_url", "date", "search_type"]
-    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
-    dimensions = ["date"]
-
-
-class SearchAnalyticsByDevice(SearchAnalytics):
-    primary_key = ["site_url", "date", "device", "search_type"]
-    search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "device"]
-
-
-class SearchAnalyticsByPage(SearchAnalytics):
-    primary_key = ["site_url", "date", "page", "search_type"]
-    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
-    dimensions = ["date", "page"]
-
-
-class SearchAnalyticsByQuery(SearchAnalytics):
-    primary_key = ["site_url", "date", "query", "search_type"]
-    dimensions = ["date", "query"]
-
-
-class SearchAnalyticsAllFields(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
-    dimensions = ["date", "country", "device", "page", "query"]
-
-
-class SearchAnalyticsSiteReportBySite(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "search_type"]
-    dimensions = ["date", "country", "device"]
-    aggregation_type = QueryAggregationType.by_property
-
-
-class SearchAnalyticsSiteReportByPage(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "search_type"]
-    search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device"]
-    aggregation_type = QueryAggregationType.by_page
-
-
-class SearchAnalyticsPageReport(SearchAnalytics):
-    primary_key = ["site_url", "date", "country", "device", "search_type", "page"]
-    search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device", "page"]
-
-
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     # `date` is a cursor field therefore should be mandatory
     DEFAULT_DIMENSIONS = ["date"]

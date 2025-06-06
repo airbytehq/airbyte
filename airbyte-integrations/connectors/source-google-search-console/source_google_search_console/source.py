@@ -3,14 +3,14 @@
 #
 
 import json
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import urlparse
 
 import jsonschema
 import pendulum
 import requests
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -23,15 +23,7 @@ from source_google_search_console.exceptions import (
 )
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
-    SearchAnalyticsAllFields,
     SearchAnalyticsByCustomDimensions,
-    SearchAnalyticsByDate,
-    SearchAnalyticsByDevice,
-    SearchAnalyticsByPage,
-    SearchAnalyticsByQuery,
-    SearchAnalyticsPageReport,
-    SearchAnalyticsSiteReportByPage,
-    SearchAnalyticsSiteReportBySite,
 )
 
 
@@ -147,18 +139,6 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
 
-        streams.extend(
-            [
-                SearchAnalyticsByDevice(**stream_config),
-                SearchAnalyticsByDate(**stream_config),
-                SearchAnalyticsByQuery(**stream_config),
-                SearchAnalyticsByPage(**stream_config),
-                SearchAnalyticsAllFields(**stream_config),
-                SearchAnalyticsPageReport(**stream_config),
-                SearchAnalyticsSiteReportBySite(**stream_config),
-                SearchAnalyticsSiteReportByPage(**stream_config),
-            ]
-        )
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
 
         return streams
