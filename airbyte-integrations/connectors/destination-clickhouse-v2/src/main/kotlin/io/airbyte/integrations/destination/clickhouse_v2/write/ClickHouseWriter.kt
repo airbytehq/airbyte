@@ -20,18 +20,18 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseAirbyteClient
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
 class ClickHouseWriter(
-    /// private val internalNamespace: String,
+    @Named("internalNamespace") private val internalNamespace: String,
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val clickhouseClient: ClickhouseAirbyteClient
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
-    private val internalNamespace: String = "airbyte_internal"
 
     override suspend fun setup() {
         names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
@@ -48,49 +48,26 @@ class ClickHouseWriter(
         val tempTableName = realTableName.asTempTable(internalNamespace = internalNamespace)
         val columnNameMapping = tableNameInfo.columnNameMapping
         return when (stream.minimumGenerationId) {
-            0L ->
-                when (stream.importType) {
-                    Append,
-                    Overwrite,
-                    is Dedupe ->
-                        DirectLoadTableAppendStreamLoader(
-                            stream,
-                            initialStatus,
-                            realTableName = realTableName,
-                            tempTableName = tempTableName,
-                            columnNameMapping,
-                            clickhouseClient,
-                            clickhouseClient,
-                            streamStateStore,
-                        )
-                }
-            stream.generationId ->
-                when (stream.importType) {
-                    Append,
-                    Overwrite ->
-                        DirectLoadTableAppendTruncateStreamLoader(
-                            stream,
-                            initialStatus,
-                            realTableName = realTableName,
-                            tempTableName = tempTableName,
-                            columnNameMapping,
-                            clickhouseClient,
-                            clickhouseClient,
-                            streamStateStore,
-                        )
-                    is Dedupe ->
-                        DirectLoadTableDedupTruncateStreamLoader(
-                            stream,
-                            initialStatus,
-                            internalNamespace = internalNamespace,
-                            realTableName = realTableName,
-                            tempTableName = tempTableName,
-                            columnNameMapping,
-                            clickhouseClient,
-                            clickhouseClient,
-                            streamStateStore,
-                        )
-                }
+            0L -> DirectLoadTableAppendStreamLoader(
+                stream,
+                initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping,
+                clickhouseClient,
+                clickhouseClient,
+                streamStateStore,
+            )
+            stream.generationId -> DirectLoadTableAppendTruncateStreamLoader(
+                stream,
+                initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping,
+                clickhouseClient,
+                clickhouseClient,
+                streamStateStore,
+            )
             else ->
                 throw SystemErrorException(
                     "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"

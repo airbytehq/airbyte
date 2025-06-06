@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -113,6 +114,7 @@ class ClickhouseDataDumper(private val configProvider: (ConfigurationSpecificati
                 .map { entry ->
                     val airbyteValue = when (entry.value) {
                         is Long -> IntegerValue(entry.value as Long)
+                        is String -> StringValue(entry.value as String)
                         else -> throw UnsupportedOperationException(
                             "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
                         )
@@ -154,10 +156,10 @@ class ClickhouseDataCleaner: DestinationCleaner {
             .makeWithOverrides(clickhouseSpecification,
                  mapOf(
                      "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
-                //     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
-                //     "protocol" to "http",
-                //     "username" to ClickhouseContainerHelper.getUsername()!!,
-                //     "password" to ClickhouseContainerHelper.getPassword()!!,
+                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
+                     "protocol" to "http",
+                     "username" to ClickhouseContainerHelper.getUsername()!!,
+                     "password" to ClickhouseContainerHelper.getPassword()!!,
                  )
             )
 
