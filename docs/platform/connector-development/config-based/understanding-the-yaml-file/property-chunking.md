@@ -1,21 +1,25 @@
-# Property Chunking
+# Property chunking
 
-Property chunking enables connectors to handle APIs with limitations on the number of properties that can be fetched per request. This feature breaks down large property lists into smaller, manageable chunks and merges the results back into complete records.
-
-Many critical connectors require this functionality to work with APIs that have property limits, such as HubSpot (character limits) and LinkedIn Ads (property count limits).
+Property chunking enables connectors to handle APIs with limitations on the number of properties that you can fetch per request. This feature breaks down large property lists into smaller, manageable chunks and merges the results back into complete records. Several connectors require this capability to work with APIs that have property limits.
 
 ## Overview
 
-Property chunking works by:
+Property chunking works in these steps.
+
 1. Fetching the complete list of properties (either statically defined or dynamically from an API endpoint)
+
 2. Splitting properties into chunks based on configured limits
+
 3. Making separate API requests for each chunk
+
 4. Merging the results back into complete records using a merge strategy
 
 ## Schema
 
 ```yaml
 QueryProperties:
+  title: Query Properties
+  description: For APIs that require explicit specification of the properties to query for, this component specifies which property fields and how they are supplied to outbound requests.
   type: object
   required:
     - type
@@ -29,6 +33,8 @@ QueryProperties:
       description: The set of properties that will be queried for in the outbound request. This can either be statically defined or dynamic based on an API endpoint
       anyOf:
         - type: array
+          items:
+            type: string
         - "$ref": "#/definitions/PropertiesFromEndpoint"
     always_include_properties:
       title: Always Include Properties
@@ -45,10 +51,12 @@ QueryProperties:
       additionalProperties: true
 ```
 
-### PropertyChunking
+### `PropertyChunking`
 
 ```yaml
 PropertyChunking:
+  title: Property Chunking
+  description: For APIs with restrictions on the amount of properties that can be requester per request, property chunking can be applied to make multiple requests with a subset of the properties.
   type: object
   required:
     - type
@@ -69,17 +77,19 @@ PropertyChunking:
       type: integer
     record_merge_strategy:
       title: Record Merge Strategy
-      description: Dictates how records that require multiple requests to get all properties should be emitted to the destination
+      description: Dictates how to records that require multiple requests to get all properties should be emitted to the destination
       "$ref": "#/definitions/GroupByKeyMergeStrategy"
     $parameters:
       type: object
       additionalProperties: true
 ```
 
-### PropertiesFromEndpoint
+### `PropertiesFromEndpoint`
 
 ```yaml
 PropertiesFromEndpoint:
+  title: Properties from Endpoint
+  description: Defines the behavior for fetching the list of properties from an API that will be loaded into the requests to extract records.
   type: object
   required:
     - type
@@ -96,21 +106,25 @@ PropertiesFromEndpoint:
         type: string
       examples:
         - ["name"]
+      interpolation_context:
+        - config
+        - parameters
     retriever:
       description: Requester component that describes how to fetch the properties to query from a remote API endpoint.
       anyOf:
-        - "$ref": "#/definitions/CustomRetriever"
         - "$ref": "#/definitions/SimpleRetriever"
+        - "$ref": "#/definitions/CustomRetriever"
     $parameters:
       type: object
       additionalProperties: true
 ```
 
-### GroupByKeyMergeStrategy
+### `GroupByKeyMergeStrategy`
 
 ```yaml
 GroupByKeyMergeStrategy:
-  type: object
+  title: Group by Key
+  description: Record merge strategy that combines records according to fields on the record.
   required:
     - type
     - key
@@ -124,26 +138,69 @@ GroupByKeyMergeStrategy:
       anyOf:
         - type: string
         - type: array
+          items:
+            type: string
       examples:
         - "id"
         - ["parent_id", "end_date"]
+    $parameters:
+      type: object
+      additionalProperties: true
 ```
 
-## Property Limit Types
+## Property limit types
 
 ### Characters
-When using `characters` as the limit type, the total character count of all property names (including delimiters) is used to determine chunk size.
 
-### Property Count
-When using `property_count` as the limit type, the number of individual properties is used to determine chunk size.
+When using `characters` as the limit type, the total character count of all property names (including delimiters) determines chunk size.
 
-## Usage Examples
+### Property count
 
-### HubSpot: Character-based Chunking
+When using `property_count` as the limit type, the number of individual properties determines chunk size.
 
-HubSpot's API has a limit on the total character count of properties that can be requested. Here's how to configure character-based chunking:
+## Record merging
 
-```yaml
+When the connector needs multiple requests to fetch all properties for a record, it must merge the results back together. The `GroupByKeyMergeStrategy` combines records based on a specified key field.
+
+### Simple key merging
+
+For records with a single unique identifier.
+
+```yaml title="manifest.yaml"
+record_merge_strategy:
+  type: GroupByKeyMergeStrategy
+  key: "id"
+```
+
+### Compound key merging
+
+For records requiring multiple fields to create a unique identifier.
+
+```yaml title="manifest.yaml"
+record_merge_strategy:
+  type: GroupByKeyMergeStrategy
+  key: ["parent_id", "end_date"]
+```
+
+## Always include properties
+
+Some properties must be in every chunk request, typically because they're needed for record merging or API requirements. These properties are automatically added to each chunk and don't count toward the property limit.
+
+```yaml title="manifest.yaml"
+always_include_properties:
+  - dateRange
+  - pivotValues
+```
+
+## Usage examples
+
+Here are examples of how Airbyte has used property chunking in some connectors.
+
+### HubSpot: character-based chunking
+
+HubSpot's API has a limit on the total character count of properties you can request. Here's how to configure character-based chunking.
+
+```yaml title="manifest.yaml"
 request_parameters:
   properties:
     type: QueryProperties
@@ -168,11 +225,11 @@ request_parameters:
       property_limit: 15000
 ```
 
-### LinkedIn Ads: Property Count Chunking
+### LinkedIn Ads: Property count chunking
 
-LinkedIn Ads API limits the number of properties that can be requested per call. Here's how to configure property count-based chunking:
+LinkedIn Ads' API limits the number of properties you can request per call. Here's how to configure property count-based chunking.
 
-```yaml
+```yaml title="manifest.yaml"
 request_parameters:
   fields:
     type: QueryProperties
@@ -250,37 +307,3 @@ request_parameters:
         type: GroupByKeyMergeStrategy
         key: ["end_date", "string_of_pivot_values"]
 ```
-
-## Record Merging
-
-When multiple requests are needed to fetch all properties for a record, the results must be merged back together. The `GroupByKeyMergeStrategy` combines records based on a specified key field.
-
-### Simple Key Merging
-For records with a single unique identifier:
-
-```yaml
-record_merge_strategy:
-  type: GroupByKeyMergeStrategy
-  key: "id"
-```
-
-### Compound Key Merging
-For records requiring multiple fields to create a unique identifier:
-
-```yaml
-record_merge_strategy:
-  type: GroupByKeyMergeStrategy
-  key: ["parent_id", "end_date"]
-```
-
-## Always Include Properties
-
-Some properties must be included in every chunk request, typically because they're needed for record merging or API requirements:
-
-```yaml
-always_include_properties:
-  - dateRange
-  - pivotValues
-```
-
-These properties are automatically added to each chunk and don't count toward the property limit.
