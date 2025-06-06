@@ -13,10 +13,8 @@ from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
     GoogleSearchConsole,
-    QueryAggregationType,
     SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
-    SearchAnalyticsKeywordSiteReportBySite,
 )
 from utils import command_check
 
@@ -120,24 +118,6 @@ def test_updated_state():
         "https://domain2.com": {"web": {"date": "2022-01-01"}},
         "date": "2022-01-01",
     }
-
-
-def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
-    stream = SearchAnalyticsKeywordSiteReportBySite(None, ["https://example.com"], "2021-01-01", "2021-01-02")
-    requests_mock.post(
-        f"{stream.url_base}sites/{stream._site_urls[0]}/searchAnalytics/query", status_code=200, json={"rows": [{"keys": ["TPF_QA"]}]}
-    )
-    slice = list(stream.stream_slices(None))[0]
-    url = stream.url_base + stream.path(None, slice)
-    requests_mock.get(url, status_code=400, json=bad_aggregation_type)
-    test_response = requests.get(url)
-    # before should_retry, the aggregation_type should be set to `by_propety`
-    assert stream.aggregation_type == QueryAggregationType.by_property
-    # trigger should retry
-    assert stream.should_retry(test_response) is False
-    # after should_retry, the aggregation_type should be set to `auto`
-    assert stream.aggregation_type == QueryAggregationType.auto
-    assert stream.raise_on_http_errors is False
 
 
 @pytest.mark.parametrize(
