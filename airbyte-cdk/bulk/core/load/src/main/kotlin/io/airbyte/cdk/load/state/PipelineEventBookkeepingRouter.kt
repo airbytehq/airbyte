@@ -234,7 +234,6 @@ class PipelineEventBookkeepingRouter(
                         BatchEndOfStream(it.descriptor, "bookkeepingRouter", 0, manager.readCount())
                     )
                 }
-                batchStateUpdateQueue.close()
             }
             log.info { "Closing internal control channels" }
             fileTransferQueue.close()
