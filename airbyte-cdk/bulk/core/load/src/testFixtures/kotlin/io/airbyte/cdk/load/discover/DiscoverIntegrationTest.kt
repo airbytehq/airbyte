@@ -53,7 +53,8 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
-            val catalogMessages = messages.filter { it.type == AirbyteMessage.Type.DESTINATION_CATALOG }
+            val catalogMessages =
+                messages.filter { it.type == AirbyteMessage.Type.DESTINATION_CATALOG }
             val testName = tc.name ?: ""
 
             assertEquals(
