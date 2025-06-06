@@ -6,10 +6,10 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
@@ -51,7 +51,7 @@ class ObjectLoaderPartFormatterTest {
     fun setup() {
         pathFactory = mockk()
         bufferedWriterFactory = mockk()
-        stream = mockk()
+        stream = mockk(relaxed = true)
         bufferedWriter = mockk()
         catalog = mockk()
         stateManager = mockk()
@@ -85,11 +85,12 @@ class ObjectLoaderPartFormatterTest {
     private fun makeRecord(): DestinationRecordRaw =
         DestinationRecordRaw(
             stream,
-            AirbyteMessage()
-                .withRecord(
-                    AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
-                ),
-            ObjectTypeWithEmptySchema,
+            DestinationRecordJsonSource(
+                AirbyteMessage()
+                    .withRecord(
+                        AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
+                    )
+            ),
             serializedSizeBytes = 0L
         )
 

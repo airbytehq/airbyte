@@ -227,7 +227,7 @@ internal class S3DataLakeUtilTest {
                     ),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = Meta(),
+                sourceMeta = Meta(),
             )
         val columns =
             mutableListOf(
@@ -295,7 +295,7 @@ internal class S3DataLakeUtilTest {
                     ),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = Meta(),
+                sourceMeta = Meta(),
             )
         val columns =
             mutableListOf(
@@ -354,7 +354,7 @@ internal class S3DataLakeUtilTest {
                     ),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = Meta(),
+                sourceMeta = Meta(),
             )
         val columns =
             mutableListOf(
