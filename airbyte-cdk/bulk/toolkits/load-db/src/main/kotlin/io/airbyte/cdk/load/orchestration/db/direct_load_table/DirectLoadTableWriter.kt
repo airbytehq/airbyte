@@ -75,6 +75,7 @@ class DirectLoadTableWriter(
                             sqlTableOperations,
                             streamStateStore,
                         )
+                    else -> throw SystemErrorException("Unsupported Sync Mode: $this")
                 }
             stream.generationId ->
                 when (stream.importType) {
@@ -102,6 +103,7 @@ class DirectLoadTableWriter(
                             sqlTableOperations,
                             streamStateStore,
                         )
+                    else -> throw SystemErrorException("Unsupported Sync Mode: $this")
                 }
             else ->
                 throw SystemErrorException(
