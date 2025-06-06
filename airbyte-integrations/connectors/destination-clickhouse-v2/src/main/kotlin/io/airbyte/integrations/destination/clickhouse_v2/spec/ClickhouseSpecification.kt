@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -23,23 +24,34 @@ class ClickhouseSpecification: ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order": 1}""")
     val port: String = "8443"
 
+    @get:JsonSchemaTitle("Protocol")
+    @get:JsonPropertyDescription("HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443")
+    @get:JsonProperty("protocol")
+    @get:JsonSchemaInject(json = """{"order": 2, "airbyte_hidden": true}""")
+    val protocol: ClickhouseConnectionProtocol = ClickhouseConnectionProtocol.HTTPS
+
     @get:JsonSchemaTitle("Database")
     @get:JsonPropertyDescription("Name of the database.")
     @get:JsonProperty("database")
-    @get:JsonSchemaInject(json = """{"order": 2}""")
+    @get:JsonSchemaInject(json = """{"order": 3}""")
     val database: String = "default"
 
     @get:JsonSchemaTitle("Username")
     @get:JsonPropertyDescription("Username to use to access the database.")
     @get:JsonProperty("username")
-    @get:JsonSchemaInject(json = """{"order": 3}""")
+    @get:JsonSchemaInject(json = """{"order": 4}""")
     val username: String = "default"
 
     @get:JsonSchemaTitle("Password")
     @get:JsonPropertyDescription("Password associated with the username.")
     @get:JsonProperty("password")
-    @get:JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
+    @get:JsonSchemaInject(json = """{"order": 5, "airbyte_secret": true}""")
     val password: String = ""
+}
+
+enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
+    HTTP("http"),
+    HTTPS("https");
 }
 
 @Singleton
