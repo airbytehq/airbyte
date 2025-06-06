@@ -56,7 +56,7 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters['dimensions'] }}"
           type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: "{{ parameters['aggregation_type'] }}"
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
       paginator:
         type: DefaultPaginator
@@ -156,7 +156,7 @@ definitions:
         - device
         - page
         - query
-      aggregation_type: auto
+      aggregationType: auto
       search_types:
         - web
         - news
@@ -203,7 +203,7 @@ definitions:
       dimensions:
         - date
         - country
-      aggregation_type: auto
+      aggregationType: auto
       search_types:
         - web
         - news
@@ -243,7 +243,7 @@ definitions:
     $parameters:
       dimensions:
         - date
-      aggregation_type: auto
+      aggregationType: auto
       search_types:
         - web
         - news
@@ -292,7 +292,7 @@ definitions:
       dimensions:
         - date
         - device
-      aggregation_type: auto
+      aggregationType: auto
       search_types:
         - web
         - news
@@ -336,7 +336,7 @@ definitions:
       dimensions:
         - date
         - page
-      aggregation_type: auto
+      aggregationType: auto
       search_types:
         - web
         - news
@@ -381,7 +381,7 @@ definitions:
       dimensions:
         - date
         - query
-      aggregation_type: auto
+      aggregationType: auto
       search_types:
         - web
         - news
