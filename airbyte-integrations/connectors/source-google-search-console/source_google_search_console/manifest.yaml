@@ -85,6 +85,22 @@ definitions:
         - type: ListPartitionRouter
           values: "{{ parameters['search_types'] }}"
           cursor_field: search_type
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2021-01-01') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+      step: P3D
+      cursor_granularity: P1D
     state_migrations:
       - type: CustomStateMigration
         class_name: source_google_search_console.components.NestedSubstreamStateMigration
