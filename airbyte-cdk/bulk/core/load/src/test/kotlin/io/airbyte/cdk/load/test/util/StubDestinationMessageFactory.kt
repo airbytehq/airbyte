@@ -6,12 +6,12 @@ package io.airbyte.cdk.load.test.util
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
@@ -28,11 +28,12 @@ object StubDestinationMessageFactory {
         return DestinationRecord(
             stream = stream,
             message =
-                AirbyteMessage()
-                    .withRecord(
-                        AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
-                    ),
-            schema = ObjectTypeWithoutSchema,
+                DestinationRecordJsonSource(
+                    AirbyteMessage()
+                        .withRecord(
+                            AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
+                        )
+                ),
             0L
         )
     }
