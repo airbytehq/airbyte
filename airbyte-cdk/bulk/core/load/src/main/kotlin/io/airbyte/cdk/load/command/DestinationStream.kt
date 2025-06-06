@@ -20,9 +20,32 @@ import jakarta.inject.Singleton
  * Internal representation of destination streams. This is intended to be a case class specialized
  * for usability.
  *
- * TODO: Add missing info like sync type, generation_id, etc.
+ * NOTE ON NAMESPACE MAPPING:
  *
- * TODO: Add dedicated schema type, converted from json-schema.
+ * When run in speed mode ([io.airbyte.cdk.load.config.DataChannelMedium] = [SOCKET]), namespace
+ * mapping will be applied in the destination instead of in the orchestrator. The entails
+ * - the platform will give the destination a catalog with an unmapped namespace and stream names
+ * - the source will send the destination records and control messages with unmapped namespace and
+ * stream names
+ * - the destination will apply the namespace mapping as soon as it receives these messages (all of
+ * its written data/table names/object paths will use the mapped namespace and names, same as in a
+ * non-speed sync)
+ * - when the destination emits control messages (state, stats), it must use the *unmapped*
+ * namespace and names More generally: all inter-application communication will be unmapped, all
+ * communication between the connector and the destination, or between the CDK and the connector
+ * code, will be mapped.
+ *
+ * TO MAKE THIS AS ERROR-PROOF AS POSSIBLE:
+ * - every DestinationStream must be instantiated with an [unmappedName], [unmappedNamespace], AND a
+ * [NamespaceMapper]
+ * - the default namespace mapper will be identity, and will work as expected for standard syncs
+ * - [DestinationStream.Descriptor] will ALWAYS be MAPPED. (All code and tests should follow this
+ * pattern.)
+ * - [NamespaceMapper] is treated as data for the purpose of equality checks (ie, same unmapped
+ * names + and same mapping rules => same stream)
+ * - currently this won't impact the ordering of stream names for [AirbyteValueProxy.FieldAccessor]
+ * s, but only because the only stream name mapping currently supported is prepending a uniform
+ * prefix. IF THAT CHANGES, PROXY FIELD ORDERING WILL BREAK.
  */
 data class DestinationStream(
     val unmappedNamespace: String?,

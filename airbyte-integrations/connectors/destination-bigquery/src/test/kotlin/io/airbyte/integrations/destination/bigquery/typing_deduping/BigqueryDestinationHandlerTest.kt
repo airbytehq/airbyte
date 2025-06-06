@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.TimePartitioning
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
@@ -55,12 +56,14 @@ class BigqueryDestinationHandlerTest {
     fun testColumnsMatch() {
         val stream =
             DestinationStream(
-                Mockito.mock(),
+                "foo",
+                "bar",
                 Append,
                 ObjectType(linkedMapOf("a1" to FieldType(IntegerType, nullable = true))),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
+                namespaceMapper = NamespaceMapper()
             )
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
@@ -80,7 +83,8 @@ class BigqueryDestinationHandlerTest {
     fun testColumnsNotMatch() {
         val stream =
             DestinationStream(
-                Mockito.mock(),
+                "foo",
+                "bar",
                 Append,
                 ObjectType(
                     linkedMapOf(
@@ -91,6 +95,7 @@ class BigqueryDestinationHandlerTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
+                namespaceMapper = NamespaceMapper()
             )
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2", "c1" to "c2"))
         val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
@@ -117,7 +122,8 @@ class BigqueryDestinationHandlerTest {
     fun testClusteringMatches() {
         var stream =
             DestinationStream(
-                Mockito.mock(),
+                "foo",
+                "bar",
                 Dedupe(
                     listOf(listOf("bar")),
                     emptyList(),
@@ -126,6 +132,7 @@ class BigqueryDestinationHandlerTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
+                namespaceMapper = NamespaceMapper()
             )
         var columnNameMapping = ColumnNameMapping(mapOf("bar" to "foo"))
 
@@ -142,12 +149,14 @@ class BigqueryDestinationHandlerTest {
         // Clustering matches
         stream =
             DestinationStream(
-                Mockito.mock(),
+                "foo",
+                "bar",
                 Append,
                 ObjectTypeWithoutSchema,
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
+                namespaceMapper = NamespaceMapper()
             )
         Assertions.assertTrue(clusteringMatches(stream, columnNameMapping, existingTable))
 
@@ -161,7 +170,8 @@ class BigqueryDestinationHandlerTest {
             )
         stream =
             DestinationStream(
-                Mockito.mock(),
+                "foo",
+                "bar",
                 Dedupe(
                     listOf(listOf("a1"), listOf("b1"), listOf("c1"), listOf("d1"), listOf("e1")),
                     emptyList()
@@ -169,7 +179,8 @@ class BigqueryDestinationHandlerTest {
                 ObjectTypeWithoutSchema,
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId = 0
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
             )
         columnNameMapping =
             ColumnNameMapping(
