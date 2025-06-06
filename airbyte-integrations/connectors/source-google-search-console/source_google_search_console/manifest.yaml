@@ -403,10 +403,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+            value: "{{ stream_partition.get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -456,10 +456,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+            value: "{{ stream_partition.get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -505,10 +505,10 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('site_url') }}"
           - path:
               - search_type
-            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+            value: "{{ stream_partition.get('search_type') }}"
       - type: AddFields
         fields:
           - path:
@@ -951,11 +951,11 @@ schemas:
       ctr:
         description: "Click-through rate, calculated as clicks divided by impressions."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position of the search result on the search engine results page."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_country:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -1036,11 +1036,11 @@ schemas:
       ctr:
         description: "The click-through rate (CTR) represents the percentage of total impressions that resulted in a click to the site URL."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position of the site URL in the search results pages for the specific date."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_device:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
@@ -1067,11 +1067,11 @@ schemas:
       ctr:
         description: "Click-through rate represents the ratio of clicks to impressions, showing the effectiveness of your site in attracting clicks from search results."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position of the site's URLs in search results for the given query or queries."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_page:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -1098,11 +1098,11 @@ schemas:
       ctr:
         description: "Click-through rate (CTR) is the ratio of clicks to impressions, indicating the effectiveness of the page in generating clicks."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position at which the page appeared in search results."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_by_query:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -1129,27 +1129,23 @@ schemas:
       ctr:
         description: "The click-through rate (percentage) for the specific query, calculated as clicks divided by impressions."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
       position:
         description: "The average position at which the search result appeared for the specific query."
         type: ["null", "number"]
-        multipleOf: 1e-25
+        multipleOf: 1.e-25
   search_analytics_page_report:
     $schema: "https://json-schema.org/draft-07/schema#"
     type: object
     additionalProperties: true
     properties:
       site_url:
-        description: >-
-          The URL of the website for which the search analytics data is being
-          reported.
+        description: The URL of the website for which the search analytics data is being reported.
         type:
           - "null"
           - string
       search_type:
-        description: >-
-          The type of search (e.g., web, image, video) that led users to the
-          website.
+        description: The type of search (e.g., web, image, video) that led users to the website.
         type:
           - "null"
           - string
@@ -1170,38 +1166,28 @@ schemas:
           - "null"
           - string
       device:
-        description: >-
-          The type of device used by the user for the search query (e.g., desktop,
-          mobile).
+        description: The type of device used by the user for the search query (e.g., desktop, mobile).
         type:
           - "null"
           - string
       clicks:
-        description: >-
-          The total number of times users clicked on search results that led to the
-          linked website.
+        description: The total number of times users clicked on search results that led to the linked website.
         type:
           - "null"
           - integer
       impressions:
-        description: >-
-          The total number of times a search result from the linked website was
-          shown to users.
+        description: The total number of times a search result from the linked website was shown to users.
         type:
           - "null"
           - integer
       ctr:
-        description: >-
-          Click-through rate: The percentage of clicks out of the total impressions
-          for a given search query.
+        description: "Click-through rate: The percentage of clicks out of the total impressions for a given search query."
         type:
           - "null"
           - number
         multipleOf: 1.e-25
       position:
-        description: >-
-          The average position at which the website's search results appeared to
-          users.
+        description: The average position at which the website's search results appeared to users.
         type:
           - "null"
           - number
@@ -1248,9 +1234,7 @@ schemas:
           - "null"
           - integer
       ctr:
-        description: >-
-          The click-through rate, i.e., the percentage of total impressions that
-          resulted in clicks.
+        description: The click-through rate, i.e., the percentage of total impressions that resulted in clicks.
         type:
           - "null"
           - number
