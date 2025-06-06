@@ -1,4 +1,4 @@
-version: 6.6.0
+version: 6.51.0
 
 type: DeclarativeSource
 
@@ -121,8 +121,8 @@ definitions:
             type: RecordSelector
             record_filter:
               condition: "{{ record['id'] == parameters.table_id }}"
-            $parameters:
-              table_id: ""
+              $parameters:
+                table_id: ""
             extractor:
               type: DpathExtractor
               field_path:
@@ -558,9 +558,9 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - transformations
-            - 0
+            - "0"
             - fields
-            - 0
+            - "0"
             - value
           value: "{{ components_values.name }}"
         - type: ComponentMappingDefinition
@@ -684,6 +684,26 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
+  config_normalization_rules:
+    config_migrations:
+        - type: ConfigMigration
+          description: |
+            Remaps the existing config authentication format to a new format
+            OLD: {"api_key": ...}
+            NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["credentials", "api_key"]
+                  value: "{{ config['api_key'] }}"
+              condition: "{{ config.get('api_key', False) }}"
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["credentials", "auth_method"]
+                  value: "api_key"
+              condition: "{{ config.get('api_key', False) }}"
 
 schemas:
   bases:

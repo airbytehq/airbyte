@@ -12,6 +12,8 @@ import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.message.InputMessageOther
@@ -232,6 +234,7 @@ abstract class IntegrationTest(
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
+        namespaceMappingConfig: NamespaceMappingConfig? = null,
     ): List<AirbyteMessage> {
         destinationProcessFactory.testName = testPrettyName
 
@@ -244,6 +247,10 @@ abstract class IntegrationTest(
                 micronautProperties = micronautProperties,
                 dataChannelMedium = dataChannelMedium,
                 dataChannelFormat = dataChannelFormat,
+                namespaceMappingConfig = namespaceMappingConfig
+                        ?: NamespaceMappingConfig(
+                            NamespaceDefinitionType.SOURCE,
+                        ),
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }

@@ -87,7 +87,7 @@ data class InputRecord(
         data = JsonToAirbyteValue().convert(data.deserializeToNode()),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
-        serialized = "",
+        serialized = data,
         fileReference,
         checkpointId,
         unknownFieldNames
@@ -96,10 +96,10 @@ data class InputRecord(
     override fun asProtobuf(): AirbyteMessageProtobuf {
         val recordBuilder =
             AirbyteRecordMessageProtobuf.newBuilder()
-                .setStreamName(stream.descriptor.name)
+                .setStreamName(stream.unmappedName)
                 .setEmittedAtMs(emittedAtMs)
         checkpointId?.let { recordBuilder.setPartitionId(it.value) }
-        stream.descriptor.namespace?.let { recordBuilder.setStreamNamespace(it) }
+        stream.unmappedNamespace?.let { recordBuilder.setStreamNamespace(it) }
         meta?.let { meta ->
             recordBuilder.setMeta(
                 AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
@@ -149,8 +149,8 @@ data class InputRecord(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withStream(stream.descriptor.name)
-                    .withNamespace(stream.descriptor.namespace)
+                    .withStream(stream.unmappedName)
+                    .withNamespace(stream.unmappedNamespace)
                     .withEmittedAt(emittedAtMs)
                     .withData(data.toJson())
                     .also {

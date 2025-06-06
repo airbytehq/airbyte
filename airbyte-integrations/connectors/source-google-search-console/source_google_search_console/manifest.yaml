@@ -199,10 +199,305 @@ definitions:
       schema:
         $ref: "#/schemas/sitemaps"
 
+  # This stream is only used as a parent stream for search_by_keyword substreams
+  search_appearances_stream:
+    type: DeclarativeStream
+    name: search_appearances
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        http_method: POST
+        authenticator: "#/definitions/selective_authenticator"
+        request_headers:
+          Content-Type: "application/json"
+        request_body_json:
+          startDate: "{{ config.get('start_date') }}"
+          endDate: "{{ config.get('end_date') }}"
+          dimensions: ["searchAppearance"]
+          type: "{{ stream_partition.get('search_type') }}"
+          aggregationType: auto
+          dataState: "{{ config.get('data_state', 'final') }}"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: startRow
+          inject_into: body_json
+        page_size_option:
+          type: RequestOption
+          field_name: rowLimit
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 25000
+          inject_on_first_request: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+        - type: ListPartitionRouter
+          values:
+            - web
+            - news
+            - image
+            - video
+          cursor_field: search_type
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - searchAppearance
+            value: "{{ record['keys'][0] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+
+  base_search_analytics_keyword_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.googleapis.com/webmasters/v3
+        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        http_method: POST
+        authenticator: "#/definitions/selective_authenticator"
+        request_headers:
+          Content-Type: "application/json"
+        request_body_json:
+          startDate: "{{ stream_interval.get('start_time') }}"
+          endDate: "{{ stream_interval.get('end_time') }}"
+          dimensions: "{{ parameters.get('dimensions') }}"
+          type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
+          dataState: "{{ config.get('data_state', 'final') }}"
+          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 400
+              error_message: >-
+                Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
+                'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: startRow
+          inject_into: body_json
+        page_size_option:
+          type: RequestOption
+          field_name: rowLimit
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 25000
+          inject_on_first_request: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+      partition_router:
+        - type: ListPartitionRouter
+          values: "{{ config['site_urls'] }}"
+          cursor_field: site_url
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: searchAppearance
+              partition_field: search_appearance
+              stream:
+                $ref: "#/definitions/search_appearances_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2021-01-01') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+      step: P3D
+      cursor_granularity: P1D
+
+  search_analytics_keyword_page_report_stream:
+    $ref: "#/definitions/base_search_analytics_keyword_stream"
+    name: search_analytics_keyword_page_report
+    primary_key:
+      - site_url
+      - date
+      - country
+      - device
+      - query
+      - page
+      - search_type
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
+              - search_type
+            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][3] }}"
+          - path:
+              - page
+            value: "{{ record['keys'][4] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search_analytics_keyword_page_report"
+    $parameters:
+      aggregationType: auto
+      dimensions:
+        - date
+        - country
+        - device
+        - query
+        - page
+
+  search_analytics_keyword_site_report_by_page_stream:
+    $ref: "#/definitions/base_search_analytics_keyword_stream"
+    name: search_analytics_keyword_site_report_by_page
+    primary_key:
+      - site_url
+      - date
+      - country
+      - device
+      - query
+      - search_type
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
+              - search_type
+            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][3] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search_analytics_keyword_site_report_by_page"
+    $parameters:
+      aggregationType: byPage
+      dimensions:
+        - date
+        - country
+        - device
+        - query
+
+  search_analytics_keyword_site_report_by_site_stream:
+    $ref: "#/definitions/base_search_analytics_keyword_stream"
+    name: search_analytics_keyword_site_report_by_site
+    primary_key:
+      - site_url
+      - date
+      - country
+      - device
+      - query
+      - search_type
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - site_url
+            value: "{{ stream_partition['site_url'] }}"
+          - path:
+              - search_type
+            value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][3] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search_analytics_keyword_site_report_by_site"
+    $parameters:
+      aggregationType: byProperty
+      dimensions:
+        - date
+        - country
+        - device
+        - query
+
 streams:
-  - "#/definitions/search_analytics_by_country_stream"
+  # Regular streams
   - "#/definitions/sites_stream"
   - "#/definitions/sitemaps_stream"
+  # Search Analytics streams
+  - "#/definitions/search_analytics_by_country_stream"
+  # Search Analytics Keyword streams
+  - "#/definitions/search_analytics_keyword_page_report_stream"
+  - "#/definitions/search_analytics_keyword_site_report_by_page_stream"
+  - "#/definitions/search_analytics_keyword_site_report_by_site_stream"
 
 schemas:
   search_analytics_by_country:
@@ -339,3 +634,195 @@ schemas:
               type:
                 - "null"
                 - string
+
+  search_analytics_keyword_page_report:
+    $schema: "https://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      site_url:
+        description: The URL of the website being monitored.
+        type:
+          - "null"
+          - string
+      search_type:
+        description: "The type of search (e.g., web, image, video)."
+        type:
+          - "null"
+          - string
+      date:
+        description: The date of the search data collected.
+        type:
+          - "null"
+          - string
+        format: date
+      country:
+        description: The country where the search is made.
+        type:
+          - "null"
+          - string
+      device:
+        description: "The device type used for the search (e.g., desktop, mobile)."
+        type:
+          - "null"
+          - string
+      page:
+        description: The page URL on which the keyword appears in search results.
+        type:
+          - "null"
+          - string
+      query:
+        description: The search query used to find the site.
+        type:
+          - "null"
+          - string
+      clicks:
+        description: The number of clicks for the keyword on a specific page.
+        type:
+          - "null"
+          - integer
+      impressions:
+        description: The number of times the keyword appeared in search results.
+        type:
+          - "null"
+          - integer
+      ctr:
+        description: >-
+          Click-through rate which is the percentage of clicks divided by
+          impressions.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+      position:
+        description: The average position of the keyword on search results pages.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+
+  search_analytics_keyword_site_report_by_page:
+    $schema: "https://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      site_url:
+        description: The URL of the website for which the search analytics data is retrieved.
+        type:
+          - "null"
+          - string
+      search_type:
+        description: "The type of search conducted (e.g., web, image, video)."
+        type:
+          - "null"
+          - string
+      date:
+        description: The date when the search data was recorded.
+        type:
+          - "null"
+          - string
+        format: date
+      country:
+        description: The country from which the search query originated.
+        type:
+          - "null"
+          - string
+      device:
+        description: "The device type used for the search query (e.g., desktop, mobile)."
+        type:
+          - "null"
+          - string
+      query:
+        description: The search query used by the user.
+        type:
+          - "null"
+          - string
+      clicks:
+        description: The number of times users clicked on your website link in search results.
+        type:
+          - "null"
+          - integer
+      impressions:
+        description: The number of times your website link appeared in search results.
+        type:
+          - "null"
+          - integer
+      ctr:
+        description: "Click-through rate: Number of clicks divided by the number of impressions."
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+      position:
+        description: The average position of your website link in search results.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+
+  search_analytics_keyword_site_report_by_site:
+    $schema: "https://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      site_url:
+        description: The URL of the site for which the search analytics data is recorded.
+        type:
+          - "null"
+          - string
+      search_type:
+        description: >-
+          The type of search (e.g., web search, image search) that generated the
+          analytics data.
+        type:
+          - "null"
+          - string
+      date:
+        description: The date for which the search analytics data is recorded.
+        type:
+          - "null"
+          - string
+        format: date
+      country:
+        description: The country from which the search originated.
+        type:
+          - "null"
+          - string
+      device:
+        description: >-
+          The type of device used by the user during the search (e.g., desktop,
+          mobile).
+        type:
+          - "null"
+          - string
+      query:
+        description: The search query used by the user to find the site in search results.
+        type:
+          - "null"
+          - string
+      clicks:
+        description: >-
+          The number of times users clicked on the search result linking to the
+          site.
+        type:
+          - "null"
+          - integer
+      impressions:
+        description: The number of times the site was shown in search results to users.
+        type:
+          - "null"
+          - integer
+      ctr:
+        description: >-
+          Click-through rate represents the percentage of users who clicked on the
+          site's link after seeing it in search results.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25
+      position:
+        description: The average ranking position of the site in search results.
+        type:
+          - "null"
+          - number
+        multipleOf: 1.e-25

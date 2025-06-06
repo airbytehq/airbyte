@@ -3,7 +3,6 @@
 #
 
 import json
-import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
@@ -20,7 +19,6 @@ from airbyte_cdk.utils import AirbyteTracedException
 from source_google_search_console.exceptions import (
     InvalidSiteURLValidationError,
     UnauthorizedOauthError,
-    UnauthorizedServiceAccountError,
     UnidentifiedError,
 )
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
@@ -31,9 +29,6 @@ from source_google_search_console.streams import (
     SearchAnalyticsByDevice,
     SearchAnalyticsByPage,
     SearchAnalyticsByQuery,
-    SearchAnalyticsKeywordPageReport,
-    SearchAnalyticsKeywordSiteReportByPage,
-    SearchAnalyticsKeywordSiteReportBySite,
     SearchAnalyticsPageReport,
     SearchAnalyticsSiteReportByPage,
     SearchAnalyticsSiteReportBySite,
@@ -159,15 +154,11 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
                 SearchAnalyticsByQuery(**stream_config),
                 SearchAnalyticsByPage(**stream_config),
                 SearchAnalyticsAllFields(**stream_config),
-                SearchAnalyticsKeywordPageReport(**stream_config),
                 SearchAnalyticsPageReport(**stream_config),
                 SearchAnalyticsSiteReportBySite(**stream_config),
                 SearchAnalyticsSiteReportByPage(**stream_config),
-                SearchAnalyticsKeywordSiteReportByPage(**stream_config),
-                SearchAnalyticsKeywordSiteReportBySite(**stream_config),
             ]
         )
-
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
 
         return streams

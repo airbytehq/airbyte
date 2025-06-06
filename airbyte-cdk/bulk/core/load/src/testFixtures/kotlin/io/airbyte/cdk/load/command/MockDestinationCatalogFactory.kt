@@ -22,7 +22,8 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
     companion object {
         val stream1 =
             DestinationStream(
-                DestinationStream.Descriptor("test", "stream1"),
+                unmappedNamespace = "test",
+                unmappedName = "stream1",
                 importType = Append,
                 schema =
                     ObjectType(
@@ -35,10 +36,12 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = NamespaceMapper()
             )
         val stream2 =
             DestinationStream(
-                DestinationStream.Descriptor("test", "stream2"),
+                unmappedNamespace = "test",
+                unmappedName = "stream2",
                 importType = Append,
                 schema =
                     ObjectType(
@@ -51,6 +54,7 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = NamespaceMapper()
             )
     }
 
