@@ -239,6 +239,7 @@ class PipelineEventBookkeepingRouter(
             fileTransferQueue.close()
             checkpointQueue.close()
             openStreamQueue.close()
+            batchStateUpdateQueue.close()
             syncManager.markInputConsumed()
         }
     }
