@@ -13,6 +13,7 @@ from source_google_search_console.streams import (
 
 from airbyte_cdk.models import Status
 
+
 @pytest.mark.parametrize(
     "dimensions, expected_status, schema_props, primary_key",
     (
