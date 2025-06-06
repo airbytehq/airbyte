@@ -39,7 +39,7 @@ include = [
 ]
 
 [tool.poe.tasks]
-# This overrides the default task for running unit tests specifically or the source-github connector.
+# This overrides the default task for running unit tests specifically for the source-github connector.
 # This is a workaround to an issue that arises when running all of the unit tests in one execution of pytest 
 # due to incompatibilities between request mocking libraries requests-mock and responses.
 test-unit-tests.shell = '''
