@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.data.ClickHouseFormat
+import com.fasterxml.jackson.databind.node.LongNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -40,8 +41,11 @@ class ClickhouseDirectLoader(
         val protocolRecord = record.asRawJson() as ObjectNode
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.record.emittedAt)
         protocolRecord.put(Constants.FIELD_GEN_ID, Constants.GEN_ID)
-        protocolRecord.put(Constants.FIELD_META, Constants.META)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
+
+        val meta = Jsons.jsonNode(record.rawData.record.meta) as ObjectNode
+        meta.put("sync_id", record.stream.syncId)
+        protocolRecord.put(Constants.FIELD_META, meta)
 
         buffer.write(protocolRecord.toString())
         buffer.write(DELIMITER)
