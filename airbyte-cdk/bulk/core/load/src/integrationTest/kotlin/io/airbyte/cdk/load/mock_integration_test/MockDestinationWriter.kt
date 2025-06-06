@@ -15,8 +15,11 @@ import io.airbyte.cdk.load.test.mock.MockDestinationConfiguration
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
@@ -59,6 +62,10 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 getFilename(stream.descriptor),
                 stream.minimumGenerationId
             )
+        } else {
+            logger.info {
+                "Skipping commit because stream ${stream.descriptor.toPrettyString()} was not successful"
+            }
         }
     }
 }
