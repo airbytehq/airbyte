@@ -7,6 +7,11 @@ check:
   stream_names:
     - sites
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 40) }}"
+  max_concurrency: 100
+
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/google-search-console
