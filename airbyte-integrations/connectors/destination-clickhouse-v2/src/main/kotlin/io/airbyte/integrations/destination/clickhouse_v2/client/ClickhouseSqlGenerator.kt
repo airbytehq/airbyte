@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.client
 
 import com.clickhouse.data.ClickHouseDataType
@@ -37,19 +41,20 @@ class ClickhouseSqlGenerator {
     }
 
     fun createTable(
-      stream: DestinationStream,
-      tableName: TableName,
-      columnNameMapping: ColumnNameMapping,
-      replace: Boolean,
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean,
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
-        val engine = when (stream.importType) {
-            is Dedupe -> "ReplacingMergeTree()"
-            else -> "MergeTree()"
-        }
+        val engine =
+            when (stream.importType) {
+                is Dedupe -> "ReplacingMergeTree()"
+                else -> "MergeTree()"
+            }
 
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
@@ -67,15 +72,16 @@ class ClickhouseSqlGenerator {
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;"
 
-    fun swapTable(sourceTableName: TableName, targetTableName: TableName): String = """
+    fun swapTable(sourceTableName: TableName, targetTableName: TableName): String =
+        """
         ALTER TABLE `${sourceTableName.namespace}`.`${sourceTableName.name}` 
             RENAME TO `${targetTableName.namespace}.${targetTableName.name}`;
         """.trimMargin()
 
     fun copyTable(
-      columnNameMapping: ColumnNameMapping,
-      sourceTableName: TableName,
-      targetTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        sourceTableName: TableName,
+        targetTableName: TableName,
     ): String {
         val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
 
@@ -100,10 +106,10 @@ class ClickhouseSqlGenerator {
     }
 
     fun upsertTable(
-      stream: DestinationStream,
-      columnNameMapping: ColumnNameMapping,
-      sourceTableName: TableName,
-      targetTableName: TableName
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        sourceTableName: TableName,
+        targetTableName: TableName
     ): String {
         val importType = stream.importType as Dedupe
         val pkEquivalent =
@@ -132,7 +138,7 @@ class ClickhouseSqlGenerator {
             val cursor = "`$cursorColumnName`"
             // Build a condition for "new_record is more recent than target_table":
             cursorComparison = // First, compare the cursors.
-                ("""
+            ("""
              (
                target_table.$cursor < new_record.$cursor
                OR (target_table.$cursor = new_record.$cursor AND target_table.$COLUMN_NAME_AB_EXTRACTED_AT < new_record.$COLUMN_NAME_AB_EXTRACTED_AT)
@@ -148,9 +154,7 @@ class ClickhouseSqlGenerator {
 
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
-        if (
-            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN)
-        ) {
+        if (stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
                 "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND $cursorComparison THEN DELETE"
@@ -203,9 +207,9 @@ class ClickhouseSqlGenerator {
      * only need the most-recent record to upsert).
      */
     private fun selectDedupedRecords(
-      stream: DestinationStream,
-      sourceTableName: TableName,
-      columnNameMapping: ColumnNameMapping,
+        stream: DestinationStream,
+        sourceTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
     ): String {
         val columnList: String =
             stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
@@ -258,20 +262,22 @@ class ClickhouseSqlGenerator {
     fun countTable(
         tableName: TableName,
         alias: String = "",
-    ): String = """
+    ): String =
+        """
         SELECT count(1) $alias FROM `${tableName.namespace}`.`${tableName.name}`;
     """.trimMargin()
 
     fun getGenerationId(
         tableName: TableName,
         alias: String = "",
-    ): String = """
+    ): String =
+        """
         SELECT $COLUMN_NAME_AB_GENERATION_ID $alias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1;
     """.trimIndent()
 
     private fun columnsAndTypes(
-      stream: DestinationStream,
-      columnNameMapping: ColumnNameMapping
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
     ): String =
         stream.schema
             .asColumns()
@@ -311,14 +317,12 @@ class ClickhouseSqlGenerator {
             is ObjectType,
             ObjectTypeWithEmptySchema,
             ObjectTypeWithoutSchema -> ClickHouseDataType.JSON
-
             is UnionType ->
                 if (type.isLegacyUnion) {
                     toDialectType(type.chooseType())
                 } else {
-                  ClickHouseDataType.JSON
+                    ClickHouseDataType.JSON
                 }
-
             is UnknownType -> ClickHouseDataType.JSON
         }
 }

@@ -380,11 +380,11 @@ abstract class BasicFunctionalityIntegrationTest(
                                                 Change(
                                                     field = "foo",
                                                     change =
-                                                    AirbyteRecordMessageMetaChange.Change
-                                                        .NULLED,
+                                                        AirbyteRecordMessageMetaChange.Change
+                                                            .NULLED,
                                                     reason =
-                                                    AirbyteRecordMessageMetaChange.Reason
-                                                        .SOURCE_FIELD_SIZE_LIMITATION
+                                                        AirbyteRecordMessageMetaChange.Reason
+                                                            .SOURCE_FIELD_SIZE_LIMITATION
                                                 )
                                             ),
                                         syncId = 42

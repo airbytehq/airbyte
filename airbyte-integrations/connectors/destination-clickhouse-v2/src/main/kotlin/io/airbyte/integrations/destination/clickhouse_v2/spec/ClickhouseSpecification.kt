@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -11,7 +15,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickhouseSpecification: ConfigurationSpecification() {
+class ClickhouseSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Hostname")
     @get:JsonPropertyDescription("Hostname of the database.")
     @get:JsonProperty("hostname")
@@ -51,7 +55,7 @@ class ClickhouseSpecification: ConfigurationSpecification() {
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
     HTTP("http"),
-    HTTPS("https");
+    HTTPS("https")
 }
 
 @Singleton
