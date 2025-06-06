@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
@@ -63,6 +64,9 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
     processFileTaskLegacyStep: ProcessFileTaskLegacyStep,
+    @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+    @Named("oneShotObjectLoaderStep")
+    oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
 ) :
     LoadPipeline(
         selectPipelineSteps(
@@ -78,6 +82,8 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordCompleterStep,
             isLegacyFileTransfer,
             processFileTaskLegacyStep,
+            oneShotObjectLoaderStep,
+            dataChannelMedium,
         )
     ) {
     companion object {
@@ -97,8 +103,12 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
             isLegacyFileTransfer: Boolean,
             legacyProcessFileStep: ProcessFileTaskLegacyStep,
+            oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
+            dataChannelMedium: DataChannelMedium
         ): List<LoadPipelineStep> {
-            return if (hasFileTransfer(catalog)) {
+            return if (dataChannelMedium == DataChannelMedium.SOCKET) {
+                listOf(oneShotObjectLoaderStep)
+            } else if (hasFileTransfer(catalog)) {
                 listOf(
                     routeEventStep,
                     fileChunkStep,

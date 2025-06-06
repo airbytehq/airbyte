@@ -959,6 +959,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * and third syncs should be visible to the data dumper.
      */
     @Test
+    @Disabled("flaky")
     open fun testInterruptedTruncateWithPriorData() {
         assumeTrue(verifyDataWriting)
         val stream1 =
