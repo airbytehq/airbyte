@@ -252,7 +252,7 @@ spec:
               - type: AddedFieldDefinition
                 path: ["custom_reports_array"]
                 value: "{{ config['custom_reports'] }}"
-            condition: "{{ config.get('custom_reports') }}"
+            condition: "{{ config.get('custom_reports', False) }}"
     validations:
       - type: DpathValidator
         field_path: ["custom_reports_array"]
