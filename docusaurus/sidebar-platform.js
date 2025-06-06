@@ -15,8 +15,11 @@ const buildAConnector = {
     {
       type: "category",
       label: "Connector Builder",
+      link: {
+        type: "doc",
+        id: "connector-development/connector-builder-ui/overview",
+      },
       items: [
-        "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
         "connector-development/connector-builder-ui/custom-components",
