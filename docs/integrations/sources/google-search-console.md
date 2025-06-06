@@ -230,6 +230,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.0 | 2025-06-04 | [61335](https://github.com/airbytehq/airbyte/pull/61335) | Migrate `SearchAnalyticsAllFields`, `SearchAnalyticsByDate`, `SearchAnalyticsByDevice`, `SearchAnalyticsByPage`, and `SearchAnalyticsByQuery` to low-code |
 | 1.7.0 | 2025-06-05 | [61332](https://github.com/airbytehq/airbyte/pull/61332) | Migrate search_by_keyword streams to low-code |
 | 1.6.0 | 2025-06-04 | [61380](https://github.com/airbytehq/airbyte/pull/61380) | Promoting release candidate 1.6.0-rc.1 to a main version. |
 | 1.6.0-rc.1 | 2025-06-02 | [60928](https://github.com/airbytehq/airbyte/pull/60928) | Migrate `search_analytics_by_country`, `sites`, and `sitemaps` to low-code |
