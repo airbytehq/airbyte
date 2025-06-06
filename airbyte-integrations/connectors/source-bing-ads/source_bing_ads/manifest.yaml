@@ -391,6 +391,14 @@ definitions:
             path:
               - ForwardCompatibilityMap
             value: "{{ record.get('ForwardCompatibilityMap') if record.get('ForwardCompatibilityMap') and record.get('ForwardCompatibilityMap') | length > 0 else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - Path1
+            value: "{{ none if record.get('Path1') == '' else record.get('Path1')}}"
+          - type: AddedFieldDefinition
+            path:
+              - Path2
+            value: "{{ none if record.get('Path2') == '' else record.get('Path2')}}"
       - type: RemoveFields
         field_pointers:
           - - Descriptions
@@ -446,6 +454,36 @@ definitions:
           - - _tmp_Images_AssetLink
           - - _tmp_LongHeadlines_AssetLink
           - - _tmp_Videos_AssetLink
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - Descriptions
+            value: "{{ none if record.get('Descriptions', {}).get('AssetLink') == none else record.get('Descriptions') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalMobileUrls
+            value: "{{ none if record.get('FinalMobileUrls', {}).get('string') == none else record.get('FinalMobileUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalUrls
+            value: "{{ none if record.get('FinalUrls', {}).get('string') == none else record.get('FinalUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Headlines
+            value: "{{ none if record.get('Headlines', {}).get('AssetLink') == none else record.get('Headlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Images
+            value: "{{ none if record.get('Images', {}).get('AssetLink') == none else record.get('Images') }}"
+          - type: AddedFieldDefinition
+            path:
+              - LongHeadlines
+            value: "{{ none if record.get('LongHeadlines', {}).get('AssetLink') == none else record.get('LongHeadlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Videos
+            value: "{{ none if record.get('Videos', {}).get('AssetLink') == none else record.get('Videos') }}"
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
