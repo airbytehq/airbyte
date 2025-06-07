@@ -193,6 +193,28 @@ jobs:
             ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
             spec
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
+
+      - name: Fetch connector secrets
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run connector tests
+        env:
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
+          DOCKER_BUILDKIT: 1
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
@@ -267,9 +289,9 @@ jobs:
           DOCKER_DEFAULT_PLATFORM: linux/amd64
           DOCKER_BUILDKIT: 1
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          cd airbyte-integrations/connectors/${{ matrix.connector }}
-          airbyte-cdk connector test ${{ matrix.connector }}
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
@@ -341,9 +363,9 @@ jobs:
           DOCKER_DEFAULT_PLATFORM: linux/amd64
           DOCKER_BUILDKIT: 1
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          cd airbyte-integrations/connectors/${{ matrix.connector }}
-          airbyte-cdk connector test ${{ matrix.connector }}
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
