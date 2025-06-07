@@ -184,6 +184,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // Ignore events which can't be deserialized into records.
                 ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
+            deserializedRecord.toString() // TEMP
 //            streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes) // TEMP
             return EventType.RECORD_EMITTED
         }
