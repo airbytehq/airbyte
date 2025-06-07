@@ -1,14 +1,17 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.toProto
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -46,28 +49,15 @@ interface SelectQuerier {
     }
 }
 
-data class FieldValueEncoder(val value: Any?, val jsonEncoder: JsonEncoder<Any>)
-typealias InternalRow = MutableMap<String, FieldValueEncoder>
-
-
-fun InternalRow.toJson(parentNode: ObjectNode): ObjectNode {
-    for ((columnId, value) in this) {
-        val encodedValue = value.jsonEncoder.encode(value.value!!)
-        parentNode.set<JsonNode>(columnId, encodedValue ?: NullNode.instance)
-    }
-    return parentNode
-}
-
-/*
-fun InternalRow.toProto(): AirbyteRecordMessage.AirbyteRecordMessageProtobuf =
-    AirbyteRecordMessage.AirbyteRecordMessageProtobuf.newBuilder()
+    /*AirbyteRecordMessage.AirbyteRecordMessageProtobuf.newBuilder()
         .apply {
             for ((columnId, value) in this@toProto) {
                 addData(AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setInteger(value.value as Long)) // Adjust based on actual type
             }
         }
-        .build()
-*/
+        .build()*/
+
+
 /** Default implementation of [SelectQuerier]. */
 @Singleton
 class JdbcSelectQuerier(
@@ -206,6 +196,12 @@ class JdbcSelectQuerier(
 
             // Flag that the current row has been read before returning.
             isReady = false
+
+/*
+            val p: AirbyteRecordMessageProtobuf.Builder = resultRow.data.toProto(AirbyteRecordMessageProtobuf.newBuilder())
+            val b: AirbyteRecordMessageProtobuf? = p.build()
+            log.info { b }
+*/
             return resultRow
         }
 

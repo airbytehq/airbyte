@@ -35,7 +35,7 @@ class BoostedOutputConsumerFactory(
 }
 
 class BoostedOutputConsumer(
-    private val socket: SocketWrapper,
+    /*private*/ val socket: SocketWrapper,
     clock: Clock,
     val bufferByteSizeThresholdForFlush: Int,
     private val additionalProperties: Map<String, String>,

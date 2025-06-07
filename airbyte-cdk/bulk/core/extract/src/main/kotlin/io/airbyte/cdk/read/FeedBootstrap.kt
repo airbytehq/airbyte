@@ -13,11 +13,17 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
+import io.airbyte.cdk.output.sockets.toJson
+import io.airbyte.cdk.output.sockets.toProto
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage.*
 import java.time.ZoneOffset
 
 /**
@@ -83,9 +89,9 @@ sealed class FeedBootstrap<T : Feed>(
             outputer.close()
         }
 
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
+        override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData)
+                acceptWithoutChanges(recordData.toJson())
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -94,7 +100,7 @@ sealed class FeedBootstrap<T : Feed>(
                             .withChange(fieldValueChange.protocolChange())
                             .withReason(fieldValueChange.protocolReason())
                     }
-                acceptWithChanges(recordData, protocolChanges)
+                acceptWithChanges(recordData.toJson(), protocolChanges)
             }
         }
 
@@ -179,6 +185,138 @@ sealed class FeedBootstrap<T : Feed>(
                 )
     }
 
+    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer) :
+        StreamRecordConsumer {
+        val outputer: ProtoRecordOutputConsumer = boostedOutputConsumer
+
+        override fun close() {
+            outputer.close()
+        }
+
+        override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
+            if (changes.isNullOrEmpty()) {
+                acceptWithoutChanges(recordData.toProto(reusedRecordMessageWithoutChanges))
+            } else {
+                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
+                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
+                        AirbyteRecordMessageMetaChange()
+                            .withField(field.id)
+                            .withChange(fieldValueChange.protocolChange())
+                            .withReason(fieldValueChange.protocolReason())
+                    }
+//                acceptWithChanges(recordData.toJson(), protocolChanges) // TEMP
+            }
+        }
+
+        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
+            synchronized(this) {
+/*
+                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+                }
+*/
+                outputer.accept(
+                    reusedMessageWithoutChanges
+                        .setRecord(recordData.build())
+                        .build()
+                )
+            }
+        }
+
+/*
+        private fun acceptWithChanges(
+            recordData: AirbyteRecordMessageProtobuf.Builder,
+            changes: List<AirbyteRecordMessageMetaChange>
+        ) {
+            synchronized(this) {
+                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+                }
+                reusedRecordMeta.changes = changes
+                outputer.accept(reusedMessageWithChanges)
+            }
+        }
+*/
+
+        private val precedingGlobalFeed: Global? =
+            stateManager.feeds
+                .filterIsInstance<Global>()
+                .filter { it.streams.contains(stream) }
+                .firstOrNull()
+
+        // Ideally we should check if sync is trigger-based CDC by checking source connector
+        // configuration. But we don't have that information here. So this is just a hacky solution
+        private val isTriggerBasedCdc: Boolean =
+            precedingGlobalFeed == null &&
+                metaFieldDecorator.globalCursor != null &&
+                stream.schema.none { it.id == metaFieldDecorator.globalCursor?.id } &&
+                stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
+                stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
+
+/*        private val defaultRecordData: ObjectNode =
+            Jsons.objectNode().also { recordData: ObjectNode ->
+                stream.schema.forEach { recordData.putNull(it.id) }
+                if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
+                    metaFieldDecorator.decorateRecordData(
+                        timestamp = outputer.recordEmittedAt.atOffset(ZoneOffset.UTC),
+                        globalStateValue =
+                            if (precedingGlobalFeed != null)
+                                stateManager.scoped(precedingGlobalFeed).current()
+                            else null,
+                        stream,
+                        recordData,
+                    )
+                }
+            }*/
+
+//        private val reusedRecordData: ObjectNode = defaultRecordData.deepCopy()
+
+        private val reusedRecordMessageWithoutChanges: AirbyteRecordMessageProtobuf.Builder =
+            AirbyteRecordMessageProtobuf.newBuilder()
+                .setStreamName(stream.name)
+                .setStreamNamespace(stream.namespace)
+                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+//                .setData()
+//                .setMeta()
+
+            /*AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(stream.name)
+                        .withNamespace(stream.namespace)
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
+                        .withData(reusedRecordData)
+                )*/
+
+        private val reusedRecordMeta = AirbyteRecordMessageMeta()
+
+        val reusedMessageWithoutChanges: AirbyteMessageProtobuf.Builder =
+            AirbyteMessageProtobuf.newBuilder()
+
+
+        private val reusedRecordMessageWithChanges: AirbyteRecordMessageProtobuf.Builder =
+            AirbyteRecordMessageProtobuf.newBuilder()
+                .setStreamName(stream.name)
+                .setStreamNamespace(stream.namespace)
+                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+//                .setData()
+//                .setMeta()
+
+/*
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(stream.name)
+                        .withNamespace(stream.namespace)
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
+                        .withData(reusedRecordData)
+                        .withMeta(reusedRecordMeta)
+                )
+*/
+    }
+
     companion object {
 
         @JvmStatic
@@ -255,7 +393,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?)
     fun close()
 }
 
@@ -294,4 +432,5 @@ class StreamFeedBootstrap(
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = streamRecordConsumers(boostedOutputConsumer)[feed.id]!!
+    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(feed.streams.get(0), protoOutputConsumer)
 }

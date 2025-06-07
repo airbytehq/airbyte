@@ -6,10 +6,13 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketWrapper
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
@@ -88,7 +91,11 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         })
 
     fun out(row: SelectQuerier.ResultRow) {
-        streamRecordConsumer.accept(row.data.toJson(Jsons.objectNode()), row.changes)
+        val s = streamState.streamFeedBootstrap.protoStreamRecordConsumer(ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+            Clock.systemUTC(), 256))
+            s.accept(row.data, row.changes)
+
+//        streamRecordConsumer.accept(row.data, row.changes)
     }
 
     override fun releaseResources() {
@@ -112,7 +119,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         while (s != null) {
             when (s) {
                 is AirbyteStateMessage -> boostedOutputConsumer?.accept(s)
-                is AirbyteStreamStatusTraceMessage -> boostedOutputConsumer?.accept(s)
+                is AirbyteStreamStatusTraceMessage -> {
+                    val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                        Clock.systemUTC(), 256)
+                    o.accept(s)
+//                    boostedOutputConsumer?.accept(s)
+                }
             }
             s = PartitionReader.pendingStates.poll()
         }

@@ -1,6 +1,7 @@
 package io.airbyte.cdk.output.sockets
 
 import io.airbyte.cdk.output.sockets.SocketWrapper.SocketStatus.*
+import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.OutputStream
@@ -47,14 +48,18 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
     override var outputStream: OutputStream? = null
     override val status: SocketWrapper.SocketStatus
         get() {
-            if (socketStatus.get() == SOCKET_READY) ensureSocketState()
+            if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
         }
 
     private fun ensureSocketState() {
         try {
+            val s = AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
+                .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
+                .build()
+            s.writeDelimitedTo(outputStream!!)
             // Ensure the socket is still open and writable
-            outputStream?.write('\n'.code)
+//            outputStream?.write('\n'.code)
         } catch (e: Exception) {
             logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdownSocket()

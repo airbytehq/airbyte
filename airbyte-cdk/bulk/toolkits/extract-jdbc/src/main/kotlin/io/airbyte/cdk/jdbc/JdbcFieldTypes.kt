@@ -49,13 +49,6 @@ abstract class JdbcFieldType<R>(
     val jdbcGetter: JdbcGetter<out R>,
     override val jsonEncoder: JsonEncoder<R>,
 ) : FieldType, JdbcGetter<JsonNode> {
-    fun conv(decoded: Any?): JsonNode {
-        return when (decoded) {
-            null -> NullCodec.encode(null)
-            else -> jsonEncoder.encode(decoded as R)
-        }
-    }
-
     override fun get(
         rs: ResultSet,
         colIdx: Int,
