@@ -5,10 +5,12 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Clock
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -365,13 +367,23 @@ class FeedReader(
                 when (message) {
                     is AirbyteStateMessage -> {
                         when (finalCheckpoint) {
-                            true -> boostedOutputConsumer?.accept(message)
+                            true -> {
+                                val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                                    Clock.systemUTC(), 256)
+                                o.accept(message)
+//                                boostedOutputConsumer?.accept(message)
+                            }
                             false -> PartitionReader.pendingStates.add(message)
                         }
                     }
                     is AirbyteStreamStatusTraceMessage -> {
                         when (finalCheckpoint) {
-                            true -> boostedOutputConsumer?.accept(message)
+                            true -> {
+                                val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                                    Clock.systemUTC(), 256)
+                                o.accept(message)
+//                                boostedOutputConsumer?.accept(message)
+                            }
                             false -> PartitionReader.pendingStates.add(message)
                         }
                     }
