@@ -141,10 +141,6 @@ class DirectLoadTableAppendTruncateStreamLoader(
      * - true: Writing to temp table, will need to copy/overwrite to real table later
      * - false: Writing directly to real table, no additional action needed at close
      */
-    //when would I write to the real table?
-    // 2 streams
-    // 1 fails one succeeds
-    // next attempt
     private var isWritingToTemporaryTable: Boolean = false
 
     override suspend fun start() {
