@@ -49,6 +49,7 @@ CSV
 CSVs
 API
 APIs
+OAuth
 
 # Airbyte connectors
 
