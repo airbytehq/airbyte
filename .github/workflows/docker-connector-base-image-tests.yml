@@ -229,6 +229,24 @@ jobs:
             ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
             spec
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          # TODO: Switch back to direct installation when Docker-based tests are ready
+          # uv tool install 'airbyte-cdk[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests#subdirectory=airbyte-cdk[dev]'
+
+      - name: Fetch connector secrets
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run connector tests
+        run: |
+          # TODO: Add --docker-only flag when available to only run image-based tests
+          airbyte-cdk connector test ${{ matrix.connector }}
+
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
@@ -296,6 +314,24 @@ jobs:
             ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
             spec
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          # TODO: Switch back to direct installation when Docker-based tests are ready
+          # uv tool install 'airbyte-cdk[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests#subdirectory=airbyte-cdk[dev]'
+
+      - name: Fetch connector secrets
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run connector tests
+        run: |
+          # TODO: Add --docker-only flag when available to only run image-based tests
+          airbyte-cdk connector test ${{ matrix.connector }}
+
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
@@ -360,6 +396,24 @@ jobs:
             --rm \
             ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
             spec
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          # TODO: Switch back to direct installation when Docker-based tests are ready
+          # uv tool install 'airbyte-cdk[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests#subdirectory=airbyte-cdk[dev]'
+
+      - name: Fetch connector secrets
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run connector tests
+        run: |
+          # TODO: Add --docker-only flag when available to only run image-based tests
+          airbyte-cdk connector test ${{ matrix.connector }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
