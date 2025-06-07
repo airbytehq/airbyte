@@ -21,9 +21,9 @@ ENV APPLICATION="${CONNECTOR_NAME}"
 # Add the connector TAR file and extract it (try connector-specific name first, fallback to airbyte-app.tar)
 COPY ./build/distributions/ /tmp/distributions/
 RUN if [ -f /tmp/distributions/${CONNECTOR_NAME}.tar ]; then \
-        cp /tmp/distributions/${CONNECTOR_NAME}.tar /tmp/connector.tar; \
+        cp /tmp/distributions/${CONNECTOR_NAME}.tar /tmp/${CONNECTOR_NAME}.tar; \
     else \
-        cp /tmp/distributions/airbyte-app.tar /tmp/connector.tar; \
+        cp /tmp/distributions/airbyte-app.tar /tmp/${CONNECTOR_NAME}.tar; \
     fi && \
     tar xf /tmp/connector.tar --strip-components=1 -C /airbyte && \
     rm -rf /tmp/connector.tar /tmp/distributions && \
