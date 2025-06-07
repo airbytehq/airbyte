@@ -8,7 +8,7 @@ FROM ${BASE_IMAGE}
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 # Set-up groups, users, and directories
-RUN id -u airbyte >/dev/null 2>&1 || adduser --uid 1000 --system --group --no-create-home airbyte
+RUN adduser --uid 1000 --system --group --no-create-home airbyte
 
 # Create the cache airbyte directories and set the right permissions
 RUN mkdir --mode 755 /airbyte && \
