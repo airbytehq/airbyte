@@ -44,11 +44,12 @@ typealias InternalRow = MutableMap<String, FieldValueEncoder>
 fun InternalRow.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
     for ((columnId, value) in this) {
         val encodedValue = value.jsonEncoder.encode(value.value!!)
-        parentNode.set<JsonNode>(columnId, encodedValue ?: NullNode.instance)
+        parentNode.set<JsonNode>(columnId, encodedValue)
     }
     return parentNode
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
     return when (this) {
         is LongCodec, -> LongProtoEncoder
@@ -63,7 +64,6 @@ fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
         is ShortCodec,
         is ByteCodec,
         is DoubleCodec,
-        is FloatCodec,
         is JsonBytesCodec,
         is JsonStringCodec,
         is UrlCodec,

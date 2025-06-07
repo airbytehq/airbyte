@@ -196,7 +196,7 @@ sealed class FeedBootstrap<T : Feed>(
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toProto(reusedRecordMessageWithoutChanges))
-            } else {
+            } /*else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
                         AirbyteRecordMessageMetaChange()
@@ -205,7 +205,7 @@ sealed class FeedBootstrap<T : Feed>(
                             .withReason(fieldValueChange.protocolReason())
                     }
 //                acceptWithChanges(recordData.toJson(), protocolChanges) // TEMP
-            }
+            }*/
         }
 
         private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
