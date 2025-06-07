@@ -3,16 +3,20 @@
 
 # Manifest-Only connector Dockerfile for Airbyte
 
-# Manifest-Only connector images are built on top of SDM connector image
-ARG BASE_IMAGE=airbyte/source-manifest-only:latest
+# Manifest-Only connector images are built on top of source-declarative-manifest image
+ARG BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest
 
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_SNAKE_NAME
 ARG CONNECTOR_NAME
+ARG CONNECTOR_VERSION
 
 WORKDIR /airbyte/integration_code
 
+# Copy all files to integration_code first
 COPY . ./
 
-ENV AIRBYTE_ENTRYPOINT="python ./main.py"
-ENTRYPOINT ["python", "./main.py"]
+# Create source_declarative_manifest directory and copy files to expected locations
+RUN mkdir -p ./source_declarative_manifest && \
+    if [ -f manifest.yaml ]; then cp manifest.yaml ./source_declarative_manifest/manifest.yaml; fi && \
+    if [ -f components.py ]; then cp components.py ./source_declarative_manifest/components.py; fi
