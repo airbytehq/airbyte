@@ -91,6 +91,8 @@ and [Instagram Insights API documentation](https://developers.facebook.com/docs/
     - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
     - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Profile Activity](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Navigation](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
     - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
@@ -146,6 +148,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0-rc.2 | 2025-02-22 | [54364](https://github.com/airbytehq/airbyte/pull/54678) | Add streams profile_activity & navigation |
 | 4.1.0-rc.1   | 2025-05-27 | [60848](https://github.com/airbytehq/airbyte/pull/60848) | Add `views` metric to `StoryInsights` and `MediaInsights` streams. |
 | 4.0.5 | 2025-05-10 | [59798](https://github.com/airbytehq/airbyte/pull/59798) | Update dependencies |
 | 4.0.4 | 2025-05-03 | [59243](https://github.com/airbytehq/airbyte/pull/59243) | Update dependencies |

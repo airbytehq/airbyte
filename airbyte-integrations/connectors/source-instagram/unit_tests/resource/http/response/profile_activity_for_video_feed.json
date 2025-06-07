@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "id": "18026588782970433",
+      "breakdown": "action_type",
+      "page_id": "103326699331825",
+      "business_account_id": "17841457777488191",
+      "metric": "profile_activity",
+      "value": {
+        "bio_link_clicked": 2
+      }
+    }
+  ]
+}
