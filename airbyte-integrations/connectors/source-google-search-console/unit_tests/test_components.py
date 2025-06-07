@@ -1,7 +1,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import pytest
-from source_google_search_console.components import NestedSubstreamStateMigration
+from source_google_search_console.components import (
+    CustomReportExtractDimensionsFromKeys,
+    CustomReportSchemaLoader,
+    NestedSubstreamStateMigration,
+)
+
+from airbyte_cdk.sources.types import Record
 
 
 @pytest.mark.parametrize(
@@ -56,3 +62,59 @@ def test_nested_substream(stream_state, expected_should_migrate, expected_migrat
     if should_migrate:
         migrated_state = component.migrate(stream_state=stream_state)
         assert migrated_state == expected_migrated_state
+
+
+def test_custom_report_extract_dimensions_from_keys():
+    expected_record = {
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 11,
+        "site_url": "sc-domain:airbyte.io",
+        "search_type": "web",
+        "date": "2025-05-28",
+        "country": "usa",
+        "device": "desktop",
+    }
+
+    component = CustomReportExtractDimensionsFromKeys(dimensions=["date", "country", "device"])
+
+    record = {
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 11,
+        "site_url": "sc-domain:airbyte.io",
+        "search_type": "web",
+        "keys": ["2025-05-28", "usa", "desktop"],
+    }
+    component.transform(record=record)
+
+    assert record == expected_record
+
+
+def test_custom_report_schema_loader():
+    expected_schema = {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "additionalProperties": True,
+        "properties": {
+            "clicks": {"type": ["null", "integer"]},
+            "impressions": {"type": ["null", "integer"]},
+            "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
+            "position": {"type": ["null", "number"], "multipleOf": 1e-25},
+            "site_url": {"type": ["null", "string"]},
+            "search_type": {"type": ["null", "string"]},
+            "date": {"type": ["null", "string"], "format": "date"},
+            "country": {"type": ["null", "string"]},
+            "device": {"type": ["null", "string"]},
+            "page": {"type": ["null", "string"]},
+            "query": {"type": ["null", "string"]},
+        },
+    }
+
+    schema_loader = CustomReportSchemaLoader(dimensions=["date", "country", "device", "page", "query"])
+
+    actual_schema = schema_loader.get_json_schema()
+
+    assert actual_schema == expected_schema
