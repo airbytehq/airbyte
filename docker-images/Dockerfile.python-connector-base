@@ -11,11 +11,11 @@ RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN id -u airbyte >/dev/null 2>&1 || adduser --uid 1000 --system --group --no-create-home airbyte
 
 # Create the cache airbyte directories and set the right permissions
-RUN mkdir -p --mode 755 /airbyte && \
-    mkdir -p --mode 755 /custom_cache && \
-    mkdir -p /secrets && \
-    mkdir -p /config && \
-    mkdir -p /nonexistent && \
+RUN mkdir --mode 755 /airbyte && \
+    mkdir --mode 755 /custom_cache && \
+    mkdir /secrets && \
+    mkdir /config && \
+    mkdir /nonexistent && \
     chown airbyte:airbyte /airbyte && \
     chown -R airbyte:airbyte /custom_cache && \
     chown -R airbyte:airbyte /secrets && \
