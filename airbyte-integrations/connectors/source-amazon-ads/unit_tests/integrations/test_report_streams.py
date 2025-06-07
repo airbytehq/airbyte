@@ -100,6 +100,46 @@ class TestDisplayReportStreams:
         ]
         assert len(output.records) == 1
 
+    def test_given_file_when_read_brands_report_then_return_records(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """
+        Check brands report streams: normal stream read flow for multiple streams
+        This test iterates over several Sponsored Brands report streams, mocking the API responses for each.
+        It ensures that each stream can successfully initiate, check status, and download a report.
+        Request structure:
+            1. POST request to initiate report processing for each stream.
+            2. GET request to check report status and retrieve the download URL for each stream.
+            3. GET request to download the gzipped report file for each stream.
+        """
+        number_of_records = 0
+        for stream_name in (
+            "sponsored_brands_campaigns_report_stream",
+        ):
+            report_id = f"report-id-brands-{stream_name}"
+            download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+            requests_mock.post(
+                "https://advertising-api.amazon.com/reporting/reports",
+                json={"reportId": report_id, "status": "PENDING"},
+                status_code=202,
+                request_headers={"Authorization": "Bearer test-access-token"},
+            )
+            requests_mock.get(
+                f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+                json={"status": "COMPLETED", "url": download_url},
+                status_code=200,
+                request_headers={"Authorization": "Bearer test-access-token"},
+            )
+            report_data = gzip.compress(b'[{"record": "data"}]')
+            requests_mock.get(
+                download_url,
+                content=report_data,
+                status_code=200,
+            )
+            output = self._read(config, stream_name)
+            number_of_records += len(output.records)
+        assert number_of_records == 1
+
     def test_given_file_when_read_display_report_then_return_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
@@ -234,6 +274,50 @@ class TestDisplayReportStreams:
             assert len(warning_logs) == 0
             requests_mock.reset()
 
+    def test_given_known_error_when_read_brands_report_then_partially_skip_records(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """
+        Check partial error handling for Sponsored Brands report streams
+        This test simulates errors for some streams by mocking empty reports for odd-indexed streams.
+        It ensures that the source skips failed streams gracefully while processing successful ones.
+        Request structure:
+            1. POST request to initiate report processing for each stream.
+            2. GET request to check report status and retrieve the download URL for each stream.
+            3. GET request to download the gzipped report file (data for even-indexed, empty for odd-indexed).
+        """
+        streams = (
+            "sponsored_brands_campaigns_report_stream",
+        )
+        number_of_records = 0
+        for i, stream_name in enumerate(streams):
+            report_id = f"report-id-brands-{stream_name}"
+            download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+            requests_mock.post(
+                "https://advertising-api.amazon.com/reporting/reports",
+                json={"reportId": report_id, "status": "PENDING"},
+                status_code=202,
+                request_headers={"Authorization": "Bearer test-access-token"},
+            )
+            requests_mock.get(
+                f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+                json={"status": "COMPLETED", "url": download_url},
+                status_code=200,
+                request_headers={"Authorization": "Bearer test-access-token"},
+            )
+            report_data = gzip.compress(b'[{"record": "data"}]') if i % 2 == 0 else gzip.compress(b"[]")
+            requests_mock.get(
+                download_url,
+                content=report_data,
+                status_code=200,
+            )
+            output = self._read(config, stream_name)
+            number_of_records += len(output.records)
+            if i % 2 == 1:
+                warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
+                assert len(warning_logs) == 0
+        assert number_of_records == 1
+
     def test_given_known_error_when_read_display_report_then_partially_skip_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
@@ -286,6 +370,7 @@ class TestDisplayReportStreams:
         "stream_name",
         [
             "sponsored_brands_v3_report_stream_daily",
+            "sponsored_brands_campaigns_report_stream_daily",
             "sponsored_display_campaigns_report_stream_daily",
             "sponsored_display_adgroups_report_stream_daily",
             "sponsored_display_productads_report_stream_daily",

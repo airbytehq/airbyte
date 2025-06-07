@@ -1310,6 +1310,182 @@ definitions:
               filters: []
               timeUnit: DAILY
               format: GZIP_JSON
+              
+    sponsored_brands_campaigns_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_campaigns_report_stream
+      primary_key: ["reportDate", "campaignId", 'profileId']
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "campaigns report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["campaign"]
+              columns:
+                - "startDate"
+                - "endDate"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "campaignBudgetType"
+                - "campaignId"
+                - "campaignName"
+                - "campaignRuleBasedBudgetAmount"
+                - "campaignStatus"
+                - "clicks"
+                - "cost"
+                - "costType"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "impressions"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "longTermROAS"
+                - "longTermSales"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "newToBrandUnitsSoldPercentage"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromoted"
+                - "topOfSearchImpressionShare"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewClickThroughRate"
+                - "viewabilityRate"
+                - "viewableImpressions"
+              reportTypeId: sbCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_brands_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_campaigns_report_stream_daily
+      primary_key: ["reportDate", "campaignId", 'profileId']
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "campaigns report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["campaign"]
+              columns:
+              - "date"
+              - "addToCart"
+              - "addToCartClicks"
+              - "addToCartRate"
+              - "addToList"
+              - "addToListFromClicks"
+              - "brandedSearches"
+              - "brandedSearchesClicks"
+              - "campaignBudgetAmount"
+              - "campaignBudgetCurrencyCode"
+              - "campaignBudgetType"
+              - "campaignId"
+              - "campaignName"
+              - "campaignRuleBasedBudgetAmount"
+              - "campaignStatus"
+              - "clicks"
+              - "cost"
+              - "costType"
+              - "detailPageViews"
+              - "detailPageViewsClicks"
+              - "eCPAddToCart"
+              - "impressions"
+              - "kindleEditionNormalizedPagesRead14d"
+              - "kindleEditionNormalizedPagesRoyalties14d"
+              - "longTermROAS"
+              - "longTermSales"
+              - "newToBrandDetailPageViewRate"
+              - "newToBrandDetailPageViews"
+              - "newToBrandDetailPageViewsClicks"
+              - "newToBrandECPDetailPageView"
+              - "newToBrandPurchases"
+              - "newToBrandPurchasesClicks"
+              - "newToBrandPurchasesPercentage"
+              - "newToBrandPurchasesRate"
+              - "newToBrandSales"
+              - "newToBrandSalesClicks"
+              - "newToBrandSalesPercentage"
+              - "newToBrandUnitsSold"
+              - "newToBrandUnitsSoldClicks"
+              - "newToBrandUnitsSoldPercentage"
+              - "purchases"
+              - "purchasesClicks"
+              - "purchasesPromoted"
+              - "qualifiedBorrows"
+              - "qualifiedBorrowsFromClicks"
+              - "royaltyQualifiedBorrows"
+              - "royaltyQualifiedBorrowsFromClicks"
+              - "sales"
+              - "salesClicks"
+              - "salesPromoted"
+              - "topOfSearchImpressionShare"
+              - "unitsSold"
+              - "unitsSoldClicks"
+              - "video5SecondViewRate"
+              - "video5SecondViews"
+              - "videoCompleteViews"
+              - "videoFirstQuartileViews"
+              - "videoMidpointViews"
+              - "videoThirdQuartileViews"
+              - "videoUnmutes"
+              - "viewClickThroughRate"
+              - "viewabilityRate"
+              - "viewableImpressions"
+              reportTypeId: sbCampaigns
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
 
     sponsored_display_campaigns_report_stream:
       type: DeclarativeStream
@@ -3102,6 +3278,7 @@ streams:
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
 
+  - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream"
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream"
   - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream"
   - $ref: "#/definitions/streams/sponsored_display_productads_report_stream"
@@ -3117,6 +3294,7 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_productads_report_stream_daily"
