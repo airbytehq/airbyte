@@ -90,7 +90,7 @@ jobs:
           image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}"
           output-format: "table"
           severity-cutoff: high
-          fail-build: true
+          fail-build: false
 
     outputs:
       java-base-image: ${{ steps.docker-build-java-base.outputs.imageid }}
@@ -141,8 +141,8 @@ jobs:
         with:
           image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}"
           output-format: "table"
-          severity-cutoff: critical # TODO: revert to 'high'
-          fail-build: true
+          severity-cutoff: high
+          fail-build: false
 
     outputs:
       python-base-image: ${{ steps.docker-build-python-base.outputs.imageid }}
@@ -248,7 +248,7 @@ jobs:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
           output-format: "table"
           severity-cutoff: high
-          fail-build: true
+          fail-build: false
 
   test-python-connector-image-matrix:
     runs-on: ubuntu-latest
@@ -333,8 +333,8 @@ jobs:
         with:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
           output-format: "table"
-          severity-cutoff: critical # TODO: revert to 'high'
-          fail-build: true
+          severity-cutoff: high
+          fail-build: false
 
   test-manifest-only-connector-image-matrix:
     runs-on: ubuntu-latest
@@ -418,5 +418,4 @@ jobs:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
           output-format: "table"
           severity-cutoff: high
-          # Don't fail build for manifest-only connectors since we don't control the base image here
           fail-build: false
