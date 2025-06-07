@@ -29,17 +29,13 @@ import io.airbyte.cdk.data.UrlCodec
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
-import io.airbyte.protocol.protobuf.AirbyteMessageProtobufKt
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
 import java.time.Clock
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.util.function.Consumer
 
 
 data class FieldValueEncoder(val value: Any?, val jsonEncoder: JsonEncoder<Any>)

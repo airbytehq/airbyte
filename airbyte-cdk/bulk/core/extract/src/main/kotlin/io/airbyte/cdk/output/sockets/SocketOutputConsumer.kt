@@ -2,8 +2,6 @@ package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SequenceWriter
-import io.airbyte.cdk.command.Configuration
-import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.output.CONNECTOR_OUTPUT_PREFIX
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.RecordTemplate
@@ -19,7 +17,6 @@ import io.micronaut.context.annotation.Value
 import java.io.ByteArrayOutputStream
 import java.time.Clock
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.outputStream
 
 @Factory
 @Requires(property = MEDIUM_PROPERTY, value = "SOCKET")

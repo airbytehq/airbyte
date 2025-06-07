@@ -159,22 +159,24 @@ class JdbcSelectQuerier(
                         jdbcFieldType.jsonEncoder as JsonEncoder<Any>
                     )
 */
+                    @Suppress("UNCHECKED_CAST")
                     resultRow.data[column.id] = FieldValueEncoder(
                         jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
                         jdbcFieldType.jsonEncoder as JsonEncoder<Any>
                     )
 
-/*
-                    when (interMap[column.id]) {
-                        is Long -> {
-                            val l: Long = interMap[column.id] as Long
-                            val f = LongFieldType as JdbcFieldType<Long>
-                            resultRow.data.set<JsonNode>(column.id, f.jsonEncoder.encode(l))
-                        }
-                    }
-*/
+                    /*
+                                        when (interMap[column.id]) {
+                                            is Long -> {
+                                                val l: Long = interMap[column.id] as Long
+                                                val f = LongFieldType as JdbcFieldType<Long>
+                                                resultRow.data.set<JsonNode>(column.id, f.jsonEncoder.encode(l))
+                                            }
+                                        }
+                    */
 //                    resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                 } catch (e: Exception) {
+                    @Suppress("UNCHECKED_CAST")
                     resultRow.data[column.id] = FieldValueEncoder(
                         null,
                         NullCodec as JsonEncoder<Any> // Use NullCodec for null values
