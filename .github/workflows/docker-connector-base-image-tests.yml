@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   detect-changes:
+    name: Detect Changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
