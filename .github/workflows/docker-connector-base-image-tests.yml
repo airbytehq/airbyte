@@ -1,4 +1,4 @@
-name: Docker Image Build Tests
+name: Dockerfile Definition Tests
 
 on:
   pull_request:
@@ -17,10 +17,6 @@ concurrency:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
-    outputs:
-      java-images: ${{ steps.changes.outputs.java-images }}
-      python-images: ${{ steps.changes.outputs.python-images }}
-      manifest-only: ${{ steps.changes.outputs.manifest-only }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +34,11 @@ jobs:
               - 'docker-images/Dockerfile.python-connector-base'
             manifest-only:
               - 'docker-images/Dockerfile.manifest-only-connector'
+
+    outputs:
+      java-images: ${{ steps.changes.outputs.java-images }}
+      python-images: ${{ steps.changes.outputs.python-images }}
+      manifest-only: ${{ steps.changes.outputs.manifest-only }}
 
   build-java-base-image:
     runs-on: ubuntu-latest
@@ -77,7 +78,7 @@ jobs:
       - name: Run Java Base Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}"
+          image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
           output-format: "table"
           severity-cutoff: high
           fail-build: false
@@ -120,12 +121,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run Python Base Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}"
+          image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
@@ -184,13 +185,13 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
             CONNECTOR_NAME=${{ matrix.connector }}
 
       - name: Run `spec` Image Test
         run: |
           docker run --rm \
-            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }} \
             spec
 
       - name: Setup uv
@@ -213,12 +214,12 @@ jobs:
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
@@ -263,12 +264,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run `spec` Image Test
         run: |
           docker run --rm \
-            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }} \
             spec
 
       - name: Setup uv
@@ -291,12 +292,12 @@ jobs:
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
@@ -342,7 +343,7 @@ jobs:
       - name: Run `spec` Image Test
         run: |
           docker run --rm \
-            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }} \
             spec
 
       - name: Setup uv
@@ -365,12 +366,12 @@ jobs:
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
