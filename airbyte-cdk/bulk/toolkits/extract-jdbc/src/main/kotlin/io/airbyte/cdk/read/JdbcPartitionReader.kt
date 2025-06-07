@@ -118,7 +118,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
         while (s != null) {
             when (s) {
-                is AirbyteStateMessage -> boostedOutputConsumer?.accept(s)
+                is AirbyteStateMessage -> {
+                    val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                        Clock.systemUTC(), 256)
+                    o.accept(s)
+//                    boostedOutputConsumer?.accept(s)
+                }
                 is AirbyteStreamStatusTraceMessage -> {
                     val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
                         Clock.systemUTC(), 256)
