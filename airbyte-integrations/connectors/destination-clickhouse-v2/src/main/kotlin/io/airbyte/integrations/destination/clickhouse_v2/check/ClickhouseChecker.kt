@@ -3,9 +3,8 @@ package io.airbyte.integrations.destination.clickhouse_v2.check
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.check.DestinationChecker
-import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseBeanFactory
 import io.airbyte.integrations.destination.clickhouse_v2.check.ClickhouseChecker.Constants.TEST_DATA
-import io.airbyte.integrations.destination.clickhouse_v2.client.log
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseBeanFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 import java.time.Clock
@@ -14,15 +13,16 @@ import java.util.concurrent.TimeUnit
 @Singleton
 class ClickhouseChecker(
     clock: Clock,
+    private val clientFactory: RawClickHouseClientFactory,
 ): DestinationChecker<ClickhouseConfiguration> {
-    // ensure table name unique across checks
+    // ensure table name unique across checks — could factor this out into an injectable shared util
     @VisibleForTesting
     val tableName = "_airbyte_check_table_${clock.millis()}"
 
     override fun check(config: ClickhouseConfiguration) {
-         val client = ClickhouseBeanFactory().clickhouseClient(config)
+        val client = clientFactory.make(config)
 
-         // TODO: the logic to combine table name database should be codified somewhere ${config.database}.$tableName
+        // TODO: ideally we'd actually inject a higher level client in here and not write SQL
          client.execute("CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test UInt8) ENGINE = MergeTree ORDER BY ()")
              .get(10, TimeUnit.SECONDS)
 
@@ -34,17 +34,20 @@ class ClickhouseChecker(
     }
 
     override fun cleanup(config: ClickhouseConfiguration) {
-         try {
-             val client = ClickhouseBeanFactory().clickhouseClient(config)
+         val client = clientFactory.make(config)
 
-             client.execute("DROP TABLE IF EXISTS ${config.database}.$tableName")
-                 .get(10, TimeUnit.SECONDS)
-         } catch (e: Exception) {
-             log.error(e) { "Failed to cleanup the check table named ${config.database}.$tableName" }
-         }
+        // TODO: ideally we'd actually inject a higher level client in here and not write SQL
+         client.execute("DROP TABLE IF EXISTS ${config.database}.$tableName")
+             .get(10, TimeUnit.SECONDS)
     }
 
     object Constants {
         const val TEST_DATA = """{"test": 42}"""
     }
+}
+
+// This exists solely for testing. It will hopefully be deleted once we fix DI.
+@Singleton
+class RawClickHouseClientFactory {
+    fun make(config: ClickhouseConfiguration) = ClickhouseBeanFactory().clickhouseClient(config)
 }
