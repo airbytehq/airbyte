@@ -188,7 +188,7 @@ class ProtoRecordOutputConsumer(
     private fun withLockFlush() {
         if (buffer.size() > 0) {
             buffer.writeTo(socket.outputStream)
-            socket.outputStream?.write(System.lineSeparator().toByteArray())
+//            socket.outputStream?.write(System.lineSeparator().toByteArray())
 //            stdout.println(buffer.toString(Charsets.UTF_8))
 //            stdout.flush()
             buffer.reset()
