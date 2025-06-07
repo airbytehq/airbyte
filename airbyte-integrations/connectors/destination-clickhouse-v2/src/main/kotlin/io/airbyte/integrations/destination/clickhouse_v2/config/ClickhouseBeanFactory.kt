@@ -5,7 +5,6 @@ import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.write.db.DbConstants.DEFAULT_INTERNAL_NAMESPACE
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
-import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -29,11 +28,17 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun clickhouseConfiguration(
-        configFactory: ClickhouseConfigurationFactory,
         specFactory: ConfigurationSpecificationSupplier<ClickhouseSpecification>,
     ): ClickhouseConfiguration {
         val spec = specFactory.get()
 
-        return configFactory.makeWithoutExceptionHandling(spec)
+        return ClickhouseConfiguration(
+            spec.hostname,
+            spec.port,
+            spec.protocol.value,
+            spec.database,
+            spec.username,
+            spec.password,
+        )
     }
 }

@@ -43,6 +43,8 @@ class ClickhouseDirectLoader(
         protocolRecord.put(Constants.FIELD_META, Constants.META)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
 
+        record.rawData.record.meta
+
         buffer.write(protocolRecord.toString())
         buffer.write(DELIMITER)
 

@@ -35,19 +35,9 @@ private val logger = KotlinLogging.logger {}
  * * Implementors should not throw exceptions in the constructor.
  * * Implementors should not inject configuration; only use the config passed in [check].
  */
-interface DestinationChecker<C : DestinationConfiguration> {
-    fun mockStream() =
-        DestinationStream(
-            descriptor = DestinationStream.Descriptor("testing", "test"),
-            importType = Append,
-            schema = ObjectTypeWithoutSchema,
-            generationId = 1,
-            minimumGenerationId = 0,
-            syncId = 1,
-        )
-
-    fun check(config: C)
-    fun cleanup(config: C) {}
+interface DestinationChecker {
+    fun check() {}
+    fun cleanup() {}
 }
 
 class DestinationCheckerSync<C : DestinationConfiguration>(
