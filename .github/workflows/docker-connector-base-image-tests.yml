@@ -367,5 +367,5 @@ jobs:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
           output-format: "table"
           severity-cutoff: high
-          # Don't fail build for manifest-only connectors since we don't control the base image
+          # Don't fail build for manifest-only connectors since we don't control the base image here
           fail-build: false
