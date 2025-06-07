@@ -25,8 +25,8 @@ RUN if [ -f /tmp/distributions/${CONNECTOR_NAME}.tar ]; then \
     else \
         cp /tmp/distributions/airbyte-app.tar /tmp/${CONNECTOR_NAME}.tar; \
     fi && \
-    tar xf /tmp/connector.tar --strip-components=1 -C /airbyte && \
-    rm -rf /tmp/connector.tar /tmp/distributions && \
+    tar xf /tmp/${CONNECTOR_NAME}.tar --strip-components=1 -C /airbyte && \
+    rm -rf /tmp/${CONNECTOR_NAME}.tar /tmp/distributions && \
     chown -R airbyte:airbyte /airbyte
 
 # Set the non-root user
