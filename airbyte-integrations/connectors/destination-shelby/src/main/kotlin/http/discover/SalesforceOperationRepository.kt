@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.DestinationOperation
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import jakarta.inject.Singleton
 
 val SALESFORCE_STRING_TYPES: Set<String> = setOf(
     "base64",
@@ -40,6 +41,7 @@ val SALESFORCE_NUMBER_TYPES: Set<String> = setOf("currency", "double", "long", "
 val SUPPORTED_SYNC_MODES: Set<DestinationSyncMode> = setOf(DestinationSyncMode.APPEND, DestinationSyncMode.UPDATE, DestinationSyncMode.APPEND_DEDUP, DestinationSyncMode.SOFT_DELETE)
 
 
+@Singleton
 class SalesforceOperationRepository(httpClient: HttpClient, baseUrl: String) {
     private val httpClient: HttpClient = httpClient
     private val baseUrl: String = baseUrl
@@ -52,7 +54,8 @@ class SalesforceOperationRepository(httpClient: HttpClient, baseUrl: String) {
                 "${baseUrl}/services/data/v62.0/sobjects"
             )
         )
-        return decoder.decode(response).get("sobjects").asIterable().flatMap { fetchOperations(it.get("name").asText()) }  // FIXME in python, we added threading here since most of the time is spent on I/O
+//        return decoder.decode(response).get("sobjects").asIterable().flatMap { fetchOperations(it.get("name").asText()) }  // FIXME in python, we added threading here since most of the time is spent on I/O
+        return fetchOperations("Lead")
     }
 
     fun fetchOperations(objectName: String): List<DestinationOperation> {
