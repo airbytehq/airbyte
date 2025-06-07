@@ -3,11 +3,11 @@ name: Docker Connector Base Image Tests
 on:
   pull_request:
     paths:
-      - 'docker-images/Dockerfile.java-connector'
-      - 'docker-images/Dockerfile.java-connector-base'
-      - 'docker-images/Dockerfile.python-connector'
-      - 'docker-images/Dockerfile.python-connector-base'
-      - 'docker-images/Dockerfile.manifest-only-connector'
+      - "docker-images/Dockerfile.java-connector"
+      - "docker-images/Dockerfile.java-connector-base"
+      - "docker-images/Dockerfile.python-connector"
+      - "docker-images/Dockerfile.python-connector-base"
+      - "docker-images/Dockerfile.manifest-only-connector"
   workflow_dispatch:
 
 concurrency:
@@ -151,8 +151,8 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -265,6 +265,8 @@ jobs:
       - name: Run connector tests
         env:
           DOCKER_DEFAULT_PLATFORM: linux/amd64
+          DOCKER_BUILDKIT: 1
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         run: |
           airbyte-cdk connector test ${{ matrix.connector }}
 
@@ -336,6 +338,8 @@ jobs:
       - name: Run connector tests
         env:
           DOCKER_DEFAULT_PLATFORM: linux/amd64
+          DOCKER_BUILDKIT: 1
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         run: |
           airbyte-cdk connector test ${{ matrix.connector }}
 
