@@ -4,18 +4,16 @@
 
 package io.airbyte.cdk.load.http.authentication
 
+import io.airbyte.cdk.load.http.HttpClient
+import io.airbyte.cdk.load.http.Response
 import io.micronaut.http.HttpHeaders
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import okhttp3.Call
 import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
 import okhttp3.Request
-import okhttp3.Response
-import okhttp3.ResponseBody.Companion.toResponseBody
+import okhttp3.Response as OkHttpResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -28,7 +26,7 @@ const val A_REFRESH_TOKEN = "a_refresh_token"
 class OAuthAuthenticatorTest {
 
     private lateinit var authenticator: OAuthAuthenticator
-    private val httpClient: OkHttpClient = mockk()
+    private val httpClient: HttpClient = mockk()
 
     @BeforeEach
     fun setup() {
@@ -66,25 +64,17 @@ class OAuthAuthenticatorTest {
         authenticator.intercept(chain)
         authenticator.intercept(chain)
 
-        verify(exactly = 1) { httpClient.newCall(any()) }
+        verify(exactly = 1) { httpClient.sendRequest(any()) }
     }
 
     private fun mockCall(originalRequest: Request) {
-        val oauthResponse: Response =
-            Response.Builder()
-                .request(originalRequest)
-                .code(200)
-                .protocol(Protocol.HTTP_2)
-                .message("success")
-                .body(
-                    "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".toResponseBody(
-                        "application/json".toMediaType()
-                    ),
-                )
-                .build()
+        val oauthResponse: Response = Response(
+            statusCode = 200,
+            headers = emptyMap(),
+            body = "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".byteInputStream(Charsets.UTF_8),
+        )
         val call: Call = mockk()
-        every { httpClient.newCall(any()) } returns (call)
-        every { call.execute() } returns (oauthResponse)
+        every { httpClient.sendRequest(any()) } returns (oauthResponse)
     }
 
     private fun mockBuilder(originalRequest: Request): Request.Builder {
@@ -98,7 +88,7 @@ class OAuthAuthenticatorTest {
     private fun mockChain(request: Request): Interceptor.Chain {
         val chain: Interceptor.Chain = mockk()
         every { chain.request() } returns (request)
-        every { chain.proceed(any()) } returns (mockk<Response>())
+        every { chain.proceed(any()) } returns (mockk<OkHttpResponse>())
 
         return chain
     }
