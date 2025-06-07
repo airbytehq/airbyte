@@ -120,8 +120,6 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run Python Base Image Vulnerability Scan
         uses: anchore/scan-action@v6
