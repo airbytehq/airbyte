@@ -121,7 +121,7 @@
         "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
         "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
         "type": "string",
-        "title": "Account Name",
+        "title": "Server URL",
         "order": 1
       },
       "role": {
