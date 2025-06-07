@@ -236,7 +236,7 @@ jobs:
         run: |
           # TODO: Switch back to direct installation when Docker-based tests are ready
           # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests#subdirectory=airbyte-cdk[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
         run: |
@@ -321,7 +321,7 @@ jobs:
         run: |
           # TODO: Switch back to direct installation when Docker-based tests are ready
           # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests#subdirectory=airbyte-cdk[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
         run: |
@@ -404,7 +404,7 @@ jobs:
         run: |
           # TODO: Switch back to direct installation when Docker-based tests are ready
           # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests#subdirectory=airbyte-cdk[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
         run: |
