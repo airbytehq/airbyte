@@ -30,7 +30,9 @@ class CheckOperation(
     override fun execute() {
 
         val destinationChecker = try {
-            applicationContext.createBean(DestinationChecker::class.java) as DestinationChecker
+            // We let micronaut do the DI, but want to catch any instantiation errors for better
+            // messages and visibility
+            applicationContext.createBean(DestinationChecker::class.java)
         } catch (e: Exception) {
             handleException(e)
             return

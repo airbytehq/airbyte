@@ -36,7 +36,6 @@ class ClickhouseChecker(
 
     override fun cleanup() {
         try {
-
             client.execute("DROP TABLE IF EXISTS ${config.database}.$tableName")
                 .get(10, TimeUnit.SECONDS)
         } catch (e: Exception) {
