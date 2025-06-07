@@ -78,7 +78,7 @@ jobs:
       - name: Run Java Base Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+          image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
