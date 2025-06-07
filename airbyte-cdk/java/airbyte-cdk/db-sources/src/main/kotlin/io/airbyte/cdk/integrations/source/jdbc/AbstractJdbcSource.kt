@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Sets
 import datadog.trace.api.Trace
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.cdk.db.SqlDatabase
 import io.airbyte.cdk.db.factory.DataSourceFactory.close
@@ -92,7 +91,6 @@ private val LOGGER = KotlinLogging.logger {}
  */
 // This is onoly here because spotbugs complains about aggregatePrimateKeys and I wasn't able to
 // figure out what it's complaining about
-@SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
     @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,

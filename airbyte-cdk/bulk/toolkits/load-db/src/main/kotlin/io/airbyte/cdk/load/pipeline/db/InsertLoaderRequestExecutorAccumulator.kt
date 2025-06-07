@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.pipeline.db
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
@@ -18,7 +17,6 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.io.Closeable
 
-@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 @Singleton
 @Requires(bean = InsertLoader::class)
 class InsertLoaderRequestExecutorAccumulator<Q : InsertLoaderRequest>(

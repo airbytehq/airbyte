@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.state.object_storage
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageDestinationState(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<*>,
@@ -115,7 +113,6 @@ class ObjectStorageDestinationState(
  * Note: there's no persisting yet. This will require either a client-provided path to store data or
  * a guaranteed sortable set of file names so that we can send the high watermark to the platform.
  */
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 @Singleton
 class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,

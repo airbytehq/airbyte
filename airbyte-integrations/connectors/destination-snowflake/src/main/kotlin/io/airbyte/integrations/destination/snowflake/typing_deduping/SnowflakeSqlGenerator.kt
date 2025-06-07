@@ -5,7 +5,6 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.ImmutableList
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
@@ -49,7 +48,6 @@ class SnowflakeSqlGenerator(
         )
     }
 
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun buildColumnId(name: String, suffix: String?): ColumnId {
         val escapedName =
             prefixReservedColumnName(escapeSqlIdentifier(name).uppercase(Locale.getDefault())) +

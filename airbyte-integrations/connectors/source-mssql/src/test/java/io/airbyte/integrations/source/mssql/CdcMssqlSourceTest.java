@@ -79,7 +79,6 @@ import org.slf4j.LoggerFactory;
 
 @TestInstance(Lifecycle.PER_METHOD)
 @Execution(ExecutionMode.CONCURRENT)
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CdcSourceTest.class);

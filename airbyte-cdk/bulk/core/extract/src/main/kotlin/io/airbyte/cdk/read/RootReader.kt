@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
@@ -26,7 +25,6 @@ import kotlinx.coroutines.withTimeoutOrNull
  *
  * This object exists mainly to facilitate unit testing by keeping dependencies to a minimum.
  */
-@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 class RootReader(
     val stateManager: StateManager,
     val resourceAcquisitionHeartbeat: Duration,

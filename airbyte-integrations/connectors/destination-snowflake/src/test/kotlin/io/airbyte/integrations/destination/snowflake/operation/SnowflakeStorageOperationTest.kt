@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake.operation
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
 import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
@@ -24,7 +23,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 
-@SuppressFBWarnings("BC_IMPOSSIBLE_CAST")
 class SnowflakeStorageOperationTest {
     private val sqlGenerator = mock(SnowflakeSqlGenerator::class.java)
     private val destinationHandler = mock(SnowflakeDestinationHandler::class.java)

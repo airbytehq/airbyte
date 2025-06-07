@@ -5,7 +5,6 @@ package io.airbyte.integrations.destination.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.ContextQueryFunction
 import io.airbyte.cdk.db.Database
 import io.airbyte.cdk.db.factory.DSLContextFactory.create
@@ -99,7 +98,6 @@ abstract class SshMySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest
         return true
     }
 
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     @Throws(Exception::class)
     override fun retrieveNormalizedRecords(
         env: TestDestinationEnv?,

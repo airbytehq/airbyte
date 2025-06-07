@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.redshift
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DataSourceFactory.close
 import io.airbyte.cdk.db.factory.DataSourceFactory.create
 import io.airbyte.cdk.db.factory.DatabaseDriver
@@ -346,7 +345,6 @@ class RedshiftDestination : BaseConnector(), Destination {
         )
     }
 
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     private fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
         defaultNamespace: String?

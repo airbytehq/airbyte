@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import com.fasterxml.jackson.databind.JsonNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
@@ -223,7 +222,6 @@ class AsyncStreamConsumerTest {
 
     @BeforeEach
     @Suppress("UNCHECKED_CAST")
-    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
     internal fun setup() {
         onStart =
             Mockito.mock(

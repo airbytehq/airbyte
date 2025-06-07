@@ -16,7 +16,6 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -39,7 +38,6 @@ import jakarta.inject.Singleton
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
@@ -209,7 +207,6 @@ data object EncryptionRequired : EncryptionSpecification
 @JsonSchemaDescription(
     "To always require encryption and verify that the source has a valid SSL certificate."
 )
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
     @JsonProperty("ca_certificate", required = true)
     @JsonSchemaTitle("CA certificate")
@@ -248,7 +245,6 @@ class SslVerifyCertificate : EncryptionSpecification {
 @JsonSchemaDescription(
     "To always require encryption and verify that the source has a valid SSL certificate."
 )
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyIdentity : EncryptionSpecification {
     @JsonProperty("ca_certificate", required = true)
     @JsonSchemaTitle("CA certificate")

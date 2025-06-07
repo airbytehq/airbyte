@@ -6,10 +6,6 @@ allprojects {
 
     group 'io.airbyte.bulk-cdk'
 
-    // Disable spotbugs on test code, which gets annoying really quickly for @MicronautTest classes.
-    spotbugsTest {
-        enabled = false
-    }
 
     dependencies {
         api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')

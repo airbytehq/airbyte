@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -21,7 +20,6 @@ class MockRemoteObject(
     val metadata: Map<String, String> = emptyMap()
 ) : RemoteObject<Int>
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 @Singleton
 @Requires(env = ["MockObjectStorageClient"])
 class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {

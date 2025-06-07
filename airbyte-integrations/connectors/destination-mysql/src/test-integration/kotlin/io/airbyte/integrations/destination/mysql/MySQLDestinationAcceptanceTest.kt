@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.Database
 import io.airbyte.cdk.db.factory.DSLContextFactory.create
 import io.airbyte.cdk.db.factory.DatabaseDriver
@@ -142,7 +141,6 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     }
 
     @Throws(Exception::class)
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,

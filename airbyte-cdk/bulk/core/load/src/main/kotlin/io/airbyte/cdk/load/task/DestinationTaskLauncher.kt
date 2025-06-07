@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -63,10 +62,6 @@ import kotlinx.coroutines.channels.Channel
  * // TODO: Capture failures, retry, and call into close(failure=true) if can't recover.
  */
 @Singleton
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "arguments are guaranteed to be non-null by Kotlin's type system"
-)
 class DestinationTaskLauncher(
     private val taskScopeProvider: TaskScopeProvider,
     private val catalog: DestinationCatalog,

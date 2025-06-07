@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
@@ -33,7 +32,6 @@ import org.mockito.Mockito
 
 private val LOGGER = KotlinLogging.logger {}
 
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 abstract class BaseDestinationAcceptanceTest(
     // If false, ignore counts and only verify the final state message.
     protected val verifyIndividualStateAndCounts: Boolean = false,

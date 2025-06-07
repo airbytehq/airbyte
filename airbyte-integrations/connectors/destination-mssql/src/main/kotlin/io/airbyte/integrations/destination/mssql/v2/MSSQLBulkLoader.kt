@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -26,7 +25,6 @@ import jakarta.inject.Singleton
 
 @Singleton class MSSQLInputPartitioner : RoundRobinInputPartitioner()
 
-@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 class MSSQLBulkLoader(
     private val azureBlobClient: AzureBlobClient,
     private val stream: DestinationStream,

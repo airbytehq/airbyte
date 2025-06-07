@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -12,7 +11,6 @@ import jakarta.inject.Provider
 private val log = KotlinLogging.logger {}
 
 /** [AirbyteConnectorRunner] tells Micronaut to use this [Runnable] as the entry point. */
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class AirbyteConnectorRunnable : Runnable {
     @Value("\${airbyte.connector.metadata.docker-repository}") lateinit var connectorName: String
 

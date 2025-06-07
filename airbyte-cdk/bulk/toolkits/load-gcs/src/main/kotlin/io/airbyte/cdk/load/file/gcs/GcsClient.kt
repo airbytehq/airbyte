@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.file.gcs
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -37,7 +36,6 @@ fun GcsBlob.toS3Object() = S3Object(this.key, this.storageConfig.s3BucketConfigu
  * because we are forced into the HMAC auth for legacy reasons. At the end of the day, this is just
  * a bare-bone wrapper around the S3Client
  */
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class GcsS3Client(
     private val s3Client: S3Client,
     private val config: GcsClientConfiguration,

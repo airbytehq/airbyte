@@ -5,7 +5,6 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -99,7 +98,6 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
     }
 
     @Throws(Exception::class)
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun dumpFinalTableRecords(streamId: StreamId, suffix: String?): List<JsonNode> {
         return dumpFinalTable(
             database,
@@ -117,7 +115,6 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
     }
 
     @Throws(Exception::class)
-    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun insertFinalTableRecords(
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,

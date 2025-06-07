@@ -175,7 +175,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
         }
 
         project.tasks.named('check').configure {
-            dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+            dependsOn project.tasks.matching { it.name ==~ /compile[a-zA-Z]*Java/ }
         }
 
         project.configurations {
