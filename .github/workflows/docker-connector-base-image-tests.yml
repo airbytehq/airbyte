@@ -1,4 +1,4 @@
-name: Docker Connector Base Image Tests
+name: Docker Image Build Tests
 
 on:
   pull_request:
