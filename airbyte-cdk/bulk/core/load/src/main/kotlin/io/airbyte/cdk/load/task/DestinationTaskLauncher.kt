@@ -9,9 +9,7 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -97,7 +95,6 @@ class DestinationTaskLauncher(
 
     // Async queues
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-    @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) {
     init {
@@ -191,7 +188,6 @@ class DestinationTaskLauncher(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()
         } else {
