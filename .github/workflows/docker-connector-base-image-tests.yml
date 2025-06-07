@@ -1,5 +1,9 @@
-name: Dockerfile Definition Tests
+# Whenever a change is made to the connector base image Dockerfiles, this workflow will be
+# triggered.
 
+# NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests
+
+name: Dockerfile Tests
 on:
   pull_request:
     paths:
@@ -119,12 +123,12 @@ jobs:
           context: .
           file: docker-images/Dockerfile.python-connector-base
           platforms: linux/amd64,linux/arm64
-          tags: |
-            ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
-            ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run Python Base Image Vulnerability Scan
         uses: anchore/scan-action@v6
