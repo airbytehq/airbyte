@@ -219,25 +219,9 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
-            spec
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install CDK CLI
-        run: |
-          # TODO: Switch back to direct installation when Docker-based tests are ready
-          # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
-
-      - name: Fetch connector secrets
-        env:
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-        run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }}
-
       - name: Run connector tests
+        env:
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
         run: |
           # TODO: Add --docker-only flag when available to only run image-based tests
           airbyte-cdk connector test ${{ matrix.connector }}
@@ -305,25 +289,9 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
-            spec
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install CDK CLI
-        run: |
-          # TODO: Switch back to direct installation when Docker-based tests are ready
-          # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
-
-      - name: Fetch connector secrets
-        env:
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-        run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }}
-
       - name: Run connector tests
+        env:
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
         run: |
           # TODO: Add --docker-only flag when available to only run image-based tests
           airbyte-cdk connector test ${{ matrix.connector }}
@@ -389,25 +357,9 @@ jobs:
         run: |
           docker run \
             --rm \
-            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }} \
-            spec
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install CDK CLI
-        run: |
-          # TODO: Switch back to direct installation when Docker-based tests are ready
-          # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
-
-      - name: Fetch connector secrets
-        env:
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-        run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }}
-
       - name: Run connector tests
+        env:
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
         run: |
           # TODO: Add --docker-only flag when available to only run image-based tests
           airbyte-cdk connector test ${{ matrix.connector }}
