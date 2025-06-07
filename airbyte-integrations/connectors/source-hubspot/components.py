@@ -414,14 +414,23 @@ class EntitySchemaNormalization(TypeTransformer):
         if not datetime_str:
             return None
 
+        # Hubspot sometimes returns datetime strings as a float which can cause an OverflowError. When a float
+        # string is detected, the string is converted into an integer string before parsing
+        try:
+            float(datetime_str)
+            if "." in datetime_str:
+                datetime_str = datetime_str.split(".")[0]
+        except ValueError:
+            pass
+
         try:
             return ab_datetime_parse(datetime_str)
-        except (ValueError, TypeError) as ex:
+        except (ValueError, TypeError, OverflowError) as ex:
             logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
 
         try:
             return ab_datetime_parse(int(datetime_str) // 1000)
-        except (ValueError, TypeError) as ex:
+        except (ValueError, TypeError, OverflowError) as ex:
             logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
 
         return None

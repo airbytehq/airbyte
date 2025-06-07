@@ -36,7 +36,9 @@ class UpdateCheckpointsTask(
             when (it.value) {
                 is StreamCheckpointWrapped -> {
                     val (stream, checkpointKey, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with id $checkpointKey" }
+                    log.info {
+                        "Updating stream checkpoint $stream:$checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
                     checkpointManager.addStreamCheckpoint(
                         stream,
                         checkpointKey,
@@ -45,10 +47,15 @@ class UpdateCheckpointsTask(
                 }
                 is GlobalCheckpointWrapped -> {
                     val (checkpointKey, message) = it.value
-                    log.info { "Updating global checkpoint with $checkpointKey" }
+                    log.info {
+                        "Updating global checkpoint with $checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
                     checkpointManager.addGlobalCheckpoint(checkpointKey, it.replace(message))
                 }
             }
+            // If its corresponding data was processed before this checkpoint was added,
+            // then it's possible it's already data-sufficient.
+            checkpointManager.flushReadyCheckpointMessages()
         }
         syncManager.markCheckpointsProcessed()
         log.info { "All checkpoints (state) updated" }

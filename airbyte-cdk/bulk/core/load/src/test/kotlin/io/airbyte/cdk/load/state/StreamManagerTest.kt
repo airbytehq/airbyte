@@ -129,12 +129,12 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId to 5),
+            mapOf(checkpointId to CheckpointValue(5, 5)),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId to 5),
+            mapOf(checkpointId to CheckpointValue(5, 5)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId))
     }
@@ -156,14 +156,14 @@ class StreamManagerTest {
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId1 to 10),
+            mapOf(checkpointId1 to CheckpointValue(10, 10)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId2 to 15),
+            mapOf(checkpointId2 to CheckpointValue(15, 15)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
@@ -188,14 +188,14 @@ class StreamManagerTest {
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId2 to 15),
+            mapOf(checkpointId2 to CheckpointValue(15, 15)),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId1 to 10),
+            mapOf(checkpointId1 to CheckpointValue(10, 10)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
@@ -213,19 +213,19 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         manager.incrementCheckpointCounts(
             BatchState.COMPLETE,
-            mapOf(checkpointId1 to 4),
+            mapOf(checkpointId1 to CheckpointValue(4, 4)),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         manager.incrementCheckpointCounts(
             BatchState.COMPLETE,
-            mapOf(checkpointId1 to 6),
+            mapOf(checkpointId1 to CheckpointValue(6, 6)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
 
         // Can still count persisted (but without effect)
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId1 to 10),
+            mapOf(checkpointId1 to CheckpointValue(10, 10)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
     }
@@ -259,12 +259,12 @@ class StreamManagerTest {
                     "1" ->
                         manager.incrementCheckpointCounts(
                             BatchState.COMPLETE,
-                            mapOf(checkpointId1 to 10),
+                            mapOf(checkpointId1 to CheckpointValue(10, 10)),
                         )
                     "2" ->
                         manager.incrementCheckpointCounts(
                             BatchState.COMPLETE,
-                            mapOf(checkpointId2 to 20),
+                            mapOf(checkpointId2 to CheckpointValue(20, 20)),
                         )
                     "end" -> manager.markEndOfStream(true)
                 }
@@ -292,8 +292,22 @@ class StreamManagerTest {
         repeat(10) { manager1.incrementReadCount() }
         manager1.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(manager1.inferNextCheckpointKey().checkpointId to 10),
+            mapOf(manager1.inferNextCheckpointKey().checkpointId to CheckpointValue(10, 10)),
         )
         assertDoesNotThrow { manager1.markCheckpoint() }
+    }
+
+    @Test
+    fun `throw if inferNextCheckpointKey called when disabled`() {
+        val manager1 = StreamManager(stream1, requireCheckpointKeyOnState = true)
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            manager1.inferNextCheckpointKey()
+        }
+    }
+
+    @Test
+    fun `throw if force marking a checkpoint when disabled`() {
+        val manager1 = StreamManager(stream1, requireCheckpointKeyOnState = true)
+        Assertions.assertThrows(IllegalStateException::class.java) { manager1.markCheckpoint() }
     }
 }

@@ -1,0 +1,46 @@
+name: Community PR Welcome Message
+
+# This workflow automatically adds a welcome message to PRs from community contributors (forks)
+# It includes a link to the local connector development documentation and other helpful resources
+#
+# MANUAL TESTING INSTRUCTIONS:
+# To manually test this workflow without a real fork PR, temporarily comment-out the fork condition in the
+# `if:` clause and uncomment the "synchronize" event type as a workflow trigger.
+# Then the workflow will run for all new commits.
+#
+# Before merging, remember to again comment-out the "synchronize" clause and uncomment the `if:` condition.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      # Toggle this line, uncommenting for testing:
+      # - synchronize
+
+jobs:
+  welcome-contributor:
+    name: PR Welcome Message
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.4
+        with:
+          # Use a different template for internal vs forks (community)
+          template: ${{ github.event.pull_request.head.repo.fork == true && '.github/pr-welcome-community.md' || '.github/pr-welcome-internal.md' }}
+          vars: |
+            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.template.outputs.result }}

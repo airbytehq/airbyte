@@ -6,11 +6,9 @@ package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayValue
@@ -18,17 +16,19 @@ import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.toAirbyteValues
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
+import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -43,12 +43,11 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.micronaut.context.annotation.Value
-import jakarta.inject.Singleton
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.math.BigInteger
 import java.time.OffsetDateTime
-import java.util.SequencedMap
-import java.util.UUID
+import java.util.*
+import kotlin.collections.LinkedHashMap
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -115,6 +114,9 @@ data class Meta(
     }
 
     companion object {
+        const val CHECKPOINT_ID_NAME: String = "partition_id"
+        const val CHECKPOINT_INDEX_NAME: String = "id"
+
         const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
         const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
         const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
@@ -189,26 +191,41 @@ data class Meta(
 
 data class DestinationRecord(
     override val stream: DestinationStream,
-    val message: AirbyteMessage,
-    val schema: AirbyteType,
-    val serializedSizeBytes: Long
+    val message: DestinationRecordSource,
+    val serializedSizeBytes: Long,
+    val checkpointId: CheckpointId? = null
 ) : DestinationRecordDomainMessage {
-    override fun asProtocolMessage(): AirbyteMessage = message
-
-    fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
-        return DestinationRecordAirbyteValue(
-            stream,
-            message.record.data.toAirbyteValue(),
-            message.record.emittedAt,
-            Meta(
-                message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
-                    ?: emptyList(),
-            ),
-        )
-    }
+    override fun asProtocolMessage(): AirbyteMessage =
+        AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                AirbyteRecordMessage()
+                    .withNamespace(stream.unmappedNamespace)
+                    .withStream(stream.unmappedName)
+                    .withEmittedAt(message.emittedAtMs)
+                    .withData(message.asJsonRecord(stream.airbyteValueProxyFieldAccessors))
+                    .also {
+                        if (checkpointId != null) {
+                            it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointId.value
+                        }
+                    }
+                    .withMeta(
+                        AirbyteRecordMessageMeta()
+                            .withChanges(
+                                message.sourceMeta.changes.map { change ->
+                                    Meta.Change(
+                                            field = change.field,
+                                            change = change.change,
+                                            reason = change.reason,
+                                        )
+                                        .asProtocolObject()
+                                },
+                            ),
+                    )
+            )
 
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, message, schema, serializedSizeBytes)
+        return DestinationRecordRaw(stream, message, serializedSizeBytes, checkpointId)
     }
 }
 
@@ -239,7 +256,7 @@ data class EnrichedDestinationRecordAirbyteValue(
      * If you want an up-to-date view of airbyte_meta, including any changes that were done to the
      * values within the destination connector, you should use [airbyteMeta].
      */
-    val meta: Meta?,
+    val sourceMeta: Meta,
     val serializedSizeBytes: Long = 0L,
 ) {
     val airbyteMeta: EnrichedAirbyteValue
@@ -250,8 +267,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                         "sync_id" to IntegerValue(stream.syncId),
                         "changes" to
                             ArrayValue(
-                                (meta?.changes?.toAirbyteValues()
-                                    ?: emptyList()) +
+                                (sourceMeta.changes.toAirbyteValues()) +
                                     declaredFields
                                         .map { it.value.changes.toAirbyteValues() }
                                         .flatten(),
@@ -306,97 +322,6 @@ data class FileReference(
                 proto.sourceFileRelativePath,
                 proto.fileSizeBytes,
             )
-    }
-}
-
-data class DestinationRecordRaw(
-    val stream: DestinationStream,
-    val rawData: AirbyteMessage,
-    val schema: AirbyteType,
-    private val serializedSizeBytes: Long,
-) {
-    val fileReference: FileReference? =
-        rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
-
-    fun asRawJson(): JsonNode {
-        return rawData.record.data
-    }
-
-    fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
-        return DestinationRecordAirbyteValue(
-            stream,
-            rawData.record.data.toAirbyteValue(),
-            rawData.record.emittedAt,
-            Meta(
-                rawData.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
-                    ?: emptyList(),
-            ),
-        )
-    }
-
-    /**
-     * Convert this record to an EnrichedRecord. Crucially, after this conversion, all entries in
-     * [EnrichedDestinationRecordAirbyteValue.allTypedFields] are guaranteed to have
-     * [EnrichedAirbyteValue.abValue] either be [NullValue], or match [EnrichedAirbyteValue.type]
-     * (e.g. if `type` is [TimestampTypeWithTimezone], then `value` is either `NullValue`, or
-     * [TimestampWithTimezoneValue]).
-     */
-    fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
-        val rawJson = asRawJson()
-
-        // Get the fields from the schema
-        val schemaFields: SequencedMap<String, FieldType> =
-            when (schema) {
-                is ObjectType -> schema.properties
-                else -> linkedMapOf()
-            }
-
-        val declaredFields = LinkedHashMap<String, EnrichedAirbyteValue>()
-        val undeclaredFields = LinkedHashMap<String, JsonNode>()
-
-        // Process fields from the raw JSON.
-        // First, get the declared fields, in the order defined by the catalog
-        schemaFields.forEach { (fieldName, fieldType) ->
-            if (!rawJson.has(fieldName)) {
-                return@forEach
-            }
-
-            val fieldValue = rawJson[fieldName]
-            val enrichedValue =
-                EnrichedAirbyteValue(
-                    abValue = NullValue,
-                    type = fieldType.type,
-                    name = fieldName,
-                    airbyteMetaField = null,
-                )
-            AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType.type)?.let {
-                enrichedValue.abValue = it
-            }
-                ?: enrichedValue.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
-
-            declaredFields[fieldName] = enrichedValue
-        }
-        // Then, get the undeclared fields
-        rawJson.fields().forEach { (fieldName, fieldValue) ->
-            if (!schemaFields.contains(fieldName)) {
-                undeclaredFields[fieldName] = fieldValue
-            }
-        }
-
-        return EnrichedDestinationRecordAirbyteValue(
-            stream = stream,
-            declaredFields = declaredFields,
-            undeclaredFields = undeclaredFields,
-            emittedAtMs = rawData.record.emittedAt,
-            meta =
-                Meta(
-                    rawData.record.meta?.changes?.map {
-                        Meta.Change(it.field, it.change, it.reason)
-                    }
-                        ?: emptyList()
-                ),
-            serializedSizeBytes = serializedSizeBytes
-        )
     }
 }
 
@@ -469,8 +394,8 @@ data class DestinationFile(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withStream(stream.descriptor.name)
-                    .withNamespace(stream.descriptor.namespace)
+                    .withStream(stream.unmappedName)
+                    .withNamespace(stream.unmappedNamespace)
                     .withEmittedAt(emittedAtMs)
                     .withAdditionalProperty("file", file),
             )
@@ -478,7 +403,7 @@ data class DestinationFile(
 }
 
 private fun statusToProtocolMessage(
-    stream: DestinationStream.Descriptor,
+    destinationStream: DestinationStream,
     emittedAtMs: Long,
     status: AirbyteStreamStatus,
 ): AirbyteMessage =
@@ -490,7 +415,11 @@ private fun statusToProtocolMessage(
                 .withEmittedAt(emittedAtMs.toDouble())
                 .withStreamStatus(
                     AirbyteStreamStatusTraceMessage()
-                        .withStreamDescriptor(stream.asProtocolObject())
+                        .withStreamDescriptor(
+                            StreamDescriptor()
+                                .withNamespace(destinationStream.unmappedNamespace)
+                                .withName(destinationStream.unmappedName)
+                        )
                         .withStatus(status),
                 ),
         )
@@ -500,7 +429,7 @@ data class DestinationRecordStreamComplete(
     val emittedAtMs: Long,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
 data class DestinationRecordStreamIncomplete(
@@ -508,7 +437,7 @@ data class DestinationRecordStreamIncomplete(
     val emittedAtMs: Long,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 data class DestinationFileStreamComplete(
@@ -516,7 +445,7 @@ data class DestinationFileStreamComplete(
     val emittedAtMs: Long,
 ) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
 data class DestinationFileStreamIncomplete(
@@ -524,30 +453,46 @@ data class DestinationFileStreamIncomplete(
     val emittedAtMs: Long,
 ) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 /** State. */
 sealed interface CheckpointMessage : DestinationMessage {
+    companion object {
+        private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
+        private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
+    }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream.Descriptor,
+        val stream: DestinationStream,
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
-                if (state != null) {
-                    it.streamState = state
+            AirbyteStreamState()
+                .withStreamDescriptor(
+                    StreamDescriptor()
+                        .withNamespace(stream.unmappedNamespace)
+                        .withName(stream.unmappedName)
+                )
+                .also {
+                    if (state != null) {
+                        it.streamState = state
+                    }
                 }
-            }
     }
+
+    val checkpointKey: CheckpointKey?
 
     val sourceStats: Stats?
     val destinationStats: Stats?
     val additionalProperties: Map<String, Any>
     val serializedSizeBytes: Long
+    val totalRecords: Long?
+    val totalBytes: Long?
 
     fun withDestinationStats(stats: Stats): CheckpointMessage
+    fun withTotalRecords(totalRecords: Long): CheckpointMessage
+    fun withTotalBytes(totalBytes: Long): CheckpointMessage
 
     fun decorateStateMessage(message: AirbyteStateMessage) {
         if (sourceStats != null) {
@@ -559,6 +504,17 @@ sealed interface CheckpointMessage : DestinationMessage {
                 AirbyteStateStats().withRecordCount(destinationStats!!.recordCount.toDouble())
         }
         additionalProperties.forEach { (key, value) -> message.withAdditionalProperty(key, value) }
+        checkpointKey?.let {
+            message.additionalProperties[CHECKPOINT_INDEX_NAME] = it.checkpointIndex.value
+            message.additionalProperties[CHECKPOINT_ID_NAME] = it.checkpointId.value
+        }
+
+        if (totalRecords != null) {
+            message.additionalProperties[COMMITTED_RECORDS_COUNT] = totalRecords
+        }
+        if (totalBytes != null) {
+            message.additionalProperties[COMMITTED_BYTES_COUNT] = totalBytes
+        }
     }
 }
 
@@ -567,27 +523,37 @@ data class StreamCheckpoint(
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     override val additionalProperties: Map<String, Any> = emptyMap(),
-    override val serializedSizeBytes: Long
+    override val serializedSizeBytes: Long,
+    override val checkpointKey: CheckpointKey? = null,
+    override val totalRecords: Long? = null,
+    override val totalBytes: Long? = null
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        stream: DestinationStream,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
+        checkpointKey: CheckpointKey? = null,
+        totalRecords: Long? = null,
+        totalBytes: Long? = null
     ) : this(
         Checkpoint(
-            DestinationStream.Descriptor(streamNamespace, streamName),
+            stream,
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
         emptyMap(),
-        serializedSizeBytes = 0L
+        serializedSizeBytes = 0L,
+        checkpointKey = checkpointKey,
+        totalRecords = totalRecords,
+        totalBytes = totalBytes
     )
 
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+    override fun withTotalRecords(totalRecords: Long) = copy(totalRecords = totalRecords)
+    override fun withTotalBytes(totalBytes: Long) = copy(totalBytes = totalBytes)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -608,6 +574,9 @@ data class GlobalCheckpoint(
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,
     override val serializedSizeBytes: Long,
+    override val checkpointKey: CheckpointKey? = null,
+    override val totalRecords: Long? = null,
+    override val totalBytes: Long? = null,
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -620,6 +589,10 @@ data class GlobalCheckpoint(
         serializedSizeBytes = 0L,
     )
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+    override fun withTotalRecords(totalRecords: Long): CheckpointMessage =
+        copy(totalRecords = totalRecords)
+
+    override fun withTotalBytes(totalBytes: Long): CheckpointMessage = copy(totalBytes = totalBytes)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -646,146 +619,14 @@ data object Undefined : DestinationMessage {
     }
 }
 
-@Singleton
-class DestinationMessageFactory(
-    private val catalog: DestinationCatalog,
-    @Value("\${airbyte.destination.core.file-transfer.enabled}")
-    private val fileTransferEnabled: Boolean,
-) {
-    fun fromAirbyteMessage(message: AirbyteMessage, serializedSizeBytes: Long): DestinationMessage {
-        fun toLong(value: Any?, name: String): Long? {
-            return value?.let {
-                when (it) {
-                    // you can't cast java.lang.Integer -> java.lang.Long
-                    // so instead we have to do this manual pattern match
-                    is Int -> it.toLong()
-                    is Long -> it
-                    else ->
-                        throw IllegalArgumentException(
-                            "Unexpected value for $name: $it (${it::class.qualifiedName})",
-                        )
-                }
-            }
-        }
-
-        return when (message.type) {
-            AirbyteMessage.Type.RECORD -> {
-                val stream =
-                    catalog.getStream(
-                        namespace = message.record.namespace,
-                        name = message.record.stream,
-                    )
-                if (fileTransferEnabled) {
-                    try {
-                        @Suppress("UNCHECKED_CAST")
-                        val fileMessage =
-                            message.record.additionalProperties["file"] as Map<String, Any>
-
-                        DestinationFile(
-                            stream = stream,
-                            emittedAtMs = message.record.emittedAt,
-                            fileMessage =
-                                DestinationFile.AirbyteRecordMessageFile(
-                                    fileUrl = fileMessage["file_url"] as String?,
-                                    bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
-                                    fileRelativePath = fileMessage["file_relative_path"] as String?,
-                                    modified =
-                                        toLong(fileMessage["modified"], "message.record.modified"),
-                                    sourceFileUrl = fileMessage["source_file_url"] as String?,
-                                ),
-                        )
-                    } catch (e: Exception) {
-                        throw IllegalArgumentException(
-                            "Failed to construct file message: ${e.message}",
-                        )
-                    }
-                } else {
-                    DestinationRecord(stream, message, stream.schema, serializedSizeBytes)
-                }
-            }
-            AirbyteMessage.Type.TRACE -> {
-                val status = message.trace.streamStatus
-                val stream =
-                    catalog.getStream(
-                        namespace = status.streamDescriptor.namespace,
-                        name = status.streamDescriptor.name,
-                    )
-                if (
-                    message.trace.type == null ||
-                        message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
-                ) {
-                    when (status.status) {
-                        AirbyteStreamStatus.COMPLETE ->
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamComplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamComplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            }
-                        AirbyteStreamStatus.INCOMPLETE ->
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            }
-                        else -> Undefined
-                    }
-                } else {
-                    Undefined
-                }
-            }
-            AirbyteMessage.Type.STATE -> {
-                when (message.state.type) {
-                    AirbyteStateMessage.AirbyteStateType.STREAM ->
-                        StreamCheckpoint(
-                            checkpoint = fromAirbyteStreamState(message.state.stream),
-                            sourceStats =
-                                message.state.sourceStats?.recordCount?.let {
-                                    Stats(recordCount = it.toLong())
-                                },
-                            additionalProperties = message.state.additionalProperties,
-                            serializedSizeBytes = serializedSizeBytes
-                        )
-                    null,
-                    AirbyteStateMessage.AirbyteStateType.GLOBAL ->
-                        GlobalCheckpoint(
-                            sourceStats =
-                                message.state.sourceStats?.recordCount?.let {
-                                    Stats(recordCount = it.toLong())
-                                },
-                            state = message.state.global.sharedState,
-                            checkpoints =
-                                message.state.global.streamStates.map {
-                                    fromAirbyteStreamState(it)
-                                },
-                            additionalProperties = message.state.additionalProperties,
-                            originalTypeField = message.state.type,
-                            serializedSizeBytes = serializedSizeBytes,
-                        )
-                    else -> // TODO: Do we still need to handle LEGACY?
-                    Undefined
-                }
-            }
-            else -> Undefined
-        }
-    }
-
-    private fun fromAirbyteStreamState(streamState: AirbyteStreamState): Checkpoint {
-        val descriptor = streamState.streamDescriptor
-        return Checkpoint(
-            stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
-            state = runCatching { streamState.streamState }.getOrNull(),
+/**
+ * For messages we recognize but do not want to process. Different from [Undefined] mainly in that
+ * we don't log a warning.
+ */
+data object Ignored : DestinationMessage {
+    override fun asProtocolMessage(): AirbyteMessage {
+        throw NotImplementedError(
+            "Ignored messages cannot be safely converted back to a protocol object.",
         )
     }
 }
