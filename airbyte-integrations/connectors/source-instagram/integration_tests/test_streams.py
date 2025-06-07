@@ -46,6 +46,7 @@ class TestInstagramSource:
 
     def test_incremental_streams(self, config, state):
         records, states = self._read_records(config, "user_insights")
+        # TODO: Remove this magic number and somehow read the number of days from the config.jsonj
         assert len(records) == 30, "UserInsights for two accounts over last 30 day should return 30 records when empty STATE provided"
 
         records, states = self._read_records(config, "user_insights", state)
