@@ -14,10 +14,14 @@ ARG CONNECTOR_VERSION
 
 WORKDIR /airbyte/integration_code
 
-# Copy all files to integration_code first
+# Create source_declarative_manifest directory first
+RUN mkdir -p ./source_declarative_manifest
+
+# Copy all files to integration_code
 COPY . ./
 
-# Create source_declarative_manifest directory and copy files to expected locations
-RUN mkdir -p ./source_declarative_manifest && \
-    if [ -f manifest.yaml ]; then cp manifest.yaml ./source_declarative_manifest/manifest.yaml; fi && \
-    if [ -f components.py ]; then cp components.py ./source_declarative_manifest/components.py; fi
+# Copy manifest.yaml to expected location (required for manifest-only connectors)
+RUN cp manifest.yaml ./source_declarative_manifest/manifest.yaml
+
+# Copy components.py if it exists (optional)
+RUN if [ -f components.py ]; then cp components.py ./source_declarative_manifest/components.py; fi
