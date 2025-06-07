@@ -25,3 +25,7 @@ RUN cp manifest.yaml ./source_declarative_manifest/manifest.yaml
 
 # Copy components.py if it exists (optional)
 RUN if [ -f components.py ]; then cp components.py ./source_declarative_manifest/components.py; fi
+
+# Set entrypoint explicitly as required for manifest-only connectors
+ENV AIRBYTE_ENTRYPOINT="python ./main.py"
+ENTRYPOINT ["python", "./main.py"]
