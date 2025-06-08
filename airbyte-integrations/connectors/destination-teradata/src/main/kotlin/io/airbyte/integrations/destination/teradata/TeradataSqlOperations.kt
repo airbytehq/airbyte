@@ -314,8 +314,11 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                     stmt.executeBatch()
                 }
             } catch (e: SQLException) {
-                LOGGER.error(e.message)
-                LOGGER.error(e.nextException.message)
+                var currentException: SQLException? = e
+                while (currentException != null) {
+                    LOGGER.error(currentException.message)
+                    currentException = currentException.nextException
+                }
                 throw Exception(e)
             }
         }
