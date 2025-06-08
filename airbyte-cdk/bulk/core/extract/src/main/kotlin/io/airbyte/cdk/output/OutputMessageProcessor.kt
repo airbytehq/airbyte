@@ -51,7 +51,7 @@ class OutputMessageProcessor(
                 Clock.systemUTC(),
                 512
             )
-            protoRecordOutputConsumer = streamFeedBootstrap.protoStreamRecordConsumer(protoOutputConsumer!!)
+            protoRecordOutputConsumer = streamFeedBootstrap.protoStreamRecordConsumer(protoOutputConsumer)
         }
         OutputType.SIMPLE_OUTPUT -> {
             simpleEfficientStreamConsumer = streamFeedBootstrap.streamRecordConsumer(null)
