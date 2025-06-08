@@ -254,7 +254,6 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         syncId: Long,
         generationId: Long
     ) {
-
         if (records.isEmpty()) {
             return
         }
@@ -269,24 +268,25 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                 JavaBaseConstants.COLUMN_NAME_AB_META,
                 JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
             )
-        val batchSize = 5000
+        var batchSize = 5000
+        if(records.size < 5000) {
+            batchSize = records.size
+        }
         database.execute { con ->
             try {
                 val stmt = con.prepareStatement(insertQueryComponent)
                 var batchCount = 0
                 for (record in records) {
                     val uuid = UUID.randomUUID().toString()
-                    val jsonData = record.serialized
+                    val jsonData = record.serialized ?: "{}"
                     val airbyteMeta =
                         if (record.record!!.meta == null) {
                             "{\"changes\":[]}"
                         } else {
                             Jsons.serialize(record.record!!.meta)
                         }
-
                     var i = 0
                     stmt.setString(++i, uuid)
-
                     stmt.setObject(
                         ++i,
                         JSONStruct(
