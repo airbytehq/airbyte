@@ -37,6 +37,7 @@ class RootReader(
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val OutputFormat: String
 ) {
     private val log = KotlinLogging.logger {}
 

@@ -196,6 +196,9 @@ class ProtoRecordOutputConsumer(
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        synchronized(this) {
+            // Flush any remaining buffer contents to stdout before closing.
+            withLockFlush()
+        }
     }
 }

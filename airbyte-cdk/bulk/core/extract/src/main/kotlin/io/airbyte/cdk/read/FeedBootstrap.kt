@@ -46,7 +46,8 @@ sealed class FeedBootstrap<T : Feed>(
     private val stateManager: StateManager,
     /** [Feed] to emit records for. */
     val feed: T,
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
+    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    val outputFormat: String,
 ) {
 
     /** Delegates to [StateManager.feeds]. */
@@ -367,13 +368,14 @@ sealed class FeedBootstrap<T : Feed>(
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
-            boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
+            boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+            outputFormat: String
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory)
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory, outputFormat)
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory)
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory, outputFormat)
             }
     }
 }
@@ -418,8 +420,9 @@ class GlobalFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
-    boostedOutputConsumerFactory: BoostedOutputConsumerFactory?
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, boostedOutputConsumerFactory)
+    boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    outputFormat: String
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, boostedOutputConsumerFactory, outputFormat)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
@@ -428,7 +431,8 @@ class StreamFeedBootstrap(
     stateManager: StateManager,
     stream: Stream,
     boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, boostedOutputConsumerFactory) {
+    outputFormat: String
+) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, boostedOutputConsumerFactory, outputFormat) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = streamRecordConsumers(boostedOutputConsumer)[feed.id]!!

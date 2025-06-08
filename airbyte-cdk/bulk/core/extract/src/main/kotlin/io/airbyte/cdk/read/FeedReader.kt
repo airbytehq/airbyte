@@ -41,7 +41,7 @@ class FeedReader(
 
     private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory)
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory, root.OutputFormat)
 
     /** Reads records from this [feed]. */
     suspend fun read() {
