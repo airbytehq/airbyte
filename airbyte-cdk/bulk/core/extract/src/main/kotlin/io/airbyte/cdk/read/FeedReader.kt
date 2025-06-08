@@ -329,12 +329,12 @@ class FeedReader(
 
             var pendingMessageQueue = ArrayDeque<Any>()
             if (finalCheckpoint) {
-                val acqs = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
+                val acqs: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
                 acquiredSocket =
                     acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
                         ?: return // No output socket available, skip checkpoint.
 
-                val r = (acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
+                val r = (acqs.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
 
                 messageProcessor = OutputMessageProcessor(
                     when (feedBootstrap.outputFormat){
