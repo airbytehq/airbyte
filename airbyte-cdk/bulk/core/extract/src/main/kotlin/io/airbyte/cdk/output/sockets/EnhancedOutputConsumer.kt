@@ -118,16 +118,19 @@ data object FloatProtoEncoder: ProtoEncoder<Float> {
 }
 
 typealias AnyProtoEncoder = TextProtoEncoder
+val valueVBuilder = AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+fun InternalRow.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Builder): AirbyteRecordMessageProtobuf {
 
-fun InternalRow.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Builder): AirbyteRecordMessageProtobuf.Builder =
-    recordMessageBuilder
+    return recordMessageBuilder
         .apply {
             for ((_, value) in this@toProto.toSortedMap()) {
                 addData(value.jsonEncoder.toProto().encode(
-                    AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder(),
+                    valueVBuilder,
                     value.value!!))
             }
         }
+        .build()
+}
 
 
 

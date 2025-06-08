@@ -7,13 +7,12 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageProcessor
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
-import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketWrapper
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import java.time.Clock
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
@@ -111,7 +110,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             s.accept(row.data, row.changes)*/
 
 //        streamRecordConsumer.accept(row.data, row.changes)
-        messageProcessor.acceptRecord(row.data)
+//        messageProcessor.acceptRecord(row.data)
+        messageProcessor.recordAcceptor(row.data)
     }
 
     override fun releaseResources() {
@@ -166,7 +166,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
-
+    private val log = KotlinLogging.logger {}
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
@@ -191,6 +191,9 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                 for (row in result) {
                     out(row)
                     numRecords.incrementAndGet()
+                    /*if (numRecords.incrementAndGet() % 1_000 == 0L) {
+                        log.info { "*** Read $numRecords records from partition $partitionId" }
+                    }*/
                 }
             }
         runComplete.set(true)

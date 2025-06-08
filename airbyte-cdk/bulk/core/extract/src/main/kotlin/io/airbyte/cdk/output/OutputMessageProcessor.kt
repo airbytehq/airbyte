@@ -32,7 +32,7 @@ class OutputMessageProcessor(
     private lateinit var protoOutputConsumer: ProtoRecordOutputConsumer
     private lateinit var protoRecordOutputConsumer: FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer
     private lateinit var simpleEfficientStreamConsumer: StreamRecordConsumer
-
+    lateinit var recordAcceptor: (InternalRow) -> Unit
     init {
 
     when (outputType) {
@@ -40,18 +40,24 @@ class OutputMessageProcessor(
             boostedOutputConsumer = BoostedOutputConsumer(
                 (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
                 Clock.systemUTC(),
-                512,
+                8192,
                 additionalProperties
             )
             efficientStreamRecordConsumer = streamFeedBootstrap.streamRecordConsumer(boostedOutputConsumer)
+            recordAcceptor = { record ->
+                efficientStreamRecordConsumer.accept(record, emptyMap())
+            }
         }
         OutputType.PROTOBUF_SOCKET -> {
             protoOutputConsumer = ProtoRecordOutputConsumer(
                 (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
                 Clock.systemUTC(),
-                512
+                8192
             )
             protoRecordOutputConsumer = streamFeedBootstrap.protoStreamRecordConsumer(protoOutputConsumer)
+            recordAcceptor = { record ->
+                protoRecordOutputConsumer.accept(record, emptyMap())
+            }
         }
         OutputType.SIMPLE_OUTPUT -> {
             simpleEfficientStreamConsumer = streamFeedBootstrap.streamRecordConsumer(null)

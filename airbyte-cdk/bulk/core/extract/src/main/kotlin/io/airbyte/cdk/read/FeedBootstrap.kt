@@ -189,14 +189,23 @@ sealed class FeedBootstrap<T : Feed>(
     inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer) :
         StreamRecordConsumer {
         val outputer: ProtoRecordOutputConsumer = boostedOutputConsumer
-
+        lateinit var firstData: AirbyteRecordMessageProtobuf
+        lateinit var firstMessage: AirbyteMessageProtobuf
         override fun close() {
             outputer.close()
         }
 
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData.toProto(reusedRecordMessageWithoutChanges))
+                if (::firstData.isInitialized.not()) {
+                    firstData = recordData.toProto(reusedRecordMessageWithoutChanges)
+                }
+                val p = recordData.toProto(AirbyteRecordMessageProtobuf.newBuilder()
+                    .setStreamName(stream.name)
+                    .setStreamNamespace(stream.namespace)
+                    .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                )
+                acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
             } /*else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -209,8 +218,13 @@ sealed class FeedBootstrap<T : Feed>(
             }*/
         }
 
-        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
+        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf,) {
             synchronized(this) {
+                if (::firstMessage.isInitialized.not()) {
+                    firstMessage = reusedMessageWithoutChanges
+                        .setRecord(firstData)
+                        .build()
+                }
 /*
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
@@ -218,9 +232,8 @@ sealed class FeedBootstrap<T : Feed>(
 */
                 outputer.accept(
                     reusedMessageWithoutChanges
-                        .setRecord(recordData.build())
-                        .build()
-                )
+                        .setRecord(recordData)
+                        .build() /*firstMessage*/)
             }
         }
 
