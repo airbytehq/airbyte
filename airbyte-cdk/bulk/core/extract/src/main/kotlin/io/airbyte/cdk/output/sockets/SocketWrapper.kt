@@ -3,6 +3,7 @@ package io.airbyte.cdk.output.sockets
 import io.airbyte.cdk.output.sockets.SocketWrapper.SocketStatus.*
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import java.io.File
 import java.io.OutputStream
 import java.net.StandardProtocolFamily
@@ -40,7 +41,7 @@ interface SocketWrapper {
     var outputStream: OutputStream?
 }
 
-class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper {
+class UnixDomainSocketWrapper(private val socketFilePath: String, val outputFormat: String): SocketWrapper {
 
     private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
@@ -54,12 +55,12 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
 
     private fun ensureSocketState() {
         try {
-            val s = AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
-                .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
-                .build()
-            s.writeDelimitedTo(outputStream!!)
+            if (outputFormat == "PROTOBUF") {
+                protoProbePacket.writeDelimitedTo(outputStream!!)
+            } else {
+                outputStream?.write('\n'.code)
+            }
             // Ensure the socket is still open and writable
-//            outputStream?.write('\n'.code)
         } catch (e: Exception) {
             logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdownSocket()
@@ -108,6 +109,12 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
     override fun unbindSocket() {
         socketBound.set(false)
     }
+
+    companion object {
+        val protoProbePacket: AirbyteMessage.AirbyteMessageProtobuf = AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
+            .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
+            .build()
+    }
 }
 
 interface SocketWrapperFactory {
@@ -116,6 +123,8 @@ interface SocketWrapperFactory {
 
 @Singleton
 class DefaultSocketWrapperFactory: SocketWrapperFactory {
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}")
+    lateinit var outputFormat: String
     override fun makeSocket(socketFilePath: String): SocketWrapper =
-        UnixDomainSocketWrapper(socketFilePath)
+        UnixDomainSocketWrapper(socketFilePath, outputFormat)
 }

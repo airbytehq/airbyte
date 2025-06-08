@@ -67,7 +67,9 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
 
-        val r = (this.acquiredResources.get().get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource
+        @Suppress("UNCHECKED_CAST")
+        val r = (this.acquiredResources.get().get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as AcquiredResourceHolder<SocketResource.AcquiredSocket>)
+            .resource // this is the socket resource we need for output
         messageProcessor = OutputMessageProcessor(
             when (streamState.streamFeedBootstrap.outputFormat) {
                 "JSONL" -> OutputMessageProcessor.OutputType.JSON_SOCKET
