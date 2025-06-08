@@ -14,8 +14,10 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 
-class AirbyteOkHttpClient(private val client: OkHttpClient, private val retryPolicy: RetryPolicy<okhttp3.Response>) :
-    HttpClient {
+class AirbyteOkHttpClient(
+    private val client: OkHttpClient,
+    private val retryPolicy: RetryPolicy<okhttp3.Response>
+) : HttpClient {
 
     override fun sendRequest(request: Request): Response {
         val url = createUrl(request)
