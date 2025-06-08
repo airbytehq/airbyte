@@ -10,7 +10,6 @@ import io.micronaut.http.HttpHeaders
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response as OkHttpResponse
@@ -45,7 +44,7 @@ class OAuthAuthenticatorTest {
         val originalRequest: Request = mockk()
         val chain: Interceptor.Chain = mockChain(originalRequest)
         val builder: Request.Builder = mockBuilder(originalRequest)
-        mockCall(originalRequest)
+        mockCall()
 
         authenticator.intercept(chain)
 
@@ -59,7 +58,7 @@ class OAuthAuthenticatorTest {
         val originalRequest: Request = mockk()
         val chain: Interceptor.Chain = mockChain(originalRequest)
         mockBuilder(originalRequest)
-        mockCall(originalRequest)
+        mockCall()
 
         authenticator.intercept(chain)
         authenticator.intercept(chain)
@@ -67,14 +66,13 @@ class OAuthAuthenticatorTest {
         verify(exactly = 1) { httpClient.sendRequest(any()) }
     }
 
-    private fun mockCall(originalRequest: Request) {
+    private fun mockCall() {
         val oauthResponse: Response =
             Response(
                 statusCode = 200,
                 headers = emptyMap(),
                 body = "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".byteInputStream(Charsets.UTF_8),
             )
-        val call: Call = mockk()
         every { httpClient.sendRequest(any()) } returns (oauthResponse)
     }
 
