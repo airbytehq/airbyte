@@ -21,11 +21,13 @@ class OAuthAuthenticator(
     private val httpClient: HttpClient = AirbyteOkHttpClient(OkHttpClient.Builder().build(), RetryPolicy.ofDefaults())
 ) :
     Interceptor {
-    private val clientIdFieldName: String = "client_id"
-    private val clientSecretFieldName: String = "client_secret"
-    private val grantTypeFieldName: String = "grant_type"
-    private val grantType: String = "refresh_token"
-    private val refreshTokenFieldName: String = "refresh_token"
+    object Constants {
+        const val CLIENT_ID_FIELD_NAME: String = "client_id"
+        const val CLIENT_SECRET_FIELD_NAME: String = "client_secret"
+        const val GRANT_TYPE_FIELD_NAME: String = "grant_type"
+        const val GRANT_TYPE: String = "refresh_token"
+        const val REFRESH_TOKEN_FIELD_NAME: String = "refresh_token"
+    }
 
     private val decoder: JsonDecoder = JsonDecoder()
     private var accessToken: String? = null
@@ -54,10 +56,10 @@ class OAuthAuthenticator(
      */
     fun queryForAccessToken(): JsonNode {
         val requestBody: String = mapOf(
-            grantTypeFieldName to grantType,
-            clientIdFieldName to clientId,
-            clientSecretFieldName to clientSecret,
-            refreshTokenFieldName to refreshToken,
+            Constants.GRANT_TYPE_FIELD_NAME to Constants.GRANT_TYPE,
+            Constants.CLIENT_ID_FIELD_NAME to clientId,
+            Constants.CLIENT_SECRET_FIELD_NAME to clientSecret,
+            Constants.REFRESH_TOKEN_FIELD_NAME to refreshToken,
         ).map { (key, value) -> "$key=$value" }.joinToString(separator = "&") { it }
         val response: Response = httpClient.sendRequest(
             Request(

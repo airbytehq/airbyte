@@ -8,6 +8,6 @@ data class Request(
     val method: RequestMethod,
     val url: String,
     val headers: Map<String, String> = mapOf(),
-    val query: MutableMap<String, List<String>> = mutableMapOf(),
+    val query: Map<String, List<String>> = mapOf(),
     val body: ByteArray? = null,
 )
