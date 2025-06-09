@@ -144,6 +144,8 @@ data class DestinationStream(
                     Overwrite -> {
                         destinationSyncMode = DestinationSyncMode.OVERWRITE
                     }
+                    SoftDelete -> DestinationSyncMode.SOFT_DELETE
+                    Update -> DestinationSyncMode.UPDATE
                 }
             }
 
@@ -173,6 +175,8 @@ class DestinationStreamFactory(
                     DestinationSyncMode.OVERWRITE -> Overwrite
                     DestinationSyncMode.APPEND_DEDUP ->
                         Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
+                    DestinationSyncMode.UPDATE -> Update
+                    DestinationSyncMode.SOFT_DELETE -> SoftDelete
                 },
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
@@ -203,6 +207,7 @@ data class Dedupe(
      */
     val cursor: List<String>,
 ) : ImportType
+
 /**
  * A legacy destination sync mode. Modern destinations depend on platform to set
  * overwrite/record-retaining behavior via the generationId / minimumGenerationId parameters, and
@@ -213,3 +218,7 @@ data class Dedupe(
  */
 // TODO should this even exist?
 data object Overwrite : ImportType
+
+data object Update : ImportType
+
+data object SoftDelete : ImportType
