@@ -11,6 +11,8 @@ package-mode = false
 python = "^3.10,<3.13"
 airbyte-cdk = "^6"
 pytest = "^8"
+pytest-lazy-fixtures = "^1.1.4"
+requests-mock = "^1.12.1"
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:This class is experimental*"

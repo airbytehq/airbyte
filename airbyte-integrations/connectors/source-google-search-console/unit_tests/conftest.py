@@ -7,12 +7,10 @@ from copy import deepcopy
 from pathlib import Path
 
 from pytest import fixture
-from source_google_search_console import SourceGoogleSearchConsole
 
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
-
 
 # These methods will be needed when the connector is converted into manifest-only
 def _get_manifest_path() -> Path:
@@ -36,8 +34,7 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
 
 def find_stream(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state
-    # streams = get_source(config, state).streams(config=config) use this method when converting to manifest-only
-    streams = SourceGoogleSearchConsole(catalog=None, config=config, state=state).streams(config=config)
+    streams = get_source(config, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream

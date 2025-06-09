@@ -7,25 +7,16 @@ from unittest.mock import MagicMock
 
 import pytest
 from pytest_lazy_fixtures import lf as lazy_fixture
-from source_google_search_console.source import SourceGoogleSearchConsole
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import find_stream
+from .conftest import _YAML_FILE_PATH, find_stream, get_source
 from .utils import command_check
 
 
 logger = logging.getLogger("airbyte")
-
-
-class MockResponse:
-    def __init__(self, data_field: str, count: int):
-        self.value = {data_field: [0 for i in range(count)]}
-
-    def json(self):
-        return self.value
 
 
 @pytest.mark.parametrize(
@@ -61,19 +52,19 @@ def test_slice(config_gen, site_urls, sync_mode, data_state):
                         "end_time": range_["end_time"],
                     },
                     partition={
-                        "site_url": site_url + "/",
                         "search_type": search_type,
+                        "site_url": site_url,
                     },
                 )
                 assert next(stream_slice) == expected
 
 
-def test_check_connection(config_gen, config, mocker, requests_mock):
+def test_check_connection(config_gen, config, requests_mock):
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
 
-    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    source = get_source(config)
 
     assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
@@ -131,22 +122,21 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     ],
 )
 def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
-    source = SourceGoogleSearchConsole(config=test_config, catalog=None, state=None)
+    source = get_source(test_config)
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
     actual = source.check_connection(logger, test_config)
     assert actual == expected
 
 
-def test_streams(config_gen):
-    config = config_gen()
-    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+def test_streams(config):
+    source = get_source(config)
     streams = source.streams(config)
     assert len(streams) == 15
 
 
 def test_streams_without_custom_reports(config_gen):
     config = config_gen(custom_reports_array=...)
-    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    source = get_source(config)
     streams = source.streams(config)
     assert len(streams) == 14
 
@@ -190,9 +180,7 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     custom_report_config = config_gen(custom_reports_array=custom_reports)
     mock_logger = MagicMock()
     status = (
-        SourceGoogleSearchConsole(config=custom_report_config, catalog=None, state=None).check(
-            config=custom_report_config, logger=mock_logger
-        )
+        get_source(custom_report_config).check(config=custom_report_config, logger=mock_logger)
     ).status
     assert status is expected_status
     if status is Status.FAILED:

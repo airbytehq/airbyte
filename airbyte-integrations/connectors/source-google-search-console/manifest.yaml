@@ -3,9 +3,9 @@ version: 6.44.0
 type: DeclarativeSource
 
 check:
-  type: CheckStream
-  stream_names:
-    - sites
+  type: CheckDynamicStream
+  stream_count: 1
+  use_check_availability: false
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -264,7 +264,9 @@ spec:
         validation_strategy:
           type: ValidateAdheresToSchema
           base_schema:
-            type: array
+            type:
+              - "null"
+              - array
             items:
               type: object
               required:
@@ -284,32 +286,17 @@ spec:
         validation_strategy:
           type: ValidateAdheresToSchema
           base_schema:
-            country:
-              - country:
-                  type:
-                    - "null"
-                    - string
-            date:
-              - date:
-                  format: date
-                  type:
-                    - "null"
-                    - string
-            device:
-              - device:
-                  type:
-                    - "null"
-                    - string
-            page:
-              - page:
-                  type:
-                    - "null"
-                    - string
-            query:
-              - query:
-                  type:
-                    - "null"
-                    - string
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+              enum:
+                - country
+                - date
+                - device
+                - page
+                - query
 
 definitions:
   oauth_authenticator:
@@ -1341,10 +1328,6 @@ dynamic_streams:
 # same authenticated user account may hit multiple site urls. The default is set to 40
 # which equates to one request every 2 seconds which seems like a fair baseline.
 #
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 40) }}"
-  max_concurrency: 100
 
 schemas:
   search_analytics_all_fields:
