@@ -83,7 +83,7 @@ class InputConsumerTask(
         log.info { "Starting consuming messages from the input flow" }
         val unopenedStreams = catalog.streams.map { it.descriptor }.toMutableSet()
         pipelineInputQueue.use {
-            var baseException: Exception? = null
+            var processingThrowable: Throwable? = null
             try {
                 inputFlow.fold(unopenedStreams) { unopenedStreams, (_, reserved) ->
                     when (val message = reserved.value) {
@@ -101,11 +101,11 @@ class InputConsumerTask(
                     }
                     unopenedStreams
                 }
-            } catch (e: Exception) {
-                log.warn(e) {
+            } catch (t: Throwable) {
+                log.warn(t) {
                     "Encountered exception in input loop. Capturing exception and proceeding with sync shutdown."
                 }
-                baseException = e
+                processingThrowable = t
                 // intentionally don't throw here.
                 // we'll throw an appropriate exception in the `finally` block.
             } finally {
@@ -122,21 +122,21 @@ class InputConsumerTask(
                     // but we can't just skip this close() call if baseException != null,
                     // because that would cause the sync to hang.
                     pipelineEventBookkeepingRouter.close()
-                } catch (e: Exception) {
-                    if (baseException == null) {
-                        throw e
+                } catch (t: Throwable) {
+                    if (processingThrowable == null) {
+                        throw t
                     } else {
-                        log.warn(e) {
-                            "Encountered exception when closing PipelineEventBookkeepingRouter, but we're already handling another exception ($baseException). Swallowing this exception."
+                        log.warn(t) {
+                            "Encountered exception when closing PipelineEventBookkeepingRouter, but we're already handling another exception ($processingThrowable). Swallowing this exception."
                         }
-                        throw baseException
+                        throw processingThrowable
                     }
                 }
                 // if the `pipelineEventBookkeepingRouter.close()` ran successfully,
                 // we should rethrow the original exception.
-                if (baseException != null) {
+                if (processingThrowable != null) {
                     log.warn { "Throwing captured exception after triggering sync shutdown." }
-                    throw baseException
+                    throw processingThrowable
                 }
             }
         }
