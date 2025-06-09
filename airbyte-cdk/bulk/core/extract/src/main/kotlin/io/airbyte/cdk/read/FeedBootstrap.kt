@@ -186,7 +186,7 @@ sealed class FeedBootstrap<T : Feed>(
                 )
     }
 
-    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer, val partitionId: String) :
+    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer, val partitionId: String?) :
         StreamRecordConsumer {
         val outputer: ProtoRecordOutputConsumer = boostedOutputConsumer
         override fun close() {
@@ -195,12 +195,15 @@ sealed class FeedBootstrap<T : Feed>(
 
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                val p = recordData.toProto(AirbyteRecordMessageProtobuf.newBuilder()
+                var b = AirbyteRecordMessageProtobuf.newBuilder()
                     .setStreamName(stream.name)
                     .setStreamNamespace(stream.namespace)
                     .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
-                    .setPartitionId(partitionId)
+
+                partitionId?.let { b.setPartitionId(it) }
+                val p = recordData.toProto(b
                 )
+
                 acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
             } /*else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
@@ -440,5 +443,5 @@ class StreamFeedBootstrap(
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = streamRecordConsumers(boostedOutputConsumer)[feed.id]!!
-    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer, partitionId: String): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(feed.streams.get(0), protoOutputConsumer, partitionId)
+    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(feed.streams.get(0), protoOutputConsumer, partitionId)
 }
