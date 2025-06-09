@@ -48,7 +48,7 @@ class ClickhouseDirectLoader(
 
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
         meta.put("sync_id", record.stream.syncId)
-        protocolRecord.put(Constants.FIELD_META, meta)
+        protocolRecord.set<ObjectNode>(Constants.FIELD_META, meta)
 
         buffer.write(protocolRecord.toString())
         buffer.write(DELIMITER)
