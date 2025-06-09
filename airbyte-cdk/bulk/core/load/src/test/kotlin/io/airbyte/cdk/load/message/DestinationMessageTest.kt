@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.message
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -47,22 +48,29 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
-    private fun factory(isFileTransferEnabled: Boolean, requireCheckpointKey: Boolean = false) =
+    private fun factory(
+        isFileTransferEnabled: Boolean,
+        requireCheckpointKey: Boolean = false,
+        namespaceMapper: NamespaceMapper = NamespaceMapper()
+    ) =
         DestinationMessageFactory(
             DestinationCatalog(
                 listOf(
                     DestinationStream(
-                        descriptor,
+                        unmappedNamespace = descriptor.namespace,
+                        unmappedName = descriptor.name,
                         Append,
                         ObjectTypeWithEmptySchema,
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
+                        namespaceMapper = namespaceMapper
                     )
                 )
             ),
             isFileTransferEnabled,
-            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey
+            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
+            namespaceMapper,
         )
 
     private fun convert(
@@ -588,7 +596,8 @@ class DestinationMessageTest {
         // Note: can't be a mock or `schemaInAirbyteProxyOrder` won't return the correct value
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor("namespace", "name"),
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
@@ -600,7 +609,8 @@ class DestinationMessageTest {
                                 "id" to FieldType(IntegerType, nullable = true),
                                 "name" to FieldType(StringType, nullable = true)
                             )
-                    )
+                    ),
+                namespaceMapper = NamespaceMapper()
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 
@@ -608,7 +618,8 @@ class DestinationMessageTest {
             DestinationMessageFactory(
                 catalog,
                 fileTransferEnabled = false,
-                requireCheckpointIdOnRecordAndKeyOnState = true
+                requireCheckpointIdOnRecordAndKeyOnState = true,
+                NamespaceMapper()
             )
         val inputMessage =
             AirbyteMessageProtobuf.newBuilder()
