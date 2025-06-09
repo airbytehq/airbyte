@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.dlq
 
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -18,7 +22,7 @@ import kotlinx.coroutines.flow.Flow
  */
 class FlattenQueueAdapter<K : WithStream>(
     private val queue: PartitionedQueue<PipelineEvent<K, DestinationRecordRaw>>,
-): PartitionedQueue<PipelineEvent<K, DlqStepOutput>> {
+) : PartitionedQueue<PipelineEvent<K, DlqStepOutput>> {
     override val partitions = queue.partitions
 
     override fun consume(partition: Int): Flow<PipelineEvent<K, DlqStepOutput>> {
@@ -47,8 +51,8 @@ class FlattenQueueAdapter<K : WithStream>(
         }
     }
 
-    private fun PipelineMessage<K, DlqStepOutput>.flatten()
-    : Iterable<PipelineMessage<K, DestinationRecordRaw>> =
+    private fun PipelineMessage<K, DlqStepOutput>.flatten():
+        Iterable<PipelineMessage<K, DestinationRecordRaw>> =
         value.rejectedRecords?.let { failedRecords ->
             val lastIndex = failedRecords.size - 1
             return failedRecords.mapIndexed { index, destinationRecordRaw ->
@@ -70,6 +74,6 @@ class FlattenQueueAdapter<K : WithStream>(
                     )
                 }
             }
-        } ?: emptyList()
-
+        }
+            ?: emptyList()
 }

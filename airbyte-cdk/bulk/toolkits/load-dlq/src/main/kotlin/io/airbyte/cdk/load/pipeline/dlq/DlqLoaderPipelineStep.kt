@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.dlq
 
 import io.airbyte.cdk.load.message.BatchState
@@ -48,15 +52,11 @@ class DlqStepOutput(
     val rejectedRecords: List<DestinationRecordRaw>? = null,
 ) : WithBatchState
 
-/**
- * Wraps a [DlqLoader] into a [BatchAccumulator] so that it fits into a [LoadPipeline].
- */
+/** Wraps a [DlqLoader] into a [BatchAccumulator] so that it fits into a [LoadPipeline]. */
 class DlqLoaderAccumulator<S>(
     private val loader: DlqLoader<S>,
 ) : BatchAccumulator<S, StreamKey, DestinationRecordRaw, DlqStepOutput> {
-    /**
-     * Propagates the call to the [DlqLoader] in order to create a new state for a stream.
-     */
+    /** Propagates the call to the [DlqLoader] in order to create a new state for a stream. */
     override suspend fun start(key: StreamKey, part: Int): S = loader.start(key, part)
 
     /**
@@ -65,9 +65,9 @@ class DlqLoaderAccumulator<S>(
      * If the [DlqLoader] returns:
      * - [DlqLoader.Incomplete]: it assumes that no data was persisted, and continue with the
      * current state.
-     * - [DlqLoader.Complete]: it assumes that data was at least partially persisted. If no
-     * records are returned, it means that the upload was successful, the batch is complete since
-     * there are no data to write to the dead letter queue. The CDK should be able to persist the
+     * - [DlqLoader.Complete]: it assumes that data was at least partially persisted. If no records
+     * are returned, it means that the upload was successful, the batch is complete since there are
+     * no data to write to the dead letter queue. The CDK should be able to persist the
      * AirbyteState. On the other hand, if records are returned, they are sent to the
      * DeadLetterQueue and the BatchState is PERSISTED in order to let the CDK know that it
      * shouldn't ack the AirbyteState until those records are persisted in the DeadLetterQueue.
@@ -87,8 +87,9 @@ class DlqLoaderAccumulator<S>(
         return FinalOutput(getOutput(result.rejectedRecords))
     }
 
-    private fun getOutput(rejectedRecords: List<DestinationRecordRaw>?) = when (rejectedRecords) {
-        null -> DlqStepOutput(BatchState.COMPLETE, null)
-        else -> DlqStepOutput(BatchState.PERSISTED, rejectedRecords)
-    }
+    private fun getOutput(rejectedRecords: List<DestinationRecordRaw>?) =
+        when (rejectedRecords) {
+            null -> DlqStepOutput(BatchState.COMPLETE, null)
+            else -> DlqStepOutput(BatchState.PERSISTED, rejectedRecords)
+        }
 }
