@@ -105,6 +105,8 @@ dynamic_streams:
         - field_path:
             - name
           type: ComponentMappingDefinition
+          # Expression is structured as: <value_if_true> if <condition> else <value_if_false>
+          # This sets the stream name to the custom name from stream_name_overrides if a match is found, otherwise uses the original sheet/tab name.
           value: >-
             {{
               (
