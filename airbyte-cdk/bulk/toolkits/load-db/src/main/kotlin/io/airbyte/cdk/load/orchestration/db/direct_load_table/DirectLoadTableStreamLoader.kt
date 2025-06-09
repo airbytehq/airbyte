@@ -36,7 +36,7 @@ class DirectLoadTableAppendStreamLoader(
             "AppendStreamLoader starting for stream ${stream.descriptor.toPrettyString()}"
         }
         if (initialStatus.realTable == null) {
-        logger.info {
+            logger.info {
                 "Creating final table for ${realTableName.toPrettyString()} for stream ${stream.descriptor.toPrettyString()}"
             }
             sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
@@ -151,18 +151,14 @@ class DirectLoadTableAppendTruncateStreamLoader(
         if (initialStatus.tempTable != null) {
             val generationId = nativeTableOperations.getGenerationId(tempTableName)
 
-            //if (initialStatus.tempTable.isEmpty || generationId >= stream.minimumGenerationId) {
-            //    nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
-            //} else {
-                logger.info {
-                    "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
-                }
-                sqlTableOperations.createTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    replace = true
-                )
+            // if (initialStatus.tempTable.isEmpty || generationId >= stream.minimumGenerationId) {
+            //    nativeTableOperations.ensureSchemaMatches(stream, tempTableName,
+            // columnNameMapping)
+            // } else {
+            logger.info {
+                "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
+            }
+            sqlTableOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
             // }
             isWritingToTemporaryTable = true
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
