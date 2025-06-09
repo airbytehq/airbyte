@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
 from source_google_sheets.utils import (
-    granular_safe_name_conversion,
+    safe_sanitzation_conversion,
     name_conversion,
     safe_name_conversion,
 )
@@ -71,7 +71,7 @@ class RawSchemaParser:
         duplicate_fields = set()
         parsed_schema_values = []
         seen_values = set()
-        # Gather all flags from config
+        # Gather all sanitisation flags from config
         config = getattr(self, "config", {})
         flags = {
             "remove_leading_trailing_underscores": config.get("remove_leading_trailing_underscores", False),
@@ -88,7 +88,7 @@ class RawSchemaParser:
                 break
             # Use granular if any flag is set, else legacy
             if names_conversion and use_granular:
-                raw_schema_property_value = granular_safe_name_conversion(raw_schema_property_value, **flags)
+                raw_schema_property_value = safe_sanitzation_conversion(raw_schema_property_value, **flags)
             elif names_conversion:
                 raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
 

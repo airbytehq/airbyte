@@ -46,7 +46,7 @@ def safe_name_conversion(text: str) -> str:
     return new
 
 
-def granular_name_conversion(
+def _sanitization(
     text: str,
     remove_leading_trailing_underscores: bool = False,
     combine_number_word_pairs: bool = False,
@@ -148,14 +148,14 @@ def granular_name_conversion(
     return final_result
 
 
-def granular_safe_name_conversion(text: str, **kwargs) -> str:
+def safe_sanitzation_conversion(text: str, **kwargs) -> str:
     """
-    Converts text to a safe name using granular_name_conversion with the provided keyword arguments.
+    Converts text to a safe name using _sanitization with the provided keyword arguments.
     Raises an exception if the result is empty or "_". Unlike safe_name_conversion,
-    this function also rejects "_" as a valid result, since granular_name_conversion
+    this function also rejects "_" as a valid result, since _sanitization
     may return "_" for certain inputs (e.g., "*").
     """
-    new = granular_name_conversion(text, **kwargs)
+    new = _sanitization(text, **kwargs)
     if not new or new == "_":
         raise Exception(f"initial string '{text}' converted to empty")
     return new

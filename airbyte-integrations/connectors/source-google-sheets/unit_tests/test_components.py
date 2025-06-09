@@ -12,7 +12,7 @@ import requests
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.components import DpathSchemaExtractor, DpathSchemaMatchingExtractor
 from source_google_sheets.components.extractors import RawSchemaParser
-from source_google_sheets.utils import granular_name_conversion
+from source_google_sheets.utils import _sanitization
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.models import SyncMode
@@ -241,30 +241,30 @@ def test_row_contains_relevant_data(values, relevant_indices, expected_response)
     assert is_row_empty == expected_response
 
 
-# Tests for granular_name_conversion
+# Tests for _sanitization
 def test_remove_leading_trailing_underscores():
-    assert granular_name_conversion(" EXAMPLE Domain ", remove_leading_trailing_underscores=True) == "example_domain"
+    assert _sanitization(" EXAMPLE Domain ", remove_leading_trailing_underscores=True) == "example_domain"
 
 
 def test_remove_special_characters():
-    assert granular_name_conversion("Example ID*", remove_special_characters=True) == "example_id"
+    assert _sanitization("Example ID*", remove_special_characters=True) == "example_id"
 
 
 def test_combine_number_word_pairs():
-    assert granular_name_conversion("50th Percentile", combine_number_word_pairs=True) == "_50th_percentile"
+    assert _sanitization("50th Percentile", combine_number_word_pairs=True) == "_50th_percentile"
 
 
 def test_combine_letter_number_pairs():
-    assert granular_name_conversion("Q3 2023", combine_letter_number_pairs=True) == "q3_2023"
+    assert _sanitization("Q3 2023", combine_letter_number_pairs=True) == "q3_2023"
 
 
 def test_allow_leading_numbers():
-    assert granular_name_conversion("50th Percentile", allow_leading_numbers=True, combine_number_word_pairs=True) == "50th_percentile"
+    assert _sanitization("50th Percentile", allow_leading_numbers=True, combine_number_word_pairs=True) == "50th_percentile"
 
 
 def test_combined_flags():
     assert (
-        granular_name_conversion(
+        _sanitization(
             " Example ID*",
             remove_leading_trailing_underscores=True,
             remove_special_characters=True,
@@ -275,7 +275,7 @@ def test_combined_flags():
 
 def test_all_flags():
     assert (
-        granular_name_conversion(
+        _sanitization(
             "  23Full1st(1)test 123aaa     *! ",
             remove_leading_trailing_underscores=True,
             remove_special_characters=True,
@@ -288,33 +288,33 @@ def test_all_flags():
 
 
 def test_multiple_consecutive_special_characters():
-    assert granular_name_conversion("a!!b", remove_special_characters=False) == "a_b"
-    assert granular_name_conversion("a!!b", remove_special_characters=True) == "ab"
+    assert _sanitization("a!!b", remove_special_characters=False) == "a_b"
+    assert _sanitization("a!!b", remove_special_characters=True) == "ab"
 
 
 def test_starting_with_number():
-    assert granular_name_conversion("123abc", allow_leading_numbers=False) == "_123_abc"
-    assert granular_name_conversion("123abc", allow_leading_numbers=True) == "123_abc"
+    assert _sanitization("123abc", allow_leading_numbers=False) == "_123_abc"
+    assert _sanitization("123abc", allow_leading_numbers=True) == "123_abc"
 
 
 def test_mixed_case_and_special_characters():
-    assert granular_name_conversion("Test_Name!123", remove_special_characters=False) == "test_name_123"
-    assert granular_name_conversion("Test_Name!123", remove_special_characters=True) == "test_name_123"
+    assert _sanitization("Test_Name!123", remove_special_characters=False) == "test_name_123"
+    assert _sanitization("Test_Name!123", remove_special_characters=True) == "test_name_123"
 
 
 def test_leading_special_characters():
-    assert granular_name_conversion("*M1k", remove_special_characters=False, combine_letter_number_pairs=True) == "_m1_k"
-    assert granular_name_conversion("*M1k", remove_special_characters=True, combine_letter_number_pairs=True) == "m1_k"
+    assert _sanitization("*M1k", remove_special_characters=False, combine_letter_number_pairs=True) == "_m1_k"
+    assert _sanitization("*M1k", remove_special_characters=True, combine_letter_number_pairs=True) == "m1_k"
 
 
 def test_trailing_special_characters():
-    assert granular_name_conversion("M1k*", remove_special_characters=False, combine_letter_number_pairs=True) == "m1_k_"
-    assert granular_name_conversion("M1k*", remove_special_characters=True, combine_letter_number_pairs=True) == "m1_k"
+    assert _sanitization("M1k*", remove_special_characters=False, combine_letter_number_pairs=True) == "m1_k_"
+    assert _sanitization("M1k*", remove_special_characters=True, combine_letter_number_pairs=True) == "m1_k"
 
 
 def test_multiple_flags_with_special_characters():
     assert (
-        granular_name_conversion(
+        _sanitization(
             "  *50th Percentile! ",
             remove_leading_trailing_underscores=True,
             remove_special_characters=True,
