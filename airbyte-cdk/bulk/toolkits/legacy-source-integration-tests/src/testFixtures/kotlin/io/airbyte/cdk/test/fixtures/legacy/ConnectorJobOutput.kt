@@ -5,7 +5,7 @@
 package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.annotation.*
-import io.airbyte.protocol.models.ConnectorSpecification
+import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.io.Serializable
 import java.util.*
 

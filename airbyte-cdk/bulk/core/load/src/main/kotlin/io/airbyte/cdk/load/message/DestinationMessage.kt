@@ -43,6 +43,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.math.BigInteger
 import java.time.OffsetDateTime
 import java.util.*
@@ -199,8 +200,8 @@ data class DestinationRecord(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withNamespace(stream.descriptor.namespace)
-                    .withStream(stream.descriptor.name)
+                    .withNamespace(stream.unmappedNamespace)
+                    .withStream(stream.unmappedName)
                     .withEmittedAt(message.emittedAtMs)
                     .withData(message.asJsonRecord(stream.airbyteValueProxyFieldAccessors))
                     .also {
@@ -393,8 +394,8 @@ data class DestinationFile(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withStream(stream.descriptor.name)
-                    .withNamespace(stream.descriptor.namespace)
+                    .withStream(stream.unmappedName)
+                    .withNamespace(stream.unmappedNamespace)
                     .withEmittedAt(emittedAtMs)
                     .withAdditionalProperty("file", file),
             )
@@ -402,7 +403,7 @@ data class DestinationFile(
 }
 
 private fun statusToProtocolMessage(
-    stream: DestinationStream.Descriptor,
+    destinationStream: DestinationStream,
     emittedAtMs: Long,
     status: AirbyteStreamStatus,
 ): AirbyteMessage =
@@ -414,7 +415,11 @@ private fun statusToProtocolMessage(
                 .withEmittedAt(emittedAtMs.toDouble())
                 .withStreamStatus(
                     AirbyteStreamStatusTraceMessage()
-                        .withStreamDescriptor(stream.asProtocolObject())
+                        .withStreamDescriptor(
+                            StreamDescriptor()
+                                .withNamespace(destinationStream.unmappedNamespace)
+                                .withName(destinationStream.unmappedName)
+                        )
                         .withStatus(status),
                 ),
         )
@@ -424,7 +429,7 @@ data class DestinationRecordStreamComplete(
     val emittedAtMs: Long,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
 data class DestinationRecordStreamIncomplete(
@@ -432,7 +437,7 @@ data class DestinationRecordStreamIncomplete(
     val emittedAtMs: Long,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 data class DestinationFileStreamComplete(
@@ -440,7 +445,7 @@ data class DestinationFileStreamComplete(
     val emittedAtMs: Long,
 ) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
 data class DestinationFileStreamIncomplete(
@@ -448,7 +453,7 @@ data class DestinationFileStreamIncomplete(
     val emittedAtMs: Long,
 ) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 /** State. */
@@ -459,15 +464,21 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream.Descriptor,
+        val stream: DestinationStream,
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
-                if (state != null) {
-                    it.streamState = state
+            AirbyteStreamState()
+                .withStreamDescriptor(
+                    StreamDescriptor()
+                        .withNamespace(stream.unmappedNamespace)
+                        .withName(stream.unmappedName)
+                )
+                .also {
+                    if (state != null) {
+                        it.streamState = state
+                    }
                 }
-            }
     }
 
     val checkpointKey: CheckpointKey?
@@ -519,8 +530,7 @@ data class StreamCheckpoint(
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        stream: DestinationStream,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -529,7 +539,7 @@ data class StreamCheckpoint(
         totalBytes: Long? = null
     ) : this(
         Checkpoint(
-            DestinationStream.Descriptor(streamNamespace, streamName),
+            stream,
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
