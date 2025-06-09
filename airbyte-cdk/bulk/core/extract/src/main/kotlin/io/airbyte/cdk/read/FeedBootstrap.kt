@@ -186,24 +186,20 @@ sealed class FeedBootstrap<T : Feed>(
                 )
     }
 
-    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer) :
+    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer, val partitionId: String) :
         StreamRecordConsumer {
         val outputer: ProtoRecordOutputConsumer = boostedOutputConsumer
-        lateinit var firstData: AirbyteRecordMessageProtobuf
-        lateinit var firstMessage: AirbyteMessageProtobuf
         override fun close() {
             outputer.close()
         }
 
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                if (::firstData.isInitialized.not()) {
-                    firstData = recordData.toProto(reusedRecordMessageWithoutChanges)
-                }
                 val p = recordData.toProto(AirbyteRecordMessageProtobuf.newBuilder()
                     .setStreamName(stream.name)
                     .setStreamNamespace(stream.namespace)
                     .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                    .setPartitionId(partitionId)
                 )
                 acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
             } /*else {
@@ -220,11 +216,6 @@ sealed class FeedBootstrap<T : Feed>(
 
         private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf,) {
             synchronized(this) {
-                if (::firstMessage.isInitialized.not()) {
-                    firstMessage = reusedMessageWithoutChanges
-                        .setRecord(firstData)
-                        .build()
-                }
 /*
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
@@ -449,5 +440,5 @@ class StreamFeedBootstrap(
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = streamRecordConsumers(boostedOutputConsumer)[feed.id]!!
-    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(feed.streams.get(0), protoOutputConsumer)
+    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer, partitionId: String): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(feed.streams.get(0), protoOutputConsumer, partitionId)
 }

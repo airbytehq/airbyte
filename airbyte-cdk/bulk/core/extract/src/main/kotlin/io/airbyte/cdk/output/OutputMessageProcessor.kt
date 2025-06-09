@@ -54,7 +54,7 @@ class OutputMessageProcessor(
                 Clock.systemUTC(),
                 8192
             )
-            protoRecordOutputConsumer = streamFeedBootstrap.protoStreamRecordConsumer(protoOutputConsumer)
+            protoRecordOutputConsumer = streamFeedBootstrap.protoStreamRecordConsumer(protoOutputConsumer, additionalProperties["partition_id"]!!)
             recordAcceptor = { record ->
                 protoRecordOutputConsumer.accept(record, emptyMap())
             }
