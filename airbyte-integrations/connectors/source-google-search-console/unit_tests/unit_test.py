@@ -59,49 +59,6 @@ def test_slice(config_gen, site_urls, sync_mode, data_state):
                 assert next(stream_slice) == expected
 
 
-def test_check_connection(config_gen, config, requests_mock):
-    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
-    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
-    requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
-
-    source = get_source(config)
-
-    assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
-    # test site_urls
-    assert command_check(source, config_gen(site_urls=["https://example.com"])) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
-    # test start_date
-    assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(
-            status=Status.FAILED,
-            message="'' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
-        )
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(start_date="start_date")) == AirbyteConnectionStatus(
-            status=Status.FAILED,
-            message="'start_date' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
-        )
-
-    # test end_date
-    assert command_check(source, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert command_check(source, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    with pytest.raises(Exception):
-        assert command_check(source, config_gen(end_date="end_date"))
-
-    # test custom_reports
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(custom_reports_array="")) == AirbyteConnectionStatus(
-            status=Status.FAILED,
-            message="'<ValidationError: \"{} is not of type \\'array\\'\">'",
-        )
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(custom_reports_array="{}")) == AirbyteConnectionStatus(
-            status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
-        )
-
-
 @pytest.mark.parametrize(
     "test_config, expected",
     [

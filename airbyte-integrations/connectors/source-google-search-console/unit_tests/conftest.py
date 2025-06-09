@@ -26,7 +26,7 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def get_source(config, state=None) -> YamlDeclarativeSource:
+def get_source(config=None, state=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)

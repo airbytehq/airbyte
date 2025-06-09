@@ -265,7 +265,6 @@ spec:
           type: ValidateAdheresToSchema
           base_schema:
             type:
-              - "null"
               - array
             items:
               type: object
