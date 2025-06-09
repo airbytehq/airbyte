@@ -407,7 +407,7 @@ definitions:
       cursor_granularity: P1D
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_google_search_console.components.NestedSubstreamStateMigration
+        class_name: source_declarative_manifest.components.NestedSubstreamStateMigration
 
   search_analytics_all_fields_stream:
     $ref: "#/definitions/base_search_analytics_stream"
@@ -1283,17 +1283,17 @@ dynamic_streams:
                 - search_type
               value: "{{ stream_partition['search_type'] }}"
         - type: CustomTransformation
-          class_name: source_google_search_console.components.CustomReportExtractDimensionsFromKeys
+          class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
           dimensions: # This will be replaced by the dimensions of the custom report
             - date
             - country
       schema_loader:
         type: CustomSchemaLoader
-        class_name: source_google_search_console.components.CustomReportSchemaLoader
+        class_name: source_declarative_manifest.components.CustomReportSchemaLoader
         dimensions: [] # This will be replaced by the dimensions of the custom report
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_google_search_console.components.NestedSubstreamStateMigration
+          class_name: source_declarative_manifest.components.NestedSubstreamStateMigration
     components_resolver:
       type: ConfigComponentsResolver
       stream_config:
