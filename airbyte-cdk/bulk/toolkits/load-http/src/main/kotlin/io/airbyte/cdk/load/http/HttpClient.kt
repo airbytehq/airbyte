@@ -5,5 +5,5 @@
 package io.airbyte.cdk.load.http
 
 interface HttpClient {
-    fun sendRequest(request: Request): Response
+    fun send(request: Request): Response
 }

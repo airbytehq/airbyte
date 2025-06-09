@@ -63,14 +63,14 @@ class OAuthAuthenticatorTest {
         authenticator.intercept(chain)
         authenticator.intercept(chain)
 
-        verify(exactly = 1) { httpClient.sendRequest(any()) }
+        verify(exactly = 1) { httpClient.send(any()) }
     }
 
     private fun mockCall() {
         val oauthResponse: Response = mockk<Response>()
         every { oauthResponse.body } returns "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".byteInputStream(Charsets.UTF_8)
         every { oauthResponse.close() } returns Unit
-        every { httpClient.sendRequest(any()) } returns (oauthResponse)
+        every { httpClient.send(any()) } returns (oauthResponse)
     }
 
     private fun mockBuilder(originalRequest: Request): Request.Builder {

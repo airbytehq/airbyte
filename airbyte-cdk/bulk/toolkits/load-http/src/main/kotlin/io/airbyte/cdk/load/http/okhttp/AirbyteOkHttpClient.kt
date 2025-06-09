@@ -19,7 +19,7 @@ class AirbyteOkHttpClient(
     private val retryPolicy: RetryPolicy<okhttp3.Response>
 ) : HttpClient {
 
-    override fun sendRequest(request: Request): Response {
+    override fun send(request: Request): Response {
         val url = createUrl(request)
 
         val okhttpRequest: okhttp3.Request =

@@ -75,7 +75,7 @@ class OAuthAuthenticator(
                 .map { (key, value) -> "$key=$value" }
                 .joinToString(separator = "&") { it }
         val response: Response =
-            httpClient.sendRequest(
+            httpClient.send(
                 Request(
                     method = RequestMethod.POST,
                     url = endpoint,
