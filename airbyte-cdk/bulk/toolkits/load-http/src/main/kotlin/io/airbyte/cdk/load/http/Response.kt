@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.http
 import java.io.Closeable
 import java.io.InputStream
 
-interface Response: Closeable {
+interface Response : Closeable {
     val statusCode: Int
     val headers: Map<String, List<String>>
     val body: InputStream?

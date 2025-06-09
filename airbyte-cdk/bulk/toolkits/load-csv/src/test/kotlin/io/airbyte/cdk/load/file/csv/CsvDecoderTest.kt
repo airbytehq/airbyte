@@ -27,10 +27,7 @@ class CsvDecoderTest {
 
     @Test
     internal fun `test given valid cdk when decode then return each row`() {
-        val csvEntries =
-            decoder.decode(CSV_CONTENT.byteInputStream()).use {
-                it.toList()
-            }
+        val csvEntries = decoder.decode(CSV_CONTENT.byteInputStream()).use { it.toList() }
 
         Assertions.assertEquals(2, csvEntries.size)
         Assertions.assertEquals(csvEntries[0], recordAtIndex(0))

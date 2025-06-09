@@ -5,9 +5,7 @@
 package io.airbyte.cdk.load.http.decoder
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.util.Jsons
-import io.mockk.InternalPlatformDsl.toArray
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,6 +29,9 @@ class JsonDecoderTest {
     internal fun `test given valid json when decode then return json object`() {
         val jsonBody = decoder.decode(JSON_CONTENT.byteInputStream())
 
-        Assertions.assertEquals(mapOf<String, JsonNode>("field" to Jsons.textNode("value")), jsonBody.fields().asSequence().associate { it.key to it.value })
+        Assertions.assertEquals(
+            mapOf<String, JsonNode>("field" to Jsons.textNode("value")),
+            jsonBody.fields().asSequence().associate { it.key to it.value }
+        )
     }
 }

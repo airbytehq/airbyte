@@ -83,7 +83,8 @@ class OAuthAuthenticator(
                     body = requestBody.toByteArray(Charsets.UTF_8)
                 )
             )
-        return response.use { it.body?.let { body -> decoder.decode(body) } } ?: throw IllegalStateException("Response body was expected but is empty")
+        return response.use { it.body?.let { body -> decoder.decode(body) } }
+            ?: throw IllegalStateException("Response body was expected but is empty")
     }
 
     private fun refreshAccessToken() {
