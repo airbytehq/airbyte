@@ -212,8 +212,8 @@ class BigQueryRecordFormatter(
                 .appendLiteral(' ')
                 .append(DateTimeFormatter.ISO_LOCAL_TIME)
                 .toFormatter()
-        val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
-        val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_TIME
+        private val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
+        private val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_TIME
 
         // This is the schema used to represent the final raw table
         val SCHEMA_V2: Schema =
