@@ -1132,22 +1132,89 @@ definitions:
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
+
+  ## Campaign Performance Report Streams
+
+  campaign_performance_report_primary_key:
+    - AccountId
+    - CampaignId
+    - TimePeriod
+    - CurrencyCode
+    - AdDistribution
+    - DeviceType
+    - Network
+    - DeliveredMatchType
+    - DeviceOS
+    - TopVsOther
+    - BidMatchType
+
+  campaign_performance_report_columns:
+    - AccountId
+    - CampaignId
+    - TimePeriod
+    - CurrencyCode
+    - AdDistribution
+    - DeviceType
+    - Network
+    - DeliveredMatchType
+    - DeviceOS
+    - TopVsOther
+    - BidMatchType
+    - AccountName
+    - CampaignName
+    - CampaignType
+    - CampaignStatus
+    - CampaignLabels
+    - Impressions
+    - Clicks
+    - Ctr
+    - Spend
+    - CostPerConversion
+    - QualityScore
+    - AdRelevance
+    - LandingPageExperience
+    - PhoneImpressions
+    - PhoneCalls
+    - Ptr
+    - Assists
+    - ReturnOnAdSpend
+    - CostPerAssist
+    - CustomParameters
+    - ViewThroughConversions
+    - AllCostPerConversion
+    - AllReturnOnAdSpend
+    - AllConversions
+    - ConversionsQualified
+    - AllConversionRate
+    - AllRevenue
+    - AllRevenuePerConversion
+    - AverageCpc
+    - AveragePosition
+    - AverageCpm
+    - Conversions
+    - ConversionRate
+    - LowQualityClicks
+    - LowQualityClicksPercent
+    - LowQualityImpressions
+    - LowQualitySophisticatedClicks
+    - LowQualityConversions
+    - LowQualityConversionRate
+    - HistoricalQualityScore
+    - HistoricalExpectedCtr
+    - HistoricalAdRelevance
+    - HistoricalLandingPageExperience
+    - Revenue
+    - RevenuePerConversion
+    - RevenuePerAssist
+    - BudgetName
+    - BudgetStatus
+    - BudgetAssociationStatus
           
   campaign_performance_report_daily_stream:
     type: DeclarativeStream
     name: campaign_performance_report_daily
     primary_key:
-      - AccountId
-      - CampaignId
-      - TimePeriod
-      - CurrencyCode
-      - AdDistribution
-      - DeviceType
-      - Network
-      - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
-      - BidMatchType
+      $ref: "#/definitions/campaign_performance_report_primary_key"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1168,66 +1235,7 @@ definitions:
             Type: CampaignPerformanceReportRequest
             Aggregation: Daily
             Columns:
-              - AccountId
-              - CampaignId
-              - TimePeriod
-              - CurrencyCode
-              - AdDistribution
-              - DeviceType
-              - Network
-              - DeliveredMatchType
-              - DeviceOS
-              - TopVsOther
-              - BidMatchType
-              - AccountName
-              - CampaignName
-              - CampaignType
-              - CampaignStatus
-              - CampaignLabels
-              - Impressions
-              - Clicks
-              - Ctr
-              - Spend
-              - CostPerConversion
-              - QualityScore
-              - AdRelevance
-              - LandingPageExperience
-              - PhoneImpressions
-              - PhoneCalls
-              - Ptr
-              - Assists
-              - ReturnOnAdSpend
-              - CostPerAssist
-              - CustomParameters
-              - ViewThroughConversions
-              - AllCostPerConversion
-              - AllReturnOnAdSpend
-              - AllConversions
-              - ConversionsQualified
-              - AllConversionRate
-              - AllRevenue
-              - AllRevenuePerConversion
-              - AverageCpc
-              - AveragePosition
-              - AverageCpm
-              - Conversions
-              - ConversionRate
-              - LowQualityClicks
-              - LowQualityClicksPercent
-              - LowQualityImpressions
-              - LowQualitySophisticatedClicks
-              - LowQualityConversions
-              - LowQualityConversionRate
-              - HistoricalQualityScore
-              - HistoricalExpectedCtr
-              - HistoricalAdRelevance
-              - HistoricalLandingPageExperience
-              - Revenue
-              - RevenuePerConversion
-              - RevenuePerAssist
-              - BudgetName
-              - BudgetStatus
-              - BudgetAssociationStatus
+              $ref: "#/definitions/campaign_performance_report_columns"
             Scope:
               AccountIds:
                 - "{{ stream_partition.extra_fields['AccountId'] }}"
@@ -1262,9 +1270,66 @@ definitions:
             value: |
               {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
               
-              
-              
-              
+  campaign_performance_report_weekly_stream:
+    type: DeclarativeStream
+    name: campaign_performance_report_weekly
+    primary_key:
+      $ref: "#/definitions/campaign_performance_report_primary_key"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaign_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_campaign_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_campaign_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: CampaignPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: CampaignPerformanceReportRequest
+            Aggregation: Weekly
+            Columns:
+              $ref: "#/definitions/campaign_performance_report_columns"
+            Scope:
+              AccountIds:
+                - "{{ stream_partition.extra_fields['AccountId'] }}"
+              Campaigns:
+                - AccountId: "{{ stream_partition.extra_fields['AccountId'] }}"
+                  CampaignId: "{{ stream_partition['campaign_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor" 
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: |
+              {{ record['AccountId'] | int if record.get('AccountId') else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CampaignId
+            value: |
+              {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
+
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -1723,6 +1788,7 @@ streams:
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
   - $ref: "#/definitions/ad_performance_report_monthly_stream"
   - $ref: "#/definitions/campaign_performance_report_daily_stream"
+  - $ref: "#/definitions/campaign_performance_report_weekly_stream"
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
