@@ -14,10 +14,10 @@ class ExactAPI:
     def authenticator(self) -> ExactOauth2Authenticator:
         if not self._authenticator:
             authenticator = ExactOauth2Authenticator(
+                connector_config=self.config,
                 token_refresh_endpoint=f"{self.config['base_url']}/api/oauth2/token",
                 client_id=self.config['credentials']["client_id"],
                 client_secret=self.config['credentials']["client_secret"],
-                refresh_token=self.config['credentials']['refresh_token'],
             )
             self._authenticator = authenticator
         return self._authenticator
