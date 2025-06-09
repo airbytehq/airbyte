@@ -114,6 +114,58 @@ function Definition({ name, definition }) {
                     </>
                   )}
                   <Examples examples={property.examples} />
+                  {property.type === "object" && property.properties && (
+                    <>
+                      <br />
+                      Properties:
+                      <ul>
+                        {Object.entries(property.properties || {})
+                          .filter(([name]) => name !== "type" && name !== "definitions")
+                          .map(([nestedName, nestedProperty]) => (
+                            <li key={nestedName}>
+                              <Heading as="h5">
+                                <Name name={nestedName} definition={nestedProperty} />
+                              </Heading>
+                              <Description text={nestedProperty.description} />
+                              {nestedProperty.anyOf && (
+                                <>
+                                  Type:{" "}
+                                  <ul>
+                                    {nestedProperty.anyOf.map((type, index) => (
+                                      <li key={index}>
+                                        {type["$ref"] && (
+                                          <a href={`${type["$ref"]}`}>
+                                            <code>{type["$ref"]}</code>
+                                          </a>
+                                        )}
+                                        {type.type && <code>{type.type}</code>}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                  <br />
+                                </>
+                              )}
+                              {nestedProperty.interpolation_context && (
+                                <>
+                                  Available variables:
+                                  <ul>
+                                    {nestedProperty.interpolation_context.map(
+                                      (variable, index) => (
+                                        <li key={index}>
+                                          <a href={`#/variables/${variable}`}>{variable}</a>
+                                        </li>
+                                      ),
+                                    )}
+                                  </ul>
+                                  <br />
+                                </>
+                              )}
+                              <Examples examples={nestedProperty.examples} />
+                            </li>
+                          ))}
+                      </ul>
+                    </>
+                  )}
                 </li>
               ))}
           </ul>
