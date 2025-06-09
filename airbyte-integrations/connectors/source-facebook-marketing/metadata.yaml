@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 3.4.9
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
@@ -32,7 +32,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
+        message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)."
         upgradeDeadline: "2024-03-17"
         scopedImpact:
           - scopeType: stream
@@ -51,6 +51,9 @@ data:
       3.1.0:
         message: "The `AdsInsights` Reports now don't have the possibility to fetch the root level properties `cost_per_conversion_lead` and `conversion_lead_rate`. These will therefore be removed."
         upgradeDeadline: "2024-06-14"
+      4.0.0:
+        message: "To reduce discrepancies with Meta Ads Manager, `action_report_time` parameters will be disregarded and API responses will mimic Ads Manager settings. For more information [visit](https://developers.facebook.com/docs/marketing-api/insights#discrepancy-with-ads-manager)."
+        upgradeDeadline: "2025-06-10"
   suggestedStreams:
     streams:
       - ads_insights
