@@ -7,7 +7,12 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 
-from .config_migrations import MigrateAccountIdToArray, MigrateIncludeDeletedToStatusFilters, MigrateSecretsPathInConnector, RemoveActionReportTimeMigration
+from .config_migrations import (
+    MigrateAccountIdToArray,
+    MigrateIncludeDeletedToStatusFilters,
+    MigrateSecretsPathInConnector,
+    RemoveActionReportTimeMigration,
+)
 from .source import SourceFacebookMarketing
 
 

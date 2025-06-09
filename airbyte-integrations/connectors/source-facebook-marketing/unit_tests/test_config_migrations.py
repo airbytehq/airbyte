@@ -19,6 +19,7 @@ from source_facebook_marketing.source import SourceFacebookMarketing
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
 
+
 # BASE ARGS
 CMD = "check"
 SOURCE: Source = SourceFacebookMarketing()

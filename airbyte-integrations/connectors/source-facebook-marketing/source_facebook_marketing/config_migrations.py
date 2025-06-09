@@ -4,7 +4,7 @@
 
 
 import logging
-from typing import Any, List, Mapping, Dict
+from typing import Any, Dict, List, Mapping
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
