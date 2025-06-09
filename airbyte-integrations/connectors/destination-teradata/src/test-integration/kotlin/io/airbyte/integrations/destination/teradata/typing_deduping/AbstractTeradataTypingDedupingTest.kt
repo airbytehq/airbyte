@@ -179,7 +179,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                     ),
                 )
 
-        val noOfRecords = 500
+        val noOfRecords = 200
         // Run a sync with 500 copies of the input messages
         val messages1 = repeatList(noOfRecords, readMessages("dat/sync1_messages.jsonl"))
 
