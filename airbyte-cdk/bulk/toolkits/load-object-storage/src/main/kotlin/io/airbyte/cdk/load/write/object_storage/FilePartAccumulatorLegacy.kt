@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
@@ -84,7 +85,7 @@ class FilePartAccumulatorLegacy(
         val objectKey = ObjectKey(streamDescriptor, part.key)
         val countMap =
             if (part.isFinal) {
-                mapOf(checkpointId to 1L)
+                mapOf(checkpointId to CheckpointValue(1, 1))
             } else {
                 emptyMap()
             }

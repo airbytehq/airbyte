@@ -7,9 +7,11 @@ package io.airbyte.integrations.destination.mssql.v2
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
@@ -37,17 +39,15 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
 
     private val testStream =
         DestinationStream(
-            descriptor =
-                DestinationStream.Descriptor(
-                    namespace = null,
-                    name = "check_test_${UUID.randomUUID()}",
-                ),
+            unmappedNamespace = null,
+            unmappedName = "check_test_${UUID.randomUUID()}",
             importType = Append,
             schema =
                 ObjectType(linkedMapOf(COLUMN_NAME to FieldType(IntegerType, nullable = true))),
             generationId = 0L,
             minimumGenerationId = 0L,
             syncId = 0L,
+            namespaceMapper = NamespaceMapper()
         )
 
     override fun check(config: MSSQLConfiguration) {
@@ -143,8 +143,7 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
                         .let { message ->
                             DestinationRecordRaw(
                                 stream,
-                                message,
-                                stream.schema,
+                                DestinationRecordJsonSource(message),
                                 Jsons.writeValueAsString(message).length.toLong(),
                             )
                         }

@@ -7,9 +7,14 @@ package io.airbyte.cdk.load.config
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.ReservationManager
+import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.SyncManager
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
@@ -47,6 +52,20 @@ class SyncBeanFactory {
         }
         return ReservationManager(reservation.bytesReserved)
     }
+
+    @Singleton
+    fun checkpointManager(
+        catalog: DestinationCatalog,
+        syncManager: SyncManager,
+        outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit,
+        timeProvider: TimeProvider,
+    ): CheckpointManager<Reserved<CheckpointMessage>> =
+        CheckpointManager(
+            catalog,
+            syncManager,
+            outputConsumer,
+            timeProvider,
+        )
 
     /* ********************
      * ASYNCHRONOUS QUEUES

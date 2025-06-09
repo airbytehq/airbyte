@@ -279,44 +279,58 @@ class TestCheckDocumentationContent:
             in result.message
         )
 
-    def test_fail_when_documentation_file_has_invalid_for_airbyte_cloud_section_content(self, connector_with_invalid_documentation):
+    def test_success_when_documentation_file_has_invalid_for_airbyte_cloud_section_content(self, connector_with_invalid_documentation):
+        # We now allow for more lenient matching of the expected content. Leaving the old test here for reference.
         # Act
         result = documentation.CheckForAirbyteCloudSectionContent()._run(connector_with_invalid_documentation)
 
         # Assert
-        assert result.status == CheckStatus.FAILED
-        assert "Connector For Airbyte Cloud: section content does not follow standard template:" in result.message
-        assert "+ 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account." in result.message
+        assert result.status == CheckStatus.PASSED
+        assert "Documentation guidelines are followed" in result.message
+        # assert result.status == CheckStatus.FAILED
+        # assert "Connector For Airbyte Cloud: section content does not follow standard template:" in result.message
+        # assert "+ 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account." in result.message
 
     def test_fail_when_documentation_file_has_invalid_for_airbyte_open_section_content(self, connector_with_invalid_documentation):
+        # We now allow for more lenient matching of the expected content. Leaving the old test here for reference.
         # Act
         result = documentation.CheckForAirbyteOpenSectionContent()._run(connector_with_invalid_documentation)
 
         # Assert
-        assert result.status == CheckStatus.FAILED
-        assert "Connector For Airbyte Open Source: section content does not follow standard template" in result.message
-        assert "+ 1. Navigate to the Airbyte Open Source dashboard." in result.message
+        assert result.status == CheckStatus.PASSED
+        assert "Documentation guidelines are followed" in result.message
+        # assert result.status == CheckStatus.FAILED
+        # assert "Connector For Airbyte Open Source: section content does not follow standard template" in result.message
+        # assert "+ 1. Navigate to the Airbyte Open Source dashboard." in result.message
 
     def test_fail_when_documentation_file_has_invalid_supported_sync_modes_section_content(self, connector_with_invalid_documentation):
+        # We now allow for more lenient matching of the expected content. Leaving the old test here for reference.
         # Act
         result = documentation.CheckSupportedSyncModesSectionContent()._run(connector_with_invalid_documentation)
 
         # Assert
-        assert result.status == CheckStatus.FAILED
-        assert "Connector Supported sync modes section content does not follow standard template:" in result.message
-        assert (
-            "+ The GitHub source connector supports the following"
-            " [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):"
-        ) in result.message
+        assert result.status == CheckStatus.PASSED
+        assert "Documentation guidelines are followed" in result.message
+
+        # assert result.status == CheckStatus.FAILED
+        # assert "Connector Supported sync modes section content does not follow standard template:" in result.message
+        # assert (
+        #     "+ The GitHub source connector supports the following"
+        #     " [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):"
+        # ) in result.message
 
     def test_fail_when_documentation_file_has_invalid_tutorials_section_content(self, connector_with_invalid_documentation):
+        # We now allow for more lenient matching of the expected content. Leaving the old test here for reference.
         # Act
         result = documentation.CheckTutorialsSectionContent()._run(connector_with_invalid_documentation)
 
         # Assert
-        assert result.status == CheckStatus.FAILED
-        assert "Connector Tutorials section content does not follow standard template:" in result.message
-        assert "+ Now that you have set up the GitHub source connector, check out the following GitHub tutorials:" in result.message
+        assert result.status == CheckStatus.PASSED
+        assert "Documentation guidelines are followed" in result.message
+
+        # assert result.status == CheckStatus.FAILED
+        # assert "Connector Tutorials section content does not follow standard template:" in result.message
+        # assert "+ Now that you have set up the GitHub source connector, check out the following GitHub tutorials:" in result.message
 
     def test_fail_when_documentation_file_has_invalid_changelog_section_content(self, connector_with_invalid_documentation):
         # Act

@@ -100,7 +100,9 @@ class InputConsumerTaskTest {
                 checkpointQueue = checkpointQueue,
                 openStreamQueue = mockk(relaxed = true),
                 fileTransferQueue = mockk(relaxed = true),
-                1
+                batchStateUpdateQueue = mockk(relaxed = true),
+                1,
+                false
             )
         val task =
             InputConsumerTask(
@@ -149,7 +151,9 @@ class InputConsumerTaskTest {
                 checkpointQueue = checkpointQueue,
                 openStreamQueue = mockk(relaxed = true),
                 fileTransferQueue = mockk(relaxed = true),
-                1
+                batchStateUpdateQueue = mockk(relaxed = true),
+                1,
+                false
             )
         val task =
             InputConsumerTask(
@@ -315,7 +319,9 @@ class InputConsumerTaskTest {
                 checkpointQueue = checkpointQueue,
                 openStreamQueue = mockk(relaxed = true),
                 fileTransferQueue = mockk(relaxed = true),
-                1
+                batchStateUpdateQueue = mockk(relaxed = true),
+                1,
+                false
             )
         val task =
             InputConsumerTask(
