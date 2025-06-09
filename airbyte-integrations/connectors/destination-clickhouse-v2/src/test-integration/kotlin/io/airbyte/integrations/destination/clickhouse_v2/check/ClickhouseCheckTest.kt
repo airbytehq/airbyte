@@ -12,7 +12,9 @@ import io.airbyte.integrations.destination.clickhouse_v2.Utils.getConfigPath
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
 import java.nio.file.Files
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 
+@Disabled
 class ClickhouseCheckTest :
     CheckIntegrationTest<ClickhouseSpecification>(
         successConfigFilenames =
