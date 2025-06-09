@@ -30,8 +30,8 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryFinalTableNameGenerator
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryRawTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryFinalTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryRawTableNameGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -51,8 +51,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val (_, rawTableName) =
             BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
 
-        return bigquery.getTable(TableId.of(config.internalTableDataset, rawTableName))?.let { table
-            ->
+        return bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName))?.let { table ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
             table.list(bigquerySchema).iterateAll().map { row ->
                 OutputRecord(
@@ -73,7 +72,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         }
             ?: run {
                 logger.warn {
-                    "Raw table does not exist: ${config.internalTableDataset}.$rawTableName. Returning empty list."
+                    "Raw table does not exist: ${config.rawTableDataset}.$rawTableName. Returning empty list."
                 }
                 emptyList()
             }

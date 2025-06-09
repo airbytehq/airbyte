@@ -44,9 +44,9 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         runBlocking(Dispatchers.IO) {
-            logger.info { "Cleaning up old raw tables in ${config.internalTableDataset}" }
+            logger.info { "Cleaning up old raw tables in ${config.rawTableDataset}" }
 
-            var rawTables = bigquery.listTables(config.internalTableDataset)
+            var rawTables = bigquery.listTables(config.rawTableDataset)
             // Page.iterateAll is _really_ slow, even if the interior function is `launch`-ed.
             // Manually page through, and launch all the deletion work, so that we're always
             // fetching new pages.

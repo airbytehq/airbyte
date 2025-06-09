@@ -12,9 +12,12 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestinationFactory
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
+import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
@@ -27,9 +30,11 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.STANDARD_INSERT_CONFIG
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
-import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
+import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
 abstract class BigqueryWriteTest(
     configContents: String,
@@ -37,7 +42,6 @@ abstract class BigqueryWriteTest(
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
     preserveUndeclaredFields: Boolean,
-    commitDataIncrementallyToEmptyDestination: Boolean,
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
@@ -57,7 +61,6 @@ abstract class BigqueryWriteTest(
         preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = false,
-        commitDataIncrementallyToEmptyDestination = commitDataIncrementallyToEmptyDestination,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
@@ -73,41 +76,22 @@ abstract class BigqueryRawTablesWriteTest(
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
         preserveUndeclaredFields = true,
-        commitDataIncrementallyToEmptyDestination = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
     )
 
-abstract class BigqueryDirectLoadWriteTest(
-    configContents: String,
-    cdcDeletionMode: CdcDeletionMode,
-) :
+abstract class BigqueryTDWriteTest(configContents: String) :
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
         ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
-            .compose(TimeWithTimezoneMapper)
             .compose(RootLevelTimestampsToUtcMapper)
+            .compose(TypingDedupingMetaChangeMapper)
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
-        commitDataIncrementallyToEmptyDestination = true,
-        dedupBehavior =
-            DedupBehavior(
-                cdcDeletionMode =
-                    when (cdcDeletionMode) {
-                        // medium confidence: the CDK might eventually add other deletion modes,
-                        // which this destination won't immediately support,
-                        // so we should have separate enums.
-                        // otherwise the new enum values would show up in the spec, which we don't
-                        // want.
-                        CdcDeletionMode.HARD_DELETE ->
-                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.HARD_DELETE
-                        CdcDeletionMode.SOFT_DELETE ->
-                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.SOFT_DELETE
-                    }
-            ),
+        dedupBehavior = DedupBehavior(),
         nullEqualsUnset = true,
         StronglyTyped(
             convertAllValuesToString = true,
@@ -115,7 +99,7 @@ abstract class BigqueryDirectLoadWriteTest(
             nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
             numberCanBeLarge = false,
-            timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
+            timeWithTimezoneBehavior = SimpleValueBehavior.PASS_THROUGH,
         ),
     ) {
     private val oldCdkDestinationFactory =
@@ -286,7 +270,7 @@ abstract class BigqueryDirectLoadWriteTest(
     }
 }
 
-class StandardInsertRawOverrideRawTables :
+class StandardInsertRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = STANDARD_INSERT_CONFIG,
@@ -305,10 +289,7 @@ class StandardInsertRawOverrideRawTables :
 }
 
 class StandardInsertRawOverride :
-    BigqueryDirectLoadWriteTest(
-        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
-        CdcDeletionMode.HARD_DELETE,
-    ) {
+    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -319,32 +300,14 @@ class StandardInsertRawOverride :
     }
 }
 
-class StandardInsert :
-    BigqueryDirectLoadWriteTest(
-        BigQueryDestinationTestUtils.standardInsertConfig,
-        CdcDeletionMode.HARD_DELETE,
-    ) {
-    @Test
-    override fun testAppendJsonSchemaEvolution() {
-        super.testAppendJsonSchemaEvolution()
-    }
-}
-
-class StandardInsertCdcSoftDeletes :
-    BigqueryDirectLoadWriteTest(
-        BigQueryDestinationTestUtils.createConfig(
-            configFile = STANDARD_INSERT_CONFIG,
-            cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
-        ),
-        CdcDeletionMode.SOFT_DELETE
-    ) {
+class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
     override fun testDedup() {
         super.testDedup()
     }
 }
 
-class GcsRawOverrideRawTables :
+class GcsRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
@@ -359,12 +322,11 @@ class GcsRawOverrideRawTables :
 }
 
 class GcsRawOverride :
-    BigqueryDirectLoadWriteTest(
+    BigqueryTDWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
         ),
-        CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -373,9 +335,8 @@ class GcsRawOverride :
 }
 
 class Gcs :
-    BigqueryDirectLoadWriteTest(
-        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
-        CdcDeletionMode.HARD_DELETE,
+    BigqueryTDWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
     ) {
     @Test
     override fun testBasicWrite() {
