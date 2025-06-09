@@ -1,6 +1,6 @@
 [project]
 name = "source-exact"
-version = "0.1.0"
+version = "0.2.0"
 description = "Connector for the bookkeeping software exact online"
 authors = [
     { name = "Jeroen de Vries", email = "jeroen@maildevries.eu" }
@@ -14,15 +14,6 @@ dependencies = [
 ]
 
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-source-exact = "source_exact.run:run"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
 
 [dependency-groups]
 dev = [

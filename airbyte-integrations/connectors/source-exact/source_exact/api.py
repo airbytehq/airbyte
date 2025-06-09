@@ -26,7 +26,9 @@ class ExactAPI:
         endpoint = "crm/AccountClassifications"
         response = requests.get(
             url=f"{self.config['base_url']}{endpoint}",
-            headers=self.authenticator.get_auth_header()
+            headers=self.authenticator.get_auth_header(),
+            # Just want to test if we can access the API, don't care about any results. With $top=0 we get no results.
+            params={"$top": 0},
         )
         try:
             response.raise_for_status()
