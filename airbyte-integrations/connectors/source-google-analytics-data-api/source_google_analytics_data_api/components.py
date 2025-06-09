@@ -63,7 +63,13 @@ class KeyValueExtractor(RecordExtractor):
     values_extractor: RecordExtractor
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        keys = self.keys_extractor.extract_records(response)
+        keys = list(self.keys_extractor.extract_records(response))
         values = self.values_extractor.extract_records(response)
 
-        yield dict(zip(keys, values))
+        has_more_chunks = True
+        while has_more_chunks:
+            chunk = [next(values, None) for _ in keys]
+            if any(v is None for v in chunk):
+                has_more_chunks = False
+            else:
+                yield dict(zip(keys, chunk))
