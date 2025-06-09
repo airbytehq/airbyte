@@ -187,22 +187,30 @@ class DestinationStreamFactory(
             isFileBased = stream.stream.isFileBased ?: false,
             includeFiles = stream.includeFiles ?: false,
             destinationObjectName = stream.destinationObjectName,
-            matchingKey = stream.destinationObjectName?.let { fromCompositeNestedKeyToCompositeKey(stream.primaryKey) }.orEmpty()
+            matchingKey =
+                stream.destinationObjectName
+                    ?.let { fromCompositeNestedKeyToCompositeKey(stream.primaryKey) }
+                    .orEmpty()
         )
     }
 }
 
-private fun fromCompositeNestedKeyToCompositeKey(compositeNestedKey: List<List<String>>) : List<String> {
+private fun fromCompositeNestedKeyToCompositeKey(
+    compositeNestedKey: List<List<String>>
+): List<String> {
     if (compositeNestedKey.any { it.size > 1 }) {
-        throw IllegalArgumentException("Nested keys are not supported for matching keys. Key was $compositeNestedKey")
+        throw IllegalArgumentException(
+            "Nested keys are not supported for matching keys. Key was $compositeNestedKey"
+        )
     }
     if (compositeNestedKey.any { it.isEmpty() }) {
-        throw IllegalArgumentException("Parts of the composite key need to have at least one element. Key was $compositeNestedKey")
+        throw IllegalArgumentException(
+            "Parts of the composite key need to have at least one element. Key was $compositeNestedKey"
+        )
     }
 
     return compositeNestedKey.map { it[0] }.toList()
 }
-
 
 sealed interface ImportType
 

@@ -10,7 +10,6 @@ import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
-import io.airbyte.protocol.models.v0.SyncMode
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlin.test.assertEquals
@@ -60,9 +59,15 @@ class DestinationStreamUTest {
 
     @Test
     fun `test given destination object name when make then assemble matching keys`() {
-        val configuredStream = a_configured_stream()
-            .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
-            .withPrimaryKey(listOf<List<String>>(listOf<String>("composite_key_1"), listOf<String>("composite_key_2")))
+        val configuredStream =
+            a_configured_stream()
+                .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
+                .withPrimaryKey(
+                    listOf<List<String>>(
+                        listOf<String>("composite_key_1"),
+                        listOf<String>("composite_key_2")
+                    )
+                )
 
         val stream = a_stream_factory().make(configuredStream)
 
@@ -72,37 +77,49 @@ class DestinationStreamUTest {
 
     @Test
     fun `test given primary key is nested when make then throw error`() {
-        val configuredStream = a_configured_stream()
-            .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
-            .withPrimaryKey(listOf<List<String>>(listOf<String>("nested_key_root", "nested_key_leaf")))
+        val configuredStream =
+            a_configured_stream()
+                .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
+                .withPrimaryKey(
+                    listOf<List<String>>(listOf<String>("nested_key_root", "nested_key_leaf"))
+                )
 
-        assertFailsWith<IllegalArgumentException>(block = { a_stream_factory().make(configuredStream) })
+        assertFailsWith<IllegalArgumentException>(
+            block = { a_stream_factory().make(configuredStream) }
+        )
     }
 
     @Test
     fun `test given primary key has empty key when make then throw error`() {
-        val configuredStream = a_configured_stream()
-            .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
-            .withPrimaryKey(listOf<List<String>>(listOf<String>("composite_key_1"), listOf<String>()))
+        val configuredStream =
+            a_configured_stream()
+                .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
+                .withPrimaryKey(
+                    listOf<List<String>>(listOf<String>("composite_key_1"), listOf<String>())
+                )
 
-        assertFailsWith<IllegalArgumentException>(block = { a_stream_factory().make(configuredStream) })
+        assertFailsWith<IllegalArgumentException>(
+            block = { a_stream_factory().make(configuredStream) }
+        )
     }
 
-    private fun a_stream_factory(): DestinationStreamFactory = DestinationStreamFactory(
-        JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT),
-        namespaceMapper = NamespaceMapper(),
-    )
-
-    private fun a_configured_stream(): ConfiguredAirbyteStream = ConfiguredAirbyteStream()
-        .withStream(
-            CatalogHelpers.createAirbyteStream(
-                "a_stream_name",
-                "namespace",
-                Field.of("field_name", JsonSchemaType.STRING),
-            ),
+    private fun a_stream_factory(): DestinationStreamFactory =
+        DestinationStreamFactory(
+            JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT),
+            namespaceMapper = NamespaceMapper(),
         )
-        .withDestinationSyncMode(DestinationSyncMode.APPEND)
-        .withMinimumGenerationId(0L)
-        .withGenerationId(1L)
-        .withSyncId(2L)
+
+    private fun a_configured_stream(): ConfiguredAirbyteStream =
+        ConfiguredAirbyteStream()
+            .withStream(
+                CatalogHelpers.createAirbyteStream(
+                    "a_stream_name",
+                    "namespace",
+                    Field.of("field_name", JsonSchemaType.STRING),
+                ),
+            )
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withMinimumGenerationId(0L)
+            .withGenerationId(1L)
+            .withSyncId(2L)
 }
