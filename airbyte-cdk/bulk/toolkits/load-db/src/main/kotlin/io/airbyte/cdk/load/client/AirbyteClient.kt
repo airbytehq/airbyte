@@ -16,7 +16,5 @@ interface AirbyteClient {
      */
     suspend fun countTable(tableName: TableName): Long?
 
-    suspend fun getGenerationId(tableName: TableName): Long
-
     suspend fun createNamespace(namespace: String)
 }
