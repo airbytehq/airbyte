@@ -1,5 +1,5 @@
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk import SingleUseRefreshTokenOauth2Authenticator
 
 
-class ExactOauth2Authenticator(Oauth2Authenticator):
+class ExactOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
     pass
