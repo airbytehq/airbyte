@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
 import io.micronaut.http.HttpHeaders
+import java.lang.IllegalStateException
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response as OkHttpResponse
@@ -82,7 +83,7 @@ class OAuthAuthenticator(
                     body = requestBody.toByteArray(Charsets.UTF_8)
                 )
             )
-        return decoder.decode(response)
+        return response.use { it.body?.let { body -> decoder.decode(body) } } ?: throw IllegalStateException("Response body was expected but is empty")
     }
 
     private fun refreshAccessToken() {

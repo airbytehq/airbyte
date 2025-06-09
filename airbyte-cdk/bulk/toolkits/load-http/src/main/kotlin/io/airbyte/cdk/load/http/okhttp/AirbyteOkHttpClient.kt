@@ -30,11 +30,7 @@ class AirbyteOkHttpClient(
                 .build()
         val response: okhttp3.Response =
             FailsafeCall.with(retryPolicy).compose(client.newCall(okhttpRequest)).execute()
-        return Response(
-            response.code,
-            response.headers.toMultimap(),
-            response.body?.let { OkHttpResponseBody(it) }
-        )
+        return OkHttpResponse(response)
     }
 
     private fun createUrl(request: Request): HttpUrl {

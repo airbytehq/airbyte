@@ -67,12 +67,9 @@ class OAuthAuthenticatorTest {
     }
 
     private fun mockCall() {
-        val oauthResponse: Response =
-            Response(
-                statusCode = 200,
-                headers = emptyMap(),
-                body = "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".byteInputStream(Charsets.UTF_8),
-            )
+        val oauthResponse: Response = mockk<Response>()
+        every { oauthResponse.body } returns "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".byteInputStream(Charsets.UTF_8)
+        every { oauthResponse.close() } returns Unit
         every { httpClient.sendRequest(any()) } returns (oauthResponse)
     }
 
