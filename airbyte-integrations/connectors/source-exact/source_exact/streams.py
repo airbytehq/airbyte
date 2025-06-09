@@ -5,14 +5,11 @@ from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
-
-BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 class ExactStream(HttpStream, CheckpointMixin, ABC):
     """
@@ -33,10 +30,12 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
     In addition, Exact enforces single use refresh tokens. The stream will automatically refresh the access token when
     it is expired.
     """
+
     def __init__(self, config):
         self.endpoint = None
         self._divisions = config["divisions"]
         self._base_url = config["base_url"]
+        self.token_refresh_endpoint = f"{self._base_url}/api/oauth/token"
 
         self._active_division = self._divisions[0]
         """The current division being synced."""
@@ -72,7 +71,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         self.logger.info(f"Syncing endpoint {self.endpoint}...")
         return self.endpoint
 
-
     @property
     def url_base(self) -> str:
         """URL base depends on the current division being synced."""
@@ -105,7 +103,8 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         """
 
         # Get the first not null type -> i.e., the expected type of the property
-        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
+        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in
+                                self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^/Date\((\d+)\)/$")
 
@@ -167,7 +166,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
             return True
             # response = self._send_request(prepared_request, {})
 
-
             # Forbidden, user does not have access to the API
         except requests.RequestException:
             return False
@@ -203,6 +201,7 @@ class ExactSyncStream(ExactStream):
     primary_key = "Timestamp"
     cursor_field = "Timestamp"
 
+
 class ExactOtherStream(ExactStream):
     """
     Exact non-sync endpoints paginate by 60 items. Often they denote regular entities which have a ID as primary
@@ -212,6 +211,7 @@ class ExactOtherStream(ExactStream):
     state_checkpoint_interval = 60
     primary_key = "ID"
     cursor_field = "Modified"
+
 
 class SyncCashflowPaymentTerms(ExactSyncStream):
     """Stream to sync the endpoint `sync/Cashflow/PaymentTerms`"""
@@ -469,6 +469,7 @@ class CRMAccountClassificationNames(ExactOtherStream):
     """Stream to sync the endpoint `crm/AccountClassificationNames`"""
 
     endpoint = "crm/AccountClassificationNames"
+
 
 class RequestBodyException(Exception):
     """

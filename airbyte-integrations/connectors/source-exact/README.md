@@ -14,6 +14,7 @@
 poetry run source-exact spec
 poetry run source-exact check --config secrets/config.json
 poetry run source-exact discover --config secrets/config.json
+poetry run source-exact read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Optional flags

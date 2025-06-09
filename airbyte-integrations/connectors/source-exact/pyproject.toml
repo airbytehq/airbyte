@@ -24,3 +24,8 @@ source-exact = "source_exact.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
 
+[dependency-groups]
+dev = [
+    "ruff>=0.11.12",
+]
+
