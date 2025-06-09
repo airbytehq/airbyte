@@ -144,16 +144,17 @@ class BigQueryRecordFormatter(
                             // so handle that here.
                             when (value.type) {
                                 TimestampTypeWithTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] = formatTimestampWithTimezone(value)
-
+                                    outputRecord[columnNameMapping[key]!!] =
+                                        formatTimestampWithTimezone(value)
                                 TimestampTypeWithoutTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] = formatTimestampWithoutTimezone(value)
-
+                                    outputRecord[columnNameMapping[key]!!] =
+                                        formatTimestampWithoutTimezone(value)
                                 TimeTypeWithoutTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] = formatTimeWithoutTimezone(value)
-
+                                    outputRecord[columnNameMapping[key]!!] =
+                                        formatTimeWithoutTimezone(value)
                                 TimeTypeWithTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] = formatTimeWithTimezone(value)
+                                    outputRecord[columnNameMapping[key]!!] =
+                                        formatTimeWithTimezone(value)
                                 else -> outputRecord[columnNameMapping[key]!!] = value.abValue
                             }
                         }
@@ -267,15 +268,11 @@ class BigQueryRecordFormatter(
         }
 
         fun formatTimestampWithTimezone(value: EnrichedAirbyteValue): String {
-            return DATETIME_FORMATTER.format(
-                (value.abValue as TimestampWithTimezoneValue).value
-            )
+            return DATETIME_FORMATTER.format((value.abValue as TimestampWithTimezoneValue).value)
         }
 
         fun formatTimestampWithoutTimezone(value: EnrichedAirbyteValue): String {
-            return DATETIME_FORMATTER.format(
-                (value.abValue as TimestampWithoutTimezoneValue).value
-            )
+            return DATETIME_FORMATTER.format((value.abValue as TimestampWithoutTimezoneValue).value)
         }
 
         fun formatTimeWithoutTimezone(value: EnrichedAirbyteValue): String {
