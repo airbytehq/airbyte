@@ -105,9 +105,22 @@ dynamic_streams:
         - field_path:
             - name
           type: ComponentMappingDefinition
-          value: "{{components_values['properties']['title']}}"
+          value: >-
+            {{
+              (
+                config.get('stream_name_overrides', [])
+                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+                | list
+              )[0]['custom_stream_name']
+              if (
+                config.get('stream_name_overrides', [])
+                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+                | list
+              )
+              else components_values['properties']['title']
+            }}
           value_type: string
-          description: name for dynamic stream.
+          description: name for dynamic stream (with optional override).
         - field_path:
             - schema_loader
             - retriever

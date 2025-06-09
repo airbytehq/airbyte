@@ -131,6 +131,38 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 ## Configuration Options
 
+### Stream Name Overrides (Rename Sheet/Stream Names)
+
+The Google Sheets connector allows you to optionally rename streams (sheet/tab names) as they appear in Airbyte and your destination. This is useful if your sheet names are not descriptive, contain special characters, or you want to standardize naming across sources.
+
+#### How it works
+
+- You can provide a list of overrides, each specifying a `source_stream_name` (the exact name of the sheet/tab in your spreadsheet) and a `custom_stream_name` (the name you want it to appear as in Airbyte and your destination).
+- If a `source_stream_name` is not found in your spreadsheet, it will be ignored and the default name will be used.
+- This feature only affects stream (sheet/tab) names, not field/column names.
+- If you want to rename fields or column names, you can do so using the Airbyte Mappings feature after your connection is created. See the Airbyte [documentation](https://docs.airbyte.com/platform/using-airbyte/mappings) for more details on how to use Mappings.
+- Renaming occurs before any other name conversion or sanitization options.
+
+#### Example
+
+Suppose your spreadsheet has sheets named `Sheet1`, `2024 Q1`, and `Summary`. You want to rename them to `sales_data`, `q1_2024`, and leave `Summary` unchanged. You would configure:
+
+```json
+[
+  { "source_stream_name": "Sheet1", "custom_stream_name": "sales_data" },
+  { "source_stream_name": "2024 Q1", "custom_stream_name": "q1_2024" }
+]
+```
+
+After discovery, your streams in Airbyte will be named `sales_data`, `q1_2024`, and `Summary`.
+
+#### How to configure
+
+- In the Airbyte UI, add your overrides in the **Stream Name Overrides** field as an array of objects.
+- If you do not wish to rename any streams, leave this field blank.
+
+---
+
 ### Google Sheets Connector Column Name Conversion
 
 The Google Sheets connector offers options to customize how column names from your spreadsheet are converted to be SQL-compliant. These settings can be configured in the Airbyte UI when setting up the connector.
@@ -179,8 +211,8 @@ The following options allow you to fine-tune the column name conversion process.
   - **Description**: Allows column names to start with numbers. If disabled, a leading underscore is added to column names that begin with a number.
   - **Example**:  
     - Input: `"50th Percentile"`  
-    - Output: `"50th_percentile"` (if enabled)  
-    - Output: `"_50th_percentile"` (if disabled)
+    - Output: `"50_th_percentile"` (if enabled)  
+    - Output: `"_50_th_percentile"` (if disabled)
   - **Default**: Off
 
 ---
