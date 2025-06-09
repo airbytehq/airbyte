@@ -1,17 +1,5 @@
 # Facebook Marketing Migration Guide
 
-## Upgrading to 4.0.0
-
-Streams Ads-Insights-* no longer use the action_report_time parameter.
-
-### Update Custom Insights Reports (this step can be skipped if you did not define any)
-
-1. Select **Sources** in the main navbar.
-   1. Select the Facebook Marketing Connector.
-2. Select the **Retest saved source**.
-3. Remove unsupported fields from the list in Custom Insights section.
-4. Select **Test and Save**.
-
 ## Upgrading to 3.1.0
 
 The `AdsInsights` Reports now don't have the possibility to fetch the next root level properties (fields):
