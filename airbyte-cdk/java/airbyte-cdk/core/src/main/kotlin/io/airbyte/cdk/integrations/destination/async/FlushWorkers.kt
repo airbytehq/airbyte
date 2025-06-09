@@ -92,7 +92,7 @@ constructor(
             // This will put a new log line every second which is too much, sampling it doesn't
             // bring much value
             // so it is set to debug
-            logger.debug { "Retrieve Work -- Finding queues to flush" }
+            logger.info { "Retrieve Work -- Finding queues to flush" }
             val threadPoolExecutor = workerPool as ThreadPoolExecutor
             var allocatableThreads =
                 threadPoolExecutor.maximumPoolSize - threadPoolExecutor.activeCount

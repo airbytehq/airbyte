@@ -254,6 +254,12 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         syncId: Long,
         generationId: Long
     ) {
+        LOGGER.info(
+            "Inserting records into table $tableName in schema $schemaName.",
+        )
+        LOGGER.info(
+            "Number of records to insert: ${records.size}",
+        )
         if (records.isEmpty()) {
             return
         }
@@ -272,46 +278,74 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         if(records.size < 5000) {
             batchSize = records.size
         }
+        LOGGER.info("batchSize - {}", batchSize)
         database.execute { con ->
             try {
-                val stmt = con.prepareStatement(insertQueryComponent)
-                var batchCount = 0
-                for (record in records) {
-                    val uuid = UUID.randomUUID().toString()
-                    val jsonData = record.serialized ?: "{}"
-                    val airbyteMeta =
-                        if (record.record!!.meta == null) {
-                            "{\"changes\":[]}"
-                        } else {
-                            Jsons.serialize(record.record!!.meta)
+                con.prepareStatement(insertQueryComponent).use {
+                    stmt ->
+                    var batchCount = 0
+                    LOGGER.info("insertQueryComponent - {}", insertQueryComponent)
+                    for (record in records) {
+                        LOGGER.info("record : {}", record)
+
+                        val uuid = UUID.randomUUID().toString()
+                        LOGGER.info("uuid {}", uuid)
+                        if (record.serialized == null) {
+                            LOGGER.warn("Serialized payload is null for record: {}", record)
                         }
-                    var i = 0
-                    stmt.setString(++i, uuid)
-                    stmt.setObject(
-                        ++i,
-                        JSONStruct(
-                            "JSON",
-                            arrayOf(jsonData),
-                        ),
-                    )
-                    val extractedAt =
-                        Timestamp.from(
-                            Instant.ofEpochMilli(record.record!!.emittedAt)
-                                .atZone(ZoneOffset.UTC)
-                                .toInstant(),
+                        val jsonData = record.serialized ?: "{}"
+                        LOGGER.info("jsonData {}", jsonData)
+
+                        val meta = record.record?.meta
+                        val airbyteMeta =
+                            if (meta == null) "{\"changes\":[]}" else Jsons.serialize(meta)
+
+                        var i = 0
+                        stmt.setString(++i, uuid)
+
+                        stmt.setObject(
+                            ++i,
+                            JSONStruct(
+                                "JSON",
+                                arrayOf(jsonData),
+                            ),
                         )
-                    stmt.setTimestamp(++i, extractedAt)
-                    stmt.setString(++i, airbyteMeta)
-                    stmt.setLong(++i, generationId)
-                    stmt.addBatch()
-                    batchCount++
-                    if (batchCount >= batchSize) {
-                        stmt.executeBatch()
-                        batchCount = 0
+                        val emittedAt = record.record?.emittedAt
+                            ?: throw IllegalArgumentException("record.emittedAt is null")
+
+                        val extractedAt =
+                            Timestamp.from(
+                                Instant.ofEpochMilli(emittedAt)
+                                    .atZone(ZoneOffset.UTC)
+                                    .toInstant(),
+                            )
+                        stmt.setTimestamp(++i, extractedAt)
+                        stmt.setString(++i, airbyteMeta)
+                        stmt.setLong(++i, generationId)
+                        LOGGER.info(
+                            "Inserting record with UUID: {}, Data: {}, Extracted At: {}, Meta: {}, Generation ID: {}",
+                            uuid,
+                            jsonData,
+                            extractedAt,
+                            airbyteMeta,
+                            generationId
+                        )
+                        stmt.addBatch()
+                        batchCount++
+                        LOGGER.info("batchCount: {}", batchCount)
+                        LOGGER.info("batchSize: {}", batchSize)
+                        if (batchCount >= batchSize) {
+                            LOGGER.info("Executing batch")
+                            stmt.executeBatch()
+                            batchCount = 0
+                        } else {
+                            LOGGER.info("only added to batch")
+                        }
                     }
-                }
-                if (batchCount > 0) {
-                    stmt.executeBatch()
+                    if (batchCount > 0) {
+                        LOGGER.info("Executing final batch")
+                        stmt.executeBatch()
+                    }
                 }
             } catch (e: SQLException) {
                 var currentException: SQLException? = e
@@ -319,9 +353,12 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                     LOGGER.error(currentException.message)
                     currentException = currentException.nextException
                 }
-                throw Exception(e)
+                throw RuntimeException("Batch insert failed", e)
+            } catch (ex: Exception) {
+                LOGGER.info("Exception occured, {}", ex.message)
             }
         }
+        LOGGER.info("insertRecrodsInternalV2 is completed.")
     }
 
     /**
