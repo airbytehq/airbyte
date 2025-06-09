@@ -33,15 +33,14 @@ fun interface DatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatu
     suspend fun gatherInitialStatus(streams: TableCatalog): Map<DestinationStream, InitialStatus>
 }
 
-abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatus>(
+abstract class BaseDirectLoadInitialStatusGatherer(
     private val airbyteClient: AirbyteClient,
-    private val tableDatabase: String,
     private val internalTableDataset: String
-) : DatabaseInitialStatusGatherer<InitialStatus> {
+) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
         streams: TableCatalog
-    ): Map<DestinationStream, InitialStatus> {
-        val map = ConcurrentHashMap<DestinationStream, InitialStatus>(streams.size)
+    ): Map<DestinationStream, DirectLoadInitialStatus> {
+        val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(streams.size)
         coroutineScope {
             streams.forEach { (stream, tableNameInfo) ->
                 launch {
@@ -65,7 +64,7 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
         }
     }
 
-    private suspend fun getInitialStatus(tableName: TableName): InitialStatus {
+    private suspend fun getInitialStatus(tableName: TableName): DirectLoadInitialStatus {
         return DirectLoadInitialStatus(
             realTable = getTableStatus(tableName),
             // TODO this feels sketchy. We maybe should compute the temp table name
@@ -76,6 +75,5 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
                     tableName.asTempTable(internalNamespace = internalTableDataset),
                 ),
         )
-            as InitialStatus
     }
 }
