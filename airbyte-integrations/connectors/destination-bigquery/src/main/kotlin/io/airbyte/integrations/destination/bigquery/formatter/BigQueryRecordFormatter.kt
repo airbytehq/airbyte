@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
@@ -141,21 +143,17 @@ class BigQueryRecordFormatter(
                             // Bigquery has some strict requirements for datetime / time formatting,
                             // so handle that here.
                             when (value.type) {
+                                TimestampTypeWithTimezone ->
+                                    outputRecord[columnNameMapping[key]!!] = formatTimestampWithTimezone(value)
+
                                 TimestampTypeWithoutTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        DATETIME_FORMATTER.format(
-                                            (value.abValue as TimestampWithoutTimezoneValue).value
-                                        )
+                                    outputRecord[columnNameMapping[key]!!] = formatTimestampWithoutTimezone(value)
+
                                 TimeTypeWithoutTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                            (value.abValue as TimeWithoutTimezoneValue).value
-                                        )
+                                    outputRecord[columnNameMapping[key]!!] = formatTimeWithoutTimezone(value)
+
                                 TimeTypeWithTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        TIME_WITH_TIMEZONE_FORMATTER.format(
-                                            (value.abValue as TimeWithTimezoneValue).value
-                                        )
+                                    outputRecord[columnNameMapping[key]!!] = formatTimeWithTimezone(value)
                                 else -> outputRecord[columnNameMapping[key]!!] = value.abValue
                             }
                         }
@@ -266,6 +264,30 @@ class BigQueryRecordFormatter(
                     }
                     .map { (name, type) -> Field.of(name, type) }
             return Schema.of(DIRECT_LOAD_SCHEMA + userDefinedFields)
+        }
+
+        fun formatTimestampWithTimezone(value: EnrichedAirbyteValue): String {
+            return DATETIME_FORMATTER.format(
+                (value.abValue as TimestampWithTimezoneValue).value
+            )
+        }
+
+        fun formatTimestampWithoutTimezone(value: EnrichedAirbyteValue): String {
+            return DATETIME_FORMATTER.format(
+                (value.abValue as TimestampWithoutTimezoneValue).value
+            )
+        }
+
+        fun formatTimeWithoutTimezone(value: EnrichedAirbyteValue): String {
+            return TIME_WITHOUT_TIMEZONE_FORMATTER.format(
+                (value.abValue as TimeWithoutTimezoneValue).value
+            )
+        }
+
+        fun formatTimeWithTimezone(value: EnrichedAirbyteValue): String {
+            return TIME_WITH_TIMEZONE_FORMATTER.format(
+                (value.abValue as TimeWithTimezoneValue).value
+            )
         }
     }
 }

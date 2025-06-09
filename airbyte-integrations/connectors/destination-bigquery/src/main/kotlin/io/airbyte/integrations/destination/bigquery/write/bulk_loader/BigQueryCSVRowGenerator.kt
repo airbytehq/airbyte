@@ -17,12 +17,9 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeWithTimezoneValue
-import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.csv.toCsvValue
@@ -30,12 +27,18 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
-import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITHOUT_TIMEZONE_FORMATTER
-import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITH_TIMEZONE_FORMATTER
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithoutTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithoutTimezone
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 
 object LIMITS {
     val TRUE = IntegerValue(1)
@@ -45,12 +48,12 @@ object LIMITS {
         val numValue = (value.abValue as NumberValue).value
         return if (
             numValue < BigQueryRecordFormatter.MIN_NUMERIC ||
-                BigQueryRecordFormatter.MAX_NUMERIC < numValue
+            BigQueryRecordFormatter.MAX_NUMERIC < numValue
         ) {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
         } else {
-            return numValue
+            numValue
         }
     }
 
@@ -58,7 +61,7 @@ object LIMITS {
         val intValue = (value.abValue as IntegerValue).value
         return if (
             intValue < BigQueryRecordFormatter.INT64_MIN_VALUE ||
-                BigQueryRecordFormatter.INT64_MAX_VALUE < intValue
+            BigQueryRecordFormatter.INT64_MAX_VALUE < intValue
         ) {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
@@ -90,30 +93,23 @@ class BigQueryCSVRowGenerator {
                 is TimestampTypeWithTimezone ->
                     value.abValue =
                         StringValue(
-                            (actualValue as TimestampWithTimezoneValue)
-                                .value
-                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                            formatTimestampWithTimezone(value)
                         )
+
                 is TimestampTypeWithoutTimezone ->
                     value.abValue =
                         StringValue(
-                            (actualValue as TimestampWithoutTimezoneValue)
-                                .value
-                                .format(DateTimeFormatter.ISO_DATE_TIME)
+                            formatTimestampWithoutTimezone(value)
                         )
                 is TimeTypeWithTimezone ->
                     value.abValue =
                         StringValue(
-                            (actualValue as TimeWithTimezoneValue)
-                                .value
-                                .format(TIME_WITH_TIMEZONE_FORMATTER)
+                            formatTimeWithTimezone(value)
                         )
                 is TimeTypeWithoutTimezone ->
                     value.abValue =
                         StringValue(
-                            (actualValue as TimeWithoutTimezoneValue)
-                                .value
-                                .format(TIME_WITHOUT_TIMEZONE_FORMATTER)
+                            formatTimeWithoutTimezone(value)
                         )
 
                 // serialize complex types to string
