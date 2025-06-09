@@ -193,6 +193,7 @@ sealed class FeedBootstrap<T : Feed>(
             outputer.close()
         }
 
+        val valueVBuilder = io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
                 var b = AirbyteRecordMessageProtobuf.newBuilder()
@@ -201,7 +202,7 @@ sealed class FeedBootstrap<T : Feed>(
                     .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
 
                 partitionId?.let { b.setPartitionId(it) }
-                val p = recordData.toProto(b
+                val p = recordData.toProto(b, valueVBuilder
                 )
 
                 acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
@@ -217,7 +218,7 @@ sealed class FeedBootstrap<T : Feed>(
             }*/
         }
 
-        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf,) {
+        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
             synchronized(this) {
 /*
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
