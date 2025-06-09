@@ -3,7 +3,6 @@ import traceback
 from datetime import datetime
 
 from orjson import orjson
-
 from airbyte_cdk.entrypoint import launch, logger
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import (
@@ -14,14 +13,13 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
+
 from source_exact import SourceExact
 
 
 def _get_source(_args):
-
     try:
-        return SourceExact(
-        )
+        return SourceExact()
 
     except Exception as error:
         print(
@@ -44,7 +42,6 @@ def _get_source(_args):
         return None
 
 
-
 def run() -> None:
     init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
@@ -52,5 +49,3 @@ def run() -> None:
     logger.info(f"Running source: {source}")
     if source:
         launch(source, _args)
-
-
