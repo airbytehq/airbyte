@@ -18,17 +18,19 @@ import java.util.concurrent.TimeUnit
 class ClickhouseChecker(
     clock: Clock,
     private val clientFactory: RawClickHouseClientFactory,
-): DestinationChecker<ClickhouseConfiguration> {
+) : DestinationChecker<ClickhouseConfiguration> {
     // ensure table name unique across checks — could factor this out into an injectable shared util
-    @VisibleForTesting
-    val tableName = "_airbyte_check_table_${clock.millis()}"
+    @VisibleForTesting val tableName = "_airbyte_check_table_${clock.millis()}"
 
     override fun check(config: ClickhouseConfiguration) {
         val client = clientFactory.make(config)
 
         // TODO: ideally we'd actually inject a higher level client in here and not write SQL
-         client.execute("CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test UInt8) ENGINE = MergeTree ORDER BY ()")
-             .get(10, TimeUnit.SECONDS)
+        client
+            .execute(
+                "CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test UInt8) ENGINE = MergeTree ORDER BY ()"
+            )
+            .get(10, TimeUnit.SECONDS)
 
         val insert =
             client
@@ -41,11 +43,12 @@ class ClickhouseChecker(
     }
 
     override fun cleanup(config: ClickhouseConfiguration) {
-         val client = clientFactory.make(config)
+        val client = clientFactory.make(config)
 
         // TODO: ideally we'd actually inject a higher level client in here and not write SQL
-         client.execute("DROP TABLE IF EXISTS ${config.database}.$tableName")
-             .get(10, TimeUnit.SECONDS)
+        client
+            .execute("DROP TABLE IF EXISTS ${config.database}.$tableName")
+            .get(10, TimeUnit.SECONDS)
     }
 
     object Constants {
