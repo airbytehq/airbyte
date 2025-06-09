@@ -316,13 +316,13 @@ class ClickhouseSqlGenerator {
             ArrayTypeWithoutSchema,
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> ClickHouseDataType.JSON
+            ObjectTypeWithoutSchema -> ClickHouseDataType.String
             is UnionType ->
                 if (type.isLegacyUnion) {
                     toDialectType(type.chooseType())
                 } else {
-                    ClickHouseDataType.JSON
+                    ClickHouseDataType.String
                 }
-            is UnknownType -> ClickHouseDataType.JSON
+            is UnknownType -> ClickHouseDataType.String
         }
 }
