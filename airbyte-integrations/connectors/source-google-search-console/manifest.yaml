@@ -3,9 +3,9 @@ version: 6.44.0
 type: DeclarativeSource
 
 check:
-  type: CheckDynamicStream
-  stream_count: 1
-  use_check_availability: false
+  type: CheckStream
+  stream_names:
+    - sites
 
 concurrency_level:
   type: ConcurrencyLevel

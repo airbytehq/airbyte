@@ -135,7 +135,7 @@ def test_streams(config):
 
 
 def test_streams_without_custom_reports(config_gen):
-    config = config_gen(custom_reports_array=...)
+    config = config_gen(custom_reports_array=..., custom_reports=...)
     source = get_source(config)
     streams = source.streams(config)
     assert len(streams) == 14
@@ -145,6 +145,12 @@ def test_streams_without_custom_reports(config_gen):
     "dimensions, expected_status, schema_props, primary_key",
     (
         (["impressions"], Status.FAILED, None, None),
+        (
+            ["date", "country", "device", "page", "query"],
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"],
+        ),
         (
             [],
             Status.SUCCEEDED,
@@ -177,7 +183,7 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
     custom_reports = [{"name": "custom", "dimensions": dimensions}]
 
-    custom_report_config = config_gen(custom_reports_array=custom_reports)
+    custom_report_config = config_gen(custom_reports_array=custom_reports, custom_reports=...)
     mock_logger = MagicMock()
     status = (
         get_source(custom_report_config).check(config=custom_report_config, logger=mock_logger)
