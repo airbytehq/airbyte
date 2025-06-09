@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'java-test-fixtures'
+}
+
+group = 'io.airbyte.integrations.source-connector-tests'
+version = 'unspecified'
+
+dependencies {
+    testFixturesImplementation platform('org.junit:junit-bom:5.10.0')
+    testFixturesImplementation 'org.junit.jupiter:junit-jupiter'
+
+    testFixturesImplementation "io.micronaut:micronaut-context"
+
+    // Add dependency to airbyte-cdk core modules
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    testFixturesImplementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    testFixturesImplementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
+    testFixturesImplementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
+
+    // TestContainers dependencies
+    testFixturesImplementation "org.testcontainers:testcontainers:1.19.1"
+    testFixturesImplementation "org.testcontainers:jdbc:1.19.1"
+    testFixturesImplementation "org.testcontainers:junit-jupiter:1.19.1"
+}
+
+test {
+    useJUnitPlatform()
+}
