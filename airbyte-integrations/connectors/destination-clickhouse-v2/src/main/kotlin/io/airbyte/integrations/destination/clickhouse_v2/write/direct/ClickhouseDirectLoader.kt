@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.Constants.DELIMITER
+import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -42,8 +43,9 @@ class ClickhouseDirectLoader(
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asRawJson() as ObjectNode
+
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.record.emittedAt)
-        protocolRecord.put(Constants.FIELD_GEN_ID, Constants.GEN_ID)
+        protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
 
         val meta = Jsons.jsonNode(record.rawData.record.meta) as ObjectNode
