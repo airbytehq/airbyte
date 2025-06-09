@@ -270,7 +270,7 @@ sealed class FeedBootstrap<T : Feed>(
                 .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
                 .also { builder -> partitionId?.let { builder.setPartitionId(it) } }
                 .also { builder ->
-                    stream.schema.sortedBy { it.id }.forEach { field ->
+                    stream.schema.sortedBy { it.id }.forEach {
                         builder.addData(
                             NullProtoEncoder.encode(valueVBuilder, true)
                         )
