@@ -58,6 +58,7 @@ fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
         is BooleanCodec, -> BooleanProtoEncoder
         is OffsetDateTimeCodec, -> OffsetDateTimeProtoEncoder
         is FloatCodec, -> FloatProtoEncoder
+        is NullCodec, -> NullProtoEncoder
         is BinaryCodec,
         is BigDecimalCodec,
         is BigDecimalIntegerCodec,
@@ -71,7 +72,6 @@ fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
         is LocalTimeCodec,
         is LocalDateTimeCodec,
         is OffsetTimeCodec,
-        is NullCodec,
         is ArrayEncoder<*>, -> AnyProtoEncoder
 
         else -> AnyProtoEncoder
@@ -117,15 +117,28 @@ data object FloatProtoEncoder: ProtoEncoder<Float> {
         builder.setNumber(decoded.toDouble())
 }
 
+data object NullProtoEncoder : ProtoEncoder<Boolean> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: Boolean): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setIsNull(decoded)
+}
+
 typealias AnyProtoEncoder = TextProtoEncoder
 fun InternalRow.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Builder, valueVBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder
         .apply {
+            this@toProto.toSortedMap().onEachIndexed { index, entry ->
+                setData(index,
+                    entry.value.jsonEncoder.toProto().encode(valueVBuilder, entry.value.value!!))
+                setData(index, NullProtoEncoder.encode(valueVBuilder, entry.value.value == null))
+            }
+/*
             for ((_, value) in this@toProto.toSortedMap()) {
+
                 addData(value.jsonEncoder.toProto().encode(
                     valueVBuilder,
                     value.value!!))
             }
+*/
         }
 //        .build()
 }

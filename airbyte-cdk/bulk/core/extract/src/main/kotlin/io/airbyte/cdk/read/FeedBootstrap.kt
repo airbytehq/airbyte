@@ -14,6 +14,7 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.NullProtoEncoder
 import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProto
@@ -193,17 +194,17 @@ sealed class FeedBootstrap<T : Feed>(
             outputer.close()
         }
 
-        val valueVBuilder = io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+        val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                var b = AirbyteRecordMessageProtobuf.newBuilder()
+                /*var b = AirbyteRecordMessageProtobuf.newBuilder()
                     .setStreamName(stream.name)
                     .setStreamNamespace(stream.namespace)
-                    .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                    .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())*/
+                //                partitionId?.let { b.setPartitionId(it) }
 
-                partitionId?.let { b.setPartitionId(it) }
-                val p = recordData.toProto(b, valueVBuilder
-                )
+                var b = defaultRecordData
+                val p = recordData.toProto(b, valueVBuilder)
 
                 acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
             } /*else {
@@ -262,6 +263,19 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
                 stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
 
+        private val defaultRecordData: AirbyteRecordMessageProtobuf.Builder =
+            AirbyteRecordMessageProtobuf.newBuilder()
+                .setStreamName(stream.name)
+                .setStreamNamespace(stream.namespace)
+                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                .also { builder -> partitionId?.let { builder.setPartitionId(it) } }
+                .also { builder ->
+                    stream.schema.sortedBy { it.id }.forEach { field ->
+                        builder.addData(
+                            NullProtoEncoder.encode(valueVBuilder, true)
+                        )
+                    }
+                }
 /*        private val defaultRecordData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
                 stream.schema.forEach { recordData.putNull(it.id) }
