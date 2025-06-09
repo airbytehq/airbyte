@@ -1297,7 +1297,7 @@ wheels = [
 [[package]]
 name = "source-exact"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "airbyte-cdk" },
     { name = "pendulum" },
