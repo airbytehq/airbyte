@@ -13,6 +13,7 @@ import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
@@ -64,7 +65,7 @@ class ClickhouseDirectLoadWriter :
                 numberCanBeLarge = false,
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
     ) {
@@ -286,7 +287,7 @@ class ClickhouseDirectLoadWriter :
      * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      *
      */
-    @Disabled override fun testContainerTypes() {}
+    // @Disabled override fun testContainerTypes() {}
 
     /**
      * failing because of
@@ -378,72 +379,6 @@ class ClickhouseDirectLoadWriter :
     @Disabled override fun resumeAfterCancelledTruncate() {}
 
     /**
-     * failing because of
-     *
-     * com.clickhouse.client.api.ServerException: Code: 117. DB::Exception: JSON object should start with '{': (while reading the value of key name): (at row 1) : While executing ParallelParsingBlockInputFormat. (INCORRECT_DATA) (version 25.5.2.47 (official build))"}
-     * 	at com.clickhouse.client.api.internal.HttpAPIClientHelper.readError(HttpAPIClientHelper.java:371) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.internal.HttpAPIClientHelper.executeRequest(HttpAPIClientHelper.java:426) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.lambda$insert$8(Client.java:1600) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.runAsyncOperation(Client.java:2156) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1643) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1503) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1446) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.flush(ClickhouseDirectLoader.kt:75) ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?]
-     * 	at io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.finish(ClickhouseDirectLoader.kt:88) ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?]
-     * 	at io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:46) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:24) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.finishKeys(LoadPipelineStepTask.kt:278) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.access$finishKeys(LoadPipelineStepTask.kt:59) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:302) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33) [kotlin-stdlib-2.1.10.jar:2.1.10-release-473]
-     * 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     *
-     */
-    @Disabled override fun testUnknownTypes() {}
-
-    /**
-     * failing because of
-     *
-     * com.clickhouse.client.api.ServerException: Code: 117. DB::Exception: JSON object should start with '{': (while reading the value of key a): (at row 1) : While executing ParallelParsingBlockInputFormat. (INCORRECT_DATA) (version 25.5.2.47 (official build))"}
-     * 	at com.clickhouse.client.api.internal.HttpAPIClientHelper.readError(HttpAPIClientHelper.java:371) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.internal.HttpAPIClientHelper.executeRequest(HttpAPIClientHelper.java:426) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.lambda$insert$8(Client.java:1600) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.runAsyncOperation(Client.java:2156) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1643) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1503) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1446) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.flush(ClickhouseDirectLoader.kt:75) ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?]
-     * 	at io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.finish(ClickhouseDirectLoader.kt:88) ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?]
-     * 	at io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:46) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:24) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.finishKeys(LoadPipelineStepTask.kt:278) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.access$finishKeys(LoadPipelineStepTask.kt:59) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:302) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33) [kotlin-stdlib-2.1.10.jar:2.1.10-release-473]
-     * 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707) [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     *
-     */
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    /**
      * Dedup is handle by the Clickhouse server, so this test is not applicable.
      */
     @Disabled override fun testFunkyCharactersDedup() {}
@@ -518,39 +453,6 @@ class ClickhouseDirectLoadWriter :
      *
      */
     @Disabled override fun testOverwriteSchemaEvolution() {}
-
-    /**
-     * failing because of
-     *
-     * com.clickhouse.client.api.ServerException: Code: 117. DB::Exception: JSON object should start with '{': (while reading the value of key combined_type): (at row 1) : While executing ParallelParsingBlockInputFormat. (INCORRECT_DATA) (version 25.5.2.47 (official build))"}
-     * 	at com.clickhouse.client.api.internal.HttpAPIClientHelper.readError(HttpAPIClientHelper.java:371) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.internal.HttpAPIClientHelper.executeRequest(HttpAPIClientHelper.java:426) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.lambda$insert$8(Client.java:1600) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.runAsyncOperation(Client.java:2156) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1643) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1503) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at com.clickhouse.client.api.Client.insert(Client.java:1446) ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)]
-     * 	at io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.flush(ClickhouseDirectLoader.kt:75) ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?]
-     * 	at io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.finish(ClickhouseDirectLoader.kt:88) ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?]
-     * 	at io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:46) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:24) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.finishKeys(LoadPipelineStepTask.kt:278) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.access$finishKeys(LoadPipelineStepTask.kt:59) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:302) ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33) ~[kotlin-stdlib-2.1.10.jar:2.1.10-release-473]
-     * 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     * 	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707) ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     *
-     */
-    @Disabled override fun testUnions() {}
 }
 
 class ClickhouseDataDumper(
@@ -582,7 +484,11 @@ class ClickhouseDataDumper(
                     val airbyteValue =
                         when (entry.value) {
                             is Long -> IntegerValue(entry.value as Long)
-                            is String -> StringValue(entry.value as String)
+                            is String -> if (entry.value == "")
+                                NullValue
+                            else
+                                StringValue(entry.value as String)
+                            null -> NullValue
                             else ->
                                 throw UnsupportedOperationException(
                                     "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
