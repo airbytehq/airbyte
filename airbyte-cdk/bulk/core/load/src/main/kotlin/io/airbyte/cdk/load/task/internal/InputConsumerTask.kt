@@ -83,7 +83,8 @@ class InputConsumerTask(
         log.info { "Starting consuming messages from the input flow" }
         val unopenedStreams = catalog.streams.map { it.descriptor }.toMutableSet()
         pipelineInputQueue.use {
-            pipelineEventBookkeepingRouter.use {
+            var baseException: Exception? = null
+            try {
                 inputFlow.fold(unopenedStreams) { unopenedStreams, (_, reserved) ->
                     when (val message = reserved.value) {
                         is DestinationStreamAffinedMessage ->
@@ -99,6 +100,43 @@ class InputConsumerTask(
                         }
                     }
                     unopenedStreams
+                }
+            } catch (e: Exception) {
+                log.warn(e) {
+                    "Encountered exception in input loop. Capturing exception and proceeding with sync shutdown."
+                }
+                baseException = e
+                // intentionally don't throw here.
+                // we'll throw an appropriate exception in the `finally` block.
+            } finally {
+                // pipelineEventBookkeepingRouter.use {...} will swallow baseException.
+                // so instead, we'll use a plain try-catch-finally,
+                // and actually prioritize the original exception over anything thrown
+                // in this `try` block.
+                try {
+                    // this is likely to throw a "no stream status message" error,
+                    // if there's an error during input handling.
+                    // That's quite misleading (b/c the actual error is that we crashed before we
+                    // could handle the stream status message),
+                    // so we would prefer to rethrow the original exception.
+                    // but we can't just skip this close() call if baseException != null,
+                    // because that would cause the sync to hang.
+                    pipelineEventBookkeepingRouter.close()
+                } catch (e: Exception) {
+                    if (baseException == null) {
+                        throw e
+                    } else {
+                        log.warn(e) {
+                            "Encountered exception when closing PipelineEventBookkeepingRouter, but we're already handling another exception ($baseException). Swallowing this exception."
+                        }
+                        throw baseException
+                    }
+                }
+                // if the `pipelineEventBookkeepingRouter.close()` ran successfully,
+                // we should rethrow the original exception.
+                if (baseException != null) {
+                    log.warn { "Throwing captured exception after triggering sync shutdown." }
+                    throw baseException
                 }
             }
         }
