@@ -305,7 +305,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     }
 
     /** Determines if we can directly upsert without additional processing */
-    private suspend fun shouldUpsertDirectly(): Boolean {
+    private fun shouldUpsertDirectly(): Boolean {
         return when {
             // Case 1: Real table doesn't exist yet
             initialStatus.realTable == null -> true
@@ -321,7 +321,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     }
 
     /** Performs direct upsert from temp table to real table */
-    private suspend fun performDirectUpsert() {
+    private fun performDirectUpsert() {
         // Create or ensure schema of real table
         if (initialStatus.realTable == null) {
             sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
@@ -342,7 +342,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     }
 
     /** Performs upsert using an additional temporary table for safer operation */
-    private suspend fun performUpsertWithTemporaryTable() {
+    private fun performUpsertWithTemporaryTable() {
         val tempTempTable = tempTableName.asTempTable(internalNamespace = internalNamespace)
 
         // Create temporary table for intermediate operations
