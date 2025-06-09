@@ -5,16 +5,12 @@
 package io.airbyte.integrations.destination.clickhouse_v2.write
 
 import io.airbyte.cdk.SystemErrorException
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendStreamLoader
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendTruncateStreamLoader
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableDedupTruncateStreamLoader
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -34,7 +30,8 @@ class ClickHouseWriter(
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
     override suspend fun setup() {
-        names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
+        names.values
+            .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
             .forEach { clickhouseClient.createNamespace(it) }
         clickhouseClient.createNamespace(internalNamespace)
 
@@ -48,26 +45,28 @@ class ClickHouseWriter(
         val tempTableName = realTableName.asTempTable(internalNamespace = internalNamespace)
         val columnNameMapping = tableNameInfo.columnNameMapping
         return when (stream.minimumGenerationId) {
-            0L -> DirectLoadTableAppendStreamLoader(
-                stream,
-                initialStatus,
-                realTableName = realTableName,
-                tempTableName = tempTableName,
-                columnNameMapping,
-                clickhouseClient,
-                clickhouseClient,
-                streamStateStore,
-            )
-            stream.generationId -> DirectLoadTableAppendTruncateStreamLoader(
-                stream,
-                initialStatus,
-                realTableName = realTableName,
-                tempTableName = tempTableName,
-                columnNameMapping,
-                clickhouseClient,
-                clickhouseClient,
-                streamStateStore,
-            )
+            0L ->
+                DirectLoadTableAppendStreamLoader(
+                    stream,
+                    initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping,
+                    clickhouseClient,
+                    clickhouseClient,
+                    streamStateStore,
+                )
+            stream.generationId ->
+                DirectLoadTableAppendTruncateStreamLoader(
+                    stream,
+                    initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping,
+                    clickhouseClient,
+                    clickhouseClient,
+                    streamStateStore,
+                )
             else ->
                 throw SystemErrorException(
                     "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"

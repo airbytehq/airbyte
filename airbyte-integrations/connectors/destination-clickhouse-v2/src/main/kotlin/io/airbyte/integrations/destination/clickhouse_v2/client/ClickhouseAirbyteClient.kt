@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.client
 
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
@@ -20,9 +24,7 @@ val log = KotlinLogging.logger {}
 class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
     private val sqlGenerator: ClickhouseSqlGenerator,
-) : AirbyteClient,
-    DirectLoadTableSqlOperations,
-    DirectLoadTableNativeOperations {
+) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun createNamespace(namespace: String) {
         val statement = sqlGenerator.createNamespace(namespace)
@@ -47,9 +49,7 @@ class ClickhouseAirbyteClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        execute(
-            sqlGenerator.dropTable(tableName)
-        )
+        execute(sqlGenerator.dropTable(tableName))
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
@@ -124,7 +124,7 @@ class ClickhouseAirbyteClient(
         } catch (e: Exception) {
             log.error(e) { "Failed to retrieve the generation Id" }
             // TODO: open question: Do we need to raise an error here or just return 0?
-            return 0;
+            return 0
         }
     }
 

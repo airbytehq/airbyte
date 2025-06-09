@@ -38,7 +38,9 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
     private val tableDatabase: String,
     private val internalTableDataset: String
 ) : DatabaseInitialStatusGatherer<InitialStatus> {
-    override suspend fun gatherInitialStatus(streams: TableCatalog): Map<DestinationStream, InitialStatus> {
+    override suspend fun gatherInitialStatus(
+        streams: TableCatalog
+    ): Map<DestinationStream, InitialStatus> {
         val map = ConcurrentHashMap<DestinationStream, InitialStatus>(streams.size)
         coroutineScope {
             streams.forEach { (stream, tableNameInfo) ->
@@ -73,6 +75,7 @@ abstract class BaseDatabaseInitialStatusGatherer<InitialStatus : DatabaseInitial
                 getTableStatus(
                     tableName.asTempTable(internalNamespace = internalTableDataset),
                 ),
-        ) as InitialStatus
+        )
+            as InitialStatus
     }
 }
