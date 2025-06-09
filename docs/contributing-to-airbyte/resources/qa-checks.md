@@ -432,3 +432,15 @@ _Applies to connector with any internal support level_
 _Applies to connector with medium, high Airbyte usage level_
 
 Medium to High Use Connectors must enable acceptance tests via the `connectorTestSuitesOptions.suite:acceptanceTests` in their respective metadata.yaml file to ensure that the connector is working as expected.
+
+## 🔢 Version
+
+### Connector Version Increment Check
+
+_Applies to the following connector types: source, destination_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
+_Applies to connector with any support level_
+_Applies to connector with any internal support level_
+_Applies to connector with any Airbyte usage level_
+
+Validates that the connector version was incremented if files were modified.

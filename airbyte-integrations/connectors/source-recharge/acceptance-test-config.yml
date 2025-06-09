@@ -15,6 +15,10 @@ acceptance_tests:
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: shop
             bypass_reason: "The stream is not empty, but the primary key is the entire record, so it is constantly changing"
+          - name: credit_adjustments
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: payment_methods_stream
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
       - config_path: secrets/config_order_modern_api.json
@@ -31,6 +35,10 @@ acceptance_tests:
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: shop
             bypass_reason: "The stream is not empty, but the primary key is the entire record, so it is constantly changing"
+          - name: credit_adjustments
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: payment_methods_stream
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
         expect_records:
           path: "integration_tests/expected_records_orders_modern_api.jsonl"
   connection:

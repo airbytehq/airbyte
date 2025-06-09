@@ -205,16 +205,22 @@ async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre
 
 
 @pytest.mark.parametrize(
-    "check_image_exists_status",
-    [StepStatus.SKIPPED, StepStatus.FAILURE],
+    "check_image_exists_status, pre_release",
+    [
+        (StepStatus.SKIPPED, False),
+        (StepStatus.SKIPPED, True),
+        (StepStatus.FAILURE, False),
+    ],
 )
-async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker, check_image_exists_status, publish_context):
+async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker, check_image_exists_status, pre_release, publish_context):
     """We validate that when the connector image exists or the check fails, we don't run the rest of the pipeline.
     We also validate that the metadata upload step is called when the image exists (Skipped status).
     We do this to ensure that the metadata is still updated in the case where the connector image already exists.
     It's the role of the metadata service upload command to actually upload the file if the metadata has changed.
     But we check that the metadata upload step does not happen if the image check fails (Failure status).
     """
+    publish_context.pre_release = pre_release
+
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
@@ -242,7 +248,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
         if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache", "UploadSbom"]:
             getattr(module, to_mock).return_value.run.assert_not_called()
 
-    if check_image_exists_status is StepStatus.SKIPPED:
+    if check_image_exists_status is StepStatus.SKIPPED and not pre_release:
         run_metadata_upload.assert_called_once()
         assert (
             report.steps_results
@@ -255,6 +261,9 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
                 run_metadata_upload.return_value,
             ]
         )
+
+    if check_image_exists_status is StepStatus.SKIPPED and pre_release:
+        run_metadata_upload.assert_not_called()
 
     if check_image_exists_status is StepStatus.FAILURE:
         run_metadata_upload.assert_not_called()

@@ -23,7 +23,7 @@ Version 2.0.0 introduces changes in primary key for streams `Segment Members` an
    This will reset the data in your destination and initiate a fresh sync.
    :::
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 1.0.0
 
@@ -51,7 +51,7 @@ Depending on the destination type, you may not be prompted to reset your data
 
 - The `._links` field, which contained non-user-relevant Mailchimp metadata, has been removed from all streams.
 - All instances of datetime fields have had their type changed from `string` to airbyte-type `timestamp-with-timezone`. This change should ensure greater precision and consistency in how datetime information is represented and processed by destinations.
-- The Mailchimp API returns many fields without data as empty strings. To accomodate the above changes, empty strings are now converted to null values:
+- The Mailchimp API returns many fields without data as empty strings. To accommodate the above changes, empty strings are now converted to null values:
 
 ```md
 {"id": "record_id", "last_opened": ""} -> {"id": "record_id", "last_opened": null}

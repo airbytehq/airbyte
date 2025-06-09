@@ -1,0 +1,72 @@
+# Migrated from airbyte-ci/connectors/base_images/README.md
+
+# https://hub.docker.com/_/python/tags?name=3.11.11-slim-bookworm
+ARG BASE_IMAGE=docker.io/python:3.11.11-slim-bookworm@sha256:081075da77b2b55c23c088251026fb69a7b2bf92471e491ff5fd75c192fd38e5
+FROM ${BASE_IMAGE}
+
+# Set the timezone to UTC
+RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+
+# Set-up groups, users, and directories
+RUN adduser --uid 1000 --system --group --no-create-home airbyte
+
+# Create the cache airbyte directories and set the right permissions
+RUN mkdir --mode 755 /airbyte && \
+    mkdir --mode 755 /custom_cache && \
+    mkdir /secrets && \
+    mkdir /config && \
+    mkdir /nonexistent && \
+    chown airbyte:airbyte /airbyte && \
+    chown -R airbyte:airbyte /custom_cache && \
+    chown -R airbyte:airbyte /secrets && \
+    chown -R airbyte:airbyte /config && \
+    chown -R airbyte:airbyte /nonexistent && \
+    chown -R airbyte:airbyte /tmp
+
+
+ENV POETRY_VIRTUALENVS_CREATE=false
+ENV POETRY_VIRTUALENVS_IN_PROJECT=false
+ENV POETRY_NO_INTERACTION=1
+
+# Create and set up pip cache directory
+# TODO: Remove this block if not needed.
+ENV PIP_CACHE_DIR=/pip_cache
+RUN mkdir -p ${PIP_CACHE_DIR} && chown -R airbyte:airbyte ${PIP_CACHE_DIR}
+
+# Install pip and poetry
+RUN pip install --upgrade \
+      pip==24.0 \
+      setuptools==78.1.1 \
+      poetry==1.8.4
+
+# Install system dependencies 
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get dist-upgrade -y && \
+    apt-get clean
+RUN apt-get install -y socat=1.7.4.4-2
+
+# Install system dependencies related to OCR and PDF processing
+# TODO: move these out of the base image since they are only needed for a few connectors
+RUN apt-get update && \
+    apt-get install -y \
+      tesseract-ocr=5.3.0-2 \
+      poppler-utils=22.12.0-2+deb12u1
+
+# NLTK data directory (this may not be needed)
+# ENV NLTK_DATA_DIR="/usr/share/nltk_data"
+# RUN mkdir -p 755 ${NLTK_DATA_DIR}
+# TODO: remove this block if not needed. If it is needed, finish copying over from Airbyte CI.
+
+# Set a whole bunch of permissions for the non-root user (delete this block if not needed)
+# RUN mkdir --mode 755 /airbyte && \
+#     mkdir --mode 755 /custom_cache && \
+#     mkdir -p 755 /usr/share/nltk_data && \
+#     chown -R airbyte:airbyte /airbyte && \
+#     chown -R airbyte:airbyte /custom_cache && \
+#     chown -R airbyte:airbyte /secrets && \
+#     chown -R airbyte:airbyte /config && \
+#     chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && \
+#     chown -R airbyte:airbyte /usr/share/pki/nltk_data && \
+#     chown -R airbyte:airbyte /etc/pki/ca-trust && \
+#     chown -R airbyte:airbyte /tmp

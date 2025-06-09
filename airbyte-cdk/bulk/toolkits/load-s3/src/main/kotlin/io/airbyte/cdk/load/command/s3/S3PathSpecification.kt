@@ -72,9 +72,7 @@ interface S3PathSpecification {
     fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = s3BucketPath,
-            stagingPrefix = null,
-            pathSuffixPattern = s3PathFormat,
+            pathPattern = s3PathFormat,
             fileNamePattern = fileNamePattern,
-            usesStagingDirectory = false
         )
 }

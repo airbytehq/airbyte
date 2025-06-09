@@ -22,7 +22,7 @@
             "required": [
               "cluster_type",
               "connection_string",
-              "database",
+              "databases",
               "username",
               "password",
               "auth_source"
@@ -41,10 +41,13 @@
                 "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
                 "order": 2
               },
-              "database": {
-                "title": "Database Name",
-                "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
+              "databases": {
+                "title": "Database Names",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
                 "order": 3
               },
               "username": {
@@ -81,7 +84,7 @@
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["cluster_type", "connection_string", "database"],
+            "required": ["cluster_type", "connection_string", "databases"],
             "additionalProperties": true,
             "properties": {
               "cluster_type": {
@@ -99,10 +102,13 @@
                 ],
                 "order": 2
               },
-              "database": {
-                "title": "Database Name",
-                "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
+              "databases": {
+                "title": "Database Names",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
                 "order": 3
               },
               "username": {
@@ -168,13 +174,23 @@
         "maximum": 100000,
         "group": "advanced"
       },
+      "discover_timeout_seconds": {
+        "type": "integer",
+        "title": "Document discovery timeout in seconds (Advanced)",
+        "description": "The amount of time the connector will wait when it discovers a document. Defaults to 600 seconds. Valid range: 5 seconds to 1200 seconds.",
+        "default": 600,
+        "order": 11,
+        "minimum": 5,
+        "maximum": 1200,
+        "group": "advanced"
+      },
       "invalid_cdc_cursor_position_behavior": {
         "type": "string",
         "title": "Invalid CDC position behavior (Advanced)",
         "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
         "enum": ["Fail sync", "Re-sync data"],
         "default": "Fail sync",
-        "order": 11,
+        "order": 12,
         "group": "advanced"
       },
       "update_capture_mode": {
@@ -183,7 +199,7 @@
         "description": "Determines how Airbyte looks up the value of an updated document. If 'Lookup' is chosen, the current value of the document will be read. If 'Post Image' is chosen, then the version of the document immediately after an update will be read. WARNING : Severe data loss will occur if this option is chosen and the appropriate settings are not set on your Mongo instance : https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images.",
         "enum": ["Lookup", "Post Image"],
         "default": "Lookup",
-        "order": 12,
+        "order": 13,
         "group": "advanced"
       },
       "initial_load_timeout_hours": {
@@ -193,7 +209,7 @@
         "default": 8,
         "min": 4,
         "max": 24,
-        "order": 13,
+        "order": 14,
         "group": "advanced"
       }
     },

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from source_pinterest.source import SourcePinterest
@@ -40,3 +40,18 @@ def test_get_authenticator(test_config):
     auth = source.get_authenticator(test_config)
     expected = test_config.get("refresh_token")
     assert auth._refresh_token == expected
+
+
+def test_invalid_account_id(wrong_account_id_config):
+    source = SourcePinterest()
+    logger_mock = MagicMock()
+
+    with patch("source_pinterest.source.AdAccountValidationStream") as MockStream:
+        instance = MockStream.return_value
+        instance.read_records.return_value = []
+
+        with pytest.raises(AirbyteTracedException) as e:
+            source.check_connection(logger_mock, wrong_account_id_config)
+
+        expected_error = f"Invalid ad_account_id: {wrong_account_id_config['account_id']}. No data returned from Pinterest API."
+        assert e.value.message == expected_error

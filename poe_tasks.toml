@@ -1,0 +1,75 @@
+# ## `poe connector` task
+#
+# The `poe connector` task is a shortcut to run any poe task in a connector's directory.
+# Example usage:
+#   poe connector <connector-name> <task> [args...]
+#   poe connector source-hardcoded-records check-all
+#   poe connector destination-motherduck check-all
+#
+# ## `poe source` and `poe destination` tasks
+# The `source` and `destinations` tasks are thin wrappers around
+# the `connector` task.
+#
+# Example usage:
+#   poe source hardcoded-records check-all
+#   poe destination motherduck check-all
+
+[tasks.docs-build]
+help = "Build the docs.airbyte.com site documentation using Docusaurus."
+shell = '''
+cd $POE_ROOT/docusaurus
+pnpm install
+pnpm build
+'''
+
+[tasks.get-modified-connectors]
+help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files."""
+shell = '''
+./poe-tasks/get-modified-connectors.sh ${java_filter}
+'''
+args = [
+  { name = "java_filter", positional = true, multiple = true, help = "Optional. To filter Java connectors, pass either 'java-only' or 'no-java'" },
+]
+
+[tasks.connector]
+help = """Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]
+This does not yet work for manifest-only connectors, which need
+to be run from their own directory for now.
+"""
+
+shell = '''
+#!/bin/bash
+cd airbyte-integrations/connectors/${connector}
+poe ${task_and_args}
+'''
+cwd = "airbyte-integrations/connectors/${connector}"
+
+args = [
+  { name = "connector", positional = true, help = "Name of the connector (e.g., source-hardcoded-records)" },
+  { name = "task_and_args", positional = true, multiple = true, help = "Task name and its arguments" }
+]
+
+[tasks.source]
+help = "Run a poe task in a source's directory. Usage: poe source <source-shortname> <task> [args...]. E.g. `poe source hardcoded-records check-all`"
+cmd = 'poe connector "source-${source}" ${task_and_args}'
+
+args = [
+  { name = "source", positional = true, help = "Name of the source (e.g., 'hardcoded-records')" },
+  { name = "task_and_args", positional = true, multiple = true, help = "Task name and its arguments" }
+]
+
+[tasks.destination]
+help = "Run a poe task in a destination's directory. Usage: poe destination <destination-shortname> <task> [args...]. E.g. `poe destination motherduck check-all`"
+cmd = 'poe connector "destination-${destination}" ${task_and_args}'
+
+args = [
+  { name = "destination", positional = true, help = "Name of the destination (e.g., 'motherduck')" },
+  { name = "task_and_args", positional = true, multiple = true, help = "Task name and its arguments" }
+]
+
+[tasks.dummy-change]
+help = "A task to add a dummy change to the specified connector."
+shell = "echo '# Dummy change (revert-me)' >> ${POE_ROOT}/airbyte-integrations/connectors/${connector}/metadata.yaml"
+args = [
+  { name = "connector", positional = true, help = "Name of the connector to add a dummy change to (e.g., 'source-hardcoded-records')" },
+]

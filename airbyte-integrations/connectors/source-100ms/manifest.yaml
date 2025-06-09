@@ -1,0 +1,2247 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://dashboard.100ms.live/
+
+  API Reference:
+  https://www.100ms.live/docs/server-side/v2/api-reference/Rooms/list-rooms
+
+check:
+  type: CheckStream
+  stream_names:
+    - sessions
+
+definitions:
+  streams:
+    sessions:
+      type: DeclarativeStream
+      name: sessions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/sessions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sessions"
+    rooms:
+      type: DeclarativeStream
+      name: rooms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/rooms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rooms"
+    active_room_peers:
+      type: DeclarativeStream
+      name: active_room_peers
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/active-rooms/{{ stream_partition['room_id'] }}/peers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - peers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: room_id
+              stream:
+                $ref: "#/definitions/streams/rooms"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/active_room_peers"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    template_settings:
+      type: DeclarativeStream
+      name: template_settings
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/templates/{{ stream_partition['temp_id'] }}/settings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: temp_id
+              stream:
+                $ref: "#/definitions/streams/templates"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/template_settings"
+    templates_destinations:
+      type: DeclarativeStream
+      name: templates_destinations
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/templates/{{ stream_partition['temp_id'] }}/destinations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - browserRecordings
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: temp_id
+              stream:
+                $ref: "#/definitions/streams/templates"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates_destinations"
+    analytics_events:
+      type: DeclarativeStream
+      name: analytics_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/events
+          http_method: GET
+          request_parameters:
+            room_id: "{{ stream_partition['room_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', '') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: room_id
+              stream:
+                $ref: "#/definitions/streams/rooms"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/analytics_events"
+    recordings:
+      type: DeclarativeStream
+      name: recordings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/recordings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('last', '') }}"
+            stop_condition: "{{ response.get('last') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recordings"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.100ms.live
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"management_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/sessions"
+  - $ref: "#/definitions/streams/rooms"
+  - $ref: "#/definitions/streams/active_room_peers"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/template_settings"
+  - $ref: "#/definitions/streams/templates_destinations"
+  - $ref: "#/definitions/streams/analytics_events"
+  - $ref: "#/definitions/streams/recordings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - management_token
+      - start_date
+    properties:
+      management_token:
+        type: string
+        description: >-
+          The management token used for authenticating API requests. You can
+          find or generate this token in your 100ms dashboard under the API
+          section. Refer to the documentation at
+          https://www.100ms.live/docs/concepts/v2/concepts/security-and-tokens#management-token-for-rest-api
+          for more details.
+        name: management_token
+        order: 0
+        title: Management Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    sessions: true
+    rooms: true
+    active_room_peers: true
+    templates: true
+    template_settings: true
+    templates_destinations: true
+    analytics_events: true
+    recordings: true
+  testedStreams:
+    sessions:
+      streamHash: 344eda3338f459120ee4b23ae8d04ce796c8b7ad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    rooms:
+      streamHash: 52c193f9d092fcb4f39001d264a7e6fd0a8d612f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    active_room_peers:
+      streamHash: 34db6c7ddf5f56ccfed0d77857e8778a7dbd92df
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: b236d07f606812ae0080283d178090432b7d33ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    template_settings:
+      streamHash: 59f79026fcf67aadba5ac9b436ede881adda59cc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates_destinations:
+      streamHash: 31a6e2ad7c05fd40a015f5e30e823ab25e5acd1d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    analytics_events:
+      streamHash: 240027cb30822eb959309974e0fc9d921dc4b9eb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    recordings:
+      streamHash: 814167c30d674228679a99e18929c9f7df8be629
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: >-
+      https://www.100ms.live/docs/server-side/v2/api-reference/Sessions/list-sessions
+
+schemas:
+  sessions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      ended_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      peers:
+        type:
+          - object
+          - "null"
+        properties:
+          4b9dd7c7-8173-4e95-99fb-3a39f04dfff8:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              joined_at:
+                type:
+                  - string
+                  - "null"
+              left_at:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              session_id:
+                type:
+                  - string
+                  - "null"
+              user:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+          62bc19d6-bdf2-4ae3-96dd-39c2af9fc4f2:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              joined_at:
+                type:
+                  - string
+                  - "null"
+              left_at:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              session_id:
+                type:
+                  - string
+                  - "null"
+              user:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+          66bccaef-6b7b-4db1-9544-94be372080ab:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              joined_at:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              session_id:
+                type:
+                  - string
+                  - "null"
+              user:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+          770201f7-a4b3-4858-b195-ca4ccc441a64:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              joined_at:
+                type:
+                  - string
+                  - "null"
+              left_at:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              session_id:
+                type:
+                  - string
+                  - "null"
+              user:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+      room_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  rooms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      large_room:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      template_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  active_room_peers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      683e5a05-10ff-4b43-80ff-8a6234025500:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          joined_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+      968e8a17-c6c1-43a5-bfdf-afae57872485:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          joined_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      appId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      customerId:
+        type:
+          - string
+          - "null"
+      destinations:
+        type:
+          - object
+          - "null"
+        properties:
+          browserRecordings:
+            type:
+              - object
+              - "null"
+            properties:
+              6708fd34-1814-4721-91ab-ff8df9bc5eec:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  autoStopTimeout:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  maxDuration:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  presignDuration:
+                    type:
+                      - number
+                      - "null"
+                  role:
+                    type:
+                      - string
+                      - "null"
+                  thumbnails:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+          hlsDestinations:
+            type:
+              - object
+              - "null"
+            properties:
+              4a2a1131-35b4-4d42-a02b-b4f213c778b2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enableMetadataInsertion:
+                    type:
+                      - boolean
+                      - "null"
+                  enableStaticUrl:
+                    type:
+                      - boolean
+                      - "null"
+                  layers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        audioBitrate:
+                          type:
+                            - number
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                        videoBitrate:
+                          type:
+                            - number
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                  maxDuration:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  numPlaylistSegments:
+                    type:
+                      - number
+                      - "null"
+                  playlistType:
+                    type:
+                      - string
+                      - "null"
+                  preset:
+                    type:
+                      - string
+                      - "null"
+                  recording:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      HLSVodRecording:
+                        type:
+                          - object
+                          - "null"
+                      hlsVod:
+                        type:
+                          - boolean
+                          - "null"
+                      layers:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            audioBitrate:
+                              type:
+                                - number
+                                - "null"
+                            height:
+                              type:
+                                - number
+                                - "null"
+                            videoBitrate:
+                              type:
+                                - number
+                                - "null"
+                            width:
+                              type:
+                                - number
+                                - "null"
+                      presignDuration:
+                        type:
+                          - number
+                          - "null"
+                      singleFilePerLayer:
+                        type:
+                          - boolean
+                          - "null"
+                      singleFilePerLayerRecording:
+                        type:
+                          - object
+                          - "null"
+                      thumbnails:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          height:
+                            type:
+                              - number
+                              - "null"
+                          offsets:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - number
+                                - "null"
+                          width:
+                            type:
+                              - number
+                              - "null"
+                  role:
+                    type:
+                      - string
+                      - "null"
+                  videoFrameRate:
+                    type:
+                      - number
+                      - "null"
+          rtmpDestinations:
+            type:
+              - object
+              - "null"
+          transcriptions:
+            type:
+              - object
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      plugins:
+        type:
+          - object
+          - "null"
+        properties:
+          noiseCancellation:
+            type:
+              - object
+              - "null"
+          whiteboard:
+            type:
+              - object
+              - "null"
+            properties:
+              permissions:
+                type:
+                  - object
+                  - "null"
+      roles:
+        type:
+          - object
+          - "null"
+        properties:
+          __internal_recorder:
+            type:
+              - object
+              - "null"
+            properties:
+              maxPeerCount:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              permissions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  browserRecording:
+                    type:
+                      - boolean
+                      - "null"
+                  hlsStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  rtmpStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  sendRoomState:
+                    type:
+                      - boolean
+                      - "null"
+              priority:
+                type:
+                  - number
+                  - "null"
+              publishParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  allowed:
+                    type:
+                      - array
+                      - "null"
+                  audio:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                  screen:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                  simulcast:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      screen:
+                        type:
+                          - object
+                          - "null"
+                      video:
+                        type:
+                          - object
+                          - "null"
+                  video:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+              role_id:
+                type:
+                  - string
+                  - "null"
+              subscribeParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  maxSubsBitRate:
+                    type:
+                      - number
+                      - "null"
+                  subscribeDegradation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      degradeGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                      packetLossThreshold:
+                        type:
+                          - number
+                          - "null"
+                      recoverGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                  subscribeToRoles:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+          guest:
+            type:
+              - object
+              - "null"
+            properties:
+              maxPeerCount:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              permissions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  browserRecording:
+                    type:
+                      - boolean
+                      - "null"
+                  hlsStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  pollRead:
+                    type:
+                      - boolean
+                      - "null"
+                  pollWrite:
+                    type:
+                      - boolean
+                      - "null"
+                  rtmpStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  sendRoomState:
+                    type:
+                      - boolean
+                      - "null"
+              priority:
+                type:
+                  - number
+                  - "null"
+              publishParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  allowed:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  audio:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                  screen:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                  simulcast:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      screen:
+                        type:
+                          - object
+                          - "null"
+                      video:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          layers:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                maxBitrate:
+                                  type:
+                                    - number
+                                    - "null"
+                                maxFramerate:
+                                  type:
+                                    - number
+                                    - "null"
+                                rid:
+                                  type:
+                                    - string
+                                    - "null"
+                                scaleResolutionDownBy:
+                                  type:
+                                    - number
+                                    - "null"
+                  video:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+              role_id:
+                type:
+                  - string
+                  - "null"
+              subscribeParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  maxSubsBitRate:
+                    type:
+                      - number
+                      - "null"
+                  subscribeDegradation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      degradeGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                      packetLossThreshold:
+                        type:
+                          - number
+                          - "null"
+                      recoverGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                  subscribeToRoles:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+          host:
+            type:
+              - object
+              - "null"
+            properties:
+              maxPeerCount:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              permissions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  browserRecording:
+                    type:
+                      - boolean
+                      - "null"
+                  changeRole:
+                    type:
+                      - boolean
+                      - "null"
+                  endRoom:
+                    type:
+                      - boolean
+                      - "null"
+                  hlsStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  mute:
+                    type:
+                      - boolean
+                      - "null"
+                  pollRead:
+                    type:
+                      - boolean
+                      - "null"
+                  pollWrite:
+                    type:
+                      - boolean
+                      - "null"
+                  removeOthers:
+                    type:
+                      - boolean
+                      - "null"
+                  rtmpStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  sendRoomState:
+                    type:
+                      - boolean
+                      - "null"
+                  unmute:
+                    type:
+                      - boolean
+                      - "null"
+              priority:
+                type:
+                  - number
+                  - "null"
+              publishParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  allowed:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  audio:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                  screen:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                  simulcast:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      screen:
+                        type:
+                          - object
+                          - "null"
+                      video:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          layers:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                maxBitrate:
+                                  type:
+                                    - number
+                                    - "null"
+                                maxFramerate:
+                                  type:
+                                    - number
+                                    - "null"
+                                rid:
+                                  type:
+                                    - string
+                                    - "null"
+                                scaleResolutionDownBy:
+                                  type:
+                                    - number
+                                    - "null"
+                  video:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+              role_id:
+                type:
+                  - string
+                  - "null"
+              subscribeParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  maxSubsBitRate:
+                    type:
+                      - number
+                      - "null"
+                  subscribeDegradation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      degradeGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                      packetLossThreshold:
+                        type:
+                          - number
+                          - "null"
+                      recoverGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                  subscribeToRoles:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+          viewer-near-realtime:
+            type:
+              - object
+              - "null"
+            properties:
+              maxPeerCount:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              permissions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  browserRecording:
+                    type:
+                      - boolean
+                      - "null"
+                  hlsStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  rtmpStreaming:
+                    type:
+                      - boolean
+                      - "null"
+                  sendRoomState:
+                    type:
+                      - boolean
+                      - "null"
+              priority:
+                type:
+                  - number
+                  - "null"
+              publishParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  allowed:
+                    type:
+                      - array
+                      - "null"
+                  audio:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                  screen:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                  simulcast:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      screen:
+                        type:
+                          - object
+                          - "null"
+                      video:
+                        type:
+                          - object
+                          - "null"
+                  video:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      bitRate:
+                        type:
+                          - number
+                          - "null"
+                      codec:
+                        type:
+                          - string
+                          - "null"
+                      frameRate:
+                        type:
+                          - number
+                          - "null"
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+              role_id:
+                type:
+                  - string
+                  - "null"
+              subscribeParams:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  maxSubsBitRate:
+                    type:
+                      - number
+                      - "null"
+                  subscribeDegradation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      degradeGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+                      packetLossThreshold:
+                        type:
+                          - number
+                          - "null"
+                      recoverGracePeriodSeconds:
+                        type:
+                          - number
+                          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          region:
+            type:
+              - string
+              - "null"
+          retry:
+            type:
+              - object
+              - "null"
+          roomState:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              messageInterval:
+                type:
+                  - number
+                  - "null"
+              sendPeerList:
+                type:
+                  - boolean
+                  - "null"
+              stopRoomStateOnJoin:
+                type:
+                  - boolean
+                  - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  template_settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      region:
+        type:
+          - string
+          - "null"
+      retry:
+        type:
+          - object
+          - "null"
+      roomState:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          messageInterval:
+            type:
+              - number
+              - "null"
+          sendPeerList:
+            type:
+              - boolean
+              - "null"
+          stopRoomStateOnJoin:
+            type:
+              - boolean
+              - "null"
+      subscribeDegradation:
+        type:
+          - object
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  templates_destinations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      6708fd34-1814-4721-91ab-ff8df9bc5eec:
+        type:
+          - object
+          - "null"
+        properties:
+          autoStopTimeout:
+            type:
+              - number
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          maxDuration:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          presignDuration:
+            type:
+              - number
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          thumbnails:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          width:
+            type:
+              - number
+              - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  analytics_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - string
+              - "null"
+          action:
+            type:
+              - string
+              - "null"
+          agent:
+            type:
+              - object
+              - "null"
+            properties:
+              device_model:
+                type:
+                  - string
+                  - "null"
+              domain:
+                type:
+                  - string
+                  - "null"
+              framework:
+                type:
+                  - string
+                  - "null"
+              framework_sdk_version:
+                type:
+                  - string
+                  - "null"
+              framework_version:
+                type:
+                  - string
+                  - "null"
+              is_prebuilt:
+                type:
+                  - boolean
+                  - "null"
+              os:
+                type:
+                  - string
+                  - "null"
+              os_version:
+                type:
+                  - string
+                  - "null"
+              sdk:
+                type:
+                  - string
+                  - "null"
+              sdk_version:
+                type:
+                  - string
+                  - "null"
+              string:
+                type:
+                  - string
+                  - "null"
+          audio:
+            type:
+              - object
+              - "null"
+            properties:
+              codec:
+                type:
+                  - string
+                  - "null"
+              deviceId:
+                type:
+                  - string
+                  - "null"
+              maxBitrate:
+                type:
+                  - number
+                  - "null"
+              volume:
+                type:
+                  - number
+                  - "null"
+          devices:
+            type:
+              - object
+              - "null"
+            properties:
+              audioInput:
+                type:
+                  - array
+                  - "null"
+              audioOutput:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    deviceId:
+                      type:
+                        - string
+                        - "null"
+                    groupId:
+                      type:
+                        - string
+                        - "null"
+                    kind:
+                      type:
+                        - string
+                        - "null"
+                    label:
+                      type:
+                        - string
+                        - "null"
+              videoInput:
+                type:
+                  - array
+                  - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          error_code:
+            type:
+              - number
+              - "null"
+          error_description:
+            type:
+              - string
+              - "null"
+          error_message:
+            type:
+              - string
+              - "null"
+          error_name:
+            type:
+              - string
+              - "null"
+          is_terminal:
+            type:
+              - boolean
+              - "null"
+          joined_at:
+            type:
+              - string
+              - "null"
+          mute:
+            type:
+              - boolean
+              - "null"
+          peer_id:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          room_id:
+            type:
+              - string
+              - "null"
+          room_name:
+            type:
+              - string
+              - "null"
+          session_id:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          started_at:
+            type:
+              - string
+              - "null"
+          stopped_at:
+            type:
+              - string
+              - "null"
+          stream_id:
+            type:
+              - string
+              - "null"
+          template_id:
+            type:
+              - string
+              - "null"
+          track_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          user_name:
+            type:
+              - string
+              - "null"
+          video:
+            type:
+              - object
+              - "null"
+            properties:
+              codec:
+                type:
+                  - string
+                  - "null"
+              deviceId:
+                type:
+                  - string
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+              maxBitrate:
+                type:
+                  - number
+                  - "null"
+              maxFramerate:
+                type:
+                  - number
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+      id:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  recordings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      destination:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      meeting_url:
+        type:
+          - string
+          - "null"
+      recording_assets:
+        type:
+          - array
+          - "null"
+      room_id:
+        type:
+          - string
+          - "null"
+      session_id:
+        type:
+          - string
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      started_by:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      stopped_by:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at

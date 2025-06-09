@@ -23,17 +23,17 @@ This page contains the setup guide and reference information for the [Airtable](
 #### For Airbyte Open Source:
 
 1. Go to https://airtable.com/create/tokens to create new token.
-   ![Generate new Token](../../.gitbook/assets/source/airtable/generate_new_token.png)
+   ![Generate new Token](/.gitbook/assets/source/airtable/generate_new_token.png)
 2. Add following scopes:
 
    - `data.records:read`
    - `data.recordComments:read`
    - `schema.bases:read`
 
-   ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
+   ![Add Scopes](/.gitbook/assets/source/airtable/add_scopes.png)
 
 3. Select required bases or allow access to all available and press the `Create Token` button.
-   ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
+   ![Add Bases](/.gitbook/assets/source/airtable/add_bases.png)
 4. Save token from the popup window.
 <!-- /env:oss -->
 
@@ -75,10 +75,10 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
 ## Supported Streams
 
@@ -137,6 +137,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.1      | 2025-06-05 | [61394](https://github.com/airbytehq/airbyte/pull/61394) | Fix schema issue related to migration                                                   |
+| 4.6.0      | 2025-06-04 | [60875](https://github.com/airbytehq/airbyte/pull/60875) | Migrate to manifest-only                                                                |
 | 4.5.1      | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null                      |
 | 4.5.0      | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version.                               |
 | 4.5.0-rc.4 | 2025-02-04 | [53156](https://github.com/airbytehq/airbyte/pull/53156) | Add default type for `rollup`, `lookuo` and `multiplelookup`, add new type `manualSort` |

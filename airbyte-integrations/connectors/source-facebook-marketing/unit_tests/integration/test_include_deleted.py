@@ -175,6 +175,7 @@ class TestIncludeDeleted(TestCase):
             "bid_amount",
             "bid_constraints",
             "adlabels",
+            "learning_stage_info",
         ]
 
         http_mocker.get(

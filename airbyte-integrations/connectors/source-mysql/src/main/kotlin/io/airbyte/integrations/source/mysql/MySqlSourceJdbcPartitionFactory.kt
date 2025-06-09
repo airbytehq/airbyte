@@ -15,6 +15,7 @@ import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -25,8 +26,10 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.math.BigInteger
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset.UTC
@@ -50,6 +53,7 @@ class MySqlSourceJdbcPartitionFactory(
         MySqlSourceJdbcPartition,
     > {
 
+    private val log = KotlinLogging.logger {}
     private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
     override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
@@ -316,7 +320,8 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    // visible for testing
+    fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
@@ -397,7 +402,215 @@ class MySqlSourceJdbcPartitionFactory(
         unsplitPartition: MySqlSourceJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<MySqlSourceJdbcPartition> {
-        // At this moment we don't support split on within mysql stream in any mode.
-        return listOf(unsplitPartition)
+
+        val stream: Stream = unsplitPartition.stream
+        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: emptyList()
+
+        if (pkChosenFromCatalog.isEmpty()) {
+            return listOf(unsplitPartition)
+        }
+
+        val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+        log.info { "Found primary key upper bound: $upperBound" }
+
+        val type = pkChosenFromCatalog[0].type as LosslessJdbcFieldType<*, *>
+        val upperBoundVal = type.jsonDecoder.decode(upperBound)
+
+        log.info { "Found primary key upper bound: $upperBoundVal" }
+
+        return when (unsplitPartition) {
+            is MySqlSourceJdbcSnapshotWithCursorPartition ->
+                unsplitPartition.split(opaqueStateValues.size, upperBoundVal)
+            is MySqlSourceJdbcRfrSnapshotPartition ->
+                unsplitPartition.split(opaqueStateValues.size, upperBoundVal)
+            is MySqlSourceJdbcCdcSnapshotPartition ->
+                unsplitPartition.split(opaqueStateValues.size, upperBoundVal)
+            else -> null
+        }
+            ?: listOf(unsplitPartition)
+    }
+
+    private fun MySqlSourceJdbcSnapshotWithCursorPartition.split(
+        num: Int,
+        upperBound: Any?
+    ): List<MySqlSourceJdbcResumablePartition>? {
+        val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
+        val lowerBound =
+            when (lowerBound.isNullOrEmpty()) {
+                true -> null
+                false -> type.jsonDecoder.decode(lowerBound[0])
+            }
+        return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
+            MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
+                selectQueryGenerator,
+                streamState,
+                checkpointColumns,
+                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
+                cursor,
+                cursorUpperBound
+            )
+        }
+    }
+
+    private fun MySqlSourceJdbcRfrSnapshotPartition.split(
+        num: Int,
+        upperBound: Any?
+    ): List<MySqlSourceJdbcResumablePartition>? {
+        val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
+        val lowerBound =
+            when (lowerBound.isNullOrEmpty()) {
+                true -> null
+                false -> type.jsonDecoder.decode(lowerBound[0])
+            }
+
+        return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
+            MySqlSourceJdbcSplittableRfrSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                checkpointColumns,
+                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
+            )
+        }
+    }
+
+    private fun MySqlSourceJdbcCdcSnapshotPartition.split(
+        num: Int,
+        upperBound: Any?
+    ): List<MySqlSourceJdbcResumablePartition>? {
+        val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
+        val lowerBound =
+            when (lowerBound.isNullOrEmpty()) {
+                true -> null
+                false -> type.jsonDecoder.decode(lowerBound[0])
+            }
+
+        return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                checkpointColumns,
+                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
+            )
+        }
+    }
+
+    private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? {
+        return when (upperBound) {
+            is Long -> calculateBoundaries(num, lowerBound as Long?, upperBound)
+            is String -> calculateBoundaries(num, lowerBound as String?, upperBound)
+            is Double -> calculateBoundaries(num, lowerBound as Double?, upperBound)
+            else -> null
+        }
+    }
+    private fun calculateBoundaries(
+        num: Int,
+        lowerBound: Long?,
+        upperBound: Long
+    ): Map<Long, Long> {
+        var queryPlan: MutableList<Long> = mutableListOf()
+        val effectiveLowerBound = lowerBound ?: 0L
+        val eachStep: Long = (upperBound - effectiveLowerBound) / num
+        for (i in 1..(num - 1)) {
+            queryPlan.add(i * eachStep)
+        }
+
+        val lbs: List<Long> = listOf(effectiveLowerBound) + queryPlan
+        val ubs: List<Long> = queryPlan + upperBound
+        return lbs.zip(ubs).toMap()
+    }
+
+    private fun calculateBoundaries(
+        num: Int,
+        lowerBound: Double?,
+        upperBound: Double
+    ): Map<Double, Double> {
+        var queryPlan: MutableList<Double> = mutableListOf()
+        val effectiveLowerBound = lowerBound ?: 0.0
+        val eachStep: Double = (upperBound - effectiveLowerBound) / num
+        for (i in 1..(num - 1)) {
+            queryPlan.add(i * eachStep)
+        }
+        val lbs: List<Double> = listOf(effectiveLowerBound) + queryPlan
+        val ubs: List<Double> = queryPlan + upperBound
+        return lbs.zip(ubs).toMap()
+    }
+
+    private fun calculateBoundaries(
+        num: Int,
+        lowerBound: String?,
+        upperBound: String
+    ): Map<String, String> {
+        val effectiveLowerBound = lowerBound ?: String()
+        var queryPlan: List<String> =
+            unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
+        val lbs: List<String> = listOf(effectiveLowerBound) + queryPlan
+        val ubs: List<String> = queryPlan + upperBound
+        return lbs.zip(ubs).toMap()
+    }
+
+    fun unicodeInterpolatedStrings(start: String, end: String, steps: Int): List<String> {
+        fun toCodePoints(s: String): List<Int> {
+            val codePoints = mutableListOf<Int>()
+            var i = 0
+            while (i < s.length) {
+                val cp = s.codePointAt(i)
+                codePoints.add(cp)
+                i += Character.charCount(cp)
+            }
+            return codePoints
+        }
+
+        fun fromCodePoints(codePoints: List<Int>): String {
+            val sb = StringBuilder()
+            for (cp in codePoints) {
+                sb.append(Character.toChars(cp))
+            }
+            return sb.toString()
+        }
+
+        fun codePointsToBigInt(cps: List<Int>, base: BigInteger): BigInteger {
+            var result = BigInteger.ZERO
+            for (cp in cps) {
+                result = result.multiply(base).add(BigInteger.valueOf(cp.toLong()))
+            }
+            return result
+        }
+
+        fun bigIntToCodePoints(num: BigInteger, length: Int, base: BigInteger): List<Int> {
+            var n = num
+            val result = MutableList(length) { 0 }
+            for (i in (length - 1) downTo 0) {
+                val rem = n.mod(base).toInt()
+                result[i] = rem
+                n = n.divide(base)
+            }
+            return result
+        }
+
+        val base = BigInteger.valueOf(0x110000L) // Max Unicode code point + 1
+        val a = toCodePoints(start)
+        val b = toCodePoints(end)
+        val maxLen = maxOf(a.size, b.size)
+        val aPadded = a + List(maxLen - a.size) { 0 }
+        val bPadded = b + List(maxLen - b.size) { 0 }
+
+        val aNum = codePointsToBigInt(aPadded, base)
+        val bNum = codePointsToBigInt(bPadded, base)
+
+        val result = mutableListOf<String>()
+        for (i in 0..steps) {
+            val fraction =
+                BigInteger.valueOf(i.toLong())
+                    .multiply(bNum - aNum)
+                    .divide(BigInteger.valueOf(steps.toLong()))
+            val mid = aNum + fraction
+            val cps = bigIntToCodePoints(mid, maxLen, base)
+            result.add(fromCodePoints(cps))
+        }
+
+        return result
     }
 }

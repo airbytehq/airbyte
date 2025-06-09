@@ -28,19 +28,14 @@ definitions:
 
   default_error_handler:
     type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 30
     response_filters:
-      - http_codes: [400]
-        action: FAIL
-        error_message: Authentication has failed. Please update your config with valid credentials.
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
         error_message: Authentication has failed. Please update your config with valid credentials.
-      - http_codes: [402]
-        action: FAIL
-        error_message: Unable to perform a request. Payment Required.
-      - predicate: "{{ 'Retry-After' in headers }}"
-        action: RATE_LIMITED
-        error_message: Query rate limit exceeded.
       - error_message_contains: "Query rate limit exceeded"
         action: RATE_LIMITED
         error_message: Query rate limit exceeded.
@@ -51,6 +46,15 @@ definitions:
       - error_message_contains: "to_date cannot be later than today"
         action: FAIL
         error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
+      - http_codes: [400]
+        action: FAIL
+        error_message: Authentication has failed. Please update your config with valid credentials.
+      - http_codes: [402]
+        action: FAIL
+        error_message: Unable to perform a request. Payment Required.
+      - predicate: "{{ 'Retry-After' in headers }}"
+        action: RATE_LIMITED
+        error_message: Query rate limit exceeded.
 
   requester:
     type: CustomRequester
@@ -69,7 +73,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - "{{ parameters['field_path'] }}"
+        - "{{ parameters['extractor_field_path'] }}"
 
   selector_empty_dpath:
     type: RecordSelector
@@ -95,9 +99,9 @@ definitions:
 
   incremental_sync:
     type: DatetimeBasedCursor
-    step: 'P{{ config["date_window_size"] or 30 }}D'
+    step: 'P{{ config.get("date_window_size", 30) }}D'
     cursor_granularity: P1D
-    lookback_window: 'P{{ config["attribution_window"] or 5 }}D'
+    lookback_window: 'P{{ config.get("attribution_window", 5) }}D'
     cursor_field: date
     cursor_datetime_formats:
       - "%Y-%m-%d"
@@ -126,7 +130,7 @@ definitions:
     $ref: "#/definitions/stream_base"
     $parameters:
       name: cohorts
-      path: 2.0/cohorts/list
+      path: query/cohorts/list
       field_path: []
     retriever:
       $ref: "#/definitions/retriever"
@@ -170,14 +174,14 @@ definitions:
     primary_key: distinct_id
     $parameters:
       name: engage
-      field_path: results
+      extractor_field_path: results
     retriever:
       type: SimpleRetriever
       requester:
         type: CustomRequester
         class_name: "source_mixpanel.components.EngagesHttpRequester"
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
-        path: 2.0/engage
+        path: query/engage
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"
@@ -206,9 +210,73 @@ definitions:
               - browser_version
             value: "{{ record.browser_version | string if record.browser_version else '' }}"
     schema_loader:
-      type: CustomSchemaLoader
-      class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
-      file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+      type: DynamicSchemaLoader
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: "source_mixpanel.components.EngagesHttpRequester"
+          url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/query/"
+          path: engage/properties
+          authenticator: "#/definitions/authenticator"
+          error_handler:
+            $ref: "#/definitions/default_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            class_name: "source_mixpanel.components.EngagePropertiesDpathExtractor"
+            field_path:
+              - results
+      schema_transformations:
+        - type: KeysReplace
+          old: "$"
+          new: ""
+        - type: AddFields
+          fields:
+            - path: ["distinct_id"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["browser"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["browser_version"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["city"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["country_code"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["region"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["timezone"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["last_seen"]
+              value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
+            - path: ["email"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["name"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["first_name"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["last_name"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["id"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["unblocked"]
+              value: "{{ {'type': ['null', 'string']} }}"
+      schema_type_identifier:
+        type: SchemaTypeIdentifier
+        key_pointer: ["name"]
+        type_pointer: ["type"]
+        schema_pointer: []
+        types_mapping:
+          - type: TypesMap
+            # no format specified as values can be "2021-12-16T00:00:00", "1638298874", "15/08/53895"
+            target_type: string
+            current_type: datetime
+          - type: TypesMap
+            target_type: array
+            current_type: list
+          - type: TypesMap
+            target_type: string
+            current_type: unknown
 
   cohort_members_stream:
     $ref: "#/definitions/engage_stream"
@@ -217,8 +285,8 @@ definitions:
       - cohort_id
     $parameters:
       name: cohort_members
-      path: 2.0/engage
-      field_path: results
+      path: query/engage
+      extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -253,6 +321,44 @@ definitions:
           - path:
               - browser_version
             value: "{{ record.browser_version | string if record.browser_version else '' }}"
+    schema_loader:
+      $ref: "#/definitions/engage_stream/schema_loader"
+      schema_transformations:
+        - type: KeysReplace
+          old: "$"
+          new: ""
+        - type: AddFields
+          fields:
+            - path: ["cohort_id"]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: ["distinct_id"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["browser"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["browser_version"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["city"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["country_code"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["region"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["timezone"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["last_seen"]
+              value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
+            - path: ["email"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["name"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["first_name"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["last_name"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["id"]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["unblocked"]
+              value: "{{ {'type': ['null', 'string']} }}"
 
   # No API docs! build based on singer source
   revenue_stream:
@@ -260,8 +366,8 @@ definitions:
     primary_key: "date"
     $parameters:
       name: revenue
-      path: 2.0/engage/revenue
-      field_path: results
+      path: query/engage/revenue
+      extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -269,7 +375,7 @@ definitions:
         extractor:
           class_name: "source_mixpanel.components.RevenueDpathExtractor"
           field_path:
-            - "{{ parameters['field_path'] }}"
+            - "{{ parameters['extractor_field_path'] }}"
     incremental_sync: "#/definitions/incremental_sync"
 
   # https://developer.mixpanel.com/reference/list-all-annotations-for-project
@@ -277,7 +383,7 @@ definitions:
     $ref: "#/definitions/stream_base"
     $parameters:
       name: annotations
-      field_path: results
+      extractor_field_path: results
       path: annotations
     primary_key: "id"
     retriever:
@@ -288,7 +394,7 @@ definitions:
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
         path: |
           {% set project_id = config.credentials.project_id %}
-          {% if project_id %}app/projects/{{project_id}}{% else %}2.0{% endif %}/annotations
+          {% if project_id %}app/projects/{{project_id}}{% else %}query{% endif %}/annotations
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"
@@ -309,7 +415,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        path: 2.0/funnels/list
+        path: query/funnels/list
         http_method: GET
         request_parameters:
           project_id: "{{ config['credentials']['project_id'] }}"
@@ -342,7 +448,7 @@ definitions:
         type: CustomRequester
         class_name: "source_mixpanel.components.FunnelsHttpRequester"
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
-        path: 2.0/funnels
+        path: query/funnels
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"
@@ -379,6 +485,324 @@ definitions:
               - name
             value: "{{ stream_slice.get('funnel_name') }}"
 
+  export_transformations:
+    - type: CustomTransformation
+      class_name: "source_mixpanel.components.PropertiesTransformation"
+      properties_field: "properties"
+    - type: DpathFlattenFields
+      delete_origin_value: true
+      field_path:
+        - "properties"
+    - type: AddFields
+      fields:
+        - path: ["time"]
+          value: "{{ format_datetime(record['time'], '%Y-%m-%dT%H:%M:%SZ') }}"
+
+  export_schema_loader:
+    type: DynamicSchemaLoader
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.MixpanelHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/query"
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          $ref: "#/definitions/default_error_handler"
+        path: events/properties/top
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: "source_mixpanel.components.PropertiesTransformation"
+      - type: AddFields
+        # Transformation is performed AFTER reading schema.
+        # If field, that transformation wants to add, already exists in schema it will be ignored.
+        # All fields are top level we are safe when using path[0]
+        condition: "{{ path[0] not in record.keys() }}"
+        fields:
+          - path: ["event"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["distinct_id"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["insert_id"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["time"]
+            value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
+          - path: ["browser"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["created"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["email"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["first_name"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["last_name"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["initial_referrer"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["os"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Abandon Cart Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Account Created Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Add To Cart Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Affiliate"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Browse Count"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Browse Filter"]
+            value: "{{ {'type': ['null', 'array'], 'items': {'type': ['null', 'array']}} }}"
+          - path: ["Campaign Name"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Campaign Source"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Card Type"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Cart Items"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Cart Size"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Cart Size (# of Items)"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Cart Value"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Complete Purchase Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Coupon"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Coupon Count Used"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Date of Last Item Detail View"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Delivery Day"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Delivery Fee"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Delivery Fees"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Delivery Method"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Delivery Method Added Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Gender"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Item Category"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Item Cost"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Item Detail Page Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Item Name"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Item Rating"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Items in Browse"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Landing Page Loaded Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Last Cart Abandonment"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Last Event"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Last Purchase"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Last Search"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Marketing A/B Test"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Misc Fee"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Misc Fees"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Number of Cards Added"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Number of Cart Abandons"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Number of Item Details Viewed"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Number of Purchases"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Number of Searches"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Page Version"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Payment Method Added Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Platform"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Registration Date"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Registration Method"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Review Payment Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Search Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Search Page"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Search Results Count"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["Search Term"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Suggested Item"]
+            value: "{{ {'type': ['null', 'boolean']} }}"
+          - path: ["Total Charge"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["UTM_Medium"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["UTM_Term"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["UTM_source"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Within Checkout Process"]
+            value: "{{ {'type': ['null', 'boolean']} }}"
+          - path: ["mp_lib"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["labels"]
+            value: "{{ {'type': ['null', 'array'], 'items': {'type': ['null', 'string']}} }}"
+          - path: ["sampling_factor"]
+            value: "{{ {'type': ['null', 'integer']} }}"
+          - path: ["dataset"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["Referred by"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["import"]
+            value: "{{ {'type': ['null', 'boolean']} }}"
+          - path: ["URL"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["mp_api_timestamp_ms"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["mp_api_endpoint"]
+            value: "{{ {'type': ['null', 'string']} }}"
+          - path: ["mp_processing_time_ms"]
+            value: "{{ {'type': ['null', 'string']} }}"
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer: []
+      type_pointer: []
+      schema_pointer: []
+
+  # https://developer.mixpanel.com/reference/raw-event-export
+  export_incremental_stream:
+    type: DeclarativeStream
+    name: export
+    $parameters:
+      name: export
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.ExportHttpRequester"
+        path: export
+        http_method: GET
+        url_base: "https://data{{ '-eu' if config.region == 'EU' else '' }}.mixpanel.com/api/2.0/"
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: CustomErrorHandler
+          class_name: "source_mixpanel.components.ExportErrorHandler"
+          max_retries: 10
+          backoff_strategies:
+            $ref: "#/definitions/default_error_handler/backoff_strategies"
+          response_filters:
+            $ref: "#/definitions/default_error_handler/response_filters"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          class_name: "source_mixpanel.components.ExportDpathExtractor"
+          field_path: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      $ref: "#/definitions/export_transformations"
+    schema_loader:
+      $ref: "#/definitions/export_schema_loader"
+
+  # https://developer.mixpanel.com/reference/raw-event-export
+  export_full_refresh_stream:
+    type: DeclarativeStream
+    name: export
+    $parameters:
+      name: export
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.MixpanelHttpRequester"
+        path: export
+        http_method: GET
+        url_base: "https://data{{ '-eu' if config.region == 'EU' else '' }}.mixpanel.com/api/2.0/"
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          type: CustomErrorHandler
+          class_name: "source_mixpanel.components.ExportErrorHandler"
+          max_retries: 10
+          backoff_strategies:
+            $ref: "#/definitions/default_error_handler/backoff_strategies"
+          response_filters:
+            $ref: "#/definitions/default_error_handler/response_filters"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          class_name: "source_mixpanel.components.ExportDpathExtractor"
+          field_path: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: time
+      step: "P{{ config.get('date_window_size', 30) }}D"
+      cursor_granularity: P1D
+      lookback_window: "PT{{ max(config.get('attribution_window', 5) * 20 * 60 * 60, config.get('export_lookback_window', 0)) }}S"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.start_date, '%Y-%m-%dT%H:%M:%SZ')  if config.get('start_date') else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.end_date, '%Y-%m-%dT%H:%M:%SZ') if config.get('end_date') else today_with_timezone(config.get('project_timezone', 'US/Pacific')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: from_date
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to_date
+        inject_into: request_parameter
+    transformations:
+      $ref: "#/definitions/export_transformations"
+    schema_loader:
+      $ref: "#/definitions/export_schema_loader"
+
+  export_stream:
+    type: StateDelegatingStream
+    $parameters:
+      name: "export"
+    full_refresh_stream: "#/definitions/export_full_refresh_stream"
+    incremental_stream: "#/definitions/export_incremental_stream"
+
 streams:
   - "#/definitions/cohorts_stream"
   - "#/definitions/engage_stream"
@@ -386,8 +810,29 @@ streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohort_members_stream"
   - "#/definitions/funnels_stream"
+  - "#/definitions/export_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - cohorts
+    - revenue
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # -The Query API has a rate limit of 60 queries per hour and a maximum of 5 concurrent queries
+    # https://developer.mixpanel.com/reference/raw-event-export#api-export-endpoint-rate-limits
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # rate limit of 60 queries per hour
+          interval: PT60S
+      matchers: []
+
+# concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
+# synchronous streams: export
+# https://developer.mixpanel.com/reference/rate-limits
+# A maximum of 5 concurrent queries and 60 queries per hour.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 25

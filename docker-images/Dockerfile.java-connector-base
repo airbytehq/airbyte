@@ -1,0 +1,44 @@
+# Migrated from airbyte-ci/connectors/base_images/README.md
+
+# https://hub.docker.com/_/amazoncorretto/tags?name=21-al2023
+ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023@sha256:b88419ff8e6f18de4e8e78b1814b12df4805cfe42dcf0c036671da86f589f35f
+FROM ${BASE_IMAGE}
+
+# Install dependencies
+RUN sh -c set -o xtrace && \
+    yum install -y shadow-utils tar openssl findutils && \
+    yum update -y --security && \
+    yum clean all && \
+    rm -rf /var/cache/yum
+
+# Set-up groups, users, and directories
+RUN groupadd --gid 1000 airbyte && \
+    useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && \
+    mkdir /secrets && \
+    mkdir /config && \
+    mkdir --mode 755 /airbyte && \
+    mkdir --mode 755 /custom_cache && \
+    chown -R airbyte:airbyte /airbyte && \
+    chown -R airbyte:airbyte /custom_cache && \
+    chown -R airbyte:airbyte /secrets && \
+    chown -R airbyte:airbyte /config && \
+    chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && \
+    chown -R airbyte:airbyte /etc/pki/ca-trust && \
+    chown -R airbyte:airbyte /tmp
+
+# Set environment variables that the Java connector bootstrap script will expect
+ENV AIRBYTE_SPEC_CMD="/airbyte/javabase.sh --spec"
+ENV AIRBYTE_CHECK_CMD="/airbyte/javabase.sh --check"
+ENV AIRBYTE_DISCOVER_CMD="/airbyte/javabase.sh --discover"
+ENV AIRBYTE_READ_CMD="/airbyte/javabase.sh --read"
+ENV AIRBYTE_WRITE_CMD="/airbyte/javabase.sh --write"
+ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
+
+WORKDIR /airbyte
+
+ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base/base.sh \
+    /airbyte/base.sh
+ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base-java/javabase.sh \
+    /airbyte/javabase.sh
+ADD https://dtdg.co/latest-java-tracer \
+    /airbyte/dd-java-agent.jar

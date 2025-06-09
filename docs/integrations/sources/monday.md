@@ -76,33 +76,36 @@ The Monday connector should not run into Monday API limitations under normal usa
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
-| :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| 2.1.13 | 2025-02-01 | [52780](https://github.com/airbytehq/airbyte/pull/52780) | Update dependencies |
-| 2.1.12 | 2025-01-25 | [51833](https://github.com/airbytehq/airbyte/pull/51833) | Update dependencies |
-| 2.1.11 | 2025-01-14 | [51147](https://github.com/airbytehq/airbyte/pull/10311) | Update API version to 2024-10 |
-| 2.1.10 | 2025-01-11 | [51147](https://github.com/airbytehq/airbyte/pull/51147) | Update dependencies |
-| 2.1.9 | 2025-01-08 | [50984](https://github.com/airbytehq/airbyte/pull/50984) | Update the `spec` to support `Jinja` style variables for `DeclarativeOAuthFlow` |
-| 2.1.8 | 2024-12-28 | [50624](https://github.com/airbytehq/airbyte/pull/50624) | Update dependencies |
-| 2.1.7 | 2024-12-21 | [43901](https://github.com/airbytehq/airbyte/pull/43901) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 2.1.6 | 2024-12-19 | [49943](https://github.com/airbytehq/airbyte/pull/49943) | Pin CDK constraint to avoid breaking change in newer versions |
-| 2.1.5 | 2024-10-31 | [48054](https://github.com/airbytehq/airbyte/pull/48054) | Moved to `DeclarativeOAuthFlow` specification |
-| 2.1.4 | 2024-08-17 | [44201](https://github.com/airbytehq/airbyte/pull/44201) | Add boards name to the `items` stream |
-| 2.1.3 | 2024-06-04 | [38958](https://github.com/airbytehq/airbyte/pull/38958) | [autopull] Upgrade base image to v1.2.1 |
-| 2.1.2 | 2024-04-30 | [37722](https://github.com/airbytehq/airbyte/pull/37722) | Fetch `display_value` field for column values of `Mirror`, `Dependency` and `Connect Board` types |
-| 2.1.1 | 2024-04-05 | [36717](https://github.com/airbytehq/airbyte/pull/36717) | Add handling of complexityBudgetExhausted error. |
-| 2.1.0 | 2024-04-03 | [36746](https://github.com/airbytehq/airbyte/pull/36746) | Pin airbyte-cdk version to `^0` |
-| 2.0.4 | 2024-02-28 | [35696](https://github.com/airbytehq/airbyte/pull/35696) | Fix extraction for `null` value in stream `Activity logs` |
-| 2.0.3 | 2024-02-21 | [35506](https://github.com/airbytehq/airbyte/pull/35506) | Support for column values of the mirror type for the `Items` stream. |
-| 2.0.2 | 2024-02-12 | [35146](https://github.com/airbytehq/airbyte/pull/35146) | Manage dependencies with Poetry. |
-| 2.0.1 | 2024-02-08 | [35016](https://github.com/airbytehq/airbyte/pull/35016) | Migrated to the latest airbyte cdk |
-| 2.0.0 | 2024-01-12 | [34108](https://github.com/airbytehq/airbyte/pull/34108) | Migrated to the latest API version: 2024-01 |
-| 1.1.4 | 2023-12-13 | [33448](https://github.com/airbytehq/airbyte/pull/33448) | Increase test coverage and migrate to base image |
-| 1.1.3 | 2023-09-23 | [30248](https://github.com/airbytehq/airbyte/pull/30248) | Add new field "type" to board stream |
-| 1.1.2 | 2023-08-23 | [29777](https://github.com/airbytehq/airbyte/pull/29777) | Add retry for `502` error |
-| 1.1.1 | 2023-08-15 | [29429](https://github.com/airbytehq/airbyte/pull/29429) | Ignore `null` records in response |
-| 1.1.0 | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944) | Add incremental sync for Items and Boards streams |
-| 1.0.0 | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410) | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
-| 0.2.6 | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244) | Added http error handling for `403` and `500` HTTP errors |
+|:--------|:-----------| :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| 2.3.0 | 2025-04-02 | [56967](https://github.com/airbytehq/airbyte/pull/56967) | Promoting release candidate 2.3.0-rc.1 to a main version. |
+| 2.3.0-rc.1   | 2025-03-18 | [55225](https://github.com/airbytehq/airbyte/pull/55225) | Update CDK to v6 |
+| 2.2.0   | 2025-03-14 | [52780](https://github.com/airbytehq/airbyte/pull/52780) | Add optional config parameter to control which boards are fetched when syncing the `Boards` stream |
+| 2.1.13  | 2025-02-01 | [52780](https://github.com/airbytehq/airbyte/pull/52780) | Update dependencies |
+| 2.1.12  | 2025-01-25 | [51833](https://github.com/airbytehq/airbyte/pull/51833) | Update dependencies |
+| 2.1.11  | 2025-01-14 | [51147](https://github.com/airbytehq/airbyte/pull/10311) | Update API version to 2024-10 |
+| 2.1.10  | 2025-01-11 | [51147](https://github.com/airbytehq/airbyte/pull/51147) | Update dependencies |
+| 2.1.9   | 2025-01-08 | [50984](https://github.com/airbytehq/airbyte/pull/50984) | Update the `spec` to support `Jinja` style variables for `DeclarativeOAuthFlow` |
+| 2.1.8   | 2024-12-28 | [50624](https://github.com/airbytehq/airbyte/pull/50624) | Update dependencies |
+| 2.1.7   | 2024-12-21 | [43901](https://github.com/airbytehq/airbyte/pull/43901) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.1.6   | 2024-12-19 | [49943](https://github.com/airbytehq/airbyte/pull/49943) | Pin CDK constraint to avoid breaking change in newer versions |
+| 2.1.5   | 2024-10-31 | [48054](https://github.com/airbytehq/airbyte/pull/48054) | Moved to `DeclarativeOAuthFlow` specification |
+| 2.1.4   | 2024-08-17 | [44201](https://github.com/airbytehq/airbyte/pull/44201) | Add boards name to the `items` stream |
+| 2.1.3   | 2024-06-04 | [38958](https://github.com/airbytehq/airbyte/pull/38958) | [autopull] Upgrade base image to v1.2.1 |
+| 2.1.2   | 2024-04-30 | [37722](https://github.com/airbytehq/airbyte/pull/37722) | Fetch `display_value` field for column values of `Mirror`, `Dependency` and `Connect Board` types |
+| 2.1.1   | 2024-04-05 | [36717](https://github.com/airbytehq/airbyte/pull/36717) | Add handling of complexityBudgetExhausted error. |
+| 2.1.0   | 2024-04-03 | [36746](https://github.com/airbytehq/airbyte/pull/36746) | Pin airbyte-cdk version to `^0` |
+| 2.0.4   | 2024-02-28 | [35696](https://github.com/airbytehq/airbyte/pull/35696) | Fix extraction for `null` value in stream `Activity logs` |
+| 2.0.3   | 2024-02-21 | [35506](https://github.com/airbytehq/airbyte/pull/35506) | Support for column values of the mirror type for the `Items` stream. |
+| 2.0.2   | 2024-02-12 | [35146](https://github.com/airbytehq/airbyte/pull/35146) | Manage dependencies with Poetry. |
+| 2.0.1   | 2024-02-08 | [35016](https://github.com/airbytehq/airbyte/pull/35016) | Migrated to the latest airbyte cdk |
+| 2.0.0   | 2024-01-12 | [34108](https://github.com/airbytehq/airbyte/pull/34108) | Migrated to the latest API version: 2024-01 |
+| 1.1.4   | 2023-12-13 | [33448](https://github.com/airbytehq/airbyte/pull/33448) | Increase test coverage and migrate to base image |
+| 1.1.3   | 2023-09-23 | [30248](https://github.com/airbytehq/airbyte/pull/30248) | Add new field "type" to board stream |
+| 1.1.2   | 2023-08-23 | [29777](https://github.com/airbytehq/airbyte/pull/29777) | Add retry for `502` error |
+| 1.1.1   | 2023-08-15 | [29429](https://github.com/airbytehq/airbyte/pull/29429) | Ignore `null` records in response |
+| 1.1.0   | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944) | Add incremental sync for Items and Boards streams |
+| 1.0.0   | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410) | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
+| 0.2.6   | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244) | Added http error handling for `403` and `500` HTTP errors |
 | 0.2.5   | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                                               |
 | 0.2.4   | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277)  | Increase row limit to 100                                                                         |
 | 0.2.3   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231)  | Publish using low-code CDK Beta version                                                           |

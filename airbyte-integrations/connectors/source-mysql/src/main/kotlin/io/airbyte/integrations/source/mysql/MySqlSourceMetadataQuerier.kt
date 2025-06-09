@@ -32,14 +32,24 @@ class MySqlSourceMetadataQuerier(
         base.extraChecks()
         if (base.config.global) {
             // Extra checks for CDC
-            var cdcVariableCheckQueries: List<Pair<String, String>> =
+            var cdcVariableCheckQueries: List<Triple<String, String, String>> =
                 listOf(
-                    Pair("show variables where Variable_name = 'log_bin'", "ON"),
-                    Pair("show variables where Variable_name = 'binlog_format'", "ROW"),
-                    Pair("show variables where Variable_name = 'binlog_row_image'", "FULL"),
+                    Triple("log_bin", "show variables where Variable_name = 'log_bin'", "ON"),
+                    Triple(
+                        "binlog_format",
+                        "show variables where Variable_name = 'binlog_format'",
+                        "ROW"
+                    ),
+                    Triple(
+                        "binlog_row_image",
+                        "show variables where Variable_name = 'binlog_row_image'",
+                        "FULL"
+                    ),
                 )
 
-            cdcVariableCheckQueries.forEach { runVariableCheckSql(it.first, it.second, base.conn) }
+            cdcVariableCheckQueries.forEach {
+                runVariableCheckSql(it.first, it.second, it.third, base.conn)
+            }
 
             // Note: SHOW MASTER STATUS has been deprecated in latest mysql (8.4) and going forward
             // it should be SHOW BINARY LOG STATUS. We will run both - if both have been failed we
@@ -62,7 +72,12 @@ class MySqlSourceMetadataQuerier(
         }
     }
 
-    private fun runVariableCheckSql(sql: String, expectedValue: String, conn: Connection) {
+    private fun runVariableCheckSql(
+        variable: String,
+        sql: String,
+        expectedValue: String,
+        conn: Connection
+    ) {
         try {
             conn.createStatement().use { stmt: Statement ->
                 stmt.executeQuery(sql).use { rs: ResultSet ->
@@ -73,7 +88,8 @@ class MySqlSourceMetadataQuerier(
                     if (!resultValue.equals(expectedValue, ignoreCase = true)) {
                         throw ConfigErrorException(
                             String.format(
-                                "The variable should be set to \"%s\", but it is \"%s\"",
+                                "The variable \"%s\" should be set to \"%s\", but it is \"%s\"",
+                                variable,
                                 expectedValue,
                                 resultValue,
                             ),

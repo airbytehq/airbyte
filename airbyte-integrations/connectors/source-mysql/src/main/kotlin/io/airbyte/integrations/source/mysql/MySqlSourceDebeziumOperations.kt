@@ -21,8 +21,9 @@ import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
+import io.airbyte.cdk.read.cdc.CdcPartitionsCreatorDebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumOffset
-import io.airbyte.cdk.read.cdc.DebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder
 import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
@@ -46,6 +47,7 @@ import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLSyntaxErrorException
 import java.sql.Statement
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -63,7 +65,9 @@ class MySqlSourceDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
     val configuration: MySqlSourceConfiguration,
     random: Random = Random.Default,
-) : DebeziumOperations<MySqlSourceCdcPosition> {
+) :
+    CdcPartitionsCreatorDebeziumOperations<MySqlSourceCdcPosition>,
+    CdcPartitionReaderDebeziumOperations<MySqlSourceCdcPosition> {
     private val log = KotlinLogging.logger {}
     private val cdcIncrementalConfiguration: CdcIncrementalConfiguration by lazy {
         configuration.incrementalConfiguration as CdcIncrementalConfiguration
@@ -269,38 +273,50 @@ class MySqlSourceDebeziumOperations(
     }
 
     private fun queryPositionAndGtids(): Pair<MySqlSourceCdcPosition, String?> {
-        val file = Field("File", StringFieldType)
-        val pos = Field("Position", LongFieldType)
-        val gtids = Field("Executed_Gtid_Set", StringFieldType)
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
-                val sql = "SHOW MASTER STATUS"
-                stmt.executeQuery(sql).use { rs: ResultSet ->
-                    if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
-                    val mySqlSourceCdcPosition =
-                        MySqlSourceCdcPosition(
-                            fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
-                                    ?: throw ConfigErrorException(
-                                        "No value for ${file.id} in: $sql",
-                                    ),
-                            position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
-                                    ?: throw ConfigErrorException(
-                                        "No value for ${pos.id} in: $sql",
-                                    ),
-                        )
-                    if (rs.metaData.columnCount <= 4) {
-                        // This value exists only in MySQL 5.6.5 or later.
-                        return mySqlSourceCdcPosition to null
-                    }
-                    val gtidSet: String? =
-                        rs.getString(gtids.id)
-                            ?.takeUnless { rs.wasNull() || it.isBlank() }
-                            ?.trim()
-                            ?.replace("\n", "")
-                            ?.replace("\r", "")
-                    return mySqlSourceCdcPosition to gtidSet
+                try {
+                    // Syntax for MySQL version < 8.4
+                    return parseBinaryLogStatus(stmt, "SHOW MASTER STATUS")
+                } catch (e: SQLSyntaxErrorException) {
+                    // Syntax for MySQL version >= 8.4
+                    return parseBinaryLogStatus(stmt, "SHOW BINARY LOG STATUS")
                 }
             }
+        }
+    }
+
+    private fun parseBinaryLogStatus(
+        stmt: Statement,
+        query: String
+    ): Pair<MySqlSourceCdcPosition, String?> {
+        stmt.executeQuery(query).use { rs: ResultSet ->
+            if (!rs.next()) throw ConfigErrorException("No results for query: {{$query}}")
+            val file = Field("File", StringFieldType)
+            val pos = Field("Position", LongFieldType)
+            val gtids = Field("Executed_Gtid_Set", StringFieldType)
+            val mySqlSourceCdcPosition =
+                MySqlSourceCdcPosition(
+                    fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
+                            ?: throw ConfigErrorException(
+                                "No value for ${file.id} in: {{$query}}",
+                            ),
+                    position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
+                            ?: throw ConfigErrorException(
+                                "No value for ${pos.id} in: {{$query}}",
+                            ),
+                )
+            if (rs.metaData.columnCount <= 4) {
+                // This value exists only in MySQL 5.6.5 or later.
+                return mySqlSourceCdcPosition to null
+            }
+            val gtidSet: String? =
+                rs.getString(gtids.id)
+                    ?.takeUnless { rs.wasNull() || it.isBlank() }
+                    ?.trim()
+                    ?.replace("\n", "")
+                    ?.replace("\r", "")
+            return mySqlSourceCdcPosition to gtidSet
         }
     }
 
@@ -329,7 +345,7 @@ class MySqlSourceDebeziumOperations(
         }
     }
 
-    override fun generateColdStartProperties(): Map<String, String> =
+    override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
         DebeziumPropertiesBuilder()
             .with(commonProperties)
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
@@ -337,7 +353,6 @@ class MySqlSourceDebeziumOperations(
             // construct the db schema history. Note that we used to use schema_only_recovery mode
             // instead, but this mode has been deprecated.
             .with("snapshot.mode", "recovery")
-            .withStreams(listOf())
             .buildMap()
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =

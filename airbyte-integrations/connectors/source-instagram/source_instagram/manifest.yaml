@@ -119,16 +119,16 @@ definitions:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
               "REELS" %}{{
-              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,plays,reach,saved,shares,ig_reels_aggregated_all_plays_count,clips_replays_count'
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares,views'
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'impressions,reach,saved'}}{% elif
+              %}{{  'reach,saved,views'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
-              'impressions,reach,saved,likes,comments,shares,follows,profile_visits'
+              'reach,saved,likes,comments,shares,follows,profile_visits,views'
               }}{%elif stream_partition.media_insights_info.media_type ==
-              "CAROUSEL_ALBUM"%}{{ 'impressions,reach,saved,shares,follows,profile_visits' }}{% else %}{{
-              'impressions,reach,saved,likes,comments,shares,follows,profile_visits' }}{%
+              "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits,views' }}{% else %}{{
+              'reach,saved,likes,comments,shares,follows,profile_visits,views' }}{%
               endif %}
           error_handler:
             type: CompositeErrorHandler
@@ -448,7 +448,7 @@ definitions:
           path: "{{ stream_partition.story_insights_info.story_id }}/insights"
           http_method: GET
           request_parameters:
-            metric: impressions,reach,replies,follows,profile_visits,shares,total_interactions
+            metric: reach,replies,follows,profile_visits,shares,total_interactions,views
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -586,6 +586,12 @@ streams:
   - $ref: "#/definitions/streams/Stories"
   - $ref: "#/definitions/streams/StoryInsights"
   - $ref: "#/definitions/streams/Api"
+
+# Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 15) }}"
+  max_concurrency: 50
 
 metadata:
   autoImportSchema:
@@ -809,11 +815,6 @@ schemas:
         type:
           - "null"
           - number
-      impressions:
-        description: The number of times the media has been displayed to users.
-        type:
-          - "null"
-          - integer
       reach:
         description: The number of unique users who have seen the media.
         type:
@@ -844,21 +845,6 @@ schemas:
         type:
           - "null"
           - integer
-      plays:
-        description: The number of times the media has been played.
-        type:
-          - "null"
-          - integer
-      ig_reels_aggregated_all_plays_count:
-        description: The number of times of Instagram Reels gets reproduced after an impression is counted.
-        type:
-          - "null"
-          - integer
-      clips_replays_count:
-        description: The number of times the reel gets reproduced after the first one.
-        type:
-          - "null"
-          - integer
       follows:
         description: The number of accounts that started to follow the profile.
         type:
@@ -866,6 +852,11 @@ schemas:
           - integer
       profile_visits:
         description: The number of times the profile has been visited.
+        type:
+          - "null"
+          - integer
+      views:
+        description: The number of views on the media.
         type:
           - "null"
           - integer
@@ -1076,11 +1067,6 @@ schemas:
         type:
           - "null"
           - string
-      impressions:
-        description: The number of times the story was viewed.
-        type:
-          - "null"
-          - integer
       reach:
         description: The number of unique accounts that viewed the story.
         type:
@@ -1108,6 +1094,11 @@ schemas:
           - integer
       total_interactions:
         description¨: The number of replies and shares of the story.
+        type:
+          - "null"
+          - integer
+      views:
+        description: The number of views on the story.
         type:
           - "null"
           - integer

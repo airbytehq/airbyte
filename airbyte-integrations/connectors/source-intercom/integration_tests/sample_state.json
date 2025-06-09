@@ -6,7 +6,7 @@
         "name": "segments"
       },
       "stream_state": {
-        "updated_at": 1676297667
+        "updated_at": "1676297667"
       }
     }
   },
@@ -17,7 +17,7 @@
         "name": "companies"
       },
       "stream_state": {
-        "updated_at": 1676517777
+        "updated_at": "1676517777"
       }
     }
   },
@@ -28,9 +28,9 @@
         "name": "company_segments"
       },
       "stream_state": {
-        "updated_at": 1676462345,
+        "updated_at": "1676462345",
         "companies": {
-          "updated_at": 1676517777
+          "updated_at": "1676517777"
         }
       }
     }
@@ -42,7 +42,7 @@
         "name": "conversations"
       },
       "stream_state": {
-        "updated_at": 1676462031
+        "updated_at": "1676462031"
       }
     }
   },
@@ -53,9 +53,9 @@
         "name": "conversation_parts"
       },
       "stream_state": {
-        "updated_at": 1676462031,
+        "updated_at": "1676462031",
         "conversations": {
-          "updated_at": 1676462031
+          "updated_at": "1676462031"
         }
       }
     }
@@ -67,7 +67,7 @@
         "name": "contacts"
       },
       "stream_state": {
-        "updated_at": 1676462031
+        "updated_at": "1676462031"
       }
     }
   },
@@ -78,7 +78,7 @@
         "name": "tickets"
       },
       "stream_state": {
-        "updated_at": 1676462031
+        "updated_at": "1676462031"
       }
     }
   }

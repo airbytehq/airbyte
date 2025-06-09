@@ -1,15 +1,15 @@
 @keyframes fade-in-container {
-    from {
-      opacity: 0;
-    }
+  from {
+    opacity: 0;
   }
-.modalPageContainer{
-    position:absolute;
-    z-index:1000;
+}
+.modalPageContainer {
+  position: absolute;
+  z-index: 1000;
 }
 
-.modalOverlay{
-    position: fixed;
+.modalOverlay {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -32,28 +32,27 @@
 }
 
 .modalContainer {
-    z-index:1000;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    animation: fade-in-container 0.2s ease-out;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-  }
-  .modalPanel {
-    max-height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: var(--color-white);
-    padding: 20px;
-    border-radius: 5px;
-    font-size: 0.8em;
-  }
-  .modalTitle {
-    font-size: 16px;
-    line-height: 1.2em;
-  }
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  animation: fade-in-container 0.2s ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modalPanel {
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-white);
+  padding: 20px;
+  border-radius: 5px;
+  font-size: 0.8em;
+}
+.modalTitle {
+  font-size: 16px;
+  line-height: 1.2em;
+}

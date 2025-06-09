@@ -1,0 +1,90 @@
+name: Bump Bulk CDK + Release Connectors
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        type: choice
+        required: true
+        default: airbytehq/airbyte
+        options:
+          - airbytehq/airbyte
+jobs:
+  publish-bulk-cdk:
+    uses: ./.github/workflows/publish-bulk-cdk.yml
+    secrets: inherit
+  bump-cdk-version:
+    runs-on: ubuntu-24.04
+    outputs:
+      modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
+      # Output the matrix config as a JSON string
+      modified_connectors_json: ${{ steps.export-connection-modified.outputs.modified_connectors_json }}
+    needs: [publish-bulk-cdk]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
+      - name: Fetch latest Bulk Load CDK version
+        id: fetch-version
+        run: |
+          # 1. Define the target URL
+          REPO_URL="https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-base/"
+          echo "Fetching versions from $REPO_URL" >&2 # Log output to standard error
+
+          # 2. Fetch HTML, extract versions (X.Y), sort, get the latest
+          latest_version=$(curl -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -s "$REPO_URL" | grep -o 'href="[0-9]\+\.[0-9]\+/"' | sed 's/^href="//; s/\/"$//' | sort -V | tail -n 1)
+          echo "Latest version found: $latest_version"
+
+          # 3. Set the output parameter for GitHub Actions
+          # This makes "latest_version" available to subsequent steps
+          echo "latest_version=$latest_version" >> "$GITHUB_OUTPUT"
+      - name: Configure Git
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+      - name: Update cdk in build.gradle files
+        id: export-connection-modified
+        run: |
+          ./tools/bin/cdk-auto-release/update-bulk-cdk-version-in-connectors.sh ${{ steps.fetch-version.outputs.latest_version }}
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Bump the cdk version to ${{ steps.fetch-version.outputs.latest_version }}"
+          git push
+
+  publish-connectors:
+    needs: [bump-cdk-version, publish-bulk-cdk]
+    uses: ./.github/workflows/publish_connectors.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors_json) }}
+    with:
+      connectors-options: "--name=${{ matrix.connector_name }}"
+      publish-options: --main-release
+      airbyte_ci_binary_url: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+    secrets: inherit
+
+  update-changelog-and-merge:
+    runs-on: ubuntu-24.04
+    needs: [publish-connectors, bump-cdk-version]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
+      - name: Configure Git
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+      - name: Merge the changelog of the connectors
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+          AUTO_MERGE_PRODUCTION: false
+          MODIFIED_CONNECTORS: ${{ needs.bump-cdk-version.outputs.modified_connectors }}
+        run: |
+          ./tools/bin/cdk-auto-release/update-changelog.sh ${{ github.ref_name }}

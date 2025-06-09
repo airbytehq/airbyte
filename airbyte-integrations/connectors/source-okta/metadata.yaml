@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
-  dockerImageTag: 0.3.20
+  dockerImageTag: 0.3.21
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg

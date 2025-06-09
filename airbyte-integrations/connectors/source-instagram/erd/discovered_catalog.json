@@ -175,10 +175,6 @@
             "description": "The total watch time of Instagram Reels videos in seconds.",
             "type": ["null", "number"]
           },
-          "impressions": {
-            "description": "The number of times the media has been displayed to users.",
-            "type": ["null", "integer"]
-          },
           "reach": {
             "description": "The number of unique users who have seen the media.",
             "type": ["null", "integer"]
@@ -207,24 +203,16 @@
             "description": "The total number of interactions (likes, comments, shares) on the media.",
             "type": ["null", "integer"]
           },
-          "plays": {
-            "description": "The number of times the media has been played.",
-            "type": ["null", "integer"]
-          },
-          "ig_reels_aggregated_all_plays_count": {
-            "description": "The number of times of Instagram Reels gets reproduced after an impression is counted.",
-            "type": ["null", "integer"]
-          },
-          "clips_replays_count": {
-            "description": "The number of times the reel gets reproduced after the first one.",
-            "type": ["null", "integer"]
-          },
           "follows": {
             "description": "The number of accounts that started to follow the profile.",
             "type": ["null", "integer"]
           },
           "profile_visits": {
             "description": "The number of times the profile has been visited.",
+            "type": ["null", "integer"]
+          },
+          "views": {
+            "description": "The number of views on the media.",
             "type": ["null", "integer"]
           }
         },
@@ -427,10 +415,6 @@
             "description": "The unique identifier of the story insights record.",
             "type": ["null", "string"]
           },
-          "impressions": {
-            "description": "The number of times the story was viewed.",
-            "type": ["null", "integer"]
-          },
           "reach": {
             "description": "The number of unique accounts that viewed the story.",
             "type": ["null", "integer"]
@@ -454,6 +438,10 @@
           "total_interactions": {
             "description\u00a8": "The number of replies and shares of the story.",
             "type": ["null", "integer"]
+          },
+          "views": {
+            "description": "The number of views the story received.",
+            "type": ["null", "integer"]
           }
         }
       },
@@ -470,11 +458,17 @@
           "account": {
             "type": ["object", "null"],
             "properties": {
-              "business_account_id": { "type": ["string", "null"] },
-              "page_id": { "type": ["string", "null"] }
+              "business_account_id": {
+                "type": ["string", "null"]
+              },
+              "page_id": {
+                "type": ["string", "null"]
+              }
             }
           },
-          "id": { "type": "string" }
+          "id": {
+            "type": "string"
+          }
         },
         "required": ["id"]
       },
@@ -509,10 +503,6 @@
             "description": "The number of clicks to get directions to the user's business location.",
             "type": ["null", "integer"]
           },
-          "impressions": {
-            "description": "The total number of times the user's content has been displayed.",
-            "type": ["null", "integer"]
-          },
           "phone_call_clicks": {
             "description": "The number of clicks to call the user's business phone number.",
             "type": ["null", "integer"]
@@ -533,16 +523,8 @@
             "description": "The number of clicks on the website link in the user's profile.",
             "type": ["null", "integer"]
           },
-          "impressions_week": {
-            "description": "The total number of impressions in the last week.",
-            "type": ["null", "integer"]
-          },
           "reach_week": {
             "description": "The total reach in the last week.",
-            "type": ["null", "integer"]
-          },
-          "impressions_days_28": {
-            "description": "The total number of impressions in the last 28 days.",
             "type": ["null", "integer"]
           },
           "reach_days_28": {

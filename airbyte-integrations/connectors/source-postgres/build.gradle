@@ -2,7 +2,9 @@ import org.jsonschema2pojo.SourceType
 
 plugins {
     id 'airbyte-java-connector'
-    id "org.jsonschema2pojo" version "1.2.1"
+    id 'com.github.eirnym.js2p'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 java {
@@ -12,7 +14,7 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.4'
+    cdkVersionRequired = '0.48.13'
     features = ['db-sources', 'datastore-postgres']
     useLocalCdk = false
 }
@@ -23,6 +25,7 @@ application {
 }
 
 dependencies {
+    api "com.google.protobuf:protobuf-java:3.25.5" // for fixing vulnerability of protobuf-java used by Debezium
     implementation 'commons-codec:commons-codec:1.16.0'
     implementation 'io.debezium:debezium-embedded:3.0.1.Final'
     implementation 'io.debezium:debezium-connector-postgres:3.0.1.Final'
@@ -50,4 +53,8 @@ compileKotlin {
     dependsOn {
         generateJsonSchema2Pojo
     }
+}
+
+tasks.named('sourcesJar').configure {
+    dependsOn tasks.named('generateJsonSchema2Pojo')
 }

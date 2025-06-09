@@ -11,7 +11,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 - Added Nginx and Basic Auth to ensure security when using Airbyte Open Source. [#17694](https://github.com/airbytehq/airbyte/pull/17694)
   - Now when you start the Airbyte server and go to localhost:8000, you’ll be prompted to log in before accessing your Airbyte workspace.
   - You should change the default username (airbyte) and password (password) before you deploy Airbyte. If you do not want a username or password, you can remove them by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values (" ") in your `.env` file.
-  - Our [CLI](https://github.com/airbytehq/airbyte/pull/17982) and [docs](https://docs.airbyte.com/deploying-airbyte/local-deployment) have been updated to reflect this change.
+  - Our [CLI](https://github.com/airbytehq/airbyte/pull/17982) and docs have been updated to reflect this change.
 
 ### Improvements
 

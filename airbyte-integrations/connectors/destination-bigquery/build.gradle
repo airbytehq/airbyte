@@ -1,17 +1,14 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'application'
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.46.0'
-    features = [
-            'db-destinations',
-            'datastore-bigquery',
-            'typing-deduping',
-            'gcs-destinations',
-            'core',
-    ]
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-gcs', 'load-db', 'load-s3']
+    cdk = 'local'
 }
 
 java {
@@ -37,5 +34,7 @@ application {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-text:1.12.0'
+    implementation 'com.google.cloud:google-cloud-bigquery'
+
+    integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
 }

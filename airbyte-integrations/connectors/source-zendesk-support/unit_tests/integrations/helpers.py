@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from typing import Optional
 
 import pendulum
 from pendulum.datetime import DateTime
@@ -47,12 +48,14 @@ def given_ticket_forms(
     return ticket_forms_record_builder
 
 
-def given_posts(http_mocker: HttpMocker, start_date: DateTime, api_token_authenticator: ApiTokenAuthenticator) -> PostsRecordBuilder:
+def given_posts(
+    http_mocker: HttpMocker, start_date: DateTime, api_token_authenticator: ApiTokenAuthenticator, updated_at: Optional[DateTime] = None
+) -> PostsRecordBuilder:
     """
     Posts requests setup
     """
     posts_record_builder = PostsRecordBuilder.posts_record().with_field(
-        FieldPath("updated_at"), datetime_to_string(start_date.add(seconds=1))
+        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(seconds=1))
     )
     http_mocker.get(
         PostsRequestBuilder.posts_endpoint(api_token_authenticator)
@@ -65,13 +68,17 @@ def given_posts(http_mocker: HttpMocker, start_date: DateTime, api_token_authent
 
 
 def given_post_comments(
-    http_mocker: HttpMocker, start_date: DateTime, post_id: int, api_token_authenticator: ApiTokenAuthenticator
+    http_mocker: HttpMocker,
+    start_date: DateTime,
+    post_id: int,
+    api_token_authenticator: ApiTokenAuthenticator,
+    updated_at: Optional[DateTime] = None,
 ) -> PostsCommentsRecordBuilder:
     """
     Post Comments requests setup
     """
-    post_comments_record_builder = PostsCommentsRecordBuilder.posts_commetns_record().with_field(
-        FieldPath("updated_at"), datetime_to_string(start_date.add(seconds=1))
+    post_comments_record_builder = PostsCommentsRecordBuilder.posts_comments_record().with_field(
+        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(seconds=1))
     )
     http_mocker.get(
         PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post_id)

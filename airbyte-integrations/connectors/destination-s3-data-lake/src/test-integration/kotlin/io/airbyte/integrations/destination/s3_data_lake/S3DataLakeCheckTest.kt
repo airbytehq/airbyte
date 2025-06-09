@@ -7,12 +7,13 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTestUtil.GLUE_CONFIG_PATH
+import java.nio.file.Files
 
 class S3DataLakeCheckTest :
     CheckIntegrationTest<S3DataLakeSpecification>(
         successConfigFilenames =
             listOf(
-                CheckTestConfig(GLUE_CONFIG_PATH),
+                CheckTestConfig(Files.readString(GLUE_CONFIG_PATH)),
             ),
         // TODO we maybe should add some configs that are expected to fail `check`
         failConfigFilenamesAndFailureReasons = mapOf(),

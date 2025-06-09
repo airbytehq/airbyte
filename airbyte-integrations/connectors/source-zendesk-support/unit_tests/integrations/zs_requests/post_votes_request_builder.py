@@ -30,7 +30,7 @@ class PostsVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["page[after]"] = self._page_after
         return params
 
-    def with_start_time(self, start_time: int) -> "PostsVotesRequestBuilder":
+    def with_start_time(self, start_time: str) -> "PostsVotesRequestBuilder":
         self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
         return self
 

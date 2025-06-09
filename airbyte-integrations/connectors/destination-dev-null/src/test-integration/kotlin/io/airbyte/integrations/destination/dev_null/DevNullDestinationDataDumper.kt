@@ -22,7 +22,7 @@ object DevNullDestinationDataDumper : DestinationDataDumper {
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         throw NotImplementedError()
     }
 }

@@ -2,13 +2,13 @@
 
 ### General Limitations
 
-- Use MySQL Server versions `8.0`, `5.7`, or `5.6`.
+- Use MySQL Server versions `8.4`, `8.0`, `5.7`, or `5.6`.
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ### CDC Requirements
 
-- Make sure to read our [CDC docs](../../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+- Make sure to read our [CDC docs](/platform/understanding-airbyte/cdc) to see limitations that impact all databases using CDC replication.
 - Our CDC implementation uses at least once delivery for all change records.
 - To enable CDC with incremental sync, ensure the table has at least one primary key.
   Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
@@ -42,6 +42,22 @@ MariaDB is a fork of MySQL that adds many new features. The MySQL source connect
 - Amazon RDS MySQL or MariaDB connection issues: If you see the following `Cannot create a PoolableConnectionFactory` error, please add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 - Amazon RDS MySQL connection issues: If you see `Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`, many times this due to your VPC not allowing public traffic. We recommend going through [this AWS troubleshooting checklist](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/) to ensure the correct permissions/settings have been granted to allow Airbyte to connect to your database.
 
+### Query Timeout:
+
+**Error**: `MySQL Query Timeout: The sync was aborted because the query took too long to return results, will retry.`
+
+**What Happened**:
+Your sync was temporarily interrupted because a query took too long to complete. This is usually caused by MySQL’s query execution time limit set on the server (e.g., `max_execution_time`).
+
+**Resolution**:
+While this error is transient and Airbyte will retry the sync automatically, persistent timeouts may cause the sync to fail. To prevent this:
+- Go to the Source Configuration page.
+- Under _Optional Fields_, locate `Checkpoint Target Time Interval`. 
+  - This defines how often Airbyte creates checkpoints (in seconds). The default is 5 minutes. 
+- Set MySQL’s `max_execution_time` (in milliseconds) to a value higher than this interval. 
+  - For example, if `Checkpoint Target Time Interval` is set to 300s (5 minutes),
+  then `max_execution_time` should be at least 300000ms.
+
 ### Under CDC incremental mode, there are still full refresh syncs
 
 Normally under the CDC mode, the MySQL source will first run a full refresh sync to read the snapshot of all the existing data, and all subsequent runs will only be incremental syncs reading from the binlogs. However, occasionally, you may see full refresh syncs after the initial run. When this happens, you will see the following log:
@@ -52,7 +68,12 @@ The root causes is that the binglogs needed for the incremental sync have been r
 
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently.
-  - Set a higher `binlog_expire_logs_seconds`. It's recommended to set this value to a time period of 7 days. See detailed documentation [here](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds). The downside of this approach is that more disk space will be needed.
+  - For standard MySQL installations: Set a higher `binlog_expire_logs_seconds`. It's recommended to set this value to a time period of 7 days. See [MySQL binary log documentation](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds) for details.
+  - For Amazon RDS MySQL instances: Set the `binlog retention hours` parameter to at least 24 hours (or higher). This parameter defaults to 0, causing binlogs to be removed immediately. Use the RDS-specific procedure described in the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/mysql-stored-proc-configuring.html). For example:
+    ```sql
+    call mysql.rds_set_configuration('binlog retention hours', 24);
+    ```
+    The downside of increasing retention is that more disk space is needed.
 
 ### EventDataDeserializationException errors during initial snapshot
 

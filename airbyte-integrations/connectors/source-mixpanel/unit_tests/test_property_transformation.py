@@ -8,14 +8,12 @@ that will conflict in further data normalization, like:
 `userName` and `username`
 """
 
-from unittest.mock import MagicMock
-
 import pytest
-from source_mixpanel.streams import Export
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
-from .utils import get_url_to_mock, setup_response
+from .utils import get_url_to_mock, init_stream, setup_response
 
 
 @pytest.fixture
@@ -35,13 +33,14 @@ def export_response():
     )
 
 
-def test_export_stream_conflict_names(requests_mock, export_response, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_stream_conflict_names(requests_mock, export_response, config_raw):
+    stream = init_stream("export", config_raw)
     # Remove requests limit for test
-    stream.reqs_per_hour_limit = 0
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
 
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    cursor_slice = {"start_time": "2017-01-25", "end_time": "2017-02-25"}
+    stream_slice = StreamSlice(cursor_slice=cursor_slice, partition={})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
     records = [record for record in records]

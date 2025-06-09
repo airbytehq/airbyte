@@ -32,31 +32,31 @@ access to the database.
 1. Log in to the MongoDB Atlas dashboard.
 2. From the dashboard, click on "Database Access" under "Security"
 
-![Security Database Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
+![Security Database Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
 
 3. Click on the "+ ADD NEW DATABASE USER" button.
 
-![Add New Database User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
+![Add New Database User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
 
 4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-![Authentication Method](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
+![Authentication Method](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
 5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
 
-![Username and Password](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
+![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
 6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
 
-![Database User Privileges](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
 7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
-![Restrict Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
+![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
 8. Click on "Add User" at the bottom to save the user.
 
-![Add User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
+![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
 ##### Self Hosted
 
@@ -112,15 +112,15 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
-![Connect to Source Cluster](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
+![Connect to Source Cluster](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
 3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Shell Connect](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
 4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog, removing/avoiding the quotation marks.
 
-![Copy Connection String](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
+![Copy Connection String](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
 ##### Self Hosted Cluster
 
@@ -180,7 +180,7 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 | :----------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                          |
 | Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
-| Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                                                                                                   |
+| Database Names                             | The names of the MongoDB databases that contain the source collection(s) to sync. Allows specifying multiple databases to discover and sync collections from.                                                                                                                                                                                                                                                                                |
 | Username                                   | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                    |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                           |
 | Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
@@ -197,8 +197,15 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                               | Subject                                                                                                   |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 2.0.1 | 2025-06-04 | [61369](https://github.com/airbytehq/airbyte/pull/61369) | Do not pin on 1.5.17 |
+| 2.0.0 | 2025-05-27 | [60252](https://github.com/airbytehq/airbyte/pull/60252) | Add support for multiple databases |
+| 1.5.19 | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311) | Migrate to new Gradle flow |
+| 1.5.18 | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
+| 1.5.17 | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery |
+| 1.5.16 | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973) | Update logging configuration. |
+| 1.5.15 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
 | 1.5.14 | 2025-01-10 | [51491](https://github.com/airbytehq/airbyte/pull/51491) | Use a non root base image |
 | 1.5.13 | 2024-12-18 | [49868](https://github.com/airbytehq/airbyte/pull/49868) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 1.5.12 | 2024-11-01 | [48115](https://github.com/airbytehq/airbyte/pull/48115) | Remove database name check. |
@@ -240,54 +247,54 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 | 1.2.13 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
 | 1.2.12 | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526) | Improve error handling. |
 | 1.2.11 | 2024-02-20 | [35375](https://github.com/airbytehq/airbyte/pull/35375) | Add config to throw an error on invalid CDC position and enable it by default. |
-| 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                            |
-| 1.2.9   | 2024-02-13 | [35114](https://github.com/airbytehq/airbyte/pull/35114) | Extend subsequent cdc record wait time to the duration of initial. Bug Fixes                              |
-| 1.2.8   | 2024-02-08 | [34748](https://github.com/airbytehq/airbyte/pull/34748) | Adopt CDK 0.19.0                                                                                          |
-| 1.2.7   | 2024-02-01 | [34759](https://github.com/airbytehq/airbyte/pull/34759) | Fail sync if initial snapshot for any stream fails.                                                       |
-| 1.2.6   | 2024-01-31 | [34594](https://github.com/airbytehq/airbyte/pull/34594) | Scope initial resume token to streams of interest.                                                        |
-| 1.2.5   | 2024-01-29 | [34641](https://github.com/airbytehq/airbyte/pull/34641) | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
-| 1.2.4   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0.                                                                                        |
-| 1.2.3   | 2024-01-18 | [34364](https://github.com/airbytehq/airbyte/pull/34364) | Add additional logging for resume token + reduce discovery size to 10.                                    |
-| 1.2.2   | 2024-01-16 | [34314](https://github.com/airbytehq/airbyte/pull/34314) | Reduce minimum document discovery size to 100.                                                            |
-| 1.2.1   | 2023-12-18 | [33549](https://github.com/airbytehq/airbyte/pull/33549) | Add logging to understand op log size.                                                                    |
-| 1.2.0   | 2023-12-18 | [33438](https://github.com/airbytehq/airbyte/pull/33438) | Remove LEGACY state flag                                                                                  |
-| 1.1.0   | 2023-12-14 | [32328](https://github.com/airbytehq/airbyte/pull/32328) | Schema less mode in mongodb.                                                                              |
-| 1.0.12  | 2023-12-13 | [33430](https://github.com/airbytehq/airbyte/pull/33430) | Add more verbose logging.                                                                                 |
-| 1.0.11  | 2023-11-28 | [33356](https://github.com/airbytehq/airbyte/pull/33356) | Support for better debugging tools.                                                                       |
-| 1.0.10  | 2023-11-28 | [32886](https://github.com/airbytehq/airbyte/pull/32886) | Handle discover phase OOMs                                                                                |
-| 1.0.9   | 2023-11-08 | [32285](https://github.com/airbytehq/airbyte/pull/32285) | Additional support to read UUIDs                                                                          |
-| 1.0.8   | 2023-11-08 | [32125](https://github.com/airbytehq/airbyte/pull/32125) | Fix compilation warnings                                                                                  |
-| 1.0.7   | 2023-11-07 | [32250](https://github.com/airbytehq/airbyte/pull/32250) | Add support to read UUIDs.                                                                                |
-| 1.0.6   | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                             |
-| 1.0.5   | 2023-10-31 | [32028](https://github.com/airbytehq/airbyte/pull/32028) | url encode username and password.<br/>Handle a case of document update and delete in a single sync.       |
-| 1.0.3   | 2023-10-19 | [31629](https://github.com/airbytehq/airbyte/pull/31629) | Allow discover operation use of disk file when an operation goes over max allowed mem                     |
-| 1.0.2   | 2023-10-19 | [31596](https://github.com/airbytehq/airbyte/pull/31596) | Allow use of temp disk file when an operation goes over max allowed mem                                   |
-| 1.0.1   | 2023-10-03 | [31034](https://github.com/airbytehq/airbyte/pull/31034) | Fix field filtering logic related to nested documents                                                     |
-| 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969) | General availability release using Change Data Capture (CDC)                                              |
-| 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815) | Revert back to version 0.2.0                                                                              |
-| 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760) | Fix bug preventing some syncs from succeeding when collecting stats                                       |
-| 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733) | Fix bug preventing syncs from discovering field types                                                     |
-| 0.2.2   | 2023-07-25 | [28692](https://github.com/airbytehq/airbyte/pull/28692) | Fix bug preventing statistics retrieval from views                                                        |
-| 0.2.1   | 2023-07-21 | [28527](https://github.com/airbytehq/airbyte/pull/28527) | Log server information                                                                                    |
-| 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                      |
-| 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614) | Increased discover performance                                                                            |
-| 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590) | Add ability to enforce SSL in MongoDB connector and check logic                                           |
-| 0.1.17  | 2022-09-08 | [16401](https://github.com/airbytehq/airbyte/pull/16401) | Fixed bug with empty strings in fields with _aibyte_transform_                                            |
-| 0.1.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
-| 0.1.15  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                                    |
-| 0.1.14  | 2022-05-05 | [12428](https://github.com/airbytehq/airbyte/pull/12428) | JsonSchema: Add properties to fields with type 'object'                                                   |
-| 0.1.13  | 2022-02-21 | [10276](https://github.com/airbytehq/airbyte/pull/10276) | Create a custom codec registry to handle DBRef MongoDB objects                                            |
-| 0.1.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
-| 0.1.11  | 2022-01-10 | [9238](https://github.com/airbytehq/airbyte/pull/9238)   | Return only those collections for which the user has privileges                                           |
-| 0.1.10  | 2021-12-30 | [9202](https://github.com/airbytehq/airbyte/pull/9202)   | Update connector fields title/description                                                                 |
-| 0.1.9   | 2021-12-07 | [8491](https://github.com/airbytehq/airbyte/pull/8491)   | Configure 10000 limit doc reading during Discovery step                                                   |
-| 0.1.8   | 2021-11-29 | [8306](https://github.com/airbytehq/airbyte/pull/8306)   | Added milliseconds for date format for cursor                                                             |
-| 0.1.7   | 2021-11-22 | [8161](https://github.com/airbytehq/airbyte/pull/8161)   | Updated Performance and updated cursor for timestamp type                                                 |
-| 0.1.5   | 2021-11-17 | [8046](https://github.com/airbytehq/airbyte/pull/8046)   | Added milliseconds to convert timestamp to datetime format                                                |
-| 0.1.4   | 2021-11-15 | [7982](https://github.com/airbytehq/airbyte/pull/7982)   | Updated Performance                                                                                       |
-| 0.1.3   | 2021-10-19 | [7160](https://github.com/airbytehq/airbyte/pull/7160)   | Fixed nested document parsing                                                                             |
-| 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)   | Added filter to avoid MongoDb system collections                                                          |
-| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)   | Source MongoDb: added support via TLS/SSL                                                                 |
-| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)   | New source: MongoDb ported to java                                                                        |
+| 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751)   | Emit analytics message for invalid CDC cursor.                                                            |
+| 1.2.9   | 2024-02-13 | [35114](https://github.com/airbytehq/airbyte/pull/35114)   | Extend subsequent cdc record wait time to the duration of initial. Bug Fixes                              |
+| 1.2.8   | 2024-02-08 | [34748](https://github.com/airbytehq/airbyte/pull/34748)   | Adopt CDK 0.19.0                                                                                          |
+| 1.2.7   | 2024-02-01 | [34759](https://github.com/airbytehq/airbyte/pull/34759)   | Fail sync if initial snapshot for any stream fails.                                                       |
+| 1.2.6   | 2024-01-31 | [34594](https://github.com/airbytehq/airbyte/pull/34594)   | Scope initial resume token to streams of interest.                                                        |
+| 1.2.5   | 2024-01-29 | [34641](https://github.com/airbytehq/airbyte/pull/34641)   | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
+| 1.2.4   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573)   | Adopt CDK v0.16.0.                                                                                        |
+| 1.2.3   | 2024-01-18 | [34364](https://github.com/airbytehq/airbyte/pull/34364)   | Add additional logging for resume token + reduce discovery size to 10.                                    |
+| 1.2.2   | 2024-01-16 | [34314](https://github.com/airbytehq/airbyte/pull/34314)   | Reduce minimum document discovery size to 100.                                                            |
+| 1.2.1   | 2023-12-18 | [33549](https://github.com/airbytehq/airbyte/pull/33549)   | Add logging to understand op log size.                                                                    |
+| 1.2.0   | 2023-12-18 | [33438](https://github.com/airbytehq/airbyte/pull/33438)   | Remove LEGACY state flag                                                                                  |
+| 1.1.0   | 2023-12-14 | [32328](https://github.com/airbytehq/airbyte/pull/32328)   | Schema less mode in mongodb.                                                                              |
+| 1.0.12  | 2023-12-13 | [33430](https://github.com/airbytehq/airbyte/pull/33430)   | Add more verbose logging.                                                                                 |
+| 1.0.11  | 2023-11-28 | [33356](https://github.com/airbytehq/airbyte/pull/33356)   | Support for better debugging tools.                                                                       |
+| 1.0.10  | 2023-11-28 | [32886](https://github.com/airbytehq/airbyte/pull/32886)   | Handle discover phase OOMs                                                                                |
+| 1.0.9   | 2023-11-08 | [32285](https://github.com/airbytehq/airbyte/pull/32285)   | Additional support to read UUIDs                                                                          |
+| 1.0.8   | 2023-11-08 | [32125](https://github.com/airbytehq/airbyte/pull/32125)   | Fix compilation warnings                                                                                  |
+| 1.0.7   | 2023-11-07 | [32250](https://github.com/airbytehq/airbyte/pull/32250)   | Add support to read UUIDs.                                                                                |
+| 1.0.6   | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193)   | Adopt java CDK version 0.4.1.                                                                             |
+| 1.0.5   | 2023-10-31 | [32028](https://github.com/airbytehq/airbyte/pull/32028)   | url encode username and password.<br/>Handle a case of document update and delete in a single sync.       |
+| 1.0.3   | 2023-10-19 | [31629](https://github.com/airbytehq/airbyte/pull/31629)   | Allow discover operation use of disk file when an operation goes over max allowed mem                     |
+| 1.0.2   | 2023-10-19 | [31596](https://github.com/airbytehq/airbyte/pull/31596)   | Allow use of temp disk file when an operation goes over max allowed mem                                   |
+| 1.0.1   | 2023-10-03 | [31034](https://github.com/airbytehq/airbyte/pull/31034)   | Fix field filtering logic related to nested documents                                                     |
+| 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969)   | General availability release using Change Data Capture (CDC)                                              |
+| 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815)   | Revert back to version 0.2.0                                                                              |
+| 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760)   | Fix bug preventing some syncs from succeeding when collecting stats                                       |
+| 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733)   | Fix bug preventing syncs from discovering field types                                                     |
+| 0.2.2   | 2023-07-25 | [28692](https://github.com/airbytehq/airbyte/pull/28692)   | Fix bug preventing statistics retrieval from views                                                        |
+| 0.2.1   | 2023-07-21 | [28527](https://github.com/airbytehq/airbyte/pull/28527)   | Log server information                                                                                    |
+| 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737)   | License Update: Elv2                                                                                      |
+| 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614)   | Increased discover performance                                                                            |
+| 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590)   | Add ability to enforce SSL in MongoDB connector and check logic                                           |
+| 0.1.17  | 2022-09-08 | [16401](https://github.com/airbytehq/airbyte/pull/16401)   | Fixed bug with empty strings in fields with _aibyte_transform_                                            |
+| 0.1.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356)   | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.1.15  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)   | Updated stacktrace format for any trace message errors                                                    |
+| 0.1.14  | 2022-05-05 | [12428](https://github.com/airbytehq/airbyte/pull/12428)   | JsonSchema: Add properties to fields with type 'object'                                                   |
+| 0.1.13  | 2022-02-21 | [10276](https://github.com/airbytehq/airbyte/pull/10276)   | Create a custom codec registry to handle DBRef MongoDB objects                                            |
+| 0.1.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
+| 0.1.11  | 2022-01-10 | [9238](https://github.com/airbytehq/airbyte/pull/9238)     | Return only those collections for which the user has privileges                                           |
+| 0.1.10  | 2021-12-30 | [9202](https://github.com/airbytehq/airbyte/pull/9202)     | Update connector fields title/description                                                                 |
+| 0.1.9   | 2021-12-07 | [8491](https://github.com/airbytehq/airbyte/pull/8491)     | Configure 10000 limit doc reading during Discovery step                                                   |
+| 0.1.8   | 2021-11-29 | [8306](https://github.com/airbytehq/airbyte/pull/8306)     | Added milliseconds for date format for cursor                                                             |
+| 0.1.7   | 2021-11-22 | [8161](https://github.com/airbytehq/airbyte/pull/8161)     | Updated Performance and updated cursor for timestamp type                                                 |
+| 0.1.5   | 2021-11-17 | [8046](https://github.com/airbytehq/airbyte/pull/8046)     | Added milliseconds to convert timestamp to datetime format                                                |
+| 0.1.4   | 2021-11-15 | [7982](https://github.com/airbytehq/airbyte/pull/7982)     | Updated Performance                                                                                       |
+| 0.1.3   | 2021-10-19 | [7160](https://github.com/airbytehq/airbyte/pull/7160)     | Fixed nested document parsing                                                                             |
+| 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)     | Added filter to avoid MongoDb system collections                                                          |
+| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)     | Source MongoDb: added support via TLS/SSL                                                                 |
+| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)     | New source: MongoDb ported to java                                                                        |
 
 </details>

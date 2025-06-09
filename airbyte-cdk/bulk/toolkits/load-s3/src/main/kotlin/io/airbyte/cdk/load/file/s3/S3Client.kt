@@ -24,10 +24,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.airbyte.cdk.load.command.s3.S3ClientConfigurationProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -44,12 +44,18 @@ data class S3Object(override val key: String, override val storageConfig: S3Buck
         get() = "${storageConfig.s3BucketName}/$key"
 }
 
+interface S3Client : ObjectStorageClient<S3Object>
+
+/**
+ * The primary and recommended S3 client implementation -- kotlin-friendly with suspend functions.
+ * However, there's a bug that can cause hard failures under high-concurrency. (Partial workaround
+ * in place https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817).
+ */
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
-class S3Client(
+class S3KotlinClient(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     val bucketConfig: S3BucketConfiguration,
-    private val uploadConfig: ObjectStorageUploadConfiguration?,
-) : ObjectStorageClient<S3Object> {
+) : S3Client {
     private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String) = flow {
@@ -142,7 +148,7 @@ class S3Client(
         }
         val response = client.createMultipartUpload(request)
 
-        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+        log.debug { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
 
         return S3StreamingUpload(client, bucketConfig, response)
     }
@@ -150,16 +156,18 @@ class S3Client(
 
 /**
  * [assumeRoleCredentials] is required if [keyConfig] does not have an access key, _and_ [arnRole]
- * includes a nonnull role ARN. Otherwise it is ignored.
+ * includes a nonnull role ARN. Otherwise, it is ignored.
  */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
-    private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
     private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
+    private val s3ClientConfig: S3ClientConfigurationProvider? = null,
 ) {
+    private val log = KotlinLogging.logger {}
+
     companion object {
         const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
 
@@ -168,12 +176,34 @@ class S3ClientFactory(
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config, assumeRoleCredentials).make()
+            S3ClientFactory(config, config, config, assumeRoleCredentials).make()
     }
 
     @Singleton
     @Secondary
     fun make(): S3Client {
+        if (s3ClientConfig?.s3ClientConfiguration?.useLegacyJavaClient == true) {
+            log.info { "Creating S3 client using legacy Java SDK" }
+            return if (
+                arnRole.awsArnRoleConfiguration.roleArn != null && assumeRoleCredentials != null
+            ) {
+                S3LegacyJavaClientFactory()
+                    .createFromAssumeRole(
+                        arnRole.awsArnRoleConfiguration,
+                        assumeRoleCredentials,
+                        bucketConfig.s3BucketConfiguration
+                    )
+            } else {
+                S3LegacyJavaClientFactory()
+                    .createFromAccessKey(
+                        keyConfig.awsAccessKeyConfiguration,
+                        bucketConfig.s3BucketConfiguration
+                    )
+            }
+        }
+
+        log.info { "Creating S3 client using Kotlin SDK" }
+
         val credsProvider: CredentialsProvider =
             if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
                 StaticCredentialsProvider {
@@ -202,7 +232,7 @@ class S3ClientFactory(
 
         val s3SdkClient =
             aws.sdk.kotlin.services.s3.S3Client {
-                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+                region = bucketConfig.s3BucketConfiguration.s3BucketRegion
                 credentialsProvider = credsProvider
                 endpointUrl =
                     bucketConfig.s3BucketConfiguration.s3Endpoint?.let {
@@ -216,10 +246,9 @@ class S3ClientFactory(
                 httpClient(CrtHttpEngine)
             }
 
-        return S3Client(
+        return S3KotlinClient(
             s3SdkClient,
             bucketConfig.s3BucketConfiguration,
-            uploadConfig?.objectStorageUploadConfiguration
         )
     }
 }

@@ -7,92 +7,100 @@ package io.airbyte.cdk.load.config
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.MultiProducerChannel
+import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
-import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.SyncManager
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Value
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import kotlin.math.min
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
+
+const val CHECK_STREAM_NAMESPACE = "airbyte_internal_test"
 
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
 class SyncBeanFactory {
-    private val log = KotlinLogging.logger {}
+    /* ******************
+     * RESOURCE MANAGERS
+     * ******************/
 
     @Singleton
-    @Named("memoryManager")
-    fun memoryManager(
+    @Secondary
+    @Named("globalMemoryManager")
+    fun globalMemoryManager(): ReservationManager {
+        return ReservationManager(Runtime.getRuntime().maxMemory())
+    }
+
+    @Singleton
+    @Named("queueMemoryManager")
+    fun queueMemoryMananger(
         config: DestinationConfiguration,
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ReservationManager {
-        val memory = config.maxMessageQueueMemoryUsageRatio * Runtime.getRuntime().maxMemory()
-
-        return ReservationManager(memory.toLong())
+        val recordQueueBytes =
+            config.maxMessageQueueMemoryUsageRatio * globalMemoryManager.totalCapacityBytes
+        val reservation = runBlocking {
+            globalMemoryManager.reserve(recordQueueBytes.toLong(), null)
+        }
+        return ReservationManager(reservation.bytesReserved)
     }
 
     @Singleton
-    @Named("diskManager")
-    fun diskManager(
-        @Value("\${airbyte.destination.core.resources.disk.bytes}") availableBytes: Long,
-    ): ReservationManager {
-        return ReservationManager(availableBytes)
-    }
+    fun checkpointManager(
+        catalog: DestinationCatalog,
+        syncManager: SyncManager,
+        outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit,
+        timeProvider: TimeProvider,
+    ): CheckpointManager<Reserved<CheckpointMessage>> =
+        CheckpointManager(
+            catalog,
+            syncManager,
+            outputConsumer,
+            timeProvider,
+        )
+
+    /* ********************
+     * ASYNCHRONOUS QUEUES
+     * ********************/
 
     /**
-     * The queue that sits between the aggregation (SpillToDiskTask) and load steps
-     * (ProcessRecordsTask).
-     *
-     * Since we are buffering on disk, we must consider the available disk space in our depth
-     * configuration.
+     * A queue of streams to open on. This allows the dev to control the number of concurrent calls
+     * to open by controlling how many workers (coroutines) are pulling from this queue.
      */
     @Singleton
-    @Named("fileAggregateQueue")
-    fun fileAggregateQueue(
-        @Value("\${airbyte.destination.core.resources.disk.bytes}") availableBytes: Long,
-        config: DestinationConfiguration,
-        catalog: DestinationCatalog
-    ): MultiProducerChannel<FileAggregateMessage> {
-        val streamCount = catalog.size()
-        // total batches by disk capacity
-        val maxBatchesThatFitOnDisk = (availableBytes / config.recordBatchSizeBytes).toInt()
-        // account for batches in flight processing by the workers
-        val maxBatchesMinusUploadOverhead =
-            maxBatchesThatFitOnDisk - config.numProcessRecordsWorkers
-        // ideally we'd allow enough headroom to smooth out rate differences between consumer /
-        // producer streams
-        val idealDepth = 4 * config.numProcessRecordsWorkers
-        // take the smaller of the two—this should be the idealDepth except in corner cases
-        val capacity = min(maxBatchesMinusUploadOverhead, idealDepth)
-        log.info { "Creating file aggregate queue with limit $capacity" }
-        val channel = Channel<FileAggregateMessage>(capacity)
-        return MultiProducerChannel(streamCount.toLong(), channel, "fileAggregateQueue")
-    }
-
-    @Singleton
-    @Named("batchQueue")
-    fun batchQueue(
-        config: DestinationConfiguration,
-    ): MultiProducerChannel<BatchEnvelope<*>> {
-        val channel = Channel<BatchEnvelope<*>>(config.batchQueueDepth)
-        return MultiProducerChannel(config.numProcessRecordsWorkers.toLong(), channel, "batchQueue")
-    }
-
-    @Singleton
-    @Named("fileMessageQueue")
-    fun fileMessageQueue(
-        config: DestinationConfiguration,
-    ): MultiProducerChannel<FileTransferQueueMessage> {
-        val channel = Channel<FileTransferQueueMessage>(config.batchQueueDepth)
-        return MultiProducerChannel(1, channel, "fileMessageQueue")
-    }
-
-    @Singleton
     @Named("openStreamQueue")
-    class OpenStreamQueue : ChannelMessageQueue<DestinationStream>()
+    class OpenStreamQueue : ChannelMessageQueue<DestinationStream>(Channel(Channel.UNLIMITED))
+
+    /** A queue for updating batch states, which is not partitioned. */
+    @Singleton
+    @Named("batchStateUpdateQueue")
+    fun batchStateUpdateQueue(): ChannelMessageQueue<BatchUpdate> {
+        return ChannelMessageQueue(Channel(100))
+    }
+
+    /* *************
+     * GLOBAL FLAGS
+     * *************/
+
+    /** True if the catalog has at least one stream that includeFiles. */
+    @Singleton
+    @Named("isFileTransfer")
+    fun isFileTransfer(catalog: DestinationCatalog): Boolean =
+        catalog.streams.any { it.includeFiles }
+
+    /* *************
+     * GLOBAL STATE
+     * *************/
+
+    @Singleton
+    @Named("defaultDestinationTaskLauncherHasThrown")
+    fun defaultDestinationTaskLauncherHasThrown(): AtomicBoolean = AtomicBoolean(false)
 }

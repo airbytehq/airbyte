@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-load'))
+
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+}

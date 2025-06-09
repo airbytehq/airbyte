@@ -24,5 +24,5 @@ application {
 }
 
 dependencies {
-	implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
+    implementation 'com.teradata.jdbc:terajdbc:20.00.00.43'
 }

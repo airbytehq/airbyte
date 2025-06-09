@@ -6,27 +6,26 @@
 import io
 import json
 import logging
-import uuid
+import os
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-import pytz
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceGoogleDriveSpec
+from .spec import SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -58,30 +57,22 @@ DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
     GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
 }
 
-PUBLIC_PERMISSION_IDS = [
-    "anyoneWithLink",
-    "anyoneCanFind",
-    "domainCanFind",
-    "domainWithLink",
-]
-
-
-DRIVE_SERVICE_SCOPES = [
-    "https://www.googleapis.com/auth/admin.directory.group.readonly",
-    "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
-    "https://www.googleapis.com/auth/admin.directory.user.readonly",
-]
-
-
-def datetime_now() -> datetime:
-    return datetime.now(pytz.UTC)
-
 
 class GoogleDriveRemoteFile(RemoteFile):
     id: str
     # The mime type of the file as returned by the Google Drive API
     # This is not the same as the mime type when opened by the parser (e.g. google docs is exported as docx)
     original_mime_type: str
+    view_link: str
+    # Only populated for items in shared drives.
+    drive_id: Optional[str] = None
+    created_at: datetime
+
+    @property
+    def url(self) -> str:
+        if self.drive_id:
+            return f"https://drive.google.com/open?id={self.id}&driveId={self.drive_id}"
+        return self.view_link
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
@@ -90,7 +81,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._drive_service = None
-        self._directory_service = None
 
     @property
     def config(self) -> SourceGoogleDriveSpec:
@@ -139,12 +129,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             self._drive_service = self._build_google_service("drive", "v3")
         return self._drive_service
 
-    @property
-    def google_directory_service(self):
-        if self._directory_service is None:
-            self._directory_service = self._build_google_service("admin", "directory_v1", DRIVE_SERVICE_SCOPES)
-        return self._directory_service
-
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.
@@ -160,10 +144,11 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
             # supportsAllDrives and includeItemsFromAllDrives are required to access files in shared drives
+            # ref https://developers.google.com/workspace/drive/api/reference/rest/v3/files#File
             request = service.files().list(
                 q=f"'{folder_id}' in parents",
                 pageSize=1000,
-                fields="nextPageToken, files(id, name, modifiedTime, mimeType)",
+                fields="nextPageToken, files(id, name, modifiedTime, mimeType, webViewLink, driveId, createdTime)",
                 supportsAllDrives=True,
                 includeItemsFromAllDrives=True,
             )
@@ -186,6 +171,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         continue
                     else:
                         last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                        created_at = datetime.strptime(new_file["createdTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
                         original_mime_type = new_file["mimeType"]
                         mime_type = (
                             self._get_export_mime_type(original_mime_type)
@@ -195,9 +181,12 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         remote_file = GoogleDriveRemoteFile(
                             uri=file_name,
                             last_modified=last_modified,
+                            created_at=created_at,
                             id=new_file["id"],
                             original_mime_type=original_mime_type,
                             mime_type=mime_type,
+                            drive_id=new_file.get("driveId"),
+                            view_link=new_file.get("webViewLink"),
                         )
                         if self.file_matches_globs(remote_file, globs):
                             yield remote_file
@@ -270,7 +259,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
-    def get_file(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+    def upload(
+        self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from Google Drive to a specified local directory.
 
@@ -290,15 +281,18 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         try:
-            file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+            file_paths = self._get_file_transfer_paths(source_file_relative_path=file.uri, staging_directory=local_directory)
+            local_file_path = file_paths[self.LOCAL_FILE_PATH]
+            file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+            file_name = file_paths[self.FILE_NAME]
 
             if self._is_exportable_document(file.original_mime_type):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
 
                 file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
                 local_file_path += file_extension
-                absolute_file_path += file_extension
                 file_relative_path += file_extension
+                file_name += file_extension
             else:
                 request = self.google_drive_service.files().get_media(fileId=file.id)
 
@@ -310,144 +304,26 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     progress = status.resumable_progress / status.total_size * 100 if status.total_size else 0
                     logger.info(f"Processing file {file.uri}, progress: {progress:.2f}%")
 
+            logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
             # native google objects seems to be reporting lower size through the api than the final download size
             file_size = getsize(local_file_path)
 
-            return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+            file_record_data = FileRecordData(
+                folder=file_paths[self.FILE_FOLDER],
+                file_name=file_name,
+                bytes=file_size,
+                id=file.id,
+                mime_type=file.mime_type,
+                created_at=file.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                source_uri=file.url,
+            )
+            file_reference = AirbyteRecordMessageFileReference(
+                staging_file_url=local_file_path,
+                source_file_relative_path=file_relative_path,
+                file_size_bytes=file_size,
+            )
+            return file_record_data, file_reference
 
         except Exception as e:
             raise ErrorDownloadingFile(f"There was an error while trying to download the file {file.uri}: {str(e)}")
-
-    def get_file_permissions(self, file_id: str, file_name: str, logger: logging.Logger) -> Tuple[List[RemoteIdentity], bool]:
-        """
-        Retrieves the permissions of a file in Google Drive and checks for public access.
-
-        Args:
-            file_id (str): The file to get permissions for.
-            file_name (str): The name of the file to get permissions for.
-            logger (logging.Logger): Logger for debugging and information.
-
-        Returns:
-            Tuple(List[RemoteFileIdentity], boolean): A list of RemoteFileIdentity objects containing permission details.
-        """
-        try:
-            request = self.google_drive_service.permissions().list(
-                fileId=file_id,
-                fields="permissions, permissions/role, permissions/type, permissions/id, permissions/emailAddress",
-                supportsAllDrives=True,
-            )
-            response = request.execute()
-            permissions = response.get("permissions", [])
-            is_public = False
-
-            remote_identities = []
-
-            for p in permissions:
-                identity = self._to_remote_file_identity(p)
-                if p.get("id") in PUBLIC_PERMISSION_IDS:
-                    is_public = True
-                if identity is not None:
-                    remote_identities.append(identity)
-
-            return remote_identities, is_public
-        except Exception as e:
-            raise ErrorFetchingMetadata(f"An error occurred while retrieving file permissions: {str(e)}")
-
-    def _to_remote_file_identity(self, identity: dict[str, Any]) -> RemoteIdentity | None:
-        if identity.get("id") in PUBLIC_PERMISSION_IDS:
-            return None
-        if identity.get("deleted") is True:
-            return None
-
-        return RemoteIdentity(
-            modified_at=datetime.now(),
-            id=uuid.uuid4(),
-            remote_id=identity.get("emailAddress"),
-            name=identity.get("name"),
-            email_address=identity.get("emailAddress"),
-            type=identity.get("type"),
-            description=None,
-        )
-
-    def get_file_acl_permissions(self, file: GoogleDriveRemoteFile, logger: logging.Logger) -> Dict[str, Any]:
-        remote_identities, is_public = self.get_file_permissions(file.id, file_name=file.uri, logger=logger)
-        return RemotePermissions(
-            id=file.id,
-            file_path=file.uri,
-            allowed_identity_remote_ids=[p.remote_id for p in remote_identities],
-            publicly_accessible=is_public,
-        ).dict(exclude_none=True)
-
-    def _get_looping_google_api_list_response(
-        self, service: Any, key: str, args: dict[str, Any], logger: logging.Logger
-    ) -> Iterator[dict[str, Any]]:
-        try:
-            looping = True
-            next_page_token: str | None = None
-            while looping:
-                rsp = service.list(pageToken=next_page_token, **args).execute()
-                next_page_token = rsp.get("nextPageToken")
-                items: list[dict[str, Any]] = rsp.get(key)
-
-                if items is None or len(items) == 0:
-                    looping = False
-                    break
-
-                if rsp.get("nextPageToken") is None:
-                    looping = False
-                else:
-                    next_page_token = rsp.get("nextPageToken")
-
-                for item in items:
-                    yield item
-        except Exception as e:
-            logger.error(f"There was an error listing {key} with {args}: {str(e)}")
-            raise e
-
-    def load_identity_groups(self, logger: logging.Logger) -> Dict[str, Any]:
-        domain = self.config.delivery_method.domain
-        if not domain:
-            logger.info("No domain provided. Trying to fetch identities from the user workspace.")
-            api_args = {"customer": "my_customer"}
-        else:
-            api_args = {"domain": domain}
-
-        users_api = self.google_directory_service.users()
-        groups_api = self.google_directory_service.groups()
-        members_api = self.google_directory_service.members()
-
-        for user in self._get_looping_google_api_list_response(users_api, "users", args=api_args, logger=logger):
-            rfp = RemoteIdentity(
-                id=uuid.uuid4(),
-                remote_id=user["primaryEmail"],
-                name=user["name"]["fullName"] if user["name"] is not None else None,
-                email_address=user["primaryEmail"],
-                member_email_addresses=[x["address"] for x in user["emails"]],
-                type=RemoteIdentityType.USER,
-                modified_at=datetime_now(),
-            )
-            yield rfp.dict()
-
-        for group in self._get_looping_google_api_list_response(groups_api, "groups", args=api_args, logger=logger):
-            rfp = RemoteIdentity(
-                id=uuid.uuid4(),
-                remote_id=group["email"],
-                name=group["name"],
-                email_address=group["email"],
-                type=RemoteIdentityType.GROUP,
-                modified_at=datetime_now(),
-            )
-
-            for member in self._get_looping_google_api_list_response(members_api, "members", {"groupKey": group["id"]}, logger):
-                rfp.member_email_addresses = rfp.member_email_addresses or []
-                rfp.member_email_addresses.append(member["email"])
-
-            yield rfp.dict()
-
-    @property
-    def file_permissions_schema(self) -> Dict[str, Any]:
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("file_permissions")
-
-    @property
-    def identities_schema(self) -> Dict[str, Any]:
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("identities")

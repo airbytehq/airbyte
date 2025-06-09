@@ -82,3 +82,14 @@ connectionSpecification:
       description: >-
         Date in the format YYYY-MM-DD.
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    conversion_count:
+      title: Definition of conversion count in reports.
+      description: >-
+        The definition of conversion count in reports. See <a
+        href="https://amplifyv01.docs.apiary.io/#reference/performance-reporting/periodic/retrieve-performance-statistics-for-all-marketer-campaigns-by-periodic-breakdown">the
+        docs</a>.
+      enum:
+        - click/view_time
+        - conversion_time
+      order: 5
+      type: string

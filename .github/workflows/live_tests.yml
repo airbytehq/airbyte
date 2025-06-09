@@ -48,7 +48,7 @@ on:
 jobs:
   live_tests:
     name: Live Tests
-    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte

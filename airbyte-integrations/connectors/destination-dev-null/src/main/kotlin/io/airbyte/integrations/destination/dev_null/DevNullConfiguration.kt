@@ -26,9 +26,8 @@ data class Failing(val numMessages: Int) : DevNullType
 
 data class Throttled(val millisPerRecord: Long) : DevNullType
 
-data class DevNullConfiguration(
-    val type: DevNullType,
-) : DestinationConfiguration()
+data class DevNullConfiguration(val type: DevNullType, val ackRatePerRecord: Int = 10_000) :
+    DestinationConfiguration()
 
 /**
  * This factory is injected into the initialization code and used to map from the client-provided

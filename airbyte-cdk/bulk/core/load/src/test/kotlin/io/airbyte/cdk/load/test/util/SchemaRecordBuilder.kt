@@ -69,9 +69,14 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
             } else {
                 null
             }
-        inputSchema.properties[name] = FieldType(UnionType(inputOptions), nullable = nullable)
+        inputSchema.properties[name] =
+            FieldType(UnionType(inputOptions, isLegacyUnion = false), nullable = nullable)
         expectedSchema.properties[name] =
-            expectedInstead ?: FieldType(UnionType(expectedOptions!!), nullable = nullable)
+            expectedInstead
+                ?: FieldType(
+                    UnionType(expectedOptions!!, isLegacyUnion = false),
+                    nullable = nullable
+                )
         return SchemaTestUnionBuilder(this, inputOptions, expectedOptions)
     }
 

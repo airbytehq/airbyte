@@ -63,8 +63,7 @@ class AirbyteTypeToJsonSchema {
                 val timestampNode = ofType("string").put("format", "date-time")
                 timestampNode.put("airbyte_type", "timestamp_without_timezone")
             }
-            // In case of unknown type, just return {} (i.e. the accept-all JsonSchema)
-            is UnknownType -> JsonNodeFactory.instance.objectNode()
+            is UnknownType -> airbyteType.schema
         }
     }
 }

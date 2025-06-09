@@ -1,0 +1,4272 @@
+version: 6.33.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - deals
+
+definitions:
+  streams:
+    deals:
+      type: DeclarativeStream
+      name: deals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: deal
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+    deal_fields:
+      type: DeclarativeStream
+      name: deal_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/dealFields
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_fields"
+    goals:
+      type: DeclarativeStream
+      name: goals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/goals/find
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - goals
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/goals"
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: file
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    filters:
+      type: DeclarativeStream
+      name: filters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: filter
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filters"
+    lead_labels:
+      type: DeclarativeStream
+      name: lead_labels
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/leadLabels
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_labels"
+    leads:
+      type: DeclarativeStream
+      name: leads
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/leads
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: note
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: activity
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    activity_types:
+      type: DeclarativeStream
+      name: activity_types
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/activityTypes
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activity_types"
+    activity_fields:
+      type: DeclarativeStream
+      name: activity_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/activityFields
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activity_fields"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/currencies
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    mail:
+      type: DeclarativeStream
+      name: mail
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: thread_id
+              stream:
+                $ref: "#/definitions/streams/mailThreads"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mail"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/organizations
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: organization
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    organization_fields:
+      type: DeclarativeStream
+      name: organization_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/organizationFields
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_fields"
+    permission_sets:
+      type: DeclarativeStream
+      name: permission_sets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/permissionSets
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/permission_sets"
+    persons:
+      type: DeclarativeStream
+      name: persons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: person
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/persons"
+    person_fields:
+      type: DeclarativeStream
+      name: person_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/personFields
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/person_fields"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: pipeline
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: product
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    product_fields:
+      type: DeclarativeStream
+      name: product_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/productFields
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_fields"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/roles
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    stages:
+      type: DeclarativeStream
+      name: stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: stage
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            field_path:
+              - data
+              - "*"
+            nullable_nested_field: data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stages"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/recents
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+            items: user
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - data
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+            %H:%M:%S') }}
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since_timestamp
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    deal_products:
+      type: DeclarativeStream
+      name: deal_products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/deals/{{ stream_slice.parent_id }}/products
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/deals"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_products"
+    mailThreads:
+      type: DeclarativeStream
+      name: mailThreads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/mailbox/mailThreads
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - inbox
+            - drafts
+            - sent
+            - archive
+          cursor_field: folder
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: folder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mailThreads"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.pipedrive.com/
+
+streams:
+  - $ref: "#/definitions/streams/deals"
+  - $ref: "#/definitions/streams/deal_fields"
+  - $ref: "#/definitions/streams/goals"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/filters"
+  - $ref: "#/definitions/streams/lead_labels"
+  - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/activity_types"
+  - $ref: "#/definitions/streams/activity_fields"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/mail"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/organization_fields"
+  - $ref: "#/definitions/streams/permission_sets"
+  - $ref: "#/definitions/streams/persons"
+  - $ref: "#/definitions/streams/person_fields"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/product_fields"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/stages"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/deal_products"
+  - $ref: "#/definitions/streams/mailThreads"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - replication_start_date
+    properties:
+      api_token:
+        type: string
+        description: The Pipedrive API Token.
+        title: API Token
+        airbyte_secret: true
+        order: 0
+      replication_start_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated. When specified and not None, then
+          stream will behave as incremental
+        title: Start Date
+        examples:
+          - "2017-01-25 00:00:00Z"
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    deals: false
+    deal_fields: false
+    goals: false
+    files: false
+    filters: false
+    lead_labels: false
+    leads: false
+    notes: false
+    activities: false
+    activity_types: false
+    activity_fields: false
+    currencies: false
+    mail: false
+    organizations: false
+    organization_fields: false
+    permission_sets: false
+    persons: false
+    person_fields: false
+    pipelines: false
+    products: false
+    product_fields: false
+    roles: false
+    stages: false
+    users: false
+    deal_products: false
+    mailThreads: false
+  yamlComponents:
+    streams:
+      deals:
+        - recordSelector
+      files:
+        - recordSelector
+      filters:
+        - recordSelector
+      notes:
+        - recordSelector
+      activities:
+        - recordSelector
+      persons:
+        - recordSelector
+      pipelines:
+        - recordSelector
+      products:
+        - recordSelector
+      stages:
+        - recordSelector
+  testedStreams:
+    deal_fields:
+      streamHash: 2dcceac0c36936299612f3ba221532446d068fd8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    goals:
+      streamHash: 5dd918304f44e9382ceddca3160722052db05c53
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lead_labels:
+      streamHash: 4529273c02f87dec57267625c5314171b3f06154
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leads:
+      streamHash: 7da898e49f0739935d862082377b1ed2d2e5b24d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activity_types:
+      streamHash: 0bd30dcf4935c4668bd0a5569a199fe59d4ab04b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activity_fields:
+      streamHash: 3a07394d800c448627c98ca20f03af8826a2ec48
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: 18a725f171b6acdc8b82ac701280536d2451d7ae
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    mail:
+      streamHash: eaf13873356a147c0c8a1f821e4e988a14e27b09
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    organizations:
+      streamHash: 166c80bf7becfb09d846f0d035caf3a785f5a560
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization_fields:
+      streamHash: af9484fdc43863ee7b41a8019b85325c025a3c28
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    permission_sets:
+      streamHash: bf8d0b57f92e7086c4f61ac9c5b58517fa01dd02
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    person_fields:
+      streamHash: 730346f33e25f02858f0da1c34191062ce32fa0c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_fields:
+      streamHash: def5f6bd4ee1046efbf27f5a3c185e7ca872dd92
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: 0b7c02fef6ed17d9d18bbd4dde1669ab38ad497d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 6f08d2ca937033de8e19f14ca30f80f863aa8a85
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    mailThreads:
+      streamHash: 1fb532c7bd1e79a526829bc19b2728e65aff2893
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  deals:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - "null"
+          - boolean
+      activities_count:
+        type:
+          - "null"
+          - integer
+      add_time:
+        type:
+          - "null"
+          - string
+      cc_email:
+        type:
+          - "null"
+          - string
+      close_time:
+        type:
+          - "null"
+          - string
+      creator_user_id:
+        type:
+          - "null"
+          - integer
+      currency:
+        type:
+          - "null"
+          - string
+      deleted:
+        type:
+          - "null"
+          - boolean
+      done_activities_count:
+        type:
+          - "null"
+          - integer
+      email_messages_count:
+        type:
+          - "null"
+          - integer
+      expected_close_date:
+        type:
+          - "null"
+          - string
+        format: date
+      files_count:
+        type:
+          - "null"
+          - integer
+      first_won_time:
+        type:
+          - "null"
+          - string
+      followers_count:
+        type:
+          - "null"
+          - integer
+      formatted_value:
+        type:
+          - "null"
+          - string
+      formatted_weighted_value:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      label:
+        type:
+          - "null"
+          - string
+      last_activity_date:
+        type:
+          - "null"
+          - string
+        format: date
+      last_activity_id:
+        type:
+          - "null"
+          - integer
+      last_incoming_mail_time:
+        type:
+          - "null"
+          - string
+      last_outgoing_mail_time:
+        type:
+          - "null"
+          - string
+      lost_reason:
+        type:
+          - "null"
+          - string
+      lost_time:
+        type:
+          - "null"
+          - string
+      next_activity_date:
+        type:
+          - "null"
+          - string
+        format: date
+      next_activity_duration:
+        type:
+          - "null"
+          - string
+      next_activity_id:
+        type:
+          - "null"
+          - integer
+      next_activity_note:
+        type:
+          - "null"
+          - string
+      next_activity_subject:
+        type:
+          - "null"
+          - string
+      next_activity_time:
+        type:
+          - "null"
+          - string
+      next_activity_type:
+        type:
+          - "null"
+          - string
+      notes_count:
+        type:
+          - "null"
+          - integer
+      org_hidden:
+        type:
+          - "null"
+          - boolean
+      org_id:
+        type:
+          - "null"
+          - integer
+      org_name:
+        type:
+          - "null"
+          - string
+      owner_name:
+        type:
+          - "null"
+          - string
+      participants_count:
+        type:
+          - "null"
+          - integer
+      person_hidden:
+        type:
+          - "null"
+          - boolean
+      person_id:
+        type:
+          - "null"
+          - integer
+      person_name:
+        type:
+          - "null"
+          - string
+      pipeline_id:
+        type:
+          - "null"
+          - integer
+      probability:
+        type:
+          - "null"
+          - number
+      products_count:
+        type:
+          - "null"
+          - integer
+      rotten_time:
+        type:
+          - "null"
+          - string
+      stage_change_time:
+        type:
+          - "null"
+          - string
+      stage_id:
+        type:
+          - "null"
+          - integer
+      stage_order_nr:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      undone_activities_count:
+        type:
+          - "null"
+          - integer
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      user_id:
+        type:
+          - "null"
+          - integer
+      value:
+        type:
+          - "null"
+          - number
+      visible_to:
+        type:
+          - "null"
+          - string
+      weighted_value:
+        type:
+          - "null"
+          - number
+      weighted_value_currency:
+        type:
+          - "null"
+          - string
+      won_time:
+        type:
+          - "null"
+          - string
+  deal_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+        format: "%Y-%m-%d %H:%M:%S"
+      add_visible_flag:
+        type:
+          - "null"
+          - boolean
+      bulk_edit_allowed:
+        type:
+          - "null"
+          - boolean
+      details_visible_flag:
+        type:
+          - "null"
+          - boolean
+      edit_flag:
+        type:
+          - "null"
+          - boolean
+      field_type:
+        type:
+          - "null"
+          - string
+      filtering_allowed:
+        type:
+          - "null"
+          - boolean
+      group_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
+      important_flag:
+        type:
+          - "null"
+          - boolean
+      index_visible_flag:
+        type:
+          - "null"
+          - boolean
+      is_subfield:
+        type:
+          - "null"
+          - boolean
+      json_column_flag:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      last_updated_by_user_id:
+        type:
+          - "null"
+          - integer
+      link:
+        type:
+          - "null"
+          - string
+      mandatory_flag:
+        type:
+          - "null"
+          - object
+          - boolean
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      options:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+      order_nr:
+        type:
+          - "null"
+          - integer
+      parent_id:
+        type:
+          - "null"
+          - integer
+      projects_detail_visible_flag:
+        type:
+          - "null"
+          - boolean
+      searchable_flag:
+        type:
+          - "null"
+          - boolean
+      show_in_pipelines:
+        type:
+          - "null"
+          - object
+        items:
+          pipeline_ids:
+            type:
+              - "null"
+              - array
+          show_in_all:
+            type:
+              - "null"
+              - boolean
+      sortable_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+        format: "%Y-%m-%d %H:%M:%S"
+      use_field:
+        type:
+          - "null"
+          - string
+  goals:
+    type:
+      - object
+      - "null"
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          params:
+            type:
+              - object
+              - "null"
+            properties:
+              activity_type_id:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              pipeline_id:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      duration:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          end:
+            type:
+              - string
+              - "null"
+          start:
+            type:
+              - string
+              - "null"
+      expected_outcome:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          target:
+            type:
+              - number
+              - "null"
+          tracking_metric:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      interval:
+        type:
+          - string
+          - "null"
+      is_active:
+        type: boolean
+      owner_id:
+        type:
+          - number
+          - "null"
+      report_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      title:
+        type:
+          - string
+          - "null"
+    title: Goals schema
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      activity_id:
+        type:
+          - "null"
+          - integer
+      add_time:
+        type:
+          - "null"
+          - string
+      cid:
+        type:
+          - "null"
+          - integer
+      deal_id:
+        type:
+          - "null"
+          - integer
+      deal_name:
+        type:
+          - "null"
+          - string
+      file_name:
+        type:
+          - "null"
+          - string
+      file_size:
+        type:
+          - "null"
+          - integer
+      file_type:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      inline_flag:
+        type:
+          - "null"
+          - boolean
+      lead_id:
+        type:
+          - "null"
+          - integer
+      lead_name:
+        type:
+          - "null"
+          - string
+      log_id:
+        type:
+          - "null"
+          - integer
+      mail_message_id:
+        type:
+          - "null"
+          - integer
+      mail_template_id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      org_id:
+        type:
+          - "null"
+          - integer
+      org_name:
+        type:
+          - "null"
+          - string
+      people_name:
+        type:
+          - "null"
+          - string
+      person_id:
+        type:
+          - "null"
+          - integer
+      person_name:
+        type:
+          - "null"
+          - string
+      product_id:
+        type:
+          - "null"
+          - integer
+      product_name:
+        type:
+          - "null"
+          - string
+      remote_id:
+        type:
+          - "null"
+          - string
+      remote_location:
+        type:
+          - "null"
+          - string
+      s3_bucket:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      url:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - integer
+  filters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      custom_view_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      temporary_flag:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      user_id:
+        type:
+          - "null"
+          - integer
+      visible_to:
+        type:
+          - "null"
+          - string
+  lead_labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add_time:
+        type:
+          - "null"
+          - string
+      color:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+  leads:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      add_time:
+        type:
+          - "null"
+          - string
+      creator_id:
+        type:
+          - "null"
+          - integer
+      expected_close_date:
+        type:
+          - "null"
+          - string
+        format: date
+      id:
+        type:
+          - "null"
+          - string
+      is_archived:
+        type:
+          - "null"
+          - boolean
+      label_ids:
+        type:
+          - "null"
+          - array
+      next_activity_id:
+        type:
+          - "null"
+          - integer
+      organization_id:
+        type:
+          - "null"
+          - integer
+      owner_id:
+        type:
+          - "null"
+          - integer
+      person_id:
+        type:
+          - "null"
+          - integer
+      source_name:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+      value:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      was_seen:
+        type:
+          - "null"
+          - boolean
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      content:
+        type:
+          - "null"
+          - string
+      deal:
+        type:
+          - "null"
+          - object
+        properties:
+          title:
+            type:
+              - "null"
+              - string
+      deal_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      last_update_user_id:
+        type:
+          - "null"
+          - integer
+      lead:
+        type:
+          - "null"
+          - object
+      lead_id:
+        type:
+          - "null"
+          - integer
+      org_id:
+        type:
+          - "null"
+          - integer
+      organization:
+        type: object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+      person:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+      person_id:
+        type:
+          - "null"
+          - integer
+      pinned_to_deal_flag:
+        type:
+          - "null"
+          - boolean
+      pinned_to_lead_flag:
+        type:
+          - "null"
+          - boolean
+      pinned_to_organization_flag:
+        type:
+          - "null"
+          - boolean
+      pinned_to_person_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      user:
+        type: object
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          icon_url:
+            type:
+              - "null"
+              - string
+          is_you:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+      user_id:
+        type:
+          - "null"
+          - integer
+  activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      assigned_to_user_id:
+        type:
+          - "null"
+          - integer
+      attendees:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email_address:
+              type:
+                - "null"
+                - string
+            is_organizer:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            person_id:
+              type:
+                - "null"
+                - integer
+            status:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - integer
+      busy_flag:
+        type:
+          - "null"
+          - boolean
+      calendar_sync_include_context:
+        type:
+          - "null"
+          - boolean
+      company_id:
+        type:
+          - "null"
+          - integer
+      conference_meeting_client:
+        type:
+          - "null"
+          - string
+      conference_meeting_id:
+        type:
+          - "null"
+          - string
+      conference_meeting_url:
+        type:
+          - "null"
+          - string
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
+      deal_dropbox_bcc:
+        type:
+          - "null"
+          - string
+      deal_id:
+        type:
+          - "null"
+          - integer
+      deal_title:
+        type:
+          - "null"
+          - string
+      done:
+        type:
+          - "null"
+          - boolean
+      due_date:
+        type:
+          - "null"
+          - string
+      due_time:
+        type:
+          - "null"
+          - string
+      duration:
+        type:
+          - "null"
+          - string
+      file:
+        type:
+          - "null"
+          - object
+        properties:
+          clean_name:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+      gcal_event_id:
+        type:
+          - "null"
+          - string
+      google_calendar_etag:
+        type:
+          - "null"
+          - string
+      google_calendar_id:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      last_notification_time:
+        type:
+          - "null"
+          - string
+      last_notification_user_id:
+        type:
+          - "null"
+          - integer
+      lead_id:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      location_admin_area_level_1:
+        type:
+          - "null"
+          - string
+      location_admin_area_level_2:
+        type:
+          - "null"
+          - string
+      location_country:
+        type:
+          - "null"
+          - string
+      location_formatted_address:
+        type:
+          - "null"
+          - string
+      location_lat:
+        type:
+          - "null"
+          - number
+      location_locality:
+        type:
+          - "null"
+          - string
+      location_long:
+        type:
+          - "null"
+          - number
+      location_postal_code:
+        type:
+          - "null"
+          - string
+      location_route:
+        type:
+          - "null"
+          - string
+      location_street_number:
+        type:
+          - "null"
+          - string
+      location_sublocality:
+        type:
+          - "null"
+          - string
+      location_subpremise:
+        type:
+          - "null"
+          - string
+      marked_as_done_time:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      notification_language_id:
+        type:
+          - "null"
+          - integer
+      org_id:
+        type:
+          - "null"
+          - integer
+      org_name:
+        type:
+          - "null"
+          - string
+      owner_name:
+        type:
+          - "null"
+          - string
+      participants:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            person_id:
+              type:
+                - "null"
+                - integer
+            primary_flag:
+              type:
+                - "null"
+                - boolean
+      person_dropbox_bcc:
+        type:
+          - "null"
+          - string
+      person_id:
+        type:
+          - "null"
+          - integer
+      person_name:
+        type:
+          - "null"
+          - string
+      public_description:
+        type:
+          - "null"
+          - string
+      rec_master_activity_id:
+        type:
+          - "null"
+          - integer
+      rec_rule:
+        type:
+          - "null"
+          - string
+      rec_rule_extension:
+        type:
+          - "null"
+          - string
+      reference_id:
+        type:
+          - "null"
+          - integer
+      reference_type:
+        type:
+          - "null"
+          - string
+      series:
+        type:
+          - "null"
+          - string
+      source_timezone:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      type_name:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      update_user_id:
+        type:
+          - "null"
+          - integer
+      user_id:
+        type:
+          - "null"
+          - integer
+  activity_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      color:
+        type:
+          - "null"
+          - string
+      icon_key:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_custom_flag:
+        type:
+          - "null"
+          - boolean
+      key_string:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+  activity_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      add_visible_flag:
+        type:
+          - "null"
+          - boolean
+      bulk_edit_allowed:
+        type:
+          - "null"
+          - boolean
+      details_visible_flag:
+        type:
+          - "null"
+          - boolean
+      edit_flag:
+        type:
+          - "null"
+          - boolean
+      field_type:
+        type:
+          - "null"
+          - string
+      filtering_allowed:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
+      important_flag:
+        type:
+          - "null"
+          - boolean
+      index_visible_flag:
+        type:
+          - "null"
+          - boolean
+      is_subfield:
+        type:
+          - "null"
+          - boolean
+      json_column_flag:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      last_updated_by_user_id:
+        type:
+          - "null"
+          - integer
+      mandatory_flag:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      options:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+                - string
+                - boolean
+            label:
+              type:
+                - "null"
+                - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      parent_id:
+        type:
+          - "null"
+          - integer
+      searchable_flag:
+        type:
+          - "null"
+          - boolean
+      sortable_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      code:
+        type:
+          - "null"
+          - string
+      decimal_points:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      is_custom_flag:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      symbol:
+        type:
+          - "null"
+          - string
+  mail:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - "null"
+          - string
+      add_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      body_url:
+        type:
+          - "null"
+          - string
+      deleted_flag:
+        type:
+          - "null"
+          - integer
+      draft_flag:
+        type:
+          - "null"
+          - integer
+      from:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email_address:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            linked_person_id:
+              type:
+                - "null"
+                - integer
+            linked_person_name:
+              type:
+                - "null"
+                - string
+            mail_message_party_id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+      has_attachments_flag:
+        type:
+          - "null"
+          - integer
+      has_body_flag:
+        type:
+          - "null"
+          - integer
+      has_inline_attachments_flag:
+        type:
+          - "null"
+          - integer
+      has_real_attachments_flag:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      mail_link_tracking_enabled_flag:
+        type:
+          - "null"
+          - integer
+      mail_thread_id:
+        type:
+          - "null"
+          - integer
+      message_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      read_flag:
+        type:
+          - "null"
+          - integer
+      sent_flag:
+        type:
+          - "null"
+          - integer
+      sent_from_pipedrive_flag:
+        type:
+          - "null"
+          - integer
+      smart_bcc_flag:
+        type:
+          - "null"
+          - integer
+      snippet:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      synced_flag:
+        type:
+          - "null"
+          - integer
+      to:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email_address:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            linked_person_id:
+              type:
+                - "null"
+                - integer
+            linked_person_name:
+              type:
+                - "null"
+                - string
+            mail_message_party_id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+      update_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user_id:
+        type:
+          - "null"
+          - integer
+  organizations:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      activities_count:
+        type:
+          - "null"
+          - number
+      add_time:
+        type:
+          - "null"
+          - string
+      address:
+        type:
+          - "null"
+          - string
+      address_admin_area_level_1:
+        type:
+          - "null"
+          - string
+      address_admin_area_level_2:
+        type:
+          - "null"
+          - string
+      address_country:
+        type:
+          - "null"
+          - string
+      address_formatted_address:
+        type:
+          - "null"
+          - string
+      address_locality:
+        type:
+          - "null"
+          - string
+      address_postal_code:
+        type:
+          - "null"
+          - string
+      address_route:
+        type:
+          - "null"
+          - string
+      address_street_number:
+        type:
+          - "null"
+          - string
+      address_sublocality:
+        type:
+          - "null"
+          - string
+      address_subpremise:
+        type:
+          - "null"
+          - string
+      category_id:
+        type:
+          - "null"
+          - integer
+      cc_email:
+        type:
+          - "null"
+          - string
+      closed_deals_count:
+        type:
+          - "null"
+          - number
+      company_id:
+        type:
+          - "null"
+          - number
+      country_code:
+        type:
+          - "null"
+          - string
+      delete_time:
+        type:
+          - "null"
+          - string
+      done_activities_count:
+        type:
+          - "null"
+          - number
+      email_messages_count:
+        type:
+          - "null"
+          - number
+      files_count:
+        type:
+          - "null"
+          - number
+      first_char:
+        type:
+          - "null"
+          - string
+      followers_count:
+        type:
+          - "null"
+          - number
+      id:
+        type:
+          - "null"
+          - number
+      label:
+        type:
+          - "null"
+          - number
+      last_activity_date:
+        type:
+          - "null"
+          - string
+      last_activity_id:
+        type:
+          - "null"
+          - number
+      lost_deals_count:
+        type:
+          - "null"
+          - number
+      name:
+        type:
+          - "null"
+          - string
+      next_activity_date:
+        type:
+          - "null"
+          - string
+      next_activity_id:
+        type:
+          - "null"
+          - number
+      next_activity_time:
+        type:
+          - "null"
+          - string
+      notes_count:
+        type:
+          - "null"
+          - number
+      open_deals_count:
+        type:
+          - "null"
+          - number
+      owner_id:
+        type:
+          - "null"
+          - object
+          - number
+        properties:
+          active_flag:
+            type:
+              - "null"
+              - boolean
+          email:
+            type:
+              - "null"
+              - string
+          has_pic:
+            type:
+              - "null"
+              - number
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          pic_hash:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - number
+      owner_name:
+        type:
+          - "null"
+          - string
+      people_count:
+        type:
+          - "null"
+          - number
+      picture_id:
+        type:
+          - "null"
+          - object
+        properties:
+          active_flag:
+            type:
+              - "null"
+              - boolean
+          add_time:
+            type:
+              - "null"
+              - string
+          added_by_user_id:
+            type:
+              - "null"
+              - number
+          item_id:
+            type:
+              - "null"
+              - number
+          item_type:
+            type:
+              - "null"
+              - string
+          pictures:
+            type:
+              - "null"
+              - object
+            properties:
+              "128":
+                type:
+                  - "null"
+                  - string
+              "512":
+                type:
+                  - "null"
+                  - string
+          update_time:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - number
+      related_closed_deals_count:
+        type:
+          - "null"
+          - number
+      related_lost_deals_count:
+        type:
+          - "null"
+          - number
+      related_open_deals_count:
+        type:
+          - "null"
+          - number
+      related_won_deals_count:
+        type:
+          - "null"
+          - number
+      undone_activities_count:
+        type:
+          - "null"
+          - number
+      update_time:
+        type:
+          - "null"
+          - string
+      visible_to:
+        type:
+          - "null"
+          - number
+          - string
+      won_deals_count:
+        type:
+          - "null"
+          - number
+  organization_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      add_visible_flag:
+        type:
+          - "null"
+          - boolean
+      bulk_edit_allowed:
+        type:
+          - "null"
+          - boolean
+      details_visible_flag:
+        type:
+          - "null"
+          - boolean
+      display_field:
+        type:
+          - "null"
+          - string
+      display_name:
+        type:
+          - "null"
+          - string
+      edit_flag:
+        type:
+          - "null"
+          - boolean
+      field_type:
+        type:
+          - "null"
+          - string
+      filtering_allowed:
+        type:
+          - "null"
+          - boolean
+      group_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
+      important_flag:
+        type:
+          - "null"
+          - boolean
+      index_visible_flag:
+        type:
+          - "null"
+          - boolean
+      is_subfield:
+        type:
+          - "null"
+          - boolean
+      json_column_flag:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      last_updated_by_user_id:
+        type:
+          - "null"
+          - integer
+      link:
+        type:
+          - "null"
+          - string
+      mandatory_flag:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      options:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+                - string
+                - boolean
+            label:
+              type:
+                - "null"
+                - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      parent_id:
+        type:
+          - "null"
+          - integer
+      searchable_flag:
+        type:
+          - "null"
+          - boolean
+      sortable_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      use_field:
+        type:
+          - "null"
+          - string
+  permission_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      app:
+        type:
+          - "null"
+          - string
+      assignment_count:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  persons:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      activities_count:
+        type:
+          - "null"
+          - integer
+      add_time:
+        type:
+          - "null"
+          - string
+      cc_email:
+        type:
+          - "null"
+          - string
+      closed_deals_count:
+        type:
+          - "null"
+          - integer
+      company_id:
+        type:
+          - "null"
+          - integer
+      delete_time:
+        type:
+          - "null"
+          - string
+      done_activities_count:
+        type:
+          - "null"
+          - integer
+      email:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              type:
+                - "null"
+                - string
+            primary:
+              type:
+                - "null"
+                - boolean
+            value:
+              type:
+                - "null"
+                - string
+      email_messages_count:
+        type:
+          - "null"
+          - integer
+      files_count:
+        type:
+          - "null"
+          - integer
+      first_char:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      followers_count:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      label:
+        type:
+          - "null"
+          - integer
+      last_activity_date:
+        type:
+          - "null"
+          - string
+      last_activity_id:
+        type:
+          - "null"
+          - integer
+      last_incoming_mail_time:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      last_outgoing_mail_time:
+        type:
+          - "null"
+          - string
+      lost_deals_count:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      next_activity_date:
+        type:
+          - "null"
+          - string
+        format: date
+      next_activity_id:
+        type:
+          - "null"
+          - integer
+      next_activity_time:
+        type:
+          - "null"
+          - string
+        format: time
+      notes_count:
+        type:
+          - "null"
+          - integer
+      open_deals_count:
+        type:
+          - "null"
+          - integer
+      org_id:
+        type:
+          - "null"
+          - integer
+      org_name:
+        type:
+          - "null"
+          - string
+      owner_id:
+        type:
+          - "null"
+          - integer
+      owner_name:
+        type:
+          - "null"
+          - string
+      participant_closed_deals_count:
+        type:
+          - "null"
+          - integer
+      participant_open_deals_count:
+        type:
+          - "null"
+          - integer
+      phone:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              type:
+                - "null"
+                - string
+            primary:
+              type:
+                - "null"
+                - boolean
+            value:
+              type:
+                - "null"
+                - string
+      picture_128_url:
+        type:
+          - "null"
+          - string
+      picture_id:
+        type:
+          - "null"
+          - object
+        properties:
+          active_flag:
+            type:
+              - "null"
+              - boolean
+          add_time:
+            type:
+              - "null"
+              - string
+          added_by_user_id:
+            type:
+              - "null"
+              - integer
+          item_id:
+            type:
+              - "null"
+              - integer
+          item_type:
+            type:
+              - "null"
+              - string
+          pictures:
+            type:
+              - "null"
+              - object
+            properties:
+              "128":
+                type:
+                  - "null"
+                  - string
+              "512":
+                type:
+                  - "null"
+                  - string
+          update_time:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - integer
+      related_closed_deals_count:
+        type:
+          - "null"
+          - integer
+      related_lost_deals_count:
+        type:
+          - "null"
+          - integer
+      related_open_deals_count:
+        type:
+          - "null"
+          - integer
+      related_won_deals_count:
+        type:
+          - "null"
+          - integer
+      undone_activities_count:
+        type:
+          - "null"
+          - integer
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      visible_to:
+        type:
+          - "null"
+          - string
+      won_deals_count:
+        type:
+          - "null"
+          - integer
+  person_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      add_visible_flag:
+        type:
+          - "null"
+          - boolean
+      bulk_edit_allowed:
+        type:
+          - "null"
+          - boolean
+      details_visible_flag:
+        type:
+          - "null"
+          - boolean
+      display_field:
+        type:
+          - "null"
+          - string
+      edit_flag:
+        type:
+          - "null"
+          - boolean
+      field_type:
+        type:
+          - "null"
+          - string
+      filtering_allowed:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      important_flag:
+        type:
+          - "null"
+          - boolean
+      index_visible_flag:
+        type:
+          - "null"
+          - boolean
+      json_column_flag:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      last_updated_by_user_id:
+        type:
+          - "null"
+          - integer
+      link:
+        type:
+          - "null"
+          - string
+      mandatory_flag:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      options:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - boolean
+                - integer
+            label:
+              type:
+                - "null"
+                - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      searchable_flag:
+        type:
+          - "null"
+          - boolean
+      sortable_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+      use_field:
+        type:
+          - "null"
+          - string
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      deal_probability:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      selected:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      url_title:
+        type:
+          - "null"
+          - string
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      code:
+        type:
+          - "null"
+          - string
+      files_count:
+        type:
+          - "null"
+          - integer
+      first_char:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      owner_id:
+        type:
+          - "null"
+          - integer
+      owner_name:
+        type:
+          - "null"
+          - string
+      prices:
+        type: array
+        items:
+          type: object
+          properties:
+            cost:
+              type:
+                - "null"
+                - integer
+            currency:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            overhead_cost:
+              type:
+                - "null"
+                - integer
+            price:
+              type:
+                - "null"
+                - integer
+            product_id:
+              type:
+                - "null"
+                - integer
+      selectable:
+        type:
+          - "null"
+          - boolean
+      tax:
+        type:
+          - "null"
+          - integer
+      unit:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+      visible_to:
+        type:
+          - "null"
+          - string
+  product_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      add_visible_flag:
+        type:
+          - "null"
+          - boolean
+      bulk_edit_allowed:
+        type:
+          - "null"
+          - boolean
+      details_visible_flag:
+        type:
+          - "null"
+          - boolean
+      display_field:
+        type:
+          - "null"
+          - string
+      edit_flag:
+        type:
+          - "null"
+          - boolean
+      field_type:
+        type:
+          - "null"
+          - string
+      filtering_allowed:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      important_flag:
+        type:
+          - "null"
+          - boolean
+      index_visible_flag:
+        type:
+          - "null"
+          - boolean
+      json_column_flag:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      last_updated_by_user_id:
+        type:
+          - "null"
+          - integer
+      link:
+        type:
+          - "null"
+          - string
+      mandatory_flag:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      options:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+                - boolean
+                - integer
+            label:
+              type:
+                - "null"
+                - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      searchable_flag:
+        type:
+          - "null"
+          - boolean
+      sortable_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+      use_field:
+        type:
+          - "null"
+          - string
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      assignment_count:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      level:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      parent_role_id:
+        type:
+          - "null"
+          - integer
+      sub_role_count:
+        type:
+          - "null"
+          - string
+  stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      deal_probability:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      pipeline_deal_probability:
+        type:
+          - "null"
+          - boolean
+      pipeline_id:
+        type:
+          - "null"
+          - integer
+      pipeline_name:
+        type:
+          - "null"
+          - string
+      rotten_days:
+        type:
+          - "null"
+          - integer
+      rotten_flag:
+        type:
+          - "null"
+          - boolean
+      update_time:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_without_timezone
+        format: date-time
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      activated:
+        type:
+          - "null"
+          - boolean
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      created:
+        type:
+          - "null"
+          - string
+      default_currency:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      has_created_company:
+        type:
+          - "null"
+          - boolean
+      icon_url:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_admin:
+        type:
+          - "null"
+          - integer
+      is_you:
+        type:
+          - "null"
+          - boolean
+      lang:
+        type:
+          - "null"
+          - integer
+      last_login:
+        type:
+          - "null"
+          - string
+      locale:
+        type:
+          - "null"
+          - string
+      modified:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      role_id:
+        type:
+          - "null"
+          - integer
+      signup_flow_variation:
+        type:
+          - "null"
+          - string
+      timezone_name:
+        type:
+          - "null"
+          - string
+      timezone_offset:
+        type:
+          - "null"
+          - string
+  deal_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - boolean
+      add_time:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      deal_id:
+        type:
+          - "null"
+          - integer
+      discount_percentage:
+        type:
+          - "null"
+          - integer
+      duration:
+        type:
+          - "null"
+          - integer
+      duration_unit:
+        type:
+          - "null"
+          - string
+      enabled_flag:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      item_price:
+        type:
+          - "null"
+          - integer
+      last_edit:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      order_nr:
+        type:
+          - "null"
+          - integer
+      product_id:
+        type:
+          - "null"
+          - integer
+      product_variation_id:
+        type:
+          - "null"
+          - integer
+      quantity:
+        type:
+          - "null"
+          - integer
+      quantity_formatted:
+        type:
+          - "null"
+          - string
+      sum:
+        type:
+          - "null"
+          - integer
+      sum_formatted:
+        type:
+          - "null"
+          - string
+      sum_no_discount:
+        type:
+          - "null"
+          - integer
+      tax:
+        type:
+          - "null"
+          - number
+  mailThreads:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type: integer
+      account_id:
+        type: string
+      add_time:
+        type: string
+      all_messages_sent_flag:
+        type: integer
+      archived_flag:
+        type: integer
+      deal_id:
+        type:
+          - integer
+          - "null"
+      deal_status:
+        type:
+          - string
+          - "null"
+      deleted_flag:
+        type: integer
+      drafts_parties:
+        type: array
+      external_deleted_flag:
+        type: integer
+      first_message_timestamp:
+        type: string
+      first_message_to_me_flag:
+        type: integer
+      folders:
+        type: array
+        items:
+          type: string
+      has_attachments_flag:
+        type: integer
+      has_draft_flag:
+        type: integer
+      has_inline_attachments_flag:
+        type: integer
+      has_real_attachments_flag:
+        type: integer
+      has_sent_flag:
+        type: integer
+      id:
+        type: integer
+      last_message_received_timestamp:
+        type: string
+      last_message_sent_timestamp:
+        type:
+          - string
+          - "null"
+      last_message_timestamp:
+        type: string
+      mail_link_tracking_enabled_flag:
+        type: integer
+      parties:
+        type: object
+        properties:
+          from:
+            type: array
+            items:
+              type: object
+              properties:
+                email_address:
+                  type: string
+                id:
+                  type: integer
+                latest_sent:
+                  type: boolean
+                linked_organization_id:
+                  type:
+                    - integer
+                    - "null"
+                linked_person_id:
+                  type: integer
+                linked_person_name:
+                  type: string
+                mail_message_party_id:
+                  type: integer
+                message_time:
+                  type: integer
+                name:
+                  type: string
+          to:
+            type: array
+            items:
+              type: object
+              properties:
+                email_address:
+                  type: string
+                id:
+                  type: integer
+                latest_sent:
+                  type: boolean
+                linked_organization_id:
+                  type:
+                    - integer
+                    - "null"
+                linked_person_id:
+                  type: integer
+                linked_person_name:
+                  type: string
+                mail_message_party_id:
+                  type: integer
+                message_time:
+                  type: integer
+                name:
+                  type: string
+      shared_flag:
+        type: integer
+      smart_bcc_flag:
+        type: integer
+      snippet:
+        type: string
+      snippet_draft:
+        type:
+          - string
+          - "null"
+      snippet_sent:
+        type: string
+      subject:
+        type: string
+      synced_flag:
+        type: integer
+      update_time:
+        type: string
+      user_id:
+        type: integer

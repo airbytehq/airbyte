@@ -1,0 +1,73 @@
+# A shared set of tasks for Manifest-Only Airbyte connectors.
+#
+# Referenced from `airbyte-integrations/connectors/poe_tasks.toml` to apply to
+# all non-Java and non-Python connectors. By process of elimination, this covers
+# the manifest-only connectors.
+#
+# If you find this tasks file is picked up by a connector that is *not* a
+# manifest-only connector, simply add a `poe_tasks.toml` file in the connector's
+# directory, and this will override the connectors' tasks to not use this file.
+
+[tasks]
+
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
+fetch-secrets = "airbyte-cdk secrets fetch ${POE_PWD}"
+
+install = [
+  "install-cdk-cli",
+  "install-unit-tests-project",
+]
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+install-unit-tests-project.shell = '''
+if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
+  echo "Found 'unit_tests/pyproject.toml' file, installing unit tests..."
+  cd ${POE_PWD}/unit_tests
+  poetry install --no-root --all-extras
+else
+  echo "No unit tests defined; skipping unit tests installation."
+fi
+'''
+test-all = [
+  "test-unit-tests",
+  "test-integration-tests",
+]
+test-unit-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
+  echo "Found 'unit_tests/pyproject.toml' file, running unit tests..."
+  cd ${POE_PWD}/unit_tests
+  poetry install --no-root --all-extras
+  poetry run pytest --junitxml=${POE_PWD}/build/test-results/pytest-unit-tests-junit.xml
+else
+  echo "No unit tests defined; skipping unit tests."
+fi
+'''
+test-integration-tests = "airbyte-cdk connector test ${POE_PWD}"
+format-check = "echo 'No format check step for this connector.'"
+
+lock.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
+  echo "Found 'unit_tests/pyproject.toml' file, locking unit tests project..."
+  cd ${POE_PWD}/unit_tests
+  poetry lock
+else
+  echo "No unit tests defined; skipping unit tests locking."
+fi
+'''
+
+# Generic tasks (same across all connector types)
+
+[tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

@@ -41,7 +41,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
             )
         val expected = LinkedHashMap(expectedMeta)
         expected[Meta.COLUMN_NAME_DATA] = data
-        val mockRecord = DestinationRecordAirbyteValue(stream.descriptor, data, emittedAtMs, Meta())
+        val mockRecord = DestinationRecordAirbyteValue(stream, data, emittedAtMs, Meta())
         val withMeta = mockRecord.dataWithAirbyteMeta(stream, flatten = false)
         val uuid = withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID) as StringValue
         Assertions.assertTrue(
@@ -64,7 +64,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
             )
         val expected = LinkedHashMap(expectedMeta)
         data.values.forEach { (name, value) -> expected[name] = value }
-        val mockRecord = DestinationRecordAirbyteValue(stream.descriptor, data, emittedAtMs, Meta())
+        val mockRecord = DestinationRecordAirbyteValue(stream, data, emittedAtMs, Meta())
         val withMeta = mockRecord.dataWithAirbyteMeta(stream, flatten = true)
         withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID)
         Assertions.assertEquals(expected, withMeta.values)

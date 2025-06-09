@@ -6,7 +6,7 @@ import logging
 import typing
 from typing import Optional, Tuple
 
-from requests import HTTPError, codes
+from requests import HTTPError, JSONDecodeError, codes
 
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
@@ -29,7 +29,10 @@ class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
              we cannot filter out these streams, so we check for them before reading from the streams.
         """
         if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-            error_data = error.response.json()[0]
+            try:
+                error_data = error.response.json()[0]
+            except JSONDecodeError as json_error:
+                raise error from json_error
             error_code = error_data.get("errorCode", "")
             if error_code != "REQUEST_LIMIT_EXCEEDED":
                 return False, f"Cannot receive data for stream '{stream.name}', error message: '{error_data.get('message')}'"

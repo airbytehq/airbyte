@@ -25,7 +25,6 @@ Table "media_insights" {
     "id" string [pk]
     "ig_reels_avg_watch_time" number
     "ig_reels_video_view_total_time" number
-    "impressions" integer
     "reach" integer
     "saved" integer
     "video_views" integer
@@ -33,11 +32,9 @@ Table "media_insights" {
     "likes" integer
     "shares" integer
     "total_interactions" integer
-    "plays" integer
-    "ig_reels_aggregated_all_plays_count" integer
-    "clips_replays_count" integer
     "follows" integer
     "profile_visits" integer
+    "views" integer
 }
 
 Table "users" {
@@ -88,13 +85,13 @@ Table "story_insights" {
     "business_account_id" string
     "page_id" string
     "id" string
-    "impressions" integer
     "reach" integer
     "replies" integer
     "follows" integer
     "profile_visits" integer
     "shares" integer
     "total_interactions" integer
+    "views" integer
 }
 
 Table "Api" {
@@ -108,15 +105,12 @@ Table "user_insights" {
     "date" string
     "follower_count" integer
     "get_directions_clicks" integer
-    "impressions" integer
     "phone_call_clicks" integer
     "profile_views" integer
     "reach" integer
     "text_message_clicks" integer
     "website_clicks" integer
-    "impressions_week" integer
     "reach_week" integer
-    "impressions_days_28" integer
     "reach_days_28" integer
     "online_followers" object
     "email_contacts" integer

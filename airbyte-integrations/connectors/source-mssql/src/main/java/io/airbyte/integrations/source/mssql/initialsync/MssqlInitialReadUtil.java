@@ -441,12 +441,12 @@ public class MssqlInitialReadUtil {
   public static Optional<String> selectOcFieldName(final JdbcDatabase database,
                                                    final ConfiguredAirbyteStream stream) {
 
-    final Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
+    final Map<String, List<String>> clusteredIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
     final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     final List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
     final String ocFieldName;
 
-    final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
+    final List<String> clusterColumns = Optional.ofNullable(clusteredIndexField)
         .map(map -> map.get(streamName))
         .orElse(new ArrayList<>());
 

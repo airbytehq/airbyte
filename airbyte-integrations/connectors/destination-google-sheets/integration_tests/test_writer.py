@@ -143,6 +143,43 @@ def test_deduplicate_records(expected):
     records = test_wks.get_all_records()
     assert records == expected
 
+    # clean worksheet for future tests
+    test_wks.clear()
+
+
+long_input_records = [
+    {
+        "stream": TEST_STREAM,
+        "data": {"id": 1, "key1": "A" * 50_001},
+    },
+]
+
+
+@pytest.mark.parametrize(
+    "expected",
+    [
+        ([{"id": 1, "key1": f"{'A' * 49_986}...[TRUNCATED]", "list": ""}]),
+    ],
+    ids=["truncate_long_cell"],
+)
+def test_truncate_long_cell(expected):
+    # set `is_set` for headers to False
+    # because previously the headers have been set already
+    TEST_WRITER.stream_info[TEST_STREAM]["is_set"] = False
+
+    for record in long_input_records:
+        stream_name = record["stream"]
+        data = record["data"]
+        TEST_WRITER.add_to_buffer(stream_name, data)
+        TEST_WRITER.queue_write_operation(stream_name)
+
+    TEST_WRITER.write_whats_left()
+
+    # check expected records are written into target worksheet
+    test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)
+    records = test_wks.get_all_records()
+    assert records == expected
+
     # remove the test worksheet after tests
     TEST_SPREADSHEET.spreadsheet.del_worksheet(test_wks)
 

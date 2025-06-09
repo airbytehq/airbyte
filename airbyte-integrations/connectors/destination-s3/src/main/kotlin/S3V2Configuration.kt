@@ -36,9 +36,14 @@ data class S3V2Configuration<T : OutputStream>(
     // Internal configuration
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration(),
-    override val numProcessRecordsWorkers: Int = 2,
-    override val estimatedRecordMemoryOverheadRatio: Double = 5.0,
-    override val processEmptyFiles: Boolean = true,
+    override val numProcessRecordsWorkers: Int = 1,
+
+    // ObjectLoader-specific configuration
+    val numPartWorkers: Int = 2,
+    val numUploadWorkers: Int = 5,
+    val maxMemoryRatioReservedForParts: Double = 0.4,
+    val objectSizeBytes: Long = 200L * 1024 * 1024,
+    val partSizeBytes: Long = 20L * 1024 * 1024,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,

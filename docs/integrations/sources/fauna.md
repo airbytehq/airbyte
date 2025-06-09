@@ -232,7 +232,15 @@ FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------- |
-| 0.1.1   | 2022-12-12 | [20275](https://github.com/airbytehq/airbyte/pull/20275) | Fix index lookup with no values |
-| 0.1.0   | 2022-11-17 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source                |
+| 0.1.9 | 2025-05-10 | [59992](https://github.com/airbytehq/airbyte/pull/59992) | Update dependencies |
+| 0.1.8 | 2025-05-03 | [59430](https://github.com/airbytehq/airbyte/pull/59430) | Update dependencies |
+| 0.1.7 | 2025-04-26 | [58913](https://github.com/airbytehq/airbyte/pull/58913) | Update dependencies |
+| 0.1.6 | 2025-04-12 | [57799](https://github.com/airbytehq/airbyte/pull/57799) | Update dependencies |
+| 0.1.5 | 2025-04-05 | [57218](https://github.com/airbytehq/airbyte/pull/57218) | Update dependencies |
+| 0.1.4 | 2025-03-29 | [56519](https://github.com/airbytehq/airbyte/pull/56519) | Update dependencies |
+| 0.1.3 | 2025-03-22 | [55955](https://github.com/airbytehq/airbyte/pull/55955) | Update dependencies |
+| 0.1.2 | 2024-07-10 | [41051](https://github.com/airbytehq/airbyte/pull/41051) | Migrate to poetry |
+| 0.1.1 | 2022-12-12 | [20275](https://github.com/airbytehq/airbyte/pull/20275) | Fix index lookup with no values |
+| 0.1.0 | 2022-11-17 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |
 
 </details>

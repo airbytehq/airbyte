@@ -34,6 +34,6 @@ acceptance_tests:
         timeout_seconds: 7200
   spec:
     tests:
-      - spec_path: source_klaviyo/spec.json
+      - spec_path: manifest.yaml
 connector_image: airbyte/source-klaviyo:dev
 test_strictness_level: high

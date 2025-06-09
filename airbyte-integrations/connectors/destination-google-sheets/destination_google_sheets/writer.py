@@ -61,9 +61,42 @@ class GoogleSheetsWriter(WriteBufferMixin):
             stream: Worksheet = self.spreadsheet.open_worksheet(stream_name)
             self.logger.info(f"Writing data for stream: {stream_name}")
             # we start from the cell of `A2` as starting range to fill the spreadsheet
+            values = [
+                [self._truncate_cell(val, row_idx, col_idx) for col_idx, val in enumerate(row)] for row_idx, row in enumerate(values, 1)
+            ]
             stream.append_table(values, start="A2", dimension="ROWS")
         else:
             self.logger.info(f"Skipping empty stream: {stream_name}")
+
+    def _truncate_cell(self, value: str, row_idx: int, col_idx: int) -> str:
+        """
+        Truncates the input string if it exceeds the Google Sheets cell limit (50,000 characters).
+        Adds a '...[TRUNCATED]' suffix to indicate data loss and logs the truncation with cell location.
+        """
+        max_len = 50_000
+        suffix = "...[TRUNCATED]"
+
+        if len(value) > max_len:
+            a1_notation = self._a1_notation(row_idx, col_idx)
+            self.logger.warn(f"Truncated cell at {a1_notation} to {max_len} characters.")
+            return value[: max_len - len(suffix)] + suffix
+
+        return value
+
+    def _a1_notation(self, row: int, col: int) -> str:
+        """
+        Converts zero-based row and column indexes to A1 notation.
+        For example, (0, 0) -> 'A1', (1, 1) -> 'B2', (0, 26) -> 'AA1'.
+        """
+        col += 1
+        row += 1
+
+        col_letter = ""
+        while col:
+            col, rem = divmod(col - 1, 26)
+            col_letter = f"{chr(65 + rem)}{col_letter}"
+
+        return f"{col_letter}{row}"
 
     def write_whats_left(self):
         """

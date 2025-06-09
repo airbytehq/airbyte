@@ -1,0 +1,196 @@
+{
+  "data": {
+    "boards": [
+      {
+        "id": "1822136933",
+        "name": "Inventory management",
+        "items_page": {
+          "cursor": "next_page_cursor",
+          "items": [
+            {
+              "id": "item_12345",
+              "name": "MacBook Pro",
+              "assets": [],
+              "board": {
+                "id": "1822136933",
+                "name": "Inventory management"
+              },
+              "column_values": [
+                {
+                  "id": "name",
+                  "text": "MacBook Pro",
+                  "type": "name",
+                  "value": "MacBook Pro"
+                },
+                {
+                  "id": "text4",
+                  "text": "SN123456",
+                  "type": "text",
+                  "value": "SN123456"
+                },
+                {
+                  "id": "status",
+                  "text": "Working well",
+                  "type": "status",
+                  "value": "{\"index\": 1, \"post_id\": null, \"changed_at\": \"2023-06-20T12:05:12Z\"}"
+                }
+              ],
+              "created_at": "2023-06-20T12:00:00Z",
+              "creator_id": "25479561",
+              "group": {
+                "id": "topics"
+              },
+              "parent_item": {
+                "id": null
+              },
+              "state": "active",
+              "subscribers": [
+                {
+                  "id": "25479561"
+                }
+              ],
+              "updated_at": "2023-06-20T12:05:12Z",
+              "updates": [
+                {
+                  "id": "update_123"
+                }
+              ]
+            }
+          ]
+        },
+        "board_kind": "public",
+        "type": "board",
+        "columns": [
+          {
+            "archived": false,
+            "description": null,
+            "id": "name",
+            "settings_str": "{}",
+            "title": "Name",
+            "type": "name",
+            "width": 523
+          },
+          {
+            "archived": false,
+            "description": null,
+            "id": "text4",
+            "settings_str": "{}",
+            "title": "SN",
+            "type": "text",
+            "width": null
+          },
+          {
+            "archived": false,
+            "description": null,
+            "id": "status",
+            "settings_str": "{\"done_colors\":[1],\"hide_footer\":true,\"labels\":{\"0\":\"Out for repair\",\"1\":\"Working well\",\"2\":\"Needs replacement\"},\"labels_positions_v2\":{\"0\":0,\"1\":2,\"2\":1,\"5\":3},\"labels_colors\":{\"0\":{\"color\":\"#fdab3d\",\"border\":\"#e99729\",\"var_name\":\"orange\"},\"1\":{\"color\":\"#00c875\",\"border\":\"#00b461\",\"var_name\":\"green-shadow\"},\"2\":{\"color\":\"#df2f4a\",\"border\":\"#ce3048\",\"var_name\":\"red-shadow\"}}}",
+            "title": "Status",
+            "type": "status",
+            "width": null
+          },
+          {
+            "archived": false,
+            "description": null,
+            "id": "date4",
+            "settings_str": "{}",
+            "title": "Date given to current owner",
+            "type": "date",
+            "width": 204
+          },
+          {
+            "archived": false,
+            "description": null,
+            "id": "text",
+            "settings_str": "{}",
+            "title": "Current owner",
+            "type": "text",
+            "width": null
+          },
+          {
+            "archived": false,
+            "description": null,
+            "id": "date_given_to_current_owner",
+            "settings_str": "{}",
+            "title": "Last checked",
+            "type": "date",
+            "width": 129
+          }
+        ],
+        "communication": null,
+        "description": "Welcome to your inventory management board. This is the place to track and manage all of your IT equipment inventory.",
+        "groups": [
+          {
+            "archived": false,
+            "color": "#BB3354",
+            "deleted": false,
+            "id": "duplicate_of_tvs___projectors",
+            "position": "65408",
+            "title": "Out of service"
+          },
+          {
+            "archived": false,
+            "color": "#579bfc",
+            "deleted": false,
+            "id": "topics",
+            "position": "65536",
+            "title": "Laptops"
+          },
+          {
+            "archived": false,
+            "color": "#a25ddc",
+            "deleted": false,
+            "id": "group_title",
+            "position": "98304",
+            "title": "Monitors"
+          },
+          {
+            "archived": false,
+            "color": "#037f4c",
+            "deleted": false,
+            "id": "new_group",
+            "position": "163840.0",
+            "title": "TVs & projectors"
+          },
+          {
+            "archived": false,
+            "color": "#FF642E",
+            "deleted": false,
+            "id": "new_group54043",
+            "position": "229376.0",
+            "title": "New Test Group"
+          }
+        ],
+        "owners": [
+          {
+            "id": "25479561"
+          }
+        ],
+        "creator": {
+          "id": "25479561"
+        },
+        "permissions": "everyone",
+        "state": "active",
+        "subscribers": [
+          {
+            "id": "25479561"
+          }
+        ],
+        "tags": [],
+        "top_group": {
+          "id": "duplicate_of_tvs___projectors"
+        },
+        "updated_at": "2023-06-20T12:05:12Z",
+        "updates": [],
+        "views": [],
+        "workspace": {
+          "id": null,
+          "name": "Main workspace",
+          "kind": "open",
+          "description": "Use the Main Workspace to manage and collaborate on all company-wide boards. All team members are in this workspace."
+        },
+        "updated_at_int": 1687262712
+      }
+    ]
+  },
+  "account_id": 10239240
+}

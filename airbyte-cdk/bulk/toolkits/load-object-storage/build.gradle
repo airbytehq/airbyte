@@ -25,3 +25,7 @@ project.tasks.matching {
 }.configureEach {
     enabled = false
 }
+
+test {
+    systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
+}

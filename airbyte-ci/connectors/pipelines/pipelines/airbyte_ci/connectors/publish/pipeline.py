@@ -513,16 +513,20 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if metadata_validation_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results, context)
 
+            # Check if the connector image is already published to the registry.
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
+
             python_registry_steps, terminate_early = await _run_python_registry_publish_pipeline(context)
             results.extend(python_registry_steps)
+
             if terminate_early:
                 return create_connector_report(results, context)
 
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
-            if check_connector_image_results.status is StepStatus.SKIPPED:
+            # For pre-releases, rebuild all the time.
+            if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
                 context.logger.info(
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
@@ -540,8 +544,8 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
-            # Exit early if the connector image already exists or has failed to build
-            if check_connector_image_results.status is not StepStatus.SUCCESS:
+            # Exit early if the connector image already exists
+            if check_connector_image_results.status is not StepStatus.SUCCESS and not context.pre_release:
                 return create_connector_report(results, context)
 
             build_connector_results = await steps.run_connector_build(context)
@@ -635,7 +639,7 @@ def get_rollback_pr_creation_arguments(
         "branch_id": f"{context.connector.technical_name}/rollback-{release_candidate_version}",
         "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
         "pr_title": f"🐙 {context.connector.technical_name}: Stop progressive rollout for {release_candidate_version}",
-        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout.",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout. This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
     }
 
 
@@ -670,7 +674,9 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext, sema
                 return connector_report
 
             # Open PR when all previous steps are successful
-            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
+            initial_pr_creation = CreateOrUpdatePullRequest(
+                context, skip_ci=True, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"]
+            )
             pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
             initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
             results.append(initial_pr_creation_result)
@@ -690,7 +696,7 @@ def get_promotion_pr_creation_arguments(
         "branch_id": f"{context.connector.technical_name}/{promoted_version}",
         "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
         "pr_title": f"🐙 {context.connector.technical_name}: release {promoted_version}",
-        "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}).",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}). This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
     }
 
 

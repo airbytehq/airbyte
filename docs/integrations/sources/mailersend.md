@@ -28,6 +28,18 @@ MailerSend has a default [rate limit](https://developers.mailersend.com/general.
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+| 0.2.25 | 2025-05-24 | [60696](https://github.com/airbytehq/airbyte/pull/60696) | Update dependencies |
+| 0.2.24 | 2025-05-10 | [59865](https://github.com/airbytehq/airbyte/pull/59865) | Update dependencies |
+| 0.2.23 | 2025-05-03 | [59278](https://github.com/airbytehq/airbyte/pull/59278) | Update dependencies |
+| 0.2.22 | 2025-04-26 | [58777](https://github.com/airbytehq/airbyte/pull/58777) | Update dependencies |
+| 0.2.21 | 2025-04-19 | [58198](https://github.com/airbytehq/airbyte/pull/58198) | Update dependencies |
+| 0.2.20 | 2025-04-12 | [57734](https://github.com/airbytehq/airbyte/pull/57734) | Update dependencies |
+| 0.2.19 | 2025-04-05 | [57038](https://github.com/airbytehq/airbyte/pull/57038) | Update dependencies |
+| 0.2.18 | 2025-03-29 | [56651](https://github.com/airbytehq/airbyte/pull/56651) | Update dependencies |
+| 0.2.17 | 2025-03-22 | [56008](https://github.com/airbytehq/airbyte/pull/56008) | Update dependencies |
+| 0.2.16 | 2025-03-08 | [55446](https://github.com/airbytehq/airbyte/pull/55446) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [54805](https://github.com/airbytehq/airbyte/pull/54805) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [53821](https://github.com/airbytehq/airbyte/pull/53821) | Update dependencies |
 | 0.2.13 | 2025-02-08 | [53300](https://github.com/airbytehq/airbyte/pull/53300) | Update dependencies |
 | 0.2.12 | 2025-02-01 | [52745](https://github.com/airbytehq/airbyte/pull/52745) | Update dependencies |
 | 0.2.11 | 2025-01-25 | [52271](https://github.com/airbytehq/airbyte/pull/52271) | Update dependencies |

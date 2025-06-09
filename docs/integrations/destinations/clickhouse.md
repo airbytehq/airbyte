@@ -1,12 +1,18 @@
 # ClickHouse
 
+:::warning
+The Clickhouse connector is outdated and does not use Destination v2 (typing and deduplication). 
+As a result, it may not work well with large datasets or could have performance issues. 
+Subscribe to the [discussion](https://github.com/airbytehq/airbyte/discussions/35339) to receive updates and learn more.
+:::
+
 ## Features
 
 | Feature                        | Supported?\(Yes/No\) | Notes |
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
 | Namespaces                     | Yes                  |       |
 
 #### Output Schema
