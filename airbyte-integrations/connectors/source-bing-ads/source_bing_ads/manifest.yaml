@@ -1135,7 +1135,7 @@ definitions:
 
   ## Campaign Performance Report Streams
 
-  campaign_performance_report_primary_key:
+  campaign_performance_report_stream_primary_key:
     - AccountId
     - CampaignId
     - TimePeriod
@@ -1148,7 +1148,7 @@ definitions:
     - TopVsOther
     - BidMatchType
 
-  campaign_performance_report_columns:
+  campaign_performance_report_stream_columns:
     - AccountId
     - CampaignId
     - TimePeriod
@@ -1209,20 +1209,32 @@ definitions:
     - BudgetName
     - BudgetStatus
     - BudgetAssociationStatus
+
+  campaign_performance_report_stream_transformations:
+    - type: AddedFieldDefinition
+      path:
+        - AccountId
+      value: |
+        {{ record['AccountId'] | int if record.get('AccountId') else none }}
+    - type: AddedFieldDefinition
+      path:
+        - CampaignId
+      value: |
+        {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
           
   campaign_performance_report_daily_stream:
     type: DeclarativeStream
     name: campaign_performance_report_daily
     primary_key:
-      $ref: "#/definitions/campaign_performance_report_primary_key"
+      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_performance_report"
     retriever:
-      $ref: "#/definitions/basic_campaign_async_retriever"
+      $ref: "#/definitions/basic_async_retriever"
       creation_requester:
-        $ref: "#/definitions/basic_campaign_async_retriever/creation_requester"
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
@@ -1235,13 +1247,11 @@ definitions:
             Type: CampaignPerformanceReportRequest
             Aggregation: Daily
             Columns:
-              $ref: "#/definitions/campaign_performance_report_columns"
+              $ref: "#/definitions/campaign_performance_report_stream_columns"
             Scope:
               AccountIds:
                 - "{{ stream_partition.extra_fields['AccountId'] }}"
-              Campaigns:
-                - AccountId: "{{ stream_partition.extra_fields['AccountId'] }}"
-                  CampaignId: "{{ stream_partition['campaign_id'] }}"
+              Campaigns: null
             Time:
               CustomDateRangeStart:
                 Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
@@ -1257,32 +1267,21 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - AccountId
-            value: |
-              {{ record['AccountId'] | int if record.get('AccountId') else none }}
-          - type: AddedFieldDefinition
-            path:
-              - CampaignId
-            value: |
-              {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
+      $ref: "#/definitions/campaign_performance_report_stream_transformations"
               
   campaign_performance_report_weekly_stream:
     type: DeclarativeStream
     name: campaign_performance_report_weekly
     primary_key:
-      $ref: "#/definitions/campaign_performance_report_primary_key"
+      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_performance_report"
     retriever:
-      $ref: "#/definitions/basic_campaign_async_retriever"
+      $ref: "#/definitions/basic_async_retriever"
       creation_requester:
-        $ref: "#/definitions/basic_campaign_async_retriever/creation_requester"
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
@@ -1295,13 +1294,11 @@ definitions:
             Type: CampaignPerformanceReportRequest
             Aggregation: Weekly
             Columns:
-              $ref: "#/definitions/campaign_performance_report_columns"
+              $ref: "#/definitions/campaign_performance_report_stream_columns"
             Scope:
               AccountIds:
-                - "{{ stream_partition.extra_fields['AccountId'] }}"
-              Campaigns:
-                - AccountId: "{{ stream_partition.extra_fields['AccountId'] }}"
-                  CampaignId: "{{ stream_partition['campaign_id'] }}"
+                - "{{ stream_partition['account_id'] }}"
+              Campaigns: null
             Time:
               CustomDateRangeStart:
                 Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
@@ -1317,18 +1314,7 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - AccountId
-            value: |
-              {{ record['AccountId'] | int if record.get('AccountId') else none }}
-          - type: AddedFieldDefinition
-            path:
-              - CampaignId
-            value: |
-              {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
+      $ref: "#/definitions/campaign_performance_report_stream_transformations"
 
   basic_async_retriever:
     type: AsyncRetriever
@@ -1379,66 +1365,6 @@ definitions:
       decoder:
         type: CsvDecoder
         encoding: "utf-8-sig"
-    creation_requester:
-      type: HttpRequester
-      url_base: https://reporting.api.bingads.microsoft.com/
-      path: Reporting/v13/GenerateReport/Submit
-      http_method: POST
-      request_headers:
-        Content-Type: application/json
-        DeveloperToken: "{{ config['developer_token'] }}"
-        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
-        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
-      authenticator: "#/definitions/authenticator"
-  basic_campaign_async_retriever:
-    type: AsyncRetriever
-    partition_router:
-      $ref: "#/definitions/campaign_substream_partition_router"
-    status_mapping:
-      failed:
-        - Error
-      running:
-        - Pending
-      completed:
-        - Success
-      timeout: []
-    download_target_extractor:
-      type: DpathExtractor
-      field_path:
-        - ReportRequestStatus
-        - ReportDownloadUrl
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path: []
-    status_extractor:
-      type: DpathExtractor
-      field_path:
-        - ReportRequestStatus
-        - Status
-    polling_requester:
-      type: HttpRequester
-      url_base: https://reporting.api.bingads.microsoft.com/
-      path: Reporting/v13/GenerateReport/Poll
-      http_method: POST
-      authenticator: "#/definitions/authenticator"
-      request_headers:
-        Content-Type: application/json
-        DeveloperToken: "{{ config['developer_token'] }}"
-        CustomerId: "'{{ stream_partition.extra_fields['CustomerId'] }}'"
-        CustomerAccountId: "'{{ stream_partition.extra_fields['AccountId'] }}'"
-      request_body_json:
-        ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
-    download_requester:
-      type: HttpRequester
-      url_base: "{{download_target}}"
-      http_method: GET
-    download_decoder:
-      type: ZipfileDecoder
-      decoder:
-        type: CsvDecoder
-        encoding: "utf-8-sig"
         set_values_to_none:
           - ""
           - "--"
@@ -1450,8 +1376,8 @@ definitions:
       request_headers:
         Content-Type: application/json
         DeveloperToken: "{{ config['developer_token'] }}"
-        CustomerId: "'{{ stream_partition.extra_fields['CustomerId'] }}'"
-        CustomerAccountId: "'{{ stream_partition.extra_fields['AccountId'] }}'"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
   account_substream_partition_router:
     type: CustomPartitionRouter
@@ -1466,17 +1392,6 @@ definitions:
         stream: "#/definitions/accounts_stream"
         extra_fields:
           - - ParentCustomerId
-  campaign_substream_partition_router:
-    type: CustomPartitionRouter
-    class_name: source_bing_ads.components.LightSubstreamPartitionRouter
-    parent_stream_configs:
-      - type: ParentStreamConfig
-        parent_key: Id
-        partition_field: campaign_id
-        stream: "#/definitions/campaigns_stream"
-        extra_fields:
-          - - AccountId
-          - - CustomerId
   # cursors section
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
