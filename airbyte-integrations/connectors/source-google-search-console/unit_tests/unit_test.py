@@ -8,12 +8,10 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_lazy_fixtures import lf as lazy_fixture
 
-from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
+from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.types import StreamSlice
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import _YAML_FILE_PATH, find_stream, get_source
-from .utils import command_check
+from .conftest import find_stream, get_source
 
 
 logger = logging.getLogger("airbyte")
@@ -142,9 +140,7 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
 
     custom_report_config = config_gen(custom_reports_array=custom_reports, custom_reports=...)
     mock_logger = MagicMock()
-    status = (
-        get_source(custom_report_config).check(config=custom_report_config, logger=mock_logger)
-    ).status
+    status = get_source(custom_report_config).check(config=custom_report_config, logger=mock_logger).status
     assert status is expected_status
     if status is Status.FAILED:
         return

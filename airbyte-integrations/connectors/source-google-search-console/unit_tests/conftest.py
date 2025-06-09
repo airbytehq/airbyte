@@ -12,6 +12,7 @@ from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
+
 # These methods will be needed when the connector is converted into manifest-only
 def _get_manifest_path() -> Path:
     source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
