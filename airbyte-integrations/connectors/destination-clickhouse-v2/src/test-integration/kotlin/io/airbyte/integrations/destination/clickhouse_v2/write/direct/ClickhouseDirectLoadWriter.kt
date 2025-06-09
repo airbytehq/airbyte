@@ -10,17 +10,12 @@ import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
-import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.message.InputRecord
-import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -38,16 +33,11 @@ import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigur
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClientProvider.getClient
-import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.time.ZonedDateTime
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 
 class ClickhouseDirectLoadWriter :
     BasicFunctionalityIntegrationTest(

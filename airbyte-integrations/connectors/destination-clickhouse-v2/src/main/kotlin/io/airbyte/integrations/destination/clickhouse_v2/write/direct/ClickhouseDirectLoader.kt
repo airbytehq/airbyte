@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.data.ClickHouseFormat
-import com.fasterxml.jackson.databind.node.LongNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
