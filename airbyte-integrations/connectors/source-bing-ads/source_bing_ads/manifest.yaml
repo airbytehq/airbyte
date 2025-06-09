@@ -1221,7 +1221,60 @@ definitions:
         - CampaignId
       value: |
         {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
-          
+
+  campaign_performance_report_hourly_stream:
+    type: DeclarativeStream
+    name: campaign_performance_report_hourly
+    primary_key:
+      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
+    schema_loader:
+      type: InlineSchemaLoader
+    schema:
+      $ref: "#/schemas/campaign_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: CampaignPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: CampaignPerformanceReportRequest
+            Aggregation: Hourly
+            Columns:
+              $ref: "#/definitions/campaign_performance_report_stream_columns"
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+              Campaigns: null
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+                Hour: "{{ str_to_datetime(stream_interval.get('end_time')).hour }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - Type: AddFields
+        fields:
+          $ref: "#/definitions/campaign_performance_report_stream_transformations"
+      - Type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
+
   campaign_performance_report_daily_stream:
     type: DeclarativeStream
     name: campaign_performance_report_daily
@@ -1268,7 +1321,7 @@ definitions:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
       $ref: "#/definitions/campaign_performance_report_stream_transformations"
-              
+
   campaign_performance_report_weekly_stream:
     type: DeclarativeStream
     name: campaign_performance_report_weekly
@@ -1310,11 +1363,61 @@ definitions:
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor" 
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
       $ref: "#/definitions/campaign_performance_report_stream_transformations"
+
+  campaign_performance_report_monthly_stream:
+    type: DeclarativeStream
+    name: campaign_performance_report_monthly
+    primary_key:
+      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaign_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: CampaignPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: CampaignPerformanceReportRequest
+            Aggregation: Monthly
+            Columns:
+              $ref: "#/definitions/campaign_performance_report_stream_columns"
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+              Campaigns: null
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - Type: AddFields
+        fields:
+          $ref: "#/definitions/campaign_performance_report_stream_transformations"
+      - $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
 
   basic_async_retriever:
     type: AsyncRetriever
@@ -1691,6 +1794,25 @@ definitions:
           {% set v = record.get('TopImpressionRatePercent') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
+    # Used in all hourly report streams
+    hourly_stream_timestamp_transformation:
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+        #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+        value: |
+          {%- set parts = record.TimePeriod.split('|') -%}
+          {%- set time_period = record.TimePeriod -%}
+          {%- set date_part = '' -%}
+          {%- set hour_part = 0 -%}
+          {%- if parts|length > 1 -%}
+            {%- set date_part = parts[0] -%}
+            {%- set hour_part = parts[1]|int -%}
+            {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
+          {%- endif -%}
+          {{ time_period }}
+
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/campaigns_stream"
@@ -1702,8 +1824,11 @@ streams:
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
   - $ref: "#/definitions/ad_performance_report_monthly_stream"
+  - $ref: "#/definitions/campaign_performance_report_hourly_stream"
   - $ref: "#/definitions/campaign_performance_report_daily_stream"
   - $ref: "#/definitions/campaign_performance_report_weekly_stream"
+  - $ref: "#/definitions/campaign_performance_report_monthly_stream"
+
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
@@ -2570,305 +2695,611 @@ schemas:
       AccountId:
         description: The unique ID of the account to which the campaign belongs.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       CampaignId:
         description: The unique ID of the campaign.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       TimePeriod:
         description: The time period for which the data is reported.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       CurrencyCode:
         description: The currency code used for monetary values.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AdDistribution:
         description: The distribution channels where the ads were displayed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DeviceType:
         description: The type of device where the ad was displayed (e.g., mobile, desktop).
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Network:
         description: The advertising network where the ad was displayed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DeliveredMatchType:
         description: The type of match used for delivering ads.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DeviceOS:
         description: The operating system of the device where the ad was displayed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TopVsOther:
         description: Comparison of the ad position with top vs. other placements.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BidMatchType:
         description: The type of bid matching used for the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AccountName:
         description: The name of the account to which the campaign belongs.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CampaignName:
         description: The name of the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CampaignType:
         description: The type/category of the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CampaignStatus:
         description: The status of the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CampaignLabels:
         description: Any labels associated with the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Impressions:
         description: Total number of times the ad was displayed.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       Clicks:
         description: Total number of clicks on the ad.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       Ctr:
         description: Click-through rate.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Spend:
         description: Total amount spent on the campaign.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       CostPerConversion:
         description: The average cost per conversion.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       QualityScore:
         description: The quality score of the ad.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AdRelevance:
         description: The relevance score of the ad in relation to the target audience.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       LandingPageExperience:
         description: The landing page experience of the ad.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       PhoneImpressions:
         description: Number of impressions on phone devices.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       PhoneCalls:
         description: Number of phone calls generated by the ad.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       Ptr:
         description: Phone-through rate.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Assists:
         description: Number of assists in the conversion process.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ReturnOnAdSpend:
         description: The return on ad spend for conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       CostPerAssist:
         description: Average cost per assist in the conversion process.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       CustomParameters:
         description: Any custom parameters associated with the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ViewThroughConversions:
         description: Number of view-through conversions generated by the ad.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       AllCostPerConversion:
         description: The average cost per conversion for all conversion types.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AllReturnOnAdSpend:
         description: The return on ad spend for all conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AllConversions:
         description: Total number of all types of conversions.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ConversionsQualified:
         description: Number of qualified conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AllConversionRate:
         description: Conversion rate considering all types of conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AllRevenue:
         description: Total revenue generated from all types of conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AllRevenuePerConversion:
         description: The average revenue generated per conversion for all conversion types.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AverageCpc:
         description: Average cost per click.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AveragePosition:
         description: The average position of the ad in search results.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AverageCpm:
         description: Average cost per thousand impressions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Conversions:
         description: Total number of conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       ConversionRate:
         description: The overall conversion rate.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       LowQualityClicks:
         description: Number of clicks categorized as low quality.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       LowQualityClicksPercent:
         description: Percentage of clicks categorized as low quality.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       LowQualityImpressions:
         description: Number of impressions categorized as low quality.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       LowQualitySophisticatedClicks:
         description: Number of sophisticated clicks categorized as low quality.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       LowQualityConversions:
         description: Number of conversions from low-quality clicks.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       LowQualityConversionRate:
         description: Conversion rate of low-quality clicks.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       HistoricalQualityScore:
         description: Historical quality score of the ad.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       HistoricalExpectedCtr:
         description: Historical expected click-through rate.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       HistoricalAdRelevance:
         description: Historical ad relevance score.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       HistoricalLandingPageExperience:
         description: Historical landing page experience score.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Revenue:
         description: Total revenue generated from conversions.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       RevenuePerConversion:
         description: The average revenue generated per conversion.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       RevenuePerAssist:
         description: Average revenue generated per assist in the conversion process.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       BudgetName:
         description: The name of the budget associated with the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BudgetStatus:
         description: The status of the budget associated with the campaign.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BudgetAssociationStatus:
         description: The status of the campaign's budget association.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
+  campaign_performance_report_hourly:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The unique ID of the account to which the campaign belongs.
+        type:
+          - "null"
+          - integer
+      CampaignId:
+        description: The unique ID of the campaign.
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period for which the data is reported.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      CurrencyCode:
+        description: The currency code used for monetary values.
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description: The distribution channels where the ads were displayed.
+        type:
+          - "null"
+          - string
+      DeviceType:
+        description: The type of device where the ad was displayed (e.g., mobile, desktop).
+        type:
+          - "null"
+          - string
+      Network:
+        description: The advertising network where the ad was displayed.
+        type:
+          - "null"
+          - string
+      DeliveredMatchType:
+        description: The type of match used for delivering ads.
+        type:
+          - "null"
+          - string
+      DeviceOS:
+        description: The operating system of the device where the ad was displayed.
+        type:
+          - "null"
+          - string
+      TopVsOther:
+        description: Comparison of the ad position with top vs. other placements.
+        type:
+          - "null"
+          - string
+      BidMatchType:
+        description: The type of bid matching used for the campaign.
+        type:
+          - "null"
+          - string
+      AccountName:
+        description: The name of the account to which the campaign belongs.
+        type:
+          - "null"
+          - string
+      CampaignName:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      CampaignType:
+        description: The type/category of the campaign.
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      CampaignLabels:
+        description: Any labels associated with the campaign.
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: Total number of times the ad was displayed.
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: Total number of clicks on the ad.
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: Click-through rate.
+        type:
+          - "null"
+          - number
+      Spend:
+        description: Total amount spent on the campaign.
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The average cost per conversion.
+        type:
+          - "null"
+          - number
+      QualityScore:
+        description: The quality score of the ad.
+        type:
+          - "null"
+          - number
+      AdRelevance:
+        description: The relevance score of the ad in relation to the target audience.
+        type:
+          - "null"
+          - number
+      LandingPageExperience:
+        description: The landing page experience of the ad.
+        type:
+          - "null"
+          - number
+      PhoneImpressions:
+        description: Number of impressions on phone devices.
+        type:
+          - "null"
+          - integer
+      PhoneCalls:
+        description: Number of phone calls generated by the ad.
+        type:
+          - "null"
+          - integer
+      Ptr:
+        description: Phone-through rate.
+        type:
+          - "null"
+          - number
+      Assists:
+        description: Number of assists in the conversion process.
+        type:
+          - "null"
+          - integer
+      ReturnOnAdSpend:
+        description: The return on ad spend for conversions.
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: Average cost per assist in the conversion process.
+        type:
+          - "null"
+          - number
+      CustomParameters:
+        description: Any custom parameters associated with the campaign.
+        type:
+          - "null"
+          - string
+      ViewThroughConversions:
+        description: Number of view-through conversions generated by the ad.
+        type:
+          - "null"
+          - integer
+      AllCostPerConversion:
+        description: The average cost per conversion for all conversion types.
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend for all conversions.
+        type:
+          - "null"
+          - number
+      AllConversions:
+        description: Total number of all types of conversions.
+        type:
+          - "null"
+          - integer
+      ConversionsQualified:
+        description: Number of qualified conversions.
+        type:
+          - "null"
+          - number
+      AllConversionRate:
+        description: Conversion rate considering all types of conversions.
+        type:
+          - "null"
+          - number
+      AllRevenue:
+        description: Total revenue generated from all types of conversions.
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The average revenue generated per conversion for all conversion types.
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: Average cost per click.
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position of the ad in search results.
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: Average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: Total number of conversions.
+        type:
+          - "null"
+          - number
+      ConversionRate:
+        description: The overall conversion rate.
+        type:
+          - "null"
+          - number
+      LowQualityClicks:
+        description: Number of clicks categorized as low quality.
+        type:
+          - "null"
+          - integer
+      LowQualityClicksPercent:
+        description: Percentage of clicks categorized as low quality.
+        type:
+          - "null"
+          - number
+      LowQualityImpressions:
+        description: Number of impressions categorized as low quality.
+        type:
+          - "null"
+          - integer
+      LowQualitySophisticatedClicks:
+        description: Number of sophisticated clicks categorized as low quality.
+        type:
+          - "null"
+          - integer
+      LowQualityConversions:
+        description: Number of conversions from low-quality clicks.
+        type:
+          - "null"
+          - integer
+      LowQualityConversionRate:
+        description: Conversion rate of low-quality clicks.
+        type:
+          - "null"
+          - number
+      HistoricalQualityScore:
+        description: Historical quality score of the ad.
+        type:
+          - "null"
+          - number
+      HistoricalExpectedCtr:
+        description: Historical expected click-through rate.
+        type:
+          - "null"
+          - number
+      HistoricalAdRelevance:
+        description: Historical ad relevance score.
+        type:
+          - "null"
+          - number
+      HistoricalLandingPageExperience:
+        description: Historical landing page experience score.
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: Total revenue generated from conversions.
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The average revenue generated per conversion.
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: Average revenue generated per assist in the conversion process.
+        type:
+          - "null"
+          - number
+      BudgetName:
+        description: The name of the budget associated with the campaign.
+        type:
+          - "null"
+          - string
+      BudgetStatus:
+        description: The status of the budget associated with the campaign.
+        type:
+          - "null"
+          - string
+      BudgetAssociationStatus:
+        description: The status of the campaign's budget association.
+        type:
+          - "null"
+          - string
 
   ad_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
