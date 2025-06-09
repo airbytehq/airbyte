@@ -13,9 +13,9 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
 from source_google_sheets.utils import (
-    safe_sanitzation_conversion,
     name_conversion,
     safe_name_conversion,
+    safe_sanitzation_conversion,
 )
 
 
