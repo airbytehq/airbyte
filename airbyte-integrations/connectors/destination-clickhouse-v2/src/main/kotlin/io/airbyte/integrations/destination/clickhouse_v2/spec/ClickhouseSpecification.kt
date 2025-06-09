@@ -29,7 +29,7 @@ class ClickhouseSpecification : ConfigurationSpecification() {
     val port: String = "8443"
 
     @get:JsonSchemaTitle("Protocol")
-    @get:JsonPropertyDescription("HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443")
+    @get:JsonPropertyDescription("Protocol for the database connection string.")
     @get:JsonProperty("protocol")
     @get:JsonSchemaInject(json = """{"order": 2, "airbyte_hidden": true}""")
     val protocol: ClickhouseConnectionProtocol = ClickhouseConnectionProtocol.HTTPS

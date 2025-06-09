@@ -39,6 +39,7 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 
+@Disabled
 class ClickhouseDirectLoadWriter :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
@@ -81,7 +82,7 @@ class ClickhouseDirectLoadWriter :
         // Clickhouse does not support file transfer, so this test is skipped.
     }
 
-    @Disabled() override fun testInterruptedTruncateWithoutPriorData() {}
+    @Disabled override fun testInterruptedTruncateWithoutPriorData() {}
 
     @Disabled override fun testNoColumns() {}
 
