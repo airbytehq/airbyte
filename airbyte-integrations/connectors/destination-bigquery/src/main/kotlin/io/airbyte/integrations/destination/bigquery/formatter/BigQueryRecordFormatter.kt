@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
@@ -35,7 +37,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
 import java.util.concurrent.TimeUnit
 
 /**
@@ -141,21 +142,18 @@ class BigQueryRecordFormatter(
                             // Bigquery has some strict requirements for datetime / time formatting,
                             // so handle that here.
                             when (value.type) {
+                                TimestampTypeWithTimezone ->
+                                    outputRecord[columnNameMapping[key]!!] =
+                                        formatTimestampWithTimezone(value)
                                 TimestampTypeWithoutTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
-                                        DATETIME_FORMATTER.format(
-                                            (value.abValue as TimestampWithoutTimezoneValue).value
-                                        )
+                                        formatTimestampWithoutTimezone(value)
                                 TimeTypeWithoutTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
-                                        TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                            (value.abValue as TimeWithoutTimezoneValue).value
-                                        )
+                                        formatTimeWithoutTimezone(value)
                                 TimeTypeWithTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
-                                        TIME_WITH_TIMEZONE_FORMATTER.format(
-                                            (value.abValue as TimeWithTimezoneValue).value
-                                        )
+                                        formatTimeWithTimezone(value)
                                 else -> outputRecord[columnNameMapping[key]!!] = value.abValue
                             }
                         }
@@ -207,14 +205,14 @@ class BigQueryRecordFormatter(
         private val DATETIME_MIN_VALUE = LocalDateTime.parse("0001-01-01T00:00:00")
         private val DATETIME_MAX_VALUE = LocalDateTime.parse("9999-12-31T23:59:59.999999")
 
-        private val DATETIME_FORMATTER =
-            DateTimeFormatterBuilder()
-                .append(DateTimeFormatter.ISO_DATE)
-                .appendLiteral(' ')
-                .append(DateTimeFormatter.ISO_LOCAL_TIME)
-                .toFormatter()
-        val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
-        val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_TIME
+        private val DATETIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        private val DATETIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ISO_DATE_TIME
+        private val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ISO_LOCAL_TIME
+        private val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ISO_OFFSET_TIME
 
         // This is the schema used to represent the final raw table
         val SCHEMA_V2: Schema =
@@ -266,6 +264,30 @@ class BigQueryRecordFormatter(
                     }
                     .map { (name, type) -> Field.of(name, type) }
             return Schema.of(DIRECT_LOAD_SCHEMA + userDefinedFields)
+        }
+
+        fun formatTimestampWithTimezone(value: EnrichedAirbyteValue): String {
+            return DATETIME_WITH_TIMEZONE_FORMATTER.format(
+                (value.abValue as TimestampWithTimezoneValue).value
+            )
+        }
+
+        fun formatTimestampWithoutTimezone(value: EnrichedAirbyteValue): String {
+            return DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
+                (value.abValue as TimestampWithoutTimezoneValue).value
+            )
+        }
+
+        fun formatTimeWithoutTimezone(value: EnrichedAirbyteValue): String {
+            return TIME_WITHOUT_TIMEZONE_FORMATTER.format(
+                (value.abValue as TimeWithoutTimezoneValue).value
+            )
+        }
+
+        fun formatTimeWithTimezone(value: EnrichedAirbyteValue): String {
+            return TIME_WITH_TIMEZONE_FORMATTER.format(
+                (value.abValue as TimeWithTimezoneValue).value
+            )
         }
     }
 }
