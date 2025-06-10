@@ -1,0 +1,160 @@
+name: Airbyte CI for Fork Connector Tests
+# This workflow is used to run connector tests on fork repositories.
+# It can be triggered manually via slash command or workflow dispatch.
+# It uses GitHub App authentication to access fork repositories and their secrets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "The repository name"
+        required: false
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+      owner:
+        description: "The fork owner name (defaults to PR's fork owner if not specified)"
+        required: false
+        type: string
+
+jobs:
+  determine-fork-owner:
+    name: "Determine Fork Owner"
+    runs-on: ubuntu-24.04
+    outputs:
+      fork-owner: ${{ steps.get-fork-owner.outputs.fork-owner }}
+      fork-repo: ${{ steps.get-fork-owner.outputs.fork-repo }}
+    steps:
+      - name: Get fork owner and repository
+        id: get-fork-owner
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ inputs.owner }}" ]; then
+            echo "fork-owner=${{ inputs.owner }}" >> $GITHUB_OUTPUT
+            echo "fork-repo=${{ inputs.owner }}/airbyte" >> $GITHUB_OUTPUT
+            echo "Using provided owner: ${{ inputs.owner }}"
+          else
+            if [ -n "${{ inputs.repo }}" ]; then
+              REPO_OWNER=$(echo "${{ inputs.repo }}" | cut -d'/' -f1)
+              echo "fork-owner=$REPO_OWNER" >> $GITHUB_OUTPUT
+              echo "fork-repo=${{ inputs.repo }}" >> $GITHUB_OUTPUT
+              echo "Using repo owner: $REPO_OWNER"
+            else
+              echo "Error: No owner specified and no repo provided"
+              exit 1
+            fi
+          fi
+
+  post-start-comment:
+    name: "Post Start Comment"
+    needs: determine-fork-owner
+    runs-on: ubuntu-24.04
+    if: >
+      inputs.comment-id != '' &&
+      github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append start comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: success()
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          reactions: "+1"
+          body: |
+            > **Fork Connector CI Tests Started**
+            >
+            > Running tests on fork: `${{ needs.determine-fork-owner.outputs.fork-repo }}`
+            >
+            > These tests will leverage the fork's integration test credentials.
+            >
+            > [Check job output.](${{ steps.job-vars.outputs.run-url }})
+
+  call-fork-connector-ci-tests:
+    name: "Call Fork Connector CI Tests"
+    needs: determine-fork-owner
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Authenticate as GitHub App [${{ needs.determine-fork-owner.outputs.fork-owner }} Fork]
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        with:
+          owner: "${{ needs.determine-fork-owner.outputs.fork-owner }}"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Trigger connector CI tests on fork
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          script: |
+            const response = await github.rest.actions.createWorkflowDispatch({
+              owner: '${{ needs.determine-fork-owner.outputs.fork-owner }}',
+              repo: 'airbyte',
+              workflow_id: 'connector-ci-checks.yml',
+              ref: '${{ inputs.gitref || github.ref_name }}',
+              inputs: {
+                repo: '${{ needs.determine-fork-owner.outputs.fork-repo }}',
+                gitref: '${{ inputs.gitref || github.ref_name }}',
+                'comment-id': '${{ inputs.comment-id || '' }}',
+                pr: '${{ inputs.pr || '' }}'
+              }
+            });
+            
+            console.log('Workflow dispatch response:', response.status);
+            
+            if (response.status !== 204) {
+              throw new Error(`Failed to trigger workflow: ${response.status}`);
+            }
+
+  post-end-comment:
+    name: "Post Completion Comment"
+    needs: [determine-fork-owner, call-fork-connector-ci-tests]
+    runs-on: ubuntu-24.04
+    if: >
+      always() &&
+      inputs.comment-id &&
+      github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Append end comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > Fork Connector CI Tests dispatch completed for `${{ needs.determine-fork-owner.outputs.fork-repo }}`. 
+            > 
+            > Check the fork repository's Actions tab for test results.
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure()
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          reactions: confused
+          body: |
+            > 🔴 Fork Connector CI Tests dispatch failed for `${{ needs.determine-fork-owner.outputs.fork-repo }}`.
+            > 
+            > This could be due to:
+            > - GitHub App not installed in the fork repository
+            > - Insufficient permissions for the GitHub App
+            > - Fork repository does not exist
+            > - Network or authentication issues

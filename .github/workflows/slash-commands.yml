@@ -35,6 +35,7 @@ jobs:
             publish-java-cdk
             run-cat-tests
             run-connector-tests
+            run-fork-tests
             test-performance
 
           # Notes regarding static-args:
