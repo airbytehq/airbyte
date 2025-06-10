@@ -58,12 +58,12 @@ class ClickhouseDirectLoader(
 
         recordCount++
 
-        if (recordCount >= Constants.BATCH_SIZE_RECORDS) {
+        //if (recordCount >= Constants.BATCH_SIZE_RECORDS) {
             flush()
             return DirectLoader.Complete
-        }
+        //}
 
-        return DirectLoader.Incomplete
+        //return DirectLoader.Incomplete
     }
 
     private fun flush() {
@@ -77,9 +77,9 @@ class ClickhouseDirectLoader(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
                     jsonBytes,
                     ClickHouseFormat.JSONEachRow,
-                    InsertSettings().let {
-                        it.setOption("date_time_input_format", "best_effort")
-                    }
+                    // InsertSettings().let {
+                    //     it.setOption("date_time_input_format", "best_effort")
+                    // }
                 )
                 .await()
         }

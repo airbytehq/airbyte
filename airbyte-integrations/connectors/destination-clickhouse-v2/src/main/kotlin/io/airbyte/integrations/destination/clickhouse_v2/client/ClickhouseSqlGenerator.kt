@@ -48,6 +48,8 @@ class ClickhouseSqlGenerator {
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
 
+        log.error { columnDeclarations }
+
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
         val engine =
