@@ -19,10 +19,8 @@ definitions:
           path: /report
           http_method: GET
           request_parameters:
-            metrics: >-
-              {{ config['metrics'] + config['additional_metrics'] |
-              join(',') }}
-            dimensions: '{{ config["dimensions"] + ["day"] | join(",") }}'
+            metrics: "{{ (config['metrics'] + config['additional_metrics']) | join(',') }}"
+            dimensions: "{{ (config['dimensions'] + ['day']) | join(',') }}"
             date_period: "{{ stream_interval['start_time'] }}:{{ stream_interval['end_time'] }}"
         record_selector:
           type: RecordSelector
