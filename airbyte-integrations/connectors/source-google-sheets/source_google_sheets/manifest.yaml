@@ -14,7 +14,6 @@ dynamic_streams:
       name: ""
       $parameters:
         i: 123
-        primary_key: []
       primary_key: []
       retriever:
         type: SimpleRetriever
