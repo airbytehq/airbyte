@@ -1,6 +1,6 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
 
-package io.airbyte.integrations.source
+package io.airbyte.integrations.sourceTesting
 
 import io.airbyte.cdk.jdbc.JdbcFieldType
 

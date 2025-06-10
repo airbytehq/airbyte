@@ -1,5 +1,5 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.tests
+package io.airbyte.integrations.sourceTesting.tests
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -10,8 +10,8 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.IntegrationTestOperations
-import io.airbyte.integrations.source.TestDbExecutor
+import io.airbyte.integrations.sourceTesting.IntegrationTestOperations
+import io.airbyte.integrations.sourceTesting.TestDbExecutor
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage

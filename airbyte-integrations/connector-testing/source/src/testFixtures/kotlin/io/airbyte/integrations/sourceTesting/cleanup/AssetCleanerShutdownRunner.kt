@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.cleanup
+package io.airbyte.integrations.sourceTesting.cleanup
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.event.ShutdownEvent

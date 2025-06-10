@@ -1,9 +1,9 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
 
-package io.airbyte.integrations.source.tests
+package io.airbyte.integrations.sourceTesting.tests
 
-import io.airbyte.integrations.source.TestAssetResourceNamer
-import io.airbyte.integrations.source.TestDbExecutor
+import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
+import io.airbyte.integrations.sourceTesting.TestDbExecutor
 import io.airbyte.protocol.models.v0.SyncMode
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

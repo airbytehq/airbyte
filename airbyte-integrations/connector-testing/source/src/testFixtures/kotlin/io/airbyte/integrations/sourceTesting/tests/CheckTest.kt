@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.tests
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.JdbcSourceConfiguration
-import io.airbyte.integrations.source.IntegrationTestOperations
+import io.airbyte.integrations.sourceTesting.IntegrationTestOperations
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest

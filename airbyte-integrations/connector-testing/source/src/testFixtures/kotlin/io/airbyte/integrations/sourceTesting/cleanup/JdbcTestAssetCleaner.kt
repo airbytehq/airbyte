@@ -2,12 +2,12 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.cleanup
+package io.airbyte.integrations.sourceTesting.cleanup
 
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.integrations.source.JdbcTestDbExecutor
-import io.airbyte.integrations.source.SqlDialect
-import io.airbyte.integrations.source.TestAssetResourceNamer
+import io.airbyte.integrations.sourceTesting.JdbcTestDbExecutor
+import io.airbyte.integrations.sourceTesting.SqlDialect
+import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 
