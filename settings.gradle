@@ -201,4 +201,4 @@ integrationsPath.eachDir { dir ->
 // Include miscellaneous modules.
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'
-include 'airbyte-integrations:connector-testing:source'
+include ':airbyte-integrations:connector-testing:source'
