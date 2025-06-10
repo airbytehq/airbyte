@@ -17,7 +17,7 @@ class BigqueryDirectLoadSqlTableOperations(
     private val defaultOperations: DefaultDirectLoadTableSqlOperations,
     private val bq: BigQuery,
 ) : DirectLoadTableSqlOperations by defaultOperations {
-    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
+    override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         // manually delete the target table - otherwise we can't e.g. update the partitioning scheme
         bq.getTable(targetTableName.toTableId())?.delete()
 

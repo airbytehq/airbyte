@@ -81,7 +81,6 @@ class DestinationTaskLauncherUTest {
             failStreamTaskFactory,
             failSyncTaskFactory,
             openStreamQueue,
-            batchUpdateQueue,
             hasThrown = AtomicBoolean(false),
         )
     }

@@ -58,8 +58,7 @@ class BigqueryBatchStandardInsertsLoader(
     private lateinit var writer: TableDataWriteChannel
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        // TODO there was a RateLimiter here for some reason...?
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
@@ -79,7 +78,7 @@ class BigqueryBatchStandardInsertsLoader(
         return DirectLoader.Incomplete
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         if (!this::writer.isInitialized) {
             switchToWriteChannel()
         }

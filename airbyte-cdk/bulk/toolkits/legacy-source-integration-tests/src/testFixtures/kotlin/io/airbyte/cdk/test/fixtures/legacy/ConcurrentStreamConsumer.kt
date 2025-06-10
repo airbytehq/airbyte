@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.test.fixtures.legacy
 
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.*
