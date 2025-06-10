@@ -1,6 +1,6 @@
 # Property chunking
 
-Property chunking enables connectors to handle APIs with limitations on the number of properties that you can fetch per request. This feature breaks down large property lists into smaller, manageable chunks and merges the results back into complete records. Several connectors require this capability to work with APIs that have property limits.
+Property chunking enables connectors to handle APIs with limitations on the number of properties that you can fetch per request. This feature breaks down large property lists into smaller, manageable chunks and merges the results back into complete records. Some connectors require this capability to work with APIs that have property limits.
 
 ## Overview
 
@@ -12,7 +12,7 @@ Property chunking works in these steps.
 
 3. Making separate API requests for each chunk
 
-4. Merging the results back into complete records using a merge strategy
+4. Merging the results back into complete records using a merge strategy, like combining sets of property values into a single record according to their primary key ID
 
 ## Schema
 
@@ -196,9 +196,9 @@ always_include_properties:
 
 Here are examples of how Airbyte has used property chunking in some connectors.
 
-### HubSpot: character-based chunking
+### HubSpot: fetching properties from an API endpoint with character-based chunking
 
-HubSpot's API has a limit on the total character count of properties you can request. Here's how to configure character-based chunking.
+Airbyte's HubSpot connector uses dynamic property chunking. Instead of specifying a static list of properties, it makes a request to `https://api.hubapi.com/properties/v2/contacts/properties` to determine the list of properties.
 
 ```yaml title="manifest.yaml"
 request_parameters:
@@ -227,7 +227,7 @@ request_parameters:
 
 ### LinkedIn Ads: Property count chunking
 
-LinkedIn Ads' API limits the number of properties you can request per call. Here's how to configure property count-based chunking.
+LinkedIn Ads' API limits the number of properties you can request per call. Airbyte's connector provides a static list of properties and makes a series of requests that always includes `dateRange` and `pivotValues`, then merges responses into a single record using the end date and the pivot values.
 
 ```yaml title="manifest.yaml"
 request_parameters:
