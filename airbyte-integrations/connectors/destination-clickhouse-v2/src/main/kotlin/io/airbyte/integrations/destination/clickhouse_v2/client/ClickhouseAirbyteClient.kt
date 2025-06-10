@@ -8,6 +8,7 @@ import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.client.api.query.QueryResponse
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
@@ -17,10 +18,13 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSql
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
 
 val log = KotlinLogging.logger {}
 
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "suspend and fb's non-null analysis don't play well"
+)
 @Singleton
 class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
@@ -33,7 +37,7 @@ class ClickhouseAirbyteClient(
         execute(statement)
     }
 
-    override fun createTable(
+    override suspend fun createTable(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
@@ -49,11 +53,11 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    override fun dropTable(tableName: TableName) {
+    override suspend fun dropTable(tableName: TableName) {
         execute(sqlGenerator.dropTable(tableName))
     }
 
-    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
+    override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         execute(
             sqlGenerator.wrapInTransaction(
                 sqlGenerator.dropTable(targetTableName),
@@ -62,7 +66,7 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    override fun copyTable(
+    override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName
@@ -76,7 +80,7 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    override fun upsertTable(
+    override suspend fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
@@ -92,7 +96,7 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    override fun ensureSchemaMatches(
+    override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
@@ -114,7 +118,7 @@ class ClickhouseAirbyteClient(
         }
     }
 
-    override fun getGenerationId(tableName: TableName): Long {
+    override suspend fun getGenerationId(tableName: TableName): Long {
         try {
             val sql = sqlGenerator.getGenerationId(tableName, "generation")
             val response = query(sql)
@@ -129,13 +133,11 @@ class ClickhouseAirbyteClient(
         }
     }
 
-    private fun execute(query: String): CommandResponse {
-        // TODO: Make suspend after we update the interfaces
-        return runBlocking { client.execute(query).await() }
+    private suspend fun execute(query: String): CommandResponse {
+        return client.execute(query).await()
     }
 
-    private fun query(query: String): QueryResponse {
-        // TODO: Make suspend after we update the interfaces
-        return runBlocking { client.query(query).await() }
+    private suspend fun query(query: String): QueryResponse {
+        return client.query(query).await()
     }
 }
