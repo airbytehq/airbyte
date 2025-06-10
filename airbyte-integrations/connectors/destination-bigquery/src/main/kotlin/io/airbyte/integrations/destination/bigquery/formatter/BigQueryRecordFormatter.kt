@@ -143,8 +143,8 @@ class BigQueryRecordFormatter(
 
     companion object {
         // see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types
-        val INT64_MIN_VALUE: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
-        val INT64_MAX_VALUE: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
+        private val INT64_MIN_VALUE: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
+        private val INT64_MAX_VALUE: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
         private val NUMERIC_SCALE = BigDecimal("1e9")
         val MAX_NUMERIC: BigDecimal = BigDecimal("1e38").minus(BigDecimal.ONE).divide(NUMERIC_SCALE)
         val MIN_NUMERIC: BigDecimal = BigDecimal("-1e38").plus(BigDecimal.ONE).divide(NUMERIC_SCALE)
