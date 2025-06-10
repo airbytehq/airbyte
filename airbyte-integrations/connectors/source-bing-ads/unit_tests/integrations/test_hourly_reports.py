@@ -52,14 +52,20 @@ class HourlyReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
     second_read_state_for_records_further_start_date = get_state_after_migration(
         time_period="2024-05-07T01:00:00+00:00", account_id=TestSuiteReportStream.account_id
     )
-    report_file_with_records_further_start_date = "ad_performance_report_hourly_with_records_further_config_start_date"
+
+    @property
+    def report_file_with_records_further_start_date(self):
+        return f"{self.stream_name}_with_records_further_config_start_date"
+
     state_file_legacy = "hourly_reports_state_legacy"
     state_file_after_migration = "hourly_reports_state_after_migration"
     state_file_after_migration_with_cursor_further_config_start_date = (
         "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
     )
-    # records should above the state_file_after_migration_with_cursor_further_config_start_date cursor
-    incremental_report_file_with_records_further_cursor = "ad_performance_report_hourly_incremental_with_records_further_cursor"
+
+    @property
+    def incremental_report_file_with_records_further_cursor(self):
+        return f"{self.stream_name}_incremental_with_records_further_cursor"
 
 
 class TestAgeGenderAudienceReportHourlyStream(HourlyReportsTest):
@@ -123,12 +129,59 @@ class TestAdGroupImpressionPerformanceReportHourlyStream(HourlyReportsTest):
     incremental_report_file = "ad_group_impression_performance_report_hourly_incremental"
 
 
-class TestCampaignPerformanceReportHourlyStream(HourlyReportsTest):
+class TestCampaignPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
     stream_name = "campaign_performance_report_hourly"
     report_file = "campaign_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "campaign_performance_report_hourly_incremental"
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReturnOnlyCompleteData": false, "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}, "ReportName": "CampaignPerformanceReport", "Type": "CampaignPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "CampaignId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Network", "DeliveredMatchType", "DeviceOS", "TopVsOther", "BidMatchType", "AccountName", "CampaignName", "CampaignType", "CampaignStatus", "CampaignLabels", "Impressions", "Clicks", "Ctr", "Spend", "CostPerConversion", "QualityScore", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "ViewThroughConversions", "AllCostPerConversion", "AllReturnOnAdSpend", "AllConversions", "ConversionsQualified", "AllConversionRate", "AllRevenue", "AllRevenuePerConversion", "AverageCpc", "AveragePosition", "AverageCpm", "Conversions", "ConversionRate", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualitySophisticatedClicks", "LowQualityConversions", "LowQualityConversionRate", "Revenue", "RevenuePerConversion", "RevenuePerAssist", "BudgetName", "BudgetStatus", "BudgetAssociationStatus"]}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReturnOnlyCompleteData": false, "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}, "ReportName": "CampaignPerformanceReport", "Type": "CampaignPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "CampaignId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Network", "DeliveredMatchType", "DeviceOS", "TopVsOther", "BidMatchType", "AccountName", "CampaignName", "CampaignType", "CampaignStatus", "CampaignLabels", "Impressions", "Clicks", "Ctr", "Spend", "CostPerConversion", "QualityScore", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "ViewThroughConversions", "AllCostPerConversion", "AllReturnOnAdSpend", "AllConversions", "ConversionsQualified", "AllConversionRate", "AllRevenue", "AllRevenuePerConversion", "AverageCpc", "AveragePosition", "AverageCpm", "Conversions", "ConversionRate", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualitySophisticatedClicks", "LowQualityConversions", "LowQualityConversionRate", "Revenue", "RevenuePerConversion", "RevenuePerAssist", "BudgetName", "BudgetStatus", "BudgetAssociationStatus"]}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
+
+    @freeze_time("2024-05-06")
+    def test_no_config_start_date(self):
+        """
+        If the field reports_start_date is blank, Airbyte will replicate all data from previous and current calendar years.
+        This test is to validate that the stream will return all records from the first day of the year 2023 (CustomDateRangeStart in mocked body).
+        """
+        if self.stream_name not in MANIFEST_STREAMS:
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        self.mock_report_apis()
+        # here we mock the report start date to be the first day of the year 2023
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReturnOnlyCompleteData": false, "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}, "ReportName": "CampaignPerformanceReport", "Type": "CampaignPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "CampaignId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Network", "DeliveredMatchType", "DeviceOS", "TopVsOther", "BidMatchType", "AccountName", "CampaignName", "CampaignType", "CampaignStatus", "CampaignLabels", "Impressions", "Clicks", "Ctr", "Spend", "CostPerConversion", "QualityScore", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "ViewThroughConversions", "AllCostPerConversion", "AllReturnOnAdSpend", "AllConversions", "ConversionsQualified", "AllConversionRate", "AllRevenue", "AllRevenuePerConversion", "AverageCpc", "AveragePosition", "AverageCpm", "Conversions", "ConversionRate", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualitySophisticatedClicks", "LowQualityConversions", "LowQualityConversionRate", "Revenue", "RevenuePerConversion", "RevenuePerAssist", "BudgetName", "BudgetStatus", "BudgetAssociationStatus"]}}',
+        )
+        config = deepcopy(self._config)
+        del config["reports_start_date"]
+        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, config, self.report_file)
+        assert len(output.records) == self.records_number
+        first_read_state = deepcopy(self.first_read_state)
+        # this corresponds to the last read record as we don't have started_date in the config
+        # the self.first_read_state is set using the config start date so it is not correct for this test
+        first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
+        first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
+        assert output.most_recent_state.stream_state.__dict__ == first_read_state
 
 
 class TestCampaignImpressionPerformanceReportHourlyStream(HourlyReportsTest):
