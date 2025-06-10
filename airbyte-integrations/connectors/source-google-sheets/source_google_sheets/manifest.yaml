@@ -14,7 +14,8 @@ dynamic_streams:
       name: ""
       $parameters:
         i: 123
-      primary_key: []
+        primary_key: []
+      primary_key: "{{parameters['primary_key']}}"
       retriever:
         type: SimpleRetriever
         $parameters:
@@ -172,6 +173,30 @@ dynamic_streams:
           type: ComponentMappingDefinition
           value: "{{config.get('batch_size', 1000000)}}"
           description: batch size count for dynamic stream partition router (slicer).
+        - field_path:
+            - $parameters
+            - primary_key
+          type: ComponentMappingDefinition
+          # This Jinja2 block sets the primary key for each stream.
+          # It first resolves the stream name, using the override from config if present, otherwise the original sheet/tab name.
+          # The PK is then set at the end: {{ [] }}
+
+          value: >-
+            {%- set resolved_stream_name = (
+              (
+                config.get('stream_name_overrides', [])
+                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+                | list
+              )[0]['custom_stream_name']
+              if (
+                config.get('stream_name_overrides', [])
+                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+                | list
+              )
+              else components_values['properties']['title']
+            ) -%}
+            {{ [] }}
+          description: Primary key for the stream.
 
 definitions:
   streams:
