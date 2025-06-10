@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.util.FastUUIDGenerator
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -31,6 +32,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 
@@ -47,6 +49,7 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
+    private val uuidGenerator: FastUUIDGenerator,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -56,29 +59,40 @@ class DefaultObjectStorageFormattingWriterFactory(
         // TODO: FileWriter
 
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
-            is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
+            is JsonFormatConfiguration ->
+                JsonFormattingWriter(
+                    stream = stream,
+                    outputStream = outputStream,
+                    rootLevelFlattening = flatten,
+                    airbyteRawId = uuidGenerator.insecureUUID()
+                )
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
-                    stream,
-                    outputStream,
-                    formatConfigProvider.objectStorageFormatConfiguration
-                        as AvroFormatConfiguration,
-                    flatten
+                    stream = stream,
+                    outputStream = outputStream,
+                    formatConfig =
+                        formatConfigProvider.objectStorageFormatConfiguration
+                            as AvroFormatConfiguration,
+                    rootLevelFlattening = flatten,
+                    airbyteRawId = uuidGenerator.insecureUUID(),
                 )
             is ParquetFormatConfiguration ->
                 ParquetFormattingWriter(
-                    stream,
-                    outputStream,
-                    formatConfigProvider.objectStorageFormatConfiguration
-                        as ParquetFormatConfiguration,
-                    flatten
+                    stream = stream,
+                    outputStream = outputStream,
+                    formatConfig =
+                        formatConfigProvider.objectStorageFormatConfiguration
+                            as ParquetFormatConfiguration,
+                    rootLevelFlattening = flatten,
+                    airbyteRawId = uuidGenerator.insecureUUID(),
                 )
             is CSVFormatConfiguration ->
                 CSVFormattingWriter(
-                    stream,
-                    outputStream,
-                    flatten,
-                    extractedAtAsTimestampWithTimezone = false
+                    stream = stream,
+                    outputStream = outputStream,
+                    rootLevelFlattening = flatten,
+                    extractedAtAsTimestampWithTimezone = false,
+                    airbyteRawId = uuidGenerator.insecureUUID(),
                 )
         }
     }
@@ -88,13 +102,18 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
+    private val airbyteRawId: UUID,
 ) : ObjectStorageFormattingWriter {
 
     override fun accept(record: DestinationRecordRaw) {
         val data =
             record
                 .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(stream, rootLevelFlattening)
+                .dataWithAirbyteMeta(
+                    stream = stream,
+                    flatten = rootLevelFlattening,
+                    airbyteRawId = airbyteRawId
+                )
                 .toJson()
                 .serializeToString()
         outputStream.write(data)
@@ -115,6 +134,7 @@ class CSVFormattingWriter(
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
     private val extractedAtAsTimestampWithTimezone: Boolean,
+    private val airbyteRawId: UUID,
 ) : ObjectStorageFormattingWriter {
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
@@ -124,9 +144,10 @@ class CSVFormattingWriter(
             record
                 .asDestinationRecordAirbyteValue()
                 .dataWithAirbyteMeta(
-                    stream,
-                    rootLevelFlattening,
-                    extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone
+                    stream = stream,
+                    flatten = rootLevelFlattening,
+                    extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+                    airbyteRawId = airbyteRawId,
                 )
                 .toCsvRecord(finalSchema)
         )
@@ -146,6 +167,7 @@ class AvroFormattingWriter(
     outputStream: OutputStream,
     formatConfig: AvroFormatConfiguration,
     private val rootLevelFlattening: Boolean,
+    private val airbyteRawId: UUID,
 ) : ObjectStorageFormattingWriter {
     val log = KotlinLogging.logger {}
 
@@ -164,7 +186,12 @@ class AvroFormattingWriter(
         val marshalledRecord = record.asDestinationRecordAirbyteValue()
         val dataMapped = pipeline.map(marshalledRecord.data, marshalledRecord.meta?.changes)
         val withMeta =
-            dataMapped.withAirbyteMeta(stream, marshalledRecord.emittedAtMs, rootLevelFlattening)
+            dataMapped.withAirbyteMeta(
+                stream = stream,
+                emittedAtMs = marshalledRecord.emittedAtMs,
+                flatten = rootLevelFlattening,
+                airbyteRawId = airbyteRawId
+            )
         writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
     }
 
@@ -182,6 +209,7 @@ class ParquetFormattingWriter(
     outputStream: OutputStream,
     formatConfig: ParquetFormatConfiguration,
     private val rootLevelFlattening: Boolean,
+    private val airbyteRawId: UUID,
 ) : ObjectStorageFormattingWriter {
     private val log = KotlinLogging.logger {}
 
@@ -201,7 +229,12 @@ class ParquetFormattingWriter(
         val marshalledRecord = record.asDestinationRecordAirbyteValue()
         val dataMapped = pipeline.map(marshalledRecord.data, marshalledRecord.meta?.changes)
         val withMeta =
-            dataMapped.withAirbyteMeta(stream, marshalledRecord.emittedAtMs, rootLevelFlattening)
+            dataMapped.withAirbyteMeta(
+                stream = stream,
+                emittedAtMs = marshalledRecord.emittedAtMs,
+                flatten = rootLevelFlattening,
+                airbyteRawId = airbyteRawId
+            )
         writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
     }
 

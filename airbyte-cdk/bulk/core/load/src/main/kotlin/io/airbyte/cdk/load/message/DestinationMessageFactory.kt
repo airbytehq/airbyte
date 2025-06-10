@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.util.FastUUIDGenerator
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
@@ -23,7 +24,8 @@ class DestinationMessageFactory(
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
+    private val uuidGenerator: FastUUIDGenerator,
 ) {
 
     fun fromAirbyteProtocolMessage(
@@ -93,10 +95,11 @@ class DestinationMessageFactory(
                             null
                         }
                     DestinationRecord(
-                        stream,
-                        DestinationRecordJsonSource(message),
-                        serializedSizeBytes,
-                        checkpointId
+                        stream = stream,
+                        message = DestinationRecordJsonSource(message),
+                        serializedSizeBytes = serializedSizeBytes,
+                        checkpointId = checkpointId,
+                        airbyteRawId = uuidGenerator.insecureUUID(),
                     )
                 }
             }
@@ -241,10 +244,11 @@ class DestinationMessageFactory(
                 )
             val stream = catalog.getStream(descriptor)
             DestinationRecord(
-                stream,
-                DestinationRecordProtobufSource(message),
-                serializedSizeBytes,
-                CheckpointId(message.record.partitionId)
+                stream = stream,
+                message = DestinationRecordProtobufSource(message),
+                serializedSizeBytes = serializedSizeBytes,
+                checkpointId = CheckpointId(message.record.partitionId),
+                airbyteRawId = uuidGenerator.insecureUUID(),
             )
         } else if (message.hasProbe()) {
             ProbeMessage

@@ -25,6 +25,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import java.util.UUID
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -79,7 +80,12 @@ class InputConsumerTaskUTest {
                         Reserved(
                             null,
                             0,
-                            DestinationRecord(stream = dstream, message = mockk(relaxed = true), 0L)
+                            DestinationRecord(
+                                stream = dstream,
+                                message = mockk(relaxed = true),
+                                serializedSizeBytes = 0L,
+                                airbyteRawId = UUID.randomUUID()
+                            )
                         )
                     )
                 )

@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
+import io.airbyte.cdk.load.util.FastUUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
@@ -48,6 +49,8 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
+    private val uuidGenerator = FastUUIDGenerator()
+
     private fun factory(
         isFileTransferEnabled: Boolean,
         requireCheckpointKey: Boolean = false,
@@ -71,6 +74,7 @@ class DestinationMessageTest {
             isFileTransferEnabled,
             requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
             namespaceMapper,
+            uuidGenerator = uuidGenerator,
         )
 
     private fun convert(
@@ -508,9 +512,10 @@ class DestinationMessageTest {
 
         val internalRecord =
             DestinationRecordRaw(
-                mockk(relaxed = true),
-                DestinationRecordJsonSource(msg),
-                "serialized".length.toLong()
+                stream = mockk(relaxed = true),
+                rawData = DestinationRecordJsonSource(msg),
+                serializedSizeBytes = "serialized".length.toLong(),
+                airbyteRawId = uuidGenerator.insecureUUID(),
             )
 
         assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
@@ -526,9 +531,10 @@ class DestinationMessageTest {
                 .withRecord(AirbyteRecordMessage().withFileReference(null))
         val internalRecord =
             DestinationRecordRaw(
-                mockk(relaxed = true),
-                DestinationRecordJsonSource(msg),
-                "serialized".length.toLong()
+                stream = mockk(relaxed = true),
+                rawData = DestinationRecordJsonSource(msg),
+                serializedSizeBytes = "serialized".length.toLong(),
+                airbyteRawId = uuidGenerator.insecureUUID(),
             )
 
         assertNull(internalRecord.fileReference)
@@ -616,10 +622,11 @@ class DestinationMessageTest {
 
         val factory =
             DestinationMessageFactory(
-                catalog,
+                catalog = catalog,
                 fileTransferEnabled = false,
                 requireCheckpointIdOnRecordAndKeyOnState = true,
-                NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                uuidGenerator = uuidGenerator,
             )
         val inputMessage =
             AirbyteMessageProtobuf.newBuilder()
