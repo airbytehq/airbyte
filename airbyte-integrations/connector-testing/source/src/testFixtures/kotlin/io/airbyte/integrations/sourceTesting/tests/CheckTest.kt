@@ -1,5 +1,5 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.tests
+package io.airbyte.integrations.sourceTesting.tests
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.JdbcSourceConfiguration
