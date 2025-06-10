@@ -212,7 +212,7 @@ request_parameters:
         requester:
           type: HttpRequester
           url_base: "https://api.hubapi.com"
-          path: "/properties/v2/{{ stream_name }}/properties"
+          path: "/properties/v2/contacts/properties"
           http_method: "GET"
         record_selector:
           type: RecordSelector
