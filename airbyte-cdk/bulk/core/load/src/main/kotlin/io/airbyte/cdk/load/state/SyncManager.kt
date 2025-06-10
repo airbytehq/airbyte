@@ -123,7 +123,7 @@ class SyncManager(
         if (incompleteStreams.isNotEmpty()) {
             val prettyStreams = incompleteStreams.map { it.toPrettyString() }
             throw TransientErrorException(
-                "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
+                "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
             )
         }
         inputConsumed.complete(true)

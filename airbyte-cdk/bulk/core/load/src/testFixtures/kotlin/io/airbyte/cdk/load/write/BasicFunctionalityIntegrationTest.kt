@@ -3639,7 +3639,7 @@ abstract class BasicFunctionalityIntegrationTest(
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 
-    private fun checkpointKeyForMedium(): CheckpointKey? {
+    fun checkpointKeyForMedium(): CheckpointKey? {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> null
             DataChannelMedium.SOCKET -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
