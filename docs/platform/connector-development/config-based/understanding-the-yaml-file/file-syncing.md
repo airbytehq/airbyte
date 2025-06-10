@@ -86,13 +86,9 @@ Extracts file content from the HTTP response when the entire response body isn't
 
 Customizes file naming using Jinja templating with access to record data and configuration. If not provided, Airbyte uses a random UUID as the filename.
 
-## File storage and metadata
+## File handling
 
-Airbyte stores downloaded files in a temporary directory structure organized by stream name. Each record receives these additional metadata fields.
-
-- `file_reference.staging_file_url`: Local path to the downloaded file
-- `file_reference.source_file_relative_path`: Relative path for organization
-- `file_reference.file_size_bytes`: File size information
+Downloaded files are stored temporarily during sync processing. The platform automatically handles file organization and adds necessary metadata for destination processing. Users only need to configure the `file_uploader` component - the platform manages the rest of the file transfer workflow.
 
 ## Authentication
 
