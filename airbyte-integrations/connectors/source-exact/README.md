@@ -57,3 +57,22 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 --debug
 ```
 
+## Testing
+
+Make sure to familiarize yourself
+with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test
+files and methods should be named.
+First install test dependencies into your virtual environment:
+
+```shell
+uv sync --dev
+```
+
+### Unit Tests
+
+To run unit tests locally, from the connector directory `source_exact` run:
+
+```
+uv run pytest unit_tests/
+```
+
