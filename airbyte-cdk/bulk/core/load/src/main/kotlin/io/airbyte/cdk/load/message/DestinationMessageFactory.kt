@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
@@ -126,17 +127,9 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            }
+                            throw ConfigErrorException(
+                                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
+                            )
                         else -> Undefined
                     }
                 } else {
