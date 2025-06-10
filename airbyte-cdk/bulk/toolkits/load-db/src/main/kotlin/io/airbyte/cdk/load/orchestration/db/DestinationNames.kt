@@ -71,7 +71,7 @@ class DefaultTempTableNameGenerator(
                         originalName.name + TMP_TABLE_SUFFIX,
                     ),
                 )
-                .substring(hashLength)
+                .take(hashLength)
         return TableName(
             name = "$shortNamespace$shortName$hash",
             namespace = internalNamespace,
@@ -80,10 +80,10 @@ class DefaultTempTableNameGenerator(
 
     /**
      * Examples:
-     * * `"123456".takeFirstAndALastNChars(1, "_") = "1_6"`
-     * * `"123456".takeFirstAndALastNChars(2, "_") = "12_56"`
-     * * `"123456".takeFirstAndALastNChars(3, "_") = "123456"`
-     * * `"123456".takeFirstAndALastNChars(4, "_") = "123456"`
+     * * `"123456".takeFirstAndLastNChars(1, "_") = "1_6"`
+     * * `"123456".takeFirstAndLastNChars(2, "_") = "12_56"`
+     * * `"123456".takeFirstAndLastNChars(3, "_") = "123456"`
+     * * `"123456".takeFirstAndLastNChars(4, "_") = "123456"`
      */
     private fun String.takeFirstAndLastNChars(n: Int, separator: String): String {
         if (length <= 2 * n) {
