@@ -2,12 +2,15 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 from pytest_lazy_fixtures import lf as lazy_fixture
 
+from airbyte_cdk import AirbyteConnectionStatus, AirbyteEntrypoint, AirbyteTracedException
 from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.types import StreamSlice
 
@@ -55,6 +58,70 @@ def test_slice(config_gen, site_urls, sync_mode, data_state):
                     },
                 )
                 assert next(stream_slice) == expected
+
+
+def test_check_connection(config_gen, config, requests_mock):
+    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
+    requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
+
+    source = get_source(config=config)
+
+    mock_logger = MagicMock()
+
+    assert source.check(logger=mock_logger, config=config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    # test site_urls
+    assert source.check(logger=mock_logger, config=config_gen(site_urls=["https://example.com/"])) == AirbyteConnectionStatus(
+        status=Status.SUCCEEDED
+    )
+
+
+def test_config_migrations(config_gen):
+    try:
+        config_path = Path(__file__).parent / "test_configs" / "config.json"
+        assert config_path.exists()
+
+        with open(config_path, "r") as f:
+            config = json.load(f)
+
+        og_config = dict(config)
+
+        get_source(config, config_path=str(config_path))
+
+        with open(config_path, "r") as f:
+            migrated_config = json.load(f)
+
+        assert "custom_reports_array" in migrated_config
+        assert migrated_config["custom_reports_array"] == [{"name": "config_migration_test", "dimensions": ["date", "country", "device"]}]
+        assert "custom_reports_array" not in og_config
+    finally:
+        # Reset config
+        with open(config_path, "w") as f:
+            json.dump(
+                config_gen(
+                    custom_reports_array=...,
+                    custom_reports='[{"name": "config_migration_test", "dimensions": ["date", "country", "device"]}]',
+                ),
+                f,
+            )
+
+
+def test_config_validations(config_gen):
+    config_valid = config_gen()
+    config_invalid_custom_reports_type = config_gen(custom_reports_array={}, custom_reports=...)
+    config_invalid_custom_reports_dict_properties = config_gen(
+        custom_reports_array=[{"dimensions": ["date", "country", "device"]}], custom_reports=...
+    )
+
+    assert get_source(config_valid).streams(config=config_valid)
+
+    with pytest.raises(ValueError) as excinfo_invalid_custom_reports_type:
+        get_source(config_invalid_custom_reports_type).streams(config=config_invalid_custom_reports_type)
+    assert "JSON schema validation error: {} is not of type 'array'" in str(excinfo_invalid_custom_reports_type.value)
+
+    with pytest.raises(ValueError) as excinfo_invalid_custom_reports_dict_properties:
+        get_source(config_invalid_custom_reports_dict_properties).streams(config=config_invalid_custom_reports_dict_properties)
+    assert "JSON schema validation error: 'name' is a required property" in str(excinfo_invalid_custom_reports_dict_properties.value)
 
 
 @pytest.mark.parametrize(
