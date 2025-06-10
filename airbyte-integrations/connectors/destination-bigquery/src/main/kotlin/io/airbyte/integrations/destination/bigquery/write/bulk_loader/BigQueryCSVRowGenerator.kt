@@ -7,12 +7,8 @@ package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
-import io.airbyte.cdk.load.data.EnrichedAirbyteValue
-import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
@@ -25,45 +21,15 @@ import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
-import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithoutTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithoutTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.validateAirbyteValue
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
-import java.math.BigDecimal
-import java.math.BigInteger
 
 object LIMITS {
     val TRUE = IntegerValue(1)
     val FALSE = IntegerValue(0)
-
-    fun validateNumber(value: EnrichedAirbyteValue): BigDecimal? {
-        val numValue = (value.abValue as NumberValue).value
-        return if (
-            numValue < BigQueryRecordFormatter.MIN_NUMERIC ||
-                BigQueryRecordFormatter.MAX_NUMERIC < numValue
-        ) {
-            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-            null
-        } else {
-            numValue
-        }
-    }
-
-    fun validateInteger(value: EnrichedAirbyteValue): BigInteger? {
-        val intValue = (value.abValue as IntegerValue).value
-        return if (
-            intValue < BigQueryRecordFormatter.INT64_MIN_VALUE ||
-                BigQueryRecordFormatter.INT64_MAX_VALUE < intValue
-        ) {
-            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-            null
-        } else {
-            intValue
-        }
-    }
 }
 
 class BigQueryCSVRowGenerator {
@@ -81,9 +47,6 @@ class BigQueryCSVRowGenerator {
 
             val actualValue = value.abValue
             when (value.type) {
-                // Enforce numeric range
-                is IntegerType -> LIMITS.validateInteger(value)
-                is NumberType -> LIMITS.validateNumber(value)
                 is BooleanType ->
                     value.abValue =
                         if ((actualValue as BooleanValue).value) LIMITS.TRUE else LIMITS.FALSE
