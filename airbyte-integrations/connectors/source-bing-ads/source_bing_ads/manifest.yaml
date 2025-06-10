@@ -1268,18 +1268,6 @@ definitions:
     - HistoricalAdRelevance
     - HistoricalLandingPageExperience
 
-  campaign_performance_report_stream_transformations:
-    - type: AddedFieldDefinition
-      path:
-        - AccountId
-      value: |
-        {{ record['AccountId'] | int if record.get('AccountId') else none }}
-    - type: AddedFieldDefinition
-      path:
-        - CampaignId
-      value: |
-        {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
-
   campaign_performance_report_hourly_stream:
     type: DeclarativeStream
     name: campaign_performance_report_hourly
@@ -1307,7 +1295,10 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/campaign_performance_report_stream_transformations"
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
@@ -1339,7 +1330,10 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/campaign_performance_report_stream_transformations"
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
 
   campaign_performance_report_weekly_stream:
     type: DeclarativeStream
@@ -1368,7 +1362,10 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/campaign_performance_report_stream_transformations"
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
 
   campaign_performance_report_monthly_stream:
     type: DeclarativeStream
@@ -1397,7 +1394,10 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/campaign_performance_report_stream_transformations"
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
 
   # bulk streams
   labels_stream:
@@ -1657,7 +1657,7 @@ definitions:
       AccountIds:
         - "{{ stream_partition['account_id'] }}"
     Time:
-      CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+      CustomDateRangeStart:
         Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
         Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
         Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
@@ -1665,8 +1665,7 @@ definitions:
         Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
         Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
         Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-      # "PredefinedTime": "ValueHere"
-      "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+      ReportTimeZone: "GreenwichMeanTimeDublinEdinburghLisbonLondon"
 
   transformations:
     # Shared by multiple performance report streams (account + ad)
@@ -1942,6 +1941,108 @@ definitions:
             {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
           {%- endif -%}
           {{ time_period }}
+
+    # Used in campaign performance report streams
+    campaign_performance_report_common_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AllConversionRate
+        value: |
+          {% set v = record.get('AllConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllConversions
+        value: |
+          {{ record['AllConversions'] | int if record.get('AllConversions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AllReturnOnAdSpend
+        value: |
+          {% set v = record.get('AllReturnOnAdSpend') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllRevenue
+        value: |
+          {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ViewThroughConversions
+        value: |
+          {{ record['ViewThroughConversions'] | int if record.get('ViewThroughConversions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AllCostPerConversion
+        value: |
+          {% set v = record.get('AllCostPerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllRevenuePerConversion
+        value: |
+          {% set v = record.get('AllRevenuePerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - PhoneImpressions
+        value: |
+          {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - PhoneCalls
+        value: |
+          {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicks
+        value: |
+          {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicksPercent
+        value: |
+          {% set v = record.get('LowQualityClicksPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityImpressions
+        value: |
+          {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualitySophisticatedClicks
+        value: |
+          {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversions
+        value: |
+          {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversionRate
+        value: |
+          {% set v = record.get('LowQualityConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AdRelevance
+        value: |
+          {% set v = record.get('AdRelevance') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LandingPageExperience
+        value: |
+          {% set v = record.get('LandingPageExperience') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - QualityScore
+        value: |
+          {% set v = record.get('QualityScore') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
 streams:
   - $ref: "#/definitions/accounts_stream"
