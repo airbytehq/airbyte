@@ -41,11 +41,11 @@ class ClickhouseDirectLoader(
         const val FIELD_GEN_ID = "_airbyte_generation_id"
     }
 
-    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
         println(protocolRecord.toPrettyString())
-        protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.record.emittedAt)
+        protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
 
@@ -58,12 +58,12 @@ class ClickhouseDirectLoader(
 
         recordCount++
 
-        //if (recordCount >= Constants.BATCH_SIZE_RECORDS) {
+        if (recordCount >= Constants.BATCH_SIZE_RECORDS) {
             flush()
             return DirectLoader.Complete
-        //}
+        }
 
-        //return DirectLoader.Incomplete
+        return DirectLoader.Incomplete
     }
 
     private fun flush() {
