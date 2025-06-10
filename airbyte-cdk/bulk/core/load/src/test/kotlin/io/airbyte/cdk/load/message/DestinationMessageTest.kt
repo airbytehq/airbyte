@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.load.message
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -36,33 +38,42 @@ import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessagePro
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.mockk.mockk
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
-    private fun factory(isFileTransferEnabled: Boolean, requireCheckpointKey: Boolean = false) =
+    private fun factory(
+        isFileTransferEnabled: Boolean,
+        requireCheckpointKey: Boolean = false,
+        namespaceMapper: NamespaceMapper = NamespaceMapper()
+    ) =
         DestinationMessageFactory(
             DestinationCatalog(
                 listOf(
                     DestinationStream(
-                        descriptor,
+                        unmappedNamespace = descriptor.namespace,
+                        unmappedName = descriptor.name,
                         Append,
                         ObjectTypeWithEmptySchema,
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
+                        namespaceMapper = namespaceMapper
                     )
                 )
             ),
             isFileTransferEnabled,
-            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey
+            requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
+            namespaceMapper,
         )
 
     private fun convert(
@@ -80,6 +91,34 @@ class DestinationMessageTest {
             // Fortunately, the protocol models are (by definition) round-trippable through JSON.
             serialized.deserializeToClass(AirbyteMessage::class.java),
             serialized.length.toLong()
+        )
+    }
+
+    @Test
+    fun testThrowOnIncompleteStatus() {
+        val e =
+            assertThrows<ConfigErrorException> {
+                convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
+            }
+        assertTrue(
+            e.message!!.startsWith(
+                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
+            ),
+            "Exception message was wrong: ${e.message}",
+        )
+    }
+
+    @Test
+    fun testThrowOnFileIncompleteStatus() {
+        val e =
+            assertThrows<ConfigErrorException> {
+                convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
+            }
+        assertTrue(
+            e.message!!.startsWith(
+                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
+            ),
+            "Exception message was wrong: ${e.message}",
         )
     }
 
@@ -308,6 +347,24 @@ class DestinationMessageTest {
         private val descriptor = DestinationStream.Descriptor("namespace", "name")
         private val blob1 = """{"foo": "bar"}""".deserializeToNode()
         private val blob2 = """{"foo": "bar"}""".deserializeToNode()
+        private val incompleteStatusMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.TRACE)
+                .withTrace(
+                    AirbyteTraceMessage()
+                        .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                        .withEmittedAt(1234.0)
+                        .withStreamStatus(
+                            AirbyteStreamStatusTraceMessage()
+                                // Intentionally no "reasons" here - destinations never
+                                // inspect that
+                                // field, so it's not round-trippable
+                                .withStreamDescriptor(descriptor.asProtocolObject())
+                                .withStatus(
+                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+                                )
+                        )
+                )
 
         @JvmStatic
         fun roundTrippableMessages(): List<Arguments> =
@@ -355,24 +412,6 @@ class DestinationMessageTest {
                                         )
                                 )
                         ),
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withEmittedAt(1234.0)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        // Intentionally no "reasons" here - destinations never
-                                        // inspect that
-                                        // field, so it's not round-trippable
-                                        .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStatus(
-                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .INCOMPLETE
-                                        )
-                                )
-                        ),
                 )
                 .map { Arguments.of(it) }
 
@@ -412,24 +451,6 @@ class DestinationMessageTest {
                                         .withStatus(
                                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
                                                 .COMPLETE
-                                        )
-                                )
-                        ),
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withEmittedAt(1234.0)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        // Intentionally no "reasons" here - destinations never
-                                        // inspect that
-                                        // field, so it's not round-trippable
-                                        .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStatus(
-                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .INCOMPLETE
                                         )
                                 )
                         ),
@@ -588,7 +609,8 @@ class DestinationMessageTest {
         // Note: can't be a mock or `schemaInAirbyteProxyOrder` won't return the correct value
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor("namespace", "name"),
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
@@ -600,7 +622,8 @@ class DestinationMessageTest {
                                 "id" to FieldType(IntegerType, nullable = true),
                                 "name" to FieldType(StringType, nullable = true)
                             )
-                    )
+                    ),
+                namespaceMapper = NamespaceMapper()
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 
@@ -608,7 +631,8 @@ class DestinationMessageTest {
             DestinationMessageFactory(
                 catalog,
                 fileTransferEnabled = false,
-                requireCheckpointIdOnRecordAndKeyOnState = true
+                requireCheckpointIdOnRecordAndKeyOnState = true,
+                NamespaceMapper()
             )
         val inputMessage =
             AirbyteMessageProtobuf.newBuilder()

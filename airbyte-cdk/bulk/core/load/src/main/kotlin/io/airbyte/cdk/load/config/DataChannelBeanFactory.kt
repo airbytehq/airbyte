@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.config
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.DataChannelReader
 import io.airbyte.cdk.load.file.JSONLDataChannelReader
@@ -27,6 +28,7 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
+import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -34,6 +36,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.File
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 
@@ -292,5 +295,31 @@ class DataChannelBeanFactory {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
         }
         return HeartbeatTask(config, pipelineInputQueue, checkpointManager)
+    }
+
+    @Singleton
+    fun namespaceMapper(
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Value("\${airbyte.destination.core.mappers.namespace-mapping-config-path}")
+        namespaceMappingConfigPath: String
+    ): NamespaceMapper {
+        when (dataChannelMedium) {
+            DataChannelMedium.STDIO -> {
+                // Source is effectively "identity." In STDIO mode, we just take
+                // what we're given.
+                return NamespaceMapper(NamespaceDefinitionType.SOURCE)
+            }
+            DataChannelMedium.SOCKET -> {
+                val config =
+                    File(namespaceMappingConfigPath)
+                        .readText(Charsets.UTF_8)
+                        .deserializeToClass(NamespaceMappingConfig::class.java)
+                return NamespaceMapper(
+                    namespaceDefinitionType = config.namespaceDefinitionType,
+                    namespaceFormat = config.namespaceFormat,
+                    streamPrefix = config.streamPrefix
+                )
+            }
+        }
     }
 }

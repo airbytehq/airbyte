@@ -7,14 +7,13 @@ package io.airbyte.cdk.load.state
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.PipelineInputEvent
+import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
@@ -29,6 +28,8 @@ import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.BatchEndOfStream
+import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.util.CloseableCoroutine
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
@@ -59,6 +60,8 @@ class PipelineEventBookkeepingRouter(
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val openStreamQueue: QueueWriter<DestinationStream>,
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    @Named("batchStateUpdateQueue")
+    private val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("numDataChannels") private val numDataChannels: Int,
     @Named("markEndOfStreamAtEndOfSync") private val markEndOfStreamAtEndOfSync: Boolean
 ) : CloseableCoroutine {
@@ -110,13 +113,6 @@ class PipelineEventBookkeepingRouter(
                 }
                 PipelineEndOfStream(stream.descriptor)
             }
-            is DestinationRecordStreamIncomplete -> {
-                log.info { "Read INCOMPLETE for stream ${stream.descriptor}" }
-                if (!markEndOfStreamAtEndOfSync) {
-                    manager.markEndOfStream(false)
-                }
-                PipelineEndOfStream(stream.descriptor)
-            }
 
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
@@ -132,10 +128,6 @@ class PipelineEventBookkeepingRouter(
                 fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
                 PipelineHeartbeat()
             }
-            is DestinationFileStreamIncomplete ->
-                throw IllegalStateException(
-                    "File stream ${stream.descriptor} failed upstream, cannot continue."
-                )
         }
     }
 
@@ -143,13 +135,13 @@ class PipelineEventBookkeepingRouter(
         when (val checkpoint = reservation.value) {
             is StreamCheckpoint -> {
                 val stream = checkpoint.checkpoint.stream
-                val manager = syncManager.getStreamManager(stream)
+                val manager = syncManager.getStreamManager(stream.descriptor)
                 val (checkpointKey, checkpointRecordCount) = getKeyAndCounts(checkpoint, manager)
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
                 checkpointQueue.publish(
                     reservation.replace(
-                        StreamCheckpointWrapped(stream, checkpointKey, messageWithCount)
+                        StreamCheckpointWrapped(stream.descriptor, checkpointKey, messageWithCount)
                     )
                 )
             }
@@ -223,7 +215,11 @@ class PipelineEventBookkeepingRouter(
             if (markEndOfStreamAtEndOfSync) {
                 catalog.streams.forEach {
                     val sawComplete = sawEndOfStreamComplete.contains(it.descriptor)
-                    syncManager.getStreamManager(it.descriptor).markEndOfStream(sawComplete)
+                    val manager = syncManager.getStreamManager(it.descriptor)
+                    manager.markEndOfStream(sawComplete)
+                    batchStateUpdateQueue.publish(
+                        BatchEndOfStream(it.descriptor, "bookkeepingRouter", 0, manager.readCount())
+                    )
                 }
             }
             log.info { "Closing internal control channels" }

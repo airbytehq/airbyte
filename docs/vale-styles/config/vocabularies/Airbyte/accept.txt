@@ -37,6 +37,7 @@ Python
 MarkDownLint
 markdownlint-cli2
 JavaScript
+ID
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -48,6 +49,10 @@ CSV
 CSVs
 API
 APIs
+OAuth
+DPath
+UUID
+URL
 
 # Airbyte connectors
 
@@ -59,6 +64,9 @@ S3 Data Lake
 Glue
 [Gg]raph[Qq][Ll]
 \bDocker(?:'s)?\b
+npm
+HubSpot
+Zendesk
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
