@@ -135,12 +135,18 @@ connectionSpecification:
       type: array
       title: Stream Name Overrides
       description: >-
+        **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
+
         Allows you to rename streams (Google Sheet tab names) as they appear in Airbyte. 
+
         Each item should be an object with a `source_stream_name` (the exact name of the sheet/tab in your spreadsheet) 
         and a `custom_stream_name` (the name you want it to appear as in Airbyte and the destination).
+
         If a `source_stream_name` is not found in your spreadsheet, it will be ignored and the default name will be used.
         This feature only affects stream (sheet/tab) names, not field/column names.
+
         If you want to rename fields or column names, you can do so using the Airbyte Mappings feature after your connection is created. See the Airbyte documentation for more details on how to use Mappings.
+
         Examples:
           - To rename a sheet called "Sheet1" to "sales_data", and "2024 Q1" to "q1_2024":
             [

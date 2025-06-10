@@ -107,21 +107,13 @@ dynamic_streams:
             - name
           type: ComponentMappingDefinition
           # Expression is structured as: <value_if_true> if <condition> else <value_if_false>
-          # This sets the stream name to the custom name from stream_name_overrides if a match is found, otherwise uses the original sheet/tab name.
+          # This sets the stream name to the custom name from stream_name_overrides if a match is found,
+          # otherwise uses the original sheet/tab name.
           value: >-
-            {{
-              (
-                config.get('stream_name_overrides', [])
+            {%- set overrides = config.get('stream_name_overrides', [])
                 | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
-                | list
-              )[0]['custom_stream_name']
-              if (
-                config.get('stream_name_overrides', [])
-                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
-                | list
-              )
-              else components_values['properties']['title']
-            }}
+                | list -%}
+            {{ overrides[0]['custom_stream_name'] if overrides else components_values['properties']['title'] }}
           value_type: string
           description: name for dynamic stream (with optional override).
         - field_path:
@@ -173,30 +165,6 @@ dynamic_streams:
           type: ComponentMappingDefinition
           value: "{{config.get('batch_size', 1000000)}}"
           description: batch size count for dynamic stream partition router (slicer).
-        - field_path:
-            - $parameters
-            - primary_key
-          type: ComponentMappingDefinition
-          # This Jinja2 block sets the primary key for each stream.
-          # It first resolves the stream name, using the override from config if present, otherwise the original sheet/tab name.
-          # The PK is then set at the end: {{ [] }}
-
-          value: >-
-            {%- set resolved_stream_name = (
-              (
-                config.get('stream_name_overrides', [])
-                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
-                | list
-              )[0]['custom_stream_name']
-              if (
-                config.get('stream_name_overrides', [])
-                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
-                | list
-              )
-              else components_values['properties']['title']
-            ) -%}
-            {{ [] }}
-          description: Primary key for the stream.
 
 definitions:
   streams:

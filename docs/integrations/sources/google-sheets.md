@@ -160,6 +160,8 @@ After discovery, your streams in Airbyte will be named `sales_data`, `q1_2024`, 
 
 - In the Airbyte UI, add your overrides in the **Stream Name Overrides** field as an array of objects.
 - If you do not wish to rename any streams, leave this field blank.
+- **After adding or changing a stream name override, refresh your schema in Airbyte to see the new stream names take effect.**
+- **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
 
 ---
 
@@ -285,7 +287,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.11.0 | 2025-06-10 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options|
+| 0.11.0 | 2025-06-11 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options|
 | 0.10.0 | 2025-06-09 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additional sanitization flags when using Convert Column Names to SQL-Compliant Format (names_conversion)|
 | 0.9.6 | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets |
 | 0.9.5 | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`|
