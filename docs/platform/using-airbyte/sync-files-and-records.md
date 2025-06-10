@@ -6,19 +6,17 @@ import ConfigureMetadata from './_configure_file_metadata.mdx';
 
 # Sync files and records together
 
-Airbyte supports moving files and records together in the same connection.
-
-Some sources, like Google Drive, contain only files. Others, like ZenDesk Support, are mix of structured data and unstructured attachments. In either situation, the combination of structured and unstructured data drives more robust knowledge systems with more context, something critical to successful AI systems.
+Airbyte supports moving files and records together in the same connection. Some sources are a mix of structured data and unstructured attachments. The combination of structured and unstructured data drives more robust knowledge systems with more context, something critical to successful AI systems.
 
 ## How it works
 
-The process to move files and records together differs depending on whether your data source is structured with unstructured attachments, or is unstructured/file-based.
+The process to move files and records depends on whether your data source is structured with unstructured attachments, or is unstructured/file-based.
 
-- **Unstructured/file-based sources**: Choose the **Copy raw files** delivery method when you set up the source. Airbyte syncs your raw files, and includes a metadata file with structured data describing those files.
+- **Structured sources with unstructured attachments**: Files are a stream. When you set up your connection, you select and deselect this stream as you normally would. This stream includes structured metadata describing those files. The columns you choose in the stream are the metadata Airbyte syncs to your destination.
 
-- **Structured/mixed sources**: Files are in a stream, which you can turn on or off when setting up your connection. Airbyte includes a metadata file with structured data describing those files.
+- **Unstructured/file-based sources**: Files and records aren't synced together and you must choose to copy files. When you set up the source, choose the **Copy raw files** delivery method. Airbyte syncs your raw files and includes structured metadata describing those files. When you set up your connection, the columns you choose in the stream represent the metadata Airbyte adds to that file.
 
-## What connectors supports file transfers
+## Which connectors support file transfers
 
 Connectors that support file transfers have `supportsFileTransfer: true` in their metadata. Airbyte's UI doesn't currently make this obvious, but the following sources support file transfers.
 
