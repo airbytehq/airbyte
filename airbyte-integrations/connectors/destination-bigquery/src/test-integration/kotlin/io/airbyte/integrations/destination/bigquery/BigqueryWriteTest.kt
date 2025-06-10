@@ -30,7 +30,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -166,7 +165,7 @@ abstract class BigqueryDirectLoadWriteTest(
                         emittedAtMs = 2,
                     ),
                 ),
-                streamStatus = AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
+                streamStatus = null,
                 destinationProcessFactory = typingDedupingDestinationFactory,
             )
         }
