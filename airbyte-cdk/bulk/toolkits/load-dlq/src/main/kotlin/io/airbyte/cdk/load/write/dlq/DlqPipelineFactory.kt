@@ -78,11 +78,11 @@ class DlqPipelineFactoryFactory {
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> =
         ResourceReservingPartitionedQueue(
-            globalMemoryManager,
-            0.2,
-            1,
-            1,
-            100000,
+            reservationManager = globalMemoryManager,
+            ratioOfTotalMemoryToReserve = 0.2,
+            numConsumers = 1,
+            numProducers = 1,
+            expectedResourceUsagePerUnit = 100000,
         )
 
     /**
@@ -105,13 +105,13 @@ class DlqPipelineFactoryFactory {
         flushStrategy: PipelineFlushStrategy,
     ): ObjectLoaderPartFormatterStep =
         ObjectLoaderPartFormatterStep(
-            numInputPartitions,
-            partFormatter,
-            inputQueue.asOrderedFlows(),
-            outputQueue,
-            taskFactory,
-            "record-part-formatter-step",
-            flushStrategy,
+            numWorkers = numInputPartitions,
+            partFormatter = partFormatter,
+            inputFlows = inputQueue.asOrderedFlows(),
+            outputQueue = outputQueue,
+            taskFactory = taskFactory,
+            stepId = "record-part-formatter-step",
+            flushStrategy = flushStrategy,
         )
 
     /** References the traditional ObjectStorage pipeline steps. */
