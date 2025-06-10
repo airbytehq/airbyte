@@ -1946,6 +1946,11 @@ definitions:
     campaign_performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
+          - CampaignId
+        value: |
+          {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
+      - type: AddedFieldDefinition
+        path:
           - AllConversionRate
         value: |
           {% set v = record.get('AllConversionRate') %}
