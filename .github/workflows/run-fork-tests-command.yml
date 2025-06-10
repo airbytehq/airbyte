@@ -101,28 +101,17 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Trigger connector CI tests on fork
-        uses: actions/github-script@v7
+        uses: benc-uk/workflow-dispatch@v1
         with:
-          github-token: ${{ steps.get-app-token.outputs.token }}
-          script: |
-            const response = await github.rest.actions.createWorkflowDispatch({
-              owner: '${{ needs.determine-fork-owner.outputs.fork-owner }}',
-              repo: 'airbyte',
-              workflow_id: 'connector-ci-checks.yml',
-              ref: '${{ inputs.gitref || github.ref_name }}',
-              inputs: {
-                repo: '${{ needs.determine-fork-owner.outputs.fork-repo }}',
-                gitref: '${{ inputs.gitref || github.ref_name }}',
-                'comment-id': '${{ inputs.comment-id || '' }}',
-                pr: '${{ inputs.pr || '' }}'
-              }
-            });
-            
-            console.log('Workflow dispatch response:', response.status);
-            
-            if (response.status !== 204) {
-              throw new Error(`Failed to trigger workflow: ${response.status}`);
-            }
+          token: ${{ steps.get-app-token.outputs.token }}
+          repo: ${{ needs.determine-fork-owner.outputs.fork-owner }}/airbyte
+          workflow: connector-ci-checks.yml
+          ref: ${{ inputs.gitref || github.ref_name }}
+          inputs: |
+            repo: ${{ needs.determine-fork-owner.outputs.fork-repo }}
+            gitref: ${{ inputs.gitref || github.ref_name }}
+            comment-id: ${{ inputs.comment-id || '' }}
+            pr: ${{ inputs.pr || '' }}
 
   post-end-comment:
     name: "Post Completion Comment"
