@@ -15,7 +15,7 @@ dynamic_streams:
       $parameters:
         i: 123
         primary_key: []
-      primary_key: "{{parameters['primary_key']}}"
+      primary_key: []
       retriever:
         type: SimpleRetriever
         $parameters:
