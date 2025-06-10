@@ -38,11 +38,7 @@ class FlattenQueueAdapter<K : WithStream>(
 
     override suspend fun broadcast(value: PipelineEvent<K, DlqStepOutput>) {
         when (value) {
-            is PipelineMessage -> value.flatten().forEach {
-                runBlocking {
-                    queue.broadcast(it)
-                }
-            }
+            is PipelineMessage -> value.flatten().forEach { runBlocking { queue.broadcast(it) } }
             is PipelineHeartbeat -> queue.broadcast(PipelineHeartbeat())
             is PipelineEndOfStream -> queue.broadcast(PipelineEndOfStream(value.stream))
         }
@@ -50,11 +46,8 @@ class FlattenQueueAdapter<K : WithStream>(
 
     override suspend fun publish(value: PipelineEvent<K, DlqStepOutput>, partition: Int) {
         when (value) {
-            is PipelineMessage -> value.flatten().forEach {
-                runBlocking {
-                    queue.publish(it, partition)
-                }
-            }
+            is PipelineMessage ->
+                value.flatten().forEach { runBlocking { queue.publish(it, partition) } }
             is PipelineHeartbeat -> queue.publish(PipelineHeartbeat(), partition)
             is PipelineEndOfStream -> queue.publish(PipelineEndOfStream(value.stream), partition)
         }
