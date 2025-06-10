@@ -9,11 +9,9 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -52,14 +50,6 @@ object StubDestinationMessageFactory {
 
     fun makeFileStreamComplete(stream: DestinationStream): DestinationFileStreamComplete {
         return DestinationFileStreamComplete(stream = stream, emittedAtMs = 0)
-    }
-
-    fun makeStreamIncomplete(stream: DestinationStream): DestinationRecordStreamIncomplete {
-        return DestinationRecordStreamIncomplete(stream = stream, emittedAtMs = 0)
-    }
-
-    fun makeFileStreamIncomplete(stream: DestinationStream): DestinationFileStreamIncomplete {
-        return DestinationFileStreamIncomplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {

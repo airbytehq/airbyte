@@ -22,10 +22,15 @@ from source_google_search_console.exceptions import (
     UnidentifiedError,
 )
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
-from source_google_search_console.streams import (
-    SearchAnalyticsByCustomDimensions,
-)
 
+
+DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
+    "country": [{"country": {"type": ["null", "string"]}}],
+    "date": [{"date": {"type": ["null", "string"], "format": "date"}}],
+    "device": [{"device": {"type": ["null", "string"]}}],
+    "page": [{"page": {"type": ["null", "string"]}}],
+    "query": [{"query": {"type": ["null", "string"]}}],
+}
 
 custom_reports_schema = {
     "type": "array",
@@ -93,7 +98,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
             jsonschema.validate(config["custom_reports_array"], custom_reports_schema)
             for report in config["custom_reports_array"]:
                 for dimension in report["dimensions"]:
-                    if dimension not in SearchAnalyticsByCustomDimensions.DIMENSION_TO_PROPERTY_SCHEMA_MAP:
+                    if dimension not in DIMENSION_TO_PROPERTY_SCHEMA_MAP:
                         message = f"dimension: '{dimension}' not found"
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
@@ -137,17 +142,7 @@ class SourceGoogleSearchConsole(YamlDeclarativeSource):
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
-        streams = super().streams(config=config)
-
-        streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
-
-        return streams
-
-    def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
-        return [
-            type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in config.get("custom_reports_array", [])
-        ]
+        return super().streams(config=config)
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
