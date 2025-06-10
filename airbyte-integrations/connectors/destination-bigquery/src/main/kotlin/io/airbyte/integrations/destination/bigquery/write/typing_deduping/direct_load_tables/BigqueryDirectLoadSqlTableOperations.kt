@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direc
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.CopyJobConfiguration
 import com.google.cloud.bigquery.JobInfo
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
@@ -17,6 +18,7 @@ class BigqueryDirectLoadSqlTableOperations(
     private val defaultOperations: DefaultDirectLoadTableSqlOperations,
     private val bq: BigQuery,
 ) : DirectLoadTableSqlOperations by defaultOperations {
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", "kotlin coroutines")
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         // manually delete the target table - otherwise we can't e.g. update the partitioning scheme
         bq.getTable(targetTableName.toTableId())?.delete()
