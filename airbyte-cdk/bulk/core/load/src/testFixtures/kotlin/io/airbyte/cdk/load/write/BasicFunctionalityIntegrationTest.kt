@@ -183,9 +183,7 @@ enum class UnionBehavior {
      */
     STRINGIFY,
 
-    /**
-     * Union fields are written as strings, no validation is performed
-     */
+    /** Union fields are written as strings, no validation is performed */
     STRICT_STRINGIFY,
 }
 
