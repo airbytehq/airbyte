@@ -1,6 +1,6 @@
 import re
 from abc import ABC
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, MutableMapping
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
@@ -8,7 +8,6 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 from source_exact.api import ExactAPI
 
@@ -32,11 +31,12 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
     In addition, Exact enforces single use refresh tokens. The stream will automatically refresh the access token when
     it is expired.
     """
+    endpoint = None
 
     def __init__(self, config):
+
         self._divisions = config["divisions"]
         self._base_url = config["base_url"]
-        self.endpoint = None
         self.token_refresh_endpoint = f"{self._base_url}/api/oauth/token"
         self.api = ExactAPI(config)
 
@@ -49,13 +49,31 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         for division in self._divisions:
             self._state_per_division[str(division)] = {}
 
-        self._single_refresh_token_authenticator = SingleUseRefreshTokenOauth2Authenticator(
-            connector_config=config,
-            token_refresh_endpoint=f"{self._base_url}/api/oauth2/token",
-        )
-        self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
+        # self._single_refresh_token_authenticator = SingleUseRefreshTokenOauth2Authenticator(
+        #     connector_config=config,
+        #     token_refresh_endpoint=f"{self._base_url}/api/oauth2/token",
+        # )
+        # self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
+        #
+        # super().__init__(self._single_refresh_token_authenticator)
+        super().__init__()
 
-        super().__init__(self._single_refresh_token_authenticator)
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state_per_division
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        if not value:
+            return
+
+        self._state_per_division = value
+
+    @property
+    def url_base(self) -> str:
+        """URL base depends on the current division being synced."""
+
+        return f"{self._base_url}/api/v1/{self._active_division}/"
 
     def path(self, stream_state: Optional[Mapping[str, Any]] = None,
              stream_slice: Optional[Mapping[str, Any]] = None,
@@ -74,11 +92,69 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         self.logger.info(f"Syncing endpoint {self.endpoint}...")
         return self.endpoint
 
-    @property
-    def url_base(self) -> str:
-        """URL base depends on the current division being synced."""
+    def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
+        """
+        Overridden to request JSON response (default for Exact is XML).
+        """
 
-        return f"{self._base_url}/api/v1/{self._active_division}/"
+        return {"Accept": "application/json"}
+
+    def request_params(
+            self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        """
+        The sync endpoints requires selection of fields to return. We use the configured catalog to make selection
+        of fields we want to have.
+        """
+
+        # Contains the full next page, so don't append new query params
+        if next_page_token:
+            return {}
+
+        configured_properties = list(self.get_json_schema()["properties"].keys())
+        params = {
+            "$select": ",".join(configured_properties),
+        }
+
+        division = str(stream_slice["division"])
+        state = self._state_per_division.get(division, {})
+        # TODO: how to handle case if a division is removed from the config? Keep the state of that division or delete it?
+        cursor_value = state.get(self.cursor_field)
+
+        if cursor_value:
+            params["$filter"] = self._get_param_filter(cursor_value)
+
+        if self.cursor_field == "Modified":
+            params["$orderby"] = "Modified asc"
+
+        return params
+
+    def _get_param_filter(self, cursor_value: str):
+        """Returns the $filter clause for the cursor field."""
+
+        if self.cursor_field == "Timestamp":
+            return f"Timestamp gt {cursor_value}L"
+
+        elif self.cursor_field != "Modified":
+            raise RuntimeError(f"Source not capable of incremental syncing with cursor field '{self.cursor_field}'")
+
+        # else: cursor_field == "Modified"
+
+        # cursor_value is a timestamp stored as string in real UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_item)
+        # The Exact API (OData format) doesn't accept timezone info. Instead, we parse the timestamp into
+        # the API's local timezone (CET +1h in winter and +2h in summer) without timezone info.
+        # More details about the API's timezone: see _parse_item.
+        utc_timestamp = pendulum.parse(cursor_value)
+        if utc_timestamp.timezone_name not in ["UTC", "+00:00"]:
+            self.logger.warning(
+                f"The value of the cursor field 'Modified' is not detected as a UTC timestamp: {cursor_value}. This might lead to an incorrect $filter clause and unexpected records."
+            )
+
+        tz_cet = pendulum.timezone("CET")
+        cet_timestamp = tz_cet.convert(utc_timestamp)
+        cet_timestamp_str = cet_timestamp.isoformat().split("+")[0]
+
+        return f"Modified gt datetime'{cet_timestamp_str}'"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
