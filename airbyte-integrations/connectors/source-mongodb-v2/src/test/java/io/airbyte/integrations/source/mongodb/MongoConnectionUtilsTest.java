@@ -44,9 +44,7 @@ class MongoConnectionUtilsTest {
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
     assertEquals(authSource, ((MongoClientImpl) mongoClient).getSettings().getCredential().getSource());
-    // read prefernce defaults to primary
-    // https://mongodb.github.io/mongo-java-driver/3.9/javadoc/com/mongodb/MongoClientSettings.html#getReadPreference--
-    assertEquals(ReadPreference.primary(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
+    assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
   }
 
   @Test
