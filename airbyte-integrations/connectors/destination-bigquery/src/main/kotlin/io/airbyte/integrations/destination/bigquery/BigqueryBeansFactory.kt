@@ -135,7 +135,6 @@ class BigqueryBeansFactory {
                         sqlTableOperations,
                         destinationHandler,
                         projectId = config.projectId,
-                        internalTableDataset = config.internalTableDataset,
                         tempTableNameGenerator,
                     ),
                 sqlTableOperations = sqlTableOperations,

@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
@@ -78,7 +79,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Mockito.mock(),
                     Mockito.mock(),
                     projectId = "unused",
-                    internalTableDataset = "unused",
+                    tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
                 )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         Assertions.assertAll(
@@ -135,7 +136,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Mockito.mock(),
                     Mockito.mock(),
                     projectId = "unused",
-                    internalTableDataset = "unused",
+                    tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
                 )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         // NB: column names in AlterTableReport are all _after_ destination name transform

@@ -40,7 +40,6 @@ class BigqueryDirectLoadNativeTableOperations(
     private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
-    private val internalTableDataset: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DirectLoadTableNativeOperations {
     override suspend fun ensureSchemaMatches(
