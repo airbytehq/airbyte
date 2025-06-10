@@ -54,9 +54,25 @@ class KeyValueExtractor(RecordExtractor):
     and each value from `values_extractor` is the value for that key.
 
     Example:
-      keys_extractor -> yields: ["name", "age"]
-      values_extractor -> yields: ["Alice", 30]
-      result: { "name": "Alice", "age": 30 }
+        keys_extractor -> yields: ["name", "age"]
+        values_extractor -> yields: ["Alice", 30, "Brian", 32]
+        result: { "name": "Alice", "age": 30 } and { "name": "Brian", "age": 32 }
+
+    ---
+    More specifically, we:
+      - Start with a list of keys, e.g. ['date', 'firstUserCampaignName', 'firstUserMedium'].
+      - Receive a flat sequence of values in that same order, e.g.:
+        ['20231001', 'TikTok-Conversion', 'ads', '20231001', 'TikTok-Mahta', 'ads'].
+      - Because there are three keys, we split the flat list into chunks of three values each.
+        Each chunk maps to the keys to form one dictionary:
+          {
+              "date": "20231001",
+              "firstUserCampaignName": "TikTok-Conversion",
+              "firstUserMedium": "ads"
+          }
+        and so on.
+
+    This allows transforming a flat list of values into structured records using a predefined key schema.
     """
 
     keys_extractor: RecordExtractor
