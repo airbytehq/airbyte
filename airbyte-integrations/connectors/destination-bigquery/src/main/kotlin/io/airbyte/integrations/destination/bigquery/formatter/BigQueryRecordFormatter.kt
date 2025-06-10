@@ -143,9 +143,6 @@ class BigQueryRecordFormatter(
                             // Bigquery has some strict requirements for datetime / time formatting,
                             // so handle that here.
                             when (value.type) {
-                                TimestampTypeWithTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        formatTimestampWithTimezone(value)
                                 TimestampTypeWithoutTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
                                         formatTimestampWithoutTimezone(value)
