@@ -1276,7 +1276,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/campaign_performance_report"
+        $ref: "#/schemas/campaign_performance_report_hourly"
     retriever:
       $ref: "#/definitions/basic_async_retriever"
       creation_requester:
