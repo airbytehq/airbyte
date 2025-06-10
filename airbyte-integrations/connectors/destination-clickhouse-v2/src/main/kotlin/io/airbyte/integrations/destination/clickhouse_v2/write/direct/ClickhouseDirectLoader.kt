@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.Meta as CDKConstants
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.integrations.destination.clickhouse_v2.config.UUIDGenerator
@@ -37,22 +38,18 @@ class ClickhouseDirectLoader(
     object Constants {
         const val BATCH_SIZE_RECORDS = 500000
         const val DELIMITER = "\n"
-        const val FIELD_RAW_ID = "_airbyte_raw_id"
-        const val FIELD_EXTRACTED_AT = "_airbyte_extracted_at"
-        const val FIELD_META = "_airbyte_meta"
-        const val FIELD_GEN_ID = "_airbyte_generation_id"
     }
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
-        protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
-        protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
-        protocolRecord.put(Constants.FIELD_RAW_ID, uuidGenerator.v7().toString())
+        protocolRecord.put(CDKConstants.COLUMN_NAME_AB_EXTRACTED_AT, record.rawData.emittedAtMs)
+        protocolRecord.put(CDKConstants.COLUMN_NAME_AB_GENERATION_ID, record.stream.generationId)
+        protocolRecord.put(CDKConstants.COLUMN_NAME_AB_RAW_ID, uuidGenerator.v7().toString())
 
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
-        meta.put("sync_id", record.stream.syncId)
-        protocolRecord.set<ObjectNode>(Constants.FIELD_META, meta)
+        meta.put(CDKConstants.AIRBYTE_META_SYNC_ID_KEY, record.stream.syncId)
+        protocolRecord.set<ObjectNode>(CDKConstants.COLUMN_NAME_AB_META, meta)
 
         buffer.write(protocolRecord.toString())
         buffer.write(DELIMITER)

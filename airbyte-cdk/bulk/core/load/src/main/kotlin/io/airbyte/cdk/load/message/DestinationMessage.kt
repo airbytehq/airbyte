@@ -119,6 +119,7 @@ data class Meta(
     companion object {
         const val CHECKPOINT_ID_NAME: String = "partition_id"
         const val CHECKPOINT_INDEX_NAME: String = "id"
+        const val AIRBYTE_META_SYNC_ID_KEY = "sync_id"
 
         const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
         const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
