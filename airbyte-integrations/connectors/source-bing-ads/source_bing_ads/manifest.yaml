@@ -399,6 +399,14 @@ definitions:
             path:
               - Path2
             value: "{{ none if record.get('Path2') == '' else record.get('Path2')}}"
+          - type: AddedFieldDefinition
+            path:
+              - TextPart2
+            value: "{{ none if record.get('TextPart2') == '' else record.get('TextPart2')}}"
+          - type: AddedFieldDefinition
+            path:
+              - TitlePart3
+            value: "{{ none if record.get('TitlePart3') == '' else record.get('TitlePart3')}}"
       - type: RemoveFields
         field_pointers:
           - - Descriptions
@@ -483,8 +491,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - Videos
-            value: "{{ none if record.get('Videos', {}).get('AssetLink') == none else record.get('Videos') }}"
-
+            value: "{{ none if record.get('Videos', {}).get('AssetLink') == none or record.get('Videos', {}).get('AssetLink') == [] else record.get('Videos') }}"
   # Report Streams
 
   ## Account Performance Reports
