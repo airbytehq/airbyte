@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
-import com.clickhouse.client.api.insert.InsertSettings
 import com.clickhouse.data.ClickHouseFormat
 import com.fasterxml.jackson.databind.node.ObjectNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings

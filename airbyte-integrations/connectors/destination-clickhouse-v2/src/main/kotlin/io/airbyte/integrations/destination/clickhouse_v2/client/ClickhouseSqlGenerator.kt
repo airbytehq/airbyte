@@ -283,11 +283,12 @@ class ClickhouseSqlGenerator {
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
-                val typeName = if (toDialectType(type.type).name == "DateTime") {
-                    "DateTime64(3)"
-                } else {
-                    toDialectType(type.type).name
-                }
+                val typeName =
+                    if (toDialectType(type.type).name == "DateTime") {
+                        "DateTime64(3)"
+                    } else {
+                        toDialectType(type.type).name
+                    }
                 "`$columnName` $typeName"
             }
             .joinToString(",\n")
