@@ -1275,8 +1275,8 @@ definitions:
       $ref: "#/definitions/campaign_performance_report_stream_primary_key"
     schema_loader:
       type: InlineSchemaLoader
-    schema:
-      $ref: "#/schemas/campaign_performance_report"
+      schema:
+        $ref: "#/schemas/campaign_performance_report"
     retriever:
       $ref: "#/definitions/basic_async_retriever"
       creation_requester:
