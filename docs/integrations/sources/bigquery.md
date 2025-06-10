@@ -68,9 +68,12 @@ At this point you should have a service account with the "BigQuery User" project
 
 #### Service account key
 
-Service Account Keys are used to authenticate as Google Service Accounts. For Airbyte to leverage the permissions you granted to the Service Account in the previous step, you'll need to provide its Service Account Keys. See the [Google documentation](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) for more information about Keys.
+For Airbyte to leverage the permissions you granted to the Service Account in the previous step, you'll need to configure its authentication. Service Account Keys are the simplest way to do this.
+See the [Google documentation](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) for more information about Keys.
 
 Follow the [Creating and Managing Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) guide to create a key. Airbyte currently supports JSON Keys only, so make sure you create your key in that format. As soon as you created the key, make sure to download it, as that is the only time Google will allow you to see its contents. Once you've successfully configured BigQuery as a source in Airbyte, delete this key from your computer.
+
+In some settings, you may be able to use other [valid credential configurations](https://cloud.google.com/docs/authentication/client-libraries#external-credentials) in JSON format.
 
 ### Setup the BigQuery source in Airbyte
 
@@ -78,7 +81,7 @@ You should now have all the requirements needed to configure BigQuery as a sourc
 
 - **Project ID**
 - **Default Dataset ID \[Optional\]**: the schema name if only one schema is interested. Dramatically boost source discover operation.
-- **Credentials JSON**: the contents of your Service Account Key JSON file
+- **Credentials JSON**: the contents of your Service Account Key JSON file or other valid Google Credentials JSON configuration
 
 Once you've configured BigQuery as a source, delete the Service Account Key from your computer.
 
@@ -89,6 +92,7 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.0 | 2025-06-10 | [unkown](https://github.com/airbytehq/airbyte/pull/unk) | Use GoogleCredentials class to get credentials from configured JSON c.f. [#59744]((https://github.com/airbytehq/airbyte/pull/59744) |
 | 0.4.3 | 2024-12-18 | [49875](https://github.com/airbytehq/airbyte/pull/49875) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.4.2 | 2024-02-22 | [35503](https://github.com/airbytehq/airbyte/pull/35503) | Source BigQuery: replicating RECORD REPEATED fields |
 | 0.4.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
