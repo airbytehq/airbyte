@@ -11,6 +11,7 @@ import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TableDefinition
 import com.google.cloud.bigquery.TimePartitioning
 import com.google.common.annotations.VisibleForTesting
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
@@ -32,6 +33,7 @@ import org.apache.commons.codec.digest.DigestUtils
 
 private val logger = KotlinLogging.logger {}
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class BigqueryDirectLoadNativeTableOperations(
     private val bigquery: BigQuery,
     private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
