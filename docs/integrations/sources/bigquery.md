@@ -92,7 +92,7 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.5.0 | 2025-06-10 | [unkown](https://github.com/airbytehq/airbyte/pull/unk) | Use GoogleCredentials class to get credentials from configured JSON c.f. [#59744]((https://github.com/airbytehq/airbyte/pull/59744) |
+| 0.5.0 | 2025-06-10 | [61496](https://github.com/airbytehq/airbyte/pull/61496) | Use GoogleCredentials class to get credentials from configured JSON c.f. [#59744]((https://github.com/airbytehq/airbyte/pull/59744) |
 | 0.4.3 | 2024-12-18 | [49875](https://github.com/airbytehq/airbyte/pull/49875) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.4.2 | 2024-02-22 | [35503](https://github.com/airbytehq/airbyte/pull/35503) | Source BigQuery: replicating RECORD REPEATED fields |
 | 0.4.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
