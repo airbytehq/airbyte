@@ -35,7 +35,6 @@ class ClickhouseDirectLoader(
 
     object Constants {
         const val UUID = "bf7d3df8-8a91-4fd4-bd4c-89c293ba1d6b"
-        const val GEN_ID = 0L
         const val BATCH_SIZE_RECORDS = 500000
         const val DELIMITER = "\n"
 
@@ -48,7 +47,6 @@ class ClickhouseDirectLoader(
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
-        println(protocolRecord.toPrettyString())
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
@@ -73,7 +71,6 @@ class ClickhouseDirectLoader(
     private suspend fun flush() {
         val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
         buffer = ByteArrayOutputStream()
-        log.info { "Beginning insert of $recordCount rows into ${descriptor.name}" }
 
         val insertResult =
             clickhouseClient
@@ -81,9 +78,6 @@ class ClickhouseDirectLoader(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
                     jsonBytes,
                     ClickHouseFormat.JSONEachRow,
-                    // InsertSettings().let {
-                    //     it.setOption("date_time_input_format", "best_effort")
-                    // }
                 )
                 .await()
 

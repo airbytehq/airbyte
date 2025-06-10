@@ -48,8 +48,6 @@ class ClickhouseSqlGenerator {
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
 
-        log.error { columnDeclarations }
-
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
         val engine =
@@ -314,8 +312,8 @@ class ClickhouseSqlGenerator {
             IntegerType -> ClickHouseDataType.Int64
             NumberType -> ClickHouseDataType.Decimal
             StringType -> ClickHouseDataType.String
-            TimeTypeWithTimezone -> ClickHouseDataType.Date
-            TimeTypeWithoutTimezone -> ClickHouseDataType.Date
+            TimeTypeWithTimezone -> ClickHouseDataType.String
+            TimeTypeWithoutTimezone -> ClickHouseDataType.String
             TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
             TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
             is ArrayType,

@@ -3231,8 +3231,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            // TODO: I added stringifySchemalessObjects, not sure if it is right
-                            "combined_type" to unionValue("string", "string1", stringifySchemalessObjects),
+                            "combined_type" to unionValue("string", "string1"),
                             "union_of_string_and_schemaless_type" to
                                 unionValue(
                                     "object",
