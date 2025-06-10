@@ -57,6 +57,10 @@ class FlattenQueueAdapter<K : WithStream>(
         Iterable<PipelineMessage<K, DestinationRecordRaw>> =
         value.rejectedRecords?.let { failedRecords ->
             val lastIndex = failedRecords.size - 1
+            // In order to avoid duplicated counts, we push the checkpoint counts to the last
+            // record of the list.
+            // Same idea regarding the postProcessingCallback, to avoid having the callback called
+            // prematurely, we push it to the last record.
             return failedRecords.mapIndexed { index, destinationRecordRaw ->
                 if (index < lastIndex) {
                     PipelineMessage(
