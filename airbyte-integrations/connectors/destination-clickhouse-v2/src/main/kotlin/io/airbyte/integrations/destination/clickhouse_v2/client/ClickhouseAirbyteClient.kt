@@ -131,12 +131,10 @@ class ClickhouseAirbyteClient(
     }
 
     private suspend fun execute(query: String): CommandResponse {
-        // TODO: Make suspend after we update the interfaces
         return client.execute(query).await()
     }
 
     private suspend fun query(query: String): QueryResponse {
-        // TODO: Make suspend after we update the interfaces
         return client.query(query).await()
     }
 }
