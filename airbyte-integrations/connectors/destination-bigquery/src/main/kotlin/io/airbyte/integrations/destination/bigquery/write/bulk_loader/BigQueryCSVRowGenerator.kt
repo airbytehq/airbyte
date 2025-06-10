@@ -30,6 +30,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithoutTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithoutTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.validateAirbyteValue
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -76,6 +77,8 @@ class BigQueryCSVRowGenerator {
             if (value.abValue is NullValue) {
                 return@forEach
             }
+            validateAirbyteValue(value)
+
             val actualValue = value.abValue
             when (value.type) {
                 // Enforce numeric range

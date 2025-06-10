@@ -9,10 +9,13 @@ import com.google.cloud.bigquery.QueryParameterValue
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
@@ -80,64 +83,13 @@ class BigQueryRecordFormatter(
                     outputRecord[key] = (value.abValue as IntegerValue).value
                 else -> {
                     if (!legacyRawTablesOnly) {
-                        val bigqueryType = BigqueryDirectLoadSqlGenerator.toDialectType(value.type)
                         // if we're null, then just don't write a value into the output JSON,
                         // so that bigquery will load a NULL value.
                         // Otherwise, do all the type validation stuff, then write a value into
                         // the output JSON.
                         if (value.abValue != NullValue) {
                             // first, validate the value.
-                            when (bigqueryType) {
-                                StandardSQLTypeName.INT64 -> {
-                                    (value.abValue as IntegerValue).value.let {
-                                        if (it < INT64_MIN_VALUE || INT64_MAX_VALUE < it) {
-                                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                                        }
-                                    }
-                                }
-                                StandardSQLTypeName.NUMERIC -> {
-                                    (value.abValue as NumberValue).value.let {
-                                        if (it.precision() > NUMERIC_MAX_PRECISION) {
-                                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                                        }
-                                    }
-                                }
-                                StandardSQLTypeName.DATE -> {
-                                    (value.abValue as DateValue).value.let {
-                                        if (it < DATE_MIN_VALUE || DATE_MAX_VALUE < it) {
-                                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                                        }
-                                    }
-                                }
-                                StandardSQLTypeName.TIMESTAMP -> {
-                                    (value.abValue as TimestampWithTimezoneValue).value.let {
-                                        if (it < TIMESTAMP_MIN_VALUE || TIMESTAMP_MAX_VALUE < it) {
-                                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                                        }
-                                    }
-                                }
-                                StandardSQLTypeName.DATETIME -> {
-                                    (value.abValue as TimestampWithoutTimezoneValue).value.let {
-                                        if (it < DATETIME_MIN_VALUE || DATETIME_MAX_VALUE < it) {
-                                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                                        }
-                                    }
-                                }
-                                // these types don't require validation
-                                StandardSQLTypeName.BOOL,
-                                StandardSQLTypeName.JSON,
-                                StandardSQLTypeName.STRING,
-                                StandardSQLTypeName.TIME -> {}
-                                // we shouldn't be generating these types
-                                StandardSQLTypeName.ARRAY,
-                                StandardSQLTypeName.BIGNUMERIC,
-                                StandardSQLTypeName.BYTES,
-                                StandardSQLTypeName.FLOAT64,
-                                StandardSQLTypeName.STRUCT,
-                                StandardSQLTypeName.GEOGRAPHY,
-                                StandardSQLTypeName.INTERVAL,
-                                StandardSQLTypeName.RANGE -> throw NotImplementedError()
-                            }
+                            validateAirbyteValue(value)
                             // then, populate the record.
                             // Bigquery has some strict requirements for datetime / time formatting,
                             // so handle that here.
@@ -288,6 +240,47 @@ class BigQueryRecordFormatter(
             return TIME_WITH_TIMEZONE_FORMATTER.format(
                 (value.abValue as TimeWithTimezoneValue).value
             )
+        }
+
+        fun validateAirbyteValue(value: EnrichedAirbyteValue) {
+            when (value.type) {
+                is IntegerType -> {
+                    (value.abValue as IntegerValue).value.let {
+                        if (it < INT64_MIN_VALUE || INT64_MAX_VALUE < it) {
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        }
+                    }
+                }
+                is NumberType -> {
+                    (value.abValue as NumberValue).value.let {
+                        if (it.precision() > NUMERIC_MAX_PRECISION) {
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        }
+                    }
+                }
+                is DateType -> {
+                    (value.abValue as DateValue).value.let {
+                        if (it < DATE_MIN_VALUE || DATE_MAX_VALUE < it) {
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        }
+                    }
+                }
+                is TimestampTypeWithTimezone -> {
+                    (value.abValue as TimestampWithTimezoneValue).value.let {
+                        if (it < TIMESTAMP_MIN_VALUE || TIMESTAMP_MAX_VALUE < it) {
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        }
+                    }
+                }
+                is TimestampTypeWithoutTimezone -> {
+                    (value.abValue as TimestampWithoutTimezoneValue).value.let {
+                        if (it < DATETIME_MIN_VALUE || DATETIME_MAX_VALUE < it) {
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        }
+                    }
+                }
+                else -> {}
+            }
         }
     }
 }
