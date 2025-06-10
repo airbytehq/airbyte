@@ -283,7 +283,12 @@ class ClickhouseSqlGenerator {
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
-                val typeName = toDialectType(type.type).name
+                val typeName =
+                    if (toDialectType(type.type).name == "DateTime") {
+                        "DateTime64(3)"
+                    } else {
+                        toDialectType(type.type).name
+                    }
                 "`$columnName` $typeName"
             }
             .joinToString(",\n")
@@ -306,23 +311,23 @@ class ClickhouseSqlGenerator {
             BooleanType -> ClickHouseDataType.Bool
             DateType -> ClickHouseDataType.Date
             IntegerType -> ClickHouseDataType.Int64
-            NumberType -> ClickHouseDataType.Int256
+            NumberType -> ClickHouseDataType.Decimal
             StringType -> ClickHouseDataType.String
             TimeTypeWithTimezone -> ClickHouseDataType.String
-            TimeTypeWithoutTimezone -> ClickHouseDataType.DateTime
+            TimeTypeWithoutTimezone -> ClickHouseDataType.String
             TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
             TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
             is ArrayType,
             ArrayTypeWithoutSchema,
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> ClickHouseDataType.JSON
+            ObjectTypeWithoutSchema -> ClickHouseDataType.String
             is UnionType ->
                 if (type.isLegacyUnion) {
                     toDialectType(type.chooseType())
                 } else {
-                    ClickHouseDataType.JSON
+                    ClickHouseDataType.String
                 }
-            is UnknownType -> ClickHouseDataType.JSON
+            is UnknownType -> ClickHouseDataType.String
         }
 }
