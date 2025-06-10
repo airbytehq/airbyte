@@ -2,4 +2,5 @@ from airbyte_cdk import SingleUseRefreshTokenOauth2Authenticator
 
 
 class ExactOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
-    pass
+    def __init__(self, connector_config, token_refresh_endpoint, **kwargs):
+        super().__init__(connector_config, token_refresh_endpoint, **kwargs)

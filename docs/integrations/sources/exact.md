@@ -92,7 +92,10 @@ at [Exact Support](https://support.exactonline.com/community/s/knowledge-base#Al
 5. Fill in a `Redirect URI`, note this must be a valid URI as it's used in OAuth flow
 6. Find your `Client ID` and `Client Secret` of the created app
 
-#### Create initial OAuth token
+#### Create initial OAuth refresh token
+
+See documentation for this step
+at [Exact Knowledge Base](https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-oauth-eol-oauth-devstep2)
 
 1. In your browser go to the following URL (after replacing the variables).
 
