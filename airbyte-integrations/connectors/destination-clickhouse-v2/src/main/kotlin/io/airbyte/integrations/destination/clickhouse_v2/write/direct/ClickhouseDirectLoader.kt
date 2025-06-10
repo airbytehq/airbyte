@@ -12,12 +12,12 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DirectLoader
+import io.airbyte.integrations.destination.clickhouse_v2.config.UUIDGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.Constants.DELIMITER
 import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
@@ -29,15 +29,14 @@ private val log = KotlinLogging.logger {}
 class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
+    private val uuidGenerator: UUIDGenerator,
 ) : DirectLoader {
     private var buffer: ByteArrayOutputStream = ByteArrayOutputStream()
     private var recordCount = 0
 
     object Constants {
-        const val UUID = "bf7d3df8-8a91-4fd4-bd4c-89c293ba1d6b"
         const val BATCH_SIZE_RECORDS = 500000
         const val DELIMITER = "\n"
-
         const val FIELD_RAW_ID = "_airbyte_raw_id"
         const val FIELD_EXTRACTED_AT = "_airbyte_extracted_at"
         const val FIELD_META = "_airbyte_meta"
@@ -49,7 +48,7 @@ class ClickhouseDirectLoader(
 
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
-        protocolRecord.put(Constants.FIELD_RAW_ID, UUID.randomUUID().toString())
+        protocolRecord.put(Constants.FIELD_RAW_ID, uuidGenerator.v7().toString())
 
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
         meta.put("sync_id", record.stream.syncId)

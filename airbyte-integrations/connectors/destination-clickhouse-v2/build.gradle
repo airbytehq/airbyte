@@ -34,8 +34,8 @@ application {
 }
 
 dependencies {
-
     implementation 'com.clickhouse:client-v2:0.8.6'
+    implementation 'com.github.f4b6a3:uuid-creator:6.1.0'
 
     testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
