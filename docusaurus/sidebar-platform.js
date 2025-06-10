@@ -15,8 +15,11 @@ const buildAConnector = {
     {
       type: "category",
       label: "Connector Builder",
+      link: {
+        type: "doc",
+        id: "connector-development/connector-builder-ui/overview",
+      },
       items: [
-        "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
         "connector-development/connector-builder-ui/custom-components",
@@ -63,6 +66,7 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
             "connector-development/config-based/understanding-the-yaml-file/pagination",
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
+            "connector-development/config-based/understanding-the-yaml-file/property-chunking",
             "connector-development/config-based/understanding-the-yaml-file/rate-limit-api-budget",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
             "connector-development/config-based/understanding-the-yaml-file/file-syncing",
