@@ -1289,7 +1289,7 @@ definitions:
             Aggregation: Hourly
             Columns:
               $ref: "#/definitions/campaign_performance_report_hourly_columns"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     transformations:
