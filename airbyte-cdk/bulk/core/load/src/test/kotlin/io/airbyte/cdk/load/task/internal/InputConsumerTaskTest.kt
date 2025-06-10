@@ -336,20 +336,4 @@ class InputConsumerTaskTest {
 
         assertThrows(IllegalStateException::class) { task.execute() }
     }
-
-    @Test
-    fun testInputErrorThrowsOriginalError() = runTest {
-        val bookkeeper =
-            mockk<PipelineEventBookkeepingRouter> {
-                coEvery { close() } throws RuntimeException("blah blah no stream status")
-            }
-        val e =
-            assertThrows<RuntimeException> {
-                InputConsumerTask.closePipelineEventBookkeepingRouter(
-                    bookkeeper,
-                    RuntimeException("original exception"),
-                )
-            }
-        assertEquals("original exception", e.message)
-    }
 }
