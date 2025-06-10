@@ -1148,7 +1148,7 @@ definitions:
     - TopVsOther
     - BidMatchType
 
-  campaign_performance_report_stream_columns:
+  campaign_performance_report_hourly_columns:
     - AccountId
     - CampaignId
     - TimePeriod
@@ -1206,6 +1206,68 @@ definitions:
     - BudgetStatus
     - BudgetAssociationStatus
 
+  campaign_performance_report_non_hourly_columns:
+    - AccountId
+    - CampaignId
+    - TimePeriod
+    - CurrencyCode
+    - AdDistribution
+    - DeviceType
+    - Network
+    - DeliveredMatchType
+    - DeviceOS
+    - TopVsOther
+    - BidMatchType
+    - AccountName
+    - CampaignName
+    - CampaignType
+    - CampaignStatus
+    - CampaignLabels
+    - Impressions
+    - Clicks
+    - Ctr
+    - Spend
+    - CostPerConversion
+    - QualityScore
+    - AdRelevance
+    - LandingPageExperience
+    - PhoneImpressions
+    - PhoneCalls
+    - Ptr
+    - Assists
+    - ReturnOnAdSpend
+    - CostPerAssist
+    - CustomParameters
+    - ViewThroughConversions
+    - AllCostPerConversion
+    - AllReturnOnAdSpend
+    - AllConversions
+    - ConversionsQualified
+    - AllConversionRate
+    - AllRevenue
+    - AllRevenuePerConversion
+    - AverageCpc
+    - AveragePosition
+    - AverageCpm
+    - Conversions
+    - ConversionRate
+    - LowQualityClicks
+    - LowQualityClicksPercent
+    - LowQualityImpressions
+    - LowQualitySophisticatedClicks
+    - LowQualityConversions
+    - LowQualityConversionRate
+    - Revenue
+    - RevenuePerConversion
+    - RevenuePerAssist
+    - BudgetName
+    - BudgetStatus
+    - BudgetAssociationStatus
+    - HistoricalQualityScore
+    - HistoricalExpectedCtr
+    - HistoricalAdRelevance
+    - HistoricalLandingPageExperience
+
   campaign_performance_report_stream_transformations:
     - type: AddedFieldDefinition
       path:
@@ -1233,31 +1295,12 @@ definitions:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
+            $ref: "#/definitions/report_stream_common_request_body_json"
             ReportName: CampaignPerformanceReport
-            ReturnOnlyCompleteData: false
             Type: CampaignPerformanceReportRequest
             Aggregation: Hourly
             Columns:
-              $ref: "#/definitions/campaign_performance_report_stream_columns"
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-            Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+              $ref: "#/definitions/campaign_performance_report_hourly_columns"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -1284,35 +1327,12 @@ definitions:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
+            $ref: "#/definitions/report_stream_common_request_body_json"
             ReportName: CampaignPerformanceReport
-            ReturnOnlyCompleteData: false
             Type: CampaignPerformanceReportRequest
             Aggregation: Daily
             Columns:
-              - $ref: "#/definitions/campaign_performance_report_stream_columns"
-              - HistoricalQualityScore
-              - HistoricalExpectedCtr
-              - HistoricalAdRelevance
-              - HistoricalLandingPageExperience
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-            Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+              $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -1336,36 +1356,12 @@ definitions:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
+            $ref: "#/definitions/report_stream_common_request_body_json"
             ReportName: CampaignPerformanceReport
-            ReturnOnlyCompleteData: false
             Type: CampaignPerformanceReportRequest
             Aggregation: Weekly
             Columns:
-              - $ref: "#/definitions/campaign_performance_report_stream_columns"
-              - HistoricalQualityScore
-              - HistoricalExpectedCtr
-              - HistoricalAdRelevance
-              - HistoricalLandingPageExperience
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-              Campaigns: null
-            Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+              $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -1389,35 +1385,12 @@ definitions:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
+            $ref: "#/definitions/report_stream_common_request_body_json"
             ReportName: CampaignPerformanceReport
-            ReturnOnlyCompleteData: false
             Type: CampaignPerformanceReportRequest
             Aggregation: Monthly
             Columns:
-              - $ref: "#/definitions/campaign_performance_report_stream_columns"
-              - HistoricalQualityScore
-              - HistoricalExpectedCtr
-              - HistoricalAdRelevance
-              - HistoricalLandingPageExperience
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-              Campaigns: null
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+              $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -1523,6 +1496,9 @@ definitions:
       decoder:
         type: CsvDecoder
         encoding: "utf-8-sig"
+        set_values_to_none:
+          - ""
+          - "--"
     creation_requester:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
@@ -1668,6 +1644,30 @@ definitions:
       # falling back 1 year as anyway we will leave empty LastSyncTimeInUTC for dates > 30 Days
       datetime: '{{ config["reports_start_date"] if config.get("reports_start_date") else format_datetime(now_utc() - duration("P1Y"), "%Y-%m-%d") }}'
       datetime_format: "%Y-%m-%d"
+
+  # Used across all report streams
+  report_stream_common_request_body_json:
+    ExcludeColumnHeaders: false
+    ExcludeReportFooter: true
+    ExcludeReportHeader: true
+    Format: Csv
+    FormatVersion: "'2.0'"
+    ReturnOnlyCompleteData: false
+    Scope:
+      AccountIds:
+        - "{{ stream_partition['account_id'] }}"
+    Time:
+      CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+        Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+        Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+        Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+      CustomDateRangeEnd:
+        Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+        Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+        Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+      # "PredefinedTime": "ValueHere"
+      "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+
   transformations:
     # Shared by multiple performance report streams (account + ad)
     performance_report_common_transformations:
