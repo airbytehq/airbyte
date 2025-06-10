@@ -306,10 +306,10 @@ class ClickhouseSqlGenerator {
             BooleanType -> ClickHouseDataType.Bool
             DateType -> ClickHouseDataType.Date
             IntegerType -> ClickHouseDataType.Int64
-            NumberType -> ClickHouseDataType.Int256
+            NumberType -> ClickHouseDataType.Decimal
             StringType -> ClickHouseDataType.String
-            TimeTypeWithTimezone -> ClickHouseDataType.String
-            TimeTypeWithoutTimezone -> ClickHouseDataType.DateTime
+            TimeTypeWithTimezone -> ClickHouseDataType.Date
+            TimeTypeWithoutTimezone -> ClickHouseDataType.Date
             TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
             TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
             is ArrayType,

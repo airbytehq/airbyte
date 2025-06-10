@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
+import com.clickhouse.client.api.insert.InsertSettings
 import com.clickhouse.data.ClickHouseFormat
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationStream
@@ -43,6 +44,7 @@ class ClickhouseDirectLoader(
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
+        println(protocolRecord.toPrettyString())
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.record.emittedAt)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
@@ -74,7 +76,10 @@ class ClickhouseDirectLoader(
                 .insert(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
                     jsonBytes,
-                    ClickHouseFormat.JSONEachRow
+                    ClickHouseFormat.JSONEachRow,
+                    InsertSettings().let {
+                        it.setOption("date_time_input_format", "best_effort")
+                    }
                 )
                 .await()
         }
