@@ -31,7 +31,13 @@ class CloseableCoroutineTest {
                     throw RuntimeException("exception in close")
                 }
             }
-        val e = assertThrows<RuntimeException> { closeable.use { 42 } }
+        val e =
+            assertThrows<RuntimeException> {
+                closeable.use {
+                    // `close` will throw an exception, so we never actually use this value.
+                    @Suppress("UNUSED_EXPRESSION") 42
+                }
+            }
         assertEquals("exception in close", e.message)
     }
 
