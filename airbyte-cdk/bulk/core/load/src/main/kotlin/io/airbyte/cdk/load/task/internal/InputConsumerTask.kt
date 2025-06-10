@@ -138,14 +138,13 @@ class InputConsumerTask(
                 // because that would cause the sync to hang.
                 pipelineEventBookkeepingRouter.close()
             } catch (t: Throwable) {
-                if (processingThrowable == null) {
-                    throw t
-                } else {
+                processingThrowable?.let {
                     log.warn(t) {
                         "Encountered exception when closing PipelineEventBookkeepingRouter, but we're already handling another exception ($processingThrowable). Swallowing this exception."
                     }
                     throw processingThrowable
                 }
+                    ?: throw t
             }
             // if the `pipelineEventBookkeepingRouter.close()` ran successfully,
             // we should rethrow the original exception.
