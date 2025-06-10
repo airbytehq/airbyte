@@ -54,7 +54,8 @@ class BufferingOutputConsumer(
                 AirbyteMessage.Type.SPEC -> specs.add(m.spec)
                 AirbyteMessage.Type.CONNECTION_STATUS -> statuses.add(m.connectionStatus)
                 AirbyteMessage.Type.CATALOG -> catalogs.add(m.catalog)
-                AirbyteMessage.Type.DESTINATION_CATALOG -> destinationCatalogs.add(m.destinationCatalog)
+                AirbyteMessage.Type.DESTINATION_CATALOG ->
+                    destinationCatalogs.add(m.destinationCatalog)
                 AirbyteMessage.Type.TRACE -> traces.add(m.trace)
                 else -> TODO("${m.type} not supported")
             }
@@ -78,7 +79,8 @@ class BufferingOutputConsumer(
 
     fun catalogs(): List<AirbyteCatalog> = synchronized(this) { listOf(*catalogs.toTypedArray()) }
 
-    fun destinationCatalogs(): List<DestinationCatalog> = synchronized(this) { listOf(*destinationCatalogs.toTypedArray()) }
+    fun destinationCatalogs(): List<DestinationCatalog> =
+        synchronized(this) { listOf(*destinationCatalogs.toTypedArray()) }
 
     fun traces(): List<AirbyteTraceMessage> = synchronized(this) { listOf(*traces.toTypedArray()) }
 

@@ -152,8 +152,10 @@ class JsonSchemaToAirbyteType(
                 .asSequence()
                 .map { (name, node) -> name to fieldFromSchema(node as ObjectNode) }
                 .toMap(LinkedHashMap())
-        val additionalProperties = schema.get("additionalProperties")?.asBoolean()?: false
-        val required: List<String> = schema.get("required")?.asSequence()?.map { it.asText() }?.toList() ?: emptyList<String>()
+        val additionalProperties = schema.get("additionalProperties")?.asBoolean() ?: false
+        val required: List<String> =
+            schema.get("required")?.asSequence()?.map { it.asText() }?.toList()
+                ?: emptyList<String>()
         return ObjectType(propertiesMapped, additionalProperties, required)
     }
 

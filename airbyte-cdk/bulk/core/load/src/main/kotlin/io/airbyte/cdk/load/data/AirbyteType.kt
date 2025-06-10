@@ -49,7 +49,11 @@ data object ArrayTypeWithoutSchema : AirbyteType() {
     override val isArray = true
 }
 
-data class ObjectType(val properties: LinkedHashMap<String, FieldType>, val additionalProperties: Boolean = false, val required: List<String> = emptyList<String>()) : AirbyteType() {
+data class ObjectType(
+    val properties: LinkedHashMap<String, FieldType>,
+    val additionalProperties: Boolean = false,
+    val required: List<String> = emptyList<String>()
+) : AirbyteType() {
     override fun asColumns(): LinkedHashMap<String, FieldType> {
         return properties
     }
