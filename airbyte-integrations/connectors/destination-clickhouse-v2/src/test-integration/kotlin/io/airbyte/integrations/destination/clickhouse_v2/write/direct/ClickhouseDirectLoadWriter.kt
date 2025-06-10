@@ -56,7 +56,7 @@ class ClickhouseDirectLoadWriter :
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        unionBehavior = UnionBehavior.STRICK_STRINGIFY,
+        unionBehavior = UnionBehavior.STRICT_STRINGIFY,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = true,

@@ -186,7 +186,7 @@ enum class UnionBehavior {
     /**
      * Union fields are written as strings, no validation is performed
      */
-    STRICK_STRINGIFY,
+    STRICT_STRINGIFY,
 }
 
 enum class UnknownTypesBehavior {
@@ -3227,7 +3227,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         StringValue(value.serializeToString())
                     }
-                UnionBehavior.STRICK_STRINGIFY -> StringValue(value.toString())
+                UnionBehavior.STRICT_STRINGIFY -> StringValue(value.toString())
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
