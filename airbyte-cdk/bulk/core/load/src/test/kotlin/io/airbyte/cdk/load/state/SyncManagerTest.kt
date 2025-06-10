@@ -137,7 +137,7 @@ class SyncManagerTest {
         val e = assertThrows<TransientErrorException> { syncManager.markInputConsumed() }
         assertEquals(
             // stream1 is fine, so the message only includes stream2
-            "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
+            "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
             e.message
         )
     }

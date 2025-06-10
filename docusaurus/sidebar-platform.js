@@ -69,6 +69,7 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/property-chunking",
             "connector-development/config-based/understanding-the-yaml-file/rate-limit-api-budget",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
+            "connector-development/config-based/understanding-the-yaml-file/file-syncing",
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
