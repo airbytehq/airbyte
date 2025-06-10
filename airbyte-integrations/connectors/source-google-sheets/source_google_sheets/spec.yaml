@@ -31,7 +31,49 @@ connectionSpecification:
     names_conversion:
       type: boolean
       title: Convert Column Names to SQL-Compliant Format
-      description: Enables the conversion of column names to a standardized, SQL-compliant format. For example, 'My Name' -> 'my_name'. Enable this option if your destination is SQL-based.
+      description: >-
+        Converts column names to a SQL-compliant format (snake_case, lowercase, etc).
+        If enabled, you can further customize the sanitization using the options below.
+      default: false
+    remove_leading_trailing_underscores:
+      type: boolean
+      title: Remove Leading and Trailing Underscores
+      description: >-
+        Removes leading and trailing underscores from column names. Does not remove leading underscores from column names that start with a number.
+        Example: "50th Percentile? "→ "_50_th_percentile"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+      default: false
+    combine_number_word_pairs:
+      type: boolean
+      title: Combine Number-Word Pairs
+      description: >-
+        Combines adjacent numbers and words.
+        Example: "50th Percentile?" → "_50th_percentile_"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+      default: false
+    remove_special_characters:
+      type: boolean
+      title: Remove All Special Characters
+      description: >-
+        Removes all special characters from column names.
+        Example: "Example ID*" → "example_id"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+      default: false
+    combine_letter_number_pairs:
+      type: boolean
+      title: Combine Letter-Number Pairs
+      description: >-
+        Combines adjacent letters and numbers.
+        Example: "Q3 2023" → "q3_2023"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+      default: false
+    allow_leading_numbers:
+      type: boolean
+      title: Allow Leading Numbers
+      description: >-
+        Allows column names to start with numbers.
+        Example: "50th Percentile" → "50_th_percentile"
+        This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
       default: false
     credentials:
       type: object

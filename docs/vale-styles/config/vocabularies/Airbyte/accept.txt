@@ -37,6 +37,7 @@ Python
 MarkDownLint
 markdownlint-cli2
 JavaScript
+ID
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -59,6 +60,7 @@ S3 Data Lake
 Glue
 [Gg]raph[Qq][Ll]
 \bDocker(?:'s)?\b
+npm
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
