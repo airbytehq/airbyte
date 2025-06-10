@@ -213,6 +213,7 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.12.0 | 2025-06-06 | [61432](https://github.com/airbytehq/airbyte/pull/61432) | Improve performance in GCS staging mode by writing GZIP-compressed files. |
 | 2.11.4 | 2025-05-30 | [61018](https://github.com/airbytehq/airbyte/pull/61018) | Always emit a useful error message when erroring during sync startup. |
 | 2.11.3 | 2025-06-02 | [61321](https://github.com/airbytehq/airbyte/pull/61321) | CHECK operation doesn't need to drop the dataset anymore. |
 | 2.11.2 | 2025-05-29 | [60986](https://github.com/airbytehq/airbyte/pull/60986) | CHECK operation uses configured default dataset instead of `airbyte_internal_test`. |
