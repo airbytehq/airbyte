@@ -21,7 +21,10 @@ import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
 
-@SuppressFBWarnings(value= ["NP_NONNULL_PARAM_VIOLATION"], justification="suspend and fb's non-null analysis don't play well")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "suspend and fb's non-null analysis don't play well"
+)
 class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
