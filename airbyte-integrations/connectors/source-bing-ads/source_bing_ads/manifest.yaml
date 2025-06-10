@@ -1199,10 +1199,6 @@ definitions:
     - LowQualitySophisticatedClicks
     - LowQualityConversions
     - LowQualityConversionRate
-    - HistoricalQualityScore
-    - HistoricalExpectedCtr
-    - HistoricalAdRelevance
-    - HistoricalLandingPageExperience
     - Revenue
     - RevenuePerConversion
     - RevenuePerAssist
@@ -1251,9 +1247,8 @@ definitions:
             Scope:
               AccountIds:
                 - "{{ stream_partition['account_id'] }}"
-              Campaigns: null
             Time:
-              CustomDateRangeStart:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
                 Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
                 Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
                 Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
@@ -1261,17 +1256,16 @@ definitions:
                 Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
                 Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-                Hour: "{{ str_to_datetime(stream_interval.get('end_time')).hour }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     transformations:
-      - Type: AddFields
+      - type: AddFields
         fields:
           $ref: "#/definitions/campaign_performance_report_stream_transformations"
-      - Type: AddFields
+      - type: AddFields
         fields:
           $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
 
@@ -1300,16 +1294,19 @@ definitions:
             Type: CampaignPerformanceReportRequest
             Aggregation: Daily
             Columns:
-              $ref: "#/definitions/campaign_performance_report_stream_columns"
+              - $ref: "#/definitions/campaign_performance_report_stream_columns"
+              - HistoricalQualityScore
+              - HistoricalExpectedCtr
+              - HistoricalAdRelevance
+              - HistoricalLandingPageExperience
             Scope:
               AccountIds:
-                - "{{ stream_partition.extra_fields['AccountId'] }}"
-              Campaigns: null
+                - "{{ stream_partition['account_id'] }}"
             Time:
-              CustomDateRangeStart:
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
               CustomDateRangeEnd:
                 Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
                 Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
@@ -1318,9 +1315,11 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     transformations:
-      $ref: "#/definitions/campaign_performance_report_stream_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/campaign_performance_report_stream_transformations"
 
   campaign_performance_report_weekly_stream:
     type: DeclarativeStream
@@ -1347,16 +1346,20 @@ definitions:
             Type: CampaignPerformanceReportRequest
             Aggregation: Weekly
             Columns:
-              $ref: "#/definitions/campaign_performance_report_stream_columns"
+              - $ref: "#/definitions/campaign_performance_report_stream_columns"
+              - HistoricalQualityScore
+              - HistoricalExpectedCtr
+              - HistoricalAdRelevance
+              - HistoricalLandingPageExperience
             Scope:
               AccountIds:
                 - "{{ stream_partition['account_id'] }}"
               Campaigns: null
             Time:
-              CustomDateRangeStart:
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
               CustomDateRangeEnd:
                 Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
                 Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
@@ -1365,9 +1368,11 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     transformations:
-      $ref: "#/definitions/campaign_performance_report_stream_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/campaign_performance_report_stream_transformations"
 
   campaign_performance_report_monthly_stream:
     type: DeclarativeStream
@@ -1394,16 +1399,19 @@ definitions:
             Type: CampaignPerformanceReportRequest
             Aggregation: Monthly
             Columns:
-              $ref: "#/definitions/campaign_performance_report_stream_columns"
+              - $ref: "#/definitions/campaign_performance_report_stream_columns"
+              - HistoricalQualityScore
+              - HistoricalExpectedCtr
+              - HistoricalAdRelevance
+              - HistoricalLandingPageExperience
             Scope:
               AccountIds:
                 - "{{ stream_partition['account_id'] }}"
               Campaigns: null
-            Time:
-              CustomDateRangeStart:
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
               CustomDateRangeEnd:
                 Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
                 Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
@@ -1412,12 +1420,11 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     transformations:
-      - Type: AddFields
+      - type: AddFields
         fields:
           $ref: "#/definitions/campaign_performance_report_stream_transformations"
-      - $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
 
   basic_async_retriever:
     type: AsyncRetriever
