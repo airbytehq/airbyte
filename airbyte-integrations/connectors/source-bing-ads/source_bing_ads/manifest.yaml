@@ -262,7 +262,6 @@ definitions:
       partition_router:
         type: GroupingPartitionRouter
         group_size: 1
-        deduplicate: true
         underlying_partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -326,7 +325,6 @@ definitions:
       partition_router:
         type: GroupingPartitionRouter
         group_size: 1
-        deduplicate: true
         underlying_partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
