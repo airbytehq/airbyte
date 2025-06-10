@@ -1,6 +1,6 @@
 # File syncing
 
-File syncing enables connectors to download and transfer files from API sources. This capability supports files up to 1.5-GB and handles file formats including documents, images, and structured data. File syncing is particularly useful for API endpoints that return files.
+File syncing enables connectors to download and transfer files from API sources when an API endpoint returns a file. This capability supports all common file formats including documents, images, and structured data.
 
 :::info
 File syncing is experimental. It isn't available in the Connector Builder UI. You must implement this using manifest.yaml files in a manifest-only or hybrid connector.
@@ -84,7 +84,7 @@ Extracts file content from the HTTP response when the entire response body isn't
 
 ### `filename_extractor`
 
-Customizes file naming using Jinja templating with access to record data and configuration. If not provided, Airbyte uses a random UUID as the filename.
+Customizes file naming using Jinja templating with access to record data and configuration. If not provided, Airbyte uses a random UUID as the filename. It's critical you ensure file names are unique every time.
 
 ## File handling
 
