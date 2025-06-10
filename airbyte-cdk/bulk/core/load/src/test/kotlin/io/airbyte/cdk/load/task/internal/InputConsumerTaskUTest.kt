@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -18,6 +17,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.mockk.coEvery
@@ -42,6 +42,7 @@ class InputConsumerTaskUTest {
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
     @MockK lateinit var partitioner: InputPartitioner
     @MockK lateinit var openStreamQueue: QueueWriter<DestinationStream>
+    @MockK lateinit var pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 
     private val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
     private lateinit var dstream: DestinationStream
@@ -50,12 +51,9 @@ class InputConsumerTaskUTest {
         InputConsumerTask(
             catalog,
             inputFlow,
-            checkpointQueue,
-            syncManager,
-            fileTransferQueue,
             recordQueueForPipeline,
             partitioner,
-            openStreamQueue
+            pipelineEventBookkeepingRouter
         )
 
     @BeforeEach
@@ -81,12 +79,7 @@ class InputConsumerTaskUTest {
                         Reserved(
                             null,
                             0,
-                            DestinationRecord(
-                                stream = dstream,
-                                message = mockk(relaxed = true),
-                                serialized = "",
-                                schema = ObjectTypeWithoutSchema
-                            )
+                            DestinationRecord(stream = dstream, message = mockk(relaxed = true), 0L)
                         )
                     )
                 )

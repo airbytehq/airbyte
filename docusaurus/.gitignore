@@ -8,6 +8,7 @@
 .docusaurus
 .cache-loader
 src/data/declarative_component_schema.yaml
+src/data/connector_registry_slim.json
 
 # Misc
 .DS_Store

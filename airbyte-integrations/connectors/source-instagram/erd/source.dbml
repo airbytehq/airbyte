@@ -34,6 +34,7 @@ Table "media_insights" {
     "total_interactions" integer
     "follows" integer
     "profile_visits" integer
+    "views" integer
 }
 
 Table "users" {
@@ -90,6 +91,7 @@ Table "story_insights" {
     "profile_visits" integer
     "shares" integer
     "total_interactions" integer
+    "views" integer
 }
 
 Table "Api" {

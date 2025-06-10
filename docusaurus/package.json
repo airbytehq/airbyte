@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "prepare-sidebar": "node scripts/prepare-sidebar-data.js",
+    "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
     "prebuild": "pnpm run prepare-sidebar",
     "prestart": "pnpm run prepare-sidebar",
     "docusaurus": "docusaurus",
@@ -94,6 +94,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@headlessui/react": "^2.1.9",
+    "@markprompt/css": "^0.34.0",
+    "@markprompt/react": "^0.62.1",
     "@mdx-js/react": "^3.0.0",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",

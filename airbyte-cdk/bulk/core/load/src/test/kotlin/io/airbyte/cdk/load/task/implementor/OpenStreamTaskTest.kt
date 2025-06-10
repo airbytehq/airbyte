@@ -57,6 +57,8 @@ class OpenStreamTaskTest {
 
         assertThrows(MyException::class) { task.execute() }
 
-        coVerify(exactly = 3) { syncManager.registerStartedStreamLoader(any(), any()) }
+        // loader1 will be registered.
+        // but loader2 and loader3 will not, because loader2 throws an exception in start().
+        coVerify(exactly = 1) { syncManager.registerStartedStreamLoader(any(), any()) }
     }
 }

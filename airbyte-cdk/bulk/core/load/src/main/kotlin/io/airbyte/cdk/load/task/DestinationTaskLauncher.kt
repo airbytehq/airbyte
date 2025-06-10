@@ -9,9 +9,7 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -22,6 +20,7 @@ import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.StatsEmitter
 import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
@@ -78,6 +77,7 @@ class DestinationTaskLauncher(
     private val inputConsumerTask: InputConsumerTask? = null,
     private val heartbeatTask: HeartbeatTask? = null,
     private val updateBatchTask: UpdateBatchStateTaskFactory,
+    private val statsEmitter: StatsEmitter? = null,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
@@ -95,7 +95,6 @@ class DestinationTaskLauncher(
 
     // Async queues
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-    @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) {
     init {
@@ -178,13 +177,17 @@ class DestinationTaskLauncher(
             launch(it)
         }
 
+        statsEmitter?.let {
+            log.info { "Launching Stats emtiter task" }
+            launch(it)
+        }
+
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
 
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()
         } else {

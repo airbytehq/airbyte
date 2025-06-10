@@ -24,6 +24,7 @@ class ObjectLoaderPartFormatterStep(
     private val stepId: String,
     private val flushStrategy: PipelineFlushStrategy?,
 ) : LoadPipelineStep {
+
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.create(
             partFormatter,

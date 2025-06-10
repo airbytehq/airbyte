@@ -33,6 +33,7 @@ class CheckCategory(Enum):
     SECURITY = "🔒 Security"
     METADATA = "📝 Metadata"
     TESTING = "🧪 Testing"
+    VERSION = "🔢 Version"
 
 
 class CheckStatus(Enum):

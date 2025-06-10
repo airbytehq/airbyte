@@ -1,0 +1,8 @@
+{
+  "hostname": "localhost",
+  "port": "8123",
+  "protocol": "http",
+  "username": "replace_me_username",
+  "password": "replace_me_password",
+  "database": "default"
+}

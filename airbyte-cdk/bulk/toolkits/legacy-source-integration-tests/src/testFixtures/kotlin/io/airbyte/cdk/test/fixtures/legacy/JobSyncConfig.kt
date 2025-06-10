@@ -6,7 +6,7 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.io.Serializable
 import java.util.*
 

@@ -1,0 +1,3333 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: Connector for the Dolibarr ERP/CRM REST API focused on GET operations
+
+check:
+  type: CheckStream
+  stream_names:
+    - Products list
+
+definitions:
+  streams:
+    Products list:
+      type: DeclarativeStream
+      name: Products list
+      primary_key:
+        - product_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+          request_parameters:
+            mode: "0"
+            sortfield: t.tms
+            sortorder: DESC
+            pagination_data: "false"
+            includestockdata: "1"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - product_id
+              value: "{{ record['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Products list"
+    Products category id list:
+      type: DeclarativeStream
+      name: Products category id list
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/{{ stream_partition.parent_id }}/categories
+          http_method: GET
+          request_parameters:
+            sortfield: s.rowid
+            sortorder: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: product_id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/Products list"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - product_id
+              value: "{{ stream_partition.parent_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - label
+        - type: RemoveFields
+          field_pointers:
+            - - description
+        - type: RemoveFields
+          field_pointers:
+            - - position
+        - type: RemoveFields
+          field_pointers:
+            - - socid
+        - type: RemoveFields
+          field_pointers:
+            - - visible
+        - type: RemoveFields
+          field_pointers:
+            - - type
+        - type: RemoveFields
+          field_pointers:
+            - - entity
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - category_id
+              value: "{{ record['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Products category id list"
+    Product categories list:
+      type: DeclarativeStream
+      name: Product categories list
+      primary_key:
+        - category_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+          request_parameters:
+            type: product
+            sortfield: t.tms
+            sortorder: DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - category_id
+              value: "{{ record['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - "**"
+              - MAP_ID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Product categories list"
+    Customer invoices list:
+      type: DeclarativeStream
+      name: Customer invoices list
+      primary_key:
+        - invoice_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices
+          http_method: GET
+          request_parameters:
+            sortfield: t.tms
+            sortorder: DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - lines
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - invoice_id
+              value: "{{ record['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - customer_id
+              value: "{{ record['socid'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer invoices list"
+    Customer invoices lines list:
+      type: DeclarativeStream
+      name: Customer invoices lines list
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/{{ stream_partition.invoice_id }}/lines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: invoice_id
+              partition_field: invoice_id
+              stream:
+                $ref: "#/definitions/streams/Customer invoices list"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - product_id
+              value: "{{ record['fk_product'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - invoice_id
+              value: "{{ record['fk_facture'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - unit_buy_price
+              value: "{{ record['pa_ht'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - unit_sell_price
+              value: "{{ record['subprice'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - fk_facture
+        - type: RemoveFields
+          field_pointers:
+            - - fk_product
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - total_sell_price
+              value: "{{ record['total_ttc'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - libelle
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer invoices lines list"
+    Customers list:
+      type: DeclarativeStream
+      name: Customers list
+      primary_key:
+        - customer_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /thirdparties
+          http_method: GET
+          request_parameters:
+            mode: "1"
+            sortfield: t.tms
+            sortorder: DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - customer_id
+              value: "{{ record['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customers list"
+    Supplier invoices list:
+      type: DeclarativeStream
+      name: Supplier invoices list
+      primary_key:
+        - supp_invoice_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierinvoices
+          http_method: GET
+          request_parameters:
+            sortfield: t.tms
+            sortorder: DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: tms
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - lines
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supp_invoice_id
+              value: "{{ record['id'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supplier_id
+              value: "{{ record['socid'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Supplier invoices list"
+    Supplier invoices lines list:
+      type: DeclarativeStream
+      name: Supplier invoices lines list
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierinvoices/{{ stream_partition.supp_invoice_id }}/lines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: supp_invoice_id
+              partition_field: supp_invoice_id
+              stream:
+                $ref: "#/definitions/streams/Supplier invoices list"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supp_invoice_id
+              value: "{{ record['fk_facture_fourn'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - buy_unit_price
+              value: "{{ record['pu_ttc'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - product_id
+              value: "{{ record['fk_product'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - total_buy_price
+              value: "{{ record['total_ttc'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parent_element
+        - type: RemoveFields
+          field_pointers:
+            - - fk_parent_attribute
+        - type: RemoveFields
+          field_pointers:
+            - - ref
+        - type: RemoveFields
+          field_pointers:
+            - - label
+        - type: RemoveFields
+          field_pointers:
+            - - libelle
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Supplier invoices lines list"
+    Suppliers list:
+      type: DeclarativeStream
+      name: Suppliers list
+      primary_key:
+        - supplier_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /thirdparties
+          http_method: GET
+          request_parameters:
+            mode: "4"
+            sortfield: t.tms
+            sortorder: DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supplier_id
+              value: "{{ record['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Suppliers list"
+    Internal Users:
+      type: DeclarativeStream
+      name: Internal Users
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_parameters:
+            sortfield: t.tms
+            sortorder: DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datem
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - user_id
+              value: "{{ record['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Internal Users"
+    Company profile data:
+      type: DeclarativeStream
+      name: Company profile data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /setup/company
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - company_id
+              value: "{{ record['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Company profile data"
+    Customer invoices payments list:
+      type: DeclarativeStream
+      name: Customer invoices payments list
+      primary_key:
+        - ref
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/{{ stream_partition.invoice_id }}/payments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: invoice_id
+              partition_field: invoice_id
+              stream:
+                $ref: "#/definitions/streams/Customer invoices list"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - invoice_id
+              value: "{{ stream_partition.invoice_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer invoices payments list"
+    Supplier invoices payments list:
+      type: DeclarativeStream
+      name: Supplier invoices payments list
+      primary_key:
+        - ref
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierinvoices/{{ stream_partition.supp_invoice_id }}/payments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: supp_invoice_id
+              partition_field: supp_invoice_id
+              stream:
+                $ref: "#/definitions/streams/Supplier invoices list"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - supp_invoice_id
+              value: "{{ stream_partition.supp_invoice_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Supplier invoices payments list"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{config['my_dolibarr_domain_url']}}/api/index.php
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: DOLAPIKEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Products list"
+  - $ref: "#/definitions/streams/Products category id list"
+  - $ref: "#/definitions/streams/Product categories list"
+  - $ref: "#/definitions/streams/Customer invoices list"
+  - $ref: "#/definitions/streams/Customer invoices lines list"
+  - $ref: "#/definitions/streams/Customers list"
+  - $ref: "#/definitions/streams/Supplier invoices list"
+  - $ref: "#/definitions/streams/Supplier invoices lines list"
+  - $ref: "#/definitions/streams/Suppliers list"
+  - $ref: "#/definitions/streams/Internal Users"
+  - $ref: "#/definitions/streams/Company profile data"
+  - $ref: "#/definitions/streams/Customer invoices payments list"
+  - $ref: "#/definitions/streams/Supplier invoices payments list"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - my_dolibarr_domain_url
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      my_dolibarr_domain_url:
+        type: string
+        description: >-
+          enter your "domain/dolibarr_url" without https:// Example:
+          mydomain.com/dolibarr
+        order: 1
+        title: my_dolibarr_domain/url
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Products list: true
+    Products category id list: true
+    Product categories list: true
+    Customer invoices list: true
+    Customer invoices lines list: true
+    Customers list: true
+    Supplier invoices list: true
+    Supplier invoices lines list: true
+    Suppliers list: true
+    Internal Users: true
+    Company profile data: true
+    Customer invoices payments list: true
+    Supplier invoices payments list: true
+  testedStreams:
+    Products list:
+      streamHash: 44c16d82c2479520c2a9a7ef0ccbbf9b9d0907ba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Products category id list:
+      streamHash: f2ea940d0cd5470f96cf4d6929d8af9729245790
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Product categories list:
+      streamHash: 2fc69a9eccf2ded04bb2da8ccc9694bbdb2343ea
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customer invoices list:
+      streamHash: 56b77fad6a7cd2269a8a24ba0a725459375bab50
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customer invoices lines list:
+      streamHash: ee0b8d8db367025ba817a5b852021cc5a546bf28
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customers list:
+      streamHash: 82e948b035e617fa2b1f0a9c61620892e9242d4e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Supplier invoices list:
+      streamHash: f8aa4efbae62abcb6d12883cb35ae4e05df3b459
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Supplier invoices lines list:
+      streamHash: df04a717d298430b5145954e73ed8bd4495a6084
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Suppliers list:
+      streamHash: 166ac764576fd1979e4fc1098b41161a11a601eb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Internal Users:
+      streamHash: f49c3622365ccad2f0a940a90a54c15a05ec8d0f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Company profile data:
+      streamHash: 522f4167ed17eeeb40fb9f3184386f1135e9e168
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customer invoices payments list:
+      streamHash: 0fc5bd35852ff12c83eaaa9a9e7c1da2acd1f729
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Supplier invoices payments list:
+      streamHash: fc2a5f057a0eeb74bd0d56ef5aa3024086b9c49c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Products list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      accountancy_code_buy:
+        type:
+          - string
+          - "null"
+      accountancy_code_buy_export:
+        type:
+          - string
+          - "null"
+      accountancy_code_buy_intra:
+        type:
+          - string
+          - "null"
+      accountancy_code_sell:
+        type:
+          - string
+          - "null"
+      accountancy_code_sell_export:
+        type:
+          - string
+          - "null"
+      accountancy_code_sell_intra:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      barcode:
+        type:
+          - string
+          - "null"
+      barcode_type:
+        type:
+          - string
+          - "null"
+      batch_mask:
+        type:
+          - string
+          - "null"
+      canvas:
+        type:
+          - string
+          - "null"
+      cost_price:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      customcode:
+        type:
+          - string
+          - "null"
+      date_creation:
+        type:
+          - string
+          - "null"
+      date_modification:
+        type: string
+      desiredstock:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      entity:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      finished:
+        type:
+          - string
+          - "null"
+      fk_default_warehouse:
+        type:
+          - string
+          - "null"
+      height_units:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      import_key:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      length_units:
+        type:
+          - string
+          - "null"
+      localtax1_tx:
+        type:
+          - string
+          - "null"
+      localtax1_type:
+        type:
+          - string
+          - "null"
+      localtax2_tx:
+        type:
+          - string
+          - "null"
+      localtax2_type:
+        type:
+          - string
+          - "null"
+      mandatory_period:
+        type:
+          - string
+          - "null"
+      multilangs:
+        type:
+          - array
+          - "null"
+      multiprices:
+        type:
+          - array
+          - "null"
+      multiprices_base_type:
+        type:
+          - array
+          - "null"
+      multiprices_default_vat_code:
+        type:
+          - array
+          - "null"
+      multiprices_min:
+        type:
+          - array
+          - "null"
+      multiprices_min_ttc:
+        type:
+          - array
+          - "null"
+      multiprices_ttc:
+        type:
+          - array
+          - "null"
+      multiprices_tva_tx:
+        type:
+          - array
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      note_private:
+        type:
+          - string
+          - "null"
+      pmp:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_autogen:
+        type:
+          - string
+          - "null"
+      price_base_type:
+        type:
+          - string
+          - "null"
+      price_min:
+        type:
+          - string
+          - "null"
+      price_min_ttc:
+        type:
+          - string
+          - "null"
+      price_ttc:
+        type:
+          - string
+          - "null"
+      prices_by_qty:
+        type:
+          - array
+          - "null"
+      prices_by_qty_list:
+        type:
+          - array
+          - "null"
+      product_id:
+        type: number
+      ref:
+        type:
+          - string
+          - "null"
+      seuil_stock_alerte:
+        type:
+          - string
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      stats_bom:
+        type:
+          - array
+          - "null"
+      stats_expedition:
+        type:
+          - object
+          - "null"
+        properties:
+          customers:
+            type:
+              - string
+              - "null"
+          nb:
+            type:
+              - string
+              - "null"
+          qty:
+            type:
+              - number
+              - "null"
+          rows:
+            type:
+              - string
+              - "null"
+      stats_facture_fournisseur:
+        type:
+          - array
+          - "null"
+      stats_facturerec:
+        type:
+          - array
+          - "null"
+      stats_mo:
+        type:
+          - array
+          - "null"
+      stats_proposal_supplier:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_batch:
+        type:
+          - string
+          - "null"
+      status_buy:
+        type:
+          - string
+          - "null"
+      stock_reel:
+        type:
+          - number
+          - "null"
+      stock_theorique:
+        type:
+          - number
+          - "null"
+      stock_warehouse:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              "1":
+                type: object
+                properties:
+                  id:
+                    type: string
+                  real:
+                    type: string
+      surface_units:
+        type:
+          - string
+          - "null"
+      tva_tx:
+        type:
+          - string
+          - "null"
+      volume_units:
+        type:
+          - string
+          - "null"
+      weight_units:
+        type:
+          - string
+          - "null"
+      width_units:
+        type:
+          - string
+          - "null"
+    required:
+      - product_id
+      - date_modification
+  Products category id list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      array_options:
+        type:
+          - array
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      fk_parent:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+  Product categories list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      category_id:
+        type: number
+      childs:
+        type:
+          - array
+          - "null"
+      date_creation:
+        type:
+          - string
+          - "null"
+      date_modification:
+        type: number
+      entity:
+        type:
+          - number
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fk_parent:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      user_creation_id:
+        type:
+          - number
+          - "null"
+      user_modification_id:
+        type:
+          - number
+          - "null"
+      visible:
+        type:
+          - number
+          - "null"
+    required:
+      - category_id
+      - date_modification
+  Customer invoices list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      cond_reglement_code:
+        type:
+          - string
+          - "null"
+      cond_reglement_doc:
+        type:
+          - string
+          - "null"
+      cond_reglement_id:
+        type:
+          - string
+          - "null"
+      contacts_ids:
+        type:
+          - array
+          - "null"
+      customer_id:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - number
+          - "null"
+      date_creation:
+        type:
+          - number
+          - "null"
+      date_lim_reglement:
+        type:
+          - number
+          - "null"
+      date_modification:
+        type: number
+      date_pointoftax:
+        type:
+          - string
+          - "null"
+      date_validation:
+        type:
+          - number
+          - "null"
+      datem:
+        type:
+          - number
+          - "null"
+      entity:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fk_account:
+        type:
+          - string
+          - "null"
+      fk_facture_source:
+        type:
+          - string
+          - "null"
+      fk_incoterms:
+        type:
+          - string
+          - "null"
+      fk_multicurrency:
+        type:
+          - string
+          - "null"
+      fk_user_author:
+        type:
+          - string
+          - "null"
+      fk_user_valid:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      invoice_id:
+        type: number
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      last_main_doc:
+        type:
+          - string
+          - "null"
+      linked_objects:
+        type:
+          - array
+          - "null"
+      location_incoterms:
+        type:
+          - string
+          - "null"
+      mode_reglement_code:
+        type:
+          - string
+          - "null"
+      mode_reglement_id:
+        type:
+          - string
+          - "null"
+      model_pdf:
+        type:
+          - string
+          - "null"
+      module_source:
+        type:
+          - string
+          - "null"
+      multicurrency_code:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ht:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ttc:
+        type:
+          - string
+          - "null"
+      multicurrency_total_tva:
+        type:
+          - string
+          - "null"
+      multicurrency_tx:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      paye:
+        type:
+          - string
+          - "null"
+      pos_source:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      remaintopay:
+        type:
+          - string
+          - "null"
+      retained_warranty:
+        type:
+          - string
+          - "null"
+      retained_warranty_date_limit:
+        type:
+          - number
+          - string
+          - "null"
+      retained_warranty_fk_cond_reglement:
+        type:
+          - string
+          - "null"
+      revenuestamp:
+        type:
+          - string
+          - "null"
+      situation_final:
+        type:
+          - string
+          - "null"
+      socid:
+        type:
+          - string
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statut:
+        type:
+          - string
+          - "null"
+      sumcreditnote:
+        type:
+          - string
+          - "null"
+      sumpayed:
+        type:
+          - string
+          - "null"
+      tab_next_situation_invoice:
+        type:
+          - array
+          - "null"
+      tab_previous_situation_invoice:
+        type:
+          - array
+          - "null"
+      total_ht:
+        type:
+          - string
+          - "null"
+      total_localtax1:
+        type:
+          - string
+          - "null"
+      total_localtax2:
+        type:
+          - string
+          - "null"
+      total_ttc:
+        type:
+          - string
+          - "null"
+      total_tva:
+        type:
+          - string
+          - "null"
+      totalcreditnotes:
+        type:
+          - string
+          - "null"
+      totalpaid:
+        type:
+          - number
+          - "null"
+      user_creation_id:
+        type:
+          - string
+          - "null"
+      user_validation_id:
+        type:
+          - string
+          - "null"
+    required:
+      - invoice_id
+      - date_modification
+  Customer invoices lines list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      code_ventilation:
+        type:
+          - string
+          - "null"
+      date_end:
+        type:
+          - string
+          - "null"
+      date_start:
+        type:
+          - string
+          - "null"
+      desc:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fk_accounting_account:
+        type:
+          - string
+          - "null"
+      fk_code_ventilation:
+        type:
+          - number
+          - "null"
+      fk_multicurrency:
+        type:
+          - string
+          - "null"
+      fk_product_type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      info_bits:
+        type:
+          - string
+          - "null"
+      invoice_id:
+        type:
+          - number
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      localtax1_tx:
+        type:
+          - string
+          - "null"
+      localtax1_type:
+        type:
+          - string
+          - "null"
+      localtax2_tx:
+        type:
+          - string
+          - "null"
+      localtax2_type:
+        type:
+          - string
+          - "null"
+      marge_tx:
+        type:
+          - number
+          - "null"
+      marque_tx:
+        type:
+          - number
+          - "null"
+      multicurrency_code:
+        type:
+          - string
+          - "null"
+      multicurrency_subprice:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ht:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ttc:
+        type:
+          - string
+          - "null"
+      multicurrency_total_tva:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      pa_ht:
+        type:
+          - string
+          - "null"
+      product_barcode:
+        type:
+          - string
+          - "null"
+      product_desc:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      product_label:
+        type:
+          - string
+          - "null"
+      product_ref:
+        type:
+          - string
+          - "null"
+      product_type:
+        type:
+          - string
+          - "null"
+      qty:
+        type:
+          - string
+          - "null"
+      rang:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_ext:
+        type:
+          - string
+          - "null"
+      remise_percent:
+        type:
+          - string
+          - "null"
+      rowid:
+        type:
+          - string
+          - "null"
+      situation_percent:
+        type:
+          - string
+          - "null"
+      special_code:
+        type:
+          - string
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      subprice:
+        type:
+          - string
+          - "null"
+      total_ht:
+        type:
+          - string
+          - "null"
+      total_localtax1:
+        type:
+          - string
+          - "null"
+      total_localtax2:
+        type:
+          - string
+          - "null"
+      total_sell_price:
+        type:
+          - number
+          - "null"
+      total_ttc:
+        type:
+          - string
+          - "null"
+      total_tva:
+        type:
+          - string
+          - "null"
+      tva_tx:
+        type:
+          - string
+          - "null"
+      unit_buy_price:
+        type:
+          - number
+          - "null"
+      unit_sell_price:
+        type:
+          - number
+          - "null"
+      vat_src_code:
+        type:
+          - string
+          - "null"
+  Customers list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      SupplierCategories:
+        type:
+          - array
+          - "null"
+      accountancy_code_buy:
+        type:
+          - string
+          - "null"
+      accountancy_code_sell:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      client:
+        type:
+          - string
+          - "null"
+      code_client:
+        type:
+          - string
+          - "null"
+      code_fournisseur:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type: number
+      date_creation:
+        type:
+          - number
+          - "null"
+      date_modification:
+        type: number
+      effectif:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      entity:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      fk_account:
+        type:
+          - string
+          - "null"
+      fk_incoterms:
+        type:
+          - string
+          - "null"
+      fk_multicurrency:
+        type:
+          - string
+          - "null"
+      fk_prospectlevel:
+        type:
+          - string
+          - "null"
+      fk_warehouse:
+        type:
+          - string
+          - "null"
+      forme_juridique:
+        type:
+          - string
+          - "null"
+      fournisseur:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      idprof1:
+        type:
+          - string
+          - "null"
+      idprof2:
+        type:
+          - string
+          - "null"
+      idprof3:
+        type:
+          - string
+          - "null"
+      idprof4:
+        type:
+          - string
+          - "null"
+      idprof5:
+        type:
+          - string
+          - "null"
+      idprof6:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      localtax1_value:
+        type:
+          - string
+          - "null"
+      localtax2_value:
+        type:
+          - string
+          - "null"
+      model_pdf:
+        type:
+          - string
+          - "null"
+      module:
+        type:
+          - string
+          - "null"
+      multicurrency_code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      name_alias:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      partnerships:
+        type:
+          - array
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      prospect:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      region_id:
+        type:
+          - string
+          - "null"
+      remise_percent:
+        type:
+          - number
+          - "null"
+      remise_supplier_percent:
+        type:
+          - string
+          - "null"
+      socialnetworks:
+        type:
+          - array
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      state_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_prospect_label:
+        type:
+          - string
+          - "null"
+      stcomm_id:
+        type:
+          - string
+          - "null"
+      town:
+        type:
+          - string
+          - "null"
+      tva_assuj:
+        type:
+          - string
+          - "null"
+      tva_intra:
+        type:
+          - string
+          - "null"
+      typent_code:
+        type:
+          - string
+          - "null"
+      typent_id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user_creation_id:
+        type:
+          - string
+          - "null"
+      user_modification_id:
+        type:
+          - string
+          - "null"
+      vat_reverse_charge:
+        type:
+          - number
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - customer_id
+      - date_modification
+  Supplier invoices list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      close_code:
+        type:
+          - string
+          - "null"
+      close_note:
+        type:
+          - string
+          - "null"
+      cond_reglement_code:
+        type:
+          - string
+          - "null"
+      cond_reglement_doc:
+        type:
+          - string
+          - "null"
+      cond_reglement_id:
+        type:
+          - string
+          - "null"
+      cond_reglement_label:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - number
+          - "null"
+      date_echeance:
+        type:
+          - number
+          - string
+          - "null"
+      datec:
+        type:
+          - number
+          - "null"
+      entity:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fk_account:
+        type:
+          - string
+          - "null"
+      fk_facture_source:
+        type:
+          - string
+          - "null"
+      fk_incoterms:
+        type:
+          - string
+          - "null"
+      fk_multicurrency:
+        type:
+          - string
+          - "null"
+      fk_statut:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      libelle:
+        type:
+          - string
+          - "null"
+      location_incoterms:
+        type:
+          - string
+          - "null"
+      mode_reglement_code:
+        type:
+          - string
+          - "null"
+      mode_reglement_id:
+        type:
+          - string
+          - "null"
+      model_pdf:
+        type:
+          - string
+          - "null"
+      multicurrency_code:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ht:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ttc:
+        type:
+          - string
+          - "null"
+      multicurrency_total_tva:
+        type:
+          - string
+          - "null"
+      multicurrency_tx:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      note_private:
+        type:
+          - string
+          - "null"
+      note_public:
+        type:
+          - string
+          - "null"
+      paid:
+        type:
+          - string
+          - "null"
+      paye:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_ext:
+        type:
+          - string
+          - "null"
+      ref_supplier:
+        type:
+          - string
+          - "null"
+      remise:
+        type:
+          - number
+          - "null"
+      socid:
+        type:
+          - string
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statut:
+        type:
+          - string
+          - "null"
+      supp_invoice_id:
+        type: number
+      supplier_id:
+        type:
+          - number
+          - "null"
+      tms:
+        type: number
+      total_ht:
+        type:
+          - string
+          - "null"
+      total_localtax1:
+        type:
+          - string
+          - "null"
+      total_localtax2:
+        type:
+          - string
+          - "null"
+      total_ttc:
+        type:
+          - string
+          - "null"
+      total_tva:
+        type:
+          - string
+          - "null"
+      user_creation_id:
+        type:
+          - string
+          - "null"
+      user_validation_id:
+        type:
+          - string
+          - "null"
+      vat_reverse_charge:
+        type:
+          - string
+          - "null"
+    required:
+      - supp_invoice_id
+      - tms
+  Supplier invoices lines list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      buy_unit_price:
+        type:
+          - number
+          - "null"
+      code_ventilation:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fk_accounting_account:
+        type:
+          - string
+          - "null"
+      fk_facture_fourn:
+        type:
+          - string
+          - "null"
+      fk_multicurrency:
+        type:
+          - string
+          - "null"
+      fk_product:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      info_bits:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      localtax1_tx:
+        type:
+          - string
+          - "null"
+      localtax1_type:
+        type:
+          - string
+          - "null"
+      localtax2_tx:
+        type:
+          - string
+          - "null"
+      localtax2_type:
+        type:
+          - string
+          - "null"
+      multicurrency_code:
+        type:
+          - string
+          - "null"
+      multicurrency_subprice:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ht:
+        type:
+          - string
+          - "null"
+      multicurrency_total_ttc:
+        type:
+          - string
+          - "null"
+      multicurrency_total_tva:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      product_barcode:
+        type:
+          - string
+          - "null"
+      product_desc:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      product_label:
+        type:
+          - string
+          - "null"
+      product_ref:
+        type:
+          - string
+          - "null"
+      product_type:
+        type:
+          - string
+          - "null"
+      pu_ht:
+        type:
+          - string
+          - "null"
+      pu_ttc:
+        type:
+          - string
+          - "null"
+      qty:
+        type:
+          - string
+          - "null"
+      rang:
+        type:
+          - string
+          - "null"
+      ref_supplier:
+        type:
+          - string
+          - "null"
+      remise_percent:
+        type:
+          - string
+          - "null"
+      special_code:
+        type:
+          - string
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      subprice:
+        type:
+          - string
+          - "null"
+      supp_invoice_id:
+        type:
+          - number
+          - "null"
+      total_buy_price:
+        type:
+          - number
+          - "null"
+      total_ht:
+        type:
+          - string
+          - "null"
+      total_localtax1:
+        type:
+          - string
+          - "null"
+      total_localtax2:
+        type:
+          - string
+          - "null"
+      total_ttc:
+        type:
+          - string
+          - "null"
+      total_tva:
+        type:
+          - string
+          - "null"
+      tva_tx:
+        type:
+          - string
+          - "null"
+      vat_src_code:
+        type:
+          - string
+          - "null"
+  Suppliers list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      SupplierCategories:
+        type:
+          - array
+          - "null"
+      accountancy_code_buy:
+        type:
+          - string
+          - "null"
+      accountancy_code_sell:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      client:
+        type:
+          - string
+          - "null"
+      code_fournisseur:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      date_creation:
+        type:
+          - number
+          - "null"
+      date_modification:
+        type: number
+      effectif:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      entity:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      fk_account:
+        type:
+          - string
+          - "null"
+      fk_incoterms:
+        type:
+          - string
+          - "null"
+      fk_multicurrency:
+        type:
+          - string
+          - "null"
+      fk_prospectlevel:
+        type:
+          - string
+          - "null"
+      fk_warehouse:
+        type:
+          - string
+          - "null"
+      forme_juridique:
+        type:
+          - string
+          - "null"
+      fournisseur:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      idprof1:
+        type:
+          - string
+          - "null"
+      idprof2:
+        type:
+          - string
+          - "null"
+      idprof3:
+        type:
+          - string
+          - "null"
+      idprof4:
+        type:
+          - string
+          - "null"
+      idprof5:
+        type:
+          - string
+          - "null"
+      idprof6:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      localtax1_value:
+        type:
+          - string
+          - "null"
+      localtax2_value:
+        type:
+          - string
+          - "null"
+      model_pdf:
+        type:
+          - string
+          - "null"
+      module:
+        type:
+          - string
+          - "null"
+      multicurrency_code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      name_alias:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      partnerships:
+        type:
+          - array
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      prospect:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      region_id:
+        type:
+          - string
+          - "null"
+      remise_percent:
+        type:
+          - number
+          - "null"
+      remise_supplier_percent:
+        type:
+          - string
+          - "null"
+      socialnetworks:
+        type:
+          - array
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      state_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_prospect_label:
+        type:
+          - string
+          - "null"
+      stcomm_id:
+        type:
+          - string
+          - "null"
+      supplier_id:
+        type: number
+      town:
+        type:
+          - string
+          - "null"
+      tva_assuj:
+        type:
+          - string
+          - "null"
+      tva_intra:
+        type:
+          - string
+          - "null"
+      typent_code:
+        type:
+          - string
+          - "null"
+      typent_id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user_creation_id:
+        type:
+          - string
+          - "null"
+      user_modification_id:
+        type:
+          - string
+          - "null"
+      vat_reverse_charge:
+        type:
+          - number
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - supplier_id
+      - date_modification
+  Internal Users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountancy_code:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      admin:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      birth:
+        type:
+          - number
+          - string
+          - "null"
+      civility_code:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      conf:
+        type:
+          - object
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      datec:
+        type:
+          - number
+          - "null"
+      dateemployment:
+        type:
+          - number
+          - string
+          - "null"
+      dateemploymentend:
+        type:
+          - string
+          - "null"
+      dateendvalidity:
+        type:
+          - string
+          - "null"
+      datelastlogin:
+        type:
+          - number
+          - string
+          - "null"
+      datem:
+        type: number
+      datepreviouslogin:
+        type:
+          - number
+          - string
+          - "null"
+      datestartvalidity:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      employee:
+        type:
+          - string
+          - "null"
+      entity:
+        type:
+          - string
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      firstname:
+        type:
+          - string
+          - "null"
+      fk_user:
+        type:
+          - string
+          - "null"
+      flagdelsessionsbefore:
+        type:
+          - number
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      iplastlogin:
+        type:
+          - string
+          - "null"
+      ippreviouslogin:
+        type:
+          - string
+          - "null"
+      job:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      lastname:
+        type:
+          - string
+          - "null"
+      login:
+        type:
+          - string
+          - "null"
+      national_registration_number:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      note_private:
+        type:
+          - string
+          - "null"
+      note_public:
+        type:
+          - string
+          - "null"
+      office_fax:
+        type:
+          - string
+          - "null"
+      office_phone:
+        type:
+          - string
+          - "null"
+      personal_email:
+        type:
+          - string
+          - "null"
+      personal_mobile:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_employee:
+        type:
+          - string
+          - "null"
+      rights:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              group_advance:
+                type:
+                  - object
+                  - "null"
+              self:
+                type:
+                  - object
+                  - "null"
+              self_advance:
+                type:
+                  - object
+                  - "null"
+              user:
+                type:
+                  - object
+                  - "null"
+              user_advance:
+                type:
+                  - object
+                  - "null"
+      signature:
+        type:
+          - string
+          - "null"
+      socialnetworks:
+        type:
+          - array
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      state_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statut:
+        type:
+          - string
+          - "null"
+      town:
+        type:
+          - string
+          - "null"
+      user_id:
+        type: number
+      user_mobile:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - array
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - user_id
+      - datem
+  Company profile data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      SupplierCategories:
+        type:
+          - array
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      array_options:
+        type:
+          - array
+          - "null"
+      capital:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      default_lang:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      entity:
+        type:
+          - number
+          - "null"
+      extraparams:
+        type:
+          - array
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      idprof1:
+        type:
+          - string
+          - "null"
+      idprof2:
+        type:
+          - string
+          - "null"
+      idprof3:
+        type:
+          - string
+          - "null"
+      idprof4:
+        type:
+          - string
+          - "null"
+      idprof5:
+        type:
+          - string
+          - "null"
+      idprof6:
+        type:
+          - string
+          - "null"
+      labelStatus:
+        type:
+          - array
+          - "null"
+      labelStatusShort:
+        type:
+          - array
+          - "null"
+      localtax1_assuj:
+        type:
+          - number
+          - "null"
+      localtax2_assuj:
+        type:
+          - number
+          - "null"
+      logo:
+        type:
+          - string
+          - "null"
+      logo_mini:
+        type:
+          - string
+          - "null"
+      logo_small:
+        type:
+          - string
+          - "null"
+      logo_squarred:
+        type:
+          - string
+          - "null"
+      logo_squarred_mini:
+        type:
+          - string
+          - "null"
+      logo_squarred_small:
+        type:
+          - string
+          - "null"
+      managers:
+        type:
+          - string
+          - "null"
+      module:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      nb:
+        type:
+          - array
+          - "null"
+      note_private:
+        type:
+          - string
+          - "null"
+      partnerships:
+        type:
+          - array
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      socialnetworks:
+        type:
+          - object
+          - "null"
+        properties:
+          facebook:
+            type:
+              - string
+              - "null"
+          instagram:
+            type:
+              - string
+              - "null"
+          linkedin:
+            type:
+              - string
+              - "null"
+      socialobject:
+        type:
+          - string
+          - "null"
+      specimen:
+        type:
+          - number
+          - "null"
+      state_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      town:
+        type:
+          - string
+          - "null"
+      tva_assuj:
+        type:
+          - string
+          - "null"
+      tva_intra:
+        type:
+          - string
+          - "null"
+      typent_id:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      vat_reverse_charge:
+        type:
+          - number
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+  Customer invoices payments list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      fk_bank_line:
+        type:
+          - string
+          - "null"
+      invoice_id:
+        type:
+          - number
+          - "null"
+      num:
+        type:
+          - string
+          - "null"
+      ref:
+        type: string
+      ref_ext:
+        type:
+          - string
+          - "null"
+    required:
+      - ref
+  Supplier invoices payments list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      fk_bank_line:
+        type:
+          - string
+          - "null"
+      num:
+        type:
+          - string
+          - "null"
+      ref:
+        type: string
+      supp_invoice_id:
+        type:
+          - number
+          - "null"
+    required:
+      - ref

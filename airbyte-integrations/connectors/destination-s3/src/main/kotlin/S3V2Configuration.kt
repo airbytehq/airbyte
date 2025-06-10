@@ -43,7 +43,7 @@ data class S3V2Configuration<T : OutputStream>(
     val numUploadWorkers: Int = 5,
     val maxMemoryRatioReservedForParts: Double = 0.4,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
-    val partSizeBytes: Long = 10L * 1024 * 1024,
+    val partSizeBytes: Long = 20L * 1024 * 1024,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,

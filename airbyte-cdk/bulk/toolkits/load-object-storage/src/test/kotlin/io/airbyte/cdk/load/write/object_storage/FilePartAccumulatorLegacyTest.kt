@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -50,11 +51,14 @@ class FilePartAccumulatorLegacyTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId("0"))
 
         coVerify(exactly = 1) {
             outputQueue.publish(
-                match { (it as PipelineMessage).checkpointCounts == mapOf(CheckpointId(0) to 1L) },
+                match {
+                    (it as PipelineMessage).checkpointCounts ==
+                        mapOf(CheckpointId("0") to CheckpointValue(1, 1))
+                },
                 0
             )
         }
@@ -68,7 +72,7 @@ class FilePartAccumulatorLegacyTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId("0"))
 
         coVerify(exactly = 2) { outputQueue.publish(any(), 0) }
     }
@@ -82,7 +86,7 @@ class FilePartAccumulatorLegacyTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId("0"))
 
         coVerify(exactly = 2) { outputQueue.publish(any(), 0) }
     }
@@ -98,7 +102,6 @@ class FilePartAccumulatorLegacyTest {
         return DestinationFile(
             stream,
             0,
-            "",
             DestinationFile.AirbyteRecordMessageFile(
                 fileUrl = file.absolutePath,
                 fileRelativePath = fileRelativePath,
