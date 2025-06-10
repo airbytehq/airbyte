@@ -227,7 +227,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 sourceMeta = Meta(),
-                airbyteRawId = airbyteRawId,
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val record2 =
@@ -237,7 +237,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 sourceMeta = Meta(),
-                airbyteRawId = airbyteRawId,
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val rawId1 =
