@@ -12,6 +12,8 @@ definitions:
     google_analytics_stream_template:
       type: DeclarativeStream
       name: google_analytics_stream_template
+      primary_key:
+        - property_id
       retriever:
         type: SimpleRetriever
         requester: # the dynamic stream will override request_body_json
@@ -873,7 +875,7 @@ dynamic_streams:
               {% else %}
               limit: 100000
               {% endif %}
-              {% if not (cohort and cohort.get("enabled")) %}
+              {% if not (cohort and cohort.get("enabled") == "true") %}
               dateRanges: []
               {% else %}
               cohortSpec: {
@@ -938,7 +940,7 @@ dynamic_streams:
                     value_type: string
 
             {% set cohort = components_values.get("cohortSpec") %}
-            {% if not (cohort and cohort.get("enabled")) %}
+            {% if not (cohort and cohort.get("enabled") == "true") %}
               - type: AddFields
                 fields:
                   - path: [ "startDate" ]
@@ -1006,10 +1008,10 @@ dynamic_streams:
               {% endif %}
             {% endfor %}
 
-            {% if ns.cursor and not (cohort and cohort.get("enabled")) %}
+            {% if ns.cursor and not (cohort and cohort.get("enabled") == "true") %}
               type: DatetimeBasedCursor
               cursor_field: {{ ns.cursor }}
-              lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+              lookback_window: "P{{ config.get('lookback_window', 2) }}D"
               step: "P{{ config.get('window_in_days', 365) }}D"
               cursor_granularity: PT1S
               cursor_datetime_formats:
@@ -1039,7 +1041,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "schema_filter", "condition"]
           value: >
-            {{ '{{ record[0] in ' ~ (components_values["metrics"] | tojson) ~ ' }}' }}
+            {{ '{{ record.keys() | list | first in ' ~ (components_values["metrics"] | tojson) ~ ' }}' }}
         # This adds a schema transformation to include a field that was added previously.
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "schema_transformations"]
@@ -1056,7 +1058,7 @@ dynamic_streams:
                     - path: [ "property_id" ]
                       value: "{{ {'type': ['string']} }}"
             {% set cohort = components_values.get("cohortSpec") %}
-            {% if not (cohort and cohort.get("enabled")) %}
+            {% if not (cohort and cohort.get("enabled") == "true") %}
                 - type: AddFields
                   fields:
                     - path: [ "startDate" ]
@@ -1065,6 +1067,22 @@ dynamic_streams:
                   fields:
                     - path: [ "endDate" ]
                       value: "{{ {'type': ['null', 'string']} }}"
+            {% endif %}
+        # This adds a primary key to the stream.
+        - type: ComponentMappingDefinition
+          field_path: ["primary_key"]
+          value: >
+            {% set dimensions = components_values["dimensions"] %}
+            {% set cohort = components_values.get("cohortSpec") %}
+                - property_id
+
+            {% for dimension in dimensions %}
+                - {{ dimension }}
+            {% endfor %}
+
+            {% if "date" not in dimensions and not (cohort and cohort.get("enabled") == "true") %}
+                - startDate
+                - endDate
             {% endif %}
 
 spec:
