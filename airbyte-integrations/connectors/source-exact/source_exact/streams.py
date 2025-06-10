@@ -10,6 +10,8 @@ from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
+from source_exact.api import ExactAPI
+
 
 class ExactStream(HttpStream, CheckpointMixin, ABC):
     """
@@ -36,6 +38,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         self._divisions = config["divisions"]
         self._base_url = config["base_url"]
         self.token_refresh_endpoint = f"{self._base_url}/api/oauth/token"
+        self.api = ExactAPI(config)
 
         self._active_division = self._divisions[0]
         """The current division being synced."""
@@ -54,12 +57,12 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         super().__init__(self._single_refresh_token_authenticator)
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None,
+    def path(self, stream_state: Optional[Mapping[str, Any]] = None,
              stream_slice: Optional[Mapping[str, Any]] = None,
              next_page_token: Optional[Mapping[str, Any]] = None) -> str:
         """
-        Returns the URL to call. On first call uses the property `endpoint` of subclass. For subsequent
-        pages, `next_page_token` is used.
+        Returns the URL to call. On first call uses the property `endpoint` of subclass.
+        For subsequent pages, `next_page_token` is used.
         """
 
         if not self.endpoint:
@@ -79,7 +82,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        If response contains the __next property, there are more pages. This property contains the full url to
+        If the response contains the __next property, there are more pages. This property contains the full url to
         call next including endpoint and all query parameters.
         """
 
@@ -117,12 +120,13 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
                 return [parse_value(key, v) for v in value]
 
             if isinstance(value, str):
-                # Exact returns timestamps in following format: /Date(1672531200000)/ (OData date format).
-                # The value is in seconds since Epoch (UNIX time) format. However NOTE that the time is in Dutch timezone:
+                # Exact returns timestamps in the following format: /Date(1672531200000)/ (OData date format).
+                # The value is in seconds since Epoch (UNIX time) format.
+                # NOTE that the time is in Dutch timezone:
                 # - CET (UTC+01.00) in the winter
                 # - CET (UTC+02.00) in the summer
                 # The `pendulum.from_timestamp(x, 'CET')` takes into account both summer and winter time.
-                # A timestamp x in the winter is read as UTC+01.00 and a timestamp x in the summer is read as UTC+02.00.
+                # A timestamp x in the winter is read as UTC+01.00, and a timestamp x in the summer is read as UTC+02.00.
                 #
                 # Exact API docs: https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-faq-rest-api
                 match_timestamp = regex_timestamp.match(value)
@@ -155,13 +159,12 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         try:
             self.read_records(sync_mode=SyncMode.full_refresh)
-            #     (
-            #
-            #     self._create_prepared_request(
-            #     path=self.endpoint,
-            #     headers=self._single_refresh_token_authenticator.get_auth_header(),
-            #     # Just want to test if we can access the API, don't care about any results. With $top=0 we get no results.
-            #     params={"$top": 0},
+            # (
+            # self._create_prepared_request(
+            # path=self.endpoint,
+            # headers=self._single_refresh_token_authenticator.get_auth_header(),
+            # # Just want to test if we can access the API, don't care about any results. With $top=0 we get no results.
+            # params={"$top": 0},
             # ))
             return True
             # response = self._send_request(prepared_request, {})
@@ -193,8 +196,10 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
 class ExactSyncStream(ExactStream):
     """
-    Exact Sync endpoints paginate by 1000 items. They have a column named Timestamp which denotes a entity version,
-    the value has no real correlation with a natural datetime. It allows for getting changes since the last sync.
+    Exact Sync endpoints paginate by 1000 items.
+    They have a column named Timestamp which denotes an entity version.
+    The Timestamp value has no real correlation with a natural datetime.
+    It allows for getting changes since the last sync.
     """
 
     state_checkpoint_interval = 1000
@@ -204,8 +209,9 @@ class ExactSyncStream(ExactStream):
 
 class ExactOtherStream(ExactStream):
     """
-    Exact non-sync endpoints paginate by 60 items. Often they denote regular entities which have a ID as primary
-    key, and modified field to get changes since last sync.
+    Exact non-sync endpoints paginate by 60 items.
+    Often they denote regular entities which have an ID as primary key,
+    and modified field to get changes since last sync.
     """
 
     state_checkpoint_interval = 60
