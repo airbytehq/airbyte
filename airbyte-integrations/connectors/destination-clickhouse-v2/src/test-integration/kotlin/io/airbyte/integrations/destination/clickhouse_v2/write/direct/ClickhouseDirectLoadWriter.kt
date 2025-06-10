@@ -47,9 +47,11 @@ class ClickhouseDirectLoadWriter :
         dataDumper =
             ClickhouseDataDumper { spec ->
                 val configOverrides = mutableMapOf<String, String>()
-                // ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port", it.toString()) }
+                // ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port",
+                // it.toString()) }
                 // if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
-                //     ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port", it.toString()) }
+                //     ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port",
+                // it.toString()) }
                 // } else {
                 //     ClickhouseContainerHelper.getIpAddress()
                 //         ?.let { configOverrides.put("hostname", it) }
@@ -496,7 +498,6 @@ class ClickhouseDirectLoadWriter :
     @Disabled override fun testNamespaceMappingDestinationWithPrefix() {}
     @Disabled override fun testNamespaceMappingDestinationNoPrefix() {}
 
-
     /**
      * failing because of
      *
@@ -791,8 +792,6 @@ object ClickhouseDataCleaner : DestinationCleaner {
         } catch (e: Exception) {
             // swallow the exception, we don't want to fail the test suite if the cleanup fails
         }
-
-
     }
 }
 

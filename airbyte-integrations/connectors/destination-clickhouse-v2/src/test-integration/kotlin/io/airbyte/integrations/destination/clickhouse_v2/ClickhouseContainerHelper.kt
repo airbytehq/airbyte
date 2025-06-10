@@ -20,7 +20,6 @@ object ClickhouseContainerHelper {
     fun stop() {
         synchronized(lock = container) {
             if (container.isRunning()) {
-                println("_______________________________")
                 container.stop()
             }
         }
