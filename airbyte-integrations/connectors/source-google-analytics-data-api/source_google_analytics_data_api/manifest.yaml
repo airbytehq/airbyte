@@ -1070,16 +1070,16 @@ dynamic_streams:
             {% endif %}
         # This adds a primary key to the stream.
         - type: ComponentMappingDefinition
-          field_path: [ "primary_key" ]
+          field_path: ["primary_key"]
           value: >
             {% set dimensions = components_values["dimensions"] %}
             {% set cohort = components_values.get("cohortSpec") %}
                 - property_id
-            
+
             {% for dimension in dimensions %}
                 - {{ dimension }}
             {% endfor %}
-            
+
             {% if "date" not in dimensions and not (cohort and cohort.get("enabled") == "true") %}
                 - startDate
                 - endDate
