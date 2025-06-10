@@ -15,6 +15,7 @@ class AssetCleanerShutdownRunner(private val cleaners: Set<TestAssetCleaner>) {
     private val log = KotlinLogging.logger {}
 
     @EventListener
+    @Suppress("UNUSED_PARAMETER")
     fun onShutdown(event: ShutdownEvent) {
         for (cleaner in cleaners) {
             log.info { "Cleaning up test assets for ${cleaner.assetName}" }
