@@ -21,7 +21,10 @@ import kotlinx.coroutines.future.await
 
 val log = KotlinLogging.logger {}
 
-@SuppressFBWarnings(value= ["NP_NONNULL_PARAM_VIOLATION"], justification="suspend and fb's non-null analysis don't play well")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "suspend and fb's non-null analysis don't play well"
+)
 @Singleton
 class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
