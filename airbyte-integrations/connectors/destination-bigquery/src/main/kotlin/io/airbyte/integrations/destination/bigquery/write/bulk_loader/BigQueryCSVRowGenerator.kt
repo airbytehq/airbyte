@@ -17,12 +17,8 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeWithTimezoneValue
-import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.csv.toCsvValue
@@ -30,12 +26,13 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
-import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITHOUT_TIMEZONE_FORMATTER
-import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.TIME_WITH_TIMEZONE_FORMATTER
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimeWithoutTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithTimezone
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithoutTimezone
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.time.format.DateTimeFormatter
 
 object LIMITS {
     val TRUE = IntegerValue(1)
@@ -50,7 +47,7 @@ object LIMITS {
             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
             null
         } else {
-            return numValue
+            numValue
         }
     }
 
@@ -88,33 +85,13 @@ class BigQueryCSVRowGenerator {
                     value.abValue =
                         if ((actualValue as BooleanValue).value) LIMITS.TRUE else LIMITS.FALSE
                 is TimestampTypeWithTimezone ->
-                    value.abValue =
-                        StringValue(
-                            (actualValue as TimestampWithTimezoneValue)
-                                .value
-                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        )
+                    value.abValue = StringValue(formatTimestampWithTimezone(value))
                 is TimestampTypeWithoutTimezone ->
-                    value.abValue =
-                        StringValue(
-                            (actualValue as TimestampWithoutTimezoneValue)
-                                .value
-                                .format(DateTimeFormatter.ISO_DATE_TIME)
-                        )
+                    value.abValue = StringValue(formatTimestampWithoutTimezone(value))
                 is TimeTypeWithTimezone ->
-                    value.abValue =
-                        StringValue(
-                            (actualValue as TimeWithTimezoneValue)
-                                .value
-                                .format(TIME_WITH_TIMEZONE_FORMATTER)
-                        )
+                    value.abValue = StringValue(formatTimeWithTimezone(value))
                 is TimeTypeWithoutTimezone ->
-                    value.abValue =
-                        StringValue(
-                            (actualValue as TimeWithoutTimezoneValue)
-                                .value
-                                .format(TIME_WITHOUT_TIMEZONE_FORMATTER)
-                        )
+                    value.abValue = StringValue(formatTimeWithoutTimezone(value))
 
                 // serialize complex types to string
                 is ArrayType,

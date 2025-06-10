@@ -31,6 +31,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+// TODO merge this class into InputConsumerTaskTest.
+//   There are historical reasons that these are separate classes, but those
+//   reasons are no longer true.
 class InputConsumerTaskUTest {
     @MockK lateinit var catalog: DestinationCatalog
     @MockK lateinit var inputFlow: ReservingDeserializingInputFlow

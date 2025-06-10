@@ -41,7 +41,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private val internalTableDataset: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DirectLoadTableNativeOperations {
-    override fun ensureSchemaMatches(
+    override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
@@ -90,7 +90,7 @@ class BigqueryDirectLoadNativeTableOperations(
         }
     }
 
-    override fun getGenerationId(tableName: TableName): Long {
+    override suspend fun getGenerationId(tableName: TableName): Long {
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
@@ -223,7 +223,7 @@ class BigqueryDirectLoadNativeTableOperations(
      * 2. copy the existing data into it (casting columns as needed)
      * 3. replace the real table with the temp table
      */
-    private fun recreateTable(
+    private suspend fun recreateTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
