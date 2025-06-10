@@ -298,17 +298,14 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                             ),
                         )
                         val emittedAt = record.record?.emittedAt
-                            ?: throw IllegalArgumentException("record.emittedAt is null")
 
-                        val extractedAt =
-                            Timestamp.from(
-                                Instant.ofEpochMilli(emittedAt)
-                                    .atZone(ZoneOffset.UTC)
-                                    .toInstant(),
-                            )
+                        val extractedAt: Timestamp? = emittedAt?.let {
+                            Timestamp.from(Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toInstant())
+                        }
                         stmt.setTimestamp(++i, extractedAt)
                         stmt.setString(++i, airbyteMeta)
                         stmt.setLong(++i, generationId)
+                        stmt.addBatch()
                         batchCount++
                         if (batchCount >= batchSize) {
                             stmt.executeBatch()
