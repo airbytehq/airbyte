@@ -86,17 +86,13 @@ Extracts file content from the HTTP response when the entire response body isn't
 
 Customizes file naming using Jinja templating with access to record data and configuration. If not provided, Airbyte uses a random UUID as the filename. It's critical you ensure file names are unique every time.
 
-## File handling
-
-Downloaded files are stored temporarily during sync processing. The platform automatically handles file organization and adds necessary metadata for destination processing. Users only need to configure the `file_uploader` component - the platform manages the rest of the file transfer workflow.
-
 ## Authentication
 
 File downloads support independent authentication from the main API requests. This allows downloading files from different domains or services that require separate credentials.
 
 ## File size limitation
 
-Supports files up to 1.5-GB in size. Files larger than that are not synced.
+Supports files up to 1.5-GB in size. Airbyte does not sync files larger than that.
 
 ## Format compatibility
 
