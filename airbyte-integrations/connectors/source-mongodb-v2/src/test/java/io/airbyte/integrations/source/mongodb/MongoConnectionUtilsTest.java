@@ -60,7 +60,7 @@ class MongoConnectionUtilsTest {
     final MongoDbSourceConfig config = new MongoDbSourceConfig(Jsons.jsonNode(
         Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
             Map.of(
-                MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/" + readPreference,
+                MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/?" + readPreference,
                 MongoConstants.USERNAME_CONFIGURATION_KEY, username,
                 MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
                 MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource))));
