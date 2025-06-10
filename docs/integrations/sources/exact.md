@@ -65,6 +65,10 @@ records. All other services are limited to 60 records per page.
 All endpoints support incremental sync. Regular endpoints use the `Modified` field. Sync endpoints use the `Timestamp`
 field. Note, that this `Timestamp` represents a row version and is not related to a natural timestamp.
 
+## Limitations
+
+Extracting multiple divisions is not yet supported
+
 ## Authentication
 
 Exact uses OAuth for authentication (including for the API). The API has strict rate limits:
