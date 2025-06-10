@@ -2048,6 +2048,30 @@ definitions:
         value: |
           {% set v = record.get('QualityScore') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - HistoricalAdRelevance
+        value: |
+          {% set v = record.get('HistoricalAdRelevance') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - HistoricalLandingPageExperience
+        value: |
+          {% set v = record.get('HistoricalLandingPageExperience') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - HistoricalQualityScore
+        value: |
+          {% set v = record.get('HistoricalQualityScore') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - HistoricalExpectedCtr
+        value: |
+          {% set v = record.get('HistoricalExpectedCtr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
 streams:
   - $ref: "#/definitions/accounts_stream"
