@@ -34,43 +34,6 @@ class BudgetSummaryReport(BingAdsReportingServiceStream):
         return original_value
 
 
-class CampaignPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "CampaignPerformanceReport"
-
-    report_schema_name = "campaign_performance_report"
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-    ]
-
-
-class CampaignPerformanceReportHourly(HourlyReportTransformerMixin, CampaignPerformanceReport):
-    report_aggregation = "Hourly"
-
-    report_schema_name = "campaign_performance_report_hourly"
-
-
-class CampaignPerformanceReportDaily(CampaignPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class CampaignPerformanceReportWeekly(CampaignPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class CampaignImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13

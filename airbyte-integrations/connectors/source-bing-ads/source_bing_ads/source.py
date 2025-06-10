@@ -178,7 +178,6 @@ class SourceBingAds(YamlDeclarativeSource):
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
             "AdGroupImpressionPerformanceReport",
-            "CampaignPerformanceReport",
             "CampaignImpressionPerformanceReport",
             "GeographicPerformanceReport",
             "GoalsAndFunnelsReport",
