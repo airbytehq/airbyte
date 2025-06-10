@@ -28,6 +28,8 @@ import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.fold
 
+private val log = KotlinLogging.logger {}
+
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
  * [CheckpointMessage]s to the state manager.
@@ -46,7 +48,6 @@ class InputConsumerTask(
     private val partitioner: InputPartitioner,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 ) : Task {
-    private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
@@ -109,35 +110,48 @@ class InputConsumerTask(
                 // intentionally don't throw here.
                 // we'll throw an appropriate exception in the `finally` block.
             } finally {
-                // pipelineEventBookkeepingRouter.use {...} will swallow baseException.
-                // so instead, we'll use a plain try-catch-finally,
-                // and actually prioritize the original exception over anything thrown
-                // in this `try` block.
-                try {
-                    // this is likely to throw a "no stream status message" error,
-                    // if there's an error during input handling.
-                    // That's quite misleading (b/c the actual error is that we crashed before we
-                    // could handle the stream status message),
-                    // so we would prefer to rethrow the original exception.
-                    // but we can't just skip this close() call if baseException != null,
-                    // because that would cause the sync to hang.
-                    pipelineEventBookkeepingRouter.close()
-                } catch (t: Throwable) {
-                    if (processingThrowable == null) {
-                        throw t
-                    } else {
-                        log.warn(t) {
-                            "Encountered exception when closing PipelineEventBookkeepingRouter, but we're already handling another exception ($processingThrowable). Swallowing this exception."
-                        }
-                        throw processingThrowable
+                closePipelineEventBookkeepingRouter(
+                    pipelineEventBookkeepingRouter,
+                    processingThrowable
+                )
+            }
+        }
+    }
+
+    companion object {
+        /**
+         * pipelineEventBookkeepingRouter.use {...} will swallow baseException. so instead, we'll
+         * use a plain try-catch-finally, and actually prioritize the original exception over
+         * anything thrown in this `try` block.
+         */
+        internal suspend fun closePipelineEventBookkeepingRouter(
+            pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
+            processingThrowable: Throwable?,
+        ) {
+            try {
+                // this is likely to throw a "no stream status message" error,
+                // if there's an error during input handling.
+                // That's quite misleading (b/c the actual error is that we crashed before we
+                // could handle the stream status message),
+                // so we would prefer to rethrow the original exception.
+                // but we can't just skip this close() call if baseException != null,
+                // because that would cause the sync to hang.
+                pipelineEventBookkeepingRouter.close()
+            } catch (t: Throwable) {
+                if (processingThrowable == null) {
+                    throw t
+                } else {
+                    log.warn(t) {
+                        "Encountered exception when closing PipelineEventBookkeepingRouter, but we're already handling another exception ($processingThrowable). Swallowing this exception."
                     }
-                }
-                // if the `pipelineEventBookkeepingRouter.close()` ran successfully,
-                // we should rethrow the original exception.
-                if (processingThrowable != null) {
-                    log.warn { "Throwing captured exception after triggering sync shutdown." }
                     throw processingThrowable
                 }
+            }
+            // if the `pipelineEventBookkeepingRouter.close()` ran successfully,
+            // we should rethrow the original exception.
+            if (processingThrowable != null) {
+                log.warn { "Throwing captured exception after triggering sync shutdown." }
+                throw processingThrowable
             }
         }
     }

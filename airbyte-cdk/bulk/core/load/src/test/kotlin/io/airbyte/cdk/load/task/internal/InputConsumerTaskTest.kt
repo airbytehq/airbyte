@@ -32,11 +32,13 @@ import io.mockk.coVerifySequence
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.test.assertEquals
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class InputConsumerTaskTest {
     companion object {
@@ -333,5 +335,21 @@ class InputConsumerTaskTest {
             )
 
         assertThrows(IllegalStateException::class) { task.execute() }
+    }
+
+    @Test
+    fun testInputErrorThrowsOriginalError() = runTest {
+        val bookkeeper =
+            mockk<PipelineEventBookkeepingRouter> {
+                coEvery { close() } throws RuntimeException("blah blah no stream status")
+            }
+        val e =
+            assertThrows<RuntimeException> {
+                InputConsumerTask.closePipelineEventBookkeepingRouter(
+                    bookkeeper,
+                    RuntimeException("original exception"),
+                )
+            }
+        assertEquals("original exception", e.message)
     }
 }
