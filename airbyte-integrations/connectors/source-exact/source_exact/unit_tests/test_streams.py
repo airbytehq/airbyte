@@ -11,10 +11,7 @@ from source_exact.streams import ExactOtherStream, ExactSyncStream
 
 
 class MyTestExactSyncStream(ExactSyncStream):
-
-    def __init__(self, config):
-        self.endpoint = "sync/mocked"
-        super().__init__(config)
+    endpoint = "sync/mocked"
 
     @property
     def _auth(self):
@@ -33,10 +30,7 @@ class MyTestExactSyncStream(ExactSyncStream):
 
 
 class MyTestExactOtherStream(ExactOtherStream):
-
-    def __init__(self, config):
-        self.endpoint = "other/mocked"
-        super().__init__(config)
+    endpoint = "other/mocked"
 
     @property
     def _auth(self):
@@ -65,12 +59,12 @@ def test_path__failure(config_oauth):
 
 def test_path__next_page(config_oauth):
     stream = MyTestExactSyncStream(config_oauth)
-    assert stream.path({"next_url": "example.com/next"}) == "example.com/next"
+    assert stream.path(next_page_token={"next_url": "example.com/next"}) == "example.com/next"
 
 
 def test_path__initial(config_oauth):
     stream = MyTestExactSyncStream(config_oauth)
-    assert stream.path(None) == stream.endpoint
+    assert stream.path(next_page_token=None) == stream.endpoint
 
 
 def test_request_headers(config_oauth: dict):
@@ -116,22 +110,31 @@ def test_request_params_with_sync_stream(config_oauth: dict, next_page_token, cu
         (
                 None,
                 "2022-12-12T00:00:00Z",
-                {"$filter": "Modified gt datetime'2022-12-12T01:00:00'", "$orderby": "Modified asc",
-                 "$select": "ID,Modified"},
+                {
+                    "$filter": "Modified gt datetime'2022-12-12T01:00:00'",
+                    "$orderby": "Modified asc",
+                    "$select": "ID,Modified"
+                },
         ),
         # Should not happen: input is a timestamp not in UTC! A warning is logged.
         (
                 None,
                 "2022-12-12T00:00:00+01:00",
-                {"$filter": "Modified gt datetime'2022-12-12T00:00:00'", "$orderby": "Modified asc",
-                 "$select": "ID,Modified"},
+                {
+                    "$filter": "Modified gt datetime'2022-12-12T00:00:00'",
+                    "$orderby": "Modified asc",
+                    "$select": "ID,Modified"
+                },
         ),
         # Test if UTC is correctly handled in summer time
         (
                 None,
                 "2022-06-12T00:00:00+00:00",
-                {"$filter": "Modified gt datetime'2022-06-12T02:00:00'", "$orderby": "Modified asc",
-                 "$select": "ID,Modified"},
+                {
+                    "$filter": "Modified gt datetime'2022-06-12T02:00:00'",
+                    "$orderby": "Modified asc",
+                    "$select": "ID,Modified"
+                },
         ),
     ],
 )
