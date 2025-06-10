@@ -1,15 +1,10 @@
-plugins {
-    id 'java'
-    id 'java-test-fixtures'
-}
-
 compileTestFixturesKotlin {
     compilerOptions {
         allWarningsAsErrors = false
     }
 }
 
-group = 'io.airbyte.integrations.source-connector-tests'
+group = 'io.airbyte.integrations.sourceTesting'
 version = 'unspecified'
 
 dependencies {
