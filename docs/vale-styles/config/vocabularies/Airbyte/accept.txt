@@ -65,6 +65,7 @@ Glue
 [Gg]raph[Qq][Ll]
 \bDocker(?:'s)?\b
 npm
+HubSpot
 Zendesk
 
 # Acceptable non-words that shouldn't trigger spellcheck
