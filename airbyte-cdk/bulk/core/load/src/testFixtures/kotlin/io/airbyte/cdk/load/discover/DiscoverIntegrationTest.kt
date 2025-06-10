@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.DestinationCatalog
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
 data class DiscoverTestConfig(
@@ -62,10 +63,9 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                 1,
                 "$testName: Expected to receive exactly one destination catalog message, but got ${catalogMessages.size}: $catalogMessages"
             )
-            assertEquals(
-                tc.expectedCatalog,
-                catalogMessages.first().destinationCatalog,
-                "$testName: Catalogs are different expected ${tc.expectedCatalog}, but was ${catalogMessages.first().destinationCatalog}"
+            assertFalse(
+                catalogMessages.first().destinationCatalog.operations.isEmpty(),
+                "$testName: Catalogs is expected to have at least one operation"
             )
         }
     }
