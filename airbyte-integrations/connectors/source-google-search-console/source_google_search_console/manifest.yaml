@@ -58,6 +58,19 @@ definitions:
           type: "{{ stream_partition.get('search_type') }}"
           aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              error_message_contains: "Search Analytics QPS quota exceeded"
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 400
+              error_message: >-
+                Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
+                'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
       paginator:
         type: DefaultPaginator
         page_token_option:
