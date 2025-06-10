@@ -121,7 +121,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     override fun prepareFinalTables() {
         check(!::overwriteStreamsWithTmpTable.isInitialized) { "Tables were already prepared." }
         overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet()
-        LOGGER.info { "Preparing final tables" }
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
@@ -140,7 +139,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 it.streamConfig.id to it.destinationState.withSoftReset(false)
             }
         )
-        LOGGER.info { "Preparing final tables completed" }
     }
 
     private fun prepareTablesFuture(
@@ -235,7 +233,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     streamsWithSuccessfulSetup.add(
                         Pair.of(stream.id.originalNamespace, stream.id.originalName)
                     )
-                    LOGGER.info { "prepareTablesFuture completed" }
                     return@supplyAsync
                 } catch (e: Exception) {
                     LOGGER.error(e) {

@@ -262,12 +262,6 @@ object JdbcBufferedConsumerFactory {
                 )
             }
             val writeConfig = pairToWriteConfig.getValue(pair)
-            LOGGER.info {
-                "Before insertRecords---- ${writeConfigs.size} streams"
-            }
-            LOGGER.info {
-                "Before insertRecords Number of records ---- ${records.size}"
-            }
             sqlOperations.insertRecords(
                 database,
                 ArrayList(records),
@@ -276,9 +270,6 @@ object JdbcBufferedConsumerFactory {
                 writeConfig.syncId,
                 writeConfig.generationId,
             )
-            LOGGER.info {
-                "After insertRecords"
-            }
         }
     }
 
@@ -290,7 +281,6 @@ object JdbcBufferedConsumerFactory {
         catalog: ParsedCatalog,
         typerDeduper: TyperDeduper
     ): OnCloseFunction {
-        LOGGER.info { "onCloseFunction" }
         return OnCloseFunction {
             _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->

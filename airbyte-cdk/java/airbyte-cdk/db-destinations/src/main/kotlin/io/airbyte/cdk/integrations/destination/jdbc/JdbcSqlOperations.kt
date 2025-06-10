@@ -252,7 +252,6 @@ abstract class JdbcSqlOperations : SqlOperations {
         syncId: Long,
         generationId: Long
     ) {
-        LOGGER.info("insertRecords")
         insertRecordsInternalV2(database, records, schemaName, tableName, syncId, generationId)
     }
 
@@ -267,10 +266,6 @@ abstract class JdbcSqlOperations : SqlOperations {
     )
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(
-                JdbcSqlOperations::class.java,
-            )
         const val SHOW_SCHEMAS: String = "show schemas;"
         const val NAME: String = "name"
     }

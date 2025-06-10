@@ -254,12 +254,6 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         syncId: Long,
         generationId: Long
     ) {
-        LOGGER.info(
-            "Inserting records into table $tableName in schema $schemaName.",
-        )
-        LOGGER.info(
-            "Number of records to insert: ${records.size}",
-        )
         if (records.isEmpty()) {
             return
         }
@@ -278,35 +272,17 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         if(records.size < 5000) {
             batchSize = records.size
         }
-        LOGGER.info("batchSize - {}", batchSize)
         database.execute { con ->
             try {
                 con.prepareStatement(insertQueryComponent).use {
                     stmt ->
                     stmt.queryTimeout = 600 // 10 minutes max wait
-                    LOGGER.info("Auto-commit: before set {}", con.autoCommit)
                     con.autoCommit = false
-                    LOGGER.info("Auto-commit: after set {}", con.autoCommit)
                     var batchCount = 0
-                    LOGGER.info("insertQueryComponent - {}", insertQueryComponent)
                     for (record in records) {
-                        LOGGER.info("record : {}", record)
 
                         val uuid = UUID.randomUUID().toString()
-                        LOGGER.info("uuid {}", uuid)
-                        if (record.serialized == null) {
-                            LOGGER.warn("Serialized payload is null for record: {}", record)
-                        }
                         val jsonData = record.serialized ?: "{}"
-                        LOGGER.info("jsonData {}", jsonData)
-                        LOGGER.info("Serialized JSON length: {}, bytes: {}", jsonData.length, jsonData.toByteArray().size)
-
-                        val dataSize = jsonData.toByteArray().size
-                        if (dataSize > 1_000_000) {
-                            LOGGER.warn("Large record > 1MB, skipping or handling separately")
-                            continue
-                        }
-
                         val meta = record.record?.meta
                         val airbyteMeta =
                             if (meta == null) "{\"changes\":[]}" else Jsons.serialize(meta)
@@ -333,39 +309,16 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                         stmt.setTimestamp(++i, extractedAt)
                         stmt.setString(++i, airbyteMeta)
                         stmt.setLong(++i, generationId)
-                        LOGGER.info(
-                            "Inserting record with UUID: {}, Data: {}, Extracted At: {}, Meta: {}, Generation ID: {}",
-                            uuid,
-                            jsonData,
-                            extractedAt,
-                            airbyteMeta,
-                            generationId
-                        )
-                        stmt.addBatch()
                         batchCount++
-                        LOGGER.info("batchCount: {}", batchCount)
-                        LOGGER.info("batchSize: {}", batchSize)
                         if (batchCount >= batchSize) {
-                            LOGGER.info("Executing batch")
-                            val start = System.currentTimeMillis()
                             stmt.executeBatch()
-                            val end = System.currentTimeMillis()
-                            LOGGER.info("Batch execution time: {} ms", end - start)
                             con.commit()
-                            LOGGER.info("Committed batch")
                             batchCount = 0
-                        } else {
-                            LOGGER.info("only added to batch")
                         }
                     }
                     if (batchCount > 0) {
-                        LOGGER.info("Executing final batch")
-                        val start = System.currentTimeMillis()
                         stmt.executeBatch()
-                        val end = System.currentTimeMillis()
-                        LOGGER.info("Final batch execution time: {} ms", end - start)
                         con.commit()
-                        LOGGER.info("Final commit done")
                     }
                 }
             } catch (e: SQLException) {
@@ -374,14 +327,13 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                     LOGGER.error(currentException.message)
                     currentException = currentException.nextException
                 }
-                throw RuntimeException("Batch insert failed", e)
+                throw RuntimeException("Batch insertion failed", e)
             } catch (ex: Exception) {
-                LOGGER.info("Exception occured, {}", ex.message)
+                LOGGER.error(ex.message)
             } finally {
                 con.commit()
             }
         }
-        LOGGER.info("insertRecrodsInternalV2 is completed.")
     }
 
     /**
