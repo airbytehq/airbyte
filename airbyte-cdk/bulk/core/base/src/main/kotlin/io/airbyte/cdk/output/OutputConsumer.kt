@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.airbyte.protocol.models.v0.DestinationCatalog
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -34,6 +35,10 @@ import java.util.function.Consumer
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 @DefaultImplementation(StdoutOutputConsumer::class)
 abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
+    companion object {
+        const val IS_DUMMY_STATS_MESSAGE = "isDummyStatsMessage"
+    }
+
     /**
      * The constant emittedAt timestamp we use for record timestamps.
      *
@@ -106,6 +111,14 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
                 .withAnalytics(analytics),
         )
     }
+
+    fun accept(destinationCatalog: DestinationCatalog) {
+        accept(
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.DESTINATION_CATALOG)
+                .withDestinationCatalog(destinationCatalog)
+        )
+    }
 }
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
@@ -151,7 +164,10 @@ private class StdoutOutputConsumer(
         // Using println is not particularly efficient, however.
         // To improve performance, this method accumulates RECORD messages into a buffer
         // before writing them to standard output in a batch.
-        if (airbyteMessage.type == AirbyteMessage.Type.RECORD) {
+        if (
+            airbyteMessage.type == AirbyteMessage.Type.RECORD &&
+                airbyteMessage.record.additionalProperties[IS_DUMMY_STATS_MESSAGE] != true
+        ) {
             // RECORD messages undergo a different serialization scheme.
             accept(airbyteMessage.record)
         } else {

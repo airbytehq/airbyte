@@ -3,7 +3,7 @@
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 
 interface ProtocolSerializer {
     fun serialize(configuredAirbyteCatalog: ConfiguredAirbyteCatalog): String
