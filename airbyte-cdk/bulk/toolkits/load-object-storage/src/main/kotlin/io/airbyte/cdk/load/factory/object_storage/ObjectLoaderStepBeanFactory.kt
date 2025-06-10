@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderOneShotUploader
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderOneShotUploaderStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
@@ -28,6 +30,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.Semaphore
 
 @Factory
 class ObjectLoaderStepBeanFactory {
@@ -110,10 +113,13 @@ class ObjectLoaderStepBeanFactory {
         completedUploadQueue:
             PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
             null,
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<
+                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
-        ObjectLoaderUploadCompleterStep<K, T>(
+        ObjectLoaderUploadCompleterStep(
             objectLoader,
             uploadCompleter,
             inputQueue,
@@ -136,7 +142,10 @@ class ObjectLoaderStepBeanFactory {
             PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
             null,
         @Named("fileCompletedOutputPartitioner")
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<
+                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
         ObjectLoaderUploadCompleterStep(
@@ -171,6 +180,32 @@ class ObjectLoaderStepBeanFactory {
             "file-record-part-formatter-step",
             flushStrategy,
         )
+
+    @Named("oneShotObjectLoaderStep")
+    @Singleton
+    fun <O : OutputStream, K : WithStream, T : RemoteObject<*>> oneShotObjectLoaderStep(
+        objectLoaderOneShotUploader: ObjectLoaderOneShotUploader<O, T>,
+        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("objectLoaderCompletedUploadQueue")
+        completedUploadQueue:
+            PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
+            null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<StreamKey, DestinationRecordRaw, K, T>? =
+            null,
+        taskFactory: LoadPipelineStepTaskFactory,
+    ) =
+        ObjectLoaderOneShotUploaderStep(
+            objectLoaderOneShotUploader,
+            completedUploadQueue,
+            completedUploadPartitioner,
+            taskFactory,
+            numInputPartitions
+        )
+
+    @Named("sharedUploadPermits")
+    @Singleton
+    fun sharedUploadPermits(objectLoader: ObjectLoader) = Semaphore(objectLoader.numUploadWorkers)
 
     @Singleton
     fun legacyFilePartAccumulatorFactory(
