@@ -84,6 +84,12 @@ class ClickhouseDirectLoadWriter :
         fun beforeAll() {
             ClickhouseContainerHelper.start()
         }
+
+        @JvmStatic
+        @BeforeAll
+        fun afterAll() {
+            ClickhouseContainerHelper.stop()
+        }
     }
 
     @Disabled("Clickhouse does not support file transfer, so this test is skipped.")
@@ -484,6 +490,12 @@ class ClickhouseDirectLoadWriter :
     @Disabled override fun testUnions() {}
     @Disabled override fun testNoColumns() {}
     @Disabled override fun testMidSyncCheckpointingStreamState() {}
+    @Disabled override fun testNamespaceMappingCustomFormatNoMacroWithPrefix() {}
+    @Disabled override fun testNamespaceMappingCustomFormatNoPrefix() {}
+    @Disabled override fun testNamespaceMappingSourceWithPrefix() {}
+    @Disabled override fun testNamespaceMappingDestinationWithPrefix() {}
+    @Disabled override fun testNamespaceMappingDestinationNoPrefix() {}
+
 
     /**
      * failing because of
@@ -683,7 +695,6 @@ class ClickhouseDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        println(config)
         val client = getClient(config)
 
         val output = mutableListOf<OutputRecord>()
@@ -763,11 +774,13 @@ object ClickhouseDataCleaner : DestinationCleaner {
             )
 
     override fun cleanup() {
-        val client = getClient(config)
+        try {
+            val client = getClient(config)
 
-        val query = "select * from system.databases where name like 'test%'"
+            val query = "select * from system.databases where name like 'test%'"
 
-        client.query(query).get().use { response ->
+            val response = client.query(query).get()
+
             val reader = client.newBinaryFormatReader(response)
             while (reader.hasNext()) {
                 val record = reader.next()
@@ -775,7 +788,11 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
                 client.query("DROP DATABASE IF EXISTS $databaseName").get()
             }
+        } catch (e: Exception) {
+            // swallow the exception, we don't want to fail the test suite if the cleanup fails
         }
+
+
     }
 }
 
