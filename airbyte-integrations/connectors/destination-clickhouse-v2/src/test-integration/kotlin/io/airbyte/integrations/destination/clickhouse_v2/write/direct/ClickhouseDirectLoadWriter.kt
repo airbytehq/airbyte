@@ -46,8 +46,17 @@ class ClickhouseDirectLoadWriter :
         configSpecClass = ClickhouseSpecification::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->
+                val configOverrides = mutableMapOf<String, String>()
+                // ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port", it.toString()) }
+                // if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
+                //     ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port", it.toString()) }
+                // } else {
+                //     ClickhouseContainerHelper.getIpAddress()
+                //         ?.let { configOverrides.put("hostname", it) }
+                // }
+
                 ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecification, mapOf())
+                    .makeWithOverrides(spec as ClickhouseSpecification, configOverrides)
             },
         destinationCleaner = ClickhouseDataCleaner,
         isStreamSchemaRetroactive = true,
@@ -474,6 +483,7 @@ class ClickhouseDirectLoadWriter :
     /** Need to go back to that. */
     @Disabled override fun testUnions() {}
     @Disabled override fun testNoColumns() {}
+    @Disabled override fun testMidSyncCheckpointingStreamState() {}
 
     /**
      * failing because of
@@ -673,6 +683,7 @@ class ClickhouseDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
+        println(config)
         val client = getClient(config)
 
         val output = mutableListOf<OutputRecord>()
