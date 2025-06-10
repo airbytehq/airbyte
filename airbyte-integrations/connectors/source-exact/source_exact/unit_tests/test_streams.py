@@ -11,7 +11,10 @@ from source_exact.streams import ExactOtherStream, ExactSyncStream
 
 
 class MyTestExactSyncStream(ExactSyncStream):
-    endpoint = "sync/mocked"
+
+    def __init__(self, config):
+        self.endpoint = "sync/mocked"
+        super().__init__(config)
 
     @property
     def _auth(self):
@@ -30,7 +33,10 @@ class MyTestExactSyncStream(ExactSyncStream):
 
 
 class MyTestExactOtherStream(ExactOtherStream):
-    endpoint = "other/mocked"
+
+    def __init__(self, config):
+        self.endpoint = "other/mocked"
+        super().__init__(config)
 
     @property
     def _auth(self):
@@ -58,7 +64,8 @@ def test_path__failure(config_oauth):
 
 
 def test_path__next_page(config_oauth):
-    assert MyTestExactSyncStream(config_oauth).path({"next_url": "example.com/next"}) == "example.com/next"
+    stream = MyTestExactSyncStream(config_oauth)
+    assert stream.path({"next_url": "example.com/next"}) == "example.com/next"
 
 
 def test_path__initial(config_oauth):

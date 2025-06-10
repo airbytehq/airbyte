@@ -34,9 +34,9 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
     """
 
     def __init__(self, config):
-        self.endpoint = None
         self._divisions = config["divisions"]
         self._base_url = config["base_url"]
+        self.endpoint = None
         self.token_refresh_endpoint = f"{self._base_url}/api/oauth/token"
         self.api = ExactAPI(config)
 
