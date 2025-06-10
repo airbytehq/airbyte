@@ -30,7 +30,7 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
   releaseStage: generally_available
   suggestedStreams:
     streams:

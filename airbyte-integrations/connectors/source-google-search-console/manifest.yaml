@@ -7,11 +7,6 @@ check:
   stream_names:
     - sites
 
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 40) }}"
-  max_concurrency: 100
-
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/google-search-console
@@ -348,6 +343,19 @@ definitions:
           type: "{{ stream_partition.get('search_type') }}"
           aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              error_message_contains: "Search Analytics QPS quota exceeded"
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 400
+              error_message: >-
+                Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
+                'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -895,8 +903,8 @@ definitions:
         request_headers:
           Content-Type: "application/json"
         request_body_json:
-          startDate: "{{ config.get('start_date') }}"
-          endDate: "{{ config.get('end_date') }}"
+          startDate: "{{ config.get('start_date', '2021-01-01') }}"
+          endDate: "{{ config.get('end_date', today_utc()) }}"
           dimensions: ["searchAppearance"]
           type: "{{ stream_partition.get('search_type') }}"
           aggregationType: auto
@@ -965,6 +973,9 @@ definitions:
         error_handler:
           type: DefaultErrorHandler
           response_filters:
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              error_message_contains: "Search Analytics QPS quota exceeded"
             - type: HttpResponseFilter
               action: FAIL
               http_codes:
@@ -1324,9 +1335,20 @@ dynamic_streams:
 # - Per Project Quota: 30,000,000 req/day (350 req/sec) / 40,000 req/min (60 req/sec)
 #
 # The most likely upper bound is based on the user quota since it is the lowest and the
-# same authenticated user account may hit multiple site urls. The default is set to 40
-# which equates to one request every 2 seconds which seems like a fair baseline.
-#
+# same authenticated user account may hit multiple site urls.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1200
+          interval: PT1M
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 50
 
 schemas:
   search_analytics_all_fields:

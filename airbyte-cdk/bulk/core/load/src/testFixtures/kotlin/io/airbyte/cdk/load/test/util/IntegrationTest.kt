@@ -236,6 +236,9 @@ abstract class IntegrationTest(
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
         namespaceMappingConfig: NamespaceMappingConfig? = null,
     ): List<AirbyteMessage> {
+        check(streamStatus == null || streamStatus == AirbyteStreamStatus.COMPLETE) {
+            "Invalid stream status: $streamStatus"
+        }
         destinationProcessFactory.testName = testPrettyName
 
         val destination =
@@ -257,11 +260,20 @@ abstract class IntegrationTest(
             messages.forEach { destination.sendMessage(it) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
+                    val streamStatusMessage =
+                        when (streamStatus) {
+                            AirbyteStreamStatus.COMPLETE ->
+                                InputStreamComplete(
+                                    DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                                )
+                            else ->
+                                throw IllegalStateException(
+                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
+                                )
+                        }
                     destination.sendMessage(
-                        InputStreamComplete(
-                            DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                        ),
-                        broadcast = true
+                        streamStatusMessage,
+                        broadcast = true,
                     )
                 }
             }
