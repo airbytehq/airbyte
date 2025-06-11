@@ -19,7 +19,8 @@ import java.util.UUID
 class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration) :
     RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
-        // The raw table is not implemented by Clickhouse, in order to avoid fake table collision, we are passing a random UUID for the name
+        // The raw table is not implemented by Clickhouse, in order to avoid fake table collision,
+        // we are passing a random UUID for the name
         TableName(
             config.resolvedDatabase,
             UUID.randomUUID().toString(),
@@ -34,7 +35,6 @@ class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfigurat
             namespace = streamDescriptor.namespace ?: config.resolvedDatabase,
             name = streamDescriptor.name,
         )
-
 }
 
 @Singleton

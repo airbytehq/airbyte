@@ -17,6 +17,5 @@ class ClickhouseDirectLoaderFactory(private val clickhouseClient: Client) :
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int
-    ): ClickhouseDirectLoader =
-        ClickhouseDirectLoader(streamDescriptor, clickhouseClient)
+    ): ClickhouseDirectLoader = ClickhouseDirectLoader(streamDescriptor, clickhouseClient)
 }

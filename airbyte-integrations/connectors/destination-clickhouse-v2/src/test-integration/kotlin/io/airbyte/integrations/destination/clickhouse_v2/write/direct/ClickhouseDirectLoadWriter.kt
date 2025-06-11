@@ -610,9 +610,7 @@ class ClickhouseDirectLoadWriter :
      */
     @Disabled override fun testOverwriteSchemaEvolution() {}
 
-    /**
-     * Running well locally, not well in CI
-     */
+    /** Running well locally, not well in CI */
     @Disabled override fun testMidSyncCheckpointingStreamState() {}
 }
 

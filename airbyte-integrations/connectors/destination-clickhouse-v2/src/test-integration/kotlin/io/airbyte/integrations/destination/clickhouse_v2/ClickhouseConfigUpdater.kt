@@ -33,9 +33,6 @@ class ClickhouseConfigUpdater : ConfigurationUpdater {
         defaultNamespace: String
     ): DefaultNamespaceResult {
         // We don't wan't to allow overriding the default namespace creation.
-        return DefaultNamespaceResult(
-            updatedConfig = config,
-            actualDefaultNamespace = "default"
-        )
+        return DefaultNamespaceResult(updatedConfig = config, actualDefaultNamespace = "default")
     }
 }
