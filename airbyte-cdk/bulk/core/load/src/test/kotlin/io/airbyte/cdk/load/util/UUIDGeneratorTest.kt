@@ -11,36 +11,36 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class FastUUIDGeneratorTest {
+internal class UUIDGeneratorTest {
 
     @Test
-    fun testInsecureUuidGeneration() {
-        val generator = FastUUIDGenerator()
-        val uuid1 = generator.insecureUUID()
+    fun testV4UuidGeneration() {
+        val generator = UUIDGenerator()
+        val uuid1 = generator.v4()
         assertNotNull(uuid1)
-        val uuid2 = generator.insecureUUID()
+        val uuid2 = generator.v4()
         assertNotNull(uuid2)
         assertNotEquals(uuid1, uuid2)
     }
 
     @Test
-    fun testRandomUuidGeneration() {
-        val generator = FastUUIDGenerator()
-        val uuid1 = generator.randomUUID()
+    fun testV7Generation() {
+        val generator = UUIDGenerator()
+        val uuid1 = generator.v7()
         assertNotNull(uuid1)
-        val uuid2 = generator.randomUUID()
+        val uuid2 = generator.v7()
         assertNotNull(uuid2)
         assertNotEquals(uuid1, uuid2)
     }
 
     @Test
-    fun testPerformance() {
-        val generator = FastUUIDGenerator()
+    fun testV4Performance() {
+        val generator = UUIDGenerator()
 
         val fastTime = measureTime {
             @Suppress("unused")
             for (i in 0..100000) {
-                generator.randomUUID()
+                generator.v4()
             }
         }
 
@@ -51,7 +51,27 @@ internal class FastUUIDGeneratorTest {
             }
         }
 
-        println("$fastTime < $uuidTime")
+        assertTrue(fastTime < uuidTime)
+    }
+
+    @Test
+    fun testV7Performance() {
+        val generator = UUIDGenerator()
+
+        val fastTime = measureTime {
+            @Suppress("unused")
+            for (i in 0..100000) {
+                generator.v7()
+            }
+        }
+
+        val uuidTime = measureTime {
+            @Suppress("unused")
+            for (i in 0..100000) {
+                UUID.randomUUID()
+            }
+        }
+
         assertTrue(fastTime < uuidTime)
     }
 }

@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
-import io.airbyte.cdk.load.util.FastUUIDGenerator
+import io.airbyte.cdk.load.util.UUIDGenerator
 import jakarta.inject.Singleton
 
 /**
@@ -13,7 +13,7 @@ import jakarta.inject.Singleton
  */
 @Singleton
 class UploadIdGenerator(
-    private val uuidGenerator: FastUUIDGenerator,
+    private val uuidGenerator: UUIDGenerator,
 ) {
-    fun generate() = uuidGenerator.randomUUID().toString()
+    fun generate() = uuidGenerator.v7().toString()
 }

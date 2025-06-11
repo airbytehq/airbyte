@@ -23,7 +23,7 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.util.FastUUIDGenerator
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -49,7 +49,7 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
-    private val uuidGenerator: FastUUIDGenerator,
+    private val uuidGenerator: UUIDGenerator,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -64,7 +64,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                     stream = stream,
                     outputStream = outputStream,
                     rootLevelFlattening = flatten,
-                    airbyteRawId = uuidGenerator.randomUUID()
+                    airbyteRawId = uuidGenerator.v7()
                 )
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
@@ -74,7 +74,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                         formatConfigProvider.objectStorageFormatConfiguration
                             as AvroFormatConfiguration,
                     rootLevelFlattening = flatten,
-                    airbyteRawId = uuidGenerator.randomUUID(),
+                    airbyteRawId = uuidGenerator.v7(),
                 )
             is ParquetFormatConfiguration ->
                 ParquetFormattingWriter(
@@ -84,7 +84,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                         formatConfigProvider.objectStorageFormatConfiguration
                             as ParquetFormatConfiguration,
                     rootLevelFlattening = flatten,
-                    airbyteRawId = uuidGenerator.randomUUID(),
+                    airbyteRawId = uuidGenerator.v7(),
                 )
             is CSVFormatConfiguration ->
                 CSVFormattingWriter(
@@ -92,7 +92,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                     outputStream = outputStream,
                     rootLevelFlattening = flatten,
                     extractedAtAsTimestampWithTimezone = false,
-                    airbyteRawId = uuidGenerator.randomUUID(),
+                    airbyteRawId = uuidGenerator.v7(),
                 )
         }
     }

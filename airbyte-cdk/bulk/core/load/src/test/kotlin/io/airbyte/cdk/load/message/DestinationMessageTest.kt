@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
-import io.airbyte.cdk.load.util.FastUUIDGenerator
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
@@ -49,7 +49,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
-    private val uuidGenerator = FastUUIDGenerator()
+    private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
         isFileTransferEnabled: Boolean,
@@ -515,7 +515,7 @@ class DestinationMessageTest {
                 stream = mockk(relaxed = true),
                 rawData = DestinationRecordJsonSource(msg),
                 serializedSizeBytes = "serialized".length.toLong(),
-                airbyteRawId = uuidGenerator.randomUUID(),
+                airbyteRawId = uuidGenerator.v7(),
             )
 
         assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
@@ -534,7 +534,7 @@ class DestinationMessageTest {
                 stream = mockk(relaxed = true),
                 rawData = DestinationRecordJsonSource(msg),
                 serializedSizeBytes = "serialized".length.toLong(),
-                airbyteRawId = uuidGenerator.randomUUID(),
+                airbyteRawId = uuidGenerator.v7(),
             )
 
         assertNull(internalRecord.fileReference)

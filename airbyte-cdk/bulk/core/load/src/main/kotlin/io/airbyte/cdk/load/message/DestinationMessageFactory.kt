@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
-import io.airbyte.cdk.load.util.FastUUIDGenerator
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
@@ -25,7 +25,7 @@ class DestinationMessageFactory(
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
     private val namespaceMapper: NamespaceMapper,
-    private val uuidGenerator: FastUUIDGenerator,
+    private val uuidGenerator: UUIDGenerator,
 ) {
 
     fun fromAirbyteProtocolMessage(
@@ -99,7 +99,7 @@ class DestinationMessageFactory(
                         message = DestinationRecordJsonSource(message),
                         serializedSizeBytes = serializedSizeBytes,
                         checkpointId = checkpointId,
-                        airbyteRawId = uuidGenerator.randomUUID(),
+                        airbyteRawId = uuidGenerator.v7(),
                     )
                 }
             }
@@ -248,7 +248,7 @@ class DestinationMessageFactory(
                 message = DestinationRecordProtobufSource(message),
                 serializedSizeBytes = serializedSizeBytes,
                 checkpointId = CheckpointId(message.record.partitionId),
-                airbyteRawId = uuidGenerator.randomUUID(),
+                airbyteRawId = uuidGenerator.v7(),
             )
         } else if (message.hasProbe()) {
             ProbeMessage
