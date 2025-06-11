@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -59,6 +60,7 @@ class S3DataLakeDirectLoaderFactory(
     }
 }
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class S3DataLakeDirectLoader(
     private val stream: DestinationStream,
     private val table: Table,
