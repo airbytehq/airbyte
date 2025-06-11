@@ -1145,14 +1145,14 @@ definitions:
         "AccountId",
         "CampaignId",
         "Language",
-        "AdDistribution"
+        "AdDistribution",
       ]
-#    set report_aggregation in parameters, for example,
-#    $parameters:
-#      report_aggregation: Monthly
-#      report_columns: [list of columns]
-#      report_name: AgeGenderAudienceReport
-#      report_type: AgeGenderAudienceReportRequest
+    #    set report_aggregation in parameters, for example,
+    #    $parameters:
+    #      report_aggregation: Monthly
+    #      report_columns: [list of columns]
+    #      report_name: AgeGenderAudienceReport
+    #      report_type: AgeGenderAudienceReportRequest
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3511,7 +3511,8 @@ schemas:
           - "null"
           - string
       AbsoluteTopImpressionRatePercent:
-        description: The percentage of times your ad was shown at the absolute top of the
+        description:
+          The percentage of times your ad was shown at the absolute top of the
           search results page.
         type:
           - "null"
@@ -3603,7 +3604,8 @@ schemas:
           - "null"
           - integer
       AdDistribution:
-        description: The distribution network where the ad was displayed (search, display,
+        description:
+          The distribution network where the ad was displayed (search, display,
           etc.).
         type:
           - "null"
@@ -3634,13 +3636,15 @@ schemas:
           - "null"
           - number
       ExtendedCost:
-        description: The total cost of running the ad campaign including all associated
+        description:
+          The total cost of running the ad campaign including all associated
           costs.
         type:
           - "null"
           - number
       Assists:
-        description: The number of times this ad appeared in a conversion path but was not
+        description:
+          The number of times this ad appeared in a conversion path but was not
           the last click before the conversion.
         type:
           - "null"
@@ -3676,7 +3680,8 @@ schemas:
           - "null"
           - number
       ViewThroughConversions:
-        description: The number of times users saw but did not interact with this ad and
+        description:
+          The number of times users saw but did not interact with this ad and
           later converted.
         type:
           - "null"
@@ -3692,13 +3697,15 @@ schemas:
           - "null"
           - string
       AbsoluteTopImpressionRatePercent:
-        description: The percentage of times that your ad is shown at the top of the page,
+        description:
+          The percentage of times that your ad is shown at the top of the page,
           above the organic search results.
         type:
           - "null"
           - number
       TopImpressionRatePercent:
-        description: The percentage of times that your ad is shown at the top of the search
+        description:
+          The percentage of times that your ad is shown at the top of the search
           results.
         type:
           - "null"

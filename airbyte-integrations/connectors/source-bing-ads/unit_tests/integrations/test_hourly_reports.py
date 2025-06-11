@@ -103,6 +103,7 @@ class TestAgeGenderAudienceReportHourlyStream(HourlyReportsTestWithStateChangesA
             endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
         )
 
+
 class TestAccountImpressionPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "account_impression_performance_report_hourly"
     report_file = "account_impression_performance_report_hourly"
