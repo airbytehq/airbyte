@@ -330,61 +330,59 @@ abstract class IntegrationTest(
                 dataChannelFormat = dataChannelFormat,
                 namespaceMappingConfig = NamespaceMappingConfig(NamespaceDefinitionType.SOURCE),
             )
-        return runBlocking(Dispatchers.IO) {
-            launch {
-                if (
-                    destination is DockerizedDestination &&
-                        syncEndBehavior == UncleanSyncEndBehavior.KILL
-                ) {
-                    // when you kill a docker process, it doesn't exit uncleanly apparently
-                    destination.run()
-                } else {
-                    // expect an exception. we're sending a stream incomplete or killing the
-                    // destination, so it's expected to crash
-                    assertThrows<DestinationUncleanExitException> { destination.run() }
-                }
-            }
-            records.forEach { destination.sendMessage(it) }
-            destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
-            val noopTraceMessage =
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.ANALYTICS)
-                            .withAnalytics(
-                                AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
-                            )
-                            .withEmittedAt(System.currentTimeMillis().toDouble())
-                    )
+        var outputStateMessage: AirbyteStateMessage? = null
+        fun doRun() =
+            runBlocking(Dispatchers.IO) {
+                launch { destination.run() }
+                records.forEach { destination.sendMessage(it) }
+                destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
+                val noopTraceMessage =
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.ANALYTICS)
+                                .withAnalytics(
+                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
+                                )
+                                .withEmittedAt(System.currentTimeMillis().toDouble())
+                        )
 
-            val outputStateMessage: AirbyteStateMessage
-            while (true) {
-                destination.sendMessage(InputMessageOther(noopTraceMessage), false)
-                val returnedMessages = destination.readMessages()
-                if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
-                    outputStateMessage =
-                        returnedMessages
-                            .filter { it.type == AirbyteMessage.Type.STATE }
-                            .map { it.state }
-                            .first()
-                    break
+                while (true) {
+                    destination.sendMessage(InputMessageOther(noopTraceMessage), false)
+                    val returnedMessages = destination.readMessages()
+                    if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
+                        outputStateMessage =
+                            returnedMessages
+                                .filter { it.type == AirbyteMessage.Type.STATE }
+                                .map { it.state }
+                                .first()
+                        break
+                    }
+                    // don't just spam the input stream, give the destination time to actually
+                    // process the messages we're pushing into it
+                    delay(1)
                 }
-                // don't just spam the input stream, give the destination time to actually
-                // process the messages we're pushing into it
-                delay(1)
-            }
-            when (syncEndBehavior) {
-                UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
-                UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
-                    destination.sendMessage("{\"unparseable")
-                    destination.shutdown()
+                when (syncEndBehavior) {
+                    UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
+                    UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
+                        destination.sendMessage("{\"unparseable")
+                        destination.shutdown()
+                    }
+                    UncleanSyncEndBehavior.KILL -> destination.kill()
                 }
-                UncleanSyncEndBehavior.KILL -> destination.kill()
             }
-
-            outputStateMessage
+        if (
+            destination is DockerizedDestination && syncEndBehavior == UncleanSyncEndBehavior.KILL
+        ) {
+            // when you kill a docker process, it doesn't exit uncleanly apparently
+            doRun()
+        } else {
+            // expect an exception. we're sending a stream incomplete or killing the
+            // destination, so it's expected to crash
+            assertThrows<DestinationUncleanExitException> { doRun() }
         }
+        return outputStateMessage!!
     }
 
     fun updateConfig(config: String): String = configUpdater.update(config)
