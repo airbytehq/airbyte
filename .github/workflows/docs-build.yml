@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-docs:
-    name: Build Airbyte Docs Site
+    name: Build Airbyte Docs
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Current Branch
