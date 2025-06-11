@@ -4,9 +4,6 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
-import com.fasterxml.jackson.databind.SequenceWriter
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
@@ -14,7 +11,6 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -27,7 +23,6 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -95,35 +90,22 @@ class DefaultObjectStorageFormattingWriterFactory(
 }
 
 class JsonFormattingWriter(
-    private val stream: DestinationStream,
-    private val outputStream: OutputStream,
-    private val rootLevelFlattening: Boolean,
+    stream: DestinationStream,
+    outputStream: OutputStream,
+    rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
-    private val writer: SequenceWriter =
-        Jsons.writerFor(object : TypeReference<LinkedHashMap<String, AirbyteValue>>() {})
-            .with(MinimalPrettyPrinter(System.lineSeparator()))
-            .writeValues(outputStream)
+    private val writer: FastJsonFormattingWriter =
+        FastJsonFormattingWriter(stream, outputStream, rootLevelFlattening)
 
     override fun accept(record: DestinationRecordRaw) {
-        val data: LinkedHashMap<String, AirbyteValue> =
-            record
-                .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(
-                    stream = stream,
-                    flatten = rootLevelFlattening,
-                    airbyteRawId = record.airbyteRawId,
-                )
-                .toJson()
-        writer.write(data)
+        writer.accept(record)
     }
 
     override fun flush() {
-        outputStream.flush()
+        writer.flush()
     }
-
     override fun close() {
         writer.close()
-        outputStream.close()
     }
 }
 
