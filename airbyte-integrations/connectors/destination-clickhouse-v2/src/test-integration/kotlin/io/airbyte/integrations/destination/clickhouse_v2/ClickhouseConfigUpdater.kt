@@ -25,7 +25,6 @@ class ClickhouseConfigUpdater : ConfigurationUpdater {
         updatedConfig = updatedConfig.replace("replace_me_username", getUsername())
         updatedConfig = updatedConfig.replace("replace_me_password", getPassword())
 
-        log.error { "Updated Clickhouse config: $updatedConfig" }
         return updatedConfig
     }
 

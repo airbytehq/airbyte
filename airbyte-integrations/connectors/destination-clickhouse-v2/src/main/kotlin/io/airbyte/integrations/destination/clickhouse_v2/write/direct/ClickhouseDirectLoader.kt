@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 import com.clickhouse.client.api.Client
 import com.clickhouse.data.ClickHouseFormat
 import com.fasterxml.jackson.databind.node.ObjectNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.write
@@ -17,10 +18,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
 
 private val log = KotlinLogging.logger {}
 
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "suspend and fb's non-null analysis don't play well"
+)
 class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
@@ -30,7 +34,6 @@ class ClickhouseDirectLoader(
 
     object Constants {
         const val UUID = "bf7d3df8-8a91-4fd4-bd4c-89c293ba1d6b"
-        const val GEN_ID = 0L
         const val BATCH_SIZE_RECORDS = 500000
         const val DELIMITER = "\n"
 
@@ -40,10 +43,11 @@ class ClickhouseDirectLoader(
         const val FIELD_GEN_ID = "_airbyte_generation_id"
     }
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
+
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
-        protocolRecord.put(Constants.FIELD_GEN_ID, Constants.GEN_ID)
+        protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
 
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
@@ -63,27 +67,25 @@ class ClickhouseDirectLoader(
         return DirectLoader.Incomplete
     }
 
-    private fun flush() {
+    private suspend fun flush() {
         val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
         buffer = ByteArrayOutputStream()
-        log.info { "Beginning insert of $recordCount rows into ${descriptor.name}" }
 
-        val insertResult = runBlocking {
+        val insertResult =
             clickhouseClient
                 .insert(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
                     jsonBytes,
-                    ClickHouseFormat.JSONEachRow
+                    ClickHouseFormat.JSONEachRow,
                 )
                 .await()
-        }
 
         log.info { "Finished insert of ${insertResult.writtenRows} rows into ${descriptor.name}" }
         recordCount = 0
     }
 
     // only calls this on force complete
-    override fun finish() {
+    override suspend fun finish() {
         flush()
     }
 
