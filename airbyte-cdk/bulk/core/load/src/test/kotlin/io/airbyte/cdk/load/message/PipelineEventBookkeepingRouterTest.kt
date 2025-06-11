@@ -6,9 +6,12 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -19,10 +22,12 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PipelineEventBookkeepingRouterTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
@@ -32,18 +37,30 @@ class PipelineEventBookkeepingRouterTest {
     lateinit var checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>
     @MockK(relaxed = true) lateinit var openStreamQueue: QueueWriter<DestinationStream>
     @MockK(relaxed = true) lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
+    @MockK(relaxed = true) lateinit var batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>
 
     private val stream1 =
-        DestinationStream(DestinationStream.Descriptor("test", "stream"), mockk(), mockk(), 1, 1, 1)
+        DestinationStream(
+            unmappedNamespace = "test",
+            unmappedName = "stream",
+            mockk(),
+            mockk(),
+            1,
+            1,
+            1,
+            namespaceMapper = NamespaceMapper()
+        )
 
-    private fun makeBookkeepingRouter(numDataChannels: Int) =
+    private fun makeBookkeepingRouter(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
         PipelineEventBookkeepingRouter(
             catalog,
             syncManager,
             checkpointQueue,
             openStreamQueue,
             fileTransferQueue,
-            numDataChannels
+            batchStateUpdateQueue,
+            numDataChannels,
+            markEndOfStreamAtEnd
         )
 
     @BeforeEach
@@ -55,19 +72,28 @@ class PipelineEventBookkeepingRouterTest {
 
     @Test
     fun `router uses inferred checkpoint when checkpoint id not available on record`() = runTest {
-        val router = makeBookkeepingRouter(1)
+        val router =
+            makeBookkeepingRouter(
+                1,
+            )
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
 
         val event =
             router.handleStreamMessage(
-                DestinationRecord(stream1, mockk(relaxed = true), mockk(relaxed = true), 0L, null),
+                DestinationRecord(
+                    stream = stream1,
+                    message = mockk(relaxed = true),
+                    serializedSizeBytes = 0L,
+                    checkpointId = null,
+                    airbyteRawId = UUID.randomUUID()
+                ),
                 unopenedStreams = mutableSetOf(),
             ) as PipelineMessage
 
         verify { streamManager.inferNextCheckpointKey() }
-        assertEquals(mapOf(CheckpointId("foo") to 1L), event.checkpointCounts)
+        assertEquals(mapOf(CheckpointId("foo") to CheckpointValue(1L, 0L)), event.checkpointCounts)
     }
 
     @Test
@@ -81,17 +107,20 @@ class PipelineEventBookkeepingRouterTest {
             val event =
                 router.handleStreamMessage(
                     DestinationRecord(
-                        stream1,
-                        mockk(relaxed = true),
-                        mockk(relaxed = true),
-                        0L,
-                        CheckpointId("bar")
+                        stream = stream1,
+                        message = mockk(relaxed = true),
+                        serializedSizeBytes = 0L,
+                        checkpointId = CheckpointId("bar"),
+                        airbyteRawId = UUID.randomUUID()
                     ),
                     unopenedStreams = mutableSetOf(),
                 ) as PipelineMessage
 
             verify(exactly = 0) { streamManager.inferNextCheckpointKey() }
-            assertEquals(mapOf(CheckpointId("bar") to 1L), event.checkpointCounts)
+            assertEquals(
+                mapOf(CheckpointId("bar") to CheckpointValue(1L, 0L)),
+                event.checkpointCounts
+            )
         }
 
     @Test
@@ -100,7 +129,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -126,18 +155,19 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
         every { streamManager.markCheckpoint() } returns Pair(0L, 1L)
 
+        val sourceStats = CheckpointMessage.Stats(recordCount = 0)
         router.handleCheckpoint(
             reservationManager.reserve(
                 1,
                 StreamCheckpoint(
                     checkpointMessage,
-                    null,
+                    sourceStats,
                     null,
                     emptyMap(),
                     0,
@@ -148,7 +178,7 @@ class PipelineEventBookkeepingRouterTest {
         val global =
             GlobalCheckpoint(
                 null,
-                null,
+                sourceStats,
                 null,
                 emptyList(),
                 emptyMap(),
@@ -163,8 +193,8 @@ class PipelineEventBookkeepingRouterTest {
     }
 
     @Test
-    fun `router does not close the stream until all channels set end-of-stream`() = runTest {
-        val router = makeBookkeepingRouter(2)
+    fun `router does not close the stream if forcing close at end of stream`() = runTest {
+        val router = makeBookkeepingRouter(2, markEndOfStreamAtEnd = true)
 
         // Send a record to the first channel
         val eos = DestinationRecordStreamComplete(stream1, 0L)
@@ -174,6 +204,64 @@ class PipelineEventBookkeepingRouterTest {
 
         router.handleStreamMessage(eos, unopenedStreams = mutableSetOf())
 
+        coVerify(exactly = 0) { streamManager.markEndOfStream(any()) }
+
+        router.close()
+
+        coVerify(exactly = 0) { streamManager.markEndOfStream(any()) }
+
+        router.close()
+
         coVerify(exactly = 1) { streamManager.markEndOfStream(any()) }
     }
+
+    @Test
+    fun `router throws if stream counts are not present when key and index are provided`() =
+        runTest {
+            val router = makeBookkeepingRouter(1)
+            val reservationManager = ReservationManager(1)
+
+            // Attempt to handle a record with a checkpoint key and index but no stream counts
+            assertThrows<IllegalStateException> {
+                router.handleCheckpoint(
+                    reservationManager.reserve(
+                        1,
+                        StreamCheckpoint(
+                            mockk(relaxed = true),
+                            null,
+                            null,
+                            emptyMap(),
+                            0L,
+                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
+                        )
+                    )
+                )
+            }
+        }
+
+    @Test
+    fun `router throws if global counts are not present when key and index are provided`() =
+        runTest {
+            val router = makeBookkeepingRouter(1)
+            val reservationManager = ReservationManager(1)
+
+            // Attempt to handle a global checkpoint with a key and index but no counts
+            assertThrows<IllegalStateException> {
+                router.handleCheckpoint(
+                    reservationManager.reserve(
+                        1,
+                        GlobalCheckpoint(
+                            null,
+                            null,
+                            null,
+                            emptyList(),
+                            emptyMap(),
+                            null,
+                            0L,
+                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
+                        )
+                    )
+                )
+            }
+        }
 }
