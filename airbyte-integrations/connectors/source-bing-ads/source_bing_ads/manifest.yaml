@@ -1133,7 +1133,6 @@ definitions:
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
 
-  ## Age Gender Audience Reports
   # TODO: streams above potentially also can share base stream logic, to check and update if so.
   report_base_stream:
     type: DeclarativeStream
@@ -1143,10 +1142,6 @@ definitions:
     #      report_columns: [list of columns]
     #      report_name: AgeGenderAudienceReport
     #      report_type: AgeGenderAudienceReportRequest
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/age_gender_audience_report"
     retriever:
       $ref: "#/definitions/basic_async_retriever"
       record_selector:
@@ -1183,58 +1178,68 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
 
+  ## Age Gender Audience Reports
+
+  age_gender_audience_report_stream_primary_key:
+    - AgeGroup
+    - Gender
+    - TimePeriod
+    - AccountId
+    - CampaignId
+    - Language
+    - AdDistribution
+
+  age_gender_audience_report_columns:
+    - AccountName
+    - AccountNumber
+    - AccountId
+    - TimePeriod
+    - CampaignName
+    - CampaignId
+    - AdGroupName
+    - AdGroupId
+    - AdDistribution
+    - AgeGroup
+    - Gender
+    - Impressions
+    - Clicks
+    - Conversions
+    - Spend
+    - Revenue
+    - ExtendedCost
+    - Assists
+    - Language
+    - AccountStatus
+    - CampaignStatus
+    - AdGroupStatus
+    - BaseCampaignId
+    - AllConversions
+    - AllRevenue
+    - ViewThroughConversions
+    - Goal
+    - GoalType
+    - AbsoluteTopImpressionRatePercent
+    - TopImpressionRatePercent
+    - ConversionsQualified
+    - AllConversionsQualified
+    - ViewThroughConversionsQualified
+    - ViewThroughRevenue
+
   age_gender_audience_report_daily_stream:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_daily
     primary_key:
-      [
-        "AgeGroup",
-        "Gender",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "AdDistribution",
-      ]
+      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/age_gender_audience_report"
     $parameters:
       report_aggregation: Daily
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        - AccountName
-        - AccountNumber
-        - AccountId
-        - TimePeriod
-        - CampaignName
-        - CampaignId
-        - AdGroupName
-        - AdGroupId
-        - AdDistribution
-        - AgeGroup
-        - Gender
-        - Impressions
-        - Clicks
-        - Conversions
-        - Spend
-        - Revenue
-        - ExtendedCost
-        - Assists
-        - Language
-        - AccountStatus
-        - CampaignStatus
-        - AdGroupStatus
-        - BaseCampaignId
-        - AllConversions
-        - AllRevenue
-        - ViewThroughConversions
-        - Goal
-        - GoalType
-        - AbsoluteTopImpressionRatePercent
-        - TopImpressionRatePercent
-        - ConversionsQualified
-        - AllConversionsQualified
-        - ViewThroughConversionsQualified
-        - ViewThroughRevenue
+        $ref: "#/definitions/age_gender_audience_report_columns"
     transformations:
       - type: AddFields
         fields:
@@ -1244,54 +1249,13 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_hourly
     primary_key:
-      [
-        "AgeGroup",
-        "Gender",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "AdDistribution",
-      ]
+      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
     $parameters:
       report_aggregation: Hourly
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        - AccountName
-        - AccountNumber
-        - AccountId
-        - TimePeriod
-        - CampaignName
-        - CampaignId
-        - AdGroupName
-        - AdGroupId
-        - AdDistribution
-        - AgeGroup
-        - Gender
-        - Impressions
-        - Clicks
-        - Conversions
-        - Spend
-        - Revenue
-        - ExtendedCost
-        - Assists
-        - Language
-        - AccountStatus
-        - CampaignStatus
-        - AdGroupStatus
-        - BaseCampaignId
-        - AllConversions
-        - AllRevenue
-        - ViewThroughConversions
-        - Goal
-        - GoalType
-        - AbsoluteTopImpressionRatePercent
-        - TopImpressionRatePercent
-        - ConversionsQualified
-        - AllConversionsQualified
-        - ViewThroughConversionsQualified
-        - ViewThroughRevenue
+        $ref: "#/definitions/age_gender_audience_report_columns"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1309,54 +1273,17 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_weekly
     primary_key:
-      [
-        "AgeGroup",
-        "Gender",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "AdDistribution",
-      ]
+      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/age_gender_audience_report"
     $parameters:
       report_aggregation: Weekly
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        - AccountName
-        - AccountNumber
-        - AccountId
-        - TimePeriod
-        - CampaignName
-        - CampaignId
-        - AdGroupName
-        - AdGroupId
-        - AdDistribution
-        - AgeGroup
-        - Gender
-        - Impressions
-        - Clicks
-        - Conversions
-        - Spend
-        - Revenue
-        - ExtendedCost
-        - Assists
-        - Language
-        - AccountStatus
-        - CampaignStatus
-        - AdGroupStatus
-        - BaseCampaignId
-        - AllConversions
-        - AllRevenue
-        - ViewThroughConversions
-        - Goal
-        - GoalType
-        - AbsoluteTopImpressionRatePercent
-        - TopImpressionRatePercent
-        - ConversionsQualified
-        - AllConversionsQualified
-        - ViewThroughConversionsQualified
-        - ViewThroughRevenue
+        $ref: "#/definitions/age_gender_audience_report_columns"
     transformations:
       - type: AddFields
         fields:
@@ -1366,61 +1293,23 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_monthly
     primary_key:
-      [
-        "AgeGroup",
-        "Gender",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "AdDistribution",
-      ]
+      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/age_gender_audience_report"
     $parameters:
       report_aggregation: Monthly
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        - AccountName
-        - AccountNumber
-        - AccountId
-        - TimePeriod
-        - CampaignName
-        - CampaignId
-        - AdGroupName
-        - AdGroupId
-        - AdDistribution
-        - AgeGroup
-        - Gender
-        - Impressions
-        - Clicks
-        - Conversions
-        - Spend
-        - Revenue
-        - ExtendedCost
-        - Assists
-        - Language
-        - AccountStatus
-        - CampaignStatus
-        - AdGroupStatus
-        - BaseCampaignId
-        - AllConversions
-        - AllRevenue
-        - ViewThroughConversions
-        - Goal
-        - GoalType
-        - AbsoluteTopImpressionRatePercent
-        - TopImpressionRatePercent
-        - ConversionsQualified
-        - AllConversionsQualified
-        - ViewThroughConversionsQualified
-        - ViewThroughRevenue
+        $ref: "#/definitions/age_gender_audience_report_columns"
     transformations:
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
 
-
-  ## Campaign Performance Report Streams
+  ## Campaign Performance Reports
 
   campaign_performance_report_stream_primary_key:
     - AccountId
@@ -1556,7 +1445,7 @@ definitions:
     - HistoricalLandingPageExperience
 
   campaign_performance_report_hourly_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_hourly
     primary_key:
       $ref: "#/definitions/campaign_performance_report_stream_primary_key"
@@ -1564,21 +1453,13 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_performance_report_hourly"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            $ref: "#/definitions/report_stream_common_request_body_json"
-            ReportName: CampaignPerformanceReport
-            Type: CampaignPerformanceReportRequest
-            Aggregation: Hourly
-            Columns:
-              $ref: "#/definitions/campaign_performance_report_hourly_columns"
+    $parameters:
+      report_aggregation: Hourly
+      report_name: CampaignPerformanceReport
+      report_type: CampaignPerformanceReportRequest
+      report_columns:
+        $ref: "#/definitions/campaign_performance_report_hourly_columns"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
-    state_migrations:
-      - type: LegacyToPerPartitionStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -1591,7 +1472,7 @@ definitions:
           $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
 
   campaign_performance_report_daily_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_daily
     primary_key:
       $ref: "#/definitions/campaign_performance_report_stream_primary_key"
@@ -1599,21 +1480,12 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_performance_report"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            $ref: "#/definitions/report_stream_common_request_body_json"
-            ReportName: CampaignPerformanceReport
-            Type: CampaignPerformanceReportRequest
-            Aggregation: Daily
-            Columns:
-              $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    state_migrations:
-      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      report_aggregation: Daily
+      report_name: CampaignPerformanceReport
+      report_type: CampaignPerformanceReportRequest
+      report_columns:
+        $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
     transformations:
       - type: AddFields
         fields:
@@ -1623,7 +1495,7 @@ definitions:
           $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
 
   campaign_performance_report_weekly_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_weekly
     primary_key:
       $ref: "#/definitions/campaign_performance_report_stream_primary_key"
@@ -1631,21 +1503,12 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_performance_report"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            $ref: "#/definitions/report_stream_common_request_body_json"
-            ReportName: CampaignPerformanceReport
-            Type: CampaignPerformanceReportRequest
-            Aggregation: Weekly
-            Columns:
-              $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    state_migrations:
-      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      report_aggregation: Weekly
+      report_name: CampaignPerformanceReport
+      report_type: CampaignPerformanceReportRequest
+      report_columns:
+        $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
     transformations:
       - type: AddFields
         fields:
@@ -1655,7 +1518,7 @@ definitions:
           $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
 
   campaign_performance_report_monthly_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_monthly
     primary_key:
       $ref: "#/definitions/campaign_performance_report_stream_primary_key"
@@ -1663,21 +1526,12 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_performance_report"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            $ref: "#/definitions/report_stream_common_request_body_json"
-            ReportName: CampaignPerformanceReport
-            Type: CampaignPerformanceReportRequest
-            Aggregation: Monthly
-            Columns:
-              $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    state_migrations:
-      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      report_aggregation: Monthly
+      report_name: CampaignPerformanceReport
+      report_type: CampaignPerformanceReportRequest
+      report_columns:
+        $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
     transformations:
       - type: AddFields
         fields:
@@ -1931,28 +1785,6 @@ definitions:
       # falling back 1 year as anyway we will leave empty LastSyncTimeInUTC for dates > 30 Days
       datetime: '{{ config["reports_start_date"] if config.get("reports_start_date") else format_datetime(now_utc() - duration("P1Y"), "%Y-%m-%d") }}'
       datetime_format: "%Y-%m-%d"
-
-  # Used across all report streams
-  report_stream_common_request_body_json:
-    ExcludeColumnHeaders: false
-    ExcludeReportFooter: true
-    ExcludeReportHeader: true
-    Format: Csv
-    FormatVersion: "'2.0'"
-    ReturnOnlyCompleteData: false
-    Scope:
-      AccountIds:
-        - "{{ stream_partition['account_id'] }}"
-    Time:
-      CustomDateRangeStart:
-        Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-        Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-        Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-      CustomDateRangeEnd:
-        Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-        Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-        Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-      ReportTimeZone: "GreenwichMeanTimeDublinEdinburghLisbonLondon"
 
   transformations:
     # Shared by multiple performance report streams (account + ad)
