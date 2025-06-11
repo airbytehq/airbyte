@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
