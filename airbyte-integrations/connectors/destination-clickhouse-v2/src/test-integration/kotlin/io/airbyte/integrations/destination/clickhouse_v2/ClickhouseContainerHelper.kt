@@ -17,6 +17,14 @@ object ClickhouseContainerHelper {
         }
     }
 
+    fun stop() {
+        synchronized(lock = container) {
+            if (container.isRunning()) {
+                container.stop()
+            }
+        }
+    }
+
     fun getPassword(): String = container.password
 
     fun getPort(): Int? = container.getMappedPort(8123)
