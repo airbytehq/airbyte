@@ -75,7 +75,7 @@ class S3DataLakeDirectLoader(
         val commitLock: Any = Any()
     }
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val enrichedRecordAirbyteValue = record.asEnrichedDestinationRecordAirbyteValue()
 
         val icebergRecord =
@@ -98,7 +98,7 @@ class S3DataLakeDirectLoader(
         return DirectLoader.Complete
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         log.info { "Finishing writing to $stagingBranchName" }
         val writeResult = writer.complete()
         if (writeResult.deleteFiles().isNotEmpty()) {
