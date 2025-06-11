@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations.DirectLoadTableTempTableNameMigration
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -31,7 +30,6 @@ class DirectLoadTableWriter(
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
-    private val directLoadTableTempTableNameMigration: DirectLoadTableTempTableNameMigration?,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
@@ -40,8 +38,6 @@ class DirectLoadTableWriter(
         val namespaces =
             names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }.toSet()
         destinationHandler.createNamespaces(namespaces + listOf(internalNamespace))
-
-        directLoadTableTempTableNameMigration?.execute(names)
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
     }
