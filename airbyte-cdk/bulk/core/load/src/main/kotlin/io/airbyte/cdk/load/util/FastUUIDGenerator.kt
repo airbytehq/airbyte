@@ -27,8 +27,8 @@ class FastUUIDGenerator {
 
     /**
      * Generates a cryptographically insecure UUID v4 random-based UUID value using a custom
-     * implementation that avoids the use of [java.security.SecureRandom]. This method is up to
-     * 4 times faster than [UUID.randomUUID].
+     * implementation that avoids the use of [java.security.SecureRandom]. This method is up to 4
+     * times faster than [UUID.randomUUID].
      */
     fun insecureUUID(): UUID {
         val randomBytes = ByteArray(16)
