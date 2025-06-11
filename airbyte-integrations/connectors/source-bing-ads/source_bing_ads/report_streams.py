@@ -298,30 +298,6 @@ class AccountImpressionPerformanceReportMonthly(AccountImpressionPerformanceRepo
     report_aggregation = "Monthly"
 
 
-class AgeGenderAudienceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "AgeGenderAudienceReport"
-
-    report_schema_name = "age_gender_audience_report"
-    primary_key = ["AgeGroup", "Gender", "TimePeriod", "AccountId", "CampaignId", "Language", "AdDistribution"]
-
-
-class AgeGenderAudienceReportHourly(HourlyReportTransformerMixin, AgeGenderAudienceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "age_gender_audience_report_hourly"
-
-
-class AgeGenderAudienceReportDaily(AgeGenderAudienceReport):
-    report_aggregation = "Daily"
-
-
-class AgeGenderAudienceReportWeekly(AgeGenderAudienceReport):
-    report_aggregation = "Weekly"
-
-
-class AgeGenderAudienceReportMonthly(AgeGenderAudienceReport):
-    report_aggregation = "Monthly"
-
-
 class SearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "SearchQueryPerformanceReport"
     report_schema_name = "search_query_performance_report"
