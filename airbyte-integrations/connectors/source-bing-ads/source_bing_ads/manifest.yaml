@@ -1243,7 +1243,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+          $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
 
   age_gender_audience_report_hourly_stream:
     $ref: "#/definitions/report_base_stream"
@@ -1264,7 +1264,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+          $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/hourly_report_transformations"
@@ -1287,7 +1287,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+          $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
 
   age_gender_audience_report_monthly_stream:
     $ref: "#/definitions/report_base_stream"
@@ -1307,7 +1307,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+          $ref: "#/definitions/transformations/age_gender_audience_report_transformations"
 
   ## Campaign Performance Reports
 
@@ -1469,7 +1469,7 @@ definitions:
           $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
       - type: AddFields
         fields:
-          $ref: "#/definitions/transformations/hourly_stream_timestamp_transformation"
+          $ref: "#/definitions/transformations/hourly_report_transformations"
 
   campaign_performance_report_daily_stream:
     $ref: "#/definitions/report_base_stream"
@@ -2042,7 +2042,7 @@ definitions:
           {% set v = record.get('TopImpressionRatePercent') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
-    age_gander_audience_report_transformations:
+    age_gender_audience_report_transformations:
       - type: AddedFieldDefinition
         path:
           - AbsoluteTopImpressionRatePercent
@@ -2067,30 +2067,14 @@ definitions:
         path:
           - ViewThroughConversionsQualified
         value: "{{ none if record.get('ViewThroughConversionsQualified') == '' else record.get('ViewThroughConversionsQualified') }}"
+
+    # used in hourly report streams to convert date-time format for backward compatibility
     hourly_report_transformations:
       - type: AddedFieldDefinition
         path:
           - TimePeriod
         # Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
         # Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
-        value: |
-          {%- set parts = record.TimePeriod.split('|') -%}
-          {%- set time_period = record.TimePeriod -%}
-          {%- set date_part = '' -%}
-          {%- set hour_part = 0 -%}
-          {%- if parts|length > 1 -%}
-            {%- set date_part = parts[0] -%}
-            {%- set hour_part = parts[1]|int -%}
-            {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
-          {%- endif -%}
-          {{ time_period }}
-    # used in hourly report streams to convert date-time format
-    hourly_stream_timestamp_transformation:
-      - type: AddedFieldDefinition
-        path:
-          - TimePeriod
-        #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
-        #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
         value: |
           {%- set parts = record.TimePeriod.split('|') -%}
           {%- set time_period = record.TimePeriod -%}
@@ -2254,6 +2238,7 @@ streams:
   - $ref: "#/definitions/age_gender_audience_report_hourly_stream"
   - $ref: "#/definitions/age_gender_audience_report_weekly_stream"
   - $ref: "#/definitions/age_gender_audience_report_monthly_stream"
+
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#

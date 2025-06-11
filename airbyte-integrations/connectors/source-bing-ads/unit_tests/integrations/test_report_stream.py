@@ -348,9 +348,6 @@ class TestSuiteReportStream(TestReportStream):
         """
         If the field reports_start_date is blank, Airbyte will replicate all data from previous and current calendar years.
         This test is to validate that the stream will return all records from the first day of the year 2023 (CustomDateRangeStart in mocked body).
-
-        TODO: update this test pattern to be programmatic, currently it's hardcoded for AdPerformanceReportRequest.
-        The current workaround is to override the test for each report stream.
         """
         if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
