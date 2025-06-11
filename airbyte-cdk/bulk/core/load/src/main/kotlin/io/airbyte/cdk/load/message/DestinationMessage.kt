@@ -209,7 +209,8 @@ data class DestinationRecord(
     override val stream: DestinationStream,
     val message: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null
+    val checkpointId: CheckpointId? = null,
+    val airbyteRawId: UUID,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
@@ -241,7 +242,13 @@ data class DestinationRecord(
             )
 
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, message, serializedSizeBytes, checkpointId)
+        return DestinationRecordRaw(
+            stream = stream,
+            rawData = message,
+            serializedSizeBytes = serializedSizeBytes,
+            checkpointId = checkpointId,
+            airbyteRawId = airbyteRawId,
+        )
     }
 }
 
@@ -274,7 +281,8 @@ data class EnrichedDestinationRecordAirbyteValue(
      */
     val sourceMeta: Meta,
     val serializedSizeBytes: Long = 0L,
-    private val extractedAtAsTimestampWithTimezone: Boolean = false
+    private val extractedAtAsTimestampWithTimezone: Boolean = false,
+    val airbyteRawId: UUID,
 ) {
     val airbyteMeta: EnrichedAirbyteValue
         get() =
@@ -301,7 +309,7 @@ data class EnrichedDestinationRecordAirbyteValue(
             mapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to
                     EnrichedAirbyteValue(
-                        StringValue(UUID.randomUUID().toString()),
+                        StringValue(airbyteRawId.toString()),
                         Meta.AirbyteMetaFields.RAW_ID.type,
                         name = Meta.COLUMN_NAME_AB_RAW_ID,
                         airbyteMetaField = Meta.AirbyteMetaFields.RAW_ID,
