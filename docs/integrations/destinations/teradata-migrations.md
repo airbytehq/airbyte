@@ -9,7 +9,7 @@ Worthy of specific mention, this version includes:
 - Final table generation
 - Per-record error handling
 
-Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).
+Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping.md).
 
 
 
