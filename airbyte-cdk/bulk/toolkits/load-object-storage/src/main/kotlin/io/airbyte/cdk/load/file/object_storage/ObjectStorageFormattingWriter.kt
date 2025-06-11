@@ -64,7 +64,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                     stream = stream,
                     outputStream = outputStream,
                     rootLevelFlattening = flatten,
-                    airbyteRawId = uuidGenerator.insecureUUID()
+                    airbyteRawId = uuidGenerator.randomUUID()
                 )
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
@@ -74,7 +74,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                         formatConfigProvider.objectStorageFormatConfiguration
                             as AvroFormatConfiguration,
                     rootLevelFlattening = flatten,
-                    airbyteRawId = uuidGenerator.insecureUUID(),
+                    airbyteRawId = uuidGenerator.randomUUID(),
                 )
             is ParquetFormatConfiguration ->
                 ParquetFormattingWriter(
@@ -84,7 +84,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                         formatConfigProvider.objectStorageFormatConfiguration
                             as ParquetFormatConfiguration,
                     rootLevelFlattening = flatten,
-                    airbyteRawId = uuidGenerator.insecureUUID(),
+                    airbyteRawId = uuidGenerator.randomUUID(),
                 )
             is CSVFormatConfiguration ->
                 CSVFormattingWriter(
@@ -92,7 +92,7 @@ class DefaultObjectStorageFormattingWriterFactory(
                     outputStream = outputStream,
                     rootLevelFlattening = flatten,
                     extractedAtAsTimestampWithTimezone = false,
-                    airbyteRawId = uuidGenerator.insecureUUID(),
+                    airbyteRawId = uuidGenerator.randomUUID(),
                 )
         }
     }

@@ -24,13 +24,23 @@ internal class FastUUIDGeneratorTest {
     }
 
     @Test
+    fun testRandomUuidGeneration() {
+        val generator = FastUUIDGenerator()
+        val uuid1 = generator.randomUUID()
+        assertNotNull(uuid1)
+        val uuid2 = generator.randomUUID()
+        assertNotNull(uuid2)
+        assertNotEquals(uuid1, uuid2)
+    }
+
+    @Test
     fun testPerformance() {
         val generator = FastUUIDGenerator()
 
         val fastTime = measureTime {
             @Suppress("unused")
             for (i in 0..100000) {
-                generator.insecureUUID()
+                generator.randomUUID()
             }
         }
 
@@ -41,6 +51,7 @@ internal class FastUUIDGeneratorTest {
             }
         }
 
+        println("$fastTime < $uuidTime")
         assertTrue(fastTime < uuidTime)
     }
 }

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.util
 
+import com.github.f4b6a3.uuid.alt.GUID
 import jakarta.inject.Singleton
 import java.nio.ByteBuffer
 import java.util.UUID
@@ -18,6 +19,17 @@ import java.util.concurrent.ThreadLocalRandom
 @Singleton
 class FastUUIDGenerator {
 
+    /**
+     * Generates a random UUID v4 random-based UUID with Unix epoch. This method is up to 10 times
+     * faster than [UUID.randomUUID].
+     */
+    fun randomUUID(): UUID = GUID.v4().toUUID()
+
+    /**
+     * Generates a cryptographically insecure UUID v4 random-based UUID value using a custom
+     * implementation that avoids the use of [java.security.SecureRandom]. This method is up to
+     * 4 times faster than [UUID.randomUUID].
+     */
     fun insecureUUID(): UUID {
         val randomBytes = ByteArray(16)
 

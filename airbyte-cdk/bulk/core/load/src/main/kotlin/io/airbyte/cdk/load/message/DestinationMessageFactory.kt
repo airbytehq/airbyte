@@ -99,7 +99,7 @@ class DestinationMessageFactory(
                         message = DestinationRecordJsonSource(message),
                         serializedSizeBytes = serializedSizeBytes,
                         checkpointId = checkpointId,
-                        airbyteRawId = uuidGenerator.insecureUUID(),
+                        airbyteRawId = uuidGenerator.randomUUID(),
                     )
                 }
             }
@@ -248,7 +248,7 @@ class DestinationMessageFactory(
                 message = DestinationRecordProtobufSource(message),
                 serializedSizeBytes = serializedSizeBytes,
                 checkpointId = CheckpointId(message.record.partitionId),
-                airbyteRawId = uuidGenerator.insecureUUID(),
+                airbyteRawId = uuidGenerator.randomUUID(),
             )
         } else if (message.hasProbe()) {
             ProbeMessage

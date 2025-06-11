@@ -515,7 +515,7 @@ class DestinationMessageTest {
                 stream = mockk(relaxed = true),
                 rawData = DestinationRecordJsonSource(msg),
                 serializedSizeBytes = "serialized".length.toLong(),
-                airbyteRawId = uuidGenerator.insecureUUID(),
+                airbyteRawId = uuidGenerator.randomUUID(),
             )
 
         assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
@@ -534,7 +534,7 @@ class DestinationMessageTest {
                 stream = mockk(relaxed = true),
                 rawData = DestinationRecordJsonSource(msg),
                 serializedSizeBytes = "serialized".length.toLong(),
-                airbyteRawId = uuidGenerator.insecureUUID(),
+                airbyteRawId = uuidGenerator.randomUUID(),
             )
 
         assertNull(internalRecord.fileReference)

@@ -15,5 +15,5 @@ import jakarta.inject.Singleton
 class UploadIdGenerator(
     private val uuidGenerator: FastUUIDGenerator,
 ) {
-    fun generate() = uuidGenerator.insecureUUID().toString()
+    fun generate() = uuidGenerator.randomUUID().toString()
 }
