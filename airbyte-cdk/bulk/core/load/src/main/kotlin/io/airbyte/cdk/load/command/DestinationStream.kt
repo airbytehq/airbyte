@@ -188,7 +188,9 @@ class DestinationStreamFactory(
             includeFiles = stream.includeFiles ?: false,
             destinationObjectName = stream.destinationObjectName,
             matchingKey =
-                stream.destinationObjectName?.let { fromCompositeNestedKeyToCompositeKey(stream.primaryKey) }
+                stream.destinationObjectName?.let {
+                    fromCompositeNestedKeyToCompositeKey(stream.primaryKey)
+                }
         )
     }
 }
