@@ -7,6 +7,302 @@ check:
   stream_names:
     - Orders
 
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  changelogUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  supportsNormalization: false
+  supportsDBT: false
+  connectionSpecification:
+    title: Amazon Seller Partner Spec
+    type: object
+    required:
+    - aws_environment
+    - region
+    - account_type
+    - lwa_app_id
+    - lwa_client_secret
+    - refresh_token
+    additionalProperties: true
+    properties:
+      auth_type:
+        title: Auth Type
+        const: oauth2.0
+        order: 0
+        type: string
+      aws_environment:
+        title: AWS Environment
+        description: Select the AWS Environment.
+        enum:
+        - PRODUCTION
+        - SANDBOX
+        default: PRODUCTION
+        type: string
+        order: 1
+      region:
+        title: AWS Region
+        description: Select the AWS Region.
+        enum:
+        - AE
+        - AU
+        - BE
+        - BR
+        - CA
+        - DE
+        - EG
+        - ES
+        - FR
+        - GB
+        - IN
+        - IT
+        - JP
+        - MX
+        - NL
+        - PL
+        - SA
+        - SE
+        - SG
+        - TR
+        - UK
+        - US
+        default: US
+        type: string
+        order: 2
+      account_type:
+        title: AWS Seller Partner Account Type
+        description: Type of the Account you're going to authorize the Airbyte application
+          by
+        enum:
+        - Seller
+        - Vendor
+        default: Seller
+        type: string
+        order: 3
+      app_id:
+        title: Application ID
+        description: Your Amazon Application ID.
+        order: 4
+        airbyte_secret: true
+        type: string
+      lwa_app_id:
+        title: LWA Client Id
+        description: Your Login with Amazon Client ID.
+        order: 5
+        airbyte_secret: true
+        type: string
+      lwa_client_secret:
+        title: LWA Client Secret
+        description: Your Login with Amazon Client Secret.
+        airbyte_secret: true
+        order: 6
+        type: string
+      refresh_token:
+        title: Refresh Token
+        description: The Refresh Token obtained via OAuth flow authorization.
+        airbyte_secret: true
+        order: 7
+        type: string
+      replication_start_date:
+        title: Start Date
+        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated. If start date is not provided or
+          older than 2 years ago from today, the date 2 years ago from today will be
+          used.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+        - '2017-01-25T00:00:00Z'
+        order: 8
+        type: string
+        format: date-time
+      replication_end_date:
+        title: End Date
+        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          after this date will not be replicated.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$
+        examples:
+        - '2017-01-25T00:00:00Z'
+        order: 9
+        type: string
+        format: date-time
+      period_in_days:
+        title: Period In Days
+        type: integer
+        description: For syncs spanning a large date range, this option is used to request
+          data in a smaller fixed window to improve sync reliability. This time window
+          can be configured granularly by day.
+        default: 90
+        minimum: 1
+        order: 10
+      report_options_list:
+        title: Report Options
+        description: Additional information passed to reports. This varies by report
+          type.
+        order: 11
+        type: array
+        items:
+          type: object
+          title: Report Options
+          required:
+          - report_name
+          - stream_name
+          - options_list
+          properties:
+            report_name:
+              title: Report Name
+              type: string
+              order: 0
+              enum:
+              - GET_AFN_INVENTORY_DATA
+              - GET_AFN_INVENTORY_DATA_BY_COUNTRY
+              - GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
+              - GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
+              - GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
+              - GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
+              - GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
+              - GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
+              - GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA
+              - GET_FBA_INVENTORY_PLANNING_DATA
+              - GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
+              - GET_FBA_REIMBURSEMENTS_DATA
+              - GET_FBA_SNS_FORECAST_DATA
+              - GET_FBA_SNS_PERFORMANCE_DATA
+              - GET_FBA_STORAGE_FEE_CHARGES_DATA
+              - GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
+              - GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
+              - GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+              - GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
+              - GET_FLAT_FILE_OPEN_LISTINGS_DATA
+              - GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
+              - GET_LEDGER_DETAIL_VIEW_DATA
+              - GET_LEDGER_SUMMARY_VIEW_DATA
+              - GET_MERCHANT_CANCELLED_LISTINGS_DATA
+              - GET_MERCHANT_LISTINGS_ALL_DATA
+              - GET_MERCHANT_LISTINGS_DATA
+              - GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
+              - GET_MERCHANT_LISTINGS_INACTIVE_DATA
+              - GET_MERCHANTS_LISTINGS_FYP_REPORT
+              - GET_ORDER_REPORT_DATA_SHIPPING
+              - GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
+              - GET_SELLER_FEEDBACK_DATA
+              - GET_STRANDED_INVENTORY_UI_DATA
+              - GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+              - GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+              - GET_XML_BROWSE_TREE_DATA
+              - GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+            stream_name:
+              title: Stream Name
+              type: string
+              order: 1
+            options_list:
+              title: List of options
+              description: List of options
+              type: array
+              order: 2
+              items:
+                type: object
+                required:
+                - option_name
+                - option_value
+                properties:
+                  option_name:
+                    title: Name
+                    type: string
+                    order: 0
+                  option_value:
+                    title: Value
+                    type: string
+                    order: 1
+      wait_to_avoid_fatal_errors:
+        title: Wait between requests to avoid fatal statuses in reports
+        type: boolean
+        description: For report based streams with known amount of requests per time
+          period, this option will use waiting time between requests to avoid fatal
+          statuses in reports. See <a href="https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting"
+          target="_blank">Troubleshooting</a> section for more details
+        default: false
+        order: 12
+      financial_events_step:
+        title: Financial Events Step Size (in days)
+        description: 'The time window size (in days) for fetching financial events data
+          in chunks. Options are 1 day, 7 days, 14 days, 30 days, 60 days, and 190 days,
+          based on API limitations.
+
+
+          - **Smaller step sizes (e.g., 1 day)** are better for large data volumes.
+          They fetch smaller chunks per request, reducing the risk of timeouts or overwhelming
+          the API, though more requests may slow syncing and increase the chance of
+          hitting rate limits.
+
+          - **Larger step sizes (e.g., 14 days)** are better for smaller data volumes.
+          They fetch more data per request, speeding up syncing and reducing the number
+          of API calls, which minimizes strain on rate limits.
+
+
+          Select a step size that matches your data volume to optimize syncing speed
+          and API performance.'
+        type: string
+        enum:
+        - '1'
+        - '7'
+        - '14'
+        - '30'
+        - '60'
+        - '90'
+        - '180'
+        default: '180'
+        order: 13
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        properties:
+          region:
+            type: string
+            path_in_connector_config:
+            - region
+          account_type:
+            type: string
+            path_in_connector_config:
+            - account_type
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          app_id:
+            type: string
+          lwa_app_id:
+            type: string
+          lwa_client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          app_id:
+            type: string
+            path_in_connector_config:
+            - app_id
+          lwa_app_id:
+            type: string
+            path_in_connector_config:
+            - lwa_app_id
+          lwa_client_secret:
+            type: string
+            path_in_connector_config:
+            - lwa_client_secret
+
 definitions:
   authenticator:
     type: CustomAuthenticator
@@ -1011,6 +1307,10 @@ definitions:
           fields:
             - path: ["dataEndTime"]
               value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_afn_inventory_data"
 
     get_afn_inventory_data_by_country:
       type: DeclarativeStream
@@ -1049,6 +1349,11 @@ definitions:
           fields:
             - path: ["dataEndTime"]
               value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_afn_inventory_data_by_country"
+
 
     get_fba_inventory_planning_data:
       type: DeclarativeStream
@@ -2166,3 +2471,85 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 2
   max_concurrency: 2
+
+schemas:
+  get_flat_file_all_orders_data_by_order_date_general: placeholder
+  get_flat_file_all_orders_data_by_last_update_general: placeholder
+  get_fba_storage_fee_charges_data: placeholder
+  get_amazon_fulfilled_shipments_data_general: placeholder
+  get_flat_file_open_listings_data: placeholder
+  get_fba_fulfillment_removal_order_detail_data: placeholder
+  get_flat_file_actionable_order_data_shipping: placeholder
+  get_order_report_data_shipping: placeholder
+  get_ledger_detail_view_data: placeholder
+  get_ledger_summary_view_data: placeholder
+  get_fba_reimbursements_data: placeholder
+  get_fba_fulfillment_customer_returns_data: placeholder
+  get_seller_feedback_data: placeholder
+  get_afn_inventory_data: placeholder
+  get_afn_inventory_data_by_country:
+    title: FBA Multi-Country Inventory Report
+    description: ''
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      seller-sku:
+        description: Unique SKU assigned by the seller for the product
+        type:
+        - 'null'
+        - string
+      fulfillment-channel-sku:
+        description: Unique SKU assigned by the seller for fulfillment
+        type:
+        - 'null'
+        - string
+      asin:
+        description: Unique Amazon Standard Identification Number assigned to the product
+        type:
+        - 'null'
+        - string
+      condition-type:
+        description: Type of condition (new, used, refurbished, etc.) of the product
+        type:
+        - 'null'
+        - string
+      country:
+        description: Country code identifying the country the inventory data pertains
+          to
+        type:
+        - 'null'
+        - string
+      quantity-for-local-fulfillment:
+        description: Quantity of the product available for local fulfillment
+        type:
+        - 'null'
+        - string
+      dataEndTime:
+        description: Timestamp indicating when the data was last updated
+        type:
+        - 'null'
+        - string
+        format: date
+  get_fba_inventory_planning_data: placeholder
+  get_flat_file_returns_data_by_return_date: placeholder
+  get_flat_file_archived_orders_data_by_order_date: placeholder
+  get_fba_sns_performance_data: placeholder
+  get_fba_sns_forecast_data: placeholder
+  get_merchants_listings_fyp_report: placeholder
+  get_merchant_cancelled_listings_data: placeholder
+  get_merchant_listings_data_back_compat: placeholder
+  get_stranded_inventory_ui_data: placeholder
+  get_fba_myi_unsuppressed_inventory_data: placeholder
+  get_fba_fulfillment_customer_shipment_promotion_data: placeholder
+  get_fba_estimated_fba_fees_txt_data: placeholder
+  get_restock_inventory_recommendations_report: placeholder
+  get_fba_fulfillment_customer_shipment_replacement_data: placeholder
+  get_fba_fulfillment_removal_shipment_detail_data: placeholder
+  get_xml_browse_tree_data: placeholder
+  get_xml_all_orders_data_by_order_date_general: placeholder
+  get_merchant_listings_all_data: placeholder
+  get_merchant_listings_data: placeholder
+  get_merchant_listings_inactive_data: placeholder
+  get_v2_settlement_report_data_flat_file: placeholder
+  get_vendor_forecasting_fresh_report: placeholder
+  get_vendor_forecasting_retail_report: placeholder
