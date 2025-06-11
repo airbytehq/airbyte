@@ -16,6 +16,9 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.SignStyle
+import java.time.temporal.ChronoField
 
 /**
  * Utility class to coerce AirbyteValue to specific types. Does **not** support recursive coercion.
@@ -157,11 +160,9 @@ object AirbyteValueCoercer {
     private fun offsetDateTime(it: StringValue): OffsetDateTime {
         val odt =
             try {
-                ZonedDateTime.parse(it.value, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
-                    .toOffsetDateTime()
+                ZonedDateTime.parse(it.value, DATE_TIME_FORMATTER).toOffsetDateTime()
             } catch (e: Exception) {
-                LocalDateTime.parse(it.value, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
-                    .atOffset(ZoneOffset.UTC)
+                LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
             }
         return odt
     }
@@ -188,9 +189,24 @@ object AirbyteValueCoercer {
     }
 
     val DATE_TIME_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern(
-            "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
-        )
+        DateTimeFormatterBuilder()
+            .appendValue(ChronoField.YEAR, 2, 7, SignStyle.NORMAL)
+            .optionalStart()
+            .appendLiteral("-")
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral("/")
+            .optionalEnd()
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+            .optionalStart()
+            .appendLiteral("-")
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral("/")
+            .optionalEnd()
+            .appendValue(ChronoField.DAY_OF_MONTH, 2)
+            .appendPattern("['T'HH:mm[:ss[.SSSSSSSSS]]][XXX][X]")
+            .toFormatter()
     val TIME_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern(
             "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
