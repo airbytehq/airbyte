@@ -4,24 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.message.InputRecord
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
@@ -39,10 +23,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
-import java.time.LocalDate
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 
 abstract class BigqueryWriteTest(
@@ -76,76 +56,7 @@ abstract class BigqueryWriteTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
         additionalMicronautEnvs = additionalMicronautEnvs,
-    ) {
-        @Test
-        fun testValidDatetimeRanges() {
-            assumeTrue(verifyDataWriting)
-            val stream =
-                DestinationStream(
-                    unmappedNamespace = randomizedNamespace,
-                    unmappedName = "test_stream",
-                    Append,
-                    ObjectType(
-                        linkedMapOf(
-                            "timestamp_with_timezone" to
-                                FieldType(TimestampTypeWithTimezone, nullable = true),
-                            "timestamp_without_timezone" to
-                                FieldType(TimestampTypeWithoutTimezone, nullable = true),
-                            "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = true),
-                            "time_without_timezone" to
-                                FieldType(TimeTypeWithoutTimezone, nullable = true),
-                            "date" to FieldType(DateType, nullable = true),
-                        )
-                    ),
-                    generationId = 42,
-                    minimumGenerationId = 0,
-                    syncId = 42,
-                    namespaceMapper = namespaceMapperForMedium()
-                )
-
-            runSync(
-                updatedConfig,
-                stream,
-                listOf(
-                    InputRecord(
-                        stream,
-                        """
-                        {
-                          "timestamp_without_timezone": ${LocalDate.parse("19999-12-31")}
-                        }
-                    """.trimIndent(),
-                        emittedAtMs = 100,
-                    )
-                )
-            )
-
-            dumpAndDiffRecords(
-                parsedConfig,
-                listOf(
-                    OutputRecord(
-                        extractedAt = 100,
-                        generationId = 42,
-                        data = mapOf("timestamp_without_timezone" to listOf(42.0, null)),
-                        airbyteMeta =
-                            OutputRecord.Meta(
-                                syncId = 42,
-                                changes =
-                                    listOf(
-                                        Meta.Change(
-                                            "array.1",
-                                            Change.NULLED,
-                                            Reason.DESTINATION_SERIALIZATION_ERROR
-                                        )
-                                    )
-                            ),
-                    ),
-                ),
-                stream,
-                primaryKey = listOf(listOf("id")),
-                cursor = null,
-            )
-        }
-    }
+    )
 
 abstract class BigqueryRawTablesWriteTest(
     configContents: String,

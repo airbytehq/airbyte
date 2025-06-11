@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
 import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue

@@ -243,7 +243,8 @@ class BigQueryRecordFormatter(
                     }
                 }
                 // Noting that we do not need to validate date / datetime with and without timezone
-                // ranges here since any issue would be caught earlier and would result in a nullification
+                // ranges here since any issue would be caught earlier and would result in a
+                // nullification
                 // with a DESTINATION_SERIALIZATION_ERROR reason. So checking again here does not
                 // add any value
                 else -> {}
