@@ -344,7 +344,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.35  | 2025-06-12 | []()   | Add error handling for connection issues and adopt the latest CDK version.
+| 3.6.35  | 2025-06-12 | [61527](https://github.com/airbytehq/airbyte/pull/61527)   | Add error handling for connection issues and adopt the latest CDK version.
 | 3.6.34  | 2025-05-11 | [60876](https://github.com/airbytehq/airbyte/pull/60876)   | Cache CDC initial state once constructed.
 | 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.
 | 3.6.32  | 2025-05-8  | [59722](https://github.com/airbytehq/airbyte/pull/59722)   | Consolidate gradle set up.                                                                                                                                                 |

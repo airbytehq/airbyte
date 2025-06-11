@@ -55,9 +55,8 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 externalMessage = POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE,
                 sampleInternalMessage =
                     "ERROR: canceling statement due to conflict with recovery.\n" +
-                            "org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery",
+                        "org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6296"),
-
             ),
         )
 
@@ -89,7 +88,8 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
         add(
             ConnectorErrorProfile(
                 errorClass = "Postgres Hikari Connection Error",
-                regexMatchingPattern = "(?i).*connection is not available, request timed out after*",
+                regexMatchingPattern =
+                    "(?i).*connection is not available, request timed out after*",
                 failureType = FailureType.TRANSIENT,
                 externalMessage = "Database read failed due to connection timeout, will retry.",
                 sampleInternalMessage =
@@ -123,7 +123,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                     "Database connection error when performing CDC reads, will retry.",
                 sampleInternalMessage =
                     "java.net.SocketException: Broken pipe\n" +
-                            "java.net.SocketException: Socket is closed",
+                        "java.net.SocketException: Socket is closed",
                 referenceLinks =
                     listOf(
                         "https://github.com/airbytehq/oncall/issues/5321",
@@ -191,7 +191,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 failureType = FailureType.CONFIG,
                 externalMessage =
                     "Postgres server closed the connection due to an idle-in-transaction timeout. Please review your server's timeout configuration " +
-                            "and increase the timeout if needed",
+                        "and increase the timeout if needed",
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: FATAL: terminating connection due to idle-in-transaction timeout",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5893"),
@@ -201,14 +201,15 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
         add(
             ConnectorErrorProfile(
                 errorClass = "Postgres Debezium Connection Error",
-                regexMatchingPattern = "(?i).*An exception occurred in the change event producer. This connector will be stopped.*",
+                regexMatchingPattern =
+                    "(?i).*An exception occurred in the change event producer. This connector will be stopped.*",
                 failureType = FailureType.TRANSIENT,
                 externalMessage =
                     "The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.",
                 sampleInternalMessage =
                     "io.airbyte.cdk.integrations.source.relationaldb.state.FailedRecordIteratorException: java.lang.RuntimeException: " +
-                            "java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: " +
-                            "An exception occurred in the change event producer. This connector will be stopped.",
+                        "java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: " +
+                        "An exception occurred in the change event producer. This connector will be stopped.",
                 referenceLinks = listOf("https://github.com/airbytehq/airbyte/issues/41614"),
             ),
         )
