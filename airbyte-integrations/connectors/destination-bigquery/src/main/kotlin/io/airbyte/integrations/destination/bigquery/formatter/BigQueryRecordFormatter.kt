@@ -9,8 +9,6 @@ import com.google.cloud.bigquery.QueryParameterValue
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -35,9 +33,6 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
@@ -145,12 +140,6 @@ class BigQueryRecordFormatter(
         private val INT64_MIN_VALUE: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
         private val INT64_MAX_VALUE: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
         private const val NUMERIC_MAX_PRECISION = 38
-        private val DATE_MIN_VALUE = LocalDate.parse("0001-01-01")
-        private val DATE_MAX_VALUE = LocalDate.parse("9999-12-31")
-        private val TIMESTAMP_MIN_VALUE = OffsetDateTime.parse("0001-01-01T00:00:00Z")
-        private val TIMESTAMP_MAX_VALUE = OffsetDateTime.parse("9999-12-31T23:59:59.999999Z")
-        private val DATETIME_MIN_VALUE = LocalDateTime.parse("0001-01-01T00:00:00")
-        private val DATETIME_MAX_VALUE = LocalDateTime.parse("9999-12-31T23:59:59.999999")
 
         private val DATETIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ISO_OFFSET_DATE_TIME
@@ -253,27 +242,10 @@ class BigQueryRecordFormatter(
                         }
                     }
                 }
-                is DateType -> {
-                    (value.abValue as DateValue).value.let {
-                        if (it < DATE_MIN_VALUE || DATE_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                        }
-                    }
-                }
-                is TimestampTypeWithTimezone -> {
-                    (value.abValue as TimestampWithTimezoneValue).value.let {
-                        if (it < TIMESTAMP_MIN_VALUE || TIMESTAMP_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                        }
-                    }
-                }
-                is TimestampTypeWithoutTimezone -> {
-                    (value.abValue as TimestampWithoutTimezoneValue).value.let {
-                        if (it < DATETIME_MIN_VALUE || DATETIME_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                        }
-                    }
-                }
+                // Noting that we do not need to validate date / datetime with and without timezone
+                // ranges here since any issue would be caught earlier and would result in a nullification
+                // with a DESTINATION_SERIALIZATION_ERROR reason. So checking again here does not
+                // add any value
                 else -> {}
             }
         }

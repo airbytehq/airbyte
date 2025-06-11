@@ -25,11 +25,6 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.formatTimestampWithoutTimezone
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.Companion.validateAirbyteValue
 
-object LIMITS {
-    val TRUE = IntegerValue(1)
-    val FALSE = IntegerValue(0)
-}
-
 class BigQueryCSVRowGenerator {
     fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
         val enrichedRecord =
