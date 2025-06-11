@@ -7,10 +7,33 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    steps:
+      # Checkout not required from `pull_request` event.
+      # The detection method uses the GitHub REST API.
+      - name: Detect Changes
+        id: detect-changes
+        uses: dorny/paths-filter@v3.0.2
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'docusaurus/**'
+              - '.markdownlint.jsonc'
+
+    outputs:
+      # 'true' if any of the docs files have changed, 'false' otherwise.
+      changed: ${{ steps.detect-changes.outputs.docs }}
+
   build-docs:
     name: Build Airbyte Docs
     runs-on: ubuntu-24.04
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
     steps:
+
       - name: Checkout Current Branch
         uses: actions/checkout@v4
         with:
