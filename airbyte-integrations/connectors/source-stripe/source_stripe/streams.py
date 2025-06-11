@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.error_handlers import ParentIncrementalStripeSubStreamErrorHandler, StripeErrorHandler
 from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
+from source_stripe.utils import safe_stream_state
 
 
 STRIPE_API_VERSION = "2022-11-15"
@@ -262,6 +263,7 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
+        current_stream_state = safe_stream_state(current_stream_state, self.cursor_field)
         state_cursor_value = current_stream_state.get(self.cursor_field, 0)
         latest_record_value = latest_record.get(self.cursor_field)
         if state_cursor_value:
@@ -297,6 +299,7 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
             yield StreamSlice(partition={}, cursor_slice={"created[gte]": start, "created[lte]": end})
 
     def get_start_timestamp(self, stream_state) -> int:
+        stream_state = safe_stream_state(stream_state, self.cursor_field)
         start_point = self.start_date
         # we use +1 second because date range is inclusive
         start_point = max(start_point, stream_state.get(self.cursor_field, 0) + 1)
@@ -397,6 +400,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         )
 
     def update_cursor_field(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        stream_state = safe_stream_state(stream_state, self.cursor_field)
         if not self.legacy_cursor_field:
             # Streams that used to support only full_refresh mode.
             # Now they support event-based incremental syncs but have a cursor field only in that mode.
@@ -512,6 +516,7 @@ class IncrementalStripeStream(StripeStream):
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field, stream_state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = safe_stream_state(current_stream_state, self.cursor_field)
         return self.parent_stream.get_updated_state(current_stream_state, latest_record)
 
     def read_records(
@@ -738,6 +743,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = safe_stream_state(current_stream_state, self.cursor_field)
         # important note: do not call self.parent_stream here as one of the parents does not have the needed method implemented
         return self.updated_cursor_incremental_stream.get_updated_state(current_stream_state, latest_record)
 
@@ -772,7 +778,7 @@ class ParentIncrementalStripeSubStream(StripeSubStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = stream_state or {}
+        stream_state = safe_stream_state(stream_state, self.cursor_field) or {}
         if stream_state:
             # state is shared between self and parent, but cursor fields are different
             stream_state = {self.parent.cursor_field: stream_state.get(self.cursor_field, 0)}
@@ -785,6 +791,7 @@ class ParentIncrementalStripeSubStream(StripeSubStream):
                 yield StreamSlice(partition={"parent": record}, cursor_slice={})
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = safe_stream_state(current_stream_state, self.cursor_field)
         return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
 
     def get_error_handler(self) -> Optional[ErrorHandler]:

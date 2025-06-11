@@ -8,7 +8,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
 import backoff
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v18.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from google.protobuf import json_format
@@ -21,7 +21,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 from .utils import logger
 
 
-API_VERSION = "v17"
+API_VERSION = "v18"
 
 
 def on_give_up(details):

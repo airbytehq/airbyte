@@ -10,31 +10,47 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.util.use
-import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * Interface for checkpoint management. Should accept stream and global checkpoints, as well as
- * requests to flush all data-sufficient checkpoints.
+ * Represents the checkpoint's order (stream-level for stream state, global for global state).
+ * Specifically, no state shall be released for CheckpointIndex N until all state for
+ * CheckpointIndexes 1..N-1 have been released.
+ *
+ * Begins at 1.
  */
-interface CheckpointManager<K, T> {
-    suspend fun addStreamCheckpoint(key: K, indexOrId: Long, checkpointMessage: T)
-    suspend fun addGlobalCheckpoint(keyIndexes: List<Pair<K, Long>>, checkpointMessage: T)
-    suspend fun flushReadyCheckpointMessages()
-    suspend fun getLastSuccessfulFlushTimeMs(): Long
-    suspend fun getNextCheckpointIndexes(): Map<K, Long>
-    suspend fun awaitAllCheckpointsFlushed()
+@JvmInline value class CheckpointIndex(val value: Int)
+
+/**
+ * Uniquely identifies the checkpoint. This is used by the StreamManager to count persisted records
+ * against the checkpoint. Specifically, it should be passed to the StreamManager to determine data
+ * sufficiency.
+ *
+ * Unique, unordered.
+ */
+@JvmInline value class CheckpointId(val value: String)
+
+/**
+ * Used internally by the checkpoint manager to maintain ordered maps of checkpoints. Ordered by
+ * index only.
+ */
+data class CheckpointKey(
+    val checkpointIndex: CheckpointIndex,
+    val checkpointId: CheckpointId,
+) : Comparable<CheckpointKey> {
+    // order only by index
+    override fun compareTo(other: CheckpointKey): Int {
+        return this.checkpointIndex.value - other.checkpointIndex.value
+    }
 }
 
 /**
@@ -49,98 +65,68 @@ interface CheckpointManager<K, T> {
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream.Descriptor, T> {
-
+class CheckpointManager<T>(
+    val catalog: DestinationCatalog,
+    val syncManager: SyncManager,
+    val outputConsumer: suspend (T, Long, Long) -> Unit,
+    val timeProvider: TimeProvider,
+) {
     private val log = KotlinLogging.logger {}
-    private val flushLock = Mutex()
-    protected val lastFlushTimeMs = AtomicLong(0L)
+    private val storedCheckpointsLock = Mutex()
+    private val lastFlushTimeMs = AtomicLong(0L)
+    private val committedCount: ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue> =
+        ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>()
 
-    abstract val catalog: DestinationCatalog
-    abstract val syncManager: SyncManager
-    abstract val outputConsumer: suspend (T) -> Unit
-    abstract val timeProvider: TimeProvider
-
-    /**
-     * Whether or not we are using the new style checkpoint-by-id or the old style
-     * checkpoint-by-range.
-     *
-     * TODO: Remove this once everything is using the new interface.
-     */
-    abstract val checkpointById: Boolean
-
-    data class GlobalCheckpoint<T>(
-        val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
-        val checkpointMessage: T
-    )
+    data class GlobalCheckpoint<T>(val checkpointMessage: T)
 
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
-        ConcurrentHashMap<DestinationStream.Descriptor, ConcurrentLinkedQueue<Pair<Long, T>>> =
+        ConcurrentHashMap<DestinationStream.Descriptor, TreeMap<CheckpointKey, T>> =
         ConcurrentHashMap()
-    private val globalCheckpoints: ConcurrentLinkedQueue<GlobalCheckpoint<T>> =
-        ConcurrentLinkedQueue()
-    private val lastIndexEmitted = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
+    private val globalCheckpoints: TreeMap<CheckpointKey, GlobalCheckpoint<T>> = TreeMap()
+    private val lastCheckpointKeyEmitted =
+        ConcurrentHashMap<DestinationStream.Descriptor, CheckpointKey>()
 
-    override suspend fun addStreamCheckpoint(
-        key: DestinationStream.Descriptor,
-        indexOrId: Long,
+    init {
+        lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+    }
+
+    suspend fun addStreamCheckpoint(
+        streamDescriptor: DestinationStream.Descriptor,
+        checkpointKey: CheckpointKey,
         checkpointMessage: T
     ) {
-        flushLock.withLock {
+        storedCheckpointsLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it == true } != false) {
                 throw IllegalStateException(
                     "Global checkpoints cannot be mixed with non-global checkpoints"
                 )
             }
 
-            val indexedMessages: ConcurrentLinkedQueue<Pair<Long, T>> =
-                streamCheckpoints.getOrPut(key) { ConcurrentLinkedQueue() }
-            if (indexedMessages.isNotEmpty()) {
-                // Make sure the messages are coming in order
-                val (latestIndex, _) = indexedMessages.last()!!
-                if (latestIndex > indexOrId) {
-                    throw IllegalStateException(
-                        "Checkpoint message received out of order ($latestIndex before $indexOrId)"
-                    )
-                }
-            }
-            indexedMessages.add(indexOrId to checkpointMessage)
+            val indexedMessages: TreeMap<CheckpointKey, T> =
+                streamCheckpoints.getOrPut(streamDescriptor) { TreeMap() }
+            indexedMessages[checkpointKey] = checkpointMessage
 
-            log.info { "Added checkpoint for stream: $key at index: $indexOrId" }
+            log.info { "Added checkpoint for stream: $streamDescriptor at index: $checkpointKey" }
         }
     }
 
     // TODO: Is it an error if we don't get all the streams every time?
-    override suspend fun addGlobalCheckpoint(
-        keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
-        checkpointMessage: T
-    ) {
-        flushLock.withLock {
+    suspend fun addGlobalCheckpoint(checkpointKey: CheckpointKey, checkpointMessage: T) {
+        storedCheckpointsLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
                 throw IllegalStateException(
                     "Global checkpoint cannot be mixed with non-global checkpoints"
                 )
             }
 
-            val head = globalCheckpoints.peek()
-            if (head != null) {
-                val keyIndexesByStream = keyIndexes.associate { it.first to it.second }
-                head.streamIndexes.forEach {
-                    if (keyIndexesByStream[it.first]!! < it.second) {
-                        throw IllegalStateException(
-                            "Global checkpoint message received out of order"
-                        )
-                    }
-                }
-            }
-
-            globalCheckpoints.add(GlobalCheckpoint(keyIndexes, checkpointMessage))
-            log.info { "Added global checkpoint with stream indexes: $keyIndexes" }
+            globalCheckpoints[checkpointKey] = GlobalCheckpoint(checkpointMessage)
+            log.info { "Added global checkpoint with key $checkpointKey" }
         }
     }
 
-    override suspend fun flushReadyCheckpointMessages() {
-        flushLock.withLock {
+    suspend fun flushReadyCheckpointMessages() {
+        storedCheckpointsLock.withLock {
             /*
                Iterate over the checkpoints in order, evicting each that passes
                the persistence check. If a checkpoint is not persisted, then
@@ -157,33 +143,73 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
 
     private suspend fun flushGlobalCheckpoints() {
         if (globalCheckpoints.isEmpty()) {
-            log.info { "No global checkpoints to flush" }
+            log.debug { "No global checkpoints to flush" }
             return
         }
         while (!globalCheckpoints.isEmpty()) {
-            val head = globalCheckpoints.peek()
+            val head = globalCheckpoints.firstEntry() ?: break
+            val previousStateEmitted =
+                catalog.streams.all { stream ->
+                    wasPreviousStateEmitted(stream.descriptor, head.key.checkpointIndex)
+                }
+            if (!previousStateEmitted) {
+                log.debug { "State for checkpoint before ${head.key} has not been emitted yet." }
+                break
+            }
+
             val allStreamsPersisted =
-                head.streamIndexes.all { (stream, index) ->
-                    if (!checkpointById) {
-                        syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
-                    } else {
+                if (syncManager.hasGlobalCount(head.key.checkpointId)) {
+                    syncManager.areAllStreamsPersistedForGlobalCheckpoint(head.key.checkpointId)
+                } else {
+                    catalog.streams.all {
                         syncManager
-                            .getStreamManager(stream)
-                            .areRecordsPersistedUntilCheckpoint(CheckpointId(index.toInt()))
+                            .getStreamManager(it.descriptor)
+                            .areRecordsPersistedForCheckpoint(head.key.checkpointId)
                     }
                 }
+
             if (allStreamsPersisted) {
-                log.info { "Flushing global checkpoint with stream indexes: ${head.streamIndexes}" }
-                validateAndSendMessage(head.checkpointMessage, head.streamIndexes)
-                globalCheckpoints.poll() // don't remove until after we've successfully sent
+                log.info { "Flushing global checkpoint with key ${head.key}" }
+
+                val (totalRecords, totalBytes) =
+                    catalog.streams
+                        .map { stream ->
+                            val delta =
+                                syncManager
+                                    .getStreamManager(stream.descriptor)
+                                    .committedCount(head.key.checkpointId)
+
+                            /* increment() returns the new aggregate for this stream. */
+                            committedCount.increment(stream.descriptor, delta)
+                        }
+                        .fold(0L to 0L) { acc, value ->
+                            acc.first + value.records to acc.second + value.serializedBytes
+                        }
+
+                sendStateMessage(
+                    head.value.checkpointMessage,
+                    head.key,
+                    catalog.streams.map { it.descriptor },
+                    totalRecords,
+                    totalBytes
+                )
+                globalCheckpoints.remove(
+                    head.key
+                ) // don't remove until after we've successfully sent
             } else {
-                log.info {
-                    "Not flushing global checkpoint with stream indexes: ${head.streamIndexes}"
-                }
+                log.debug { "Not flushing global checkpoint ${head.key}:" }
                 break
             }
         }
     }
+
+    private fun ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>.increment(
+        descriptor: DestinationStream.Descriptor,
+        delta: CheckpointValue,
+    ): CheckpointValue =
+        merge(descriptor, delta) { acc, inc ->
+            CheckpointValue(acc.records + inc.records, acc.serializedBytes + inc.serializedBytes)
+        }!!
 
     private suspend fun flushStreamCheckpoints() {
         val noCheckpointStreams = mutableSetOf<DestinationStream.Descriptor>()
@@ -197,77 +223,88 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                 continue
             }
             while (true) {
-                val (nextIndex, nextMessage) = streamCheckpoints.peek() ?: break
+                val (nextCheckpointKey, nextMessage) = streamCheckpoints.firstEntry() ?: break
+
+                if (
+                    !wasPreviousStateEmitted(stream.descriptor, nextCheckpointKey.checkpointIndex)
+                ) {
+                    break
+                }
+
                 val persisted =
-                    if (checkpointById) {
-                        manager.areRecordsPersistedUntilCheckpoint(CheckpointId(nextIndex.toInt()))
-                    } else {
-                        manager.areRecordsPersistedUntil(nextIndex)
-                    }
+                    manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
                 if (persisted) {
 
+                    val delta = manager.committedCount(nextCheckpointKey.checkpointId)
+                    val aggregate = committedCount.increment(stream.descriptor, delta)
+
+                    sendStateMessage(
+                        nextMessage,
+                        nextCheckpointKey,
+                        listOf(stream.descriptor),
+                        aggregate.records,
+                        aggregate.serializedBytes,
+                    )
+
                     log.info {
-                        "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextIndex"
+                        "Flushed checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey (records=${aggregate.records}, bytes=${aggregate.serializedBytes})"
                     }
-                    validateAndSendMessage(nextMessage, listOf(stream.descriptor to nextIndex))
-                    streamCheckpoints.poll() // don't remove until after we've successfully sent
+
+                    // don't remove until after we've successfully sent
+                    streamCheckpoints.remove(nextCheckpointKey)
                 } else {
-                    log.info { "Not flushing next checkpoint for index $nextIndex" }
+                    log.debug {
+                        val expectedCount =
+                            manager.readCountForCheckpoint(nextCheckpointKey.checkpointId)
+                        val committedCount =
+                            manager.persistedRecordCountForCheckpoint(
+                                nextCheckpointKey.checkpointId
+                            )
+                        "Not flushing next checkpoint for index $nextCheckpointKey (committed $committedCount records of expected $expectedCount)"
+                    }
                     break
                 }
             }
         }
         if (noCheckpointStreams.isNotEmpty()) {
-            log.info { "No checkpoints for streams: $noCheckpointStreams" }
+            log.debug { "No checkpoints for streams: $noCheckpointStreams" }
         }
     }
 
-    private suspend fun validateAndSendMessage(
+    private fun wasPreviousStateEmitted(
+        descriptor: DestinationStream.Descriptor,
+        nextCheckpointIndex: CheckpointIndex
+    ): Boolean {
+        val lastIndex = lastCheckpointKeyEmitted[descriptor]?.checkpointIndex?.value ?: 0
+        if (nextCheckpointIndex.value != lastIndex + 1) {
+            // This state cannot be emitted, because we have not emitted the previous.
+            // (This implies that we also have not received it yet, or else it would
+            // have been first in this table.)
+            log.debug {
+                "Cannot flush checkpoint for index $nextCheckpointIndex because previous index has not been flushed."
+            }
+            return false
+        }
+
+        return true
+    }
+
+    private suspend fun sendStateMessage(
         checkpointMessage: T,
-        streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>
+        checkpointKey: CheckpointKey,
+        streamCheckpoints: List<DestinationStream.Descriptor>,
+        totalRecords: Long,
+        totalBytes: Long
     ) {
-        streamIndexes.forEach { (stream, index) ->
-            val lastIndex = lastIndexEmitted[stream]
-            if (lastIndex != null && index < lastIndex) {
-                throw IllegalStateException(
-                    "Checkpoint message for $stream emitted out of order (emitting $index after $lastIndex)"
-                )
-            }
-            lastIndexEmitted[stream] = index
-        }
-
+        streamCheckpoints.forEach { stream -> lastCheckpointKeyEmitted[stream] = checkpointKey }
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-        outputConsumer.invoke(checkpointMessage)
+        outputConsumer.invoke(checkpointMessage, totalRecords, totalBytes)
     }
 
-    override suspend fun getLastSuccessfulFlushTimeMs(): Long =
-        // Return inside the lock to ensure the value reflects flushes in progress
-        flushLock.withLock { lastFlushTimeMs.get() }
-
-    override suspend fun getNextCheckpointIndexes(): Map<DestinationStream.Descriptor, Long> {
-        flushLock.withLock {
-            return when (checkpointsAreGlobal.get()) {
-                null -> {
-                    emptyMap()
-                }
-                true -> {
-                    val head = globalCheckpoints.peek()
-                    head?.streamIndexes?.associate { it } ?: emptyMap()
-                }
-                false -> {
-                    streamCheckpoints
-                        .mapValues { it.value.firstOrNull()?.first }
-                        .filterValues { it != null }
-                        .mapValues { it.value!! }
-                }
-            }
-        }
-    }
-
-    override suspend fun awaitAllCheckpointsFlushed() {
+    suspend fun awaitAllCheckpointsFlushed() {
         while (true) {
             val allCheckpointsFlushed =
-                flushLock.withLock {
+                storedCheckpointsLock.withLock {
                     globalCheckpoints.isEmpty() && streamCheckpoints.all { it.value.isEmpty() }
                 }
             if (allCheckpointsFlushed) {
@@ -283,34 +320,24 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     }
 }
 
-@Singleton
-@Secondary
-class DefaultCheckpointManager(
-    override val catalog: DestinationCatalog,
-    override val syncManager: SyncManager,
-    override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
-    override val timeProvider: TimeProvider,
-    @Named("checkpointById") override val checkpointById: Boolean = false,
-) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
-    private val log = KotlinLogging.logger {}
-
-    init {
-        lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-        log.info { "Checkpoint manager initialized with checkpointById: $checkpointById" }
-    }
-}
-
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-@Secondary
-class FreeingCheckpointConsumer(private val consumer: Consumer<AirbyteMessage>) :
-    suspend (Reserved<CheckpointMessage>) -> Unit {
-    override suspend fun invoke(message: Reserved<CheckpointMessage>) {
+class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
+    suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit {
+    override suspend fun invoke(
+        message: Reserved<CheckpointMessage>,
+        totalRecords: Long,
+        totalBytes: Long
+    ) {
         message.use {
-            val outMessage = it.value.asProtocolMessage()
+            val outMessage =
+                it.value
+                    .withTotalRecords(totalRecords = totalRecords)
+                    .withTotalBytes(totalBytes = totalBytes)
+                    .asProtocolMessage()
             consumer.accept(outMessage)
         }
     }

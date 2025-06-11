@@ -26,7 +26,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
-from integration.helpers import assert_stream_incomplete
+from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
@@ -184,7 +184,7 @@ class FullRefreshTest(TestCase):
             a_response_with_status(400),
         )
         output = self._read(_config())
-        assert_stream_incomplete(output, _STREAM_NAME, "Your account is not set up to use Issuing")
+        assert_stream_did_not_run(output, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
     def test_given_http_status_401_when_read_then_stream_is_incomplete(self, http_mocker: HttpMocker) -> None:

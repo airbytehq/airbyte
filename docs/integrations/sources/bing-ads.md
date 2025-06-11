@@ -251,6 +251,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budgets) will ignore (fallback: none) the `LastSyncTimeInUTC` for dates > 30 days ago, which will trigger a full download request.
 
 </details>
 
@@ -261,6 +262,16 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.0 | 2025-06-10 | [61517](https://github.com/airbytehq/airbyte/pull/61517) | Promoting release candidate 2.11.0-rc.1 to a main version. |
+| 2.11.0-rc.1 | 2025-06-09 | [61325](https://github.com/airbytehq/airbyte/pull/61325) | Migrate `account_performance_report` streams and `labels` stream to manifest |
+| 2.10.0 | 2025-06-02 | [61329](https://github.com/airbytehq/airbyte/pull/61329) | Promoting release candidate 2.10.0-rc.1 to a main version. |
+| 2.10.0-rc.1 | 2025-06-01 | [59750](https://github.com/airbytehq/airbyte/pull/59750) | Migrate `ad_performance_reports` and `campaigns` streams to manifest |
+| 2.9.4 | 2025-05-29 | [60909](https://github.com/airbytehq/airbyte/pull/60909) | Remove account records if duplicated caused by predicate |
+| 2.9.3 | 2025-05-28 | [60929](https://github.com/airbytehq/airbyte/pull/60929) | Fix duplicated slices/jobs when reports_start_date is not set |
+| 2.9.2 | 2025-05-22 | [60832](https://github.com/airbytehq/airbyte/pull/60832) | Fix handling of account_names predicate in declarative stream |
+| 2.9.1 | 2025-05-10 | [54233](https://github.com/airbytehq/airbyte/pull/54233) | Update dependencies |
+| 2.9.0 | 2025-05-07 | [59719](https://github.com/airbytehq/airbyte/pull/59719) | Promoting release candidate 2.9.0-rc.1 to a main version. |
+| 2.9.0-rc.1 | 2025-05-06 | [59136](https://github.com/airbytehq/airbyte/pull/59136) | Bump CDK v6 and migrate Accounts stream to low-code |
 | 2.8.13 | 2025-02-15 | [53882](https://github.com/airbytehq/airbyte/pull/53882) | Update dependencies |
 | 2.8.12 | 2025-02-01 | [52930](https://github.com/airbytehq/airbyte/pull/52930) | Update dependencies |
 | 2.8.11 | 2025-01-25 | [52198](https://github.com/airbytehq/airbyte/pull/52198) | Update dependencies |

@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.file.object_storage.PathFactory
@@ -37,7 +36,6 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val pathFactory: PathFactory,
     private val catalog: DestinationCatalog,
     private val writerFactory: BufferedFormattingWriterFactory<T>,
-    private val client: ObjectStorageClient<*>,
     private val loader: ObjectLoader,
     // TODO: This doesn't need to be "DestinationState", just a couple of utility classes
     private val stateManager: DestinationStateManager<ObjectStorageDestinationState>,
@@ -97,7 +95,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
                 state.writer.takeBytes()
             }
         val part = state.partFactory.nextPart(bytes, isFinal)
-        log.info { "Creating part $part" }
+        log.debug { "Creating part $part" }
         return FormattedPart(part)
     }
 

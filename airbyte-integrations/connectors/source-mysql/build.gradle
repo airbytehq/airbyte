@@ -1,5 +1,7 @@
 plugins {
     id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 application {
@@ -9,10 +11,11 @@ application {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc', 'extract-cdc']
-    cdk = '0.342'
+    cdk = '0.443'
 }
 
 dependencies {
+    api "com.google.protobuf:protobuf-java:4.27.5" // for fixing vulnerability of protobuf-java used by Debezium
     implementation 'com.mysql:mysql-connector-j:9.1.0'
     implementation 'io.debezium:debezium-connector-mysql'
 

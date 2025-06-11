@@ -52,7 +52,11 @@ class AirbyteBulkConnectorExtension {
                     project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
             ]
             for (toolkit in toolkits) {
-                fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+                if (toolkit.contains(':')) {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit"
+                } else {
+                    fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+                }
             }
         } else {
             fromJar = [
@@ -60,7 +64,11 @@ class AirbyteBulkConnectorExtension {
                     "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
             ]
             for (toolkit in toolkits) {
-                fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+                if (toolkit.contains(':')) {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit"
+                } else {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+                }
             }
         }
 
@@ -205,11 +213,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
 
                 jvmArgs = project.test.jvmArgs
-                systemProperties = project.test.systemProperties + [
-                        'junit.jupiter.execution.parallel.enabled': 'true',
-                        'junit.jupiter.execution.parallel.config.strategy': 'fixed',
-                        'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.max((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
-                ]
+                systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
 
@@ -227,6 +231,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 // integration tests depend on the runtime code
                 integrationTestImplementation project
                 integrationTestLegacyImplementation project
+                integrationTestLegacyImplementation project.sourceSets.integrationTest.output
             }
 
             project.tasks.named('build').configure {

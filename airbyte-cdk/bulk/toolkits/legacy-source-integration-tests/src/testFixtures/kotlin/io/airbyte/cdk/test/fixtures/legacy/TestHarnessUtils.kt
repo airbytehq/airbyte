@@ -5,7 +5,7 @@
 package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.protocol.models.*
+import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.IOException

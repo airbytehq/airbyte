@@ -6,14 +6,12 @@ package io.airbyte.cdk.load.test.util
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -28,20 +26,20 @@ object StubDestinationMessageFactory {
         return DestinationRecord(
             stream = stream,
             message =
-                AirbyteMessage()
-                    .withRecord(
-                        AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
-                    ),
-            serialized = "",
-            schema = ObjectTypeWithoutSchema
+                DestinationRecordJsonSource(
+                    AirbyteMessage()
+                        .withRecord(
+                            AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
+                        )
+                ),
+            0L
         )
     }
 
-    fun makeFile(stream: DestinationStream, record: String): DestinationFile {
+    fun makeFile(stream: DestinationStream): DestinationFile {
         return DestinationFile(
             stream = stream,
             emittedAtMs = 0,
-            serialized = record,
             fileMessage = nullFileMessage,
         )
     }
@@ -54,22 +52,12 @@ object StubDestinationMessageFactory {
         return DestinationFileStreamComplete(stream = stream, emittedAtMs = 0)
     }
 
-    fun makeStreamIncomplete(stream: DestinationStream): DestinationRecordStreamIncomplete {
-        return DestinationRecordStreamIncomplete(stream = stream, emittedAtMs = 0)
-    }
-
-    fun makeFileStreamIncomplete(stream: DestinationStream): DestinationFileStreamIncomplete {
-        return DestinationFileStreamIncomplete(stream = stream, emittedAtMs = 0)
-    }
-
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
         return StreamCheckpoint(
             checkpoint =
-                CheckpointMessage.Checkpoint(
-                    stream.descriptor,
-                    JsonNodeFactory.instance.objectNode()
-                ),
+                CheckpointMessage.Checkpoint(stream, JsonNodeFactory.instance.objectNode()),
             sourceStats = CheckpointMessage.Stats(recordCount),
+            serializedSizeBytes = 0L
         )
     }
 
@@ -80,6 +68,7 @@ object StubDestinationMessageFactory {
             checkpoints = emptyList(),
             additionalProperties = emptyMap(),
             originalTypeField = AirbyteStateMessage.AirbyteStateType.GLOBAL,
+            serializedSizeBytes = 0L
         )
     }
 

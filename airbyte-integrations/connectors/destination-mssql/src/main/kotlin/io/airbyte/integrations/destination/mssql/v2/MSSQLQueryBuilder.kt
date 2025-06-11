@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
-import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -19,10 +18,8 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -50,7 +47,6 @@ import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlTy
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Date
@@ -241,8 +237,7 @@ class MSSQLQueryBuilder(
 
     private val toMssqlType = AirbyteTypeToMssqlType()
 
-    val finalTableSchema: List<NamedField> =
-        airbyteFinalTableFields + extractFinalTableSchema(stream.schema)
+    val finalTableSchema: List<NamedField> = airbyteFinalTableFields + extractFinalTableSchema()
     val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
 
     private fun getExistingSchema(connection: Connection): List<NamedSqlField> {
@@ -374,19 +369,14 @@ class MSSQLQueryBuilder(
                         statementIndex,
                         Date.valueOf((value.abValue as DateValue).value)
                     )
-                IntegerType -> {
-                    val intValue = (value.abValue as IntegerValue).value
-                    if (intValue < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < intValue) {
-                        value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                    } else {
-                        statement.setLong(statementIndex, intValue.longValueExact())
+                IntegerType ->
+                    LIMITS.validateInteger(value)?.let {
+                        statement.setLong(statementIndex, it.longValueExact())
                     }
-                }
                 NumberType ->
-                    statement.setDouble(
-                        statementIndex,
-                        (value.abValue as NumberValue).value.toDouble()
-                    )
+                    LIMITS.validateNumber(value)?.let {
+                        statement.setBigDecimal(statementIndex, it)
+                    }
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
@@ -506,16 +496,8 @@ class MSSQLQueryBuilder(
         }
     }
 
-    private fun extractFinalTableSchema(schema: AirbyteType): List<NamedField> =
-        when (schema) {
-            is ObjectType -> {
-                (stream.schema as ObjectType)
-                    .properties
-                    .map { NamedField(name = it.key, type = it.value) }
-                    .toList()
-            }
-            else -> TODO("most likely fail hard")
-        }
+    private fun extractFinalTableSchema(): List<NamedField> =
+        stream.schema.asColumns().map { NamedField(name = it.key, type = it.value) }.toList()
 
     private fun airbyteTypeToSqlSchema(
         schema: List<NamedField>,

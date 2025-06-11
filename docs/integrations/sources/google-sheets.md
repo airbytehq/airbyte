@@ -129,6 +129,106 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 </FieldAnchor>
 <HideInUI>
 
+## Configuration Options
+
+### Stream Name Overrides (Rename Sheet/Stream Names)
+
+The Google Sheets connector allows you to optionally rename streams (sheet/tab names) as they appear in Airbyte and your destination. This is useful if your sheet names are not descriptive, contain special characters, or you want to standardize naming across sources.
+
+#### How it works
+
+- You can provide a list of overrides, each specifying a `source_stream_name` (the exact name of the sheet/tab in your spreadsheet) and a `custom_stream_name` (the name you want it to appear as in Airbyte and your destination).
+- If a `source_stream_name` is not found in your spreadsheet, it will be ignored and the default name will be used.
+- This feature only affects stream (sheet/tab) names, not field/column names.
+- If you want to rename fields or column names, you can do so using the Airbyte Mappings feature after your connection is created. See the Airbyte [documentation](https://docs.airbyte.com/platform/using-airbyte/mappings) for more details on how to use Mappings.
+- Renaming occurs before any other name conversion or sanitization options.
+
+#### Example
+
+Suppose your spreadsheet has sheets named `Sheet1`, `2024 Q1`, and `Summary`. You want to rename them to `sales_data`, `q1_2024`, and leave `Summary` unchanged. You would configure:
+
+```json
+[
+  { "source_stream_name": "Sheet1", "custom_stream_name": "sales_data" },
+  { "source_stream_name": "2024 Q1", "custom_stream_name": "q1_2024" }
+]
+```
+
+After discovery, your streams in Airbyte will be named `sales_data`, `q1_2024`, and `Summary`.
+
+#### How to configure
+
+- In the Airbyte UI, add your overrides in the **Stream Name Overrides** field as an array of objects.
+- If you do not wish to rename any streams, leave this field blank.
+- **After adding or changing a stream name override, refresh your schema in Airbyte to see the new stream names take effect.**
+- **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
+
+---
+
+### Google Sheets Connector Column Name Conversion
+
+The Google Sheets connector offers options to customize how column names from your spreadsheet are converted to be SQL-compliant. These settings can be configured in the Airbyte UI when setting up the connector.
+
+---
+
+#### 1. Convert Column Names to SQL-Compliant Format
+- **Description**: When enabled, this converts column names to a format compatible with SQL databases (e.g., lowercasing, replacing spaces with underscores). This is the primary toggle required to enable any column name conversion.
+- **Default**: Off
+
+---
+
+#### 2. Additional Conversion Options
+The following options allow you to fine-tune the column name conversion process. They only take effect if "Convert Column Names to SQL-Compliant Format" is enabled.
+
+- **Remove Leading and Trailing Underscores**
+  - **Description**: Removes leading and trailing underscores from column names. Note that leading underscores are preserved for column names starting with a number if "Allow Leading Numbers" is disabled.
+  - **Example**:  
+    - Input: `"  EXAMPLE Domain  "`  
+    - Output: `"example_domain"`
+  - **Default**: Off
+
+- **Combine Number-Word Pairs**
+  - **Description**: Combines adjacent numbers and words into a single token without separators.
+  - **Example**:  
+    - Input: `"50th Percentile"`  
+    - Output: `"50th_percentile"` (if "Allow Leading Numbers" is enabled)  
+    - Output: `"_50th_percentile"` (if "Allow Leading Numbers" is disabled)
+  - **Default**: Off
+
+- **Remove All Special Characters**
+  - **Description**: Removes all special characters (e.g., `*`, `?`, `!`, `$`, `%`, `(`, `)`) from column names.
+  - **Example**:  
+    - Input: `"Example ID*"`  
+    - Output: `"example_id"`
+  - **Default**: Off
+
+- **Combine Letter-Number Pairs**
+  - **Description**: Combines adjacent letters and numbers into a single token without separators.
+  - **Example**:  
+    - Input: `"Q3 2023"`  
+    - Output: `"q3_2023"`
+  - **Default**: Off
+
+- **Allow Leading Numbers**
+  - **Description**: Allows column names to start with numbers. If disabled, a leading underscore is added to column names that begin with a number.
+  - **Example**:  
+    - Input: `"50th Percentile"`  
+    - Output: `"50_th_percentile"` (if enabled)  
+    - Output: `"_50_th_percentile"` (if disabled)
+  - **Default**: Off
+
+---
+
+#### Additional Details
+- All converted column names are lowercased.
+- Multiple spaces or special characters are collapsed or removed, not replaced with multiple underscores.
+- Only single underscores are used to separate tokens.
+- The result is always SQL-friendly and readable.
+
+---
+
+These options provide flexibility to tailor column name conversions to your specific database requirements. Adjust them as needed in the Airbyte UI when configuring the Google Sheets connector.
+
 ## Supported sync modes
 
 The Google Sheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -187,6 +287,10 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.11.0 | 2025-06-11 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options|
+| 0.10.0 | 2025-06-09 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additional sanitization flags when using Convert Column Names to SQL-Compliant Format (names_conversion)|
+| 0.9.6 | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets |
+| 0.9.5 | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`|
 | 0.9.4 | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies |
 | 0.9.3 | 2025-02-22 | [54434](https://github.com/airbytehq/airbyte/pull/54434) | Update dependencies |
 | 0.9.2 | 2025-02-15 | [53720](https://github.com/airbytehq/airbyte/pull/53720) | Update dependencies |

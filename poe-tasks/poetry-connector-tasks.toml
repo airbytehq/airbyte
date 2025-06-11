@@ -16,26 +16,59 @@
 
 [tool.poe.tasks]
 
-# Installation and package updates
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
+fetch-secrets = "airbyte-cdk secrets fetch"
+
+install = ["install-project", "install-cdk-cli"]
+install-project = "poetry install --all-extras"
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+test-all = ["test-unit-tests", "test-integration-tests"]
+test-integration-tests = ["pytest-integration-tests"]
+test-unit-tests = ["pytest-unit-tests"]
+test-fast = ["pytest-fast"]
+format-check = ["check-ruff-format"]
+lint-check = [
+    "check-ruff-lint",
+    "check-mypy",
+]
+
+# Poetry Lock
 lock = "poetry lock"
-install = "poetry install --all-extras"
 
 # Pytest
-pytest = "poetry run pytest"
-pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
+pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds' --junitxml=build/test-results/pytest-fast-junit.xml unit_tests"
+pytest-unit-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ -d unit_tests ]; then
+  poetry run pytest --junitxml=build/test-results/pytest-unit-tests-junit.xml unit_tests
+else
+  echo "No 'unit_tests' directory found; skipping unit tests."
+fi
+'''
+
+pytest-integration-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if ls integration_tests/test_*.py >/dev/null 2>&1; then
+  poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
+else
+  echo "No 'integration_tests' directory found; skipping integration tests."
+fi
+'''
 
 # Coverage checks
-coverage = "pytest --cov=. --cov-report=term-missing"
-coverage-html = "pytest --cov=. --cov-report=html"
+coverage = "poetry run pytest --cov=. --cov-report=term-missing"
+coverage-html = "poetry run pytest --cov=. --cov-report=html"
 
 # Check commands
-check-ruff-lint = "ruff check ."
-check-ruff-format = "ruff format ."
+check-ruff-lint = "poetry run ruff check ."
+check-ruff-format = "poetry run ruff format ."
 check-ruff = [
     "check-ruff-lint",
     "check-ruff-format",
 ]
-check-mypy = "mypy ."
+check-mypy = "poetry run mypy ."
 
 check-all = [
     "check-ruff",
@@ -43,8 +76,8 @@ check-all = [
 ]
 
 # Fix commands
-fix-ruff-format = "ruff format --fix ."
-fix-ruff-lint = "ruff check --fix ."
+fix-ruff-format = "poetry run ruff format --fix ."
+fix-ruff-lint = "poetry run ruff check --fix ."
 fix-ruff = [
     "fix-ruff-format",
     "fix-ruff-lint",
@@ -91,3 +124,17 @@ args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
 help = "Pin to a specific branch of the CDK."
+
+# Generic tasks (same across all connector types)
+
+[tool.poe.tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tool.poe.tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tool.poe.tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

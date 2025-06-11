@@ -8,7 +8,7 @@
 
 ### CDC Requirements
 
-- Make sure to read our [CDC docs](../../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+- Make sure to read our [CDC docs](/platform/understanding-airbyte/cdc) to see limitations that impact all databases using CDC replication.
 - Our CDC implementation uses at least once delivery for all change records.
 - To enable CDC with incremental sync, ensure the table has at least one primary key.
   Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
@@ -68,7 +68,12 @@ The root causes is that the binglogs needed for the incremental sync have been r
 
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently.
-  - Set a higher `binlog_expire_logs_seconds`. It's recommended to set this value to a time period of 7 days. See detailed documentation [here](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds). The downside of this approach is that more disk space will be needed.
+  - For standard MySQL installations: Set a higher `binlog_expire_logs_seconds`. It's recommended to set this value to a time period of 7 days. See [MySQL binary log documentation](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds) for details.
+  - For Amazon RDS MySQL instances: Set the `binlog retention hours` parameter to at least 24 hours (or higher). This parameter defaults to 0, causing binlogs to be removed immediately. Use the RDS-specific procedure described in the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/mysql-stored-proc-configuring.html). For example:
+    ```sql
+    call mysql.rds_set_configuration('binlog retention hours', 24);
+    ```
+    The downside of increasing retention is that more disk space is needed.
 
 ### EventDataDeserializationException errors during initial snapshot
 
