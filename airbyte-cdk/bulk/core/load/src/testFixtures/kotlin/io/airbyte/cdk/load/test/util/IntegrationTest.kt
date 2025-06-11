@@ -334,7 +334,7 @@ abstract class IntegrationTest(
             launch {
                 if (
                     destination is DockerizedDestination &&
-                        syncEndBehavior != UncleanSyncEndBehavior.KILL
+                        syncEndBehavior == UncleanSyncEndBehavior.KILL
                 ) {
                     // when you kill a docker process, it doesn't exit uncleanly apparently
                     destination.run()
