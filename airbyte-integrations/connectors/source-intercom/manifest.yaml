@@ -702,8 +702,8 @@ definitions:
               - type: HttpResponseFilter
                 http_codes:
                   - 401
-                action: FAIL
-                failure_type: config_error
+                action: IGNORE
+                failure_type: transient_error
                 error_message: >-
                   Failed to perform request. Error: Permission Scope Error.
                   Please validate you have "Read Tickets" permission here: https://app.intercom.com/a/apps/_/developer-hub
