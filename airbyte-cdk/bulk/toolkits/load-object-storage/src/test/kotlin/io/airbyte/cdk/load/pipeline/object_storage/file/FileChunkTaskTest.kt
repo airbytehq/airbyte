@@ -46,6 +46,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.io.FileInputStream
 import java.nio.file.Path
+import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -275,7 +276,8 @@ class FileChunkTaskTest<T> {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(message),
-                serializedSizeBytes = 0L
+                serializedSizeBytes = 0L,
+                airbyteRawId = UUID.randomUUID(),
             )
     }
 }

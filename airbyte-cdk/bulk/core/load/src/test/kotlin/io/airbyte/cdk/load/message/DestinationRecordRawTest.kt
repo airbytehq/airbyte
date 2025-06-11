@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigInteger
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -75,7 +76,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -128,7 +130,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -181,7 +184,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -239,7 +243,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -291,7 +296,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = streamWithEmptySchema,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -383,7 +389,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = streamWithComplexSchema,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
@@ -428,7 +435,8 @@ class DestinationRecordRawTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(airbyteMessage),
-                airbyteMessage.serializeToString().length.toLong()
+                serializedSizeBytes = airbyteMessage.serializeToString().length.toLong(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
