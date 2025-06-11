@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.write.dlq
 
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -24,9 +28,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
-/**
- * Factory to build a DeadLetterQueueLoadPipeline.
- */
+/** Factory to build a DeadLetterQueueLoadPipeline. */
 class DlqPipelineFactory(
     private val dlqInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val dlqPipelineSteps: List<LoadPipelineStep>,
@@ -34,31 +36,28 @@ class DlqPipelineFactory(
     private val objectLoader: ObjectLoader,
 ) {
     fun <S : AutoCloseable> createPipeline(dlqLoader: DlqLoader<S>): LoadPipeline =
-        object : LoadPipeline(
-            listOf(
-                DlqLoaderPipelineStep(
-                    numWorkers = objectLoader.numPartWorkers,
-                    outputQueue = dlqInputQueue,
-                    taskFactory = pipelineStepTaskFactory,
-                    dlqLoader = dlqLoader,
-                ),
-                *dlqPipelineSteps.toTypedArray(),
-            )
-        ) {}
+        object :
+            LoadPipeline(
+                listOf(
+                    DlqLoaderPipelineStep(
+                        numWorkers = objectLoader.numPartWorkers,
+                        outputQueue = dlqInputQueue,
+                        taskFactory = pipelineStepTaskFactory,
+                        dlqLoader = dlqLoader,
+                    ),
+                    *dlqPipelineSteps.toTypedArray(),
+                )
+            ) {}
 }
 
-/**
- * A Micronaut Factory to help initialize the component required for a DeadLetterQueuePipeline
- */
+/** A Micronaut Factory to help initialize the component required for a DeadLetterQueuePipeline */
 @Factory
 class DlqPipelineFactoryFactory {
-    /**
-     * The end goal of this file.
-     */
+    /** The end goal of this file. */
     @Singleton
     fun dlqPipelineFactory(
-        @Named("dlqInputQueue") dlqInputQueue: PartitionedQueue<PipelineEvent<StreamKey,
-            DestinationRecordRaw>>,
+        @Named("dlqInputQueue")
+        dlqInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         @Named("dlqPipelineSteps") dlqPipelineSteps: List<LoadPipelineStep>,
         pipelineStepTaskFactory: LoadPipelineStepTaskFactory,
         objectLoader: ObjectLoader,
@@ -67,9 +66,9 @@ class DlqPipelineFactoryFactory {
     /**
      * This queue is the input queue of a "traditional" ObjectStorageLoadPipeline
      *
-     * Effectively, a DLQ LoadPipeline is a custom pipeline step that may pass down records
-     * meant for the DLQ. The DLQ LoadPipeline upload to ObjectStorage leverages the usual object
-     * storage pipeline steps with the exception of the input.
+     * Effectively, a DLQ LoadPipeline is a custom pipeline step that may pass down records meant
+     * for the DLQ. The DLQ LoadPipeline upload to ObjectStorage leverages the usual object storage
+     * pipeline steps with the exception of the input.
      *
      * This Queue is the shim between the DlqLoaderStep and the ObjectStorage input.
      */
@@ -79,50 +78,51 @@ class DlqPipelineFactoryFactory {
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> =
         ResourceReservingPartitionedQueue(
-            globalMemoryManager,
-            0.2,
-            1,
-            1,
-            100000,
+            reservationManager = globalMemoryManager,
+            ratioOfTotalMemoryToReserve = 0.2,
+            numConsumers = 1,
+            numProducers = 1,
+            expectedResourceUsagePerUnit = 100000,
         )
 
     /**
      * This is the start of the "traditional" object storage pipeline. However, in order for the
      * updated pipeline to work, this recreates the ObjectLoaderPartFormatterStep but with the
-     * dlqInputQueue as in input instead of the actual input of the destination which is used by
-     * the DlqLoader in this case.
+     * dlqInputQueue as in input instead of the actual input of the destination which is used by the
+     * DlqLoader in this case.
      */
     @Named("dlqRecordFormatterStep")
     @Singleton
     fun <T : OutputStream> partFormatterStep(
         @Named("numInputPartitions") numInputPartitions: Int,
         partFormatter: ObjectLoaderPartFormatter<T>,
-        @Named("dlqInputQueue") inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        @Named("dlqInputQueue")
+        inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         @Named("objectLoaderPartQueue")
-        outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+        outputQueue:
+            PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
         taskFactory: LoadPipelineStepTaskFactory,
         flushStrategy: PipelineFlushStrategy,
     ): ObjectLoaderPartFormatterStep =
         ObjectLoaderPartFormatterStep(
-            numInputPartitions,
-            partFormatter,
-            inputQueue.asOrderedFlows(),
-            outputQueue,
-            taskFactory,
-            "record-part-formatter-step",
-            flushStrategy,
+            numWorkers = numInputPartitions,
+            partFormatter = partFormatter,
+            inputFlows = inputQueue.asOrderedFlows(),
+            outputQueue = outputQueue,
+            taskFactory = taskFactory,
+            stepId = "record-part-formatter-step",
+            flushStrategy = flushStrategy,
         )
 
-    /**
-     * References the traditional ObjectStorage pipeline steps.
-     */
+    /** References the traditional ObjectStorage pipeline steps. */
     @Named("dlqPipelineSteps")
     @Singleton
     fun <K : WithStream, T : RemoteObject<*>> dlqPipelineSteps(
         @Named("dlqRecordFormatterStep") formatterStep: ObjectLoaderPartFormatterStep,
         @Named("recordPartLoaderStep") loaderStep: ObjectLoaderPartLoaderStep<T>,
         @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
-    ): List<LoadPipelineStep> = listOf(
+    ): List<LoadPipelineStep> =
+        listOf(
             formatterStep,
             loaderStep,
             completerStep,

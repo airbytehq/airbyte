@@ -71,6 +71,7 @@ class DestinationTaskLauncherUTest {
             inputConsumerTask,
             heartbeatTask = mockk(relaxed = true),
             updateBatchTask = mockk(relaxed = true),
+            statsEmitter = mockk(relaxed = true),
             setupTaskFactory,
             openStreamTask,
             closeStreamTaskFactory,
@@ -80,7 +81,6 @@ class DestinationTaskLauncherUTest {
             failStreamTaskFactory,
             failSyncTaskFactory,
             openStreamQueue,
-            batchUpdateQueue,
             hasThrown = AtomicBoolean(false),
         )
     }

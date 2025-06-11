@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.dlq
 
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -9,6 +13,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 
 /**
  * Queue Adapter in order to be able to reuse existing ObjectStorage steps for the DeadLetterQueue.
@@ -18,7 +23,7 @@ import kotlinx.coroutines.flow.Flow
  */
 class FlattenQueueAdapter<K : WithStream>(
     private val queue: PartitionedQueue<PipelineEvent<K, DestinationRecordRaw>>,
-): PartitionedQueue<PipelineEvent<K, DlqStepOutput>> {
+) : PartitionedQueue<PipelineEvent<K, DlqStepOutput>> {
     override val partitions = queue.partitions
 
     override fun consume(partition: Int): Flow<PipelineEvent<K, DlqStepOutput>> {
@@ -33,7 +38,7 @@ class FlattenQueueAdapter<K : WithStream>(
 
     override suspend fun broadcast(value: PipelineEvent<K, DlqStepOutput>) {
         when (value) {
-            is PipelineMessage -> value.flatten().forEach { queue.broadcast(it) }
+            is PipelineMessage -> value.flatten().forEach { runBlocking { queue.broadcast(it) } }
             is PipelineHeartbeat -> queue.broadcast(PipelineHeartbeat())
             is PipelineEndOfStream -> queue.broadcast(PipelineEndOfStream(value.stream))
         }
@@ -41,16 +46,21 @@ class FlattenQueueAdapter<K : WithStream>(
 
     override suspend fun publish(value: PipelineEvent<K, DlqStepOutput>, partition: Int) {
         when (value) {
-            is PipelineMessage -> value.flatten().forEach { queue.publish(it, partition) }
+            is PipelineMessage ->
+                value.flatten().forEach { runBlocking { queue.publish(it, partition) } }
             is PipelineHeartbeat -> queue.publish(PipelineHeartbeat(), partition)
             is PipelineEndOfStream -> queue.publish(PipelineEndOfStream(value.stream), partition)
         }
     }
 
-    private fun PipelineMessage<K, DlqStepOutput>.flatten()
-    : Iterable<PipelineMessage<K, DestinationRecordRaw>> =
+    private fun PipelineMessage<K, DlqStepOutput>.flatten():
+        Iterable<PipelineMessage<K, DestinationRecordRaw>> =
         value.rejectedRecords?.let { failedRecords ->
             val lastIndex = failedRecords.size - 1
+            // In order to avoid duplicated counts, we push the checkpoint counts to the last
+            // record of the list.
+            // Same idea regarding the postProcessingCallback, to avoid having the callback called
+            // prematurely, we push it to the last record.
             return failedRecords.mapIndexed { index, destinationRecordRaw ->
                 if (index < lastIndex) {
                     PipelineMessage(
@@ -70,6 +80,6 @@ class FlattenQueueAdapter<K : WithStream>(
                     )
                 }
             }
-        } ?: emptyList()
-
+        }
+            ?: emptyList()
 }

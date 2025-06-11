@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -32,6 +31,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+// TODO merge this class into InputConsumerTaskTest.
+//   There are historical reasons that these are separate classes, but those
+//   reasons are no longer true.
 class InputConsumerTaskUTest {
     @MockK lateinit var catalog: DestinationCatalog
     @MockK lateinit var inputFlow: ReservingDeserializingInputFlow
@@ -80,12 +82,7 @@ class InputConsumerTaskUTest {
                         Reserved(
                             null,
                             0,
-                            DestinationRecord(
-                                stream = dstream,
-                                message = mockk(relaxed = true),
-                                schema = ObjectTypeWithoutSchema,
-                                0L
-                            )
+                            DestinationRecord(stream = dstream, message = mockk(relaxed = true), 0L)
                         )
                     )
                 )
