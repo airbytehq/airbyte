@@ -44,6 +44,9 @@ class ClickhouseDirectLoader(
     }
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        println("Inserting in: ${descriptor.namespace}.${descriptor.name}")
+
+
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)

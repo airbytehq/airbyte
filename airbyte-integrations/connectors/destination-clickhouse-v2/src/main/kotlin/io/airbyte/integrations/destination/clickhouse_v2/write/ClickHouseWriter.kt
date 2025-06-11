@@ -39,6 +39,7 @@ class ClickHouseWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
+        println("Stream loader for: ${stream}")
         val initialStatus = initialStatuses[stream]!!
         val tableNameInfo = names[stream]!!
         val realTableName = tableNameInfo.tableNames.finalTableName!!

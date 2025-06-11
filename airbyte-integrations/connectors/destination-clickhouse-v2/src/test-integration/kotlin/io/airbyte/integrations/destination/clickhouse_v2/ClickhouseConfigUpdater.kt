@@ -31,6 +31,11 @@ class ClickhouseConfigUpdater : ConfigurationUpdater {
     override fun setDefaultNamespace(
         config: String,
         defaultNamespace: String
-    ): DefaultNamespaceResult =
-        DefaultNamespaceResult(updatedConfig = config, actualDefaultNamespace = defaultNamespace)
+    ): DefaultNamespaceResult {
+        // We don't wan't to allow overriding the default namespace creation.
+        return DefaultNamespaceResult(
+            updatedConfig = config,
+            actualDefaultNamespace = "default"
+        )
+    }
 }

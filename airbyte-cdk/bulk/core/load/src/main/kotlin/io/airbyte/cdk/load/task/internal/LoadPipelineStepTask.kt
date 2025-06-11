@@ -92,6 +92,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             try {
                 when (input) {
                     is PipelineMessage -> {
+                        println("Input: $input")
                         if (stateStore.streamsEnded.contains(input.key.stream)) {
                             throw IllegalStateException(
                                 "$stepId[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."

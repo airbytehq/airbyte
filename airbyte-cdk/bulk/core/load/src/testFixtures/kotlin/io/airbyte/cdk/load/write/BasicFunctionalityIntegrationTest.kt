@@ -622,10 +622,14 @@ abstract class BasicFunctionalityIntegrationTest(
                 namespaceMapper = namespaceMapperForMedium()
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
+        println("stream1: $stream1")
         val stream2 = makeStream(randomizedNamespace + "_2")
+        println("stream2: $stream2")
         val streamWithDefaultNamespace = makeStream(null)
         val (configWithRandomizedDefaultNamespace, actualDefaultNamespace) =
             configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
+        println("configWithRandomizedDefaultNamespace: $configWithRandomizedDefaultNamespace")
+        println("actualDefaultNamespace: $actualDefaultNamespace")
         runSync(
             configWithRandomizedDefaultNamespace,
             DestinationCatalog(

@@ -12,26 +12,31 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
+import java.util.UUID
 
 // Unused but needed by another bean
 @Singleton
 class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration) :
     RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
+        // The raw table is not implemented by Clickhouse, in order to avoid fake table collision, we are passing a random UUID for the name
         TableName(
             config.resolvedDatabase,
-            "test_${streamDescriptor.name}",
+            UUID.randomUUID().toString(),
         )
 }
 
 @Singleton
 class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfiguration) :
     FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        println("Final table name generator called for: $streamDescriptor")
+
+        return TableName(
             namespace = streamDescriptor.namespace ?: config.resolvedDatabase,
             name = streamDescriptor.name,
         )
+    }
 }
 
 @Singleton

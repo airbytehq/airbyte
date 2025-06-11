@@ -419,65 +419,6 @@ class ClickhouseDirectLoadWriter :
      */
     @Disabled override fun testFunkyCharacters() {}
 
-    /**
-     * failing because of
-     *
-     * com.clickhouse.client.api.ServerException: Code: 60. DB::Exception: Table
-     * test20250609KJeX_2.test_stream_test20250609KJeX does not exist. Maybe you meant
-     * test20250609KJeX_2.test_stream_test20250609KJeX_4a4?. (UNKNOWN_TABLE) (version 25.5.2.47
-     * (official build))"} at
-     * com.clickhouse.client.api.internal.HttpAPIClientHelper.readError(HttpAPIClientHelper.java:371)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.internal.HttpAPIClientHelper.executeRequest(HttpAPIClientHelper.java:426)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.lambda$insert$8(Client.java:1600)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.runAsyncOperation(Client.java:2156)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.insert(Client.java:1643) ~[client-v2-0.8.6.jar:client-v2
-     * 0.8.6 (revision: 2d305b7)] at com.clickhouse.client.api.Client.insert(Client.java:1503)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.insert(Client.java:1446) ~[client-v2-0.8.6.jar:client-v2
-     * 0.8.6 (revision: 2d305b7)] at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.flush(ClickhouseDirectLoader.kt:75)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.finish(ClickhouseDirectLoader.kt:88)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:46)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:24)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.finishKeys(LoadPipelineStepTask.kt:278)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.access$finishKeys(LoadPipelineStepTask.kt:59)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:302)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-     * [kotlin-stdlib-2.1.10.jar:2.1.10-release-473] at
-     * kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     */
-    @Disabled override fun testNamespaces() {}
-
     @Disabled override fun testNoColumns() {}
 
     /**
@@ -681,6 +622,9 @@ class ClickhouseDataDumper(
         val client = getClient(config)
 
         val output = mutableListOf<OutputRecord>()
+
+        println("Config: $config")
+        println("getting: SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}")
 
         val response =
             client
