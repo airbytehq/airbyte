@@ -1,7 +1,7 @@
 # This workflow builds the documentation for the project using `poe` and `uv`.
 # It is redundant with the Vercel Preview deployment, but is runs unprivileged and
 # can be used on forks to verify the documentation build without deploying it.
-name: Docusaurus Build
+name: Docusaurus
 on:
   pull_request:
     types: [opened, synchronize, reopened]
