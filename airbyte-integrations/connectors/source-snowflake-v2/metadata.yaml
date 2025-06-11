@@ -1,0 +1,32 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 0
+  allowedHosts:
+    hosts:
+      - ${host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: d6b1d1a1-8b3a-4f2c-9e3a-1b2c3d4e5f6a
+  dockerImageTag: 0.4.0
+  dockerRepository: airbyte/source-snowflake
+  documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
+  githubIssueLabel: source-snowflake-v2
+  icon: icon.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 7200
+  name: Snowflake
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: certified
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+metadataSpecVersion: "1.0"
