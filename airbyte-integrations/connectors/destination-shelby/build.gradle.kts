@@ -9,7 +9,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-csv", "load-object-storage")
+    toolkits = listOf("load-csv", "load-dlq")
     cdk = "local"
 }
 
