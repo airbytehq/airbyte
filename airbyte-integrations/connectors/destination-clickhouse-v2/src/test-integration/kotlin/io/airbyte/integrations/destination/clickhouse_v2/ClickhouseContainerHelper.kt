@@ -17,6 +17,7 @@ object ClickhouseContainerHelper {
         }
     }
 
+    /** This method cleanly stop the test container if it is running. */
     fun stop() {
         synchronized(lock = container) {
             if (container.isRunning()) {
