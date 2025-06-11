@@ -47,9 +47,6 @@ class BigQueryCSVRowGenerator {
 
             val actualValue = value.abValue
             when (value.type) {
-                is BooleanType ->
-                    value.abValue =
-                        if ((actualValue as BooleanValue).value) LIMITS.TRUE else LIMITS.FALSE
                 is TimestampTypeWithTimezone ->
                     value.abValue = StringValue(formatTimestampWithTimezone(value))
                 is TimestampTypeWithoutTimezone ->
