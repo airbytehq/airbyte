@@ -36,6 +36,7 @@ abstract class FieldTypeMapperTest {
 
     abstract val configSpec: ConfigurationSpecification
     abstract val executor: TestDbExecutor
+    abstract val setupDdl: List<String>
     abstract val testCases: List<TestCase>
 
     private val allStreamNamesAndRecordData: Map<String, List<JsonNode>> by lazy {
@@ -53,20 +54,16 @@ abstract class FieldTypeMapperTest {
     @TestFactory
     @Timeout(300)
     fun tests(): Iterable<DynamicNode> {
-        for (testCase in testCases) {
-            for (stmt in testCase.dml) {
-                executor.executeUpdate(stmt)
-            }
+        log.info { "Executing setup DDL statements." }
+        for (stmt in setupDdl) {
+            executor.executeUpdate(stmt)
         }
-        ops = IntegrationTestOperations(configSpec)
-
+        log.info { "Executing insert DML statements." }
+        for (stmt in testCases.flatMap { case -> case.dml }) {
+            executor.executeUpdate(stmt)
+        }
         val actual =
-            DiscoverAndReadAll(
-                ops,
-                executor,
-                testCases.stream().flatMap { case -> case.dml.stream() }.toList(),
-                allStreamNamesAndRecordData
-            )
+            DiscoverAndReadAll(IntegrationTestOperations(configSpec), allStreamNamesAndRecordData)
         val discoverAndReadAllTest: DynamicNode =
             DynamicTest.dynamicTest("discover-and-read-all", actual)
         val testCases: List<DynamicNode> =
@@ -134,8 +131,6 @@ abstract class FieldTypeMapperTest {
 
     class DiscoverAndReadAll(
         private val ops: IntegrationTestOperations,
-        private val executor: TestDbExecutor,
-        private val dmlStatements: List<String>,
         private val allStreamNamesAndRecordData: Map<String, List<JsonNode>>,
     ) : Executable {
         private val log = KotlinLogging.logger {}
@@ -150,10 +145,6 @@ abstract class FieldTypeMapperTest {
         lateinit var jdbcMessagesByStream: Map<String, BufferingOutputConsumer>
 
         override fun execute() {
-            log.info { "Executing DML statements." }
-            for (stmt in dmlStatements) {
-                executor.executeUpdate(stmt)
-            }
             log.info { "Running JDBC DISCOVER operation." }
             jdbcStreams = ops.discover()
             jdbcConfiguredCatalog = configuredCatalog(jdbcStreams)
@@ -181,7 +172,7 @@ abstract class FieldTypeMapperTest {
                 ) {
                     configuredStream.syncMode = SyncMode.INCREMENTAL
                     // TODO: add support for sourceDefinedCursor
-                    // configuredStream.cursorField = listOf(...)
+                    //  configuredStream.cursorField = listOf(...)
                 } else {
                     configuredStream.syncMode = SyncMode.FULL_REFRESH
                 }
