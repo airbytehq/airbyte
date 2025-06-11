@@ -15,6 +15,8 @@ import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.flow
 
+private val logger = KotlinLogging.logger {}
+
 class MockRemoteObject(
     override val key: String,
     override val storageConfig: Int,
@@ -36,7 +38,7 @@ class MockObjectStreamingUpload(
     override suspend fun complete(): MockRemoteObject {
         updateRemoteStorage()
         return client.get(key).also {
-            KotlinLogging.logger {  }.error { "Completing $key\n${it.data.decodeToString()}" }
+            logger.info { "Writing $key to MockObjectStorage\n${it.data.decodeToString()}" }
         }
     }
 
@@ -75,7 +77,8 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
         return block(remoteObject.data.inputStream())
     }
 
-    fun get(key: String): MockRemoteObject = objects[key] ?: throw IllegalArgumentException("Object $key not found")
+    fun get(key: String): MockRemoteObject =
+        objects[key] ?: throw IllegalArgumentException("Object $key not found")
 
     override suspend fun getMetadata(key: String): Map<String, String> {
         return objects[key]?.metadata ?: emptyMap()
@@ -98,7 +101,5 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
     override suspend fun startStreamingUpload(
         key: String,
         metadata: Map<String, String>
-    ): StreamingUpload<MockRemoteObject> {
-        return MockObjectStreamingUpload(this, key, metadata)
-    }
+    ): StreamingUpload<MockRemoteObject> = MockObjectStreamingUpload(this, key, metadata)
 }
