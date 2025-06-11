@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
@@ -285,25 +285,38 @@ abstract class IntegrationTest(
         }
     }
 
+    enum class UncleanSyncEndBehavior {
+        /**
+         * End the sync normally (i.e. by closing stdin), but don't send a COMPLETE status message.
+         */
+        TERMINATE_WITH_NO_STREAM_STATUS,
+
+        // TODO no test actually uses this right now, should we just remove it?
+        UNPARSEABLE_MESSAGE,
+
+        /** Forcibly kill the sync. */
+        KILL,
+    }
+
     /**
      * Run a sync until it acknowledges the given state message, then kill the sync. This method is
      * useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
      * behaviors.
      *
-     * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
-     * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
+     * A common pattern is to call [runSyncUntilStateAckAndExpectFailure], and then call
+     * `dumpAndDiffRecords(..., allowUnexpectedRecord = true)` to verify that [records] were written
+     * to the destination.
      *
      * This forces the connector to run with microbatching enabled - without that option, tests
      * using this method would take significantly longer, because they would need to push 100MB
      * (ish) to the destination before it would ack a state message.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun runSyncUntilStateAck(
+    fun runSyncUntilStateAckAndExpectFailure(
         configContents: String,
         stream: DestinationStream,
         records: List<InputRecord>,
         inputStateMessage: StreamCheckpoint,
-        allowGracefulShutdown: Boolean,
+        syncEndBehavior: UncleanSyncEndBehavior,
         useFileTransfer: Boolean = false,
     ): AirbyteStateMessage {
         val destination =
@@ -342,28 +355,29 @@ abstract class IntegrationTest(
                             .withEmittedAt(System.currentTimeMillis().toDouble())
                     )
 
-            val deferred = async {
-                val outputStateMessage: AirbyteStateMessage
-                while (true) {
-                    destination.sendMessage(InputMessageOther(noopTraceMessage), false)
-                    val returnedMessages = destination.readMessages()
-                    if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
-                        outputStateMessage =
-                            returnedMessages
-                                .filter { it.type == AirbyteMessage.Type.STATE }
-                                .map { it.state }
-                                .first()
-                        break
-                    }
+            val outputStateMessage: AirbyteStateMessage
+            while (true) {
+                destination.sendMessage(InputMessageOther(noopTraceMessage), false)
+                val returnedMessages = destination.readMessages()
+                if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
+                    outputStateMessage =
+                        returnedMessages
+                            .filter { it.type == AirbyteMessage.Type.STATE }
+                            .map { it.state }
+                            .first()
+                    break
                 }
-                outputStateMessage
+                // don't just spam the input stream, give the destination time to actually
+                // process the messages we're pushing into it
+                delay(1)
             }
-            val outputStateMessage = deferred.await()
-            if (allowGracefulShutdown) {
-                destination.sendMessage("{\"unparseable")
-                destination.shutdown()
-            } else {
-                destination.kill()
+            when (syncEndBehavior) {
+                UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
+                UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
+                    destination.sendMessage("{\"unparseable")
+                    destination.shutdown()
+                }
+                UncleanSyncEndBehavior.KILL -> destination.kill()
             }
 
             outputStateMessage
