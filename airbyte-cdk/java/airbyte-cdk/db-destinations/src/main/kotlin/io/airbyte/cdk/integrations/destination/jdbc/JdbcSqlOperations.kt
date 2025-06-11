@@ -19,8 +19,6 @@ import java.time.Instant
 import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 abstract class JdbcSqlOperations : SqlOperations {
     protected val schemaSet: MutableSet<String> = HashSet()

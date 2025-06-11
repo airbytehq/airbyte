@@ -269,13 +269,12 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                 JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
             )
         var batchSize = 5000
-        if(records.size < 5000) {
+        if (records.size < 5000) {
             batchSize = records.size
         }
         database.execute { con ->
             try {
-                con.prepareStatement(insertQueryComponent).use {
-                    stmt ->
+                con.prepareStatement(insertQueryComponent).use { stmt ->
                     stmt.queryTimeout = 600 // 10 minutes max wait
                     con.autoCommit = false
                     var batchCount = 0
@@ -299,9 +298,12 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                         )
                         val emittedAt = record.record?.emittedAt
 
-                        val extractedAt: Timestamp? = emittedAt?.let {
-                            Timestamp.from(Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toInstant())
-                        }
+                        val extractedAt: Timestamp? =
+                            emittedAt?.let {
+                                Timestamp.from(
+                                    Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toInstant()
+                                )
+                            }
                         stmt.setTimestamp(++i, extractedAt)
                         stmt.setString(++i, airbyteMeta)
                         stmt.setLong(++i, generationId)
