@@ -490,13 +490,6 @@ class ClickhouseDirectLoadWriter :
 
     /** Need to go back to that. */
     @Disabled override fun testUnions() {}
-    @Disabled override fun testNoColumns() {}
-    @Disabled override fun testMidSyncCheckpointingStreamState() {}
-    @Disabled override fun testNamespaceMappingCustomFormatNoMacroWithPrefix() {}
-    @Disabled override fun testNamespaceMappingCustomFormatNoPrefix() {}
-    @Disabled override fun testNamespaceMappingSourceWithPrefix() {}
-    @Disabled override fun testNamespaceMappingDestinationWithPrefix() {}
-    @Disabled override fun testNamespaceMappingDestinationNoPrefix() {}
 
     /**
      * failing because of
