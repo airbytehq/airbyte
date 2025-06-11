@@ -47,16 +47,6 @@ class ClickhouseDirectLoadWriter :
         dataDumper =
             ClickhouseDataDumper { spec ->
                 val configOverrides = mutableMapOf<String, String>()
-                // ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port",
-                // it.toString()) }
-                // if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
-                //     ClickhouseContainerHelper.getPort()?.let { configOverrides.put("port",
-                // it.toString()) }
-                // } else {
-                //     ClickhouseContainerHelper.getIpAddress()
-                //         ?.let { configOverrides.put("hostname", it) }
-                // }
-
                 ClickhouseConfigurationFactory()
                     .makeWithOverrides(spec as ClickhouseSpecification, configOverrides)
             },
@@ -66,7 +56,7 @@ class ClickhouseDirectLoadWriter :
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        unionBehavior = UnionBehavior.STRINGIFY,
+        unionBehavior = UnionBehavior.STRICT_STRINGIFY,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = true,
@@ -487,9 +477,6 @@ class ClickhouseDirectLoadWriter :
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
     @Disabled override fun testNamespaces() {}
-
-    /** Need to go back to that. */
-    @Disabled override fun testUnions() {}
 
     /**
      * failing because of
