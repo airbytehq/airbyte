@@ -31,6 +31,11 @@ object EnvVarConstants {
             "airbyte.destination.core.record-batch-size-override",
             "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE",
         )
+    val DATA_CHANNEL_FORMAT =
+        Property(
+            "airbyte.destination.core.data-channel.format",
+            "DATA_CHANNEL_FORMAT",
+        )
     val DATA_CHANNEL_MEDIUM =
         Property(
             "airbyte.destination.core.data-channel.medium",
@@ -40,5 +45,10 @@ object EnvVarConstants {
         Property(
             "airbyte.destination.core.data-channel.socket-paths",
             "DATA_CHANNEL_SOCKET_PATHS",
+        )
+    val NAMESPACE_MAPPER_CONFIG_PATH =
+        Property(
+            "airbyte.destination.core.mappers.namespace-mapping-config-path",
+            "NAMESPACE_MAPPING_CONFIG_PATH",
         )
 }

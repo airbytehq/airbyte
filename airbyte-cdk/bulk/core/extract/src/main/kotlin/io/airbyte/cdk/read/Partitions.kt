@@ -3,6 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
+import java.util.function.Supplier
 
 /**
  * [PartitionsCreatorFactory] must be implemented by each source connector and serves as the
@@ -23,6 +24,12 @@ interface PartitionsCreatorFactory {
      */
     fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator?
 }
+
+/**
+ * Interface to allow each toolkit to return the active [PartitionsCreatorFactory] class For
+ * [ReadOperation] to be able to iterator on active factories only.
+ */
+interface PartitionsCreatorFactorySupplier<T : PartitionsCreatorFactory> : Supplier<T>
 
 /**
  * A [PartitionsCreator] breaks down a [Feed] (a stream, or some global data feed) into zero, one or
