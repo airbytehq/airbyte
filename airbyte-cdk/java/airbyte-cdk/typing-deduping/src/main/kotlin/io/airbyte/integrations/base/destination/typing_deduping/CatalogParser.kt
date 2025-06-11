@@ -68,6 +68,7 @@ constructor(
                 val originalName = stream.stream.name
 
                 LOGGER.info { "Detected table name collision for $originalNamespace.$originalName" }
+
                 // ... this logic is ported from legacy normalization, and maybe should change?
                 // We're taking a hash of the quoted namespace and the unquoted stream name
                 val hash =
