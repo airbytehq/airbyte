@@ -1,22 +1,14 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
-
 package io.airbyte.integrations.sourceTesting
 
-import io.airbyte.cdk.jdbc.JdbcFieldType
+abstract class SqlDialect : QueryDialect {
 
-interface SqlDialect {
-    fun buildCreateNamespaceQuery(namespace: String): String
-
-    fun buildCreateTableQuery(tableDefinition: TableDefinition): String
-
-    fun buildDropNamespaceQuery(namespace: String): String
-
-    fun buildDropTableQuery(
+    override fun buildDropTableQuery(
         namespace: String,
         tableName: String,
     ): String = "DROP TABLE ${getFullyQualifiedName(namespace, tableName)}"
 
-    fun buildInsertQuery(
+    override fun buildInsertQuery(
         tableDefinition: TableDefinition,
         data: Map<String, Any?>,
     ): String {
@@ -26,7 +18,7 @@ interface SqlDialect {
         return "INSERT INTO ${getFullyQualifiedName(tableDefinition)} ($columns) VALUES ($values)"
     }
 
-    fun buildDeleteQuery(
+    override fun buildDeleteQuery(
         tableDefinition: TableDefinition,
         condition: String?,
     ): String {
@@ -34,23 +26,7 @@ interface SqlDialect {
         return "DELETE FROM ${getFullyQualifiedName(tableDefinition)} $whereClause"
     }
 
-    fun mapColumnTypeToSql(
-        type: ColumnType,
-        length: Int = 0,
-        precision: Int = 0,
-        scale: Int = 0,
-    ): String
-
-    fun setupTypeDdl(
-        type: ColumnType,
-        length: Int = 0,
-        precision: Int = 0,
-        scale: Int = 0,
-    ): List<String> = listOf()
-
-    fun escapeIdentifier(identifier: String): String
-
-    fun formatValue(value: Any?): String =
+    override fun formatValue(value: Any?): String =
         when (value) {
             null -> "NULL"
             is Number -> value.toString()
@@ -58,37 +34,9 @@ interface SqlDialect {
             else -> "'${value.toString().replace("'", "''")}'"
         }
 
-    fun getFullyQualifiedName(td: TableDefinition): String =
+    override fun getFullyQualifiedName(td: TableDefinition): String =
         getFullyQualifiedName(td.namespace, td.tableName)
 
-    fun getFullyQualifiedName(namespace: String, tableName: String): String =
+    override fun getFullyQualifiedName(namespace: String, tableName: String): String =
         "${escapeIdentifier(namespace)}.${escapeIdentifier(tableName)}"
-}
-
-data class TableDefinition(
-    val namespace: String,
-    val tableName: String,
-    val columns: List<ColumnDefinition>,
-    val tableOptions: String = "",
-)
-
-data class ColumnDefinition(
-    val name: String,
-    val type: ColumnType,
-    val jdbcType: JdbcFieldType<*>,
-    val length: Int = 0,
-    val precision: Int = 0,
-    val scale: Int = 0,
-    val isNullable: Boolean = true,
-    val isPrimaryKey: Boolean = false,
-    val defaultValue: String? = null,
-)
-
-enum class ColumnType {
-    INTEGER,
-    BIGINT,
-    VARCHAR,
-    DATE,
-    TIME,
-    TIMESTAMP,
 }
