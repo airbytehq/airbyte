@@ -18,7 +18,6 @@ from source_bing_ads.bulk_streams import (
     CampaignLabels,
     KeywordLabels,
     Keywords,
-    Labels,
 )
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
@@ -38,10 +37,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     AdGroupPerformanceReportHourly,
     AdGroupPerformanceReportMonthly,
     AdGroupPerformanceReportWeekly,
-    AgeGenderAudienceReportDaily,
-    AgeGenderAudienceReportHourly,
-    AgeGenderAudienceReportMonthly,
-    AgeGenderAudienceReportWeekly,
     AudiencePerformanceReportDaily,
     AudiencePerformanceReportHourly,
     AudiencePerformanceReportMonthly,
@@ -167,9 +162,7 @@ class SourceBingAds(YamlDeclarativeSource):
         ]
 
         reports = (
-            "AgeGenderAudienceReport",
             "AccountImpressionPerformanceReport",
-            # "AccountPerformanceReport",
             "AudiencePerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",

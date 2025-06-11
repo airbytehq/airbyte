@@ -1133,6 +1133,293 @@ definitions:
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
 
+  ## Age Gender Audience Reports
+  # TODO: streams above potentially also can share base stream logic, to check and update if so.
+  report_base_stream:
+    type: DeclarativeStream
+    #    set report_aggregation in parameters, for example,
+    #    $parameters:
+    #      report_aggregation: Monthly
+    #      report_columns: [list of columns]
+    #      report_name: AgeGenderAudienceReport
+    #      report_type: AgeGenderAudienceReportRequest
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/age_gender_audience_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      record_selector:
+        $ref: "#/definitions/basic_async_retriever/record_selector"
+        schema_normalization: Default
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: "{{ parameters['report_name'] }}"
+            ReturnOnlyCompleteData: false
+            Type: "{{ parameters['report_type'] }}"
+            Aggregation: "{{ parameters['report_aggregation'] }}"
+            Columns: "{{ parameters['report_columns'] }}"
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+
+  age_gender_audience_report_daily_stream:
+    $ref: "#/definitions/report_base_stream"
+    name: age_gender_audience_report_daily
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
+    $parameters:
+      report_aggregation: Daily
+      report_name: AgeGenderAudienceReport
+      report_type: AgeGenderAudienceReportRequest
+      report_columns:
+        - AccountName
+        - AccountNumber
+        - AccountId
+        - TimePeriod
+        - CampaignName
+        - CampaignId
+        - AdGroupName
+        - AdGroupId
+        - AdDistribution
+        - AgeGroup
+        - Gender
+        - Impressions
+        - Clicks
+        - Conversions
+        - Spend
+        - Revenue
+        - ExtendedCost
+        - Assists
+        - Language
+        - AccountStatus
+        - CampaignStatus
+        - AdGroupStatus
+        - BaseCampaignId
+        - AllConversions
+        - AllRevenue
+        - ViewThroughConversions
+        - Goal
+        - GoalType
+        - AbsoluteTopImpressionRatePercent
+        - TopImpressionRatePercent
+        - ConversionsQualified
+        - AllConversionsQualified
+        - ViewThroughConversionsQualified
+        - ViewThroughRevenue
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+
+  age_gender_audience_report_hourly_stream:
+    $ref: "#/definitions/report_base_stream"
+    name: age_gender_audience_report_hourly
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
+    $parameters:
+      report_aggregation: Hourly
+      report_name: AgeGenderAudienceReport
+      report_type: AgeGenderAudienceReportRequest
+      report_columns:
+        - AccountName
+        - AccountNumber
+        - AccountId
+        - TimePeriod
+        - CampaignName
+        - CampaignId
+        - AdGroupName
+        - AdGroupId
+        - AdDistribution
+        - AgeGroup
+        - Gender
+        - Impressions
+        - Clicks
+        - Conversions
+        - Spend
+        - Revenue
+        - ExtendedCost
+        - Assists
+        - Language
+        - AccountStatus
+        - CampaignStatus
+        - AdGroupStatus
+        - BaseCampaignId
+        - AllConversions
+        - AllRevenue
+        - ViewThroughConversions
+        - Goal
+        - GoalType
+        - AbsoluteTopImpressionRatePercent
+        - TopImpressionRatePercent
+        - ConversionsQualified
+        - AllConversionsQualified
+        - ViewThroughConversionsQualified
+        - ViewThroughRevenue
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/age_gender_audience_report_hourly"
+    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/hourly_report_transformations"
+
+  age_gender_audience_report_weekly_stream:
+    $ref: "#/definitions/report_base_stream"
+    name: age_gender_audience_report_weekly
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
+    $parameters:
+      report_aggregation: Weekly
+      report_name: AgeGenderAudienceReport
+      report_type: AgeGenderAudienceReportRequest
+      report_columns:
+        - AccountName
+        - AccountNumber
+        - AccountId
+        - TimePeriod
+        - CampaignName
+        - CampaignId
+        - AdGroupName
+        - AdGroupId
+        - AdDistribution
+        - AgeGroup
+        - Gender
+        - Impressions
+        - Clicks
+        - Conversions
+        - Spend
+        - Revenue
+        - ExtendedCost
+        - Assists
+        - Language
+        - AccountStatus
+        - CampaignStatus
+        - AdGroupStatus
+        - BaseCampaignId
+        - AllConversions
+        - AllRevenue
+        - ViewThroughConversions
+        - Goal
+        - GoalType
+        - AbsoluteTopImpressionRatePercent
+        - TopImpressionRatePercent
+        - ConversionsQualified
+        - AllConversionsQualified
+        - ViewThroughConversionsQualified
+        - ViewThroughRevenue
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+
+  age_gender_audience_report_monthly_stream:
+    $ref: "#/definitions/report_base_stream"
+    name: age_gender_audience_report_monthly
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
+    $parameters:
+      report_aggregation: Monthly
+      report_name: AgeGenderAudienceReport
+      report_type: AgeGenderAudienceReportRequest
+      report_columns:
+        - AccountName
+        - AccountNumber
+        - AccountId
+        - TimePeriod
+        - CampaignName
+        - CampaignId
+        - AdGroupName
+        - AdGroupId
+        - AdDistribution
+        - AgeGroup
+        - Gender
+        - Impressions
+        - Clicks
+        - Conversions
+        - Spend
+        - Revenue
+        - ExtendedCost
+        - Assists
+        - Language
+        - AccountStatus
+        - CampaignStatus
+        - AdGroupStatus
+        - BaseCampaignId
+        - AllConversions
+        - AllRevenue
+        - ViewThroughConversions
+        - Goal
+        - GoalType
+        - AbsoluteTopImpressionRatePercent
+        - TopImpressionRatePercent
+        - ConversionsQualified
+        - AllConversionsQualified
+        - ViewThroughConversionsQualified
+        - ViewThroughRevenue
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/age_gander_audience_report_transformations"
+
+
   ## Campaign Performance Report Streams
 
   campaign_performance_report_stream_primary_key:
@@ -1923,6 +2210,48 @@ definitions:
           {% set v = record.get('TopImpressionRatePercent') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
+    age_gander_audience_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Goal
+        value: "{{ none if record.get('Goal') == '' else record.get('Goal') }}"
+      - type: AddedFieldDefinition
+        path:
+          - GoalType
+        value: "{{ none if record.get('GoalType') == '' else record.get('GoalType') }}"
+      - type: AddedFieldDefinition
+        path:
+          - ViewThroughConversionsQualified
+        value: "{{ none if record.get('ViewThroughConversionsQualified') == '' else record.get('ViewThroughConversionsQualified') }}"
+    hourly_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - TimePeriod
+        # Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+        # Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+        value: |
+          {%- set parts = record.TimePeriod.split('|') -%}
+          {%- set time_period = record.TimePeriod -%}
+          {%- set date_part = '' -%}
+          {%- set hour_part = 0 -%}
+          {%- if parts|length > 1 -%}
+            {%- set date_part = parts[0] -%}
+            {%- set hour_part = parts[1]|int -%}
+            {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
+          {%- endif -%}
+          {{ time_period }}
     # used in hourly report streams to convert date-time format
     hourly_stream_timestamp_transformation:
       - type: AddedFieldDefinition
@@ -2089,6 +2418,10 @@ streams:
   - $ref: "#/definitions/campaign_performance_report_weekly_stream"
   - $ref: "#/definitions/campaign_performance_report_monthly_stream"
   - $ref: "#/definitions/labels_stream"
+  - $ref: "#/definitions/age_gender_audience_report_daily_stream"
+  - $ref: "#/definitions/age_gender_audience_report_hourly_stream"
+  - $ref: "#/definitions/age_gender_audience_report_weekly_stream"
+  - $ref: "#/definitions/age_gender_audience_report_monthly_stream"
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
@@ -3509,6 +3842,371 @@ schemas:
         type:
           - "null"
           - string
+  age_gender_audience_report:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The ID of the Bing Ads account.
+        type:
+          - "null"
+          - integer
+      AgeGroup:
+        description: The age group of the audience targeted by the ad campaign.
+        type:
+          - "null"
+          - string
+      Gender:
+        description: The gender of the audience targeted by the ad campaign.
+        type:
+          - "null"
+          - string
+      TimePeriod:
+        description: The time period for which the data is reported.
+        type:
+          - "null"
+          - string
+        format: date
+      AllConversions:
+        description: The total number of conversions.
+        type:
+          - "null"
+          - integer
+      AccountName:
+        description: The name of the Bing Ads account.
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number associated with the Bing Ads account.
+        type:
+          - "null"
+          - string
+      CampaignName:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      CampaignId:
+        description: The ID of the campaign.
+        type:
+          - "null"
+          - integer
+      AdGroupName:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      AdGroupId:
+        description: The ID of the ad group.
+        type:
+          - "null"
+          - integer
+      AdDistribution:
+        description: The type of ad distribution, such as search or content network.
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The number of times the ad was displayed.
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The number of clicks on the ad.
+        type:
+          - "null"
+          - integer
+      Conversions:
+        description: The number of conversions.
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total amount spent on the ad campaign.
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue generated from conversions.
+        type:
+          - "null"
+          - number
+      ExtendedCost:
+        description: The total cost extended due to possible monthly budget overspend.
+        type:
+          - "null"
+          - number
+      Assists:
+        description: The number of assists that contributed to conversions.
+        type:
+          - "null"
+          - integer
+      Language:
+        description: The language used in targeting the audience.
+        type:
+          - "null"
+          - string
+      AccountStatus:
+        description: The status of the Bing Ads account.
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      AdGroupStatus:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      BaseCampaignId:
+        description: The ID of the base campaign.
+        type:
+          - "null"
+          - string
+      AllRevenue:
+        description: The total revenue generated from all conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughConversions:
+        description: The number of view-through conversions.
+        type:
+          - "null"
+          - integer
+      Goal:
+        description: The goal set for the ad campaign.
+        type:
+          - "null"
+          - string
+      GoalType:
+        description: The type of goal set for the ad campaign.
+        type:
+          - "null"
+          - string
+      AbsoluteTopImpressionRatePercent:
+        description:
+          The percentage of times your ad was shown at the absolute top of the
+          search results page.
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description: The percentage of times your ad was shown above organic search results.
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The number of qualified conversions.
+        type:
+          - "null"
+          - number
+      AllConversionsQualified:
+        description: The total number of qualified conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughConversionsQualified:
+        description: The number of qualified view-through conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughRevenue:
+        description: The total revenue generated from view-through conversions.
+        type:
+          - "null"
+          - number
+  age_gender_audience_report_hourly:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The unique identifier of the account to which the data belongs.
+        type:
+          - "null"
+          - integer
+      AgeGroup:
+        description: The age group of the audience targeted by the campaign.
+        type:
+          - "null"
+          - string
+      Gender:
+        description: The gender of the audience targeted by the campaign.
+        type:
+          - "null"
+          - string
+      TimePeriod:
+        description: The specific date and time period for the collected data.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      AllConversions:
+        description: Total number of all types of conversions.
+        type:
+          - "null"
+          - integer
+      AccountName:
+        description: The name of the account to which the data belongs.
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number associated with the account.
+        type:
+          - "null"
+          - string
+      CampaignName:
+        description: The name of the campaign to which the data belongs.
+        type:
+          - "null"
+          - string
+      CampaignId:
+        description: The unique identifier of the campaign to which the data belongs.
+        type:
+          - "null"
+          - integer
+      AdGroupName:
+        description: The name of the ad group to which the data belongs.
+        type:
+          - "null"
+          - string
+      AdGroupId:
+        description: The unique identifier of the ad group to which the data belongs.
+        type:
+          - "null"
+          - integer
+      AdDistribution:
+        description:
+          The distribution network where the ad was displayed (search, display,
+          etc.).
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of times the ad was displayed to users.
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of times the ad was clicked on.
+        type:
+          - "null"
+          - integer
+      Conversions:
+        description: The total number of conversions generated by the ad.
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total amount spent on running the ad campaign.
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue generated by the ad campaign.
+        type:
+          - "null"
+          - number
+      ExtendedCost:
+        description:
+          The total cost of running the ad campaign including all associated
+          costs.
+        type:
+          - "null"
+          - number
+      Assists:
+        description:
+          The number of times this ad appeared in a conversion path but was not
+          the last click before the conversion.
+        type:
+          - "null"
+          - integer
+      Language:
+        description: The language targeting setting for the campaign.
+        type:
+          - "null"
+          - string
+      AccountStatus:
+        description: The status of the account (active, paused, etc.).
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign (active, paused, etc.).
+        type:
+          - "null"
+          - string
+      AdGroupStatus:
+        description: The status of the ad group (active, paused, etc.).
+        type:
+          - "null"
+          - string
+      BaseCampaignId:
+        description: The unique identifier of the base campaign to which the data belongs.
+        type:
+          - "null"
+          - string
+      AllRevenue:
+        description: Total revenue generated from all types of conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughConversions:
+        description:
+          The number of times users saw but did not interact with this ad and
+          later converted.
+        type:
+          - "null"
+          - integer
+      Goal:
+        description: The objective or goal set for the campaign.
+        type:
+          - "null"
+          - string
+      GoalType:
+        description: The type of goal set for the campaign (e.g., clicks, conversions).
+        type:
+          - "null"
+          - string
+      AbsoluteTopImpressionRatePercent:
+        description:
+          The percentage of times that your ad is shown at the top of the page,
+          above the organic search results.
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description:
+          The percentage of times that your ad is shown at the top of the search
+          results.
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The total number of conversions that meet specified criteria.
+        type:
+          - "null"
+          - number
+      AllConversionsQualified:
+        description: Total number of all types of conversions that meet specified criteria.
+        type:
+          - "null"
+          - number
+      ViewThroughConversionsQualified:
+        description: The number of view-through conversions that meet specified criteria.
+        type:
+          - "null"
+          - number
+      ViewThroughRevenue:
+        description: The revenue generated from view-through conversions.
+        type:
+          - "null"
+          - number
   campaign_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
