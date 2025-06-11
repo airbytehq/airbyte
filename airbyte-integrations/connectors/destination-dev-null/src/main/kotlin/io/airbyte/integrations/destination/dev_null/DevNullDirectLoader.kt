@@ -20,7 +20,7 @@ abstract class DevNullDirectLoader(
 
     abstract fun acceptInner(record: DestinationRecordRaw)
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         acceptInner(record)
         return if (++recordCount % config.ackRatePerRecord == 0L) {
             DirectLoader.Complete
@@ -29,7 +29,7 @@ abstract class DevNullDirectLoader(
         }
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         /* do nothing */
     }
 
