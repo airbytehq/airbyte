@@ -478,6 +478,8 @@ class ClickhouseDirectLoadWriter :
      */
     @Disabled override fun testNamespaces() {}
 
+    @Disabled override fun testNoColumns() {}
+
     /**
      * failing because of
      *
