@@ -68,6 +68,22 @@
                 "title": "User-Agent",
                 "default": false,
                 "description": "Add User-Agent to request"
+              },
+              "proxy_url": {
+                "type": "string",
+                "title": "HTTP Proxy URL",
+                "description": "HTTP/HTTPS proxy URL for accessing remote files. Format: http://proxy-host:port or https://proxy-host:port",
+                "examples": [
+                  "http://proxy.company.com:8080",
+                  "https://secure-proxy.company.com:3128"
+                ]
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "Custom CA Certificate",
+                "description": "Custom CA certificate for HTTPS verification. Provide the full certificate in PEM format.",
+                "airbyte_secret": true,
+                "multiline": true
               }
             }
           },
