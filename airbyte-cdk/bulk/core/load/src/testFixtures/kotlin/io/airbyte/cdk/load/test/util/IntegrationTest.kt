@@ -23,7 +23,7 @@ import io.airbyte.cdk.load.message.InputStreamComplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
-import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
+import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestination
 import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -332,13 +332,16 @@ abstract class IntegrationTest(
             )
         return runBlocking(Dispatchers.IO) {
             launch {
-                // expect an exception. we're sending a stream incomplete or killing the
-                // destination, so it's expected to crash
-                // TODO: This is a hack, not sure what's going on
-                if (destination is NonDockerizedDestination) {
-                    assertThrows<DestinationUncleanExitException> { destination.run() }
-                } else {
+                if (
+                    destination is DockerizedDestination &&
+                        syncEndBehavior != UncleanSyncEndBehavior.KILL
+                ) {
+                    // when you kill a docker process, it doesn't exit uncleanly apparently
                     destination.run()
+                } else {
+                    // expect an exception. we're sending a stream incomplete or killing the
+                    // destination, so it's expected to crash
+                    assertThrows<DestinationUncleanExitException> { destination.run() }
                 }
             }
             records.forEach { destination.sendMessage(it) }
