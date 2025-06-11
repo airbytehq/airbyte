@@ -26,6 +26,10 @@ abstract class SqlDialect : QueryDialect {
         return "DELETE FROM ${getFullyQualifiedName(tableDefinition)} $whereClause"
     }
 
+    override fun buildCreateNamespaceQuery(namespace: String): String = "CREATE SCHEMA $namespace"
+
+    override fun buildDropNamespaceQuery(namespace: String): String = "DROP SCHEMA $namespace"
+
     override fun formatValue(value: Any?): String =
         when (value) {
             null -> "NULL"
