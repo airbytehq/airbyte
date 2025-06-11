@@ -5,6 +5,7 @@ import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.message.InputRecord
@@ -56,8 +57,11 @@ class ShelbyWriterTest(
 ) : BasicFunctionalityIntegrationTest(
     configContents = """{
         |"format":{"format_type":"CSV","flattening":"Root level flattening"},
+        |"path_pattern":"my-own-crap-path",
+        |"file_name_pattern":"{sync_id}-{part_number}-{date}{format_extension}",
+        |"s3_path_format":"${'$'}{NAMESPACE}/${'$'}{STREAM_NAME}/",
         |"s3_bucket_name":"yolo",
-        |"s3_bucket_path":"yoloo",
+        |"s3_bucket_path":"destination-shelby",
         |"s3_bucket_region":"us-west-1"
         |}""".trimMargin(),
     configSpecClass = ShelbySpecification::class.java,
@@ -77,9 +81,8 @@ class ShelbyWriterTest(
     additionalMicronautEnvs = ShelbyDestination.additionalMicronautEnvs,
 ) {
 
-    fun record(id: Int) = InputRecord(
-        namespace = randomizedNamespace,
-        name = "test_stream",
+    fun record(stream: DestinationStream, id: Int) = InputRecord(
+        stream = stream,
         data = """{"id": $id, "text": "let's make this a bigger to have things sliced"}""",
         emittedAtMs = 1234,
         changes = mutableListOf()
@@ -89,30 +92,34 @@ class ShelbyWriterTest(
     fun testActivationWrite() {
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+//                unmappedNamespace = randomizedNamespace,
+                unmappedNamespace = null,
+                unmappedName = "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType, "text" to stringType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = NamespaceMapper(),
             )
         val messages =
             runSync(
                 updatedConfig,
                 stream,
                 listOf(
-                    record(1),
-                    record(2),
-                    record(3),
-                    record(4),
-                    record(5),
-                    record(6),
-                    record(7),
+                    record(stream, 1),
+                    record(stream, 2),
+                    record(stream, 3),
+                    record(stream, 4),
+                    record(stream, 5),
+                    record(stream, 6),
+                    record(stream, 7),
                     InputStreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 7,
+                        StreamCheckpoint(
+                            stream = stream,
+                            blob = """{"foo": "bar"}""",
+                            sourceRecordCount = 7,
+                        )
                     )
                 ),
             )
@@ -127,8 +134,7 @@ class ShelbyWriterTest(
                 )
                 assertEquals(
                     StreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
+                        stream = stream,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 7,
                         destinationRecordCount = 7,

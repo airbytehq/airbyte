@@ -32,7 +32,7 @@ class ShelbyState(private val schema: ObjectType) : AutoCloseable {
     fun flush(): List<DestinationRecordRaw>? {
         logger.error { "-------- Sending data!" }
         logger.warn { "\n${outputStream}" }
-        return null
+        return records
     }
 
     override fun close() {}
