@@ -12,8 +12,8 @@ abstract class TestAssetCleaner(clock: Clock) : AutoCloseable {
 
     /**
      * Cleans up old test assets from previous test runs. This might include tables, schemas, or
-     * other database objects that follow a specific naming pattern used by tests and have
-     * timestamps before the current time.
+     * other database objects that follow a specific naming pattern used by tests and have old
+     * timestamps.
      */
     abstract fun cleanupOldTestAssets()
 
