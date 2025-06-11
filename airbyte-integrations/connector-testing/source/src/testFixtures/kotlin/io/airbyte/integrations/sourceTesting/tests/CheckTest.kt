@@ -2,7 +2,6 @@
 package io.airbyte.integrations.sourceTesting.tests
 
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.integrations.sourceTesting.IntegrationTestOperations
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicNode
@@ -27,6 +26,5 @@ abstract class CheckTest {
     data class TestCase(
         val name: String,
         val configSpec: ConfigurationSpecification,
-        val jdbcConfig: JdbcSourceConfiguration
     )
 }
