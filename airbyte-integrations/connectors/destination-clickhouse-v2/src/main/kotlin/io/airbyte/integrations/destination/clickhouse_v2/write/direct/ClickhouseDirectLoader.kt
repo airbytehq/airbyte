@@ -41,22 +41,25 @@ class ClickhouseDirectLoader(
     }
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        // TODO: validate and coerce data if necessary
+        val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
+        meta.put(CDKConstants.AIRBYTE_META_SYNC_ID_KEY, record.stream.syncId)
+        // add internal columns
         val protocolRecord = record.asJsonRecord() as ObjectNode
-
+        protocolRecord.set<ObjectNode>(CDKConstants.COLUMN_NAME_AB_META, meta)
         protocolRecord.put(CDKConstants.COLUMN_NAME_AB_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(CDKConstants.COLUMN_NAME_AB_GENERATION_ID, record.stream.generationId)
         protocolRecord.put(CDKConstants.COLUMN_NAME_AB_RAW_ID, uuidGenerator.v7().toString())
 
-        val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
-        meta.put(CDKConstants.AIRBYTE_META_SYNC_ID_KEY, record.stream.syncId)
-        protocolRecord.set<ObjectNode>(CDKConstants.COLUMN_NAME_AB_META, meta)
-
+        // serialize and buffer
         buffer.write(protocolRecord.toString())
         buffer.write(DELIMITER)
 
         recordCount++
 
+        // determine whether we're complete
         if (recordCount >= Constants.BATCH_SIZE_RECORDS) {
+            // upload
             flush()
             return DirectLoader.Complete
         }
