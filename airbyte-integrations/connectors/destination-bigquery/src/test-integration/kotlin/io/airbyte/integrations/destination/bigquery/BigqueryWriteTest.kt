@@ -8,11 +8,11 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestinationFactory
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
@@ -31,7 +31,6 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 abstract class BigqueryWriteTest(
     configContents: String,
@@ -154,21 +153,25 @@ abstract class BigqueryDirectLoadWriteTest(
         // but send an INCOMPLETE status so that it fails.
         // This will create a temp table containing the `id=2` record.
         val truncateSyncStream = makeStream(genId = 6, minGenId = 6)
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                updatedConfig,
-                truncateSyncStream,
-                listOf(
-                    InputRecord(
-                        truncateSyncStream,
-                        data = """{"id": 2}""",
-                        emittedAtMs = 2,
-                    ),
+        runSyncUntilStateAckAndExpectFailure(
+            updatedConfig,
+            truncateSyncStream,
+            listOf(
+                InputRecord(
+                    truncateSyncStream,
+                    data = """{"id": 2}""",
+                    emittedAtMs = 2,
                 ),
-                streamStatus = null,
-                destinationProcessFactory = typingDedupingDestinationFactory,
-            )
-        }
+            ),
+            StreamCheckpoint(
+                truncateSyncStream,
+                """{}""",
+                sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
+            ),
+            syncEndBehavior = UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS,
+            destinationProcessFactory = typingDedupingDestinationFactory,
+        )
         // Finish the truncate refresh using the current destination.
         // We should correctly retain the `id=2` record.
         runSync(

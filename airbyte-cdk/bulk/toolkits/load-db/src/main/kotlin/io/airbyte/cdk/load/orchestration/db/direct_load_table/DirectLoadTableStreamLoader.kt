@@ -159,7 +159,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
                     }
                     sqlTableOperations.createTable(
                         stream,
@@ -192,7 +192,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 isWritingToTemporaryTable = false
             } else {
                 logger.info {
-                    "Creating temp table (real table has old generation ID) for stream ${stream.descriptor.toPrettyString()}"
+                    "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.descriptor.toPrettyString()}"
                 }
                 sqlTableOperations.createTable(
                     stream,
@@ -279,7 +279,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
                     }
                     sqlTableOperations.createTable(
                         stream,
