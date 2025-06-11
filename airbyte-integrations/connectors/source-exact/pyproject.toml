@@ -7,7 +7,7 @@ authors = [
 ]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "airbyte-cdk (>=6.48.16,<7.0.0)",
     "pendulum (>=3.1.0,<4.0.0)"
@@ -24,6 +24,10 @@ dev = [
 # Poetry related, mostly a duplicate of the above because of the build process of Airbyte, instead of using default pyproject.toml
 # As used by UV
 
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "source-exact"
 version = "0.2.0"
@@ -33,7 +37,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.11,<3.13"
 airbyte-cdk = ">=6.48.16,<7.0.0"
 pendulum = ">=3.1.0,<4.0.0"
 
