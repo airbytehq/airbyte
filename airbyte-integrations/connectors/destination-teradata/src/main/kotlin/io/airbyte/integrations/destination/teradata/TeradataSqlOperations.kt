@@ -275,7 +275,6 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         database.execute { con ->
             try {
                 con.prepareStatement(insertQueryComponent).use { stmt ->
-                    stmt.queryTimeout = 600 // 10 minutes max wait
                     con.autoCommit = false
                     var batchCount = 0
                     for (record in records) {
