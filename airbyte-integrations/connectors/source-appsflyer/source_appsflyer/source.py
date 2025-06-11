@@ -124,6 +124,7 @@ class AppsflyerStream(HttpStream, ABC):
 # Basic incremental stream
 class IncrementalAppsflyerStream(AppsflyerStream, ABC):
     intervals = 60
+    start_date_min: Optional[int] = None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         try:
@@ -143,7 +144,18 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
-        start_date = self.get_date(parse_date(cursor_value, self.timezone), self.start_date, max)
+        user_start = parse_date(self.start_date, self.timezone)
+
+        if self.start_date_min:
+            cutoff = pendulum.today(self.timezone) - timedelta(days=self.start_date_min)
+            effective_start = max(user_start, cutoff)
+            if user_start < cutoff:
+                logging.info(
+                f"Requested start_date {user_start} older than {self.start_date_min} days; using {cutoff}"
+                )
+        else:
+            effective_start = user_start
+        start_date = self.get_date(parse_date(cursor_value, self.timezone), effective_start, max)
         if self.start_date_abnormal(start_date):
             self.end_date = start_date
         return self.chunk_date_range(start_date)
@@ -242,6 +254,7 @@ class EventsMixin:
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
     cursor_field = "event_time"
+    start_date_min = 90
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -252,6 +265,7 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
 class OrganicInAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
     cursor_field = "event_time"
+    start_date_min = 90
     additional_fields = additional_fields.organic_in_app_events
 
     def path(
@@ -262,6 +276,7 @@ class OrganicInAppEvents(RawDataMixin, IncrementalAppsflyerStream):
 
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
+    start_date_min = 90
     additional_fields = additional_fields.uninstall_events
 
     def path(
@@ -272,6 +287,7 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
 
 class OrganicUninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
+    start_date_min = 90
     additional_fields = additional_fields.uninstall_events
 
     def path(
@@ -282,6 +298,7 @@ class OrganicUninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
 
 class Installs(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "install_time"
+    start_date_min = 90
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -291,6 +308,7 @@ class Installs(RawDataMixin, IncrementalAppsflyerStream):
 
 class OrganicInstalls(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "install_time"
+    start_date_min = 90
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -385,19 +403,10 @@ class SourceAppsflyer(AbstractSource):
 
         return True, None
 
-    def is_start_date_before_earliest_date(self, start_date, earliest_date):
-        if start_date <= earliest_date:
-            logging.getLogger("airbyte").log(logging.INFO, f"Start date over 90 days, using start_date: {earliest_date}")
-            return earliest_date
-
-        return start_date
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["timezone"] = config.get("timezone", "UTC")
         timezone = pendulum.timezone(config.get("timezone", "UTC"))
-        earliest_date = pendulum.today(timezone) - timedelta(days=90)
-        start_date = parse_date(config.get("start_date") or pendulum.today(timezone), timezone)
-        config["start_date"] = self.is_start_date_before_earliest_date(start_date, earliest_date)
+        config["start_date"] = parse_date(config.get("start_date") or pendulum.today(timezone), timezone)
         config["end_date"] = pendulum.now(timezone)
         logging.getLogger("airbyte").log(logging.INFO, f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
         auth = TokenAuthenticator(token=config["api_token"])
