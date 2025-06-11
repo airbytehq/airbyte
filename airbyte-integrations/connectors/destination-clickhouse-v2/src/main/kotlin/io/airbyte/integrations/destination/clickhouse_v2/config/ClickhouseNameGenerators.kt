@@ -29,14 +29,12 @@ class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration) :
 @Singleton
 class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfiguration) :
     FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
-        println("Final table name generator called for: $streamDescriptor")
-
-        return TableName(
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
+        TableName(
             namespace = streamDescriptor.namespace ?: config.resolvedDatabase,
             name = streamDescriptor.name,
         )
-    }
+
 }
 
 @Singleton

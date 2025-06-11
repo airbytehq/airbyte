@@ -623,9 +623,6 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
-        println("Config: $config")
-        println("getting: SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}")
-
         val response =
             client
                 .query(

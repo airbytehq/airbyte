@@ -56,7 +56,6 @@ class TableCatalogFactory {
                 LOGGER.info {
                     "Detected table name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}"
                 }
-                println("I am in the Table catalog factory")
                 // Create a hash-suffixed name to avoid collision
                 val hash =
                     DigestUtils.sha1Hex(

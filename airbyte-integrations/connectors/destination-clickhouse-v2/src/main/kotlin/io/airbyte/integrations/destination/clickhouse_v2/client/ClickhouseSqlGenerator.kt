@@ -37,9 +37,6 @@ import jakarta.inject.Singleton
 class ClickhouseSqlGenerator {
 
     fun createNamespace(namespace: String): String {
-        println("Creating namespace: $namespace")
-        println("CREATE DATABASE IF NOT EXISTS `$namespace`;")
-
         return "CREATE DATABASE IF NOT EXISTS `$namespace`;"
     }
 
@@ -58,19 +55,6 @@ class ClickhouseSqlGenerator {
                 is Dedupe -> "ReplacingMergeTree()"
                 else -> "MergeTree()"
             }
-
-        println("Creating the table with:")
-        println("""
-            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
-              $COLUMN_NAME_AB_RAW_ID String NOT NULL,
-              $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
-              $COLUMN_NAME_AB_META String NOT NULL,
-              $COLUMN_NAME_AB_GENERATION_ID UInt32,
-              $columnDeclarations
-            )
-            ENGINE = ${engine}
-            ORDER BY ($COLUMN_NAME_AB_RAW_ID)
-            """)
 
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
