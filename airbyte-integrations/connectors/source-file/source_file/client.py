@@ -151,30 +151,27 @@ class URLFile:
             return smart_open.open(uri, transport_params=transport_params, **self.args)
         elif storage in ("https://", "http://"):
             transport_params = {}
-            
+
             if "user_agent" in self._provider and self._provider["user_agent"]:
                 airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
                 transport_params["headers"] = {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}
-            
+
             if "proxy_url" in self._provider and self._provider["proxy_url"]:
                 proxy_url = self._provider["proxy_url"]
-                transport_params["proxies"] = {
-                    "http": proxy_url,
-                    "https": proxy_url
-                }
-            
+                transport_params["proxies"] = {"http": proxy_url, "https": proxy_url}
+
             cert_file_path = None
             if "ca_certificate" in self._provider and self._provider["ca_certificate"]:
-                cert_fd, cert_file_path = tempfile.mkstemp(suffix='.pem', text=True)
+                cert_fd, cert_file_path = tempfile.mkstemp(suffix=".pem", text=True)
                 try:
-                    with os.fdopen(cert_fd, 'w') as cert_file:
+                    with os.fdopen(cert_fd, "w") as cert_file:
                         cert_file.write(self._provider["ca_certificate"])
                     transport_params["verify"] = cert_file_path
                 except Exception:
                     if cert_file_path and os.path.exists(cert_file_path):
                         os.unlink(cert_file_path)
                     raise
-            
+
             logger.info(f"TransportParams: {transport_params}")
             try:
                 result = smart_open.open(self.full_url, transport_params=transport_params if transport_params else None, **self.args)
