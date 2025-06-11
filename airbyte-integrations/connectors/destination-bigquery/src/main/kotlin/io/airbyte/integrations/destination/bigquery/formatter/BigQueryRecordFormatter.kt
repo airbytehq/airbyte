@@ -256,10 +256,13 @@ class BigQueryRecordFormatter(
                 // NOTE: This validation is currently unreachable because our coercion logic in
                 // AirbyteValueCoercer already rejects date/time values outside supported ranges
                 // via DATE_TIME_FORMATTER and TIME_FORMATTER, the Meta change reason will therefore
-                // always be DESTINATION_SERIALIZATION_ERROR instead of DESTINATION_FIELD_SIZE_LIMITATION.
+                // always be DESTINATION_SERIALIZATION_ERROR instead of
+                // DESTINATION_FIELD_SIZE_LIMITATION.
                 //
-                // However, we're planning to expand the supported date/time range in the coercion layer,
-                // which will make this validation relevant again. Keeping this code for that future change.
+                // However, we're planning to expand the supported date/time range in the coercion
+                // layer,
+                // which will make this validation relevant again. Keeping this code for that future
+                // change.
                 is DateType -> {
                     (value.abValue as DateValue).value.let {
                         if (it < DATE_MIN_VALUE || DATE_MAX_VALUE < it) {
