@@ -150,9 +150,7 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
             cutoff = pendulum.today(self.timezone) - timedelta(days=self.start_date_min)
             effective_start = max(user_start, cutoff)
             if user_start < cutoff:
-                logging.info(
-                f"Requested start_date {user_start} older than {self.start_date_min} days; using {cutoff}"
-                )
+                logging.info(f"Requested start_date {user_start} older than {self.start_date_min} days; using {cutoff}")
         else:
             effective_start = user_start
         start_date = self.get_date(parse_date(cursor_value, self.timezone), effective_start, max)
