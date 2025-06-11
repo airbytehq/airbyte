@@ -19,6 +19,8 @@ jobs:
     - name: Set up pnpm
       # pnpm is used to manage the dependencies of the documentation build.
       uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.1
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
