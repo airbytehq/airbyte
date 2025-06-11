@@ -1,5 +1,13 @@
 #!/usr/bin/env -S uv run
 
+# /// script
+# dependencies = [
+#     "typer>=0.9.0",
+#     "requests>=2.31.0",
+#     "pyyaml>=6.0",
+# ]
+# ///
+
 import json
 import os
 import subprocess
