@@ -1137,16 +1137,6 @@ definitions:
   # TODO: streams above potentially also can share base stream logic, to check and update if so.
   report_base_stream:
     type: DeclarativeStream
-    primary_key:
-      [
-        "AgeGroup",
-        "Gender",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "AdDistribution",
-      ]
     #    set report_aggregation in parameters, for example,
     #    $parameters:
     #      report_aggregation: Monthly
@@ -1196,6 +1186,16 @@ definitions:
   age_gender_audience_report_daily_stream:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_daily
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
     $parameters:
       report_aggregation: Daily
       report_name: AgeGenderAudienceReport
@@ -1243,6 +1243,16 @@ definitions:
   age_gender_audience_report_hourly_stream:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_hourly
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
     $parameters:
       report_aggregation: Hourly
       report_name: AgeGenderAudienceReport
@@ -1298,6 +1308,16 @@ definitions:
   age_gender_audience_report_weekly_stream:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_weekly
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
     $parameters:
       report_aggregation: Weekly
       report_name: AgeGenderAudienceReport
@@ -1345,6 +1365,16 @@ definitions:
   age_gender_audience_report_monthly_stream:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_monthly
+    primary_key:
+      [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "AdDistribution",
+      ]
     $parameters:
       report_aggregation: Monthly
       report_name: AgeGenderAudienceReport
