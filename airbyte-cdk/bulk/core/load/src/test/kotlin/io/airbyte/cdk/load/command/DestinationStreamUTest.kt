@@ -53,8 +53,8 @@ class DestinationStreamUTest {
 
         val stream = a_stream_factory().make(configuredStream)
 
-        assertEquals(stream.matchingKey, emptyList())
         assertNull(stream.destinationObjectName)
+        assertNull(stream.matchingKey)
     }
 
     @Test

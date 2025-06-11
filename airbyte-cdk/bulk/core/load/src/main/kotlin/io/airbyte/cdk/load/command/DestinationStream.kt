@@ -60,7 +60,7 @@ data class DestinationStream(
     // whether we will move the file (in addition to the metadata)
     val includeFiles: Boolean = false,
     val destinationObjectName: String? = null,
-    val matchingKey: List<String> = emptyList<String>(),
+    val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper
 ) {
     val descriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
@@ -188,9 +188,7 @@ class DestinationStreamFactory(
             includeFiles = stream.includeFiles ?: false,
             destinationObjectName = stream.destinationObjectName,
             matchingKey =
-                stream.destinationObjectName
-                    ?.let { fromCompositeNestedKeyToCompositeKey(stream.primaryKey) }
-                    .orEmpty()
+                stream.destinationObjectName?.let { fromCompositeNestedKeyToCompositeKey(stream.primaryKey) }
         )
     }
 }
