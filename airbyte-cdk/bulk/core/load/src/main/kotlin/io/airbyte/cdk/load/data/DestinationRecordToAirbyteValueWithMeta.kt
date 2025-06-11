@@ -20,6 +20,7 @@ class DestinationRecordToAirbyteValueWithMeta(
     val stream: DestinationStream,
     private val flatten: Boolean,
     private val extractedAtAsTimestampWithTimezone: Boolean,
+    private val airbyteRawId: UUID,
 ) {
     fun convert(
         data: AirbyteValue,
@@ -28,7 +29,7 @@ class DestinationRecordToAirbyteValueWithMeta(
     ): ObjectValue {
         val properties =
             linkedMapOf(
-                Meta.COLUMN_NAME_AB_RAW_ID to StringValue(UUID.randomUUID().toString()),
+                Meta.COLUMN_NAME_AB_RAW_ID to StringValue(airbyteRawId.toString()),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     getEmittedAtMs(emittedAtMs, extractedAtAsTimestampWithTimezone),
                 Meta.COLUMN_NAME_AB_META to
@@ -69,11 +70,13 @@ fun Pair<AirbyteValue, List<Meta.Change>>.withAirbyteMeta(
     emittedAtMs: Long,
     flatten: Boolean = false,
     extractedAtAsTimestampWithTimezone: Boolean = false,
+    airbyteRawId: UUID,
 ) =
     DestinationRecordToAirbyteValueWithMeta(
-            stream,
+            stream = stream,
             flatten = flatten,
             extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+            airbyteRawId = airbyteRawId,
         )
         .convert(
             first,
@@ -85,11 +88,13 @@ fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
     stream: DestinationStream,
     flatten: Boolean = false,
     extractedAtAsTimestampWithTimezone: Boolean = false,
+    airbyteRawId: UUID,
 ) =
     DestinationRecordToAirbyteValueWithMeta(
-            stream,
+            stream = stream,
             flatten = flatten,
             extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+            airbyteRawId = airbyteRawId,
         )
         .convert(
             data,

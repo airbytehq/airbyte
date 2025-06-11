@@ -17,6 +17,15 @@ object ClickhouseContainerHelper {
         }
     }
 
+    /** This method cleanly stop the test container if it is running. */
+    fun stop() {
+        synchronized(lock = container) {
+            if (container.isRunning()) {
+                container.stop()
+            }
+        }
+    }
+
     fun getPassword(): String = container.password
 
     fun getPort(): Int? = container.getMappedPort(8123)

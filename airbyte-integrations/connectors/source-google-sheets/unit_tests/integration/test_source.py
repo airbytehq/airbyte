@@ -854,3 +854,196 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @pytest.mark.skip("Pending to do")
     def test_for_increase_batch_size_when_rate_limit(self):
         pass
+
+    @HttpMocker()
+    def test_discover_with_stream_name_overrides(self, http_mocker: HttpMocker) -> None:
+        # Define original and overridden stream names
+        original_sheet_name = "a_stream_name"  # Matches existing test data
+        overridden_stream_name = "custom_sales_data"
+
+        # Configure config with stream name override
+        config_with_overrides = deepcopy(self._config)
+        config_with_overrides["stream_name_overrides"] = [
+            {"source_stream_name": original_sheet_name, "custom_stream_name": overridden_stream_name}
+        ]
+
+        # Set up HTTP mocks using existing templates
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta")
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "only_headers_range")
+
+        # Define expected schema and catalog
+        expected_schema = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "properties": {"header1": {"type": ["null", "string"]}, "header2": {"type": ["null", "string"]}},
+            "type": "object",
+        }
+        expected_catalog = AirbyteCatalog(
+            streams=[
+                AirbyteStream(
+                    name=overridden_stream_name,
+                    json_schema=expected_schema,
+                    supported_sync_modes=[SyncMode.full_refresh],
+                    default_cursor_field=None,
+                    source_defined_primary_key=None,
+                    is_resumable=False,
+                )
+            ]
+        )
+        expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
+
+        # Run discover and assert
+        output = self._discover(config_with_overrides, expecting_exception=False)
+        assert output.catalog == expected_message
+
+    @HttpMocker()
+    def test_discover_with_non_matching_stream_name_override(self, http_mocker: HttpMocker) -> None:
+        # Define a non-matching override
+        original_sheet_name = "a_stream_name"
+        non_matching_override = [{"source_stream_name": "NonExistingSheet", "custom_stream_name": "custom_name"}]
+        config_with_overrides = deepcopy(self._config)
+        config_with_overrides["stream_name_overrides"] = non_matching_override
+
+        # Set up HTTP mocks
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta")
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "only_headers_range")
+
+        # Define expected schema and catalog with original name
+        expected_schema = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "properties": {"header1": {"type": ["null", "string"]}, "header2": {"type": ["null", "string"]}},
+            "type": "object",
+        }
+        expected_catalog = AirbyteCatalog(
+            streams=[
+                AirbyteStream(
+                    name=original_sheet_name,
+                    json_schema=expected_schema,
+                    supported_sync_modes=[SyncMode.full_refresh],
+                    default_cursor_field=None,
+                    source_defined_primary_key=None,
+                    is_resumable=False,
+                )
+            ]
+        )
+        expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
+
+        # Run discover and assert
+        output = self._discover(config_with_overrides, expecting_exception=False)
+        assert output.catalog == expected_message
+
+    @HttpMocker()
+    def test_read_with_stream_name_overrides(self, http_mocker: HttpMocker) -> None:
+        # Define original and overridden stream names
+        original_sheet_name = "a_stream_name"
+        overridden_stream_name = "custom_sales_data"
+
+        # Configure config with stream name override
+        config_with_overrides = deepcopy(self._config)
+        config_with_overrides["stream_name_overrides"] = [
+            {"source_stream_name": original_sheet_name, "custom_stream_name": overridden_stream_name}
+        ]
+
+        # Set up HTTP mocks
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range")
+        GoogleSheetsBaseTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
+
+        # Define configured catalog with overridden stream name
+        first_property = "header_1"
+        second_property = "header_2"
+        configured_catalog = (
+            CatalogBuilder()
+            .with_stream(
+                ConfiguredAirbyteStreamBuilder()
+                .with_name(overridden_stream_name)
+                .with_json_schema(
+                    {"properties": {first_property: {"type": ["null", "string"]}, second_property: {"type": ["null", "string"]}}}
+                )
+            )
+            .build()
+        )
+
+        # Run read and assert
+        output = self._read(config_with_overrides, catalog=configured_catalog, expecting_exception=False)
+        expected_records = [
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY, stream=overridden_stream_name, data={first_property: "value_11", second_property: "value_12"}
+                ),
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY, stream=overridden_stream_name, data={first_property: "value_21", second_property: "value_22"}
+                ),
+            ),
+        ]
+        assert len(output.records) == 2
+        assert output.records == expected_records
+
+    @HttpMocker()
+    def test_read_with_stream_name_overrides_and_primary_key(self, http_mocker: HttpMocker) -> None:
+        # Define original and overridden stream names
+        original_sheet_name = "a_stream_name"
+        overridden_stream_name = "custom_sales_data"
+
+        # Configure config with stream name override
+        config_with_overrides = deepcopy(self._config)
+        config_with_overrides["stream_name_overrides"] = [
+            {"source_stream_name": original_sheet_name, "custom_stream_name": overridden_stream_name}
+        ]
+
+        # Set up HTTP mocks for Google Sheets API responses
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range")
+        GoogleSheetsBaseTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
+
+        # Define the schema fields and configured catalog with a primary key
+        first_property = "header_1"
+        second_property = "header_2"
+        configured_catalog = (
+            CatalogBuilder()
+            .with_stream(
+                ConfiguredAirbyteStreamBuilder()
+                .with_name(overridden_stream_name)
+                .with_json_schema(
+                    {"properties": {first_property: {"type": ["null", "string"]}, second_property: {"type": ["null", "string"]}}}
+                )
+                .with_primary_key([[first_property]])  # User sets "header_1" as the primary key
+            )
+            .build()
+        )
+
+        # Run the read operation
+        output = self._read(config_with_overrides, catalog=configured_catalog, expecting_exception=False)
+
+        # Define expected records
+        expected_records = [
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY, stream=overridden_stream_name, data={first_property: "value_11", second_property: "value_12"}
+                ),
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY, stream=overridden_stream_name, data={first_property: "value_21", second_property: "value_22"}
+                ),
+            ),
+        ]
+
+        # Assertions
+        assert len(output.records) == 2, "Expected 2 records to be emitted"
+        assert output.records == expected_records, "Emitted records should match expected records with overridden stream name"
+
+        assert len(output.state_messages) == 1, "Expected 1 state message"
+        assert (
+            output.state_messages[0].state.stream.stream_descriptor.name == overridden_stream_name
+        ), "State message should use overridden stream name"
+        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(
+            __ab_no_cursor_state_message=True
+        ), "State should indicate no cursor for full refresh"
