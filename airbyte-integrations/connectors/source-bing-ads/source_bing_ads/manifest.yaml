@@ -3820,94 +3820,94 @@ schemas:
     type: object
     properties:
       AccountId:
-        description: The unique ID of the account to which the campaign belongs.
+        description: The unique identifier for the Bing Ads account.
         type:
           - "null"
           - integer
       CampaignId:
-        description: The unique ID of the campaign.
+        description: Unique identifier for the campaign.
         type:
           - "null"
           - integer
       TimePeriod:
-        description: The time period for which the data is reported.
+        description: The time period covered by the reported data.
         type:
           - "null"
           - string
         format: date-time
         airbyte_type: timestamp_with_timezone
       CurrencyCode:
-        description: The currency code used for monetary values.
+        description: Currency used for monetary values.
         type:
           - "null"
           - string
       AdDistribution:
-        description: The distribution channels where the ads were displayed.
+        description: "Where the ads were displayed, e.g., search, audience network, native, etc."
         type:
           - "null"
           - string
       DeviceType:
-        description: The type of device where the ad was displayed (e.g., mobile, desktop).
+        description: "Type of device where the ad was displayed, e.g., mobile, desktop, etc."
         type:
           - "null"
           - string
       Network:
-        description: The advertising network where the ad was displayed.
+        description: Network where the ad was displayed.
         type:
           - "null"
           - string
       DeliveredMatchType:
-        description: The type of match used for delivering ads.
+        description: Type of the match for delivered ads.
         type:
           - "null"
           - string
       DeviceOS:
-        description: The operating system of the device where the ad was displayed.
+        description: Operating system of the device where the ad was displayed.
         type:
           - "null"
           - string
       TopVsOther:
-        description: Comparison of the ad position with top vs. other placements.
+        description: Performance comparison between top and other ad positions.
         type:
           - "null"
           - string
       BidMatchType:
-        description: The type of bid matching used for the campaign.
+        description: "The type of bid match used, e.g., exact, broad, etc."
         type:
           - "null"
           - string
       AccountName:
-        description: The name of the account to which the campaign belongs.
+        description: The name of the Bing Ads account.
         type:
           - "null"
           - string
       CampaignName:
-        description: The name of the campaign.
+        description: Name of the campaign.
         type:
           - "null"
           - string
       CampaignType:
-        description: The type/category of the campaign.
+        description: "Type of the campaign, e.g., search, shopping, etc."
         type:
           - "null"
           - string
       CampaignStatus:
-        description: The status of the campaign.
+        description: "Status of the campaign, e.g., active, paused, etc."
         type:
           - "null"
           - string
       CampaignLabels:
-        description: Any labels associated with the campaign.
+        description: Labels associated with the campaign.
         type:
           - "null"
           - string
       Impressions:
-        description: Total number of times the ad was displayed.
+        description: Total number of impressions.
         type:
           - "null"
           - integer
       Clicks:
-        description: Total number of clicks on the ad.
+        description: Total number of clicks.
         type:
           - "null"
           - integer
@@ -3922,27 +3922,27 @@ schemas:
           - "null"
           - number
       CostPerConversion:
-        description: The average cost per conversion.
+        description: Average cost per tracked conversion.
         type:
           - "null"
           - number
       QualityScore:
-        description: The quality score of the ad.
+        description: Quality score of the ad shown.
         type:
           - "null"
           - number
       AdRelevance:
-        description: The relevance score of the ad in relation to the target audience.
+        description: Relevance score of the ad shown.
         type:
           - "null"
           - number
       LandingPageExperience:
-        description: The landing page experience of the ad.
+        description: User experience of the landing page.
         type:
           - "null"
           - number
       PhoneImpressions:
-        description: Number of impressions on phone devices.
+        description: Number of impressions with a phone number shown.
         type:
           - "null"
           - integer
@@ -3957,42 +3957,42 @@ schemas:
           - "null"
           - number
       Assists:
-        description: Number of assists in the conversion process.
+        description: Number of assists provided in the conversion path.
         type:
           - "null"
           - integer
       ReturnOnAdSpend:
-        description: The return on ad spend for conversions.
+        description: Return on ad spend for tracked conversions.
         type:
           - "null"
           - number
       CostPerAssist:
-        description: Average cost per assist in the conversion process.
+        description: Average cost per assist.
         type:
           - "null"
           - number
       CustomParameters:
-        description: Any custom parameters associated with the campaign.
+        description: Custom parameters associated with the ad.
         type:
           - "null"
           - string
       ViewThroughConversions:
-        description: Number of view-through conversions generated by the ad.
+        description: Number of view-through conversions recorded.
         type:
           - "null"
           - integer
       AllCostPerConversion:
-        description: The average cost per conversion for all conversion types.
+        description: Average cost per all conversions.
         type:
           - "null"
           - number
       AllReturnOnAdSpend:
-        description: The return on ad spend for all conversions.
+        description: Return on ad spend for all conversions.
         type:
           - "null"
           - number
       AllConversions:
-        description: Total number of all types of conversions.
+        description: Total number of all conversions.
         type:
           - "null"
           - integer
@@ -4002,17 +4002,17 @@ schemas:
           - "null"
           - number
       AllConversionRate:
-        description: Conversion rate considering all types of conversions.
+        description: Overall conversion rate for all conversions.
         type:
           - "null"
           - number
       AllRevenue:
-        description: Total revenue generated from all types of conversions.
+        description: Total revenue generated from all conversions.
         type:
           - "null"
           - number
       AllRevenuePerConversion:
-        description: The average revenue generated per conversion for all conversion types.
+        description: Average revenue per all conversions.
         type:
           - "null"
           - number
@@ -4022,7 +4022,7 @@ schemas:
           - "null"
           - number
       AveragePosition:
-        description: The average position of the ad in search results.
+        description: Average position of the ad when displayed.
         type:
           - "null"
           - number
@@ -4032,32 +4032,32 @@ schemas:
           - "null"
           - number
       Conversions:
-        description: Total number of conversions.
+        description: Total number of tracked conversions.
         type:
           - "null"
           - number
       ConversionRate:
-        description: The overall conversion rate.
+        description: Conversion rate for tracked conversions.
         type:
           - "null"
           - number
       LowQualityClicks:
-        description: Number of clicks categorized as low quality.
+        description: Number of clicks on low-quality traffic sources.
         type:
           - "null"
           - integer
       LowQualityClicksPercent:
-        description: Percentage of clicks categorized as low quality.
+        description: Percentage of low-quality clicks.
         type:
           - "null"
           - number
       LowQualityImpressions:
-        description: Number of impressions categorized as low quality.
+        description: Number of impressions from low-quality traffic sources.
         type:
           - "null"
           - integer
       LowQualitySophisticatedClicks:
-        description: Number of sophisticated clicks categorized as low quality.
+        description: Number of sophisticated clicks on low-quality traffic sources.
         type:
           - "null"
           - integer
@@ -4067,60 +4067,41 @@ schemas:
           - "null"
           - integer
       LowQualityConversionRate:
-        description: Conversion rate of low-quality clicks.
-        type:
-          - "null"
-          - number
-      HistoricalQualityScore:
-        description: Historical quality score of the ad.
-        type:
-          - "null"
-          - number
-      HistoricalExpectedCtr:
-        description: Historical expected click-through rate.
-        type:
-          - "null"
-          - number
-      HistoricalAdRelevance:
-        description: Historical ad relevance score.
-        type:
-          - "null"
-          - number
-      HistoricalLandingPageExperience:
-        description: Historical landing page experience score.
+        description: Conversion rate for low-quality clicks.
         type:
           - "null"
           - number
       Revenue:
-        description: Total revenue generated from conversions.
+        description: Total revenue generated from tracked conversions.
         type:
           - "null"
           - number
       RevenuePerConversion:
-        description: The average revenue generated per conversion.
+        description: Average revenue per tracked conversion.
         type:
           - "null"
           - number
       RevenuePerAssist:
-        description: Average revenue generated per assist in the conversion process.
+        description: Average revenue per assist.
         type:
           - "null"
           - number
       BudgetName:
-        description: The name of the budget associated with the campaign.
+        description: Name of the budget associated with the campaign.
         type:
           - "null"
           - string
       BudgetStatus:
-        description: The status of the budget associated with the campaign.
+        description: "Status of the budget, e.g., active, paused, etc."
         type:
           - "null"
           - string
       BudgetAssociationStatus:
-        description: The status of the campaign's budget association.
+        description: Status of the budget association.
         type:
           - "null"
           - string
+
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 2
