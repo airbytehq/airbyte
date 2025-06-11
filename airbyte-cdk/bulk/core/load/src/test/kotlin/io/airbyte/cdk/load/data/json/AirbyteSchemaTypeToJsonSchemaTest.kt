@@ -182,22 +182,21 @@ class AirbyteSchemaTypeToJsonSchemaTest {
     @Test
     internal fun `test given required has elements when serialize then set required`() {
         val required = listOf("requiredProperty")
-        val airbyteType = ObjectType(
-            properties = linkedMapOf<String, FieldType>(),
-            required = required
-        )
+        val airbyteType =
+            ObjectType(properties = linkedMapOf<String, FieldType>(), required = required)
 
         val node = AirbyteTypeToJsonSchema().convert(airbyteType)
 
-        Assertions.assertEquals(required, node.get("required").asIterable().map { it.asText() }.toList(),)
+        Assertions.assertEquals(
+            required,
+            node.get("required").asIterable().map { it.asText() }.toList(),
+        )
     }
 
     @Test
     internal fun `test given required is empty list when serialize then do not specify`() {
-        val airbyteType = ObjectType(
-            properties = linkedMapOf<String, FieldType>(),
-            required = emptyList()
-        )
+        val airbyteType =
+            ObjectType(properties = linkedMapOf<String, FieldType>(), required = emptyList())
         val node = AirbyteTypeToJsonSchema().convert(airbyteType)
         Assertions.assertNull(node.get("required"))
     }
