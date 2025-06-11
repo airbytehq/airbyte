@@ -15,7 +15,7 @@ import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.flow
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger {}
 
 class MockRemoteObject(
     override val key: String,
@@ -77,7 +77,8 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
         return block(remoteObject.data.inputStream())
     }
 
-    fun get(key: String): MockRemoteObject = objects[key] ?: throw IllegalArgumentException("Object $key not found")
+    fun get(key: String): MockRemoteObject =
+        objects[key] ?: throw IllegalArgumentException("Object $key not found")
 
     override suspend fun getMetadata(key: String): Map<String, String> {
         return objects[key]?.metadata ?: emptyMap()
