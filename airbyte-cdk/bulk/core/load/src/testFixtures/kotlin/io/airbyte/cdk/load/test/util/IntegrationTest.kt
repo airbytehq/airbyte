@@ -37,6 +37,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.test.assertEquals
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -162,6 +163,12 @@ abstract class IntegrationTest(
                 }
                 fail(message)
             }
+
+        assertEquals(
+            actualRecords.size,
+            actualRecords.map { it.rawId }.toSet().size,
+            "Expected each record to have a unique UUID",
+        )
     }
 
     /**
