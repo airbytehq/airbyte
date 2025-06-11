@@ -13,7 +13,6 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
 from source_google_sheets.utils import (
-    name_conversion,
     safe_name_conversion,
     safe_sanitzation_conversion,
 )
@@ -80,14 +79,14 @@ class RawSchemaParser:
             "combine_letter_number_pairs": config.get("combine_letter_number_pairs", False),
             "allow_leading_numbers": config.get("allow_leading_numbers", False),
         }
-        use_granular = any(flags.values())
+        use_sanitzation = any(flags.values())
 
         for property_index, raw_schema_property in enumerate(raw_schema_properties):
             raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
             if not raw_schema_property_value or raw_schema_property_value.isspace():
                 break
-            # Use granular if any flag is set, else legacy
-            if names_conversion and use_granular:
+            # Use sanitzation if any flag is set, else legacy
+            if names_conversion and use_sanitzation:
                 raw_schema_property_value = safe_sanitzation_conversion(raw_schema_property_value, **flags)
             elif names_conversion:
                 raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
