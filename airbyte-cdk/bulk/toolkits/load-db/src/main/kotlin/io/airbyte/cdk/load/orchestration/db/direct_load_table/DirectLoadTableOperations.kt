@@ -14,7 +14,7 @@ interface DirectLoadTableNativeOperations {
     /**
      * Detect the existing schema of the table, and alter it if needed to match the correct schema.
      */
-    fun ensureSchemaMatches(
+    suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
@@ -27,7 +27,7 @@ interface DirectLoadTableNativeOperations {
      * If an existing record has null generation, treat that record as belonging to generation 0.
      * These records predate the refreshes project.
      */
-    fun getGenerationId(tableName: TableName): Long
+    suspend fun getGenerationId(tableName: TableName): Long
 }
 
 /**
@@ -38,39 +38,39 @@ interface DirectLoadTableNativeOperations {
  * but in general, the [DefaultDirectLoadTableSqlOperations] is a reasonable implementation.
  */
 interface DirectLoadTableSqlOperations {
-    fun createTable(
+    suspend fun createTable(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     )
 
-    fun overwriteTable(
+    suspend fun overwriteTable(
         sourceTableName: TableName,
         targetTableName: TableName,
     )
 
-    fun copyTable(
+    suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName,
     )
 
-    fun upsertTable(
+    suspend fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName,
     )
 
-    fun dropTable(tableName: TableName)
+    suspend fun dropTable(tableName: TableName)
 }
 
 open class DefaultDirectLoadTableSqlOperations(
     private val generator: DirectLoadSqlGenerator,
     private val handler: DatabaseHandler,
 ) : DirectLoadTableSqlOperations {
-    override fun createTable(
+    override suspend fun createTable(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
@@ -81,7 +81,7 @@ open class DefaultDirectLoadTableSqlOperations(
         )
     }
 
-    override fun overwriteTable(
+    override suspend fun overwriteTable(
         sourceTableName: TableName,
         targetTableName: TableName,
     ) {
@@ -93,7 +93,7 @@ open class DefaultDirectLoadTableSqlOperations(
         )
     }
 
-    override fun copyTable(
+    override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName,
@@ -107,7 +107,7 @@ open class DefaultDirectLoadTableSqlOperations(
         )
     }
 
-    override fun upsertTable(
+    override suspend fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
@@ -123,7 +123,7 @@ open class DefaultDirectLoadTableSqlOperations(
         )
     }
 
-    override fun dropTable(tableName: TableName) {
+    override suspend fun dropTable(tableName: TableName) {
         handler.execute(generator.dropTable(tableName))
     }
 }
