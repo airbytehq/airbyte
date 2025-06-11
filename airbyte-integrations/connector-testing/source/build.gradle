@@ -1,12 +1,3 @@
-compileTestFixturesKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
-    }
-}
-
-group = 'io.airbyte.integrations.sourceTesting'
-version = 'unspecified'
-
 dependencies {
     testFixturesImplementation platform('org.junit:junit-bom:5.10.0')
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter'
