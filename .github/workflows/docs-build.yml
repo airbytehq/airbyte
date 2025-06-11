@@ -1,18 +1,24 @@
 # This workflow builds the documentation for the project using `poe` and `uv`.
 # It is redundant with the Vercel Preview deployment, but is runs unprivileged and
 # can be used on forks to verify the documentation build without deploying it.
+name: Docusaurus Build
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
   build-docs:
+    name: Build Documentation
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout Current Branch
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
+
+    - name: Set up pnpm
+      # pnpm is used to manage the dependencies of the documentation build.
+      uses: pnpm/action-setup@v4
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
