@@ -64,22 +64,28 @@ data object NullValue : AirbyteValue, Comparable<NullValue> {
 
 @JvmInline
 value class StringValue(val value: String) : AirbyteValue, Comparable<StringValue> {
+
+    @JsonValue fun toJson(): String = value
     override fun compareTo(other: StringValue): Int = value.compareTo(other.value)
 }
 
 @JvmInline
 value class BooleanValue(val value: Boolean) : AirbyteValue, Comparable<BooleanValue> {
+    @JsonValue fun toJson(): Boolean = value
     override fun compareTo(other: BooleanValue): Int = value.compareTo(other.value)
 }
 
 @JvmInline
 value class IntegerValue(val value: BigInteger) : AirbyteValue, Comparable<IntegerValue> {
     constructor(value: Long) : this(BigInteger.valueOf(value))
+    @JsonValue fun toJson(): BigInteger = value
     override fun compareTo(other: IntegerValue): Int = value.compareTo(other.value)
 }
 
 @JvmInline
-value class NumberValue(val value: BigDecimal) : AirbyteValue, Comparable<NumberValue> {
+value class NumberValue(@field:JsonValue val value: BigDecimal) :
+    AirbyteValue, Comparable<NumberValue> {
+    @JsonValue fun toJson(): BigDecimal = value
     override fun compareTo(other: NumberValue): Int = value.compareTo(other.value)
 }
 
@@ -124,6 +130,8 @@ value class TimeWithoutTimezoneValue(val value: LocalTime) :
 
 @JvmInline
 value class ArrayValue(val values: List<AirbyteValue>) : AirbyteValue {
+    @JsonValue fun toJson(): List<AirbyteValue> = values
+
     companion object {
         fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { AirbyteValue.from(it) })
     }

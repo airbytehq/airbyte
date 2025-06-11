@@ -14,6 +14,11 @@ import com.fasterxml.jackson.databind.cfg.JsonNodeFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.json.toJson
 import java.io.InputStream
 
 object Jsons : ObjectMapper() {
@@ -25,6 +30,7 @@ object Jsons : ObjectMapper() {
         registerKotlinModule()
         registerModule(JavaTimeModule())
         registerModule(AfterburnerModule())
+        registerModule(AirbyteValueModule)
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
@@ -32,6 +38,46 @@ object Jsons : ObjectMapper() {
         configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
         factory.setStreamReadConstraints(
             StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
+        )
+    }
+}
+
+/**
+ * Serialises any `AirbyteValue` subtype by delegating to its `toJson()` helper. Works for
+ * value-classes, object singletons, and normal classes.
+ */
+private object AirbyteValueModule : com.fasterxml.jackson.databind.module.SimpleModule() {
+
+    init {
+        // a single generic serializer is enough because all wrappers implement AirbyteValue
+        addSerializer(
+            AirbyteValue::class.java,
+            object : com.fasterxml.jackson.databind.JsonSerializer<AirbyteValue>() {
+                override fun serialize(
+                    value: AirbyteValue,
+                    gen: JsonGenerator,
+                    serializers: com.fasterxml.jackson.databind.SerializerProvider
+                ) {
+                    when (value) {
+                        is NullValue -> gen.writeNull() // special-case null
+                        is ObjectValue ->
+                            serializers.defaultSerializeValue(
+                                value.toJson(),
+                                gen
+                            ) // Map<String,Any?>
+                        is ArrayValue -> {
+                            gen.writeStartArray()
+                            value.values.forEach { serializers.defaultSerializeValue(it, gen) }
+                            gen.writeEndArray()
+                        }
+                        else ->
+                            serializers.defaultSerializeValue(
+                                value.toJson(),
+                                gen
+                            ) // scalar wrappers
+                    }
+                }
+            }
         )
     }
 }
