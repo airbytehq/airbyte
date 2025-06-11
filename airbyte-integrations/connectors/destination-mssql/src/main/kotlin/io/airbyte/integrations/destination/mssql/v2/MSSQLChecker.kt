@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
@@ -145,6 +146,7 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
                                 stream,
                                 DestinationRecordJsonSource(message),
                                 Jsons.writeValueAsString(message).length.toLong(),
+                                airbyteRawId = UUIDGenerator().v7(),
                             )
                         }
                 csvWriter.accept(destinationRecord)

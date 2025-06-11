@@ -37,7 +37,7 @@ class MSSQLDirectLoader(
     private val preparedStatement =
         connection.prepareStatement(state.sqlBuilder.getFinalTableInsertColumnHeader().trimIndent())
 
-    override fun accept(
+    override suspend fun accept(
         record: DestinationRecordRaw,
     ): DirectLoader.DirectLoadResult {
         sqlBuilder.populateStatement(preparedStatement, record, sqlBuilder.finalTableSchema)
@@ -70,7 +70,7 @@ class MSSQLDirectLoader(
         }
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         log.info { "Finishing batch $batch for stream $streamDescriptor" }
 
         // Execute remaining records if any
