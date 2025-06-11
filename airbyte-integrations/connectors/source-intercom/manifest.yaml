@@ -853,6 +853,7 @@ spec:
             access_token:
               type: string
               path_in_connector_config: ["access_token"]
+metadata:
   autoImportSchema:
     activity_logs: false
     admins: false
