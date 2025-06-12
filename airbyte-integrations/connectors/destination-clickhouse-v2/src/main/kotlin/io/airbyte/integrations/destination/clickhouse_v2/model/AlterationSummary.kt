@@ -3,7 +3,9 @@ package io.airbyte.integrations.destination.clickhouse_v2.model
 import com.clickhouse.data.ClickHouseDataType
 
 data class AlterationSummary(
-    val added: Map<String, ClickHouseDataType>,
-    val modified: Map<String, ClickHouseDataType>,
-    val deleted: Map<String, ClickHouseDataType>,
+    val added: Map<String, String>,
+    val modified: Map<String, String>, // old type -> new type
+    val deleted: Set<String>
 )
+
+fun AlterationSummary.isEmpty(): Boolean = added.isEmpty() && modified.isEmpty() && deleted.isEmpty()

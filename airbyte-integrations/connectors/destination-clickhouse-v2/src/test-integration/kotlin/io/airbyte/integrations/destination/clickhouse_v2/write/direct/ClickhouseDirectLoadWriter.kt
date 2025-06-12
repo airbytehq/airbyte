@@ -603,7 +603,7 @@ class ClickhouseDirectLoadWriter :
      * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
-    @Disabled override fun testAppendSchemaEvolution() {}
+    // @Disabled override fun testAppendSchemaEvolution() {}
 
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
     @Disabled override fun testDedupNoCursor() {}
@@ -667,7 +667,7 @@ class ClickhouseDirectLoadWriter :
      * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
-    @Disabled override fun testOverwriteSchemaEvolution() {}
+    // @Disabled override fun testOverwriteSchemaEvolution() {}
 
     /** Running well locally, not well in CI */
     @Disabled override fun testMidSyncCheckpointingStreamState() {}

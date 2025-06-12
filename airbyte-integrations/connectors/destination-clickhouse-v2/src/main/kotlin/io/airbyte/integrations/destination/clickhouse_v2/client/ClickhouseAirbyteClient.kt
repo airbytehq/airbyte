@@ -16,11 +16,16 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.future.await
@@ -109,42 +114,80 @@ class ClickhouseAirbyteClient(
     ) {
         // TODO bmoric: ("Not yet implemented")
         val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
+
+        val tableSchemaWithoutAirbyteColumns = tableSchema.columns.filterNot { column ->
+            column.columnName in COLUMN_NAMES
+        }
+
         if (!stream.schema.isObject) {
             val error = "The root of the schema is not an Object which is not expected, the schema changes won't be propagated"
             log.error { error }
             throw IllegalStateException(error)
         }
-        val airbyteSchemaWithClickhouseType: Map<String, ClickHouseDataType> = stream.schema.asColumns().mapValues { (_, fieldType) ->
+
+        val airbyteSchemaWithClickhouseType: Map<String, String> = stream.schema.asColumns().mapValues { (_, fieldType) ->
             // We don't need to nullable information here because we are setting all fields as nullable in the destination
             fieldType.type.toDialectType()
         }
+
+        val columnChanges: AlterationSummary = getChangedColumns(
+            tableSchemaWithoutAirbyteColumns,
+            airbyteSchemaWithClickhouseType,
+        )
+        if (columnChanges.isEmpty()) {
+            log.info { "No changes detected for table $tableName" }
+            return
+        }
+        execute(
+            sqlGenerator.alterTable(
+                columnChanges,
+                tableName,
+            ),
+        )
     }
 
     private fun getChangedColumns(tableColumns: List<ClickHouseColumn>,
-                                  catalogColumns: Map<String, ClickHouseDataType>,): AlterationSummary {
-        val added = mutableMapOf<String, ClickHouseDataType>()
-        val modified = mutableMapOf<String, ClickHouseDataType>()
+                                  catalogColumns: Map<String, String>,): AlterationSummary {
 
-        val mutableCatalogColumns: MutableMap<String, ClickHouseDataType> = catalogColumns.toMutableMap()
+        val modified = mutableMapOf<String, ClickHouseDataType>()
+        val deleted = mutableSetOf<String>()
+        val mutableCatalogColumns: MutableMap<String, String> = catalogColumns.toMutableMap()
+        println(mutableCatalogColumns)
 
         tableColumns.forEach { clickhouseColumn ->
+            println("Processing column: ${clickhouseColumn.columnName} with type ${clickhouseColumn.dataType}")
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
-                added[clickhouseColumn.columnName] = clickhouseColumn.dataType
+                deleted.add(clickhouseColumn.columnName)
             } else {
-                if (mutableCatalogColumns.get(clickhouseColumn.columnName) != clickhouseColumn.dataType) {
+                // Should we do something about datetime?
+                if (mutableCatalogColumns.get(clickhouseColumn.columnName) != clickhouseColumn.dataType.name) {
                     modified[clickhouseColumn.columnName] = clickhouseColumn.dataType
                 }
                 mutableCatalogColumns.remove(clickhouseColumn.columnName)
             }
         }
 
-        val delete: Map<String, ClickHouseDataType> = mutableCatalogColumns.toMap()
+        val added: Map<String, String> = mutableCatalogColumns
 
-        return AlterationSummary(
+        val result =  AlterationSummary(
             added = added,
-            modified = modified,
-            deleted = delete,
+            modified = toStringType(modified),
+            deleted = deleted,
         )
+
+        println(result)
+
+        return result
+    }
+
+    private fun toStringType(columns: Map<String, ClickHouseDataType>): Map<String, String> {
+        return columns.mapValues { (_, dataType) ->
+            if (dataType == ClickHouseDataType.DateTime64) {
+                "DateTime64(3)"
+            } else {
+                dataType.name
+            }
+        }
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
@@ -176,6 +219,7 @@ class ClickhouseAirbyteClient(
     }
 
     private suspend fun execute(query: String): CommandResponse {
+        println("Executing query: $query")
         return client.execute(query).await()
     }
 

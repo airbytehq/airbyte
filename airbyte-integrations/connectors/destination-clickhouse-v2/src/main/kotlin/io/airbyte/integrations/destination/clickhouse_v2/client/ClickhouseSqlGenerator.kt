@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import jakarta.inject.Singleton
 
 @Singleton
@@ -284,12 +285,7 @@ class ClickhouseSqlGenerator {
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
-                val typeName =
-                    if (type.type.toDialectType().name == "DateTime") {
-                        "DateTime64(3)"
-                    } else {
-                        type.type.toDialectType().name
-                    }
+                val typeName = type.type.toDialectType()
                 "`$columnName` $typeName"
             }
             .joinToString(",\n")
@@ -308,31 +304,39 @@ class ClickhouseSqlGenerator {
     }
 
     fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {
-        return ""
+        val builder = StringBuilder()
+            .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
+            .appendLine()
+        alterationSummary.added.forEach { (columnName, columnType) ->
+            builder.append(" ADD COLUMN `$columnName` $columnType,")
+        }
+        alterationSummary.modified.forEach { (columnName, columnType) ->
+            builder.append(" MODIFY COLUMN `$columnName` $columnType,")
+        }
+        alterationSummary.deleted.forEach { columnName ->
+            builder.append(" DROP COLUMN `$columnName`,")
+        }
+        println(builder.dropLast(1).toString())
+        return builder.dropLast(1).toString()
     }
 }
 
-fun AirbyteType.toDialectType(): ClickHouseDataType =
+fun AirbyteType.toDialectType(): String =
     when (this) {
-        BooleanType -> ClickHouseDataType.Bool
-        DateType -> ClickHouseDataType.Date
-        IntegerType -> ClickHouseDataType.Int64
-        NumberType -> ClickHouseDataType.Decimal
-        StringType -> ClickHouseDataType.String
-        TimeTypeWithTimezone -> ClickHouseDataType.String
-        TimeTypeWithoutTimezone -> ClickHouseDataType.String
-        TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
-        TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
+        BooleanType -> ClickHouseDataType.Bool.name
+        DateType -> ClickHouseDataType.Date.name
+        IntegerType -> ClickHouseDataType.Int64.name
+        NumberType -> ClickHouseDataType.Decimal.name
+        StringType -> ClickHouseDataType.String.name
+        TimeTypeWithTimezone -> ClickHouseDataType.String.name
+        TimeTypeWithoutTimezone -> ClickHouseDataType.String.name
+        TimestampTypeWithTimezone,
+        TimestampTypeWithoutTimezone -> "DateTime64(3)"
         is ArrayType,
         ArrayTypeWithoutSchema,
         is ObjectType,
         ObjectTypeWithEmptySchema,
-        ObjectTypeWithoutSchema -> ClickHouseDataType.String
-        is UnionType ->
-            if (this.isLegacyUnion) {
-                this.chooseType().toDialectType()
-            } else {
-                ClickHouseDataType.String
-            }
-        is UnknownType -> ClickHouseDataType.String
+        ObjectTypeWithoutSchema,
+        is UnionType,
+        is UnknownType-> ClickHouseDataType.String.name
     }
