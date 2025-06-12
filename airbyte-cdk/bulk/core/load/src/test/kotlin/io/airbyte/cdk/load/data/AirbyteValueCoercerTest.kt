@@ -66,7 +66,7 @@ class AirbyteValueCoercerTest {
     }
 
     @Test
-    fun testDateTimeFormatterWithSlashes() {
+    fun testDateTimeFormatterWithAlternateSeparators() {
         assertAll(
             // Slash separators
             {
@@ -88,7 +88,41 @@ class AirbyteValueCoercerTest {
                 )
             },
 
-            // Mixed separators (dashes and slashes)
+            // Dot separators
+            {
+                assertEquals(
+                    LocalDate.of(2024, 1, 15),
+                    LocalDate.parse("2024.01.15", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
+            {
+                assertEquals(
+                    LocalDate.of(99, 12, 31),
+                    LocalDate.parse("99.12.31", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
+            {
+                assertEquals(
+                    LocalDate.of(12345, 6, 15),
+                    LocalDate.parse("12345.06.15", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
+
+            // Space separators
+            {
+                assertEquals(
+                    LocalDate.of(2024, 1, 15),
+                    LocalDate.parse("2024 01 15", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
+            {
+                assertEquals(
+                    LocalDate.of(99, 12, 31),
+                    LocalDate.parse("99 12 31", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
+
+            // Mixed separators (dashes, slashes, dots, spaces)
             {
                 assertEquals(
                     LocalDate.of(2024, 1, 15),
@@ -101,13 +135,34 @@ class AirbyteValueCoercerTest {
                     LocalDate.parse("2024/01-15", AirbyteValueCoercer.DATE_TIME_FORMATTER)
                 )
             },
+            {
+                assertEquals(
+                    LocalDate.of(2024, 1, 15),
+                    LocalDate.parse("2024.01-15", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
+            {
+                assertEquals(
+                    LocalDate.of(2024, 1, 15),
+                    LocalDate.parse("2024 01/15", AirbyteValueCoercer.DATE_TIME_FORMATTER)
+                )
+            },
 
-            // Slash with time and timezone
+            // Separators with time and timezone
             {
                 assertEquals(
                     LocalDateTime.of(2024, 1, 15, 14, 30, 45),
                     LocalDateTime.parse(
                         "2024/01/15T14:30:45",
+                        AirbyteValueCoercer.DATE_TIME_FORMATTER
+                    )
+                )
+            },
+            {
+                assertEquals(
+                    LocalDateTime.of(2024, 1, 15, 14, 30, 45),
+                    LocalDateTime.parse(
+                        "2024.01.15T14:30:45",
                         AirbyteValueCoercer.DATE_TIME_FORMATTER
                     )
                 )
@@ -352,17 +407,17 @@ class AirbyteValueCoercerTest {
             {
                 assertThrows(DateTimeParseException::class.java) {
                     LocalDate.parse(
-                        "2024.01.15",
+                        "2024-13-01",
                         AirbyteValueCoercer.DATE_TIME_FORMATTER
-                    ) // Dots not supported
+                    ) // Invalid month
                 }
             },
             {
                 assertThrows(DateTimeParseException::class.java) {
                     LocalDate.parse(
-                        "2024-13-01",
+                        "2024_01_15",
                         AirbyteValueCoercer.DATE_TIME_FORMATTER
-                    ) // Invalid month
+                    ) // Underscores not supported
                 }
             }
         )

@@ -197,12 +197,24 @@ object AirbyteValueCoercer {
             .optionalStart()
             .appendLiteral("/")
             .optionalEnd()
+            .optionalStart()
+            .appendLiteral(".")
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral(" ")
+            .optionalEnd()
             .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .optionalStart()
             .appendLiteral("-")
             .optionalEnd()
             .optionalStart()
             .appendLiteral("/")
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral(".")
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral(" ")
             .optionalEnd()
             .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .appendPattern("['T'HH:mm[:ss[.SSSSSSSSS]]][XXX][X]")
@@ -212,3 +224,6 @@ object AirbyteValueCoercer {
             "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
         )
 }
+
+
+"['-']['+'][yyyyyy][yyyyy][yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
