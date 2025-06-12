@@ -93,11 +93,11 @@ class S3ObjectStorageSpec
     @get:JsonProperty("bucket_path")
     val bucketPath: String = ""
 
-    @get:JsonSchemaInject(json = """{\"examples\":[\"{namespace}/{stream_name}/{year}_{month}_{day}_{epoch}"],"order":9}""")
+    @get:JsonSchemaInject(json = """{"examples":["{namespace}/{stream_name}/{year}_{month}_{day}_{epoch}"],"order":9}""")
     @get:JsonProperty("path_format")
     val pathFormat: String? = null
 
-    @get:JsonSchemaInject(json = """{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],"order":10}""")
+    @get:JsonSchemaInject(json = """{"examples":["{date}","{date:yyyy_MM}","{timestamp}","{part_number}","{sync_id}"],"order":10}""")
     @get:JsonProperty("file_name_format")
     val fileNameFormat: String? = null
 }
