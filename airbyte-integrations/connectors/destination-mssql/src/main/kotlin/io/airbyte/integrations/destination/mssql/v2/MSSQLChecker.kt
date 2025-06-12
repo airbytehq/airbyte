@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
@@ -28,8 +29,10 @@ import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
-    DestinationChecker<MSSQLConfiguration> {
+class MSSQLChecker(
+    private val dataSourceFactory: MSSQLDataSourceFactory,
+    private val uuidGenerator: UUIDGenerator,
+) : DestinationChecker<MSSQLConfiguration> {
 
     companion object {
         private const val TEST_CSV_FILENAME = "check_test_data.csv"
@@ -145,6 +148,7 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
                                 stream,
                                 DestinationRecordJsonSource(message),
                                 Jsons.writeValueAsString(message).length.toLong(),
+                                airbyteRawId = uuidGenerator.v7(),
                             )
                         }
                 csvWriter.accept(destinationRecord)

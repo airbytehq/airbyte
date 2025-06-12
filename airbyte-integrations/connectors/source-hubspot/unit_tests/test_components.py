@@ -530,3 +530,57 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     normalized_value = transform_function(original_value=original_value, field_schema=field_schema)
 
     assert normalized_value == expected_value
+
+
+@pytest.mark.parametrize(
+    "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
+    [
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}},
+            100,
+            {"id": 5000},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_last_page_is_less_than_page_size",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
+        ),
+        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
+        pytest.param(
+            {"paging": {"next": {"after": 10000}}},
+            200,
+            {"id": 25000},
+            {"after": 9800},
+            {"after": 0, "id": 25001},
+            id="test_reset_page_and_move_to_next_chunk",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 200}}},
+            200,
+            {"id": 30000},
+            {"after": 0, "id": 25001},
+            {"after": 200, "id": 25001},
+            id="test_next_page_on_next_chunk_of_records",
+        ),
+    ],
+)
+def test_crm_search_pagination_strategy(
+    components_module, json_response, last_page_size, last_record, last_page_token_value, expected_next_page_token
+):
+    pagination_strategy = components_module.HubspotCRMSearchPaginationStrategy(page_size=200)
+
+    response = Mock()
+    response.json.return_value = json_response
+
+    actual_next_page_token = pagination_strategy.next_page_token(
+        response=response,
+        last_page_size=last_page_size,
+        last_record=last_record,
+        last_page_token_value=last_page_token_value,
+    )
+
+    assert actual_next_page_token == expected_next_page_token
