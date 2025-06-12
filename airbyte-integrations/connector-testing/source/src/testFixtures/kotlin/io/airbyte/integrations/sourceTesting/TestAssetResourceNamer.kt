@@ -7,8 +7,13 @@ package io.airbyte.integrations.sourceTesting
 import java.time.Clock
 import kotlin.random.Random
 
-// Structured names with timestamps make it easy to clean up orphaned test data.
-// Names look like "TEST_XXXX_123456789".
+/**
+ * Structured names with timestamps make it easy to clean up orphaned test data. Names look like
+ * "TEST_XXXXXXXX_123456789". We use seconds instead of millis in order to keep the names short
+ * enough to be valid in all DBs. We expose it in millis as a convenience for the consumer, despite
+ * the loss in precision. We use a randomized portion in order to ensure the names are unique in
+ * each test run.
+ */
 class TestAssetResourceNamer(
     // Inject the clock and random segment generator for testability
     private val clock: Clock = utcClock,
@@ -17,10 +22,10 @@ class TestAssetResourceNamer(
 ) {
 
     private val prefix = "TEST"
-    private val randomLength = 4
+    private val randomLength = 8
 
     fun getName(): String {
-        return "${prefix}_${randomNameSegmentGenerator.generate(4)}_${clock.millis()}"
+        return "${prefix}_${randomNameSegmentGenerator.generate(randomLength)}_${seconds()}"
     }
 
     fun millisFromName(name: String): Long? {
@@ -28,10 +33,22 @@ class TestAssetResourceNamer(
             return null
         }
         return try {
-            name.substring(prefix.length + randomLength + 2).toLong()
+            name.substring(prefix.length + randomLength + 2).toLong().secondsToMillis()
         } catch (e: Exception) {
             null
         }
+    }
+
+    private fun seconds(): Long {
+        return clock.millis().millisToSeconds()
+    }
+
+    private fun Long.millisToSeconds(): Long {
+        return (this / 1000)
+    }
+
+    private fun Long.secondsToMillis(): Long {
+        return (this * 1000)
     }
 }
 

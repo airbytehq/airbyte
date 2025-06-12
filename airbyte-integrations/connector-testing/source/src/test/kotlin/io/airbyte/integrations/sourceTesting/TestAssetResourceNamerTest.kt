@@ -16,13 +16,13 @@ class TestAssetResourceNamerTest {
 
     val time = Instant.EPOCH
     val clock = Clock.fixed(time, ZoneId.of("UTC"))
-    val randomSegment = "XXXX"
+    val randomSegment = "XXXXXXXX"
     val randomNameSegmentGenerator = mockk<RandomNameSegmentGenerator>()
     val namer = TestAssetResourceNamer(clock, randomNameSegmentGenerator)
-    val name = "TEST_XXXX_0"
+    val name = "TEST_XXXXXXXX_0"
 
     init {
-        every { randomNameSegmentGenerator.generate(4) } returns randomSegment
+        every { randomNameSegmentGenerator.generate(any()) } returns randomSegment
     }
 
     @Test
