@@ -1,0 +1,7 @@
+connector_image: airbyte/source-exact:dev
+test_strictness_level: low
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: integration_tests/spec.yaml
+

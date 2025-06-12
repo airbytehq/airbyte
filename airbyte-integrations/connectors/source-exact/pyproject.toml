@@ -40,10 +40,12 @@ readme = "README.md"
 [[tool.poetry.packages]]
 include = "source_exact"
 
-
-
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
 airbyte-cdk = ">=6.48.16,<7.0.0"
 pendulum = ">=3.1.0,<4.0.0"
 
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
