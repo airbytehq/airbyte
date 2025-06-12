@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.command.dlq
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -31,8 +35,7 @@ enum class ObjectStorageType(@get:JsonValue val type: String) {
     JsonSubTypes.Type(value = DisabledObjectStorageSpec::class, name = "None"),
     JsonSubTypes.Type(value = S3ObjectStorageSpec::class, name = "S3")
 )
-sealed interface ObjectStorageSpec
-{
+sealed interface ObjectStorageSpec {
     @get:JsonSchemaTitle("Object Storage Type")
     @get:JsonProperty("storage_type")
     val storageType: ObjectStorageType
@@ -42,31 +45,30 @@ class DisabledObjectStorageSpec : ObjectStorageSpec {
     override val storageType = ObjectStorageType.None
 }
 
-class S3ObjectStorageSpec
-    : ObjectStorageSpec,
-      ObjectStorageCompressionSpecificationProvider,
-      ObjectStorageFormatSpecificationProvider,
+class S3ObjectStorageSpec :
+    ObjectStorageSpec,
+    ObjectStorageCompressionSpecificationProvider,
+    ObjectStorageFormatSpecificationProvider,
     AWSAccessKeySpecification,
     AWSArnRoleSpecification,
-    S3BucketSpecification
-{
+    S3BucketSpecification {
     override val storageType = ObjectStorageType.S3
 
     @get:JsonSchemaInject(
         json =
-        """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true,"order":1}"""
+            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true,"order":1}"""
     )
     override val accessKeyId: String? = null
 
     @get:JsonSchemaInject(
         json =
-        """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true,"order":2}"""
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true,"order":2}"""
     )
     override val secretAccessKey: String? = null
 
     @get:JsonSchemaInject(
         json =
-        """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":3}"""
+            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":3}"""
     )
     override val roleArn: String? = null
 
@@ -93,11 +95,17 @@ class S3ObjectStorageSpec
     @get:JsonProperty("bucket_path")
     val bucketPath: String = ""
 
-    @get:JsonSchemaInject(json = """{\"examples\":[\"{namespace}/{stream_name}/{year}_{month}_{day}_{epoch}"],"order":9}""")
+    @get:JsonSchemaInject(
+        json =
+            """{\"examples\":[\"{namespace}/{stream_name}/{year}_{month}_{day}_{epoch}"],"order":9}"""
+    )
     @get:JsonProperty("path_format")
     val pathFormat: String? = null
 
-    @get:JsonSchemaInject(json = """{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],"order":10}""")
+    @get:JsonSchemaInject(
+        json =
+            """{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],"order":10}"""
+    )
     @get:JsonProperty("file_name_format")
     val fileNameFormat: String? = null
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.command.dlq
 
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
@@ -26,11 +30,13 @@ sealed class ObjectStorageConfig<T : OutputStream>(
     ObjectStorageFormatConfigurationProvider,
     ObjectStoragePathConfigurationProvider
 
-class DisabledObjectStorageConfig : ObjectStorageConfig<ByteArrayOutputStream>(
-    objectStorageCompressionConfiguration = ObjectStorageCompressionSpecificationProvider.getNoCompressionConfiguration(),
-    objectStorageFormatConfiguration = CSVFormatConfiguration(),
-    objectStoragePathConfiguration = ObjectStoragePathConfiguration("disabled/", null, null),
-)
+class DisabledObjectStorageConfig :
+    ObjectStorageConfig<ByteArrayOutputStream>(
+        objectStorageCompressionConfiguration =
+            ObjectStorageCompressionSpecificationProvider.getNoCompressionConfiguration(),
+        objectStorageFormatConfiguration = CSVFormatConfiguration(),
+        objectStoragePathConfiguration = ObjectStoragePathConfiguration("disabled/", null, null),
+    )
 
 class S3ObjectStorageConfig<T : OutputStream>(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
@@ -39,31 +45,34 @@ class S3ObjectStorageConfig<T : OutputStream>(
     objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
     objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     objectStoragePathConfiguration: ObjectStoragePathConfiguration,
-    ) :
+) :
     ObjectStorageConfig<T>(
-    objectStorageCompressionConfiguration = objectStorageCompressionConfiguration,
-    objectStorageFormatConfiguration = objectStorageFormatConfiguration,
-    objectStoragePathConfiguration = objectStoragePathConfiguration,
-), AWSAccessKeyConfigurationProvider,
+        objectStorageCompressionConfiguration = objectStorageCompressionConfiguration,
+        objectStorageFormatConfiguration = objectStorageFormatConfiguration,
+        objectStoragePathConfiguration = objectStoragePathConfiguration,
+    ),
+    AWSAccessKeyConfigurationProvider,
     AWSArnRoleConfigurationProvider,
     S3BucketConfigurationProvider
 
-
-fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig<*> = when (this) {
-    is DisabledObjectStorageSpec -> DisabledObjectStorageConfig()
-    is S3ObjectStorageSpec -> S3ObjectStorageConfig(
-        awsAccessKeyConfiguration = toAWSAccessKeyConfiguration(),
-        awsArnRoleConfiguration = toAWSArnRoleConfiguration(),
-        s3BucketConfiguration = toS3BucketConfiguration(),
-        objectStorageCompressionConfiguration = toCompressionConfiguration(),
-        objectStorageFormatConfiguration = toObjectStorageFormatConfiguration(),
-        objectStoragePathConfiguration = ObjectStoragePathConfiguration(
-            prefix = bucketPath,
-            pathPattern = normalizePathFormat(pathFormat),
-            fileNamePattern = fileNameFormat,
-        )
-    )
-}
+fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig<*> =
+    when (this) {
+        is DisabledObjectStorageSpec -> DisabledObjectStorageConfig()
+        is S3ObjectStorageSpec ->
+            S3ObjectStorageConfig(
+                awsAccessKeyConfiguration = toAWSAccessKeyConfiguration(),
+                awsArnRoleConfiguration = toAWSArnRoleConfiguration(),
+                s3BucketConfiguration = toS3BucketConfiguration(),
+                objectStorageCompressionConfiguration = toCompressionConfiguration(),
+                objectStorageFormatConfiguration = toObjectStorageFormatConfiguration(),
+                objectStoragePathConfiguration =
+                    ObjectStoragePathConfiguration(
+                        prefix = bucketPath,
+                        pathPattern = normalizePathFormat(pathFormat),
+                        fileNamePattern = fileNameFormat,
+                    )
+            )
+    }
 
 /**
  * Normalize the path format to match how the internals of the object storage toolkit work.
@@ -74,8 +83,7 @@ fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig<*> = when (th
  */
 private fun normalizePathFormat(format: String?): String? =
     format?.let {
-        val pathWithCorrectVars = it.replace("""\{\w+}""".toRegex()) { match ->
-            "${'$'}${match.value.uppercase()}"
-        }
+        val pathWithCorrectVars =
+            it.replace("""\{\w+}""".toRegex()) { match -> "${'$'}${match.value.uppercase()}" }
         if (pathWithCorrectVars.endsWith('/')) pathWithCorrectVars else "$pathWithCorrectVars/"
     }
