@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data
@@ -385,9 +385,9 @@ class AirbyteValueCoercerTest {
             },
             {
                 assertEquals(
-                    LocalDateTime.of(-123456, 3, 20, 8, 15, 30, 123456789),
+                    LocalDateTime.of(-123456, 3, 20, 8, 15, 30, 123456),
                     LocalDateTime.parse(
-                        "-123456-03-20T08:15:30.123456789",
+                        "-123456-03-20T08:15:30.123456",
                         AirbyteValueCoercer.DATE_TIME_FORMATTER
                     )
                 )
