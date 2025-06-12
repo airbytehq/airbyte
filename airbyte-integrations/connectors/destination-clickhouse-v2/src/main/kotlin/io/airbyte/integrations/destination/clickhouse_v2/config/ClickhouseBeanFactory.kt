@@ -42,7 +42,7 @@ class ClickhouseBeanFactory {
     }
 
     @Singleton
-    fun thing(
+    fun tempTableNameGenerator(
         @Named("internalNamespace") namespace: String,
     ): TempTableNameGenerator = DefaultTempTableNameGenerator(namespace)
 }
