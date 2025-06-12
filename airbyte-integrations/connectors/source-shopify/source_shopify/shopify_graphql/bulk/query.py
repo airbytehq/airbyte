@@ -4,13 +4,14 @@
 
 
 from abc import abstractmethod
-from attr import dataclass
 from dataclasses import dataclass
 from enum import Enum
-from graphql_query import Argument, Field, InlineFragment, Operation, Query
-from setuptools.command.alias import alias
 from string import Template
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+
+from attr import dataclass
+from graphql_query import Argument, Field, InlineFragment, Operation, Query
+from setuptools.command.alias import alias
 
 from .tools import BULK_PARENT_KEY, BulkTools
 
