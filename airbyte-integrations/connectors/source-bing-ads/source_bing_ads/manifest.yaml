@@ -1948,6 +1948,10 @@ definitions:
       report_type: AdGroupPerformanceReportRequest
       report_columns:
         $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
 
   ad_group_performance_report_weekly_stream:
     $ref: "#/definitions/report_base_stream"
@@ -2587,6 +2591,26 @@ definitions:
           - LowQualityConversionRate
         value: |
           {% set v = record.get('LowQualityConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
+    ad_group_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllConversionRate
+        value: |
+          {% set v = record.get('AllConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
 streams:
