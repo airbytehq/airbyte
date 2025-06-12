@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendStreamLoader
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendTruncateStreamLoader
@@ -25,7 +26,8 @@ class ClickHouseWriter(
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
-    private val clickhouseClient: ClickhouseAirbyteClient
+    private val clickhouseClient: ClickhouseAirbyteClient,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
@@ -42,7 +44,7 @@ class ClickHouseWriter(
         val initialStatus = initialStatuses[stream]!!
         val tableNameInfo = names[stream]!!
         val realTableName = tableNameInfo.tableNames.finalTableName!!
-        val tempTableName = realTableName.asTempTable(internalNamespace = internalNamespace)
+        val tempTableName = tempTableNameGenerator.generate(realTableName)
         val columnNameMapping = tableNameInfo.columnNameMapping
         return when (stream.minimumGenerationId) {
             0L ->
