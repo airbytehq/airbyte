@@ -4,26 +4,25 @@
 
 package io.airbyte.integrations.sourceTesting
 
-import jakarta.inject.Singleton
 import java.time.Clock
 import kotlin.random.Random
 
 // Structured names with timestamps make it easy to clean up orphaned test data.
 // Names look like "TEST_XXXX_123456789".
-@Singleton
 class TestAssetResourceNamer(
-    // Inject the clock for testability
+    // Inject the clock and random segment generator for testability
     private val clock: Clock,
+    private val randomNameSegmentGenerator: RandomNameSegmentGenerator,
 ) {
 
     private val prefix = "TEST"
     private val randomLength = 4
 
     fun getName(): String {
-        return "${prefix}_${getRandom()}_${clock.millis()}"
+        return "${prefix}_${randomNameSegmentGenerator.generate(4)}_${clock.millis()}"
     }
 
-    fun timestampFromName(name: String): Long? {
+    fun millisFromName(name: String): Long? {
         if (!name.startsWith(prefix)) {
             return null
         }
@@ -33,9 +32,11 @@ class TestAssetResourceNamer(
             null
         }
     }
+}
 
-    private fun getRandom(): String {
+class RandomNameSegmentGenerator(private val random: Random = Random.Default) {
+    fun generate(randomLength: Int): String {
         val chars = ('A'..'Z') + ('0'..'9')
-        return (1..randomLength).map { Random.nextInt(chars.size) }.map(chars::get).joinToString("")
+        return (1..randomLength).map { random.nextInt(chars.size) }.map(chars::get).joinToString("")
     }
 }

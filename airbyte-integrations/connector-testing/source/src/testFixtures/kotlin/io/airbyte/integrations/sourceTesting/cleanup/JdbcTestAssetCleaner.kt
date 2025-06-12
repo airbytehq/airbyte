@@ -42,7 +42,7 @@ class JdbcTestAssetCleaner(
 
         for ((namespace, tables) in allTestTables) {
             for (table in tables) {
-                if (testAssetResourceNamer.timestampFromName(table).tooOld()) {
+                if (testAssetResourceNamer.millisFromName(table).tooOld()) {
                     val dropQuery = sqlDialect.buildDropTableQuery(namespace, table)
                     log.info { "Dropping old test table: $namespace.$table" }
                     executor.executeUpdate(dropQuery)
@@ -55,7 +55,7 @@ class JdbcTestAssetCleaner(
         val testNamespaces = findAllTestNamespaces()
 
         for (namespace in testNamespaces) {
-            if (testAssetResourceNamer.timestampFromName(namespace).tooOld()) {
+            if (testAssetResourceNamer.millisFromName(namespace).tooOld()) {
                 val dropQuery = sqlDialect.buildDropNamespaceQuery(namespace)
                 log.info { "Dropping old test namespace: $namespace" }
                 executor.executeUpdate(dropQuery)
@@ -67,8 +67,8 @@ class JdbcTestAssetCleaner(
     private fun findAllTestTables(): Map<String, List<String>> {
         return metadataQuerier
             .streamNames(null)
-            .filter { testAssetResourceNamer.timestampFromName(it.namespace!!) != null }
-            .filter { testAssetResourceNamer.timestampFromName(it.name) != null }
+            .filter { testAssetResourceNamer.millisFromName(it.namespace!!) != null }
+            .filter { testAssetResourceNamer.millisFromName(it.name) != null }
             .groupBy(
                 keySelector = { it.namespace!! },
                 valueTransform = { it.name },
@@ -78,7 +78,7 @@ class JdbcTestAssetCleaner(
     /** Finds all test namespaces in the database. Returns a list of namespace names. */
     private fun findAllTestNamespaces(): List<String> {
         return metadataQuerier.streamNamespaces().filter {
-            testAssetResourceNamer.timestampFromName(it) != null
+            testAssetResourceNamer.millisFromName(it) != null
         }
     }
 }
