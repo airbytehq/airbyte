@@ -115,28 +115,6 @@ The BigQuery destination connector supports the following
 
 ## Output schema
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (can be
-overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
-deduplicated.
-
-### Raw Table schema
-
-The raw table contains these fields:
-- `_airbyte_raw_id`
-- `_airbyte_generation_id`
-- `_airbyte_extracted_at`
-- `_airbyte_loaded_at`
-- `_airbyte_meta`
-- `_airbyte_data`
-
-`_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
-for more information about the other fields.
-
-**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
-could be subject to change in future versions.
-
-### Final Table schema
-
 The final table contains these fields, in addition to the columns declared in your stream schema:
 - `airbyte_raw_id`
 - `_airbyte_generation_id`
@@ -152,6 +130,25 @@ querying these partitioned tables, by using a predicate filter (a `WHERE` clause
 partitioning column are used to prune the partitions and reduce the query cost. (The parameter
 **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the
 produced tables.)
+
+### Legacy Raw Tables schema
+
+If you enable the `Legacy raw tables` option, the connector will write tables in this format.
+
+Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (can be
+overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
+deduplicated.
+
+The raw table contains these fields:
+- `_airbyte_raw_id`
+- `_airbyte_generation_id`
+- `_airbyte_extracted_at`
+- `_airbyte_loaded_at`
+- `_airbyte_meta`
+- `_airbyte_data`
+
+`_airbyte_data` is a JSON blob with the record's data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
+for more information about the other fields.
 
 ## BigQuery Naming Conventions
 
