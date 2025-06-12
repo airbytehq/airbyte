@@ -6,15 +6,14 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.48.8'
+    features = ['db-destinations', 'typing-deduping', 'core']
     useLocalCdk = false
 }
 
-//remove once upgrading the CDK version to 0.4.x or later
-java {
-    compileJava {
-        options.compilerArgs.remove("-Werror")
+compileKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
     }
 }
 
