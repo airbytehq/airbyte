@@ -928,6 +928,7 @@ dynamic_streams:
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
         # it doesn't exist in this context yet as we populate the template
+        # If the `date_ranges_start_date`` is not set in the config, the startDate value will default to 2 years ago.
         - type: ComponentMappingDefinition
           field_path: ["transformations"]
           create_or_update: True
@@ -969,6 +970,7 @@ dynamic_streams:
               {% endfor %}]
         # Since the Google Analytics API requires defining dateRanges for requests,
         # we need to set up a single slice of query parameters here for full-refresh streams only
+        # If the `date_ranges_start_date`` is not set in the config, the startDate value will default to 2 years ago.
         - type: ComponentMappingDefinition
           field_path:
             ["retriever", "requester", "request_body_json", "dateRanges"]
@@ -993,6 +995,7 @@ dynamic_streams:
         # This mapping adds the incremental_sync component for streams that support incremental loads.
         # It is enabled if any of the following fields are present in the dimensions list:
         # "date", "yearWeek", "yearMonth", or "year"
+        # If the `date_ranges_start_date`` is not set in the config, it will default to 2 years ago.
         - type: ComponentMappingDefinition
           field_path: ["incremental_sync"]
           create_or_update: True
