@@ -41,7 +41,12 @@ class TableCatalogFactory {
         finalTableNameGenerator: FinalTableNameGenerator,
         finalTableColumnNameGenerator: ColumnNameGenerator,
     ): TableCatalog {
-        val processedRawTableNames = mutableSetOf<TableName>()
+        val processedRawTableNames =
+            if (rawTableNameGenerator != null) {
+                mutableSetOf<TableName>()
+            } else {
+                null
+            }
         val processedFinalTableNames = mutableSetOf<TableName>()
 
         val result = mutableMapOf<DestinationStream, TableNameInfo>()
@@ -52,10 +57,10 @@ class TableCatalogFactory {
             val currentRawProcessedName: TableName?
             val currentFinalProcessedName: TableName
 
-            if (
-                originalRawTableName in processedRawTableNames ||
-                    originalFinalTableName in processedFinalTableNames
-            ) {
+            val rawTableNameColliding =
+                processedRawTableNames?.let { originalRawTableName in it } ?: false
+            val finalTableNameColliding = originalFinalTableName in processedFinalTableNames
+            if (rawTableNameColliding || finalTableNameColliding) {
                 LOGGER.info {
                     "Detected table name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}"
                 }
@@ -69,13 +74,12 @@ class TableCatalogFactory {
 
                 currentRawProcessedName =
                     rawTableNameGenerator?.getTableName(stream.descriptor.copy(name = newName))
-                currentRawProcessedName?.let { processedRawTableNames.add(it) }
-
+                processedRawTableNames?.add(currentRawProcessedName!!)
                 currentFinalProcessedName =
                     finalTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
-                originalRawTableName?.let { processedRawTableNames.add(it) }
+                processedRawTableNames?.add(originalRawTableName!!)
                 processedFinalTableNames.add(originalFinalTableName)
                 currentRawProcessedName = originalRawTableName
                 currentFinalProcessedName = originalFinalTableName
