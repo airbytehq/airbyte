@@ -20,12 +20,14 @@ dev = [
     "ruff>=0.11.12",
     "source-acceptance-test>=1.0.0",
 ]
+[project.scripts]
+source-exact = "source_exact.run:run"
 
 # Poetry related, mostly a duplicate of the above because of the build process of Airbyte, instead of using default pyproject.toml
 # As used by UV
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0", ]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -38,8 +40,7 @@ readme = "README.md"
 [[tool.poetry.packages]]
 include = "source_exact"
 
-[tool.poetry.scripts]
-source-exact = "source_exact.run:run"
+
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
