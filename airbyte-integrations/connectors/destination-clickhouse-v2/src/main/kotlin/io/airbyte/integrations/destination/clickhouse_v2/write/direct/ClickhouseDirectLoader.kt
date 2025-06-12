@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
@@ -48,7 +49,7 @@ class ClickhouseDirectLoader(
 
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
-        protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
+        protocolRecord.put(Constants.FIELD_RAW_ID, UUID.randomUUID().toString())
 
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
         meta.put("sync_id", record.stream.syncId)
