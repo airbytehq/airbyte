@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.command.dlq
 
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -6,18 +10,12 @@ import org.junit.jupiter.api.Test
 class ObjectStorageConfigTest {
     @Test
     fun `normalizePathFormat should not duplicate trailing slash`() {
-        assertEquals(
-            "my/path/",
-            normalizePathFormat("my/path/")
-        )
+        assertEquals("my/path/", normalizePathFormat("my/path/"))
     }
 
     @Test
     fun `normalizePathFormat should uppercase and $ to variables`() {
-        assertEquals(
-            "my/${'$'}{STREAM_NAME}/",
-            normalizePathFormat("my/{stream_name}/")
-        )
+        assertEquals("my/${'$'}{STREAM_NAME}/", normalizePathFormat("my/{stream_name}/"))
     }
 
     @Test
