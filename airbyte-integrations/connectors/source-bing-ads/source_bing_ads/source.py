@@ -9,7 +9,7 @@ from airbyte_cdk import TState, YamlDeclarativeSource
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
+from source_bing_ads.base_streams import Accounts
 from source_bing_ads.bulk_streams import (
     AdGroupLabels,
     AppInstallAdLabels,
@@ -148,11 +148,9 @@ class SourceBingAds(YamlDeclarativeSource):
 
         client = Client(**config)
         streams = [
-            AdGroups(client, config),
             AdGroupLabels(client, config),
             AppInstallAds(client, config),
             AppInstallAdLabels(client, config),
-            Ads(client, config),
             Budget(client, config),
             BudgetSummaryReport(client, config),
             # Labels(client, config),
