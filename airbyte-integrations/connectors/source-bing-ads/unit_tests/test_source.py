@@ -283,6 +283,8 @@ def test_transform(mock_auth_token, config):
         "LongHeadlines": None,
         "Path1": None,
         "Path2": None,
+        "TextPart2": None,
+        "TitlePart3": None,
         "Videos": None,
     }
     transformed_record = list(
