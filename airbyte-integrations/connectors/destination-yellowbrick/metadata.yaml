@@ -4,6 +4,7 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+    requireVersionIncrementsInPullRequests: false
   connectorSubtype: database
   connectorType: destination
   definitionId: 1f7bac7e-53ff-4e0b-b6df-b74aa85cf703
