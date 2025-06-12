@@ -13,5 +13,7 @@ interface Response : Closeable {
     val body: InputStream?
 }
 
-fun Response.consumeBodyToString(): String = this.use{ body?.reader(Charsets.UTF_8)?.readText() ?: "" }
-fun Response.getBodyOrEmpty(): InputStream = this.body?: InputStream.nullInputStream()
+fun Response.consumeBodyToString(): String =
+    this.use { body?.reader(Charsets.UTF_8)?.readText() ?: "" }
+
+fun Response.getBodyOrEmpty(): InputStream = this.body ?: InputStream.nullInputStream()
