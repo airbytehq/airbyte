@@ -24,10 +24,10 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_google_analytics_data_api.components.CombinedExtractor
+            class_name: source_declarative_manifest.components.CombinedExtractor
             extractors:
               - type: CustomRecordExtractor
-                class_name: source_google_analytics_data_api.components.KeyValueExtractor
+                class_name: source_declarative_manifest.components.KeyValueExtractor
                 keys_extractor:
                   type: DpathExtractor
                   field_path:
@@ -43,7 +43,7 @@ definitions:
                     - "*"
                     - value
               - type: CustomRecordExtractor
-                class_name: source_google_analytics_data_api.components.KeyValueExtractor
+                class_name: source_declarative_manifest.components.KeyValueExtractor
                 keys_extractor:
                   type: DpathExtractor
                   field_path:
