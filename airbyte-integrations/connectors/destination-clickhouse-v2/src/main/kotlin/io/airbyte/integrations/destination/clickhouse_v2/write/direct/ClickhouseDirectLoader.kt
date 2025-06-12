@@ -8,33 +8,29 @@ import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
 import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.data.ClickHouseFormat
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.protobuf.value
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.Meta as CDKConstants
-import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.cdk.load.util.write
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.Constants.DELIMITER
-import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.time.Instant
 import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
@@ -47,57 +43,44 @@ class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
 ) : DirectLoader {
-    private var buffer: ByteArrayOutputStream = ByteArrayOutputStream()
-    private lateinit var schema: TableSchema
-    private lateinit var writer: RowBinaryFormatWriter
+    private val buffer: ClickHouseBinaryBuffer = ClickHouseBinaryBuffer()
+    private val schema: TableSchema = clickhouseClient.getTableSchema(descriptor.name, descriptor.namespace ?: "default")
+    private val writer: RowBinaryFormatWriter = RowBinaryFormatWriter(buffer, schema, ClickHouseFormat.RowBinary)
 
-    private fun init() {
-        schema = clickhouseClient.getTableSchema(descriptor.name, descriptor.namespace ?: "default")
-        writer = RowBinaryFormatWriter(buffer, schema, ClickHouseFormat.RowBinary)
+    private fun writeAirbyteValue(key: String, abValue: AirbyteValue) {
+            when (abValue) {
+                is NullValue -> writer.setValue(key, null)
+                is ObjectValue -> writer.setValue(key, abValue.values.toString())
+                is ArrayValue -> writer.setValue(key, abValue.values.toString())
+                is BooleanValue -> writer.setValue(key, abValue.value)
+                is IntegerValue -> writer.setValue(key, abValue.value)
+                is NumberValue -> writer.setValue(key, abValue.value)
+                is StringValue -> writer.setValue(key, abValue.value)
+                is DateValue -> writer.setValue(key, abValue.value)
+                is TimeWithTimezoneValue -> writer.setValue(key, abValue.value)
+                is TimeWithoutTimezoneValue -> writer.setValue(key, abValue.value)
+                is TimestampWithTimezoneValue -> writer.setValue(key, abValue.value)
+                is TimestampWithoutTimezoneValue -> writer.setValue(key, abValue.value)
+            }
+    }
+
+
+    private fun accRow(record: DestinationRecordRaw) {
+        // coerces and munges record to schema, adding any changes to the meta
+        val enriched = record.asEnrichedDestinationRecordAirbyteValue()
+        val cols = enriched.allTypedFields
+        cols.filter { it.key != Meta.COLUMN_NAME_AB_EXTRACTED_AT }.forEach {
+            when (val abValue = it.value.abValue) {
+
+            }
+        val extractedAt = Instant.ofEpochMilli(cols[Meta.COLUMN_NAME_AB_EXTRACTED_AT].abValue)
+        writer.setValue(Meta.COLUMN_NAME_AB_EXTRACTED_AT, )
+
+        writer.commitRow()
     }
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        // we have to do this lazily because it depends on the table being created in the dest
-        if (!this::writer.isInitialized) {
-            init()
-        }
-
-        // TODO: validate and coerce data if necessary
-        val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
-        meta.put(CDKConstants.AIRBYTE_META_SYNC_ID, record.stream.syncId)
-        // add internal columns
-        val protocolRecord = record.asJsonRecord() as ObjectNode
-
-        record.schema.asColumns().forEach {
-            val rawValue = protocolRecord[it.key]
-            when (val coerced = rawValue.toAirbyteValue()) {
-                is BooleanValue -> writer.setValue(it.key, coerced.value)
-                is IntegerValue -> writer.setValue(it.key, coerced.value)
-                is NumberValue -> writer.setValue(it.key, coerced.value)
-                is StringValue -> writer.setValue(it.key, coerced.value)
-                is ObjectValue -> writer.setValue(it.key, coerced.values.toString())
-                is ArrayValue -> writer.setValue(it.key, coerced.values.toString())
-                is NullValue -> writer.setValue(it.key, null)
-                else -> {}
-            }
-
-
-//            writer.setValue(it.key, rawValue)
-        }
-
-        val ts = java.time.Instant.ofEpochMilli(record.rawData.emittedAtMs)
-
-        writer.setValue(CDKConstants.COLUMN_NAME_AB_EXTRACTED_AT, ts)
-        writer.setValue(CDKConstants.COLUMN_NAME_AB_GENERATION_ID, record.stream.generationId)
-        writer.setValue(CDKConstants.COLUMN_NAME_AB_RAW_ID, record.airbyteRawId.toString())
-        writer.setValue(CDKConstants.COLUMN_NAME_AB_META, meta)
-        writer.commitRow()
-
-        // serialize and buffer
-//        buffer.write(protocolRecord.toString())
-//        buffer.write(DELIMITER)
-
-//        recordCount++
+        accRow(record)
 
         // determine whether we're complete
         if (writer.rowCount >= Constants.BATCH_SIZE_RECORDS) {
@@ -110,26 +93,18 @@ class ClickhouseDirectLoader(
     }
 
     private suspend fun flush() {
-
-        log.info { "Copying buffer for insert into ${descriptor.name}" }
-        val bytes = ByteArrayInputStream(buffer.toByteArray())
-//        buffer = ByteArrayOutputStream()
-
         log.info { "Beginning insert into ${descriptor.name}" }
 
         val insertResult =
             clickhouseClient
                 .insert(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
-                    bytes,
+                    buffer.toInputStream(),
                     ClickHouseFormat.RowBinary
-//                    bytes,
-//                    ClickHouseFormat.JSONEachRow,
                 )
                 .await()
 
         log.info { "Finished insert of ${insertResult.writtenRows} rows into ${descriptor.name}" }
-//        recordCount = 0
     }
 
     // only calls this on force complete
@@ -142,6 +117,19 @@ class ClickhouseDirectLoader(
 
     object Constants {
         const val BATCH_SIZE_RECORDS = 500000
-        const val DELIMITER = "\n"
+    }
+
+    /**
+     * Naive wrapper class to having to copy the buffer contents around.
+     */
+    private class ClickHouseBinaryBuffer : ByteArrayOutputStream() {
+        /**
+         * Get an input stream based on the contents of this output stream.
+         * Do not use the output stream after calling this method.
+         * @return an {@link InputStream}
+         */
+        fun toInputStream(): InputStream {
+            return ByteArrayInputStream(this.buf, 0, this.count);
+        }
     }
 }
