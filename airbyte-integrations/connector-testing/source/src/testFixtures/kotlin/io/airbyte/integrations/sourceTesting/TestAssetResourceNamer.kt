@@ -9,7 +9,7 @@ import kotlin.random.Random
 
 /**
  * Structured names with timestamps make it easy to clean up orphaned test data. Names look like
- * "TEST_XXXXXXXX_123456789". We use seconds instead of millis in order to keep the names short
+ * "TEST_123456789_XXXXXXXX". We use seconds instead of millis in order to keep the names short
  * enough to be valid in all DBs. We decode it in millis as a convenience for the consumer, despite
  * the loss in precision.
  *
@@ -27,7 +27,7 @@ class TestAssetResourceNamer(
     private val randomLength = 8
 
     fun getName(): String {
-        return "${prefix}_${randomNameSegmentGenerator.generate(randomLength)}_${seconds()}"
+        return "${prefix}_${seconds()}_${randomNameSegmentGenerator.generate(randomLength)}"
     }
 
     fun millisFromName(name: String): Long? {
@@ -35,7 +35,7 @@ class TestAssetResourceNamer(
             return null
         }
         return try {
-            name.substring(prefix.length + randomLength + 2).toLong().secondsToMillis()
+            name.split("_", limit = 3)[1].toLong().secondsToMillis()
         } catch (e: Exception) {
             null
         }

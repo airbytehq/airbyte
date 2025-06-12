@@ -10,6 +10,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class TestAssetResourceNamerTest {
@@ -19,7 +20,7 @@ class TestAssetResourceNamerTest {
     val randomSegment = "XXXXXXXX"
     val randomNameSegmentGenerator = mockk<RandomNameSegmentGenerator>()
     val namer = TestAssetResourceNamer(clock, randomNameSegmentGenerator)
-    val name = "TEST_XXXXXXXX_0"
+    val name = "TEST_0_XXXXXXXX"
 
     init {
         every { randomNameSegmentGenerator.generate(any()) } returns randomSegment
@@ -31,7 +32,12 @@ class TestAssetResourceNamerTest {
     }
 
     @Test
-    fun testMillisFromName() {
+    fun testMillisFromName_testName() {
         assertEquals(time.toEpochMilli(), namer.millisFromName(name))
+    }
+
+    @Test
+    fun testMillisFromName_externalName() {
+        assertNull(namer.millisFromName("PROD_1234_HERE"))
     }
 }
