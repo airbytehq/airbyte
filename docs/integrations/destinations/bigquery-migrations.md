@@ -2,7 +2,7 @@
 
 ## Upgrading to 3.0.0
 
-This version upgrades Destination BigQuery to the [Direct-Load](/platform/using-airbyte/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how direct-load differs from Typing and Deduping.
+This version upgrades Destination BigQuery to the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how direct-load differs from Typing and Deduping.
 
 If you do not interact with the raw tables, you can safely upgrade. There is no breakage for this usecase.
 
