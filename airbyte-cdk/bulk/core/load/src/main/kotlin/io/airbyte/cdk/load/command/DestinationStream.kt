@@ -134,7 +134,7 @@ data class DestinationStream(
             .withSyncId(syncId)
             .withIncludeFiles(includeFiles)
             .withDestinationObjectName(destinationObjectName)
-            .withPrimaryKey(matchingKey?.map { listOf(it) }.orEmpty() )
+            .withPrimaryKey(matchingKey?.map { listOf(it) }.orEmpty())
             .apply {
                 when (importType) {
                     is Append -> {
