@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -160,10 +161,11 @@ class ClickhouseAirbyteClient(
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
                 deleted.add(clickhouseColumn.columnName)
             } else {
+                val clickhouseType =
+                    clickhouseColumn.dataType.name.let { if (it == "DateTime64") DATETIME_WITH_PRECISION else it }
                 // Should we do something about datetime?
                 if (
-                    mutableCatalogColumns[clickhouseColumn.columnName] !=
-                        clickhouseColumn.dataType.name
+                    mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType
                 ) {
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!

@@ -31,8 +31,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
-import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import jakarta.inject.Singleton
 
 @Singleton
@@ -309,16 +309,23 @@ class ClickhouseSqlGenerator {
                 .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
                 .appendLine()
         alterationSummary.added.forEach { (columnName, columnType) ->
-            builder.append(" ADD COLUMN `$columnName` $columnType,")
+            builder.append(" ADD COLUMN `$columnName` ${columnType.sqlNullable()},")
         }
         alterationSummary.modified.forEach { (columnName, columnType) ->
-            builder.append(" MODIFY COLUMN `$columnName` $columnType,")
+            builder.append(" MODIFY COLUMN `$columnName` ${columnType.sqlNullable()},")
         }
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
         }
         println(builder.dropLast(1).toString())
         return builder.dropLast(1).toString()
+    }
+
+    private fun String.sqlNullable(): String =
+            "Nullable($this)"
+
+    companion object {
+        const val DATETIME_WITH_PRECISION = "DateTime64(3)"
     }
 }
 
@@ -332,7 +339,7 @@ fun AirbyteType.toDialectType(): String =
         TimeTypeWithTimezone -> ClickHouseDataType.String.name
         TimeTypeWithoutTimezone -> ClickHouseDataType.String.name
         TimestampTypeWithTimezone,
-        TimestampTypeWithoutTimezone -> "DateTime64(3)"
+        TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
         is ArrayType,
         ArrayTypeWithoutSchema,
         is ObjectType,
@@ -341,3 +348,4 @@ fun AirbyteType.toDialectType(): String =
         is UnionType,
         is UnknownType -> ClickHouseDataType.String.name
     }
+
