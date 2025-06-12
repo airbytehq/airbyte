@@ -81,7 +81,7 @@ fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig<*> =
  * - pathPattern doesn't guarantee it is only a path, to avoid path leaking into the filename, we
  * add a trailing '/'.
  */
-private fun normalizePathFormat(format: String?): String? =
+internal fun normalizePathFormat(format: String?): String? =
     format?.let {
         val pathWithCorrectVars =
             it.replace("""\{\w+}""".toRegex()) { match -> "${'$'}${match.value.uppercase()}" }
