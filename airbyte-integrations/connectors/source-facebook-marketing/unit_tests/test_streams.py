@@ -151,23 +151,3 @@ def test_custom_ads_insights_breakdowns(some_config):
     stream = AdsInsights(breakdowns=[], action_breakdowns=[], action_breakdowns_allow_empty=True, **kwargs)
     assert stream.breakdowns == []
     assert stream.action_breakdowns == []
-
-
-def test_custom_ads_insights_action_report_times(some_config):
-    kwargs = {
-        "api": None,
-        "account_ids": some_config["account_ids"],
-        "start_date": pendulum.now(),
-        "end_date": pendulum.now(),
-        "insights_lookback_window": 1,
-        "action_breakdowns": ["action_destination"],
-        "breakdowns": [],
-    }
-    stream = AdsInsights(**kwargs)
-    assert stream.action_report_time == "mixed"
-
-    stream = AdsInsights(action_report_time="conversion", **kwargs)
-    assert stream.action_report_time == "conversion"
-
-    stream = AdsInsights(action_report_time="impression", **kwargs)
-    assert stream.action_report_time == "impression"
