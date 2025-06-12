@@ -7,8 +7,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 import source_bing_ads
 from bingads.service_info import SERVICE_INFO_DICT_V13
+from conftest import find_stream
 from helpers import source
-from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
+from source_bing_ads.base_streams import Accounts, Campaigns
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
@@ -116,53 +117,127 @@ def test_campaigns_stream_slices(mocked_client, config):
         ]
 
 
-@patch.object(source_bing_ads.source, "Client")
-def test_adgroups_stream_slices(mocked_client, config):
-    adgroups = AdGroups(mocked_client, config)
-    accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
-    campaigns_read_records = [iter([{"Id": 11}, {"Id": 22}]), iter([{"Id": 55}, {"Id": 66}])]
-    with patch.object(Accounts, "read_records", return_value=accounts_read_records):
-        with patch.object(Campaigns, "read_records", side_effect=campaigns_read_records):
-            slices = adgroups.stream_slices()
-            assert list(slices) == [
-                {"campaign_id": 11, "account_id": 180519267, "customer_id": 100},
-                {"campaign_id": 22, "account_id": 180519267, "customer_id": 100},
-                {"campaign_id": 55, "account_id": 180278106, "customer_id": 200},
-                {"campaign_id": 66, "account_id": 180278106, "customer_id": 200},
+def test_adgroups_stream_slices(mock_auth_token, requests_mock, config):
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query",
+        status_code=200,
+        json={"User": {"Id": 1}},
+    )
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
+        status_code=200,
+        json={
+            "Accounts": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
             ]
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_ads_request_params(mocked_client, config):
-    ads = Ads(mocked_client, config)
-
-    request_params = ads.request_params(stream_slice={"ad_group_id": "ad_group_id"})
-    assert request_params == {
-        "AdGroupId": "ad_group_id",
-        "AdTypes": {
-            "AdType": ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"]
         },
-        "ReturnAdditionalFields": "ImpressionTrackingUrls Videos LongHeadlines",
+    )
+    requests_mock.post(
+        "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId",
+        status_code=200,
+        json={
+            "Campaigns": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
+            ]
+        },
+    )
+    ad_groups = find_stream("ad_groups", config)
+    stream_slices = list(ad_groups.retriever.stream_slicer.stream_slices())
+    assert stream_slices == [
+        {"campaign_id": [1], "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}]},
+        {"campaign_id": [2], "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}]},
+        {"campaign_id": [3], "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}]},
+    ]
+
+
+def test_ads_request_body_data(mock_auth_token, config):
+    ads = find_stream("ads", config)
+    stream_slice = {
+        "campaign_id": [1],
+        "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "AccountName", "user_id": 1, "parent_slice": {}}}],
+    }
+
+    request_params = ads.retriever.requester.get_request_body_json(stream_slice=stream_slice)
+    assert request_params == {
+        "AdTypes": ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"],
+        "ReturnAdditionalFields": "ImpressionTrackingUrls,Videos,LongHeadlines",
     }
 
 
-@patch.object(source_bing_ads.source, "Client")
-def test_ads_stream_slices(mocked_client, config):
-    ads = Ads(mocked_client, config)
-
-    with patch.object(
-        AdGroups,
-        "stream_slices",
-        return_value=iter([{"account_id": 180519267, "customer_id": 100}, {"account_id": 180278106, "customer_id": 200}]),
-    ):
-        with patch.object(AdGroups, "read_records", side_effect=[iter([{"Id": 11}, {"Id": 22}]), iter([{"Id": 55}, {"Id": 66}])]):
-            slices = ads.stream_slices()
-            assert list(slices) == [
-                {"ad_group_id": 11, "account_id": 180519267, "customer_id": 100},
-                {"ad_group_id": 22, "account_id": 180519267, "customer_id": 100},
-                {"ad_group_id": 55, "account_id": 180278106, "customer_id": 200},
-                {"ad_group_id": 66, "account_id": 180278106, "customer_id": 200},
+def test_ads_stream_slices(mock_auth_token, requests_mock, config):
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query",
+        status_code=200,
+        json={"User": {"Id": 1}},
+    )
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
+        status_code=200,
+        json={
+            "Accounts": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
             ]
+        },
+    )
+    requests_mock.post(
+        "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId",
+        status_code=200,
+        json={
+            "Campaigns": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
+            ]
+        },
+    )
+    requests_mock.post(
+        "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/AdGroups/QueryByCampaignId",
+        status_code=200,
+        json={
+            "AdGroups": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
+            ]
+        },
+    )
+    ads = find_stream("ads", config)
+    stream_slices = list(ads.retriever.stream_slicer.stream_slices())
+    assert stream_slices == [
+        {
+            "ad_group_id": [1],
+            "parent_slice": [
+                {
+                    "campaign_id": [1],
+                    "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}],
+                }
+            ],
+        },
+        {
+            "ad_group_id": [2],
+            "parent_slice": [
+                {
+                    "campaign_id": [1],
+                    "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}],
+                }
+            ],
+        },
+        {
+            "ad_group_id": [3],
+            "parent_slice": [
+                {
+                    "campaign_id": [1],
+                    "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}],
+                }
+            ],
+        },
+    ]
 
 
 @pytest.mark.parametrize(
@@ -178,8 +253,6 @@ def test_ads_stream_slices(mocked_client, config):
                 }
             },
         ),
-        (AdGroups, {"campaign_id": "campaign_id"}),
-        (Ads, {"ad_group_id": "ad_group_id"}),
         (Campaigns, {"account_id": "account_id"}),
     ),
 )
@@ -190,21 +263,50 @@ def test_streams_full_refresh(mocked_client, config, stream, stream_slice):
     mocked_client.request.assert_called_once()
 
 
-@patch.object(source_bing_ads.source, "Client")
-def test_transform(mocked_client, config):
+def test_transform(mock_auth_token, config):
     record = {"AdFormatPreference": "All", "DevicePreference": 0, "EditorialStatus": "ActiveLimited", "FinalAppUrls": None}
-    transformed_record = Ads(mocked_client, config).transform(
-        record=record, stream_slice={"ad_group_id": 90909090, "account_id": 909090, "customer_id": 9090909}
-    )
-    assert transformed_record == {
+    ads_stream = find_stream("ads", config)
+    expected_record = {
         "AccountId": 909090,
         "AdFormatPreference": "All",
         "AdGroupId": 90909090,
         "CustomerId": 9090909,
+        "Descriptions": None,
         "DevicePreference": 0,
         "EditorialStatus": "ActiveLimited",
         "FinalAppUrls": None,
+        "FinalMobileUrls": None,
+        "FinalUrls": None,
+        "ForwardCompatibilityMap": None,
+        "Headlines": None,
+        "Images": None,
+        "LongHeadlines": None,
+        "Path1": None,
+        "Path2": None,
+        "TextPart2": None,
+        "TitlePart3": None,
+        "Videos": None,
     }
+    transformed_record = list(
+        ads_stream.retriever.record_selector.filter_and_transform(
+            all_data=[
+                record,
+            ],
+            stream_state=None,
+            records_schema={},
+            stream_slice={
+                "ad_group_id": [90909090],
+                "extra_fields": {"AccountId": [909090], "CustomerId": [9090909]},
+                "parent_slice": [
+                    {
+                        "campaign_id": [1],
+                        "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}],
+                    }
+                ],
+            },
+        )
+    )[0]
+    assert dict(sorted(transformed_record.items())) == dict(sorted(expected_record.items()))
 
 
 @patch.object(source_bing_ads.source, "Client")
