@@ -534,6 +534,12 @@ class S3V2WriteTestJsonUncompressedSockets :
     override fun testClear() {
         super.testClear()
     }
+
+    @Test
+    @Disabled("known bug - https://github.com/airbytehq/airbyte-internal-issues/issues/13354")
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
 }
 
 class S3V2WriteTestJsonUncompressedSocketsProtobuf :
@@ -556,5 +562,11 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     @Disabled("Clear will never run in socket mode")
     override fun testClear() {
         super.testClear()
+    }
+
+    @Test
+    @Disabled("known bug - https://github.com/airbytehq/airbyte-internal-issues/issues/13354")
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }

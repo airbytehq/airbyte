@@ -5,10 +5,13 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import com.microsoft.sqlserver.jdbc.SQLServerException
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -232,6 +235,8 @@ class MSSQLQueryBuilder(
                 }
             Append -> emptyList()
             Overwrite -> emptyList()
+            SoftDelete,
+            Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
         }
     private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
