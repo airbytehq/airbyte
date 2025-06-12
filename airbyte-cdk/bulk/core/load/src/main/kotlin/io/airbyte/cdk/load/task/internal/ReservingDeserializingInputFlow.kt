@@ -48,7 +48,7 @@ class ReservingDeserializingInputFlow(
 
             bytes += lineSize
             if (++index % logPerNRecords == 0L) {
-                log.info { "Processed $index lines (${bytes/1024/1024}Mb" }
+                log.info { "Processed $index lines (${bytes/1024/1024}Mb)" }
             }
         }
 
