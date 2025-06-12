@@ -199,8 +199,8 @@ def output_results(connectors: List[str], json_format: bool = False):
 
 @app.command()
 def main(
-    java: bool = typer.Option(False, "--java", help="Filter for Java connectors only"),
-    no_java: bool = typer.Option(False, "--no-java", help="Filter for non-Java connectors only"),
+    language: str = typer.Option("", "--language", help="Filter for connectors of specific language (e.g., java, python, manifest-only)"),
+    exclude_language: str = typer.Option("", "--exclude-language", help="Exclude connectors of specific language (e.g., java, python, manifest-only)"),
     certified: bool = typer.Option(False, "--certified", help="Filter for certified connectors only"),
     modified: bool = typer.Option(False, "--modified", help="Filter for modified connectors only"),
     json: bool = typer.Option(False, "--json", help="Output in GitHub Actions matrix JSON format"),
@@ -211,8 +211,8 @@ def main(
 ):
     """Get Airbyte connectors with filtering and GitHub Actions matrix output."""
 
-    if java and no_java:
-        typer.echo("Error: --java and --no-java are mutually exclusive", err=True)
+    if language and exclude_language:
+        typer.echo("Error: --language and --exclude-language are mutually exclusive", err=True)
         raise typer.Exit(1)
     
     if include_connector_list and override_connector_list:
@@ -234,15 +234,14 @@ def main(
             certified_set = get_certified_connectors(registry)
             connectors = [c for c in connectors if c in certified_set]
 
-        if java or no_java:
+        if language or exclude_language:
             filtered = []
             for connector in connectors:
-                language = get_connector_language(connector)
-                is_java = language == "java"
+                connector_language = get_connector_language(connector)
 
-                if java and is_java:
+                if language and connector_language == language:
                     filtered.append(connector)
-                elif no_java and not is_java:
+                elif exclude_language and connector_language != exclude_language:
                     filtered.append(connector)
 
             connectors = filtered
