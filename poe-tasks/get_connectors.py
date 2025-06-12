@@ -202,21 +202,27 @@ def output_results(connectors: List[str], json_format: bool = False):
 @app.command()
 def main(
     language: str = typer.Option("", "--language", help="Filter for connectors of specific language (e.g., java, python, manifest-only)"),
-    exclude_language: str = typer.Option("", "--exclude-language", help="Exclude connectors of specific language (e.g., java, python, manifest-only)"),
+    exclude_language: str = typer.Option(
+        "", "--exclude-language", help="Exclude connectors of specific language (e.g., java, python, manifest-only)"
+    ),
     certified: bool = typer.Option(False, "--certified", help="Filter for certified connectors only"),
     modified: bool = typer.Option(False, "--modified", help="Filter for modified connectors only"),
     json: bool = typer.Option(False, "--json", help="Output in GitHub Actions matrix JSON format"),
     prev_commit: bool = typer.Option(False, "--prev-commit", help="Compare against previous commit"),
     registry: str = typer.Option(DEFAULT_REGISTRY_URL, "--registry", help="Registry path (local file or remote URL)"),
-    include_connector_list: str = typer.Option("", "--include-connector-list", help="Comma-separated list of connectors to include (union with filtered results)"),
-    override_connector_list: str = typer.Option("", "--override-connector-list", help="Comma-separated list of connectors to use instead of filtered results"),
+    include_connector_list: str = typer.Option(
+        "", "--include-connector-list", help="Comma-separated list of connectors to include (union with filtered results)"
+    ),
+    override_connector_list: str = typer.Option(
+        "", "--override-connector-list", help="Comma-separated list of connectors to use instead of filtered results"
+    ),
 ):
     """Get Airbyte connectors with filtering and GitHub Actions matrix output."""
 
     if language and exclude_language:
         typer.echo("Error: --language and --exclude-language are mutually exclusive", err=True)
         raise typer.Exit(1)
-    
+
     if include_connector_list and override_connector_list:
         typer.echo("Error: --include-connector-list and --override-connector-list are mutually exclusive", err=True)
         raise typer.Exit(1)
