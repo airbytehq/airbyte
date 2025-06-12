@@ -148,7 +148,7 @@ class S3KotlinClient(
         }
         val response = client.createMultipartUpload(request)
 
-        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+        log.debug { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
 
         return S3StreamingUpload(client, bucketConfig, response)
     }

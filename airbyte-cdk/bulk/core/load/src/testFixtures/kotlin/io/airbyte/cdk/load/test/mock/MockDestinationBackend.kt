@@ -9,9 +9,11 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.RecordDiffer
+import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -50,7 +52,15 @@ object MockDestinationBackend {
         }
         fun getPk(record: OutputRecord): List<AirbyteValue?> =
             primaryKey.map { pkField -> getField(pkField, record) }
-        fun getCursor(record: OutputRecord): AirbyteValue? = getField(cursor, record)
+        fun getCursor(record: OutputRecord): AirbyteValue? =
+            if (cursor.isEmpty()) {
+                TimestampWithTimezoneValue(record.extractedAt.atOffset(ZoneOffset.UTC))
+            } else {
+                // technically this is wrong - we should actually return a tuple of
+                // (cursor_field, extracted_at)
+                // but this is easier to implement :P
+                getField(cursor, record)
+            }
 
         val file = getFile(filename)
         records.forEach { incomingRecord ->
@@ -61,8 +71,14 @@ object MockDestinationBackend {
                 file.firstOrNull {
                     RecordDiffer.comparePks(incomingPk, getPk(it), nullEqualsUnset = false) == 0
                 }
+            val isNotDeletion =
+                getField(listOf("_ab_cdc_deleted_at"), incomingRecord).let {
+                    it == null || it is NullValue
+                }
             if (existingRecord == null) {
-                file.add(incomingRecord)
+                if (isNotDeletion) {
+                    file.add(incomingRecord)
+                }
             } else {
                 val incomingCursor = getCursor(incomingRecord)
                 val existingCursor = getCursor(existingRecord)
@@ -77,8 +93,7 @@ object MockDestinationBackend {
                         (compare == 0 && incomingRecord.extractedAt > existingRecord.extractedAt)
                 ) {
                     file.remove(existingRecord)
-                    val deletion = getField(listOf("_ab_cdc_deleted_at"), incomingRecord)
-                    if (deletion == null || deletion is NullValue) {
+                    if (isNotDeletion) {
                         file.add(incomingRecord)
                     }
                 }

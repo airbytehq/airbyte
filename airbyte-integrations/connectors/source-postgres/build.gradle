@@ -3,6 +3,8 @@ import org.jsonschema2pojo.SourceType
 plugins {
     id 'airbyte-java-connector'
     id 'com.github.eirnym.js2p'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 java {
@@ -12,7 +14,7 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.9'
+    cdkVersionRequired = '0.48.13'
     features = ['db-sources', 'datastore-postgres']
     useLocalCdk = false
 }

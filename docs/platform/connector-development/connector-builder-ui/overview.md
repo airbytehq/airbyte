@@ -1,4 +1,4 @@
-# Connector Builder Intro
+# Connector Builder
 
 Connector Builder is a no-code tool that’s part of the Airbyte UI.
 It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and lets you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace.
@@ -38,3 +38,7 @@ If you'd like to share your connector with other Airbyte users, you can contribu
 Reviews typically take under a week.
 
 You can also export the YAML manifest file for your connector and share it with others. The manifest file contains all the information about the connector, including the global configuration, streams, and user inputs.
+
+## Disabled in low-resource mode
+
+If you install Airbyte with abctl using low-resource mode, you are unable to access the Connector Builder. To access the Connector Builder, allocate Airbyte's [suggested resources](/platform/using-airbyte/getting-started/oss-quickstart#suggested-resources) and re-deploy Airbyte without setting the `--low-resource-mode` flag.

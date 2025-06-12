@@ -4,25 +4,34 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
+import TCPSocketWriter
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.extensions.grantAllPermissions
+import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
+import io.airbyte.cdk.load.file.TcpPortReserver
+import io.airbyte.cdk.load.message.InputMessage
+import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.NUM_SOCKETS
+import io.airbyte.cdk.load.test.util.rotate
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedWriter
 import java.io.File
-import java.io.OutputStreamWriter
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Clock
-import java.util.Locale
-import java.util.Scanner
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.io.path.outputStream
 import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -37,18 +46,22 @@ private val logger = KotlinLogging.logger {}
 
 // TODO define a factory for this class + @Require(env = CI_master_merge)
 class DockerizedDestination(
-    imageTag: String,
-    command: String,
-    configContents: String?,
-    catalog: ConfiguredAirbyteCatalog?,
+    private val imageTag: String,
+    private val command: String,
+    private val configContents: String?,
+    private val catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
-    useFileTransfer: Boolean,
-    envVars: Map<String, String>,
+    private val useFileTransfer: Boolean,
+    private val envVars: Map<String, String>,
+    override val dataChannelMedium: DataChannelMedium,
+    val dataChannelFormat: DataChannelFormat,
+    val namespaceMappingConfig: NamespaceMappingConfig,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
+    private var sidecarProcess: Process? = null
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
-    private val destinationStdin: BufferedWriter
+    private val destinationDataChannels: Array<OutputStream>
     // We use this suffix as part of the docker container name.
     // We'll also add it to the log prefix, which helps with debugging tests
     // that launch multiple containers.
@@ -62,8 +75,49 @@ class DockerizedDestination(
     private val stderrDrained = CompletableDeferred<Unit>()
     // Mainly, used for file transfer but there are other consumers, name the AWS CRT HTTP client.
     private val tmpDir = Files.createTempDirectory("tmp").grantAllPermissions()
+    private val socketPathDir = "/var/airbyte"
+    private val sharedVolumeName = "airbyte-test-shared-volume-$randomSuffix"
+    private val destinationAwaitingSocketConnection = CompletableDeferred<Unit>()
+    private val dataChannelIndex = AtomicInteger(0)
 
     init {
+        createSharedVolume()
+        process = startDestination(featureFlags)
+
+        // Annoyingly, the process's stdin is called "outputStream"
+        destinationDataChannels =
+            when (dataChannelMedium) {
+                DataChannelMedium.STDIO -> arrayOf(process.outputStream)
+                DataChannelMedium.SOCKET -> {
+                    (0 until NUM_SOCKETS)
+                        .map {
+                            val sidecarPort = TcpPortReserver.findAvailablePort()
+                            sidecarProcess = startSidecar(sidecarPort, makeSocketPath(it), it)
+
+                            TCPSocketWriter("localhost", sidecarPort, awaitFirstWrite = true)
+                        }
+                        .toTypedArray()
+                }
+            }
+    }
+
+    private fun makeSocketPath(socketIndex: Int): String =
+        "$socketPathDir/ab_socket_${randomSuffix}_$socketIndex.socket"
+
+    private fun createSharedVolume() {
+        val createVolumeCommand =
+            listOf(
+                "docker",
+                "volume",
+                "create",
+                "--name",
+                sharedVolumeName,
+            )
+        logger.info { "Creating shared volume $sharedVolumeName" }
+        ProcessBuilder(createVolumeCommand).start().waitFor()
+    }
+
+    private fun startDestination(featureFlags: Array<out FeatureFlag>): Process {
         // This is largely copied from the old cdk's DockerProcessFactory /
         // AirbyteIntegrationLauncher / DestinationAcceptanceTest,
         // but cleaned up, consolidated, and simplified.
@@ -101,11 +155,35 @@ class DockerizedDestination(
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
+
+        val containerNamespaceMapperConfigPath =
+            Paths.get(containerDataRoot, "namespace-mapper-config.json")
+        val hostNamespaceMapperConfigPath = workspaceRoot.resolve("namespace-mapper-config.json")
+        hostNamespaceMapperConfigPath.outputStream().use {
+            it.write(namespaceMappingConfig.serializeToJsonBytes())
+        }
+        val socketPaths = (0 until NUM_SOCKETS).joinToString(",") { makeSocketPath(it) }
+        val socketPathEnvVarsMaybe =
+            if (dataChannelMedium == DataChannelMedium.SOCKET) {
+                listOf(
+                    "-e",
+                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKET}",
+                    "-e",
+                    "${EnvVarConstants.DATA_CHANNEL_FORMAT.environmentVariable}=$dataChannelFormat",
+                    "-e",
+                    "${EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS.environmentVariable}=$socketPaths",
+                    "-e",
+                    "${EnvVarConstants.NAMESPACE_MAPPER_CONFIG_PATH.environmentVariable}=$containerNamespaceMapperConfigPath",
+                )
+            } else {
+                emptyList()
+            }
+
         val additionalEnvEntries =
             envVars.flatMap { (key, value) ->
                 logger.info { "Env vars: $key loaded" }
                 listOf("-e", "$key=$value")
-            }
+            } + socketPathEnvVarsMaybe
 
         // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
@@ -122,8 +200,8 @@ class DockerizedDestination(
                     "none",
                     "--name",
                     containerName,
-                    "--network",
-                    "host",
+                    "--mount",
+                    "source=$sharedVolumeName,target=/var/airbyte",
                     "-v",
                     String.format("%s:%s", workspaceRoot, containerDataRoot),
                     "-v",
@@ -139,7 +217,7 @@ class DockerizedDestination(
                         "-e",
                         "WORKER_JOB_ID=0",
                         imageTag,
-                        command,
+                        command
                     ))
                 .toMutableList()
 
@@ -157,9 +235,70 @@ class DockerizedDestination(
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
 
-        process = ProcessBuilder(cmd).start()
-        // Annoyingly, the process's stdin is called "outputStream"
-        destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
+        logger.info { "Running destination with command: $cmd" }
+        return ProcessBuilder(cmd).start()
+    }
+
+    private fun startSidecar(sidecarPort: Int, socketPath: String, index: Int): Process {
+        // Starts the socat container first, which creates the socket with proper permissions
+        // UNIX-LISTEN ensures socat will create the UNIX socket. It will also await connections
+        // and block until a connection is made.
+        // TCP-LISTEN will create a TCP socket that forwards to the UNIX socket. It will only
+        // start accepting connections after the UNIX socket connection. Connections made sooner
+        // will silently fail. (Either by blocking on write or by devnulling the data. I have no
+        // idea why
+        // this happens. In practice tests will hang or destinations will throw as if having
+        // received EOF before end-of-stream.)
+        //
+        // In theory we should be able to make the TCP port available sooner by `fork`ing the UNIX
+        // call, but in practice the TCP connection will still silently fail if the destination
+        // hasn't connected to
+        // the socket yet. To hack around this, we A) lazily initialize the TCP socket connection on
+        // first write and B) block writes until the destination logs that it has successfully
+        // connected. THIS IS HORRIBLE AND WILL PROBABLY BREAK IN A CONFUSING WAY.
+        //
+        // NOTE: There is also a slight delay between the destination connecting to the UNIX socket
+        // and the TCP port being available. To hack around that the TcpSocketWriter waits an extra
+        // second before connecting. In practice this seems sufficient even when running 100s of
+        // tests concurrently. (Without it about 3-4 of the total will hang indefinitely.)
+        val socatCommand =
+            listOf(
+                "docker",
+                "run",
+                "--rm",
+                "-d",
+                "--name",
+                "socat-sidecar-$randomSuffix-$index",
+                "--mount",
+                "source=$sharedVolumeName,target=/var/airbyte",
+                "-p",
+                "$sidecarPort:$sidecarPort",
+                "alpine/socat",
+                // level of logging; more d's => more verbose. At 15 it becomes sentient.
+                "-dddd",
+                "UNIX-LISTEN:$socketPath,reuseaddr,mode=777",
+                "TCP-LISTEN:$sidecarPort,reuseaddr,nodelay=1",
+            )
+        logger.info { "Starting socat sidecar with command: $socatCommand" }
+        return ProcessBuilder(socatCommand).start()
+    }
+
+    private fun removeSharedVolume() {
+        val removeVolumeCommand =
+            listOf(
+                "docker",
+                "volume",
+                "rm",
+                sharedVolumeName,
+            )
+        logger.info { "Removing shared volume $sharedVolumeName" }
+        ProcessBuilder(removeVolumeCommand).start().waitFor()
+    }
+
+    private suspend fun awaitReadyForSendingMessages() {
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
+            destinationAwaitingSocketConnection.await()
+        }
     }
 
     override suspend fun run() {
@@ -168,6 +307,8 @@ class DockerizedDestination(
                     // Consume stdout. These should all be properly-formatted messages.
                     // Annoyingly, the process's stdout is called "inputStream".
                     val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
+                    val unconnectedSockets =
+                        (0 until NUM_SOCKETS).map { makeSocketPath(it) }.toMutableSet()
                     while (destinationStdout.hasNextLine()) {
                         val line = destinationStdout.nextLine()
                         val message =
@@ -180,6 +321,23 @@ class DockerizedDestination(
                             }
                         if (message.type == AirbyteMessage.Type.LOG) {
                             // Don't capture logs, just echo them directly to our own stdout
+                            val connectedSockets =
+                                unconnectedSockets.filter {
+                                    message.log.message.contains(
+                                        "Socket file $it connected for reading"
+                                    )
+                                }
+                            connectedSockets.forEach {
+                                // This is a hack to detect when the destination is ready to accept
+                                // messages.
+                                // We should probably find a better way to do this.
+                                unconnectedSockets.remove(it)
+                                if (unconnectedSockets.isEmpty()) {
+                                    logger.info { "All sockets connected, unblocking writes." }
+                                    destinationAwaitingSocketConnection.complete(Unit)
+                                }
+                            }
+
                             val combinedMessage =
                                 message.log.message +
                                     (if (message.log.stackTrace != null)
@@ -233,14 +391,25 @@ class DockerizedDestination(
             }
     }
 
-    override fun sendMessage(message: AirbyteMessage) {
-        destinationStdin.write(message.serializeToString())
-        destinationStdin.newLine()
+    override suspend fun sendMessage(message: InputMessage, broadcast: Boolean) {
+        awaitReadyForSendingMessages()
+        val dataChannels =
+            if (broadcast) {
+                destinationDataChannels
+            } else {
+                arrayOf(
+                    destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)]
+                )
+            }
+        dataChannels.forEach { message.writeProtocolMessage(dataChannelFormat, it) }
     }
 
-    override fun sendMessage(string: String) {
-        destinationStdin.write(string)
-        destinationStdin.newLine()
+    override suspend fun sendMessage(string: String) {
+        awaitReadyForSendingMessages()
+        destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)].let {
+            it.write(string.toByteArray(Charsets.UTF_8))
+            it.write('\n'.code)
+        }
     }
 
     override fun readMessages(): List<AirbyteMessage> {
@@ -249,11 +418,13 @@ class DockerizedDestination(
 
     override suspend fun shutdown() {
         withContext(Dispatchers.IO) {
-            destinationStdin.close()
+            logger.info { "Destination $randomSuffix shutting down" }
+            destinationDataChannels.forEach { it.close() }
             // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
             // all the destination output (logs/trace messages).
             stdoutDrained.join()
             stderrDrained.join()
+
             // The old cdk had a 1-minute timeout here. That seems... weird?
             // We can just rely on the junit timeout, presumably?
             process.waitFor()
@@ -265,10 +436,11 @@ class DockerizedDestination(
                     destinationOutput.states(),
                 )
             }
+            removeSharedVolume()
         }
     }
 
-    override fun kill() {
+    override suspend fun kill() {
         process.destroyForcibly()
     }
 
@@ -288,6 +460,9 @@ class DockerizedDestinationFactory(
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
         micronautProperties: Map<Property, String>,
+        dataChannelMedium: DataChannelMedium,
+        dataChannelFormat: DataChannelFormat,
+        namespaceMappingConfig: NamespaceMappingConfig,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -298,6 +473,9 @@ class DockerizedDestinationFactory(
             testName,
             useFileTransfer,
             micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
+            dataChannelMedium,
+            dataChannelFormat,
+            namespaceMappingConfig = namespaceMappingConfig,
             *featureFlags,
         )
     }

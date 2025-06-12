@@ -14,6 +14,7 @@ const fetchCatalog = async () => {
   console.log("Fetching connector registry...");
   const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
   console.log(`fetched ${json.length} connectors from registry`);
+
   return json;
 };
 
@@ -45,9 +46,11 @@ const parseCDKVersion = (
 function getSupportLevelDisplay(rawSupportLevel) {
   switch (rawSupportLevel) {
     case "certified":
-      return "Airbyte Connector";
+      return "Airbyte";
     case "community":
       return "Marketplace";
+    case "enterprise":
+      return "Enterprise";
     case "archived":
       return "Archived";
     default:

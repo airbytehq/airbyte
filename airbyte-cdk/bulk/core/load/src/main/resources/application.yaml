@@ -1,6 +1,15 @@
 airbyte:
   destination:
     core:
+      data-channel:
+        medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+        format: ${DATA_CHANNEL_FORMAT:JSONL}
+        socket-paths: ${DATA_CHANNEL_SOCKET_PATHS:}
+        socket-buffer-size-bytes: 16384
+        socket-connection-timeout-ms: 900000 # 15 minutes
+        log-per-n-records: 100000 # How often the input consumer(s) should log their progress
+      mappers:
+        namespace-mapping-config-path: ${NAMESPACE_MAPPING_CONFIG_PATH:/dest/namespace-mapping.json}
       record-batch-size-override: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE:null}
       file-transfer:
         enabled: ${USE_FILE_TRANSFER:false}

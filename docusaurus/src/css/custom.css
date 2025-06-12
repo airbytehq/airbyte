@@ -46,7 +46,7 @@
   --color-dark-blue-40: hsl(230, 23%, 95%);
   --color-dark-blue-700: hsl(236, 43%, 31%);
   --color-red-400: hsl(0, 73%, 50%);
-
+  --color-orange-400: hsl(9, 100%, 60%);
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
   --icon-background: transparent;
 }
@@ -81,9 +81,12 @@ html[data-theme="dark"] {
   --color-dark-blue-700: hsl(240, 100%, 98%);
   --color-white: hsl(0, 0%, 16%);
   --color-red-400: hsl(0, 81%, 71%);
+  --color-orange-400: hsl(9, 100%, 60%);
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
+  --markprompt-background: var(--ifm-background-color) !important;
+  --markprompt-background-accent: var(--ifm-background-color) !important;
 }
 
 /* Hide sidebar on the homepage */
@@ -341,4 +344,49 @@ svg.inline-svg {
 nav a.navbar__link--active {
   color: var(--ifm-color-primary) !important;
   border-bottom: 3px solid var(--ifm-color-primary);
+}
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
+}
+.MarkpromptBranding {
+  display: none !important;
+}
+
+.MarkpromptDefaultViewExamplePromptButton {
+  color: var(--color-gray-40) !important;
+  border: 1px solid var(--color-dark-blue-40) !important;
+  border-radius: 4px !important;
+}
+
+.MarkpromptOverlay {
+  z-index: 201 !important;
+}
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  max-width: 580px !important;
+}
+
+.MarkpromptMessageAvatarContainer {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatarImage {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatar {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptContentDialog {
+  --markprompt-text-size: 1em !important;
+  --markprompt-text-size-code: 1em !important;
+}
+
+.MarkpromptPrompt {
+  padding-block: 0.35rem !important;
 }

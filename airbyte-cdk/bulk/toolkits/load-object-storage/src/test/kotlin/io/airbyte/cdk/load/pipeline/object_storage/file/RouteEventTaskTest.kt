@@ -7,9 +7,11 @@ package io.airbyte.cdk.load.pipeline.object_storage.file
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -20,6 +22,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventTask
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -28,6 +31,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +45,7 @@ class RouteEventTaskTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
 
     @MockK(relaxed = true)
-    lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    lateinit var inputQueue: Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>
 
     @MockK(relaxed = true)
     lateinit var fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
@@ -74,13 +79,15 @@ class RouteEventTaskTest {
             val stream = Fixtures.stream(includeFiles = true)
             val key = StreamKey(stream.descriptor)
             val record = Fixtures.record()
-            val checkpoints = mapOf(CheckpointId(1) to 2L)
+            val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
+            val releaseMemCallback: (suspend () -> Unit) = mockk(relaxed = true)
 
             val input =
                 PipelineMessage(
                     checkpointCounts = checkpoints,
                     key = key,
                     value = record,
+                    postProcessingCallback = releaseMemCallback,
                 )
             every { catalog.getStream(key.stream) } returns stream
 
@@ -88,7 +95,7 @@ class RouteEventTaskTest {
 
             val expectedContext =
                 PipelineContext(
-                    mapOf(CheckpointId(1) to 2),
+                    mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                     record,
                 )
 
@@ -97,16 +104,18 @@ class RouteEventTaskTest {
                     checkpointCounts = checkpoints,
                     key = key,
                     value = Fixtures.record(),
+                    postProcessingCallback = releaseMemCallback,
                     context = expectedContext
                 )
 
             coVerify { fileQueue.publish(expected, partition) }
+            coVerify { releaseMemCallback() }
         }
 
     @Test
     fun `routes end of stream for streams with includes files to file queue`() = runTest {
         val stream = Fixtures.stream(includeFiles = true)
-        val key = StreamKey(Fixtures.descriptor)
+        val key = StreamKey(Fixtures.unmappedDescriptor)
 
         val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
         every { catalog.getStream(key.stream) } returns stream
@@ -121,7 +130,7 @@ class RouteEventTaskTest {
         val stream = Fixtures.stream(includeFiles = false)
         val key = StreamKey(stream.descriptor)
         val record = Fixtures.record()
-        val checkpoints = mapOf(CheckpointId(1) to 2L)
+        val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
 
         val input =
             PipelineMessage(
@@ -139,7 +148,7 @@ class RouteEventTaskTest {
     @Test
     fun `routes end of stream for non-file streams to record queue`() = runTest {
         val stream = Fixtures.stream(includeFiles = false)
-        val key = StreamKey(Fixtures.descriptor)
+        val key = StreamKey(Fixtures.unmappedDescriptor)
 
         val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
         every { catalog.getStream(key.stream) } returns stream
@@ -150,16 +159,16 @@ class RouteEventTaskTest {
     }
 
     @Test
-    fun `routes heartbeats to record queue`() = runTest {
+    fun `broadcasts heartbeats to record queue`() = runTest {
         val input = PipelineHeartbeat<StreamKey, DestinationRecordRaw>()
 
         task.handleEvent(input)
 
-        coVerify { recordQueue.publish(input, partition) }
+        coVerify { recordQueue.broadcast(input) }
     }
 
     object Fixtures {
-        val descriptor = DestinationStream.Descriptor("namespace-1", "name-1")
+        val unmappedDescriptor = DestinationStream.Descriptor("namespace-1", "name-1")
 
         private fun message() =
             AirbyteMessage()
@@ -176,25 +185,22 @@ class RouteEventTaskTest {
 
         fun stream(includeFiles: Boolean = true, schema: ObjectType = schema()) =
             DestinationStream(
-                descriptor = descriptor,
+                unmappedNamespace = unmappedDescriptor.namespace,
+                unmappedName = unmappedDescriptor.name,
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
+                namespaceMapper = NamespaceMapper()
             )
 
-        fun record(
-            message: AirbyteMessage = message(),
-            schema: ObjectType = schema(),
-            stream: DestinationStream = stream()
-        ) =
+        fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =
             DestinationRecordRaw(
                 stream = stream,
-                rawData = message,
-                serialized = "",
-                schema = schema,
+                rawData = DestinationRecordJsonSource(message),
+                serializedSizeBytes = 0L
             )
     }
 }

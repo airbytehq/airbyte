@@ -32,6 +32,9 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
  * always forward whatever work is in progress in [finish], as [accept] will not be called again for
  * the same batch.
  *
+ * After [accept] returns a [DirectLoader.Complete] status, or after [finish] returns, the
+ * DirectLoader MUST have committed all data durably to the destination.
+ *
  * [close] will be called once at the end of the batch, after the last call to [accept] or [finish],
  * or if the sync fails. Afterward the loader will be discarded and a new one will be created for
  * the next batch if more data arrives. (Note: close should only be used to do cleanup that must
@@ -55,9 +58,9 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
  * stream) per partition. So for a loader using the default partitioner (by stream), this will
  * result in at most num_streams unique loaders. For loaders partitioning by primary key/random/
  * round-robin, this will result in at most num_streams * num_partitions unique loaders. In both
- * cases, this will be clamped to the specified max. Meaning: syncs with a large number of inter-
- * leaved streams risk generating pathologically small batches, but will never break the specified
- * concurrency restrictions.
+ * cases, this will be clamped to the specified max. Meaning: syncs with a large number of
+ * interleaved streams risk generating pathologically small batches, but will never break the
+ * specified concurrency restrictions.
  */
 interface DirectLoader : AutoCloseable {
     sealed interface DirectLoadResult
@@ -68,14 +71,14 @@ interface DirectLoader : AutoCloseable {
      * Called once per record until it returns [Complete], after which [close] is called, the loader
      * is discarded, and the records are considered processed by the platform.
      */
-    fun accept(record: DestinationRecordRaw): DirectLoadResult
+    suspend fun accept(record: DestinationRecordRaw): DirectLoadResult
 
     /**
      * Called by the CDK to force work to finish. It will only be called if the last call to
      * [accept] did not return [Complete]. After which [close] is called, the loader is discarded,
      * and the records are considered processed by the platform.
      */
-    fun finish()
+    suspend fun finish()
 }
 
 interface DirectLoaderFactory<T : DirectLoader> : LoadStrategy {
