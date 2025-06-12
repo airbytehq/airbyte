@@ -56,14 +56,19 @@ object ShelbyDataCleaner : DestinationCleaner {
 class ShelbyWriterTest(
 ) : BasicFunctionalityIntegrationTest(
     configContents = """{
-        |"format":{"format_type":"CSV","flattening":"Root level flattening"},
-        |"path_pattern":"my-own-crap-path",
-        |"file_name_pattern":"{sync_id}-{part_number}-{date}{format_extension}",
-        |"s3_path_format":"${'$'}{NAMESPACE}/${'$'}{STREAM_NAME}/",
-        |"s3_bucket_name":"yolo",
-        |"s3_bucket_path":"destination-shelby",
-        |"s3_bucket_region":"us-west-1"
+        |"objectStorageConfig":{"storage_type":"None"}
         |}""".trimMargin(),
+//    configContents = """{
+//        |"objectStorageConfig":{
+//        |  "storage_type":"S3",
+//        |  "format":{"format_type":"CSV","flattening":"Root level flattening"},
+//        |  "bucket_path":"destination-shelby",
+//        |  "file_name_format":"{sync_id}-{part_number}-{date}{format_extension}",
+//        |  "path_format":"{namespace}/{stream_name}/",
+//        |  "s3_bucket_name":"yolo",
+//        |  "s3_bucket_region":"us-west-1"
+//        |}
+//        |}""".trimMargin(),
     configSpecClass = ShelbySpecification::class.java,
     dataDumper = ShelbyDataDumper(),
     destinationCleaner = ShelbyDataCleaner,

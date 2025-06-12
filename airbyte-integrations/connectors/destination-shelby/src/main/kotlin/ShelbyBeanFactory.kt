@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.shelby
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
@@ -17,7 +18,11 @@ class ShelbyBeanFactory {
     fun discover() = ShelbyDiscoverer()
 
     @Singleton
-    fun getConfig(config: DestinationConfiguration) = config as ShelbyConfiguration<*>
+    fun getConfig(config: DestinationConfiguration) = config as ShelbyConfiguration
+
+    @Singleton
+    fun getObjectStorageConfig(config: ShelbyConfiguration): ObjectStorageConfig<*> =
+        config.objectStorageConfig
 
     @Singleton
     fun objectLoader(): ObjectLoader = object : ObjectLoader {
