@@ -10,11 +10,14 @@ import kotlin.random.Random
 /**
  * Structured names with timestamps make it easy to clean up orphaned test data. Names look like
  * "TEST_XXXXXXXX_123456789". We use seconds instead of millis in order to keep the names short
- * enough to be valid in all DBs. We expose it in millis as a convenience for the consumer, despite
- * the loss in precision. We use a randomized portion in order to ensure the names are unique.
+ * enough to be valid in all DBs. We decode it in millis as a convenience for the consumer, despite
+ * the loss in precision.
+ *
+ * @param clock injectable clock for testability. Use default UTC clock in production.
+ * @param randomNameSegmentGenerator injectable randomized segment generator for testability. Use
+ * default in production.
  */
 class TestAssetResourceNamer(
-    // Inject the clock and random segment generator for testability
     private val clock: Clock = Clock.systemUTC(), // always use UTC to avoid race conditions
     private val randomNameSegmentGenerator: RandomNameSegmentGenerator =
         RandomNameSegmentGenerator(),
