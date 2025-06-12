@@ -235,7 +235,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(MssqlSource::overrideSyncModes)
-          .map(MssqlSource::removeIncrementalWithoutPk)
+          //.map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
           .map(MssqlSource::setDefaultCursorFieldForCdc)
           .map(MssqlSource::addCdcMetadataColumns)
