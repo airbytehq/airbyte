@@ -4,14 +4,13 @@
 
 
 from abc import abstractmethod
+from attr import dataclass
 from dataclasses import dataclass
 from enum import Enum
-from string import Template
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-
-from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
 from setuptools.command.alias import alias
+from string import Template
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from .tools import BULK_PARENT_KEY, BulkTools
 
@@ -2184,7 +2183,36 @@ class Product(ShopifyBulkQuery):
     # images property fields
     images_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=["__typename", "id"])])]
     # variants property fields, we re-use the same field names as for the `images` property
-    variants_fields: List[Field] = images_fields
+    variants_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "id",
+                        "legacyResourceId",
+                        "title",
+                        "displayName",
+                        Field(name="selectedOptions", fields=["name", "value"]),
+                        "price",
+                        "compareAtPrice",
+                        "sku",
+                        "barcode",
+                        "taxable",
+                        "inventoryQuantity",
+                        "inventoryPolicy",
+                        "availableForSale",
+                        "createdAt",
+                        "updatedAt",
+                        Field(name="image", fields=["id", "url", "altText", "width", "height"]),
+                        Field(name="product", fields=["id", "title"])
+                    ]
+                )
+            ]
+        )
+    ]
 
     amount_fields: List[Field] = [
         "amount",
