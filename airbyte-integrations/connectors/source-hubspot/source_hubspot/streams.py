@@ -1794,6 +1794,15 @@ class MarketingEmails(Stream):
     scopes = {"content"}
 
 
+class Orders(CRMSearchStream):
+    # https://developers.hubspot.com/docs/reference/api/crm/commerce/orders#search
+    entity = "orders"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "companies"]
+    primary_key = "id"
+    scopes = {"crm.objects.orders.read"}
+
+
 class Owners(ClientSideIncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners

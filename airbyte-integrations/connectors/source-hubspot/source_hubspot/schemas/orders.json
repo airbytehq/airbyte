@@ -1,0 +1,382 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "companies": {
+      "description": "Information about companies associated with the invoice",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "contacts": {
+      "description": "Information about contacts associated with the invoice",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "hs_all_accessible_team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_all_assigned_business_unit_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_all_owner_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_all_team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_billing_address_city": {
+          "type": "string"
+        },
+        "hs_billing_address_country": {
+          "type": "string"
+        },
+        "hs_billing_address_email": {
+          "type": "string",
+          "format": "email"
+        },
+        "hs_billing_address_firstname": {
+          "type": "string"
+        },
+        "hs_billing_address_lastname": {
+          "type": "string"
+        },
+        "hs_billing_address_name": {
+          "type": "string"
+        },
+        "hs_billing_address_phone": {
+          "type": "string"
+        },
+        "hs_billing_address_postal_code": {
+          "type": "string"
+        },
+        "hs_billing_address_state": {
+          "type": "string"
+        },
+        "hs_billing_address_street": {
+          "type": "string"
+        },
+        "hs_buyer_accepts_marketing": {
+          "type": "boolean"
+        },
+        "hs_cancellation_reason": {
+          "type": "string"
+        },
+        "hs_closed_date": {
+          "type": "string"
+        },
+        "hs_created_by_user_id": {
+          "type": "integer"
+        },
+        "hs_createdate": {
+          "type": "string"
+        },
+        "hs_currency_code": {
+          "type": "string"
+        },
+        "hs_customer_phone": {
+          "type": "string"
+        },
+        "hs_date_entered_3725360f_519b_4b18_a593_494d60a29c9f_69491685": {
+          "type": "string"
+        },
+        "hs_date_entered_3c85a297_e9ce_400b_b42e_9f16853d69d6_2088003863": {
+          "type": "string"
+        },
+        "hs_date_entered_4b27b500_f031_4927_9811_68a0b525cbae_483620459": {
+          "type": "string"
+        },
+        "hs_date_entered_937ea84d_0a4f_4dcf_9028_3f9c2aafbf03_2012274953": {
+          "type": "string"
+        },
+        "hs_date_entered_aa99e8d0_c1d5_4071_b915_d240bbb1aed9_618008780": {
+          "type": "string"
+        },
+        "hs_date_exited_3725360f_519b_4b18_a593_494d60a29c9f_69491685": {
+          "type": "string"
+        },
+        "hs_date_exited_3c85a297_e9ce_400b_b42e_9f16853d69d6_2088003863": {
+          "type": "string"
+        },
+        "hs_date_exited_4b27b500_f031_4927_9811_68a0b525cbae_483620459": {
+          "type": "string"
+        },
+        "hs_date_exited_937ea84d_0a4f_4dcf_9028_3f9c2aafbf03_2012274953": {
+          "type": "string"
+        },
+        "hs_date_exited_aa99e8d0_c1d5_4071_b915_d240bbb1aed9_618008780": {
+          "type": "string"
+        },
+        "hs_discount_codes": {
+          "type": "string"
+        },
+        "hs_exchange_rate": {
+          "type": "number"
+        },
+        "hs_external_canceled_date": {
+          "type": "string"
+        },
+        "hs_external_cart_id": {
+          "type": "string"
+        },
+        "hs_external_checkout_id": {
+          "type": "string"
+        },
+        "hs_external_created_date": {
+          "type": "string"
+        },
+        "hs_external_modified_date": {
+          "type": "string"
+        },
+        "hs_external_order_id": {
+          "type": "string"
+        },
+        "hs_external_order_status": {
+          "type": "string"
+        },
+        "hs_external_order_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "hs_fulfillment_status": {
+          "type": "string"
+        },
+        "hs_homecurrency_amount": {
+          "type": "number"
+        },
+        "hs_is_canceled": {
+          "type": "boolean"
+        },
+        "hs_is_closed": {
+          "type": "boolean"
+        },
+        "hs_landing_site": {
+          "type": "string"
+        },
+        "hs_lastmodifieddate": {
+          "type": "string"
+        },
+        "hs_merged_object_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_object_id": {
+          "type": "integer"
+        },
+        "hs_object_source": {
+          "type": "string"
+        },
+        "hs_object_source_detail_1": {
+          "type": "string"
+        },
+        "hs_object_source_detail_2": {
+          "type": "string"
+        },
+        "hs_object_source_detail_3": {
+          "type": "string"
+        },
+        "hs_object_source_id": {
+          "type": "string"
+        },
+        "hs_object_source_label": {
+          "type": "string"
+        },
+        "hs_object_source_user_id": {
+          "type": "integer"
+        },
+        "hs_order_business_type": {
+          "type": "string"
+        },
+        "hs_order_discount": {
+          "type": "number"
+        },
+        "hs_order_name": {
+          "type": "string"
+        },
+        "hs_order_note": {
+          "type": "string"
+        },
+        "hs_owning_teams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_payment_processing_method": {
+          "type": "string"
+        },
+        "hs_payment_status": {
+          "type": "string"
+        },
+        "hs_pinned_engagement_id": {
+          "type": "integer"
+        },
+        "hs_pipeline": {
+          "type": "string"
+        },
+        "hs_pipeline_stage": {
+          "type": "string"
+        },
+        "hs_processed_date": {
+          "type": "string"
+        },
+        "hs_read_only": {
+          "type": "boolean"
+        },
+        "hs_referring_site": {
+          "type": "string"
+        },
+        "hs_refund_amount": {
+          "type": "number"
+        },
+        "hs_shared_team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_shared_user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_shipping_address_city": {
+          "type": "string"
+        },
+        "hs_shipping_address_country": {
+          "type": "string"
+        },
+        "hs_shipping_address_name": {
+          "type": "string"
+        },
+        "hs_shipping_address_phone": {
+          "type": "string"
+        },
+        "hs_shipping_address_postal_code": {
+          "type": "string"
+        },
+        "hs_shipping_address_state": {
+          "type": "string"
+        },
+        "hs_shipping_address_street": {
+          "type": "string"
+        },
+        "hs_shipping_cost": {
+          "type": "number"
+        },
+        "hs_shipping_status_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "hs_shipping_tracking_number": {
+          "type": "string"
+        },
+        "hs_source_id": {
+          "type": "integer"
+        },
+        "hs_source_store": {
+          "type": "string"
+        },
+        "hs_subtotal_price": {
+          "type": "number"
+        },
+        "hs_tags": {
+          "type": "string"
+        },
+        "hs_tax": {
+          "type": "number"
+        },
+        "hs_time_in_3725360f_519b_4b18_a593_494d60a29c9f_69491685": {
+          "type": "number"
+        },
+        "hs_time_in_3c85a297_e9ce_400b_b42e_9f16853d69d6_2088003863": {
+          "type": "number"
+        },
+        "hs_time_in_4b27b500_f031_4927_9811_68a0b525cbae_483620459": {
+          "type": "number"
+        },
+        "hs_time_in_937ea84d_0a4f_4dcf_9028_3f9c2aafbf03_2012274953": {
+          "type": "number"
+        },
+        "hs_time_in_aa99e8d0_c1d5_4071_b915_d240bbb1aed9_618008780": {
+          "type": "number"
+        },
+        "hs_total_price": {
+          "type": "number"
+        },
+        "hs_total_weight": {
+          "type": "string"
+        },
+        "hs_unique_creation_key": {
+          "type": "string"
+        },
+        "hs_updated_by_user_id": {
+          "type": "integer"
+        },
+        "hs_user_ids_of_all_notification_followers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_user_ids_of_all_notification_unfollowers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_user_ids_of_all_owners": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hs_was_imported": {
+          "type": "boolean"
+        },
+        "hubspot_owner_assigneddate": {
+          "type": "string"
+        },
+        "hubspot_owner_id": {
+          "type": "string"
+        },
+        "hubspot_team_id": {
+          "type": "string"
+        }
+      }
+    },
+    "createdAt": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  }
+}

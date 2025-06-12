@@ -54,6 +54,7 @@ from source_hubspot.streams import (
     LineItems,
     LineItemsWebAnalytics,
     MarketingEmails,
+    Orders,
     Owners,
     OwnersArchived,
     Products,
@@ -150,6 +151,7 @@ class SourceHubspot(AbstractSource):
             Invoices(**common_params),
             LineItems(**common_params),
             MarketingEmails(**common_params),
+            Orders(**common_params),
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
@@ -161,6 +163,7 @@ class SourceHubspot(AbstractSource):
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
+        self.logger.info(f"Streams: {[s.name for s in streams]}")
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
 
@@ -210,7 +213,7 @@ class SourceHubspot(AbstractSource):
                 common_params=common_params,
             )
             available_streams.extend(custom_objects_web_analytics_streams)
-
+        self.logger.info(f"Available streams: {[s.name for s in available_streams]}")
         return available_streams
 
     def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
