@@ -19,6 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toKotlinDuration
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -75,7 +78,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 "PROTOBUF" -> OutputMessageProcessor.OutputType.PROTOBUF_SOCKET
                 else -> OutputMessageProcessor.OutputType.SIMPLE_OUTPUT
             },  mapOf("partition_id" to partitionId),
-            streamState.streamFeedBootstrap,
+             streamState.streamFeedBootstrap,
             streamState.streamFeedBootstrap.outputConsumer, mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r))
 /*
         // touch it to initialize
@@ -170,7 +173,13 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
+    lateinit var dur: Instant
+
     override suspend fun run() {
+        synchronized(this) {
+            if (::dur.isInitialized.not()) { dur = Instant.now() }
+        }
+
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
@@ -190,13 +199,14 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
-                    /*if (numRecords.incrementAndGet() % 1_000 == 0L) {
+//                    numRecords.incrementAndGet()
+                    if (numRecords.incrementAndGet() % 500_000 == 0L) {
                         log.info { "*** Read $numRecords records from partition $partitionId" }
-                    }*/
+                    }
                 }
             }
         runComplete.set(true)
+        log.info { "*** --------------- Partition time: ${Duration.between(dur, Instant.now()).toKotlinDuration()} ---------------" }
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
@@ -222,6 +232,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
+
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
@@ -248,7 +259,6 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     }
                 }
             }
-
 
         runComplete.set(true)
     }

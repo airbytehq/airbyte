@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.protobuf.ByteString
+import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -33,8 +35,15 @@ import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
+import java.math.BigDecimal
+import java.net.URL
+import java.nio.ByteBuffer
 import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.OffsetTime
 import java.time.format.DateTimeFormatter
 
 
@@ -59,21 +68,20 @@ fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
         is OffsetDateTimeCodec, -> OffsetDateTimeProtoEncoder
         is FloatCodec, -> FloatProtoEncoder
         is NullCodec, -> NullProtoEncoder
-        is BinaryCodec,
-        is BigDecimalCodec,
-        is BigDecimalIntegerCodec,
-        is ShortCodec,
-        is ByteCodec,
-        is DoubleCodec,
-        is JsonBytesCodec,
-        is JsonStringCodec,
-        is UrlCodec,
-        is LocalDateCodec,
-        is LocalTimeCodec,
-        is LocalDateTimeCodec,
-        is OffsetTimeCodec,
+        is BinaryCodec, -> BinaryProtoEncoder
+        is BigDecimalCodec, -> BigDecimalProtoEncoder
+        is BigDecimalIntegerCodec, -> BigDecimalProtoEncoder // TODO: check can convert to exact integer
+        is ShortCodec, -> ShortProtoEncoder
+        is ByteCodec, -> ByteProtoEncoder
+        is DoubleCodec, -> DoubleProtoEncoder
+        is JsonBytesCodec, -> BinaryProtoEncoder
+        is JsonStringCodec, -> TextProtoEncoder
+        is UrlCodec, -> UrlProtoEncoder
+        is LocalDateCodec, -> LocalDateProtoEncoder
+        is LocalTimeCodec, -> LocalTimeProtoEncoder
+        is LocalDateTimeCodec, -> LocalDateTimeProtoEncoder
+        is OffsetTimeCodec, -> OffsetTimeProtoEncoder
         is ArrayEncoder<*>, -> AnyProtoEncoder
-
         else -> AnyProtoEncoder
     } as ProtoEncoder<T>
 }
@@ -81,6 +89,57 @@ fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
 
 fun interface ProtoEncoder<T> {
     fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: T): AirbyteRecordMessage.AirbyteValueProtobuf.Builder
+}
+
+data object OffsetTimeProtoEncoder : ProtoEncoder<OffsetTime> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: OffsetTime): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setString(decoded.format(OffsetTimeCodec.formatter))
+}
+
+data object LocalDateTimeProtoEncoder : ProtoEncoder<LocalDateTime> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: LocalDateTime): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setString(decoded.format(LocalDateTimeCodec.formatter))
+}
+
+data object LocalTimeProtoEncoder : ProtoEncoder<LocalTime> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: LocalTime): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setString(decoded.format(LocalTimeCodec.formatter))
+}
+
+data object LocalDateProtoEncoder : ProtoEncoder<LocalDate> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: LocalDate): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setString(decoded.format(LocalDateCodec.formatter))
+}
+
+data object UrlProtoEncoder : ProtoEncoder<URL> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: URL): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setString(decoded.toExternalForm())
+}
+
+data object DoubleProtoEncoder : ProtoEncoder<Double> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: Double): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setNumber(decoded)
+}
+
+data object ByteProtoEncoder : ProtoEncoder<Byte> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: Byte): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setInteger(decoded.toLong())
+}
+
+
+data object BinaryProtoEncoder : ProtoEncoder<ByteBuffer> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: ByteBuffer): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setStringBytes(decoded.toByteString()) // TODO: check here. Need base64 encoded?
+}
+
+data object ShortProtoEncoder : ProtoEncoder<Short> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: Short): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setInteger(decoded.toLong())
+}
+
+data object BigDecimalProtoEncoder : ProtoEncoder<BigDecimal> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: BigDecimal): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setBigDecimal(decoded.toPlainString()) // TODO: check here. why string?
 }
 
 data object LongProtoEncoder : ProtoEncoder<Long> {

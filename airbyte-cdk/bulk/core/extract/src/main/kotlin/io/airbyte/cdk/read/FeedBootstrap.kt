@@ -83,7 +83,7 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    private inner class EfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: BoostedOutputConsumer?) :
+    inner class EfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: BoostedOutputConsumer?) :
         StreamRecordConsumer {
         val outputer: OutputConsumer = boostedOutputConsumer ?: outputConsumer
 
@@ -457,6 +457,10 @@ class StreamFeedBootstrap(
 ) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, boostedOutputConsumerFactory, outputFormat) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = streamRecordConsumers(boostedOutputConsumer)[feed.id]!!
-    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(feed.streams.get(0), protoOutputConsumer, partitionId)
+    fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = EfficientStreamRecordConsumer(
+        feed.streams.filter { feed.id == it.id }.first(),
+        boostedOutputConsumer)
+    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(
+        feed.streams.filter { feed.id == it.id }.first(),
+        protoOutputConsumer, partitionId)
 }
