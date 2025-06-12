@@ -149,9 +149,9 @@ runs:
         CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
         # Disabling Dagger Cloud, as it is not used in the current workflow
         # and it is causing log spam in the GitHub Actions logs.
-        # If this is desired in the future, uncomment the following line and remove the line below setting AIRBYTE_CI_DISABLE_TELEMETRY
+        # If this is desired in the future, uncomment the following line and remove the line below setting DO_NOT_TRACK
         # DAGGER_CLOUD_TOKEN: "${{ inputs.dagger_cloud_token }}"
-        AIRBYTE_CI_DISABLE_TELEMETRY: "true"
+        DO_NOT_TRACK: "1" # Disable Dagger telemetry (noisy errors)
         DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
         DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
         GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
