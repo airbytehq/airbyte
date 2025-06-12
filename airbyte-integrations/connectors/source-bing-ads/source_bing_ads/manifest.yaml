@@ -1178,58 +1178,190 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
 
+  report_primary_keys:
+    age_gender_audience:
+      - AgeGroup
+      - Gender
+      - TimePeriod
+      - AccountId
+      - CampaignId
+      - Language
+      - AdDistribution
+    campaign_performance:
+      - AccountId
+      - CampaignId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+  
+  report_columns:
+    age_gender_audience:
+      - AccountName
+      - AccountNumber
+      - AccountId
+      - TimePeriod
+      - CampaignName
+      - CampaignId
+      - AdGroupName
+      - AdGroupId
+      - AdDistribution
+      - AgeGroup
+      - Gender
+      - Impressions
+      - Clicks
+      - Conversions
+      - Spend
+      - Revenue
+      - ExtendedCost
+      - Assists
+      - Language
+      - AccountStatus
+      - CampaignStatus
+      - AdGroupStatus
+      - BaseCampaignId
+      - AllConversions
+      - AllRevenue
+      - ViewThroughConversions
+      - Goal
+      - GoalType
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - ConversionsQualified
+      - AllConversionsQualified
+      - ViewThroughConversionsQualified
+      - ViewThroughRevenue
+    campaign_performance_hourly:
+      - AccountId
+      - CampaignId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - CampaignStatus
+      - CampaignLabels
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - QualityScore
+      - AdRelevance
+      - LandingPageExperience
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Assists
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - CustomParameters
+      - ViewThroughConversions
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllConversions
+      - ConversionsQualified
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - Conversions
+      - ConversionRate
+      - LowQualityClicks
+      - LowQualityClicksPercent
+      - LowQualityImpressions
+      - LowQualitySophisticatedClicks
+      - LowQualityConversions
+      - LowQualityConversionRate
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+      - BudgetName
+      - BudgetStatus
+      - BudgetAssociationStatus
+    campaign_performance_non_hourly:
+      - AccountId
+      - CampaignId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - CampaignStatus
+      - CampaignLabels
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - QualityScore
+      - AdRelevance
+      - LandingPageExperience
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Assists
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - CustomParameters
+      - ViewThroughConversions
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllConversions
+      - ConversionsQualified
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - Conversions
+      - ConversionRate
+      - LowQualityClicks
+      - LowQualityClicksPercent
+      - LowQualityImpressions
+      - LowQualitySophisticatedClicks
+      - LowQualityConversions
+      - LowQualityConversionRate
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+      - BudgetName
+      - BudgetStatus
+      - BudgetAssociationStatus
+      - HistoricalQualityScore
+      - HistoricalExpectedCtr
+      - HistoricalAdRelevance
+      - HistoricalLandingPageExperience
+    
   ## Age Gender Audience Reports
-
-  age_gender_audience_report_stream_primary_key:
-    - AgeGroup
-    - Gender
-    - TimePeriod
-    - AccountId
-    - CampaignId
-    - Language
-    - AdDistribution
-
-  age_gender_audience_report_columns:
-    - AccountName
-    - AccountNumber
-    - AccountId
-    - TimePeriod
-    - CampaignName
-    - CampaignId
-    - AdGroupName
-    - AdGroupId
-    - AdDistribution
-    - AgeGroup
-    - Gender
-    - Impressions
-    - Clicks
-    - Conversions
-    - Spend
-    - Revenue
-    - ExtendedCost
-    - Assists
-    - Language
-    - AccountStatus
-    - CampaignStatus
-    - AdGroupStatus
-    - BaseCampaignId
-    - AllConversions
-    - AllRevenue
-    - ViewThroughConversions
-    - Goal
-    - GoalType
-    - AbsoluteTopImpressionRatePercent
-    - TopImpressionRatePercent
-    - ConversionsQualified
-    - AllConversionsQualified
-    - ViewThroughConversionsQualified
-    - ViewThroughRevenue
 
   age_gender_audience_report_daily_stream:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_daily
     primary_key:
-      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/age_gender_audience"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1239,7 +1371,7 @@ definitions:
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        $ref: "#/definitions/age_gender_audience_report_columns"
+        $ref: "#/definitions/report_columns/age_gender_audience"
     transformations:
       - type: AddFields
         fields:
@@ -1249,13 +1381,13 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_hourly
     primary_key:
-      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/age_gender_audience"
     $parameters:
       report_aggregation: Hourly
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        $ref: "#/definitions/age_gender_audience_report_columns"
+        $ref: "#/definitions/report_columns/age_gender_audience"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1273,7 +1405,7 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_weekly
     primary_key:
-      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/age_gender_audience"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1283,7 +1415,7 @@ definitions:
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        $ref: "#/definitions/age_gender_audience_report_columns"
+        $ref: "#/definitions/report_columns/age_gender_audience"
     transformations:
       - type: AddFields
         fields:
@@ -1293,7 +1425,7 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: age_gender_audience_report_monthly
     primary_key:
-      $ref: "#/definitions/age_gender_audience_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/age_gender_audience"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1303,7 +1435,7 @@ definitions:
       report_name: AgeGenderAudienceReport
       report_type: AgeGenderAudienceReportRequest
       report_columns:
-        $ref: "#/definitions/age_gender_audience_report_columns"
+        $ref: "#/definitions/report_columns/age_gender_audience"
     transformations:
       - type: AddFields
         fields:
@@ -1311,144 +1443,11 @@ definitions:
 
   ## Campaign Performance Reports
 
-  campaign_performance_report_stream_primary_key:
-    - AccountId
-    - CampaignId
-    - TimePeriod
-    - CurrencyCode
-    - AdDistribution
-    - DeviceType
-    - Network
-    - DeliveredMatchType
-    - DeviceOS
-    - TopVsOther
-    - BidMatchType
-
-  campaign_performance_report_hourly_columns:
-    - AccountId
-    - CampaignId
-    - TimePeriod
-    - CurrencyCode
-    - AdDistribution
-    - DeviceType
-    - Network
-    - DeliveredMatchType
-    - DeviceOS
-    - TopVsOther
-    - BidMatchType
-    - AccountName
-    - CampaignName
-    - CampaignType
-    - CampaignStatus
-    - CampaignLabels
-    - Impressions
-    - Clicks
-    - Ctr
-    - Spend
-    - CostPerConversion
-    - QualityScore
-    - AdRelevance
-    - LandingPageExperience
-    - PhoneImpressions
-    - PhoneCalls
-    - Ptr
-    - Assists
-    - ReturnOnAdSpend
-    - CostPerAssist
-    - CustomParameters
-    - ViewThroughConversions
-    - AllCostPerConversion
-    - AllReturnOnAdSpend
-    - AllConversions
-    - ConversionsQualified
-    - AllConversionRate
-    - AllRevenue
-    - AllRevenuePerConversion
-    - AverageCpc
-    - AveragePosition
-    - AverageCpm
-    - Conversions
-    - ConversionRate
-    - LowQualityClicks
-    - LowQualityClicksPercent
-    - LowQualityImpressions
-    - LowQualitySophisticatedClicks
-    - LowQualityConversions
-    - LowQualityConversionRate
-    - Revenue
-    - RevenuePerConversion
-    - RevenuePerAssist
-    - BudgetName
-    - BudgetStatus
-    - BudgetAssociationStatus
-
-  campaign_performance_report_non_hourly_columns:
-    - AccountId
-    - CampaignId
-    - TimePeriod
-    - CurrencyCode
-    - AdDistribution
-    - DeviceType
-    - Network
-    - DeliveredMatchType
-    - DeviceOS
-    - TopVsOther
-    - BidMatchType
-    - AccountName
-    - CampaignName
-    - CampaignType
-    - CampaignStatus
-    - CampaignLabels
-    - Impressions
-    - Clicks
-    - Ctr
-    - Spend
-    - CostPerConversion
-    - QualityScore
-    - AdRelevance
-    - LandingPageExperience
-    - PhoneImpressions
-    - PhoneCalls
-    - Ptr
-    - Assists
-    - ReturnOnAdSpend
-    - CostPerAssist
-    - CustomParameters
-    - ViewThroughConversions
-    - AllCostPerConversion
-    - AllReturnOnAdSpend
-    - AllConversions
-    - ConversionsQualified
-    - AllConversionRate
-    - AllRevenue
-    - AllRevenuePerConversion
-    - AverageCpc
-    - AveragePosition
-    - AverageCpm
-    - Conversions
-    - ConversionRate
-    - LowQualityClicks
-    - LowQualityClicksPercent
-    - LowQualityImpressions
-    - LowQualitySophisticatedClicks
-    - LowQualityConversions
-    - LowQualityConversionRate
-    - Revenue
-    - RevenuePerConversion
-    - RevenuePerAssist
-    - BudgetName
-    - BudgetStatus
-    - BudgetAssociationStatus
-    - HistoricalQualityScore
-    - HistoricalExpectedCtr
-    - HistoricalAdRelevance
-    - HistoricalLandingPageExperience
-
   campaign_performance_report_hourly_stream:
     $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_hourly
     primary_key:
-      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/campaign_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1458,7 +1457,7 @@ definitions:
       report_name: CampaignPerformanceReport
       report_type: CampaignPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/campaign_performance_report_hourly_columns"
+        $ref: "#/definitions/report_columns/campaign_performance_hourly"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
     transformations:
       - type: AddFields
@@ -1475,7 +1474,7 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_daily
     primary_key:
-      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/campaign_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1485,7 +1484,7 @@ definitions:
       report_name: CampaignPerformanceReport
       report_type: CampaignPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
+        $ref: "#/definitions/report_columns/campaign_performance_non_hourly"
     transformations:
       - type: AddFields
         fields:
@@ -1498,7 +1497,7 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_weekly
     primary_key:
-      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/campaign_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1508,7 +1507,7 @@ definitions:
       report_name: CampaignPerformanceReport
       report_type: CampaignPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
+        $ref: "#/definitions/report_columns/campaign_performance_non_hourly"
     transformations:
       - type: AddFields
         fields:
@@ -1521,7 +1520,7 @@ definitions:
     $ref: "#/definitions/report_base_stream"
     name: campaign_performance_report_monthly
     primary_key:
-      $ref: "#/definitions/campaign_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/campaign_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1531,7 +1530,7 @@ definitions:
       report_name: CampaignPerformanceReport
       report_type: CampaignPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/campaign_performance_report_non_hourly_columns"
+        $ref: "#/definitions/report_columns/campaign_performance_non_hourly"
     transformations:
       - type: AddFields
         fields:
@@ -2091,26 +2090,10 @@ definitions:
     campaign_performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
-          - CampaignId
-        value: |
-          {{ record['CampaignId'] | int if record.get('CampaignId') else none }}
-      - type: AddedFieldDefinition
-        path:
           - AllConversionRate
         value: |
           {% set v = record.get('AllConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - AllConversions
-        value: |
-          {{ record['AllConversions'] | int if record.get('AllConversions') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AllReturnOnAdSpend
-        value: |
-          {% set v = record.get('AllReturnOnAdSpend') %}
-          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - AllRevenue
@@ -2121,18 +2104,6 @@ definitions:
           - ViewThroughConversions
         value: |
           {{ record['ViewThroughConversions'] | int if record.get('ViewThroughConversions') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AllCostPerConversion
-        value: |
-          {% set v = record.get('AllCostPerConversion') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - AllRevenuePerConversion
-        value: |
-          {% set v = record.get('AllRevenuePerConversion') %}
-          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - PhoneImpressions
@@ -2174,48 +2145,6 @@ definitions:
           - LowQualityConversionRate
         value: |
           {% set v = record.get('LowQualityConversionRate') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - AdRelevance
-        value: |
-          {% set v = record.get('AdRelevance') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - LandingPageExperience
-        value: |
-          {% set v = record.get('LandingPageExperience') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - QualityScore
-        value: |
-          {% set v = record.get('QualityScore') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - HistoricalAdRelevance
-        value: |
-          {% set v = record.get('HistoricalAdRelevance') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - HistoricalLandingPageExperience
-        value: |
-          {% set v = record.get('HistoricalLandingPageExperience') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - HistoricalQualityScore
-        value: |
-          {% set v = record.get('HistoricalQualityScore') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - HistoricalExpectedCtr
-        value: |
-          {% set v = record.get('HistoricalExpectedCtr') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
 streams:
