@@ -206,37 +206,50 @@ def main(
     json: bool = typer.Option(False, "--json", help="Output in GitHub Actions matrix JSON format"),
     prev_commit: bool = typer.Option(False, "--prev-commit", help="Compare against previous commit"),
     registry: str = typer.Option(DEFAULT_REGISTRY_URL, "--registry", help="Registry path (local file or remote URL)"),
+    include_connector_list: str = typer.Option("", "--include-connector-list", help="Comma-separated list of connectors to include (union with filtered results)"),
+    override_connector_list: str = typer.Option("", "--override-connector-list", help="Comma-separated list of connectors to use instead of filtered results"),
 ):
     """Get Airbyte connectors with filtering and GitHub Actions matrix output."""
 
     if java and no_java:
         typer.echo("Error: --java and --no-java are mutually exclusive", err=True)
         raise typer.Exit(1)
+    
+    if include_connector_list and override_connector_list:
+        typer.echo("Error: --include-connector-list and --override-connector-list are mutually exclusive", err=True)
+        raise typer.Exit(1)
 
-    if modified:
-        if os.getenv("GITHUB_ACTIONS") and os.getenv("GITHUB_EVENT_NAME") in ["pull_request", "pull_request_target"]:
-            connectors = get_pr_modified_connectors()
-        else:
-            connectors = get_modified_connectors(prev_commit)
+    if override_connector_list:
+        connectors = [c.strip() for c in override_connector_list.split(",") if c.strip()]
     else:
-        connectors = get_all_connectors()
+        if modified:
+            if os.getenv("GITHUB_ACTIONS") and os.getenv("GITHUB_EVENT_NAME") in ["pull_request", "pull_request_target"]:
+                connectors = get_pr_modified_connectors()
+            else:
+                connectors = get_modified_connectors(prev_commit)
+        else:
+            connectors = get_all_connectors()
 
-    if certified:
-        certified_set = get_certified_connectors(registry)
-        connectors = [c for c in connectors if c in certified_set]
+        if certified:
+            certified_set = get_certified_connectors(registry)
+            connectors = [c for c in connectors if c in certified_set]
 
-    if java or no_java:
-        filtered = []
-        for connector in connectors:
-            language = get_connector_language(connector)
-            is_java = language == "java"
+        if java or no_java:
+            filtered = []
+            for connector in connectors:
+                language = get_connector_language(connector)
+                is_java = language == "java"
 
-            if java and is_java:
-                filtered.append(connector)
-            elif no_java and not is_java:
-                filtered.append(connector)
+                if java and is_java:
+                    filtered.append(connector)
+                elif no_java and not is_java:
+                    filtered.append(connector)
 
-        connectors = filtered
+            connectors = filtered
+
+    if include_connector_list:
+        include_list = [c.strip() for c in include_connector_list.split(",") if c.strip()]
+        connectors = sorted(list(set(connectors + include_list)))
 
     output_results(connectors, json)
 
