@@ -9,6 +9,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
@@ -21,7 +22,7 @@ import kotlinx.coroutines.launch
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class BigqueryDirectLoadDatabaseInitialStatusGatherer(
     private val bigquery: BigQuery,
-    private val internalTableDataset: String,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
         streams: TableCatalog,
@@ -34,13 +35,7 @@ class BigqueryDirectLoadDatabaseInitialStatusGatherer(
                     map[stream] =
                         DirectLoadInitialStatus(
                             realTable = getTableStatus(tableName),
-                            // TODO this feels sketchy. We maybe should compute the temp table name
-                            //   in DirectLoadTableWriter, then pass that down to the status
-                            //   gatherer (and wherever else we're using it)?
-                            tempTable =
-                                getTableStatus(
-                                    tableName.asTempTable(internalNamespace = internalTableDataset)
-                                ),
+                            tempTable = getTableStatus(tempTableNameGenerator.generate(tableName)),
                         )
                 }
             }

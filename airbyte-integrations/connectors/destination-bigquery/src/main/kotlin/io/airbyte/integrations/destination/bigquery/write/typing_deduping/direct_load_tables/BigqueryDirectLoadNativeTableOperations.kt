@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.AlterTableReport
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
@@ -39,7 +40,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
-    private val internalTableDataset: String,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DirectLoadTableNativeOperations {
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
@@ -230,11 +231,11 @@ class BigqueryDirectLoadNativeTableOperations(
         columnsToRetain: List<String>,
         columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
     ) {
-        // can't just use asTempTable(), since that could conflict with
+        // can't just use the base temp table directly, since that could conflict with
         // a truncate-refresh temp table.
         // so add an explicit suffix that this is for schema change.
         val tempTableName =
-            tableName.asTempTable(internalNamespace = internalTableDataset).let {
+            tempTableNameGenerator.generate(tableName).let {
                 it.copy(name = it.name + "_airbyte_tmp_schema_change")
             }
 
