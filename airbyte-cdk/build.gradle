@@ -1,7 +1,46 @@
 apply plugin: 'base'
 
+// Add dependencies for Gradle TestKit
+dependencies {
+    testImplementation gradleTestKit()
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+}
+
 tasks.named("check") {
-    description = "Run check on *all* CDK modules"
+    description = "Run check on *all* CDK modules and connectors that depend on local CDK"
     // for each subproject under :airbyte-cdk, wire up its :<path>:check
     dependsOn subprojects.collect { "${it.path}:check" }
+
+    // Find all connector projects that depend on local CDK
+    def connectorsWithLocalCdk = []
+    rootProject.project(':airbyte-integrations:connectors').subprojects.each { connectorProject ->
+        // Check if the project has the airbyteBulkConnector configuration with cdk = 'local'
+        if (connectorProject.plugins.hasPlugin('airbyte-bulk-connector')) {
+            try {
+                def extension = connectorProject.extensions.findByName('airbyteBulkConnector')
+                if (extension && extension.hasProperty('cdk') && extension.cdk == 'local') {
+                    connectorsWithLocalCdk << connectorProject
+                }
+            } catch (Exception e) {
+                // Skip if extension not found or property not accessible
+            }
+        }
+
+        // Check if the project has the airbyteJavaConnector configuration with useLocalCdk = true
+        if (connectorProject.plugins.hasPlugin('airbyte-java-connector')) {
+            try {
+                def extension = connectorProject.extensions.findByName('airbyteJavaConnector')
+                if (extension && extension.hasProperty('useLocalCdk') && extension.useLocalCdk == true) {
+                    connectorsWithLocalCdk << connectorProject
+                }
+            } catch (Exception e) {
+                // Skip if extension not found or property not accessible
+            }
+        }
+    }
+
+    // Add check tasks for connectors with local CDK
+    dependsOn connectorsWithLocalCdk.collect { "${it.path}:check" }
 }
