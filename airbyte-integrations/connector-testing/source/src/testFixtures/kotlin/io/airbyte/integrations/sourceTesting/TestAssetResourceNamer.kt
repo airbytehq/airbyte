@@ -11,8 +11,9 @@ import kotlin.random.Random
 // Names look like "TEST_XXXX_123456789".
 class TestAssetResourceNamer(
     // Inject the clock and random segment generator for testability
-    private val clock: Clock,
-    private val randomNameSegmentGenerator: RandomNameSegmentGenerator,
+    private val clock: Clock = utcClock,
+    private val randomNameSegmentGenerator: RandomNameSegmentGenerator =
+        RandomNameSegmentGenerator(),
 ) {
 
     private val prefix = "TEST"
