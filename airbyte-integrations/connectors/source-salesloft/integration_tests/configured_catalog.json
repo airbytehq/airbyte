@@ -9,8 +9,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -21,8 +22,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -33,8 +35,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -55,8 +58,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -67,18 +71,22 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "account_stages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -99,8 +107,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -111,18 +120,22 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "email_templates",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -143,8 +156,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -181,10 +195,13 @@
         "name": "team_templates",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -205,8 +222,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -237,8 +255,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -269,8 +288,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -311,8 +331,9 @@
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     }
   ]
 }

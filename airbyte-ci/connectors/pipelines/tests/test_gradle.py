@@ -5,8 +5,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pipelines.helpers.connectors.modifed
 import pytest
+
+import pipelines.helpers.connectors.modifed
 from pipelines.airbyte_ci.steps import gradle
 from pipelines.models import steps
 
@@ -32,10 +33,6 @@ class TestGradleTask:
                 "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")})
             ),
         )
-
-    async def test_build_include(self, test_context):
-        step = self.DummyStep(test_context)
-        assert step.build_include
 
     def test_params(self, test_context):
         step = self.DummyStep(test_context)

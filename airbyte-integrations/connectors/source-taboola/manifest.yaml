@@ -1,0 +1,1260 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Taboola source that ingests data from the Taboola API.
+
+
+  Taboola helps you reach customers that convert. Drive business results by
+  reaching people genuinely, effectively at just the right moment
+  https://www.taboola.com/
+
+
+  In order to use this source, you must first create an account. Once logged in
+  you can contact Taboola support to provide you with a Client ID, Client Secret
+  and Account ID. Once these credentials have been obtained, you can input them
+  into the appropriate fields.
+
+
+  You can learn more about the API here
+  https://developers.taboola.com/backstage-api/reference
+
+check:
+  type: CheckStream
+  stream_names:
+    - account
+
+definitions:
+  streams:
+    account:
+      type: DeclarativeStream
+      name: account
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: backstage/api/1.0/users/current/allowed-accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+    audiences:
+      type: DeclarativeStream
+      name: audiences
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            backstage/api/1.0/{{
+            config["account_id"]}}/combined_audiences/resources/audiences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audiences"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /backstage/api/1.0/{{ config["account_id"] }}/campaigns/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    motion_ads:
+      type: DeclarativeStream
+      name: motion_ads
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /backstage/api/1.0/{{ config["account_id"] }}/campaigns/{{
+            stream_partition.parent_id }}/performance-video/items/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+              parent_key: id
+              partition_field: parent_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/motion_ads"
+    audience_rules:
+      type: DeclarativeStream
+      name: audience_rules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /backstage/api/1.0/{{ config["account_id"]
+            }}/universal_pixel/custom_audience_rule
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audience_rules"
+    campaign_items:
+      type: DeclarativeStream
+      name: campaign_items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /backstage/api/1.0/{{ config["account_id"] }}/campaigns/{{
+            stream_partition.parent_id }}/items/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+              parent_key: id
+              partition_field: parent_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_items"
+    conversion_rules:
+      type: DeclarativeStream
+      name: conversion_rules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /backstage/api/1.0/{{ config["account_id"]
+            }}/universal_pixel/conversion_rule
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversion_rules"
+  base_requester:
+    type: HttpRequester
+    url_base: https://backstage.taboola.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://backstage.taboola.com/backstage/oauth/token
+
+streams:
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/campaign_items"
+  - $ref: "#/definitions/streams/audience_rules"
+  - $ref: "#/definitions/streams/conversion_rules"
+  - $ref: "#/definitions/streams/motion_ads"
+  - $ref: "#/definitions/streams/audiences"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - account_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      account_id:
+        type: string
+        description: The ID associated with your taboola account
+        order: 2
+        title: Account ID
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    account:
+      hasRecords: true
+      streamHash: c0e4963d6cadfe3fa143ae49734e5d9cc889684b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audiences:
+      hasRecords: true
+      streamHash: 082a5eaa73d4b0c8760b6ddb088d52d34a9c77db
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: d966feac19f7d299089c2544174b780b40dbda8a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    motion_ads:
+      hasRecords: true
+      streamHash: c2a2b9778f2a76a1e82d96247b87a05aaff86ca1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audience_rules:
+      hasRecords: true
+      streamHash: c5d52d8fd716911fef81d1e65dd291e4b6332464
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaign_items:
+      hasRecords: true
+      streamHash: 8baabb3aa0e3b9f19901b527bb844fff967d9b40
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversion_rules:
+      hasRecords: true
+      streamHash: b00c3d15be83f431de7e5ec6696e6593e1afb9da
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    account: true
+    audiences: true
+    campaigns: true
+    motion_ads: true
+    audience_rules: true
+    campaign_items: true
+    conversion_rules: true
+
+schemas:
+  account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      is_fla:
+        type:
+          - boolean
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      partner_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      campaign_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      time_zone_name:
+        type:
+          - string
+          - "null"
+      default_platform:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  audiences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      size:
+        type:
+          - number
+          - "null"
+      provider:
+        type:
+          - string
+          - "null"
+      data_type:
+        type:
+          - string
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      audience_name:
+        type:
+          - string
+          - "null"
+      exclude_from_campaigns:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      spent:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      bid_type:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      cpa_goal:
+        type:
+          - number
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      daily_cap:
+        type:
+          - number
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      bid_strategy:
+        type:
+          - string
+          - "null"
+      os_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      advertiser_id:
+        type:
+          - string
+          - "null"
+      branding_text:
+        type:
+          - string
+          - "null"
+      policy_review:
+        type:
+          - object
+          - "null"
+        properties: {}
+      pricing_model:
+        type:
+          - string
+          - "null"
+      safety_rating:
+        type:
+          - string
+          - "null"
+      tracking_code:
+        type:
+          - string
+          - "null"
+      approval_state:
+        type:
+          - string
+          - "null"
+      city_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      spending_limit:
+        type:
+          - number
+          - "null"
+      end_date_in_utc:
+        type:
+          - string
+          - "null"
+      conversion_rules:
+        type:
+          - object
+          - "null"
+        properties:
+          rules:
+            type:
+              - array
+              - "null"
+      activity_schedule:
+        type:
+          - object
+          - "null"
+        properties:
+          mode:
+            type:
+              - string
+              - "null"
+          rules:
+            type:
+              - array
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+      browser_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      country_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      start_date_in_utc:
+        type:
+          - string
+          - "null"
+      campaign_item_type:
+        type:
+          - string
+          - "null"
+      platform_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      segments_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          AGE:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - array
+                  - "null"
+          GENDER:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - array
+                  - "null"
+      audiences_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      marketing_objective:
+        type:
+          - string
+          - "null"
+      publisher_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      contextual_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      performance_rule_ids:
+        type:
+          - array
+          - "null"
+      spending_limit_model:
+        type:
+          - string
+          - "null"
+      day_time_bid_modifier:
+        type:
+          - object
+          - "null"
+        properties:
+          values:
+            type:
+              - array
+              - "null"
+      dma_country_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      external_brand_safety:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          values:
+            type:
+              - array
+              - "null"
+      is_spend_guard_active:
+        type:
+          - string
+          - "null"
+      platform_bid_modifier:
+        type:
+          - object
+          - "null"
+        properties:
+          values:
+            type:
+              - array
+              - "null"
+      postal_code_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          href:
+            type:
+              - string
+              - "null"
+      sub_country_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      publisher_bid_modifier:
+        type:
+          - object
+          - "null"
+        properties:
+          values:
+            type:
+              - array
+              - "null"
+      daily_ad_delivery_model:
+        type:
+          - string
+          - "null"
+      traffic_allocation_mode:
+        type:
+          - string
+          - "null"
+      auto_publisher_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      region_country_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      connection_type_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - array
+              - "null"
+      custom_audience_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      custom_contextual_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      lookalike_audience_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      predefined_targeting_options:
+        type:
+          - object
+          - "null"
+        properties:
+          predefined_supply_targeting:
+            type:
+              - string
+              - "null"
+      contextual_segments_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      marking_label_multi_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      publisher_platform_bid_modifier:
+        type:
+          - object
+          - "null"
+        properties:
+          values:
+            type:
+              - array
+              - "null"
+      publisher_bid_strategy_modifiers:
+        type:
+          - object
+          - "null"
+        properties:
+          values:
+            type:
+              - array
+              - "null"
+      audience_segments_multi_targeting:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  motion_ads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      gif_url:
+        type:
+          - string
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      video_url:
+        type:
+          - string
+          - "null"
+      campaign_id:
+        type:
+          - string
+          - "null"
+      custom_data:
+        type:
+          - object
+          - "null"
+        properties:
+          custom_id:
+            type:
+              - string
+              - "null"
+          creative_name:
+            type:
+              - string
+              - "null"
+      fallback_url:
+        type:
+          - string
+          - "null"
+      policy_review:
+        type:
+          - object
+          - "null"
+        properties: {}
+      approval_state:
+        type:
+          - string
+          - "null"
+      motion_ads_studio:
+        type:
+          - object
+          - "null"
+        properties:
+          vendor_video_id:
+            type:
+              - string
+              - "null"
+          vendor_template_type:
+            type:
+              - string
+              - "null"
+      media_upload_source:
+        type:
+          - string
+          - "null"
+      recommended_fbimage:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  audience_rules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      status:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      condition:
+        type:
+          - object
+          - "null"
+        properties:
+          value:
+            type:
+              - string
+              - "null"
+          children:
+            type:
+              - array
+              - "null"
+          property:
+            type:
+              - string
+              - "null"
+          predicate:
+            type:
+              - string
+              - "null"
+      event_name:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      advertiser_id:
+        type:
+          - string
+          - "null"
+      audience_size:
+        type:
+          - number
+          - "null"
+      last_modified_at:
+        type:
+          - string
+          - "null"
+      last_modified_by:
+        type:
+          - string
+          - "null"
+      look_back_window:
+        type:
+          - number
+          - "null"
+      exclude_from_campaigns:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  campaign_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      campaign_id:
+        type:
+          - string
+          - "null"
+      custom_data:
+        type:
+          - object
+          - "null"
+        properties:
+          custom_id:
+            type:
+              - string
+              - "null"
+          creative_name:
+            type:
+              - string
+              - "null"
+      policy_review:
+        type:
+          - object
+          - "null"
+        properties: {}
+      thumbnail_url:
+        type:
+          - string
+          - "null"
+      approval_state:
+        type:
+          - string
+          - "null"
+      creative_focus:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  conversion_rules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      status:
+        type:
+          - string
+          - "null"
+      effects:
+        type:
+          - array
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      condition:
+        type:
+          - object
+          - "null"
+        properties:
+          value:
+            type:
+              - string
+              - "null"
+          children:
+            type:
+              - array
+              - "null"
+          property:
+            type:
+              - string
+              - "null"
+          predicate:
+            type:
+              - string
+              - "null"
+      event_name:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      advertiser_id:
+        type:
+          - string
+          - "null"
+      aggregation_type:
+        type:
+          - string
+          - "null"
+      last_modified_at:
+        type:
+          - string
+          - "null"
+      last_modified_by:
+        type:
+          - string
+          - "null"
+      look_back_window:
+        type:
+          - number
+          - "null"
+      exclude_from_campaigns:
+        type:
+          - boolean
+          - "null"
+      include_in_total_value:
+        type:
+          - boolean
+          - "null"
+      include_in_total_conversions:
+        type:
+          - boolean
+          - "null"
+      view_through_look_back_window:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

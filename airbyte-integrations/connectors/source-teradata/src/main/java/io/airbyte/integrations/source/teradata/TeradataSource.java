@@ -65,8 +65,9 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final String schema = config.get(JdbcUtils.DATABASE_KEY).asText();
 
-    final String host = config.has(JdbcUtils.PORT_KEY) ? config.get(JdbcUtils.HOST_KEY).asText() + ":" + config.get(JdbcUtils.PORT_KEY).asInt()
-        : config.get(JdbcUtils.HOST_KEY).asText();
+    final String host =
+        config.has(JdbcUtils.PORT_KEY) ? config.get(JdbcUtils.HOST_KEY).asText() + "DBS_PORT=" + config.get(JdbcUtils.PORT_KEY).asInt()
+            : config.get(JdbcUtils.HOST_KEY).asText();
 
     final String jdbcUrl = String.format("jdbc:teradata://%s/", host);
 

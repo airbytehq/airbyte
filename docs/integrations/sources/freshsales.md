@@ -68,6 +68,28 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 1.1.22 | 2025-05-24 | [59971](https://github.com/airbytehq/airbyte/pull/59971) | Update dependencies |
+| 1.1.21 | 2025-05-03 | [59398](https://github.com/airbytehq/airbyte/pull/59398) | Update dependencies |
+| 1.1.20 | 2025-04-26 | [58907](https://github.com/airbytehq/airbyte/pull/58907) | Update dependencies |
+| 1.1.19 | 2025-04-19 | [58317](https://github.com/airbytehq/airbyte/pull/58317) | Update dependencies |
+| 1.1.18 | 2025-04-12 | [57788](https://github.com/airbytehq/airbyte/pull/57788) | Update dependencies |
+| 1.1.17 | 2025-04-05 | [57193](https://github.com/airbytehq/airbyte/pull/57193) | Update dependencies |
+| 1.1.16 | 2025-03-29 | [56514](https://github.com/airbytehq/airbyte/pull/56514) | Update dependencies |
+| 1.1.15 | 2025-03-22 | [55995](https://github.com/airbytehq/airbyte/pull/55995) | Update dependencies |
+| 1.1.14 | 2025-03-08 | [55304](https://github.com/airbytehq/airbyte/pull/55304) | Update dependencies |
+| 1.1.13 | 2025-03-01 | [54913](https://github.com/airbytehq/airbyte/pull/54913) | Update dependencies |
+| 1.1.12 | 2025-02-22 | [54401](https://github.com/airbytehq/airbyte/pull/54401) | Update dependencies |
+| 1.1.11 | 2025-02-15 | [53708](https://github.com/airbytehq/airbyte/pull/53708) | Update dependencies |
+| 1.1.10 | 2025-02-08 | [53368](https://github.com/airbytehq/airbyte/pull/53368) | Update dependencies |
+| 1.1.9 | 2025-02-01 | [52852](https://github.com/airbytehq/airbyte/pull/52852) | Update dependencies |
+| 1.1.8 | 2025-01-25 | [52300](https://github.com/airbytehq/airbyte/pull/52300) | Update dependencies |
+| 1.1.7 | 2025-01-18 | [51688](https://github.com/airbytehq/airbyte/pull/51688) | Update dependencies |
+| 1.1.6 | 2025-01-11 | [51070](https://github.com/airbytehq/airbyte/pull/51070) | Update dependencies |
+| 1.1.5 | 2024-12-28 | [50527](https://github.com/airbytehq/airbyte/pull/50527) | Update dependencies |
+| 1.1.4 | 2024-12-21 | [50004](https://github.com/airbytehq/airbyte/pull/50004) | Update dependencies |
+| 1.1.3 | 2024-12-14 | [49473](https://github.com/airbytehq/airbyte/pull/49473) | Update dependencies |
+| 1.1.2 | 2024-12-12 | [49203](https://github.com/airbytehq/airbyte/pull/49203) | Update dependencies |
+| 1.1.1 | 2024-10-28 | [44277](https://github.com/airbytehq/airbyte/pull/44277) | Update dependencies |
 | 1.1.0 | 2024-08-15 | [44149](https://github.com/airbytehq/airbyte/pull/44149) | Refactor connector to manifest-only format |
 | 1.0.14 | 2024-08-12 | [43904](https://github.com/airbytehq/airbyte/pull/43904) | Update dependencies |
 | 1.0.13 | 2024-08-10 | [43678](https://github.com/airbytehq/airbyte/pull/43678) | Update dependencies |

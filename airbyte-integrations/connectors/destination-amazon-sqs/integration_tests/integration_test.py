@@ -7,8 +7,9 @@ import logging
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
 from destination_amazon_sqs import DestinationAmazonSqs
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
 
 
 @pytest.fixture(name="config")

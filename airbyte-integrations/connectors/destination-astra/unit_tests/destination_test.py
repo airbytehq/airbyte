@@ -6,9 +6,10 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_astra.config import ConfigModel
 from destination_astra.destination import DestinationAstra
+
+from airbyte_cdk.models import ConnectorSpecification, Status
 
 
 class TestDestinationAstra(unittest.TestCase):

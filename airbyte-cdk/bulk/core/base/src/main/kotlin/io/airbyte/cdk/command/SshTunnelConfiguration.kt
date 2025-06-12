@@ -10,6 +10,6 @@ import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 interface SshTunnelConfiguration {
     val realHost: String
     val realPort: Int
-    val sshTunnel: SshTunnelMethodConfiguration
+    val sshTunnel: SshTunnelMethodConfiguration?
     val sshConnectionOptions: SshConnectionOptions
 }

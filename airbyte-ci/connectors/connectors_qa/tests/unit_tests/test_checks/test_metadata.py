@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 
 import pytest
+
 from connectors_qa import consts
 from connectors_qa.checks import metadata
 from connectors_qa.models import CheckStatus

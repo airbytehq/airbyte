@@ -7,6 +7,10 @@ import logging
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_firestore import DestinationFirestore
+from destination_firestore.writer import FirestoreWriter
+from google.cloud import firestore
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,9 +23,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_firestore import DestinationFirestore
-from destination_firestore.writer import FirestoreWriter
-from google.cloud import firestore
 
 
 @pytest.fixture(name="config")

@@ -10,8 +10,9 @@ import anyio
 import dagger
 import inquirer  # type: ignore
 import semver
-from base_images import bases, console, consts, errors, hacks, publish, utils, version_registry
 from jinja2 import Environment, FileSystemLoader
+
+from base_images import bases, console, consts, errors, hacks, publish, utils, version_registry
 
 
 async def _generate_docs(dagger_client: dagger.Client):
@@ -69,15 +70,20 @@ async def _generate_release(dagger_client: dagger.Client):
                 message=f"Which kind of new version would you like to cut? (latest version is {latest_version}))",
                 choices=[
                     ("prerelease", latest_version.bump_prerelease()),
+                    ("finalize", latest_version.finalize_version()),
                     ("patch", latest_version.bump_patch()),
+                    ("patch-prerelease", latest_version.bump_patch().bump_prerelease()),
                     ("minor", latest_version.bump_minor()),
+                    ("minor-prerelease", latest_version.bump_minor().bump_prerelease()),
                     ("major", latest_version.bump_major()),
+                    ("major-prerelease", latest_version.bump_major().bump_prerelease()),
                 ],
             ),
             inquirer.Text("changelog_entry", message="What should the changelog entry be?", validate=lambda _, entry: len(entry) > 0),
             inquirer.Confirm("publish_now", message="Would you like to publish it to our remote registry now?"),
         ]
     )
+
     new_version, changelog_entry, publish_now = (
         new_version_answers["new_version"],
         new_version_answers["changelog_entry"],
@@ -147,7 +153,9 @@ async def _publish(
 
 async def execute_async_command(command_fn: Callable, *args, **kwargs):
     """This is a helper function that will execute a command function in an async context, required by the use of Dagger."""
-    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
+    # NOTE: Dagger logs using Rich now, and two rich apps don't play well with each other.
+    # Logging into a file makes the CLI experience tolerable.
+    async with dagger.Connection(dagger.Config(log_output=open("dagger.log", "w"))) as dagger_client:
         await command_fn(dagger_client, *args, **kwargs)
 
 

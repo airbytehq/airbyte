@@ -1,16 +1,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import base64
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pendulum.datetime import DateTime
 
 
 class ConfigBuilder:
     def __init__(self) -> None:
-        self._subdomain: str = None
-        self._start_date: str = None
+        self._subdomain: Optional[str] = None
+        self._start_date: Optional[str] = None
         self._credentials: Dict[str, str] = {}
+        self._ignore_pagination: Optional[bool] = None
 
     def with_subdomain(self, subdomain: str) -> "ConfigBuilder":
         self._subdomain = subdomain
@@ -31,6 +32,10 @@ class ConfigBuilder:
         self._start_date = start_date.format("YYYY-MM-DDTHH:mm:ss[Z]")
         return self
 
+    def with_ignore_pagination(self) -> "ConfigBuilder":
+        self._ignore_pagination = True
+        return self
+
     def build(self) -> Dict[str, Any]:
         config = {}
         if self._subdomain:
@@ -39,4 +44,6 @@ class ConfigBuilder:
             config["start_date"] = self._start_date
         if self._credentials:
             config["credentials"] = self._credentials
+        if self._ignore_pagination:
+            config["ignore_pagination"] = self._ignore_pagination
         return config

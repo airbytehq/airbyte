@@ -54,6 +54,7 @@ constructor(
     workerPool: ExecutorService = Executors.newFixedThreadPool(5),
     private val airbyteMessageDeserializer: AirbyteMessageDeserializer =
         AirbyteMessageDeserializer(),
+    flushOnEveryMessage: Boolean = false,
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val flushWorkers: FlushWorkers =
@@ -64,6 +65,7 @@ constructor(
             flushFailure,
             bufferManager.stateManager,
             workerPool,
+            flushOnEveryMessage,
         )
     private val streamNames: Set<StreamDescriptor> =
         StreamDescriptorUtils.fromConfiguredCatalog(

@@ -3,6 +3,7 @@
 #
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.pipeline import run_connectors_manifest_only_pipeline
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -12,7 +13,6 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 @click.command(cls=DaggerPipelineCommand, short_help="Migrate a low-code connector to manifest-only")
 @click.pass_context
 async def migrate_to_manifest_only(ctx: click.Context) -> bool:
-
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Migrate connector {connector.technical_name} to manifest-only",

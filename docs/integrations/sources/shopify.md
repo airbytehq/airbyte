@@ -26,23 +26,28 @@ This connector supports **OAuth2.0** and **API Password** (for private applicati
 For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
 :::
 
+<HideInUI>
+
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Shopify from the Source type dropdown.
 4. Enter a name for the Shopify connector.
+</HideInUI>
 
 #### Connect using OAuth2.0
 
-1. Select a **Source name**.
+1. Choose a **Source name**.
 2. Click **Authenticate your Shopify account**.
-3. Click **Install** to install the Airbyte application.
-4. Log in to your account, if you are not already logged in.
-5. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
-6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
-7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
-8. Click **Set up source** and wait for the connection test to complete.
+3. Click **Install** to install the Airbyte application. Log in to your account, if you are not already logged in. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
+<FieldAnchor field="shop">
+4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
+</FieldAnchor>
+<FieldAnchor field="start_date">
+5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+</FieldAnchor>
+6. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -142,7 +147,6 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
 - [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
 - [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
-- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2024-04/resources/customersavedsearch)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
@@ -178,6 +182,12 @@ When a record is deleted, the connector outputs a record with the `ID` of that r
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
+## Marketing Attribution data
+Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
+- `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
+- `Orders` (referring_site, source_name)
+- `Abandoned Checkouts` (referring_site, source_name)
+
 ## Features
 
 | Feature                   | Supported?\(Yes/No\) |
@@ -198,6 +208,7 @@ Check the following Shopify documentation for more information about [retrieving
 
 ## Limitations & Troubleshooting
 
+</HideInUI>
 <details>
 <summary>
 
@@ -209,7 +220,7 @@ Expand to see details about Shopify connector limitations and troubleshooting
 
 #### Rate limiting
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
+Shopify has some [rate limit restrictions](https://shopify.dev/docs/api/usage/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries.
@@ -227,6 +238,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 </details>
 
+
 ## Changelog
 
 <details>
@@ -234,6 +246,38 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.7 | 2025-06-02 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | 🐙 source-shopify: Update dependencies [2025-05-17] |
+| 3.0.6 | 2025-05-28 | [60797](https://github.com/airbytehq/airbyte/pull/60797) | Fix 500s on `orders` & `order_refunds` streams by adding dynamic page limit. |
+| 3.0.5 | 2025-04-23 | [58598](https://github.com/airbytehq/airbyte/pull/58598) | Fix AttributeError with Null `measurement_weight` fields for `product_variants` streams |
+| 3.0.4 | 2025-04-19 | [58431](https://github.com/airbytehq/airbyte/pull/58431) | Update dependencies |
+| 3.0.3 | 2025-04-12 | [57984](https://github.com/airbytehq/airbyte/pull/57984) | Update dependencies |
+| 3.0.2 | 2025-04-05 | [57449](https://github.com/airbytehq/airbyte/pull/57449) | Update dependencies |
+| 3.0.1 | 2025-03-29 | [56861](https://github.com/airbytehq/airbyte/pull/56861) | Update dependencies |
+| 3.0.0 | 2025-03-27 | [55823](https://github.com/airbytehq/airbyte/pull/55823) | Update API version |
+| 2.6.7 | 2025-03-22 | [56316](https://github.com/airbytehq/airbyte/pull/56316) | Update dependencies |
+| 2.6.6 | 2025-03-08 | [55621](https://github.com/airbytehq/airbyte/pull/55621) | Update dependencies |
+| 2.6.5 | 2025-03-01 | [55126](https://github.com/airbytehq/airbyte/pull/55126) | Update dependencies |
+| 2.6.4 | 2025-02-22 | [54477](https://github.com/airbytehq/airbyte/pull/54477) | Update dependencies |
+| 2.6.3 | 2025-02-15 | [51983](https://github.com/airbytehq/airbyte/pull/51983) | Update dependencies |
+| 2.6.2 | 2025-01-14 | [50976](https://github.com/airbytehq/airbyte/pull/50976) | Retry requests that return HTTP 500 |
+| 2.6.1 | 2025-02-16 | [51602](https://github.com/airbytehq/airbyte/pull/51602) | Updated the `UpgradeDeadline` for the deprecation notice about [this change](https://github.com/airbytehq/airbyte/pull/51037) |
+| 2.6.0 | 2025-01-15 | [51037](https://github.com/airbytehq/airbyte/pull/51037) | Deprecated the `ProductsGraphQL` and `CustomerSavedSearch` stream from the stream catalog |
+| 2.5.18 | 2025-01-11 | [51326](https://github.com/airbytehq/airbyte/pull/51326) | Update dependencies |
+| 2.5.17 | 2025-01-06 | [50884](https://github.com/airbytehq/airbyte/pull/50884) | Add `moments` field `Customer Journey Summary` stream |
+| 2.5.16 | 2025-01-04 | [50938](https://github.com/airbytehq/airbyte/pull/50938) | Update dependencies |
+| 2.5.15 | 2024-12-28 | [50779](https://github.com/airbytehq/airbyte/pull/50779) | Update dependencies |
+| 2.5.14 | 2024-12-21 | [49088](https://github.com/airbytehq/airbyte/pull/49088) | Update dependencies |
+| 2.5.13 | 2024-12-11 | [49134](https://github.com/airbytehq/airbyte/pull/49134) | Added `checkpointed value` collision detection for BULK-supported streams |
+| 2.5.12 | 2024-11-25 | [48661](https://github.com/airbytehq/airbyte/pull/48661) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.5.11 | 2024-11-07 | [48402](https://github.com/airbytehq/airbyte/pull/48402) | Add `image_src`, `image_url`, including `options` to `Product Variants` stream |
+| 2.5.10 | 2024-11-05 | [48322](https://github.com/airbytehq/airbyte/pull/48322) | Update dependencies |
+| 2.5.9 | 2024-10-29 | [47814](https://github.com/airbytehq/airbyte/pull/47814) | Update dependencies |
+| 2.5.8 | 2024-10-28 | [47044](https://github.com/airbytehq/airbyte/pull/47044) | Update dependencies |
+| 2.5.7 | 2024-10-14 | [46552](https://github.com/airbytehq/airbyte/pull/46552) | Add `parent state` tracking for BULK sub-streams |
+| 2.5.6 | 2024-10-12 | [46844](https://github.com/airbytehq/airbyte/pull/46844) | Update dependencies |
+| 2.5.5 | 2024-10-05 | [46578](https://github.com/airbytehq/airbyte/pull/46578) | Raise exception on missing stream |
+| 2.5.4 | 2024-10-05 | [45759](https://github.com/airbytehq/airbyte/pull/45759) | Update dependencies |
+| 2.5.3 | 2024-09-27 | [46095](https://github.com/airbytehq/airbyte/pull/46095) | Fixed duplicates for `Product Images`, `Metafield Product Images` and `Metafield Products` streams for Incremental syncs |
 | 2.5.2 | 2024-09-17 | [45633](https://github.com/airbytehq/airbyte/pull/45633) | Adds `read_inventory` as a required scope for `product_variants` stream |
 | 2.5.1 | 2024-09-14 | [45255](https://github.com/airbytehq/airbyte/pull/45255) | Update dependencies |
 | 2.5.0 | 2024-09-06 | [45190](https://github.com/airbytehq/airbyte/pull/45190) | Migrate to CDK v5 |
@@ -341,5 +385,3 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                                                                                                                                                                                                                                                                                     |
 
 </details>
-
-</HideInUI>

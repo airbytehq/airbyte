@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping
 
 import pendulum
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream

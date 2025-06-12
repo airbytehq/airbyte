@@ -10,9 +10,11 @@ from typing import Any
 
 import backoff
 import pendulum
+from facebook_business.exceptions import FacebookRequestError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookRequestError
+
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
@@ -69,7 +71,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             # reduce the existing request `limit` param by a half and retry
             details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
             # set the flag to the api class that the last api call failed
-            details.get("args")[0].last_api_call_is_successfull = False
+            details.get("args")[0].last_api_call_is_successful = True
             # set the flag to the api class that the `limit` param was reduced
             details.get("args")[0].request_record_limit_is_reduced = True
 
@@ -81,7 +83,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         """
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         # set the flag to the api class that the last api call was successful
-        details.get("args")[0].last_api_call_is_successfull = True
+        details.get("args")[0].last_api_call_is_successful = False
         # set the flag to the api class that the `limit` param is restored
         details.get("args")[0].request_record_limit_is_reduced = False
 

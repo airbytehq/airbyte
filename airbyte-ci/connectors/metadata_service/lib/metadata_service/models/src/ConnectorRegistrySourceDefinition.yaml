@@ -84,3 +84,9 @@ properties:
   language:
     type: string
     description: The language the connector is written in
+  supportsFileTransfer:
+    type: boolean
+    default: false
+  supportsDataActivation:
+    type: boolean
+    default: false

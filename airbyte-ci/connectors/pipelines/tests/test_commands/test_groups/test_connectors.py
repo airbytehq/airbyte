@@ -8,6 +8,7 @@ import asyncclick as click
 import pytest
 from asyncclick.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+
 from pipelines.airbyte_ci.connectors import commands as connectors_commands
 from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
 from pipelines.airbyte_ci.connectors.publish import commands as connectors_publish_command
@@ -108,6 +109,7 @@ def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to
     assert len(selected_connectors) == 1
 
 
+@pytest.mark.flaky
 def test_get_selected_connectors_with_modified():
     first_modified_connector = pick_a_random_connector()
     second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])

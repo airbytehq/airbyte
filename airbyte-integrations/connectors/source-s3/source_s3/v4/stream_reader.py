@@ -3,31 +3,41 @@
 #
 
 import logging
+import time
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import Iterable, List, Optional, Set
+from os.path import basename, dirname
+from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
 
 import boto3.session
 import pendulum
+import psutil
 import pytz
 import smart_open
-from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
 from botocore.session import get_session
+from typing_extensions import override
+
+from airbyte_cdk import FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
+    FILE_SIZE_LIMIT = 1_500_000_000
+
     def __init__(self):
         super().__init__()
         self._s3_client = None
@@ -158,6 +168,19 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             endpoint=self.config.endpoint,
         ) from exc
 
+    def _construct_s3_uri(self, file: RemoteFile) -> str:
+        """
+        Constructs the S3 URI for a given file, handling both regular files and files inside archives.
+
+        Args:
+            file: The RemoteFile object representing either a regular file or a file inside an archive
+
+        Returns:
+            str: The properly formatted S3 URI
+        """
+        file_path = file.uri.split("#")[0] if isinstance(file, RemoteFileInsideArchive) else file.uri
+        return f"s3://{self.config.bucket}/{file_path}"
+
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
             params = {"client": self.s3_client}
@@ -166,14 +189,13 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         logger.debug(f"try to open {file.uri}")
         try:
+            s3_uri = self._construct_s3_uri(file)
             if isinstance(file, RemoteFileInsideArchive):
-                s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
+                s3_file_object = smart_open.open(s3_uri, transport_params=params, mode="rb")
                 decompressed_stream = DecompressedStream(s3_file_object, file)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
-                result = smart_open.open(
-                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
-                )
+                result = smart_open.open(s3_uri, transport_params=params, mode=mode.value, encoding=encoding)
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
@@ -182,6 +204,99 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
+
+    @staticmethod
+    def create_progress_handler(file_size: int, local_file_path: str, logger: logging.Logger):
+        previous_bytes_checkpoint = 0
+        total_bytes_transferred = 0
+
+        def progress_handler(bytes_transferred: int):
+            nonlocal previous_bytes_checkpoint, total_bytes_transferred
+            total_bytes_transferred += bytes_transferred
+            if total_bytes_transferred - previous_bytes_checkpoint >= 100 * 1024 * 1024:
+                logger.info(
+                    f"{total_bytes_transferred / (1024 * 1024):,.2f} MB ({total_bytes_transferred / (1024 * 1024 * 1024):.2f} GB) "
+                    f"of {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB) "
+                    f"written to {local_file_path}"
+                )
+                previous_bytes_checkpoint = total_bytes_transferred
+
+                # Get available disk space
+                disk_usage = psutil.disk_usage("/")
+                available_disk_space = disk_usage.free
+
+                # Get available memory
+                memory_info = psutil.virtual_memory()
+                available_memory = memory_info.available
+                logger.info(
+                    f"Available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB), "
+                    f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
+                )
+
+        return progress_handler
+
+    @override
+    def upload(
+        self, file: RemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+        """
+        Downloads a file from an S3 bucket to a specified local directory.
+
+        Args:
+            file (RemoteFile): The remote file object containing URI and metadata.
+            local_directory (str): The local directory path where the file will be downloaded.
+            logger (logging.Logger): Logger for logging information and errors.
+
+        Returns:
+            Tuple[FileRecordData, AirbyteRecordMessageFileReference]: Contains file record data and file reference for Airbyte protocol.
+
+        Raises:
+            FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
+        """
+        file_size = self.file_size(file)
+        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+        file_paths = self._get_file_transfer_paths(file.uri, local_directory)
+        local_file_path = file_paths[self.LOCAL_FILE_PATH]
+        file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+        file_name = file_paths[self.FILE_NAME]
+
+        logger.info(
+            f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
+        )
+        # at some moment maybe we will require to play with the max_pool_connections and max_concurrency of s3 config
+        start_download_time = time.time()
+        progress_handler = self.create_progress_handler(file_size, local_file_path, logger)
+        self.s3_client.download_file(self.config.bucket, file.uri, local_file_path, Callback=progress_handler)
+        write_duration = time.time() - start_download_time
+        logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
+
+        file_record_data = FileRecordData(
+            folder=file_paths[self.FILE_FOLDER],
+            file_name=file_name,
+            bytes=file_size,
+            updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            source_uri=self._construct_s3_uri(file),
+        )
+
+        file_reference = AirbyteRecordMessageFileReference(
+            staging_file_url=local_file_path,
+            source_file_relative_path=file_relative_path,
+            file_size_bytes=file_size,
+        )
+
+        return file_record_data, file_reference
+
+    @override
+    def file_size(self, file: RemoteFile) -> int:
+        s3_object: boto3.s3.Object = self.s3_client.get_object(
+            Bucket=self.config.bucket,
+            Key=file.uri,
+        )
+        return cast(int, s3_object["ContentLength"])
 
     @staticmethod
     def _is_folder(file) -> bool:

@@ -1,0 +1,35 @@
+{
+  "count": 6,
+  "next_page": null,
+  "end_time": 1720784511,
+  "articles": [
+    {
+      "id": 7253351877519,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/help_center/en-us/articles/7253351877519.json",
+      "html_url": "https://d3v-airbyte.zendesk.com/hc/en-us/articles/7253351877519-Sample-article-Stellar-Skyonomy-refund-policies",
+      "author_id": 360786799676,
+      "comments_disabled": false,
+      "draft": true,
+      "promoted": false,
+      "position": 0,
+      "vote_sum": 0,
+      "vote_count": 0,
+      "section_id": 7253394933775,
+      "created_at": "2023-06-22T00:32:20Z",
+      "updated_at": "2023-06-22T00:32:20Z",
+      "name": "Sample article: Stellar Skyonomy refund policies",
+      "title": "Sample article: Stellar Skyonomy refund policies",
+      "source_locale": "en-us",
+      "locale": "en-us",
+      "outdated": false,
+      "outdated_locales": [],
+      "edited_at": "2023-06-22T00:32:20Z",
+      "user_segment_id": null,
+      "permission_group_id": 7253379449487,
+      "content_tag_ids": [],
+      "label_names": [],
+      "body": "\u003cp\u003eAll \u003cstrong\u003eStellar Skyonomy\u003c/strong\u003e merchandise purchases are backed by our 30-day satisfaction guarantee, no questions asked. We even pay to have it shipped back to us. Additionally, you can cancel your \u003cstrong\u003eStellar Skyonomy\u003c/strong\u003e subscription at any time. Before you cancel, review our refund policies in this article.\u003c/p\u003e\u003cbr\u003e\u003cp\u003e\u003cstrong\u003eRefund policy\u003c/strong\u003e\u003c/p\u003e\u003cp\u003eWe automatically issue a full refund when you \u003ca\u003einitiate a return\u003c/a\u003e within 30 days of delivery.\u003cbr\u003e\u003cbr\u003eTo \u003ca\u003ecancel an annual website subscription\u003c/a\u003e you can do so at any time and your refund will be prorated based on the cancellation date.\u003c/p\u003e\u003cbr\u003e\u003cp\u003e\u003cstrong\u003eRequest a refund\u003c/strong\u003e\u003c/p\u003e\u003cp\u003eIf you believe you’re eligible for a refund but haven’t received one, contact us by completing a \u003ca\u003erefund request form.\u003c/a\u003e We review every refund and aim to respond within two business days.\u003cbr\u003e\u003cbr\u003eIf you haven't received a refund you're expecting, note that it can take up to 10 business days to appear on your card statement.\u003c/p\u003e",
+      "user_segment_ids": []
+    }
+  ]
+}

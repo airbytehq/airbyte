@@ -16,7 +16,7 @@ class HardcodedStream(Stream, ABC):
         self.count = count
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """ """
+        """Generate records from the stream."""
         for _ in range(self.count):
             yield self.sample_record
 

@@ -9,5 +9,7 @@ from typing_extensions import Literal
 
 class ReleaseStage(BaseModel):
     __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
-        ..., description="enum that describes a connector's release stage", title="ReleaseStage"
+        ...,
+        description="enum that describes a connector's release stage",
+        title="ReleaseStage",
     )

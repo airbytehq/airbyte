@@ -1,0 +1,3158 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v3/customers
+          http_method: GET
+          request_parameters:
+            sort: date_modified:asc
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_modified:min
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/orders
+          http_method: GET
+          request_parameters:
+            sort: date_modified:asc
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: min_date_modified
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.DateTimeTransformer
+          fields:
+            - path:
+                - date_modified
+              value: "{{ record.date_modified }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/orders/{{ stream_partition.order_id }}/transactions
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: order_id
+              stream:
+                $ref: "#/definitions/streams/orders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: id
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: date_modified:min
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v3/content/pages
+          http_method: GET
+          request_parameters:
+            sort: date_modified:asc
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: id
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: date_modified:min
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v3/catalog/products
+          http_method: GET
+          request_parameters:
+            sort: date_modified
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_modified:min
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/channels
+          http_method: GET
+          request_parameters:
+            sort: date_modified
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_modified:min
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+    store:
+      type: DeclarativeStream
+      name: store
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/store
+          http_method: GET
+          request_parameters:
+            sort: date_modified:asc
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/store"
+    order_products:
+      type: DeclarativeStream
+      name: order_products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/orders/{{ stream_partition.order_id }}/products
+          http_method: GET
+          request_parameters:
+            sort: date_modified:asc
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: order_id
+              stream:
+                $ref: "#/definitions/streams/orders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: id
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/order_products"
+    brands:
+      type: DeclarativeStream
+      name: brands
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v3/catalog/brands
+          http_method: GET
+          request_parameters:
+            sort: id
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: id
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v3/catalog/categories
+          http_method: GET
+          request_parameters:
+            sort: id
+          request_headers:
+            Accept: application/json
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: id
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.bigcommerce.com/stores/{{ config["store_hash"] }}/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"access_token\"] }}"
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-Auth-Token
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/store"
+  - $ref: "#/definitions/streams/order_products"
+  - $ref: "#/definitions/streams/brands"
+  - $ref: "#/definitions/streams/categories"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - access_token
+      - store_hash
+    properties:
+      start_date:
+        type: string
+        description: "The date you would like to replicate data. Format: YYYY-MM-DD."
+        title: Start date
+        examples:
+          - "2021-01-01"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 0
+      access_token:
+        type: string
+        description: Access Token for making authenticated requests.
+        title: Access Token
+        airbyte_secret: true
+        order: 1
+      store_hash:
+        type: string
+        description: >-
+          The hash code of the store. For
+          https://api.bigcommerce.com/stores/HASH_CODE/v3/, The store's hash
+          code is 'HASH_CODE'.
+        title: Store Hash
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: false
+    orders: false
+    transactions: false
+    pages: false
+    products: false
+    channels: false
+    store: false
+    order_products: false
+    brands: false
+    categories: false
+  yamlComponents:
+    streams:
+      orders:
+        - transformations
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      address_count:
+        type:
+          - "null"
+          - integer
+      addresses:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            accepts_product_review_abandoned_cart_emails:
+              type:
+                - "null"
+                - boolean
+            address1:
+              type:
+                - "null"
+                - string
+            address2:
+              type:
+                - "null"
+                - string
+            address_type:
+              type:
+                - "null"
+                - string
+            channel_ids:
+              type:
+                - "null"
+                - array
+            city:
+              type:
+                - "null"
+                - string
+            company:
+              type:
+                - "null"
+                - string
+            country:
+              type:
+                - "null"
+                - string
+            country_code:
+              type:
+                - "null"
+                - string
+            customer_id:
+              type:
+                - "null"
+                - integer
+            first_name:
+              type:
+                - "null"
+                - string
+            form_fields:
+              type:
+                - "null"
+                - array
+              oneOf:
+                - type:
+                    - "null"
+                    - object
+                  properties:
+                    customer_id:
+                      type:
+                        - "null"
+                        - integer
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      oneOf:
+                        - type:
+                            - "null"
+                            - string
+                        - type:
+                            - "null"
+                            - integer
+                        - type:
+                            - "null"
+                            - array
+                - type:
+                    - "null"
+                    - object
+                  properties:
+                    address_id:
+                      type:
+                        - "null"
+                        - integer
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      oneOf:
+                        - type:
+                            - "null"
+                            - string
+                        - type:
+                            - "null"
+                            - integer
+                        - type:
+                            - "null"
+                            - array
+            id:
+              type:
+                - "null"
+                - integer
+            last_name:
+              type:
+                - "null"
+                - string
+            origin_channel_id:
+              type:
+                - "null"
+                - integer
+            phone:
+              type:
+                - "null"
+                - string
+            postal_code:
+              type:
+                - "null"
+                - string
+            state_or_province:
+              type:
+                - "null"
+                - string
+            store_credit_amounts:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+      attribute_count:
+        type:
+          - "null"
+          - integer
+      authentication:
+        type:
+          - "null"
+          - object
+        properties:
+          force_password_reset:
+            type:
+              - "null"
+              - boolean
+      company:
+        type:
+          - "null"
+          - string
+      customer_group_id:
+        type:
+          - "null"
+          - integer
+      date_created:
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_modified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      email:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      last_name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      registration_ip_address:
+        type:
+          - "null"
+          - string
+      tax_exempt_category:
+        type:
+          - "null"
+          - string
+  orders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      base_handling_cost:
+        type:
+          - "null"
+          - string
+      base_shipping_cost:
+        type:
+          - "null"
+          - string
+      base_wrapping_cost:
+        oneOf:
+          - type:
+              - "null"
+              - integer
+          - type:
+              - "null"
+              - string
+      billing_address:
+        type:
+          - "null"
+          - object
+        properties:
+          city:
+            type:
+              - "null"
+              - string
+          company:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          country_iso2:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          form_fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          last_name:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          street_1:
+            type:
+              - "null"
+              - string
+          street_2:
+            type:
+              - "null"
+              - string
+          zip:
+            type:
+              - "null"
+              - string
+      cart_id:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - integer
+      coupon_discount:
+        type:
+          - "null"
+          - string
+      coupons:
+        type:
+          - "null"
+          - object
+        properties:
+          resource:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+      currency_code:
+        type:
+          - "null"
+          - string
+      currency_exchange_rate:
+        type:
+          - "null"
+          - string
+      currency_id:
+        type:
+          - "null"
+          - integer
+      customer_id:
+        type:
+          - "null"
+          - integer
+      customer_locale:
+        type:
+          - "null"
+          - string
+      customer_message:
+        type:
+          - "null"
+          - string
+      date_created:
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_modified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_shipped:
+        type:
+          - "null"
+          - string
+        format: date-time
+      default_currency_code:
+        type:
+          - "null"
+          - string
+      default_currency_id:
+        type:
+          - "null"
+          - integer
+      discount_amount:
+        type:
+          - "null"
+          - string
+      ebay_order_id:
+        type:
+          - "null"
+          - string
+      external_id:
+        type:
+          - "null"
+          - string
+      external_source:
+        type:
+          - "null"
+          - string
+      geoip_country:
+        type:
+          - "null"
+          - string
+      geoip_country_iso2:
+        type:
+          - "null"
+          - string
+      gift_certificate_amount:
+        type:
+          - "null"
+          - string
+      handling_cost_ex_tax:
+        type:
+          - "null"
+          - string
+      handling_cost_inc_tax:
+        type:
+          - "null"
+          - string
+      handling_cost_tax:
+        type:
+          - "null"
+          - string
+      handling_cost_tax_class_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      ip_address:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      is_email_opt_in:
+        type:
+          - "null"
+          - boolean
+      items_shipped:
+        type:
+          - "null"
+          - integer
+      items_total:
+        type:
+          - "null"
+          - integer
+      order_is_digital:
+        type:
+          - "null"
+          - boolean
+      order_source:
+        type:
+          - "null"
+          - string
+      payment_method:
+        type:
+          - "null"
+          - string
+      payment_status:
+        type:
+          - "null"
+          - string
+      products:
+        type:
+          - "null"
+          - object
+        properties:
+          resource:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+      refunded_amount:
+        type:
+          - "null"
+          - string
+      shipping_address_count:
+        type:
+          - "null"
+          - integer
+      shipping_addresses:
+        type:
+          - "null"
+          - object
+        properties:
+          resource:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+      shipping_cost_ex_tax:
+        type:
+          - "null"
+          - string
+      shipping_cost_inc_tax:
+        type:
+          - "null"
+          - string
+      shipping_cost_tax:
+        type:
+          - "null"
+          - string
+      shipping_cost_tax_class_id:
+        type:
+          - "null"
+          - integer
+      staff_notes:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      status_id:
+        type:
+          - "null"
+          - integer
+      store_credit_amount:
+        type:
+          - "null"
+          - string
+      subtotal_ex_tax:
+        type:
+          - "null"
+          - string
+      subtotal_inc_tax:
+        type:
+          - "null"
+          - string
+      subtotal_tax:
+        type:
+          - "null"
+          - string
+      tax_provider_id:
+        type:
+          - "null"
+          - string
+      total_ex_tax:
+        type:
+          - "null"
+          - string
+      total_inc_tax:
+        type:
+          - "null"
+          - string
+      wrapping_cost_ex_tax:
+        type:
+          - "null"
+          - string
+      wrapping_cost_inc_tax:
+        type:
+          - "null"
+          - string
+      wrapping_cost_tax:
+        type:
+          - "null"
+          - string
+      wrapping_cost_tax_class_id:
+        type:
+          - "null"
+          - integer
+  transactions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+      avs_result:
+        type:
+          - "null"
+          - object
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          postal_match:
+            type:
+              - "null"
+              - string
+          street_match:
+            type:
+              - "null"
+              - string
+      credit_card:
+        type:
+          - "null"
+          - object
+        properties:
+          card_expiry_month:
+            type:
+              - "null"
+              - integer
+          card_expiry_year:
+            type:
+              - "null"
+              - integer
+          card_iin:
+            type:
+              - "null"
+              - string
+          card_last4:
+            type:
+              - "null"
+              - string
+          card_type:
+            type:
+              - "null"
+              - string
+      currency:
+        type:
+          - "null"
+          - string
+      custom:
+        type:
+          - "null"
+          - object
+        properties:
+          payment_method:
+            type:
+              - "null"
+              - string
+      cvv_result:
+        type:
+          - "null"
+          - object
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+      date_created:
+        type:
+          - "null"
+          - string
+      event:
+        type:
+          - "null"
+          - string
+      fraud_review:
+        type:
+          - "null"
+          - boolean
+      gateway:
+        type:
+          - "null"
+          - string
+      gateway_transaction_id:
+        type:
+          - "null"
+          - string
+      gift_certificate:
+        type:
+          - "null"
+          - object
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+          original_balance:
+            type:
+              - "null"
+              - integer
+          remaining_balance:
+            type:
+              - "null"
+              - integer
+          starting_balance:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - integer
+      method:
+        type:
+          - "null"
+          - string
+      offline:
+        type:
+          - "null"
+          - object
+        properties:
+          display_name:
+            type:
+              - "null"
+              - string
+      order_id:
+        type:
+          - "null"
+          - string
+      payment_instrument_token:
+        type:
+          - "null"
+          - string
+      payment_method_id:
+        type:
+          - "null"
+          - string
+      reference_transaction_id:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      store_credit:
+        type:
+          - "null"
+          - object
+        properties:
+          remaining_balance:
+            type:
+              - "null"
+              - integer
+      test:
+        type:
+          - "null"
+          - boolean
+  pages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - integer
+      contact_fields:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      feed:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_customers_only:
+        type:
+          - "null"
+          - boolean
+      is_homepage:
+        type:
+          - "null"
+          - boolean
+      is_visible:
+        type:
+          - "null"
+          - boolean
+      link:
+        type:
+          - "null"
+          - string
+      meta_description:
+        type:
+          - "null"
+          - string
+      meta_keywords:
+        type:
+          - "null"
+          - string
+      meta_title:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      parent_id:
+        type:
+          - "null"
+          - integer
+      search_keywords:
+        type:
+          - "null"
+          - string
+      sort_order:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+  products:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      availability:
+        type:
+          - "null"
+          - string
+      availability_description:
+        type:
+          - "null"
+          - string
+      base_variant_id:
+        type:
+          - "null"
+          - integer
+      bin_picking_number:
+        type:
+          - "null"
+          - string
+      brand_id:
+        type:
+          - "null"
+          - integer
+      brand_name or brand_id:
+        type:
+          - "null"
+          - string
+      bulk_pricing_rules:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            amount:
+              type:
+                - "null"
+                - integer
+            id:
+              type:
+                - "null"
+                - integer
+            quantity_max:
+              type:
+                - "null"
+                - integer
+            quantity_min:
+              type:
+                - "null"
+                - integer
+          required:
+            - quantity_min
+            - quantity_max
+            - type
+            - amount
+          title: bulkPricingRule_Full
+      calculated_price:
+        type:
+          - "null"
+          - number
+        format: float
+      categories:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      condition:
+        type:
+          - "null"
+          - string
+      cost_price:
+        type:
+          - "null"
+          - number
+        format: float
+      custom_fields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+          required:
+            - name
+            - value
+          title: productCustomField_Put
+      custom_url:
+        type:
+          - "null"
+          - object
+        properties:
+          is_customized:
+            type:
+              - "null"
+              - boolean
+          url:
+            type:
+              - "null"
+              - string
+        title: customUrl_Full
+      date_created:
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_modified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      depth:
+        type:
+          - "null"
+          - number
+        format: float
+      fixed_cost_shipping_price:
+        type:
+          - "null"
+          - number
+        format: float
+      gift_wrapping_options_list:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      gift_wrapping_options_type:
+        type:
+          - "null"
+          - string
+      gtin:
+        type:
+          - "null"
+          - string
+      height:
+        type:
+          - "null"
+          - number
+        format: float
+      id:
+        type:
+          - "null"
+          - integer
+      images:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            description:
+              type:
+                - "null"
+                - string
+            date_modified:
+              type:
+                - "null"
+                - string
+              format: date-time
+            id:
+              type:
+                - "null"
+                - integer
+            image_file:
+              type:
+                - "null"
+                - string
+            image_url:
+              type:
+                - "null"
+                - string
+            is_thumbnail:
+              type:
+                - "null"
+                - boolean
+            product_id:
+              type:
+                - "null"
+                - integer
+            sort_order:
+              type:
+                - "null"
+                - integer
+            url_standard:
+              type:
+                - "null"
+                - string
+            url_thumbnail:
+              type:
+                - "null"
+                - string
+            url_tiny:
+              type:
+                - "null"
+                - string
+            url_zoom:
+              type:
+                - "null"
+                - string
+          title: productImage_Full
+      inventory_level:
+        type:
+          - "null"
+          - integer
+      inventory_tracking:
+        type:
+          - "null"
+          - string
+      inventory_warning_level:
+        type:
+          - "null"
+          - integer
+      is_condition_shown:
+        type:
+          - "null"
+          - boolean
+      is_featured:
+        type:
+          - "null"
+          - boolean
+      is_free_shipping:
+        type:
+          - "null"
+          - boolean
+      is_preorder_only:
+        type:
+          - "null"
+          - boolean
+      is_price_hidden:
+        type:
+          - "null"
+          - boolean
+      is_visible:
+        type:
+          - "null"
+          - boolean
+      layout_file:
+        type:
+          - "null"
+          - string
+      map_price:
+        type:
+          - "null"
+          - number
+      meta_description:
+        type:
+          - "null"
+          - string
+      meta_keywords:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      modifiers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            config:
+              type:
+                - "null"
+                - object
+              properties:
+                checkbox_label:
+                  type:
+                    - "null"
+                    - string
+                checked_by_default:
+                  type:
+                    - "null"
+                    - boolean
+                date_earliest_value:
+                  type:
+                    - "null"
+                    - string
+                  format: date
+                date_latest_value:
+                  type:
+                    - "null"
+                    - string
+                  format: date
+                date_limit_mode:
+                  type:
+                    - "null"
+                    - string
+                date_limited:
+                  type:
+                    - "null"
+                    - boolean
+                default_value:
+                  type:
+                    - "null"
+                    - string
+                file_max_size:
+                  type:
+                    - "null"
+                    - integer
+                file_types_mode:
+                  type:
+                    - "null"
+                    - string
+                file_types_other:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                file_types_supported:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                number_highest_value:
+                  type:
+                    - "null"
+                    - number
+                number_integers_only:
+                  type:
+                    - "null"
+                    - boolean
+                number_limit_mode:
+                  type:
+                    - "null"
+                    - string
+                number_limited:
+                  type:
+                    - "null"
+                    - boolean
+                number_lowest_value:
+                  type:
+                    - "null"
+                    - number
+                product_list_adjusts_inventory:
+                  type:
+                    - "null"
+                    - boolean
+                product_list_adjusts_pricing:
+                  type:
+                    - "null"
+                    - boolean
+                product_list_shipping_calc:
+                  type:
+                    - "null"
+                    - string
+                text_characters_limited:
+                  type:
+                    - "null"
+                    - boolean
+                text_lines_limited:
+                  type:
+                    - "null"
+                    - boolean
+                text_max_length:
+                  type:
+                    - "null"
+                    - integer
+                text_max_lines:
+                  type:
+                    - "null"
+                    - integer
+                text_min_length:
+                  type:
+                    - "null"
+                    - integer
+              title: config_Full
+            display_name:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            option_values:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  adjusters:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      image_url:
+                        type:
+                          - "null"
+                          - string
+                      price:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          adjuster:
+                            type:
+                              - "null"
+                              - string
+                          adjuster_value:
+                            type:
+                              - "null"
+                              - number
+                        title: adjuster_Full
+                      purchasing_disabled:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          message:
+                            type:
+                              - "null"
+                              - string
+                          status:
+                            type:
+                              - "null"
+                              - boolean
+                      weight:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          adjuster:
+                            type:
+                              - "null"
+                              - string
+                          adjuster_value:
+                            type:
+                              - "null"
+                              - number
+                        title: adjuster_Full
+                    title: adjusters_Full
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  is_default:
+                    type:
+                      - "null"
+                      - boolean
+                  label:
+                    type:
+                      - "null"
+                      - string
+                  option_id:
+                    type:
+                      - "null"
+                      - integer
+                  sort_order:
+                    type:
+                      - "null"
+                      - integer
+                  value_data:
+                    type:
+                      - object
+                      - "null"
+                required:
+                  - label
+                  - sort_order
+                title: productModifierOptionValue_Full
+            product_id:
+              type:
+                - "null"
+                - integer
+            required:
+              type:
+                - "null"
+                - boolean
+            sort_order:
+              type:
+                - "null"
+                - integer
+          required:
+            - type
+            - required
+          title: productModifier_Full
+      mpn:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      open_graph_description:
+        type:
+          - "null"
+          - string
+      open_graph_title:
+        type:
+          - "null"
+          - string
+      open_graph_type:
+        type:
+          - "null"
+          - string
+      open_graph_use_image:
+        type:
+          - "null"
+          - boolean
+      open_graph_use_meta_description:
+        type:
+          - "null"
+          - boolean
+      open_graph_use_product_name:
+        type:
+          - "null"
+          - boolean
+      option_set_display:
+        type:
+          - "null"
+          - string
+      option_set_id:
+        type:
+          - "null"
+          - integer
+      options:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            config:
+              type:
+                - "null"
+                - object
+              properties:
+                checkbox_label:
+                  type:
+                    - "null"
+                    - string
+                checked_by_default:
+                  type:
+                    - "null"
+                    - boolean
+                date_earliest_value:
+                  type:
+                    - "null"
+                    - string
+                  format: date
+                date_latest_value:
+                  type:
+                    - "null"
+                    - string
+                  format: date
+                date_limit_mode:
+                  type:
+                    - "null"
+                    - string
+                date_limited:
+                  type:
+                    - "null"
+                    - boolean
+                default_value:
+                  type:
+                    - "null"
+                    - string
+                file_max_size:
+                  type:
+                    - "null"
+                    - integer
+                file_types_mode:
+                  type:
+                    - "null"
+                    - string
+                file_types_other:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                file_types_supported:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                number_highest_value:
+                  type:
+                    - "null"
+                    - number
+                number_integers_only:
+                  type:
+                    - "null"
+                    - boolean
+                number_limit_mode:
+                  type:
+                    - "null"
+                    - string
+                number_limited:
+                  type:
+                    - "null"
+                    - boolean
+                number_lowest_value:
+                  type:
+                    - "null"
+                    - number
+                product_list_adjusts_inventory:
+                  type:
+                    - "null"
+                    - boolean
+                product_list_adjusts_pricing:
+                  type:
+                    - "null"
+                    - boolean
+                product_list_shipping_calc:
+                  type:
+                    - "null"
+                    - string
+                text_characters_limited:
+                  type:
+                    - "null"
+                    - boolean
+                text_lines_limited:
+                  type:
+                    - "null"
+                    - boolean
+                text_max_length:
+                  type:
+                    - "null"
+                    - integer
+                text_max_lines:
+                  type:
+                    - "null"
+                    - integer
+                text_min_length:
+                  type:
+                    - "null"
+                    - integer
+              title: productOptionConfig_Full
+            display_name:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            option_values:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                is_default:
+                  type:
+                    - "null"
+                    - boolean
+                label:
+                  type:
+                    - "null"
+                    - string
+                sort_order:
+                  type:
+                    - "null"
+                    - integer
+                value_data:
+                  type:
+                    - object
+                    - "null"
+              required:
+                - label
+                - sort_order
+              title: productOptionOptionValue_Full
+            product_id:
+              type:
+                - "null"
+                - integer
+            sort_order:
+              type:
+                - "null"
+                - integer
+          title: productOption_Base
+      order_quantity_maximum:
+        type:
+          - "null"
+          - integer
+      order_quantity_minimum:
+        type:
+          - "null"
+          - integer
+      page_title:
+        type:
+          - "null"
+          - string
+      preorder_message:
+        type:
+          - "null"
+          - string
+      preorder_release_date:
+        type:
+          - "null"
+          - string
+        format: date-time
+      price:
+        type:
+          - "null"
+          - number
+        format: float
+      price_hidden_label:
+        type:
+          - "null"
+          - string
+      product_tax_code:
+        type:
+          - "null"
+          - string
+      related_products:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      retail_price:
+        type:
+          - "null"
+          - number
+        format: float
+      reviews_count:
+        type:
+          - "null"
+          - integer
+      reviews_rating_sum:
+        type:
+          - "null"
+          - integer
+      sale_price:
+        type:
+          - "null"
+          - number
+        format: float
+      search_keywords:
+        type:
+          - "null"
+          - string
+      sku:
+        type:
+          - "null"
+          - string
+      sort_order:
+        type:
+          - "null"
+          - integer
+      tax_class_id:
+        type:
+          - "null"
+          - integer
+      total_sold:
+        type:
+          - "null"
+          - integer
+      upc:
+        type:
+          - "null"
+          - string
+      variants:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            bin_picking_number:
+              type:
+                - "null"
+                - string
+            calculated_price:
+              type:
+                - "null"
+                - number
+              format: double
+            calculated_weight:
+              type: number
+            cost_price:
+              type:
+                - "null"
+                - number
+              format: double
+            depth:
+              type:
+                - "null"
+                - number
+              format: double
+            fixed_cost_shipping_price:
+              type:
+                - "null"
+                - number
+              format: double
+            height:
+              type:
+                - "null"
+                - number
+              format: double
+            id:
+              type:
+                - "null"
+                - integer
+            inventory_level:
+              type:
+                - "null"
+                - integer
+            inventory_warning_level:
+              type:
+                - "null"
+                - integer
+            is_free_shipping:
+              type:
+                - "null"
+                - boolean
+            mpn:
+              type:
+                - "null"
+                - string
+            option_values:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  label:
+                    type:
+                      - "null"
+                      - string
+                  option_display_name:
+                    type:
+                      - "null"
+                      - string
+                  option_id:
+                    type:
+                      - "null"
+                      - integer
+                title: productVariantOptionValue_Full
+            price:
+              type:
+                - "null"
+                - number
+              format: double
+            product_id:
+              type:
+                - "null"
+                - integer
+            purchasing_disabled:
+              type:
+                - "null"
+                - boolean
+            purchasing_disabled_message:
+              type:
+                - "null"
+                - string
+            retail_price:
+              type:
+                - "null"
+                - number
+              format: double
+            sale_price:
+              type:
+                - "null"
+                - number
+              format: double
+            sku:
+              type:
+                - "null"
+                - string
+            sku_id:
+              type:
+                - "null"
+                - integer
+            upc:
+              type:
+                - "null"
+                - string
+            weight:
+              type:
+                - "null"
+                - number
+              format: double
+            width:
+              type:
+                - "null"
+                - number
+              format: double
+          title: productVariant_Full
+      videos:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            length:
+              type:
+                - "null"
+                - string
+            product_id:
+              type:
+                - "null"
+                - integer
+            sort_order:
+              type:
+                - "null"
+                - integer
+            title:
+              type:
+                - "null"
+                - string
+            video_id:
+              type:
+                - "null"
+                - string
+          title: productVideo_Full
+      view_count:
+        type:
+          - "null"
+          - integer
+      warranty:
+        type:
+          - "null"
+          - string
+      weight:
+        type:
+          - "null"
+          - number
+        format: float
+      width:
+        type:
+          - "null"
+          - number
+        format: float
+    title: Product Response
+  channels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      date_created:
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_modified:
+        type:
+          - "null"
+          - string
+        format: date-time
+      external_id:
+        type:
+          - "null"
+          - string
+      icon_url:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_enabled:
+        type:
+          - "null"
+          - boolean
+      is_listable_from_ui:
+        type:
+          - "null"
+          - boolean
+      is_visible:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      platform:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+  store:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account_uuid:
+        type:
+          - "null"
+          - string
+      active_comparison_modules:
+        type:
+          - "null"
+          - array
+      address:
+        type:
+          - "null"
+          - string
+      admin_email:
+        type:
+          - "null"
+          - string
+      control_panel_base_url:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      currency_symbol:
+        type:
+          - "null"
+          - string
+      currency_symbol_location:
+        type:
+          - "null"
+          - string
+      decimal_places:
+        type:
+          - "null"
+          - integer
+      decimal_separator:
+        type:
+          - "null"
+          - string
+      default_channel_id:
+        type:
+          - "null"
+          - integer
+      default_site_id:
+        type:
+          - "null"
+          - integer
+      dimension_decimal_places:
+        type:
+          - "null"
+          - integer
+      dimension_decimal_token:
+        type:
+          - "null"
+          - string
+      dimension_thousands_token:
+        type:
+          - "null"
+          - string
+      dimension_units:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      favicon_url:
+        type:
+          - "null"
+          - string
+      features:
+        type:
+          - "null"
+          - object
+        properties:
+          checkout_type:
+            type:
+              - "null"
+              - string
+          facebook_catalog_id:
+            type:
+              - "null"
+              - string
+          graphql_storefront_api_enabled:
+            type:
+              - "null"
+              - boolean
+          multi_storefront_enabled:
+            type:
+              - "null"
+              - boolean
+          shopper_consent_tracking_enabled:
+            type:
+              - "null"
+              - boolean
+          sitewidehttps_enabled:
+            type:
+              - "null"
+              - boolean
+          stencil_enabled:
+            type:
+              - "null"
+              - boolean
+          wishlists_enabled:
+            type:
+              - "null"
+              - boolean
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      industry:
+        type:
+          - "null"
+          - string
+      is_price_entered_with_tax:
+        type:
+          - "null"
+          - boolean
+      language:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      logo:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            url:
+              type:
+                - "null"
+                - string
+      name:
+        type:
+          - "null"
+          - string
+      order_email:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      plan_is_trial:
+        type:
+          - "null"
+          - boolean
+      plan_level:
+        type:
+          - "null"
+          - string
+      plan_name:
+        type:
+          - "null"
+          - string
+      secure_url:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      store_id:
+        type:
+          - "null"
+          - integer
+      thousands_separator:
+        type:
+          - "null"
+          - string
+      timezone:
+        type:
+          - "null"
+          - object
+        properties:
+          date_format:
+            type:
+              - "null"
+              - object
+            properties:
+              display:
+                type:
+                  - "null"
+                  - string
+              export:
+                type:
+                  - "null"
+                  - string
+              extended_display:
+                type:
+                  - "null"
+                  - string
+          dst_offset:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          raw_offset:
+            type:
+              - "null"
+              - integer
+      weight_units:
+        type:
+          - "null"
+          - string
+  order_products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      applied_discounts:
+        type:
+          - "null"
+          - array
+      base_cost_price:
+        type:
+          - "null"
+          - string
+      base_price:
+        type:
+          - "null"
+          - string
+      base_total:
+        type:
+          - "null"
+          - string
+      base_wrapping_cost:
+        type:
+          - "null"
+          - string
+      bin_picking_number:
+        type:
+          - "null"
+          - string
+      brand:
+        type:
+          - "null"
+          - string
+      configurable_fields:
+        type:
+          - "null"
+          - array
+      cost_price_ex_tax:
+        type:
+          - "null"
+          - string
+      cost_price_inc_tax:
+        type:
+          - "null"
+          - string
+      cost_price_tax:
+        type:
+          - "null"
+          - string
+      depth:
+        type:
+          - "null"
+          - string
+      ebay_item_id:
+        type:
+          - "null"
+          - string
+      ebay_transaction_id:
+        type:
+          - "null"
+          - string
+      event_date:
+        type:
+          - "null"
+          - string
+      event_name:
+        type:
+          - "null"
+          - string
+      external_id:
+        type:
+          - "null"
+          - string
+      fixed_shipping_cost:
+        type:
+          - "null"
+          - string
+      fulfillment_source:
+        type:
+          - "null"
+          - string
+      gift_certificate_id:
+        type:
+          - "null"
+          - integer
+      height:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_bundled_product:
+        type:
+          - "null"
+          - boolean
+      is_refunded:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      name_customer:
+        type:
+          - "null"
+          - string
+      name_merchant:
+        type:
+          - "null"
+          - string
+      option_set_id:
+        type:
+          - "null"
+          - integer
+      order_address_id:
+        type:
+          - "null"
+          - integer
+      order_id:
+        type:
+          - "null"
+          - integer
+      parent_order_product_id:
+        type:
+          - "null"
+          - integer
+      price_ex_tax:
+        type:
+          - "null"
+          - string
+      price_inc_tax:
+        type:
+          - "null"
+          - string
+      price_tax:
+        type:
+          - "null"
+          - string
+      product_id:
+        type:
+          - "null"
+          - integer
+      product_options:
+        type:
+          - "null"
+          - array
+      quantity:
+        type:
+          - "null"
+          - number
+      quantity_refunded:
+        type:
+          - "null"
+          - number
+      quantity_shipped:
+        type:
+          - "null"
+          - number
+      refund_amount:
+        type:
+          - "null"
+          - string
+      return_id:
+        type:
+          - "null"
+          - number
+      sku:
+        type:
+          - "null"
+          - string
+      total_ex_tax:
+        type:
+          - "null"
+          - string
+      total_inc_tax:
+        type:
+          - "null"
+          - string
+      total_tax:
+        type:
+          - "null"
+          - string
+      upc:
+        type:
+          - "null"
+          - string
+      variant_id:
+        type:
+          - "null"
+          - integer
+      weight:
+        type:
+          - "null"
+          - string
+      width:
+        type:
+          - "null"
+          - string
+      wrapping_cost_ex_tax:
+        type:
+          - "null"
+          - string
+      wrapping_cost_inc_tax:
+        type:
+          - "null"
+          - string
+      wrapping_cost_tax:
+        type:
+          - "null"
+          - string
+      wrapping_id:
+        type:
+          - "null"
+          - string
+      wrapping_message:
+        type:
+          - "null"
+          - string
+      wrapping_name:
+        type:
+          - "null"
+          - string
+  brands:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      custom_url:
+        type:
+          - "null"
+          - object
+        properties:
+          is_customized:
+            type:
+              - "null"
+              - boolean
+          url:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - integer
+      image_url:
+        type:
+          - "null"
+          - string
+      meta_description:
+        type:
+          - "null"
+          - string
+      meta_keywords:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      name:
+        type:
+          - "null"
+          - string
+      page_title:
+        type:
+          - "null"
+          - string
+      search_keywords:
+        type:
+          - "null"
+          - string
+  categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      custom_url:
+        type:
+          - "null"
+          - object
+        properties:
+          is_customized:
+            type:
+              - "null"
+              - boolean
+          path:
+            type:
+              - "null"
+              - string
+      default_product_sort:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      image_url:
+        type:
+          - "null"
+          - string
+      is_visible:
+        type:
+          - "null"
+          - boolean
+      layout_file:
+        type:
+          - "null"
+          - string
+      meta_description:
+        type:
+          - "null"
+          - string
+      meta_keywords:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      name:
+        type:
+          - "null"
+          - string
+      page_title:
+        type:
+          - "null"
+          - string
+      parent_id:
+        type:
+          - "null"
+          - integer
+      search_keywords:
+        type:
+          - "null"
+          - string
+      sort_order:
+        type:
+          - "null"
+          - integer
+      views:
+        type:
+          - "null"
+          - integer

@@ -203,6 +203,18 @@
     },
     {
       "stream": {
+        "name": "leads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "line_items",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -342,33 +354,6 @@
     {
       "stream": {
         "name": "cars",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "contacts_merged_audit",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "contacts_web_analytics",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "contacts_form_submissions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

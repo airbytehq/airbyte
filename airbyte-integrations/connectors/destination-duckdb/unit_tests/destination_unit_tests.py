@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import tempfile
 from unittest.mock import Mock, patch
+
 import pytest
 from destination_duckdb.destination import CONFIG_DEFAULT_SCHEMA, DestinationDuckdb, validated_sql_name
 
@@ -14,6 +15,7 @@ def test_validated_sql_name() -> None:
     assert validated_sql_name("valid_name") == "valid_name"
     with pytest.raises(ValueError):
         validated_sql_name("invalid-name")
+
 
 @patch("duckdb.connect")
 @patch("os.makedirs")
@@ -27,6 +29,7 @@ def test_check(mock_connect, mock_makedirs) -> None:
     result = destination.check(logger, config)
     assert result.status == Status.SUCCEEDED
 
+
 @patch("duckdb.connect")
 @patch("os.makedirs")
 def test_check_failure(mock_connect, mock_makedirs) -> None:
@@ -37,6 +40,7 @@ def test_check_failure(mock_connect, mock_makedirs) -> None:
     result = destination.check(logger, config)
     assert result.status == Status.FAILED
     assert "Test exception" in result.message
+
 
 @patch("duckdb.connect")
 @patch("os.makedirs")

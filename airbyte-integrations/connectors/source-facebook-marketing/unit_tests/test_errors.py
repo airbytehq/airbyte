@@ -7,13 +7,15 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
 from source_facebook_marketing.streams.common import traced_exception
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -113,7 +115,7 @@ CONFIG_ERRORS = [
                     "code": 100,
                 }
             },
-        }
+        },
         # Error randomly happens for different connections.
         # Can be reproduced on https://developers.facebook.com/tools/explorer/?method=GET&path=act_<ad_account_id>&version=v17.0
         # 1st reason: incorrect ad account id is used
@@ -183,7 +185,7 @@ CONFIG_ERRORS = [
                     "error_user_msg": "profile should always be linked to delegate page",
                 }
             },
-        }
+        },
         # Error happens on Video stream: https://graph.facebook.com/v17.0/act_XXXXXXXXXXXXXXXX/advideos
         # Recommendations says that the problem can be fixed by switching to Business Ad Account Id
     ),
@@ -215,8 +217,8 @@ CONFIG_ERRORS = [
                     "message": "(#3018) The start date of the time range cannot be beyond 37 months from the current date",
                     "type": "OAuthException",
                     "code": 3018,
-                    "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P"
-                  }
+                    "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
             },
         },
     ),
@@ -252,27 +254,28 @@ CONFIG_ERRORS = [
 
 SERVICE_TEMPORARILY_UNAVAILABLE_TEST_NAME = "error_400_service_temporarily_unavailable"
 SERVICE_TEMPORARILY_UNAVAILABLE_RESPONSE = {
-                    "status_code": 503,
-                    "json": {
-                        "error": {
-                            "message": "(#2) Service temporarily unavailable",
-                            "type": "OAuthException",
-                            "is_transient": True,
-                            "code": 2,
-                            "fbtrace_id": "AnUyGZoFqN2m50GHVpOQEqr",
-                        }
-                    },
-                }
+    "status_code": 503,
+    "json": {
+        "error": {
+            "message": "(#2) Service temporarily unavailable",
+            "type": "OAuthException",
+            "is_transient": True,
+            "code": 2,
+            "fbtrace_id": "AnUyGZoFqN2m50GHVpOQEqr",
+        }
+    },
+}
 REDUCE_FIELDS_ERROR_TEST_NAME = "error_500_reduce_the_amount_of_data"
 REDUCE_FIELDS_ERROR_RESPONSE = {
-                    "status_code": 500,
-                    "json": {
-                        "error": {
-                            "message": "Please reduce the amount of data you're asking for, then retry your request",
-                            "code": 1,
-                        }
-                    },
-                }
+    "status_code": 500,
+    "json": {
+        "error": {
+            "message": "Please reduce the amount of data you're asking for, then retry your request",
+            "code": 1,
+        }
+    },
+}
+
 
 class TestRealErrors:
     @pytest.mark.parametrize(
@@ -406,23 +409,24 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
-    @pytest.mark.parametrize("name, friendly_msg, config_error_response, failure_type",
-                             [
-                                (
-                                     REDUCE_FIELDS_ERROR_TEST_NAME,
-                                     "Please reduce the number of fields requested. Go to the schema tab, "
-                                     "select your source, and unselect the fields you do not need.",
-                                     REDUCE_FIELDS_ERROR_RESPONSE,
-                                     FailureType.config_error
-                                ),
-                                (
-                                    SERVICE_TEMPORARILY_UNAVAILABLE_TEST_NAME,
-                                    "The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
-                                    SERVICE_TEMPORARILY_UNAVAILABLE_RESPONSE,
-                                    FailureType.transient_error
-                                )
-                             ]
-                            )
+    @pytest.mark.parametrize(
+        "name, friendly_msg, config_error_response, failure_type",
+        [
+            (
+                REDUCE_FIELDS_ERROR_TEST_NAME,
+                "Please reduce the number of fields requested. Go to the schema tab, "
+                "select your source, and unselect the fields you do not need.",
+                REDUCE_FIELDS_ERROR_RESPONSE,
+                FailureType.config_error,
+            ),
+            (
+                SERVICE_TEMPORARILY_UNAVAILABLE_TEST_NAME,
+                "The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
+                SERVICE_TEMPORARILY_UNAVAILABLE_RESPONSE,
+                FailureType.transient_error,
+            ),
+        ],
+    )
     def test_config_error_that_was_retried_when_reading_nodes(self, requests_mock, name, friendly_msg, config_error_response, failure_type):
         """This test covers errors that have been resolved in the past with a retry strategy, but it could also can fail after retries,
         then, we need to provide the user with a humanized error explaining what just happened"""
@@ -498,7 +502,7 @@ class TestRealErrors:
             assert friendly_msg in error.message
 
     def test_retry_for_cannot_include_error(self, requests_mock):
-        """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868 """
+        """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868"""
 
         api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
@@ -516,7 +520,7 @@ class TestRealErrors:
                 "error": {
                     "message": "(#100) Cannot include video_avg_time_watched_actions, video_continuous_2_sec_watched_actions in summary param because they weren't there while creating the report run.",
                     "type": "OAuthException",
-                    "code": 100
+                    "code": 100,
                 }
             },
         }
@@ -594,24 +598,22 @@ def test_traced_exception_with_api_error():
         request_context={},
         http_status=400,
         http_headers={},
-        body='{"error": {"message": "Error validating access token", "code": 190}}'
+        body='{"error": {"message": "Error validating access token", "code": 190}}',
     )
     error.api_error_message = MagicMock(return_value="Error validating access token")
-    
+
     result = traced_exception(error)
-    
+
     assert isinstance(result, AirbyteTracedException)
-    assert result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+    assert (
+        result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+    )
     assert result.failure_type == FailureType.config_error
 
 
 def test_traced_exception_without_api_error():
     error = FacebookRequestError(
-        message="Call was unsuccessful. The Facebook API has imploded",
-        request_context={},
-        http_status=408,
-        http_headers={},
-        body='{}'
+        message="Call was unsuccessful. The Facebook API has imploded", request_context={}, http_status=408, http_headers={}, body="{}"
     )
     error.api_error_message = MagicMock(return_value=None)
 

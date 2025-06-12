@@ -49,6 +49,33 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.22 | 2025-05-24 | [60443](https://github.com/airbytehq/airbyte/pull/60443) | Update dependencies |
+| 0.3.21 | 2025-05-11 | [60206](https://github.com/airbytehq/airbyte/pull/60206) | Update dependencies |
+| 0.3.20 | 2025-05-04 | [59628](https://github.com/airbytehq/airbyte/pull/59628) | Update dependencies |
+| 0.3.19 | 2025-04-27 | [58971](https://github.com/airbytehq/airbyte/pull/58971) | Update dependencies |
+| 0.3.18 | 2025-04-19 | [58382](https://github.com/airbytehq/airbyte/pull/58382) | Update dependencies |
+| 0.3.17 | 2025-04-12 | [57989](https://github.com/airbytehq/airbyte/pull/57989) | Update dependencies |
+| 0.3.16 | 2025-04-05 | [57323](https://github.com/airbytehq/airbyte/pull/57323) | Update dependencies |
+| 0.3.15 | 2025-03-29 | [56762](https://github.com/airbytehq/airbyte/pull/56762) | Update dependencies |
+| 0.3.14 | 2025-03-22 | [56214](https://github.com/airbytehq/airbyte/pull/56214) | Update dependencies |
+| 0.3.13 | 2025-03-08 | [55568](https://github.com/airbytehq/airbyte/pull/55568) | Update dependencies |
+| 0.3.12 | 2025-03-01 | [55001](https://github.com/airbytehq/airbyte/pull/55001) | Update dependencies |
+| 0.3.11 | 2025-02-23 | [54582](https://github.com/airbytehq/airbyte/pull/54582) | Update dependencies |
+| 0.3.10 | 2025-02-15 | [53995](https://github.com/airbytehq/airbyte/pull/53995) | Update dependencies |
+| 0.3.9 | 2025-02-08 | [53490](https://github.com/airbytehq/airbyte/pull/53490) | Update dependencies |
+| 0.3.8 | 2025-02-01 | [53019](https://github.com/airbytehq/airbyte/pull/53019) | Update dependencies |
+| 0.3.7 | 2025-01-25 | [52463](https://github.com/airbytehq/airbyte/pull/52463) | Update dependencies |
+| 0.3.6 | 2025-01-18 | [51873](https://github.com/airbytehq/airbyte/pull/51873) | Update dependencies |
+| 0.3.5 | 2025-01-11 | [51346](https://github.com/airbytehq/airbyte/pull/51346) | Update dependencies |
+| 0.3.4 | 2024-12-28 | [50672](https://github.com/airbytehq/airbyte/pull/50672) | Update dependencies |
+| 0.3.3 | 2024-12-21 | [50250](https://github.com/airbytehq/airbyte/pull/50250) | Update dependencies |
+| 0.3.2 | 2024-12-14 | [49684](https://github.com/airbytehq/airbyte/pull/49684) | Update dependencies |
+| 0.3.1 | 2024-12-12 | [49045](https://github.com/airbytehq/airbyte/pull/49045) | Update dependencies |
+| 0.3.0 | 2024-11-01 | [47291](https://github.com/airbytehq/airbyte/pull/47291) | Migrate to manifest only format |
+| 0.2.24 | 2024-10-23 | [47108](https://github.com/airbytehq/airbyte/pull/47108) | Update dependencies |
+| 0.2.23 | 2024-10-12 | [46850](https://github.com/airbytehq/airbyte/pull/46850) | Update dependencies |
+| 0.2.22 | 2024-10-05 | [46429](https://github.com/airbytehq/airbyte/pull/46429) | Update dependencies |
+| 0.2.21 | 2024-09-28 | [46150](https://github.com/airbytehq/airbyte/pull/46150) | Update dependencies |
 | 0.2.20 | 2024-09-21 | [45513](https://github.com/airbytehq/airbyte/pull/45513) | Update dependencies |
 | 0.2.19 | 2024-09-07 | [45243](https://github.com/airbytehq/airbyte/pull/45243) | Update dependencies |
 | 0.2.18 | 2024-08-31 | [44984](https://github.com/airbytehq/airbyte/pull/44984) | Update dependencies |

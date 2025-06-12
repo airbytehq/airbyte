@@ -188,7 +188,7 @@ class TestIncremental(BaseTest):
         if client_container and client_container_config.between_syncs_command:
             detailed_logger.info(
                 await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                .with_exec(client_container_config.between_syncs_command)
                 .stdout()
             )
 

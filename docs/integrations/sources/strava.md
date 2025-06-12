@@ -127,6 +127,27 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.21 | 2025-05-25 | [60208](https://github.com/airbytehq/airbyte/pull/60208) | Update dependencies |
+| 0.3.20 | 2025-05-04 | [59581](https://github.com/airbytehq/airbyte/pull/59581) | Update dependencies |
+| 0.3.19 | 2025-04-27 | [59034](https://github.com/airbytehq/airbyte/pull/59034) | Update dependencies |
+| 0.3.18 | 2025-04-19 | [58385](https://github.com/airbytehq/airbyte/pull/58385) | Update dependencies |
+| 0.3.17 | 2025-04-12 | [57939](https://github.com/airbytehq/airbyte/pull/57939) | Update dependencies |
+| 0.3.16 | 2025-04-05 | [57411](https://github.com/airbytehq/airbyte/pull/57411) | Update dependencies |
+| 0.3.15 | 2025-03-29 | [56879](https://github.com/airbytehq/airbyte/pull/56879) | Update dependencies |
+| 0.3.14 | 2025-03-22 | [56280](https://github.com/airbytehq/airbyte/pull/56280) | Update dependencies |
+| 0.3.13 | 2025-03-08 | [55588](https://github.com/airbytehq/airbyte/pull/55588) | Update dependencies |
+| 0.3.12 | 2025-03-01 | [55095](https://github.com/airbytehq/airbyte/pull/55095) | Update dependencies |
+| 0.3.11 | 2025-02-22 | [54482](https://github.com/airbytehq/airbyte/pull/54482) | Update dependencies |
+| 0.3.10 | 2025-02-15 | [54087](https://github.com/airbytehq/airbyte/pull/54087) | Update dependencies |
+| 0.3.9 | 2025-02-08 | [53562](https://github.com/airbytehq/airbyte/pull/53562) | Update dependencies |
+| 0.3.8 | 2025-02-01 | [53075](https://github.com/airbytehq/airbyte/pull/53075) | Update dependencies |
+| 0.3.7 | 2025-01-25 | [52019](https://github.com/airbytehq/airbyte/pull/52019) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51460](https://github.com/airbytehq/airbyte/pull/51460) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50764](https://github.com/airbytehq/airbyte/pull/50764) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50337](https://github.com/airbytehq/airbyte/pull/50337) | Update dependencies |
+| 0.3.3 | 2024-12-14 | [49777](https://github.com/airbytehq/airbyte/pull/49777) | Update dependencies |
+| 0.3.2 | 2024-12-12 | [49432](https://github.com/airbytehq/airbyte/pull/49432) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47601](https://github.com/airbytehq/airbyte/pull/47601) | Update dependencies |
 | 0.3.0 | 2024-08-27 | [44820](https://github.com/airbytehq/airbyte/pull/44820) | Refactor connector to manifest-only format |
 | 0.2.17 | 2024-08-24 | [44667](https://github.com/airbytehq/airbyte/pull/44667) | Update dependencies |
 | 0.2.16 | 2024-08-17 | [44354](https://github.com/airbytehq/airbyte/pull/44354) | Update dependencies |

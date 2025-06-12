@@ -409,13 +409,14 @@ constructor(
         const val GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS: Long = 2000
         const val IDLE_TIMEOUT_KEY: String = "idle_timeout"
         const val IDLE_TIMEOUT_DEFAULT_INFINITE: Long = 0
+        const val TUNNEL_METHOD_KEY = "tunnel_method"
 
         const val TIMEOUT_MILLIS: Int = 15000 // 15 seconds
 
         @JvmStatic
         fun getInstance(config: JsonNode, hostKey: List<String>, portKey: List<String>): SshTunnel {
             val tunnelMethod =
-                Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+                Jsons.getOptional(config, TUNNEL_METHOD_KEY, TUNNEL_METHOD_KEY)
                     .map { method: JsonNode ->
                         TunnelMethod.valueOf(method.asText().trim { it <= ' ' })
                     }
@@ -429,12 +430,12 @@ constructor(
                 null,
                 null,
                 tunnelMethod,
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-                Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_host")),
+                Jsons.getIntOrZero(config, TUNNEL_METHOD_KEY, "tunnel_port"),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "ssh_key")),
                 Strings.safeTrim(
-                    Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")
+                    Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user_password")
                 ),
                 Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
                 Jsons.getIntOrZero(config, portKey),
@@ -479,7 +480,7 @@ constructor(
         @Throws(Exception::class)
         fun getInstance(config: JsonNode, endPointKey: String): SshTunnel {
             val tunnelMethod =
-                Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+                Jsons.getOptional(config, TUNNEL_METHOD_KEY, TUNNEL_METHOD_KEY)
                     .map { method: JsonNode ->
                         TunnelMethod.valueOf(method.asText().trim { it <= ' ' })
                     }
@@ -493,12 +494,12 @@ constructor(
                 endPointKey,
                 Jsons.getStringOrNull(config, endPointKey),
                 tunnelMethod,
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-                Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_host")),
+                Jsons.getIntOrZero(config, TUNNEL_METHOD_KEY, "tunnel_port"),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "ssh_key")),
                 Strings.safeTrim(
-                    Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")
+                    Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user_password")
                 ),
                 null,
                 0,

@@ -7,6 +7,9 @@ from typing import Dict, List
 
 import pytest
 from _pytest.outcomes import Failed
+from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -16,8 +19,7 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
-from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
+
 
 pytestmark = pytest.mark.anyio
 

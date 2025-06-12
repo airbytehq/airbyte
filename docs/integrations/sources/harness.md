@@ -52,6 +52,17 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 | Version | Date       | Pull Request                                                   | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------------- | :--------------------------------------------------- |
+| 0.2.10 | 2025-05-24 | [60735](https://github.com/airbytehq/airbyte/pull/60735) | Update dependencies |
+| 0.2.9 | 2025-05-10 | [59259](https://github.com/airbytehq/airbyte/pull/59259) | Update dependencies |
+| 0.2.8 | 2025-04-26 | [58803](https://github.com/airbytehq/airbyte/pull/58803) | Update dependencies |
+| 0.2.7 | 2025-04-19 | [58194](https://github.com/airbytehq/airbyte/pull/58194) | Update dependencies |
+| 0.2.6 | 2025-04-12 | [57723](https://github.com/airbytehq/airbyte/pull/57723) | Update dependencies |
+| 0.2.5 | 2025-04-05 | [57084](https://github.com/airbytehq/airbyte/pull/57084) | Update dependencies |
+| 0.2.4 | 2025-03-29 | [56676](https://github.com/airbytehq/airbyte/pull/56676) | Update dependencies |
+| 0.2.3 | 2025-03-22 | [56037](https://github.com/airbytehq/airbyte/pull/56037) | Update dependencies |
+| 0.2.2 | 2025-03-08 | [55506](https://github.com/airbytehq/airbyte/pull/55506) | Update dependencies |
+| 0.2.1 | 2025-03-01 | [43874](https://github.com/airbytehq/airbyte/pull/43874) | Update dependencies |
+| 0.2.0 | 2024-10-05 | [46485](https://github.com/airbytehq/airbyte/pull/46485) | Migrate to Manifest-only |
 | 0.1.10 | 2024-08-03 | [43172](https://github.com/airbytehq/airbyte/pull/43172) | Update dependencies |
 | 0.1.9 | 2024-07-27 | [42735](https://github.com/airbytehq/airbyte/pull/42735) | Update dependencies |
 | 0.1.8 | 2024-07-20 | [42221](https://github.com/airbytehq/airbyte/pull/42221) | Update dependencies |

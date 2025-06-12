@@ -79,6 +79,19 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 1.2.7 | 2025-05-24 | [60770](https://github.com/airbytehq/airbyte/pull/60770) | Update dependencies |
+| 1.2.6 | 2025-05-10 | [59917](https://github.com/airbytehq/airbyte/pull/59917) | Update dependencies |
+| 1.2.5 | 2025-05-04 | [58933](https://github.com/airbytehq/airbyte/pull/58933) | Update dependencies |
+| 1.2.4 | 2025-04-19 | [58541](https://github.com/airbytehq/airbyte/pull/58541) | Update dependencies |
+| 1.2.3 | 2025-04-13 | [58053](https://github.com/airbytehq/airbyte/pull/58053) | Update dependencies |
+| 1.2.2 | 2025-04-05 | [56838](https://github.com/airbytehq/airbyte/pull/56838) | Update dependencies |
+| 1.2.1 | 2025-03-22 | [48245](https://github.com/airbytehq/airbyte/pull/48245) | Update dependencies |
+| 1.2.0 | 2025-02-07 | [50956](https://github.com/airbytehq/airbyte/pull/50956) | Restore Unit Test |
+| 1.1.0-rc.1  | 2024-10-31 | [47313](https://github.com/airbytehq/airbyte/pull/47313) | Migrate to Manifest-only |
+| 1.0.21 | 2024-10-29 | [47082](https://github.com/airbytehq/airbyte/pull/47082) | Update dependencies |
+| 1.0.20 | 2024-10-12 | [46861](https://github.com/airbytehq/airbyte/pull/46861) | Update dependencies |
+| 1.0.19 | 2024-10-05 | [46394](https://github.com/airbytehq/airbyte/pull/46394) | Update dependencies |
+| 1.0.18 | 2024-09-28 | [46149](https://github.com/airbytehq/airbyte/pull/46149) | Update dependencies |
 | 1.0.17 | 2024-09-21 | [45783](https://github.com/airbytehq/airbyte/pull/45783) | Update dependencies |
 | 1.0.16 | 2024-09-14 | [45524](https://github.com/airbytehq/airbyte/pull/45524) | Update dependencies |
 | 1.0.15 | 2024-09-07 | [45301](https://github.com/airbytehq/airbyte/pull/45301) | Update dependencies |

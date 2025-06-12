@@ -90,7 +90,28 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| 1.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.4.22 | 2025-05-24 | [60376](https://github.com/airbytehq/airbyte/pull/60376) | Update dependencies |
+| 1.4.21 | 2025-05-10 | [60018](https://github.com/airbytehq/airbyte/pull/60018) | Update dependencies |
+| 1.4.20 | 2025-05-03 | [58841](https://github.com/airbytehq/airbyte/pull/58841) | Update dependencies |
+| 1.4.19 | 2025-04-19 | [58307](https://github.com/airbytehq/airbyte/pull/58307) | Update dependencies |
+| 1.4.18 | 2025-04-12 | [57765](https://github.com/airbytehq/airbyte/pull/57765) | Update dependencies |
+| 1.4.17 | 2025-04-05 | [57201](https://github.com/airbytehq/airbyte/pull/57201) | Update dependencies |
+| 1.4.16 | 2025-03-29 | [56474](https://github.com/airbytehq/airbyte/pull/56474) | Update dependencies |
+| 1.4.15 | 2025-03-22 | [55944](https://github.com/airbytehq/airbyte/pull/55944) | Update dependencies |
+| 1.4.14 | 2025-03-08 | [55292](https://github.com/airbytehq/airbyte/pull/55292) | Update dependencies |
+| 1.4.13 | 2025-03-01 | [54926](https://github.com/airbytehq/airbyte/pull/54926) | Update dependencies |
+| 1.4.12 | 2025-02-22 | [54447](https://github.com/airbytehq/airbyte/pull/54447) | Update dependencies |
+| 1.4.11 | 2025-02-15 | [53740](https://github.com/airbytehq/airbyte/pull/53740) | Update dependencies |
+| 1.4.10 | 2025-02-08 | [53379](https://github.com/airbytehq/airbyte/pull/53379) | Update dependencies |
+| 1.4.9 | 2025-02-01 | [52798](https://github.com/airbytehq/airbyte/pull/52798) | Update dependencies |
+| 1.4.8 | 2025-01-25 | [51697](https://github.com/airbytehq/airbyte/pull/51697) | Update dependencies |
+| 1.4.7 | 2025-01-11 | [51108](https://github.com/airbytehq/airbyte/pull/51108) | Update dependencies |
+| 1.4.6 | 2024-12-28 | [49990](https://github.com/airbytehq/airbyte/pull/49990) | Update dependencies |
+| 1.4.5 | 2024-12-14 | [49478](https://github.com/airbytehq/airbyte/pull/49478) | Update dependencies |
+| 1.4.4 | 2024-12-12 | [49196](https://github.com/airbytehq/airbyte/pull/49196) | Update dependencies |
+| 1.4.3 | 2024-10-29 | [47813](https://github.com/airbytehq/airbyte/pull/47813) | Update dependencies |
+| 1.4.2 | 2024-10-28 | [47549](https://github.com/airbytehq/airbyte/pull/47549) | Update dependencies |
+| 1.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.4.0 | 2024-08-15 | [44150](https://github.com/airbytehq/airbyte/pull/44150) | Refactor connector to manifest-only format |
 | 1.3.11 | 2024-08-12 | [43761](https://github.com/airbytehq/airbyte/pull/43761) | Update dependencies |
 | 1.3.10 | 2024-08-10 | [43639](https://github.com/airbytehq/airbyte/pull/43639) | Update dependencies |

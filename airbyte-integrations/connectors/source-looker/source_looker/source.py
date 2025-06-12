@@ -7,6 +7,7 @@ from typing import Any, List, Mapping
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.core import Stream
 
+
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.

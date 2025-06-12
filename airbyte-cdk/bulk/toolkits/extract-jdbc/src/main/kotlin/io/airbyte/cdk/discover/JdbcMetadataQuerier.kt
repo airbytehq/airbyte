@@ -315,7 +315,7 @@ class JdbcMetadataQuerier(
         return pk
     }
 
-    private data class PrimaryKeyRow(
+    data class PrimaryKeyRow(
         val name: String,
         val ordinal: Int,
         val columnName: String,

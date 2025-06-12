@@ -3,6 +3,7 @@
 from typing import Any, Optional
 
 import asyncclick as click
+
 from pipelines.helpers.gcs import sanitize_gcp_credentials
 from pipelines.models.secrets import InMemorySecretStore, Secret
 

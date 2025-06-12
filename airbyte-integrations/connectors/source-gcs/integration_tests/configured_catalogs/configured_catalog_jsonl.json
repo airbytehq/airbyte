@@ -1,0 +1,47 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_jsonl",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "valid": {
+              "type": ["null", "string"]
+            },
+            "code": {
+              "type": ["null", "string"]
+            },
+            "degrees": {
+              "type": ["null", "string"]
+            },
+            "birthday": {
+              "type": ["null", "string"]
+            },
+            "last_seen": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"],
+        "is_resumable": true
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

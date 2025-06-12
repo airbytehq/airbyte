@@ -8,7 +8,7 @@
   "state": "UploadComplete",
   "concurrencyMode": "Parallel",
   "contentType": "CSV",
-  "apiVersion": 57.0,
+  "apiVersion": 62.0,
   "lineEnding": "LF",
   "columnDelimiter": "COMMA"
 }

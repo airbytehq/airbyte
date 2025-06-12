@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Dict, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 

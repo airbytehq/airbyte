@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List
 
 from dagger import Container, Directory
+
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
@@ -51,7 +52,7 @@ class GenerateDbml(Step):
             command.append("--skip-llm-relationships")
 
         erd_directory = self._build_erd_container(connector_directory, discovered_catalog).with_exec(command).directory("/source/erd")
-        await (erd_directory.export(str(_get_erd_folder(self.context.connector.code_directory))))
+        await erd_directory.export(str(_get_erd_folder(self.context.connector.code_directory)))
 
         return StepResult(step=self, status=StepStatus.SUCCESS, output=erd_directory)
 
@@ -59,7 +60,7 @@ class GenerateDbml(Step):
         source_config_path_in_container = "/data/config.json"
         discover_output = (
             await connector_to_discover.with_new_file(source_config_path_in_container, contents=self._get_default_config().value)
-            .with_exec(["discover", "--config", source_config_path_in_container])
+            .with_exec(["discover", "--config", source_config_path_in_container], use_entrypoint=True)
             .stdout()
         )
         return self._get_schema_from_discover_output(discover_output)
@@ -99,7 +100,7 @@ class GenerateDbml(Step):
             .with_workdir("/app")
         )
 
-        return container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
+        return container.with_exec(["poetry", "lock"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
 
 
 class UploadDbmlSchema(Step):
@@ -119,7 +120,7 @@ class UploadDbmlSchema(Step):
         dbdocs_container = (
             self.dagger_client.container()
             .from_("node:lts-bullseye-slim")
-            .with_exec(["npm", "install", "-g", "dbdocs"])
+            .with_exec(["npm", "install", "-g", "dbdocs"], use_entrypoint=True)
             .with_env_variable("DBDOCS_TOKEN", self.context.dbdocs_token.value)
             .with_workdir("/airbyte_dbdocs")
             .with_file("/airbyte_dbdocs/dbdocs.dbml", erd_directory.file("source.dbml"))

@@ -15,19 +15,21 @@ from pathlib import Path
 from typing import List
 
 from connector_ops.utils import console  # type: ignore
-from pipelines.consts import LOCAL_REPORTS_PATH_ROOT
-from pipelines.helpers.utils import format_duration, slugify
-from pipelines.models.artifacts import Artifact
-from pipelines.models.steps import StepResult, StepStatus
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 
+from pipelines.consts import LOCAL_REPORTS_PATH_ROOT
+from pipelines.helpers.utils import format_duration, slugify
+from pipelines.models.artifacts import Artifact
+from pipelines.models.steps import StepResult, StepStatus
+
 if typing.TYPE_CHECKING:
-    from pipelines.models.contexts.pipeline_context import PipelineContext
     from rich.tree import RenderableType
+
+    from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 @dataclass(frozen=True)

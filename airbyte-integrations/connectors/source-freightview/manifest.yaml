@@ -1,0 +1,723 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  An **Airbyte connector for Freightview** enables seamless data integration by
+  extracting and syncing shipping data from Freightview to your target data
+  warehouses or applications. This connector automates the retrieval of
+  essential shipping details, such as quotes, tracking, and shipment reports,
+  allowing businesses to efficiently analyze and manage logistics operations in
+  a centralized system.
+
+check:
+  type: CheckStream
+  stream_names:
+    - shipments
+
+definitions:
+  streams:
+    quotes:
+      type: DeclarativeStream
+      name: quotes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipments/{{ stream_partition.shipmentId }}/quotes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - quotes
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/shipments"
+              parent_key: shipmentId
+              partition_field: shipmentId
+      primary_key:
+        - quoteId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/quotes"
+    tracking:
+      type: DeclarativeStream
+      name: tracking
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipments/{{ stream_partition.shipmentId }}/tracking
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/shipments"
+              parent_key: shipmentId
+              partition_field: shipmentId
+      primary_key:
+        - createdDate
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tracking"
+    shipments:
+      type: DeclarativeStream
+      name: shipments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('continuationToken') }}"
+            stop_condition: "{{ response.get('continuationToken') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - shipments
+      primary_key:
+        - shipmentId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipments"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.freightview.com/v2.0
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        path: token
+        url_base: https://api.freightview.com/v2.0/auth
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers: {}
+        request_body_json:
+          client_id: "{{ config['client_id'] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config['client_secret'] }}"
+        request_parameters: {}
+      session_token_path:
+        - access_token
+      expiration_duration: P1D
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/shipments"
+  - $ref: "#/definitions/streams/quotes"
+  - $ref: "#/definitions/streams/tracking"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client Secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.freightview.com/v2/
+    openapiSpecUrl: https://developer.freightview.com/freightview-v2.0.min.yaml
+  testedStreams:
+    quotes:
+      hasRecords: true
+      streamHash: 177dc0c27f597f453ca998cdc8395f8ddc69f535
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tracking:
+      hasRecords: true
+      streamHash: b63b82cb7e3735030dcc3eb68f4dd1b7106c3fbd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    shipments:
+      hasRecords: true
+      streamHash: f5b80d551a70730df5c0fdd5c50d138050cf4681
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    quotes: false
+    tracking: true
+    shipments: true
+
+schemas:
+  quotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - quoteId
+    properties:
+      mode:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      method:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      quoteId:
+        type: string
+      currency:
+        type:
+          - string
+          - "null"
+      quoteNum:
+        type:
+          - string
+          - "null"
+      carrierId:
+        type:
+          - string
+          - "null"
+      serviceId:
+        type:
+          - string
+          - "null"
+      createdDate:
+        type:
+          - string
+          - "null"
+      pricingType:
+        type:
+          - string
+          - "null"
+      paymentTerms:
+        type:
+          - string
+          - "null"
+      providerCode:
+        type:
+          - string
+          - "null"
+      providerName:
+        type:
+          - string
+          - "null"
+      equipmentType:
+        type:
+          - string
+          - "null"
+      pricingMethod:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  tracking:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - createdDate
+    properties:
+      summary:
+        type:
+          - string
+          - "null"
+      eventDate:
+        type:
+          - string
+          - "null"
+      eventTime:
+        type:
+          - string
+          - "null"
+      eventType:
+        type:
+          - string
+          - "null"
+      createdDate:
+        type: string
+    additionalProperties: true
+  shipments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - shipmentId
+    properties:
+      bol:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+          bolNumber:
+            type:
+              - string
+              - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            itemId:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - number
+                - "null"
+            contains:
+              type:
+                - array
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            stackable:
+              type:
+                - boolean
+                - "null"
+            weightUOM:
+              type:
+                - string
+                - "null"
+            nmfcNumber:
+              type:
+                - number
+                - "null"
+            nonStandard:
+              type:
+                - boolean
+                - "null"
+            dropLocationSequence:
+              type:
+                - number
+                - "null"
+            declaredValueCurrency:
+              type:
+                - string
+                - "null"
+            pickupLocationSequence:
+              type:
+                - number
+                - "null"
+      billTo:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          contactName:
+            type:
+              - string
+              - "null"
+          contactEmail:
+            type:
+              - string
+              - "null"
+          contactPhone:
+            type:
+              - string
+              - "null"
+      pickup:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+          requestedDate:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      refNums:
+        type:
+          - array
+          - "null"
+      bookedBy:
+        type:
+          - string
+          - "null"
+      quotedBy:
+        type:
+          - string
+          - "null"
+      tracking:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+          lastUpdatedDate:
+            type:
+              - string
+              - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            fileName:
+              type:
+                - string
+                - "null"
+            mimeType:
+              type:
+                - string
+                - "null"
+            uploadDate:
+              type:
+                - string
+                - "null"
+            downloadUrl:
+              type:
+                - string
+                - "null"
+      equipment:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          mode:
+            type:
+              - string
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+          weightUOM:
+            type:
+              - string
+              - "null"
+          isHazardous:
+            type:
+              - boolean
+              - "null"
+          accessorials:
+            type:
+              - array
+              - "null"
+          alternateTypes:
+            type:
+              - array
+              - "null"
+      locations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            lat:
+              type:
+                - number
+                - "null"
+            lng:
+              type:
+                - number
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            company:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            opensAt:
+              type:
+                - string
+                - "null"
+            refNums:
+              type:
+                - array
+                - "null"
+            address2:
+              type:
+                - string
+                - "null"
+            closesAt:
+              type:
+                - string
+                - "null"
+            sequence:
+              type:
+                - number
+                - "null"
+            stopDate:
+              type:
+                - string
+                - "null"
+            stopType:
+              type:
+                - string
+                - "null"
+            timezone:
+              type:
+                - string
+                - "null"
+            postalCode:
+              type:
+                - string
+                - "null"
+            contactName:
+              type:
+                - string
+                - "null"
+            accessorials:
+              type:
+                - array
+                - "null"
+            contactEmail:
+              type:
+                - string
+                - "null"
+            contactPhone:
+              type:
+                - string
+                - "null"
+            instructions:
+              type:
+                - string
+                - "null"
+            stopDateType:
+              type:
+                - string
+                - "null"
+      bookedDate:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isLiveLoad:
+        type:
+          - boolean
+          - "null"
+      pickupDate:
+        type:
+          - string
+          - "null"
+      shipmentId:
+        type: string
+      createdDate:
+        type:
+          - string
+          - "null"
+      selectedQuote:
+        type:
+          - object
+          - "null"
+        properties:
+          mode:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - number
+              - "null"
+          method:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          quoteId:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          quoteNum:
+            type:
+              - string
+              - "null"
+          carrierId:
+            type:
+              - string
+              - "null"
+          serviceId:
+            type:
+              - string
+              - "null"
+          createdDate:
+            type:
+              - string
+              - "null"
+          pricingType:
+            type:
+              - string
+              - "null"
+          paymentTerms:
+            type:
+              - string
+              - "null"
+          providerCode:
+            type:
+              - string
+              - "null"
+          providerName:
+            type:
+              - string
+              - "null"
+          equipmentType:
+            type:
+              - string
+              - "null"
+          pricingMethod:
+            type:
+              - string
+              - "null"
+    additionalProperties: true

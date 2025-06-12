@@ -251,6 +251,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budgets) will ignore (fallback: none) the `LastSyncTimeInUTC` for dates > 30 days ago, which will trigger a full download request.
 
 </details>
 
@@ -260,7 +261,34 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
-| :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.0 | 2025-06-10 | [61517](https://github.com/airbytehq/airbyte/pull/61517) | Promoting release candidate 2.11.0-rc.1 to a main version. |
+| 2.11.0-rc.1 | 2025-06-09 | [61325](https://github.com/airbytehq/airbyte/pull/61325) | Migrate `account_performance_report` streams and `labels` stream to manifest |
+| 2.10.0 | 2025-06-02 | [61329](https://github.com/airbytehq/airbyte/pull/61329) | Promoting release candidate 2.10.0-rc.1 to a main version. |
+| 2.10.0-rc.1 | 2025-06-01 | [59750](https://github.com/airbytehq/airbyte/pull/59750) | Migrate `ad_performance_reports` and `campaigns` streams to manifest |
+| 2.9.4 | 2025-05-29 | [60909](https://github.com/airbytehq/airbyte/pull/60909) | Remove account records if duplicated caused by predicate |
+| 2.9.3 | 2025-05-28 | [60929](https://github.com/airbytehq/airbyte/pull/60929) | Fix duplicated slices/jobs when reports_start_date is not set |
+| 2.9.2 | 2025-05-22 | [60832](https://github.com/airbytehq/airbyte/pull/60832) | Fix handling of account_names predicate in declarative stream |
+| 2.9.1 | 2025-05-10 | [54233](https://github.com/airbytehq/airbyte/pull/54233) | Update dependencies |
+| 2.9.0 | 2025-05-07 | [59719](https://github.com/airbytehq/airbyte/pull/59719) | Promoting release candidate 2.9.0-rc.1 to a main version. |
+| 2.9.0-rc.1 | 2025-05-06 | [59136](https://github.com/airbytehq/airbyte/pull/59136) | Bump CDK v6 and migrate Accounts stream to low-code |
+| 2.8.13 | 2025-02-15 | [53882](https://github.com/airbytehq/airbyte/pull/53882) | Update dependencies |
+| 2.8.12 | 2025-02-01 | [52930](https://github.com/airbytehq/airbyte/pull/52930) | Update dependencies |
+| 2.8.11 | 2025-01-25 | [52198](https://github.com/airbytehq/airbyte/pull/52198) | Update dependencies |
+| 2.8.10 | 2025-01-18 | [51735](https://github.com/airbytehq/airbyte/pull/51735) | Update dependencies |
+| 2.8.9 | 2025-01-11 | [51230](https://github.com/airbytehq/airbyte/pull/51230) | Update dependencies |
+| 2.8.8 | 2025-01-04 | [50905](https://github.com/airbytehq/airbyte/pull/50905) | Update dependencies |
+| 2.8.7 | 2024-12-28 | [50443](https://github.com/airbytehq/airbyte/pull/50443) | Update dependencies |
+| 2.8.6 | 2024-12-21 | [50181](https://github.com/airbytehq/airbyte/pull/50181) | Update dependencies |
+| 2.8.5 | 2024-12-14 | [49283](https://github.com/airbytehq/airbyte/pull/49283) | Update dependencies |
+| 2.8.4 | 2024-11-25 | [48650](https://github.com/airbytehq/airbyte/pull/48650) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.8.3 | 2024-11-04 | [48169](https://github.com/airbytehq/airbyte/pull/48169) | Update dependencies |
+| 2.8.2 | 2024-10-29 | [47850](https://github.com/airbytehq/airbyte/pull/47850) | Update dependencies |
+| 2.8.1 | 2024-10-28 | [47093](https://github.com/airbytehq/airbyte/pull/47093) | Update dependencies |
+| 2.8.0 | 2024-10-21 | [46991](https://github.com/airbytehq/airbyte/pull/46991) | Update CDK to v5 |
+| 2.7.9 | 2024-10-12 | [46847](https://github.com/airbytehq/airbyte/pull/46847) | Update dependencies |
+| 2.7.8 | 2024-10-05 | [46504](https://github.com/airbytehq/airbyte/pull/46504) | Update dependencies |
+| 2.7.7 | 2024-09-28 | [46151](https://github.com/airbytehq/airbyte/pull/46151) | Update dependencies |
 | 2.7.6 | 2024-09-21 | [45512](https://github.com/airbytehq/airbyte/pull/45512) | Update dependencies |
 | 2.7.5 | 2024-09-07 | [45246](https://github.com/airbytehq/airbyte/pull/45246) | Update dependencies |
 | 2.7.4 | 2024-08-31 | [44276](https://github.com/airbytehq/airbyte/pull/44276) | Update dependencies |

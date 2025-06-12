@@ -1,9 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-
-const yaml = require("js-yaml");
-const fs = require("node:fs");
-const path = require("node:path");
+import "dotenv/config.js";
 
 const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
@@ -14,10 +11,7 @@ const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHead
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
-
-const redirects = yaml.load(
-  fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
-);
+const docMetaTags = require("./src/remark/docMetaTags");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -25,7 +19,7 @@ const config = {
     mermaid: true,
   },
   themes: ["@docusaurus/theme-mermaid"],
-  title: "Airbyte Documentation",
+  title: "Airbyte Docs",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
   url: "https://docs.airbyte.com/",
@@ -48,16 +42,135 @@ const config = {
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
     },
+    {
+      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
+      async: true,
+      "data-apikey": "2094e2379643f69f7aec647a15f786",
+      "data-cookieless": "1",
+      "data-auto-identify": "1",
+    },
   ],
-
-  plugins: [
+  headTags: [
+    {
+      tagName: "meta",
+      attributes: {
+        name: "zd-site-verification",
+        content: "plvcr4wcl9abmq0itvi63c",
+      },
+    },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "google-site-verification",
+        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
+      },
+    },
+  ],
+  // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
+  presets: [
     [
-      "@docusaurus/plugin-client-redirects",
+      "classic",
+      /** @type {import('@docusaurus/preset-classic').Options} */
+      ({
+        docs: {
+          routeBasePath: "/",
+          sidebarCollapsible: true,
+          sidebarPath: require.resolve("./sidebar.js"),
+          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+          path: "../docs/home",
+          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
+          remarkPlugins: [
+            docsHeaderDecoration,
+            enterpriseDocsHeaderInformation,
+            productInformation,
+            docMetaTags,
+          ],
+        },
+        blog: false,
+        theme: {
+          customCss: require.resolve("./src/css/custom.css"),
+        },
+      }),
+    ],
+  ],
+  plugins: [
+    // This plugin controls "platform" docs, which are versioned
+    [
+      "@docusaurus/plugin-content-docs",
       {
-        fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
-        redirects: redirects,
+        id: "platform",
+        path: "../docs/platform",
+        routeBasePath: "/platform",
+        sidebarPath: "./sidebar-platform.js",
+        editUrl: ({version, docPath}) => {
+          if (version === 'current') { // For the "next" (unreleased) version
+            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
+          } 
+          else { // For released versions
+            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
+          }
+        },
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
       },
     ],
+    // This plugin controls Airbyte Embedded docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded",
+        path: "../docs/embedded",
+        routeBasePath: "/embedded",
+        sidebarPath: "./sidebar-embedded.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
+    // This plugin controls release notes, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "release_notes",
+        path: "../docs/release_notes",
+        routeBasePath: "/release_notes",
+        sidebarPath: "./sidebar-release_notes.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
+    // This plugin controls Connector docs, which are unversioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "connectors",
+        path: "../docs/integrations",
+        routeBasePath: "/integrations",
+        sidebarPath: "./sidebar-connectors.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
+    require.resolve("./src/plugins/enterpriseConnectors"),
     () => ({
       name: "Yaml loader",
       configureWebpack() {
@@ -78,38 +191,16 @@ const config = {
       },
     }),
   ],
-
+  customFields: {
+    requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+    markpromptProjectKey:
+      process.env.MARKPROMPT_PROJECT_KEY ||
+      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
+  },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
-  ],
-
-  presets: [
-    [
-      "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
-        docs: {
-          routeBasePath: "/",
-          sidebarCollapsible: true,
-          sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-          path: "../docs",
-          exclude: ["**/*.inapp.md"],
-          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
-          remarkPlugins: [
-            docsHeaderDecoration,
-            enterpriseDocsHeaderInformation,
-            productInformation,
-          ],
-        },
-        blog: false,
-        theme: {
-          customCss: require.resolve("./src/css/custom.css"),
-        },
-      }),
-    ],
   ],
 
   themeConfig:
@@ -128,8 +219,16 @@ const config = {
         apiKey: "15c487fd9f7722282efd8fcb76746fce", // Public API key: it is safe to commit it
         indexName: "airbyte",
       },
+      announcementBar: {
+        id: "try_airbyte_cloud",
+        content:
+          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 14 days, no credit card needed.',
+        backgroundColor: "#615eff",
+        textColor: "#ffffff",
+        isCloseable: true,
+      },
       navbar: {
-        title: "",
+        title: "Docs",
         logo: {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
@@ -138,32 +237,51 @@ const config = {
         },
         items: [
           {
-            href: "https://airbyte.io/",
+            type: "docSidebar",
             position: "left",
-            label: "About Airbyte",
+            docsPluginId: "platform",
+            sidebarId: "platform",
+            label: "Platform",
           },
           {
-            href: "https://airbyte.com/tutorials",
-            label: "Tutorials",
+            type: "docSidebar",
             position: "left",
+            docsPluginId: "connectors",
+            sidebarId: "connectors",
+            label: "Connectors",
+          },
+          {
+            type: "docSidebar",
+            position: "left",
+            docsPluginId: "release_notes",
+            sidebarId: "releaseNotes",
+            label: "Release notes",
+          },
+          {
+            type: "docSidebar",
+            position: "left",
+            docsPluginId: "embedded",
+            sidebarId: "embedded",
+            label: "Airbyte Embedded",
           },
           {
             href: "https://support.airbyte.com/",
             label: "Support",
-            position: "left",
           },
-          // --- Right side ---
+
           {
             href: "https://status.airbyte.com",
-            label: "Cloud Status",
+            label: "Status",
             className: "cloudStatusLink",
-            position: "right",
           },
+          // --- Right side ---
+          // Platform docs version selector
           {
-            href: "https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar",
-            label: "Try Airbyte Cloud",
+            type: "docsVersionDropdown",
             position: "right",
-            className: "header-button",
+            docsPluginId: "platform",
+            label: "Version",
+            dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
           },
           {
             href: "https://github.com/airbytehq",
@@ -176,6 +294,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ["bash", "diff", "json", "hcl"],
       },
     }),
 };

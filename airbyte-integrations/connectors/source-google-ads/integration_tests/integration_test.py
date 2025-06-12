@@ -6,9 +6,10 @@ import json
 from pathlib import Path
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow
 from source_google_ads.source import SourceGoogleAds
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture(scope="module")

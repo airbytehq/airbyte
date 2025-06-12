@@ -3,8 +3,9 @@
 #
 
 
-from airbyte_cdk.logger import AirbyteLogger
 from source_posthog import SourcePosthog
+
+from airbyte_cdk.logger import AirbyteLogger
 
 
 def test_client_wrong_credentials():

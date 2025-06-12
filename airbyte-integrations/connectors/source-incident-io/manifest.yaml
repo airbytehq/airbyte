@@ -1,0 +1,1725 @@
+version: 5.8.1
+
+type: DeclarativeSource
+
+description: >-
+  The Incident.io source connector which ingests data from the incident API.
+  Incident.io is an on call, status pages and incident response tool.
+  The source supports a number of API changes.
+  For more information, checkout the website https://incident.io/
+  
+  An API key is required for authentication and using this connector.
+  In order to obtain an API key, you must have a PRO or above account.
+  Once logged-in, you will find your API key your dashboard settings.
+  You can find more about their API here https://api-docs.incident.io/
+  
+check:
+  type: CheckStream
+  stream_names:
+    - actions
+
+definitions:
+  streams:
+    actions:
+      type: DeclarativeStream
+      name: actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/actions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - actions
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/actions"
+    catalog_types:
+      type: DeclarativeStream
+      name: catalog_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/catalog_types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - catalog_types
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/catalog_types"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/custom_fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - custom_fields
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    follow-ups:
+      type: DeclarativeStream
+      name: follow-ups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/follow_ups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - follow_ups
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/follow-ups"
+    incident_roles:
+      type: DeclarativeStream
+      name: incident_roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/incident_roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_roles
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_roles"
+    incident_timestamps:
+      type: DeclarativeStream
+      name: incident_timestamps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/incident_timestamps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_timestamps
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_timestamps"
+    incident_updates:
+      type: DeclarativeStream
+      name: incident_updates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/incident_updates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_updates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_updates"
+    incident_statuses:
+      type: DeclarativeStream
+      name: incident_statuses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/incident_statuses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_statuses
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_statuses"
+    workflows:
+      type: DeclarativeStream
+      name: workflows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/workflows
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workflows
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    severities:
+      type: DeclarativeStream
+      name: severities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/severities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - severities
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/severities"
+    schedules:
+      type: DeclarativeStream
+      name: schedules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/schedules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - schedules
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/schedules"
+    incidents:
+      type: DeclarativeStream
+      name: incidents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/incidents
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incidents
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incidents"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.incident.io
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/actions"
+  - $ref: "#/definitions/streams/catalog_types"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/follow-ups"
+  - $ref: "#/definitions/streams/incident_roles"
+  - $ref: "#/definitions/streams/incident_timestamps"
+  - $ref: "#/definitions/streams/incident_updates"
+  - $ref: "#/definitions/streams/incident_statuses"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/severities"
+  - $ref: "#/definitions/streams/schedules"
+  - $ref: "#/definitions/streams/incidents"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: API key to use. Find it at https://app.incident.io/settings/api-keys
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    actions: true
+    catalog_types: true
+    custom_fields: true
+    follow-ups: true
+    incident_roles: true
+    incident_timestamps: true
+    incident_updates: true
+    incident_statuses: false
+    workflows: false
+    users: true
+    severities: false
+    schedules: false
+    incidents: true
+  testedStreams:
+    actions:
+      streamHash: 66bd85de048e14ed758adfad4f83d9ab9ef62b7e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    catalog_types:
+      streamHash: 19677186cdbbea19797f9567dbd84b05d82dfcb1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_fields:
+      streamHash: c2a88ffab2d70b975126b050a936627226ca35e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    follow-ups:
+      streamHash: 86a85ad2e6b345fa10573511cd86d008bb7ad75a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    incident_roles:
+      streamHash: f1f97627ced073f4fdc39cf7fdb9b47ff136b20e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    incident_timestamps:
+      streamHash: 2bf61e3dcde3c4e8ef428f0b45d4b160f4b4092d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    incident_updates:
+      streamHash: fe8303160cfdf6a56006d3fe67146c6e04dfcca9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    incident_statuses:
+      streamHash: c426dd6028bbb07321bbda169c89b66f3c470c61
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflows:
+      streamHash: c3e87a0f00eae4254aa7194a93589f7761bb32b5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 6a6fb6e206dfd6c0860b9e11f01b5161b7281779
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    severities:
+      streamHash: e6a359ae7611c9c12b23c9d21a8b0504ca4e5d3b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    schedules:
+      streamHash: 5f2b6b9f1068e609144643d2c205bdd4775f4d6f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    incidents:
+      streamHash: c7ab9d59ffea3d32aec4306215c27a7fa5b52c30
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api-docs.incident.io/
+
+schemas:
+  actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          slack_user_id:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      incident_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  catalog_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      annotations:
+        type:
+          - object
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      last_synced_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ranked:
+        type:
+          - boolean
+          - "null"
+      registry_type:
+        type:
+          - string
+          - "null"
+      required_integrations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      schema:
+        type:
+          - object
+          - "null"
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                array:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                mode:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      semantic_type:
+        type:
+          - string
+          - "null"
+      type_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  follow-ups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          slack_user_id:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      incident_id:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  incident_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      instructions:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      role_type:
+        type:
+          - string
+          - "null"
+      shortform:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  incident_timestamps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      rank:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  incident_updates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      incident_id:
+        type:
+          - string
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      new_incident_status:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      new_severity:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      updater:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              slack_user_id:
+                type:
+                  - string
+                  - "null"
+    required:
+      - id
+  incident_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      rank:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  workflows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      condition_groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            conditions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  operation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      label:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  param_bindings:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        array_value:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              label:
+                                type:
+                                  - string
+                                  - "null"
+                              literal:
+                                type:
+                                  - string
+                                  - "null"
+                  subject:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      label:
+                        type:
+                          - string
+                          - "null"
+                      reference:
+                        type:
+                          - string
+                          - "null"
+      continue_on_step_error:
+        type:
+          - boolean
+          - "null"
+      expressions:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      include_private_incidents:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      once_for:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            array:
+              type:
+                - boolean
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+      runs_from:
+        type:
+          - string
+          - "null"
+      runs_on_incident_modes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      runs_on_incidents:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      steps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      trigger:
+        type:
+          - object
+          - "null"
+        properties:
+          label:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      base_role:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      custom_roles:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      slack_user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  severities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      rank:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      annotations:
+        type:
+          - object
+          - "null"
+      config:
+        type:
+          - object
+          - "null"
+        properties:
+          rotations:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                handover_start_at:
+                  type:
+                    - string
+                    - "null"
+                handovers:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      interval:
+                        type:
+                          - number
+                          - "null"
+                      interval_type:
+                        type:
+                          - string
+                          - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                layers:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      current_shifts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            end_at:
+              type:
+                - string
+                - "null"
+            fingerprint:
+              type:
+                - string
+                - "null"
+            rotation_id:
+              type:
+                - string
+                - "null"
+            start_at:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  incidents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              slack_user_id:
+                type:
+                  - string
+                  - "null"
+      custom_field_entries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            custom_field:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                field_type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+            values:
+              type:
+                - array
+                - "null"
+      duration_metrics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            duration_metric:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      has_debrief:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      incident_role_assignments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            assignee:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+                slack_user_id:
+                  type:
+                    - string
+                    - "null"
+            role:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                instructions:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                required:
+                  type:
+                    - boolean
+                    - "null"
+                role_type:
+                  type:
+                    - string
+                    - "null"
+                shortform:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+      incident_status:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      incident_timestamp_values:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            incident_timestamp:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                rank:
+                  type:
+                    - number
+                    - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+      incident_type:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          create_in_triage:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          private_incidents_only:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      mode:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permalink:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      severity:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      slack_channel_id:
+        type:
+          - string
+          - "null"
+      slack_channel_name:
+        type:
+          - string
+          - "null"
+      slack_team_id:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+      workload_minutes_late:
+        type:
+          - number
+          - "null"
+      workload_minutes_sleeping:
+        type:
+          - number
+          - "null"
+      workload_minutes_total:
+        type:
+          - number
+          - "null"
+      workload_minutes_working:
+        type:
+          - number
+          - "null"
+    required:
+      - id

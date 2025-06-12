@@ -8,6 +8,7 @@ from functools import cached_property
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import smartsheet
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 
@@ -20,6 +21,8 @@ class SmartSheetAPIWrapper:
         self.api_client.errors_as_exceptions(True)
         # each call to `Sheets` makes a new instance, so we save it here to make no more new objects
         self._get_sheet = self.api_client.Sheets.get_sheet
+        self._get_report = self.api_client.Reports.get_report
+        self.is_report = config.get("is_report", False)
         self._data = None
 
     def get_token_hash(self, config: Mapping[str, Any]):
@@ -42,7 +45,27 @@ class SmartSheetAPIWrapper:
         kwargs = {"rows_modified_since": from_dt}
         if not from_dt:
             kwargs["page_size"] = 1
-        self._data = self._get_sheet(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
+        if self.is_report:
+            # Reports cannot be fetched with "rows_modified_since" parameter
+            kwargs.pop("rows_modified_since")
+            # Reports do not support incremental sync, so fetch results in larger pages and implement pagination
+            kwargs["page_size"] = 100
+            page = 1
+            self._data = self._get_report(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
+            rows_fetched = len(self._data.rows)
+            while rows_fetched < self._data.total_row_count:
+                page += 1
+                kwargs["page"] = page
+                self._data.rows.extend(
+                    self._get_report(
+                        self._spreadsheet_id,
+                        include=["rowPermalink", "writerInfo"],
+                        **kwargs,
+                    ).rows
+                )
+                rows_fetched = len(self._data.rows)
+        else:
+            self._data = self._get_sheet(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
 
     @staticmethod
     def _column_to_property(column_type: str) -> Dict[str, any]:
@@ -54,8 +77,11 @@ class SmartSheetAPIWrapper:
         return type_mapping.get(column_type, {"type": "string"})
 
     def _construct_record(self, row: smartsheet.models.Row) -> Dict[str, str]:
-        values_column_map = {cell.column_id: str(cell.value or "") for cell in row.cells}
-        record = {column.title: values_column_map[column.id] for column in self.data.columns}
+        values_column_map = {cell.column_id: str(cell.value or "") for cell in row.cells if cell.column_id}
+        if self.is_report:
+            # For reports, add the virtual column id as well
+            values_column_map.update({cell.virtual_column_id: str(cell.value or "") for cell in row.cells if cell.virtual_column_id})
+        record = {column.title: values_column_map[column.id if column.id else column.virtual_id] for column in self.data.columns}
         record["modifiedAt"] = row.modified_at.isoformat()
 
         if len(self._metadata):
@@ -120,7 +146,7 @@ class SmartSheetAPIWrapper:
         }
         return json_schema
 
-    def read_records(self, from_dt: str) -> Iterable[Dict[str, str]]:
+    def read_records(self, from_dt: Optional[str] = None) -> Iterable[Dict[str, str]]:
         self._fetch_sheet(from_dt)
         for row in self.data.rows:
             yield self._construct_record(row)

@@ -12,23 +12,25 @@ from typing import TYPE_CHECKING, Dict
 
 from connector_ops.utils import console  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.consts import GCS_PUBLIC_DOMAIN
-from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX, AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
-from pipelines.helpers.utils import format_duration
-from pipelines.models.artifacts import Artifact
-from pipelines.models.reports import Report
-from pipelines.models.steps import StepStatus
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 
+from pipelines.consts import GCS_PUBLIC_DOMAIN
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX, AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
+from pipelines.helpers.utils import format_duration
+from pipelines.models.artifacts import Artifact
+from pipelines.models.reports import Report
+from pipelines.models.steps import StepStatus
+
 if TYPE_CHECKING:
     from typing import List
 
-    from pipelines.airbyte_ci.connectors.context import ConnectorContext
     from rich.tree import RenderableType
+
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 @dataclass(frozen=True)
@@ -133,9 +135,9 @@ class ConnectorReport(Report):
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
-            template_context[
-                "icon_url"
-            ] = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            template_context["icon_url"] = (
+                f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            )
         return template.render(template_context)
 
     async def save_html_report(self) -> None:

@@ -1,0 +1,1332 @@
+version: 6.41.3
+
+type: DeclarativeSource
+
+description: >-
+  Add extract `countryOrRegion` value from `metadata` field and add it as a new
+  separate one.
+
+  Now when `metadata` field is used as a primary key to run a proper
+  deduplication for metrics grouped by `countryOrRegion` it may cause duplicate
+  if `metadata` has changes for other keys but with the same `date` and
+  `campaignid`.
+
+  Adding an ability to set just `countryOrRegion` as primary key instead of the
+  whole `metadata` field solves the issue
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      selector:
+        extractor:
+          field_path:
+            - data
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    adgroups:
+      type: DeclarativeStream
+      selector:
+        extractor:
+          field_path:
+            - data
+      name: adgroups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns/{{ stream_slice.campaign_id }}/adgroups
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/adgroups"
+    keywords:
+      type: DeclarativeStream
+      selector:
+        extractor:
+          field_path:
+            - data
+      name: keywords
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{
+            stream_slice.adgroup_id }}/targetingkeywords
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: adgroup_id
+              stream:
+                $ref: "#/definitions/streams/adgroups"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/keywords"
+    campaigns_report_daily:
+      type: DeclarativeStream
+      selector:
+        extractor:
+          field_path:
+            - data
+            - reportingDataResponse
+            - row
+      name: campaigns_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/campaigns
+          http_method: POST
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          request_body_json:
+            endTime: "{{ stream_slice.end_time }}"
+            groupBy: "[ 'countryOrRegion' ]"
+            selector: >-
+              { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
+              "ASCENDING" } ] }
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            startTime: "{{ stream_slice.start_time }}"
+            granularity: DAILY
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: "{{ config.backoff_factor }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - reportingDataResponse
+              - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P{{ config.lookback_window}}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.end_date or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - campaignId
+              value: "{{ record.metadata.campaignId }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns_report_daily"
+    adgroups_report_daily:
+      type: DeclarativeStream
+      selector:
+        extractor:
+          field_path:
+            - data
+            - reportingDataResponse
+            - row
+      name: adgroups_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/campaigns/{{ stream_slice.campaign_id }}/adgroups
+          http_method: POST
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          request_body_json:
+            endTime: "{{ stream_slice.end_time }}"
+            groupBy: "[ 'countryOrRegion' ]"
+            selector: >-
+              { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
+              "ASCENDING" } ] }
+            timeZone: "{{config['timezone'] or 'UTC' }}"
+            startTime: "{{ stream_slice.start_time }}"
+            granularity: DAILY
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: "{{ config.backoff_factor }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - reportingDataResponse
+              - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P{{ config.lookback_window}}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.end_date or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - adGroupId
+              value: "{{ record.metadata.adGroupId }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/adgroups_report_daily"
+    keywords_report_daily:
+      type: DeclarativeStream
+      selector:
+        extractor:
+          field_path:
+            - data
+            - reportingDataResponse
+            - row
+      name: keywords_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/campaigns/{{ stream_slice.campaign_id }}/keywords
+          http_method: POST
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          request_body_json:
+            endTime: "{{ stream_slice.end_time }}"
+            groupBy: "[ 'countryOrRegion' ]"
+            selector: >-
+              { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
+              "ASCENDING" } ] }
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            startTime: "{{ stream_slice.start_time }}"
+            granularity: DAILY
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 10
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
+                  response.error.errors[0].message }}
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 500
+                  - 429
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: "{{ config.backoff_factor }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - reportingDataResponse
+              - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P{{ config.lookback_window }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.end_date or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - keywordId
+              value: "{{ record.metadata.keywordId }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/keywords_report_daily"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.searchads.apple.com/api/v5
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config.client_id }}"
+      grant_type: client_credentials
+      client_secret: "{{ config.client_secret }}"
+      token_refresh_endpoint: "{{ config.get('token_refresh_endpoint', 'https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg') }}"
+      refresh_request_body: {}
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/adgroups"
+  - $ref: "#/definitions/streams/keywords"
+  - $ref: "#/definitions/streams/campaigns_report_daily"
+  - $ref: "#/definitions/streams/adgroups_report_daily"
+  - $ref: "#/definitions/streams/keywords_report_daily"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - org_id
+      - client_id
+      - start_date
+      - client_secret
+      - timezone
+      - token_refresh_endpoint
+    properties:
+      org_id:
+        type: integer
+        description: >-
+          The identifier of the organization that owns the campaign. Your Org Id
+          is the same as your account in the Apple Search Ads UI.
+        order: 0
+        title: Org Id
+      end_date:
+        type: string
+        description: Data is retrieved until that date (included)
+        order: 1
+        title: End Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2021-01-01"
+      client_id:
+        type: string
+        description: >-
+          A user identifier for the token request. See <a
+          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+        order: 2
+        title: Client Id
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: Start getting data from that date.
+        order: 3
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2020-01-01"
+      client_secret:
+        type: string
+        description: >-
+          A string that authenticates the user’s setup request. See <a
+          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+        order: 4
+        title: Client Secret
+        airbyte_secret: true
+      lookback_window:
+        type: integer
+        description: >-
+          Apple Search Ads uses a 30-day attribution window. However, you may
+          consider smaller values in order to shorten sync durations, at the
+          cost of missing late data attributions.
+        order: 5
+        title: Lookback Window
+        default: 30
+        pattern: ^(30|[1-2][0-9]|[1-9])$
+        examples:
+          - 7
+      backoff_factor:
+        type: integer
+        description: >-
+          This factor factor determines the delay increase factor between
+          retryable failures. Valid values are integers between 1 and 20.
+        order: 6
+        title: Exponential Backoff Factor
+        default: 5
+        pattern: ^(20|1[0-9]|[1-9])$
+        examples:
+          - 10
+      timezone:
+        type: string
+        default: UTC
+        description: >-
+          The timezone for the reporting data. Use 'ORTZ' for Organization Time
+          Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
+        enum:
+          - ORTZ
+          - UTC
+        order: 7
+        title: Time Zone
+      token_refresh_endpoint:
+        type: string
+        description: >-
+          Token Refresh Endpoint. You should override the default value in scenarios 
+          where it's required to proxy requests to Apple's token endpoint
+        title: Token Refresh Endpoint
+        default: >-
+          https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
+        order: 8
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: false
+    adgroups: false
+    keywords: false
+    campaigns_report_daily: false
+    adgroups_report_daily: false
+    keywords_report_daily: false
+  yamlComponents:
+    streams:
+      campaigns_report_daily:
+        - errorHandler
+      adgroups_report_daily:
+        - errorHandler
+      keywords_report_daily:
+        - errorHandler
+    global:
+      - authenticator
+  testedStreams:
+    campaigns:
+      streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    adgroups:
+      streamHash: fe4a079447f9e32ab0e6bd33cbb87620aa946b70
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    keywords:
+      streamHash: 8419d91ef05fe6a37e6a731972cc63f7db413ec3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaigns_report_daily:
+      streamHash: 0f716882a4c4cf2af1d32eaa5e4bfae1df650d1b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    adgroups_report_daily:
+      streamHash: 55fd5a511833be4580713815c5bb721ad241f03b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    keywords_report_daily:
+      hasRecords: true
+      streamHash: 236c9e467ad57836f09f2bc7adc815eecbdf7d77
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      adChannelType:
+        type: string
+      adamId:
+        type: integer
+      billingEvent:
+        type: string
+      budgetAmount:
+        anyOf:
+          - type: "null"
+          - type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
+      budgetOrders:
+        type: array
+      countriesOrRegions:
+        type: array
+        items:
+          type: string
+      countryOrRegionServingStateReasons:
+        type: object
+      creationTime:
+        type: string
+      dailyBudgetAmount:
+        type: object
+        properties:
+          amount:
+            type: string
+          currency:
+            type: string
+      deleted:
+        type: boolean
+      displayStatus:
+        type: string
+      endTime:
+        type: "null"
+      id:
+        type: integer
+      locInvoiceDetails:
+        type: object
+        properties:
+          billingContactEmail:
+            type: string
+          buyerEmail:
+            type: string
+          buyerName:
+            type: string
+          clientName:
+            type:
+              - "null"
+              - string
+          orderNumber:
+            type:
+              - "null"
+              - string
+      modificationTime:
+        type: string
+      name:
+        type: string
+      orgId:
+        type: integer
+      paymentModel:
+        type: string
+      sapinLawResponse:
+        type: string
+      servingStateReasons:
+        type: "null"
+      servingStatus:
+        type: string
+      startTime:
+        type: string
+      status:
+        type: string
+      supplySources:
+        type: array
+        items:
+          type: string
+  adgroups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      automatedKeywordsOptIn:
+        type: boolean
+      campaignId:
+        type: integer
+      cpaGoal:
+        type: "null"
+      creationTime:
+        type: string
+      defaultBidAmount:
+        type: object
+        properties:
+          amount:
+            type: string
+          currency:
+            type: string
+      deleted:
+        type: boolean
+      displayStatus:
+        type: string
+      endTime:
+        type: "null"
+      id:
+        type: integer
+      modificationTime:
+        type: string
+      name:
+        type: string
+      orgId:
+        type: integer
+      pricingModel:
+        type: string
+      servingStateReasons:
+        anyOf:
+          - type: "null"
+          - type: array
+            items:
+              type: string
+      servingStatus:
+        type: string
+      startTime:
+        type: string
+      status:
+        type: string
+      targetingDimensions:
+        type: object
+        properties:
+          adminArea:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: string
+          age:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        maxAge:
+                          type: "null"
+                        minAge:
+                          type:
+                            - integer
+                            - "null"
+          appCategories:
+            type: object
+            properties:
+              excluded:
+                anyOf:
+                  - type: "null"
+                  - type: array
+                    items:
+                      type: integer
+              included:
+                anyOf:
+                  - type: "null"
+                  - type: array
+                    items:
+                      type: integer
+          appDownloaders:
+            type: object
+            properties:
+              excluded:
+                type: array
+                items:
+                  type: string
+              included:
+                type: array
+                items:
+                  type: string
+          country:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: string
+          daypart:
+            type: "null"
+          deviceClass:
+            type: object
+            properties:
+              included:
+                type: array
+                items:
+                  type: string
+          gender:
+            type: "null"
+          locality:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: string
+  keywords:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      adGroupId:
+        type: integer
+      bidAmount:
+        type: object
+        properties:
+          amount:
+            type: string
+          currency:
+            type: string
+      campaignId:
+        type: integer
+      creationTime:
+        type: string
+      deleted:
+        type: boolean
+      id:
+        type: integer
+      matchType:
+        type: string
+      modificationTime:
+        type: string
+      status:
+        type: string
+      text:
+        type: string
+  campaigns_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      countryorregion:
+        type: string
+      metadata:
+        type: object
+        properties:
+          adChannelType:
+            type: string
+          app:
+            type: object
+            properties:
+              adamId:
+                type: integer
+              appName:
+                type: string
+          billingEvent:
+            type: string
+          campaignId:
+            type: integer
+          campaignName:
+            type: string
+          campaignStatus:
+            type: string
+          countriesOrRegions:
+            type: array
+            items:
+              type: string
+          countryOrRegion:
+            type: string
+          countryOrRegionServingStateReasons:
+            type: object
+          dailyBudget:
+            type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
+          deleted:
+            type: boolean
+          displayStatus:
+            type: string
+          modificationTime:
+            type: string
+          orgId:
+            type: integer
+          servingStateReasons:
+            type: "null"
+          servingStatus:
+            type: string
+          supplySources:
+            type: array
+            items:
+              type: string
+          totalBudget:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  amount:
+                    type: string
+                  currency:
+                    type: string
+      campaignId:
+        type: integer
+      date:
+        type: string
+      granularity:
+        type: array
+        items:
+          type: object
+          properties:
+            avgCPM:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            avgCPT:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            date:
+              type: string
+            impressions:
+              type: integer
+            latOffInstalls:
+              type: integer
+            latOnInstalls:
+              type: integer
+            localSpend:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
+            tapNewDownloads:
+              type: integer
+            tapRedownloads:
+              type: integer
+            taps:
+              type: integer
+            ttr:
+              type: number
+      other:
+        type: boolean
+  adgroups_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      countryorregion:
+        type: string
+      metadata:
+        type: object
+        properties:
+          adGroupDisplayStatus:
+            type: string
+          adGroupId:
+            type: integer
+          adGroupName:
+            type: string
+          adGroupServingStateReasons:
+            type: "null"
+          adGroupServingStatus:
+            type: string
+          adGroupStatus:
+            type: string
+          automatedKeywordsOptIn:
+            type: boolean
+          campaignId:
+            type: integer
+          countryOrRegion:
+            type: string
+          cpaGoal:
+            type: "null"
+          defaultBidAmount:
+            type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
+          deleted:
+            type: boolean
+          endTime:
+            type: "null"
+          modificationTime:
+            type: string
+          orgId:
+            type: integer
+          pricingModel:
+            type: string
+          startTime:
+            type: string
+      adGroupId:
+        type: integer
+      date:
+        type: string
+      granularity:
+        type: array
+        items:
+          type: object
+          properties:
+            avgCPM:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            avgCPT:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            date:
+              type: string
+            impressions:
+              type: integer
+            latOffInstalls:
+              type: integer
+            latOnInstalls:
+              type: integer
+            localSpend:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
+            tapNewDownloads:
+              type: integer
+            tapRedownloads:
+              type: integer
+            taps:
+              type: integer
+            ttr:
+              type: number
+      other:
+        type: boolean
+  keywords_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      countryorregion:
+        type: string
+      metadata:
+        type: object
+        properties:
+          adGroupDeleted:
+            type: boolean
+          adGroupId:
+            type: integer
+          adGroupName:
+            type: string
+          bidAmount:
+            type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
+          countryOrRegion:
+            type: string
+          deleted:
+            type: boolean
+          keyword:
+            type: string
+          keywordDisplayStatus:
+            type: string
+          keywordId:
+            type: integer
+          keywordStatus:
+            type: string
+          matchType:
+            type: string
+          modificationTime:
+            type: string
+      date:
+        type: string
+      granularity:
+        type: array
+        items:
+          type: object
+          properties:
+            avgCPT:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            date:
+              type: string
+            impressions:
+              type: integer
+            latOffInstalls:
+              type: integer
+            latOnInstalls:
+              type: integer
+            localSpend:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
+            tapNewDownloads:
+              type: integer
+            tapRedownloads:
+              type: integer
+            taps:
+              type: integer
+            ttr:
+              type: number
+      insights:
+        type: object
+        properties:
+          bidRecommendation:
+            type: object
+            properties:
+              bidMax:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+              bidMin:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+              suggestedBidAmount:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+      keywordId:
+        type: integer
+      other:
+        type: boolean

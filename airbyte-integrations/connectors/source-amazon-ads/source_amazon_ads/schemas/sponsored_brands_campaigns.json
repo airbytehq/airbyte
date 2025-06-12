@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "campaignId": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
+    "tags": { "type": ["null", "object"], "additionalProperties": true },
+    "budget": { "type": ["null", "number"] },
+    "budgetType": { "type": ["null", "string"] },
+    "startDate": { "type": ["null", "string"] },
+    "endDate": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "brandEntityId": { "type": ["null", "string"] },
+    "portfolioId": { "type": ["null", "string"] },
+    "ruleBasedBudget": { "type": ["null", "object"] },
+    "bidding": { "type": ["null", "object"] },
+    "productLocation": { "type": ["null", "string"] },
+    "costType": { "type": ["null", "string"] },
+    "smartDefault": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
+    },
+    "extendedData": { "type": ["null", "object"] }
+  },
+  "title": "sponsored_brands_campaigns",
+  "type": ["null", "object"]
+}

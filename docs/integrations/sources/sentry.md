@@ -63,8 +63,33 @@ Please be aware: this also means that any change older than 90 days will not be 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                 |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.8.11 | 2025-05-24 | [60461](https://github.com/airbytehq/airbyte/pull/60461) | Update dependencies |
+| 0.8.10 | 2025-05-15 | [60295](https://github.com/airbytehq/airbyte/pull/60295) | Fix missing records for events stream |
+| 0.8.9 | 2025-05-10 | [60171](https://github.com/airbytehq/airbyte/pull/60171) | Update dependencies |
+| 0.8.8 | 2025-05-04 | [59571](https://github.com/airbytehq/airbyte/pull/59571) | Update dependencies |
+| 0.8.7 | 2025-04-27 | [58970](https://github.com/airbytehq/airbyte/pull/58970) | Update dependencies |
+| 0.8.6 | 2025-04-19 | [58446](https://github.com/airbytehq/airbyte/pull/58446) | Update dependencies |
+| 0.8.5 | 2025-04-12 | [57927](https://github.com/airbytehq/airbyte/pull/57927) | Update dependencies |
+| 0.8.4 | 2025-04-05 | [57473](https://github.com/airbytehq/airbyte/pull/57473) | Update dependencies |
+| 0.8.3 | 2025-03-29 | [56847](https://github.com/airbytehq/airbyte/pull/56847) | Update dependencies |
+| 0.8.2 | 2025-03-22 | [56263](https://github.com/airbytehq/airbyte/pull/56263) | Update dependencies |
+| 0.8.1 | 2025-03-08 | [55062](https://github.com/airbytehq/airbyte/pull/55062) | Update dependencies |
+| 0.8.0 | 2025-03-05 | [55215](https://github.com/airbytehq/airbyte/pull/55215) | Fix lints for events stream |
+| 0.7.0 | 2025-02-25 | [46664](https://github.com/airbytehq/airbyte/pull/46664) | Converting to manifest-only format |
+| 0.6.11 | 2025-02-22 | [54521](https://github.com/airbytehq/airbyte/pull/54521) | Update dependencies |
+| 0.6.10 | 2025-02-15 | [54100](https://github.com/airbytehq/airbyte/pull/54100) | Update dependencies |
+| 0.6.9 | 2025-02-08 | [53513](https://github.com/airbytehq/airbyte/pull/53513) | Update dependencies |
+| 0.6.8 | 2025-02-01 | [52979](https://github.com/airbytehq/airbyte/pull/52979) | Update dependencies |
+| 0.6.7 | 2025-01-25 | [52503](https://github.com/airbytehq/airbyte/pull/52503) | Update dependencies |
+| 0.6.6 | 2025-01-18 | [51896](https://github.com/airbytehq/airbyte/pull/51896) | Update dependencies |
+| 0.6.5 | 2025-01-11 | [51335](https://github.com/airbytehq/airbyte/pull/51335) | Update dependencies |
+| 0.6.4 | 2025-01-04 | [50930](https://github.com/airbytehq/airbyte/pull/50930) | Update dependencies |
+| 0.6.3 | 2024-12-28 | [50709](https://github.com/airbytehq/airbyte/pull/50709) | Update dependencies |
+| 0.6.2 | 2024-12-21 | [49058](https://github.com/airbytehq/airbyte/pull/49058) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.6.1 | 2024-11-04 | [43855](https://github.com/airbytehq/airbyte/pull/43855) | Update dependencies |
+| 0.6.0 | 2024-10-30 | [47988](https://github.com/airbytehq/airbyte/pull/47988) | Upgrade the CDK and startup files to sync incremental streams concurrently |
 | 0.5.3 | 2024-06-06 | [39180](https://github.com/airbytehq/airbyte/pull/39180) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.2 | 2024-05-20 | [38263](https://github.com/airbytehq/airbyte/pull/38263) | Replace AirbyteLogger with logging.Logger |
 | 0.5.1 | 2024-04-01 | [36731](https://github.com/airbytehq/airbyte/pull/36731) | Add `%Y-%m-%dT%H:%M:%S%z` to date time formats. |

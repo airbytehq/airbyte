@@ -2,11 +2,9 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
-import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -33,6 +31,9 @@ class FeedReader(
 ) {
     private val log = KotlinLogging.logger {}
 
+    private val feedBootstrap: FeedBootstrap<*> =
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed)
+
     /** Reads records from this [feed]. */
     suspend fun read() {
         var partitionsCreatorID = 1L
@@ -46,7 +47,7 @@ class FeedReader(
                 // Publish a checkpoint if applicable.
                 maybeCheckpoint()
                 // Publish stream completion.
-                emitStreamStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+                root.streamStatusManager.notifyComplete(feed)
                 break
             }
             // Launch coroutines which read from each partition.
@@ -75,7 +76,7 @@ class FeedReader(
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
                 log.info { "Attempting bootstrap using ${factory::class}." }
-                return@run factory.make(root.stateManager, feed) ?: continue
+                return@run factory.make(feedBootstrap) ?: continue
             }
             throw SystemErrorException(
                 "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
@@ -85,7 +86,7 @@ class FeedReader(
             acquirePartitionsCreatorResources(partitionsCreatorID, partitionsCreator)
         }
         if (1L == partitionsCreatorID) {
-            emitStreamStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+            root.streamStatusManager.notifyStarting(feed)
         }
         return withContext(ctx("round-$partitionsCreatorID-create-partitions")) {
             createPartitionsWithResources(partitionsCreatorID, partitionsCreator)
@@ -198,7 +199,14 @@ class FeedReader(
         }
         var checkpoint: PartitionReadCheckpoint
         try {
-            withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            if (partitionReader is UnlimitedTimePartitionReader) {
+                partitionReader.run()
+            } else {
+                log.info {
+                    "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
+                }
+                withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            }
             log.info {
                 "completed reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
@@ -307,16 +315,6 @@ class FeedReader(
         log.info { "checkpoint of ${stateMessages.size} state message(s)" }
         for (stateMessage in stateMessages) {
             root.outputConsumer.accept(stateMessage)
-        }
-    }
-
-    private fun emitStreamStatus(status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) {
-        if (feed is Stream) {
-            root.outputConsumer.accept(
-                AirbyteStreamStatusTraceMessage()
-                    .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStatus(status),
-            )
         }
     }
 }

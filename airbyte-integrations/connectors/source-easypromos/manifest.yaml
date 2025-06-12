@@ -1,0 +1,764 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for Easypromos enables seamless data extraction from
+  Easypromos, an online platform for running contests, giveaways, and
+  promotions. It facilitates automatic syncing of participant information,
+  promotion performance, and engagement metrics into data warehouses,
+  streamlining analytics and reporting. This integration helps businesses easily
+  analyze campaign data and optimize marketing strategies
+
+check:
+  type: CheckStream
+  stream_names:
+    - promotions
+
+definitions:
+  streams:
+    promotions:
+      type: DeclarativeStream
+      name: promotions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /promotions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/promotions"
+    organizing_brands:
+      type: DeclarativeStream
+      name: organizing_brands
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizing_brands
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizing_brands"
+    stages:
+      type: DeclarativeStream
+      name: stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stages/{{ stream_partition.promotion_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: promotion_id
+              stream:
+                $ref: "#/definitions/streams/promotions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stages"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{ stream_partition.promotion_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: promotion_id
+              stream:
+                $ref: "#/definitions/streams/promotions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    participations:
+      type: DeclarativeStream
+      name: participations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /participations/{{ stream_partition.promotion_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: promotion_id
+              stream:
+                $ref: "#/definitions/streams/promotions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/participations"
+    prizes:
+      type: DeclarativeStream
+      name: prizes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /prizes/{{ stream_partition.promotion_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: promotion_id
+              stream:
+                $ref: "#/definitions/streams/promotions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prizes"
+    rankings:
+      type: DeclarativeStream
+      name: rankings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ranking/{{ stream_partition.promotion_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next_cursor') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: promotion_id
+              stream:
+                $ref: "#/definitions/streams/promotions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rankings"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.easypromosapp.com/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"bearer_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/promotions"
+  - $ref: "#/definitions/streams/organizing_brands"
+  - $ref: "#/definitions/streams/stages"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/participations"
+  - $ref: "#/definitions/streams/prizes"
+  - $ref: "#/definitions/streams/rankings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - bearer_token
+    properties:
+      bearer_token:
+        type: string
+        name: jwt_token
+        order: 0
+        title: Bearer Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    promotions: true
+    organizing_brands: false
+    stages: false
+    users: false
+    participations: false
+    prizes: false
+    rankings: false
+  testedStreams:
+    promotions:
+      hasRecords: true
+      streamHash: aa30738aecf05a5ad59b1d4b5360a2cac3c1a431
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organizing_brands:
+      hasRecords: true
+      streamHash: 6caeef094bc7203463c34ca952f2d7c164a9003a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stages:
+      hasRecords: true
+      streamHash: bf15f2fc055a0e9d4440359f2e71e4abd102cfa5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 999f9a05b409a39ef39c4fda263259826643513a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    participations:
+      hasRecords: true
+      streamHash: f2c2f9574b5ba92e535bd7da808b06cd52239d8d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    prizes:
+      hasRecords: true
+      streamHash: 85b403e53fb415e280f92ef873ed3ce465c95a59
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    rankings:
+      hasRecords: true
+      streamHash: c852ad512d4adb549fbfc253161e99c1c3bb6b56
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://easypromos-apiref.redoc.ly/
+
+schemas:
+  promotions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      default_language:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      organizing_brand:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      promotion_type:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  organizing_brands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      visible:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      custom_properties:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      language:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      login_type:
+        type:
+          - string
+          - "null"
+      meta_data:
+        type:
+          - object
+          - "null"
+        properties:
+          ip:
+            type:
+              - string
+              - "null"
+          legals:
+            type:
+              - object
+              - "null"
+            properties:
+              privacy_url:
+                type:
+                  - string
+                  - "null"
+              terms_url:
+                type:
+                  - string
+                  - "null"
+          referral_url:
+            type:
+              - string
+              - "null"
+          user_agent:
+            type:
+              - string
+              - "null"
+          utm_campaign:
+            type:
+              - string
+              - "null"
+          utm_medium:
+            type:
+              - string
+              - "null"
+          utm_source:
+            type:
+              - string
+              - "null"
+      nickname:
+        type:
+          - string
+          - "null"
+      promotion_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  participations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      ip:
+        type:
+          - string
+          - "null"
+      promotion_id:
+        type:
+          - string
+          - "null"
+      stage_id:
+        type:
+          - string
+          - "null"
+      user_agent:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  prizes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      code:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      download_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      participation_id:
+        type:
+          - string
+          - "null"
+      prize_type:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          assignation_type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          image:
+            type:
+              - string
+              - "null"
+          instructions:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          qty:
+            type:
+              - string
+              - "null"
+          ref:
+            type:
+              - string
+              - "null"
+      redeem_url:
+        type:
+          - string
+          - "null"
+      stage_id:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          country:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          custom_properties:
+            type:
+              - array
+              - "null"
+          external_id:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          meta_data:
+            type:
+              - object
+              - "null"
+            properties:
+              ip:
+                type:
+                  - string
+                  - "null"
+              legals:
+                type:
+                  - object
+                  - "null"
+                properties: {}
+              user_agent:
+                type:
+                  - string
+                  - "null"
+              utm_medium:
+                type:
+                  - string
+                  - "null"
+          nickname:
+            type:
+              - string
+              - "null"
+          promotion_id:
+            type:
+              - string
+              - "null"
+          social_id:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  rankings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

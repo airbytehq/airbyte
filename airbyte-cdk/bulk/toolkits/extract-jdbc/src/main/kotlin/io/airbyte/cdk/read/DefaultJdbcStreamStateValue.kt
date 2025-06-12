@@ -29,11 +29,15 @@ data class DefaultJdbcStreamStateValue(
             primaryKey: List<Field>,
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue =
-            Jsons.valueToTree(
-                DefaultJdbcStreamStateValue(
-                    primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-                )
-            )
+            when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        DefaultJdbcStreamStateValue(
+                            primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
+                        )
+                    )
+            }
 
         /** Value representing the progress of an ongoing snapshot involving cursor columns. */
         fun snapshotWithCursorCheckpoint(
@@ -42,22 +46,30 @@ data class DefaultJdbcStreamStateValue(
             cursor: Field,
             cursorUpperBound: JsonNode,
         ): OpaqueStateValue =
-            Jsons.valueToTree(
-                DefaultJdbcStreamStateValue(
-                    primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-                    cursors = mapOf(cursor.id to cursorUpperBound),
-                )
-            )
+            when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        DefaultJdbcStreamStateValue(
+                            primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
+                            cursors = mapOf(cursor.id to cursorUpperBound),
+                        )
+                    )
+            }
 
         /** Value representing the progress of an ongoing incremental cursor read. */
         fun cursorIncrementalCheckpoint(
             cursor: Field,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue =
-            Jsons.valueToTree(
-                DefaultJdbcStreamStateValue(
-                    cursors = mapOf(cursor.id to cursorCheckpoint),
-                )
-            )
+            when (cursorCheckpoint.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        DefaultJdbcStreamStateValue(
+                            cursors = mapOf(cursor.id to cursorCheckpoint),
+                        )
+                    )
+            }
     }
 }

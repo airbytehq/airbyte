@@ -200,14 +200,19 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             testLogging() {
                 events 'skipped', 'started', 'passed', 'failed'
                 exceptionFormat 'full'
-                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
-                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+                showStandardStreams = true
             }
 
             jvmArgs = project.test.jvmArgs
-            systemProperties = project.test.systemProperties
             maxParallelForks = project.test.maxParallelForks
             maxHeapSize = project.test.maxHeapSize
+            // Reduce parallelization to get tests passing
+            // TODO: Fix the actual issue causing concurrent tests to hang.
+            systemProperties = project.test.systemProperties + [
+                'junit.jupiter.execution.parallel.enabled': 'true',
+                'junit.jupiter.execution.parallel.config.strategy': 'fixed',
+                'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.min((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
+            ]
 
             // Tone down the JIT when running the containerized connector to improve overall performance.
             // The JVM default settings are optimized for long-lived processes in steady-state operation.

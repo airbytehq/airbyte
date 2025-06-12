@@ -5,6 +5,7 @@
 
 from datetime import datetime
 
+
 STRING_TYPES = [
     "string",
     "email",

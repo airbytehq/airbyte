@@ -1,12 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 from unittest.mock import MagicMock
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from source_jira.components.extractors import LabelsRecordExtractor
-from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter, SubstreamPartitionRouterWithContext
 
 
 @pytest.mark.parametrize(
@@ -17,63 +17,17 @@ from source_jira.components.partition_routers import SprintIssuesSubstreamPartit
         ([], []),  # Testing an empty response
     ],
 )
-def test_labels_record_extractor(json_response, expected_output):
-    # Create the extractor instance directly in the test function
-    extractor = LabelsRecordExtractor(["values"], {}, {})
-    # Set up the mocked response
+def test_labels_record_extractor(json_response, expected_output, components_module):
+    extractor = components_module.LabelsRecordExtractor(["values"], {}, {})
+
     response_mock = MagicMock(spec=requests.Response)
-    response_mock.json.return_value = json_response  # Parameterized JSON response
+    response_mock.json.return_value = json_response
+    response_mock.content = json.dumps(json_response).encode("utf-8")
+    response_mock.text = json.dumps(json_response)
+    response_mock.status_code = 200
 
-    # Call the extract_records to process the mocked response
     extracted = extractor.extract_records(response_mock)
-
-    # Assert to check if the output matches the expected result
-    assert extracted == expected_output, "The extracted records do not match the expected output"
-
-
-@pytest.mark.parametrize(
-    "records, expected_slices",
-    [
-        # No records in parent stream
-        ([], []),
-        # Valid records generating stream slices, including checking parent records
-        (
-            [{"id": 1, "parent_id": 100}, {"id": 2, "parent_id": 200}],
-            [
-                {"partition": {"partition_id": 100, "parent_slice": {}}, "parent_record": {"id": 1, "parent_id": 100}},
-                {"partition": {"partition_id": 200, "parent_slice": {}}, "parent_record": {"id": 2, "parent_id": 200}},
-            ],
-        ),
-    ],
-)
-def test_stream_slices(records, expected_slices):
-    # Mock configuration and parent stream config
-    config = MagicMock()
-    parent_stream = MagicMock()
-    parent_key = MagicMock()
-    partition_field = MagicMock()
-
-    parent_key.eval.return_value = "parent_id"
-    partition_field.eval.return_value = "partition_id"
-
-    parent_stream_config = MagicMock()
-    parent_stream_config.stream = parent_stream
-    parent_stream_config.parent_key = parent_key
-    parent_stream_config.partition_field = partition_field
-
-    # Initialize the router instance
-    router = SubstreamPartitionRouterWithContext(parent_stream_configs=[parent_stream_config], config=config, parameters={})
-
-    # Mocking parent stream's stream_slices and read_records
-    parent_stream.stream_slices.return_value = [{}]
-    parent_stream.read_records.return_value = records
-
-    slices = list(router.stream_slices())
-
-    # Preparing the output for assertion
-    output = [{"partition": slice.partition, "parent_record": getattr(slice, "parent_record", None)} for slice in slices]
-
-    assert output == expected_slices, f"Expected {expected_slices} but got {output}"
+    assert extracted == expected_output
 
 
 @pytest.mark.parametrize(
@@ -88,7 +42,7 @@ def test_stream_slices(records, expected_slices):
         )
     ],
 )
-def test_sprint_issues_substream_partition_router(fields_data, other_data, expected_fields, expected_partition):
+def test_sprint_issues_substream_partition_router(fields_data, other_data, expected_fields, expected_partition, components_module):
     fields_parent_stream = MagicMock()
     fields_parent_stream_config = MagicMock(stream=fields_parent_stream, partition_field=MagicMock())
     fields_parent_stream_config.partition_field.eval.return_value = "partition_id"
@@ -99,7 +53,7 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
     other_parent_stream_config.parent_key.eval.return_value = "id"
 
     # Initialize the router inside the test
-    router = SprintIssuesSubstreamPartitionRouter(
+    router = components_module.SprintIssuesSubstreamPartitionRouter(
         parent_stream_configs=[fields_parent_stream_config, other_parent_stream_config], config={}, parameters={}
     )
 
@@ -117,7 +71,7 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
     assert slices, "There should be at least one slice generated"
     # Asserting the correct parent stream fields are set in slices
     assert all(
-        _slice.parent_stream_fields == expected_fields for _slice in slices
+        _slice.extra_fields["fields"] == expected_fields for _slice in slices
     ), f"Expected parent stream fields {expected_fields}, but got {slices}"
     assert all(
         _slice.partition["partition_id"] == expected_partition for _slice in slices

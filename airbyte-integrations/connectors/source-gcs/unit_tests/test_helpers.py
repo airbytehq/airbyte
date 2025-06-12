@@ -10,4 +10,3 @@ def test_get_stream_name():
     blob.name = "path/to/stream.csv"
 
     assert get_stream_name(blob) == "stream"
-

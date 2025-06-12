@@ -9,10 +9,7 @@ from .constants import BASE_OAUTH_URL
 class OAuthRequestBuilder(AmazonAdsRequestBuilder):
     @classmethod
     def oauth_endpoint(cls, client_id: str, client_secred: str, refresh_token: str) -> "OAuthRequestBuilder":
-        return cls("auth/o2/token") \
-            .with_client_id(client_id) \
-            .with_client_secret(client_secred) \
-            .with_refresh_token(refresh_token)
+        return cls("auth/o2/token").with_client_id(client_id).with_client_secret(client_secred).with_refresh_token(refresh_token)
 
     def __init__(self, resource: str) -> None:
         self._resource: str = resource
@@ -34,7 +31,9 @@ class OAuthRequestBuilder(AmazonAdsRequestBuilder):
 
     @property
     def request_body(self) -> Optional[str]:
-        return f"grant_type=refresh_token&client_id={self._client_id}&client_secret={self._client_secret}&refresh_token={self._refresh_token}"
+        return (
+            f"grant_type=refresh_token&client_id={self._client_id}&client_secret={self._client_secret}&refresh_token={self._refresh_token}"
+        )
 
     def with_client_id(self, client_id: str) -> "OAuthRequestBuilder":
         self._client_id: str = client_id

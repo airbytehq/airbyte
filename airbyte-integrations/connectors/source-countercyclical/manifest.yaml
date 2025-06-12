@@ -1,0 +1,821 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: >-
+  Countercyclical is the fully end-to-end financial intelligence platform
+  designed for modern investment teams.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Investments
+
+definitions:
+  streams:
+    Investments:
+      type: DeclarativeStream
+      name: Investments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /investments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Investments"
+    Valuations:
+      type: DeclarativeStream
+      name: Valuations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /valuations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Valuations"
+    Memos:
+      type: DeclarativeStream
+      name: Memos
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /memos
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Memos"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.countercyclical.io/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apiKey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/Investments"
+  - $ref: "#/definitions/streams/Valuations"
+  - $ref: "#/definitions/streams/Memos"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Investments: true
+    Valuations: true
+    Memos: true
+  testedStreams:
+    Investments:
+      streamHash: e16652814d801950a3566c2a519576dd88d93b0c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Valuations:
+      streamHash: 56cf354aba3632e9eeb38b6fc8d5591061011160
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Memos:
+      streamHash: 093e7520467e4a57d1686ea244a427d8e180777b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Investments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      bannerImage:
+        type:
+          - string
+          - "null"
+      ceo:
+        type:
+          - string
+          - "null"
+      cik:
+        type:
+          - string
+          - "null"
+      clearbit:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              gicsCode:
+                type:
+                  - string
+                  - "null"
+              industry:
+                type:
+                  - string
+                  - "null"
+              industryGroup:
+                type:
+                  - string
+                  - "null"
+              naics6Codes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              naics6Codes2022:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              naicsCode:
+                type:
+                  - string
+                  - "null"
+              sector:
+                type:
+                  - string
+                  - "null"
+              sic4Codes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              sicCode:
+                type:
+                  - string
+                  - "null"
+              subIndustry:
+                type:
+                  - string
+                  - "null"
+          crunchbase:
+            type:
+              - object
+              - "null"
+            properties:
+              handle:
+                type:
+                  - string
+                  - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          domainAliases:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          emailProvider:
+            type:
+              - boolean
+              - "null"
+          facebook:
+            type:
+              - object
+              - "null"
+            properties:
+              handle:
+                type:
+                  - string
+                  - "null"
+              likes:
+                type:
+                  - number
+                  - "null"
+          foundedYear:
+            type:
+              - number
+              - "null"
+          geo:
+            type:
+              - object
+              - "null"
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - number
+                  - "null"
+              lng:
+                type:
+                  - number
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              stateCode:
+                type:
+                  - string
+                  - "null"
+              streetAddress:
+                type:
+                  - string
+                  - "null"
+              streetName:
+                type:
+                  - string
+                  - "null"
+              streetNumber:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - string
+              - "null"
+          identifiers:
+            type:
+              - object
+              - "null"
+            properties:
+              usCIK:
+                type:
+                  - string
+                  - "null"
+              usEIN:
+                type:
+                  - string
+                  - "null"
+          indexedAt:
+            type:
+              - string
+              - "null"
+          legalName:
+            type:
+              - string
+              - "null"
+          linkedin:
+            type:
+              - object
+              - "null"
+            properties:
+              handle:
+                type:
+                  - string
+                  - "null"
+          location:
+            type:
+              - string
+              - "null"
+          logo:
+            type:
+              - string
+              - "null"
+          metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              alexaGlobalRank:
+                type:
+                  - number
+                  - "null"
+              alexaUsRank:
+                type:
+                  - number
+                  - "null"
+              annualRevenue:
+                type:
+                  - number
+                  - "null"
+              employees:
+                type:
+                  - number
+                  - "null"
+              employeesRange:
+                type:
+                  - string
+                  - "null"
+              estimatedAnnualRevenue:
+                type:
+                  - string
+                  - "null"
+              fiscalYearEnd:
+                type:
+                  - number
+                  - "null"
+              marketCap:
+                type:
+                  - number
+                  - "null"
+              trafficRank:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          parent:
+            type:
+              - object
+              - "null"
+            properties: {}
+          phone:
+            type:
+              - string
+              - "null"
+          site:
+            type:
+              - object
+              - "null"
+            properties:
+              emailAddresses:
+                type:
+                  - array
+                  - "null"
+              phoneNumbers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          tech:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          techCategories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          ticker:
+            type:
+              - string
+              - "null"
+          timeZone:
+            type:
+              - string
+              - "null"
+          twitter:
+            type:
+              - object
+              - "null"
+            properties:
+              avatar:
+                type:
+                  - string
+                  - "null"
+              bio:
+                type:
+                  - string
+                  - "null"
+              followers:
+                type:
+                  - number
+                  - "null"
+              following:
+                type:
+                  - number
+                  - "null"
+              handle:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              location:
+                type:
+                  - string
+                  - "null"
+              site:
+                type:
+                  - string
+                  - "null"
+          ultimateParent:
+            type:
+              - object
+              - "null"
+            properties: {}
+          utcOffset:
+            type:
+              - number
+              - "null"
+      country:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      editedName:
+        type:
+          - string
+          - "null"
+      employees:
+        type:
+          - number
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      figi:
+        type:
+          - string
+          - "null"
+      financingType:
+        type:
+          - string
+          - "null"
+      foundingDate:
+        type:
+          - string
+          - "null"
+      headquarters:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      industry:
+        type:
+          - string
+          - "null"
+      ipoDate:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isFavorite:
+        type:
+          - boolean
+          - "null"
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      issuance:
+        type:
+          - string
+          - "null"
+      lei:
+        type:
+          - string
+          - "null"
+      marketType:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sector:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tickerSymbol:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  Valuations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      backgroundColor:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      delineation:
+        type:
+          - string
+          - "null"
+      discountRate:
+        type:
+          - string
+          - "null"
+      emoji:
+        type:
+          - string
+          - "null"
+      endingQuarter:
+        type:
+          - string
+          - "null"
+      endingYear:
+        type:
+          - string
+          - "null"
+      growthMetric:
+        type:
+          - string
+          - "null"
+      growthRate:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isFavorite:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      shareToken:
+        type:
+          - string
+          - "null"
+      startingQuarter:
+        type:
+          - string
+          - "null"
+      startingYear:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tableData:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            lineItem:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+            year:
+              type:
+                - number
+                - string
+                - "null"
+      terminalPeriod:
+        type:
+          - number
+          - "null"
+      terminalRate:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  Memos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      avatar:
+        type:
+          - string
+          - "null"
+      backgroundColor:
+        type:
+          - string
+          - "null"
+      banner:
+        type:
+          - string
+          - "null"
+      bannerVisible:
+        type:
+          - boolean
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      documentType:
+        type:
+          - string
+          - "null"
+      emoji:
+        type:
+          - string
+          - "null"
+      favorited:
+        type:
+          - boolean
+          - "null"
+      foregroundColor:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      locked:
+        type:
+          - boolean
+          - "null"
+      publiclyVisible:
+        type:
+          - boolean
+          - "null"
+      sourcesVisible:
+        type:
+          - boolean
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      tocVisible:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      views:
+        type:
+          - number
+          - "null"
+    required:
+      - id

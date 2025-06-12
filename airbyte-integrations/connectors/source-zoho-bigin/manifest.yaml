@@ -1,0 +1,1347 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: " Zoho Bigin connector  enables seamless data sync between Zoho Bigin and other platforms. This connector automates CRM data integration, improving workflows and ensuring real-time access to customer insights across tools."
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    modules:
+      type: DeclarativeStream
+      name: modules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/modules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - modules
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/modules"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /org
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - org
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Notes
+          http_method: GET
+          request_parameters:
+            fields: Note_Title,Note_Content,Parent_Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - Contacts
+            - Pipelines
+            - Companies
+            - Products
+            - Tasks
+            - Events
+            - Calls
+          cursor_field: module
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: module
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Accounts
+          http_method: GET
+          request_parameters:
+            fields: Account_Name,Phone,Website
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.get('info', {}).get('next_page_token') }}"
+            stop_condition: "{{ not response.get('info', {}).get('more_records', False) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Contacts
+          http_method: GET
+          request_parameters:
+            fields: Last_Name,Email
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('info', {}).get('next_page_token', '') }}"
+            stop_condition: "{{ not response.get('info', {}).get('more_records', False) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Tasks
+          http_method: GET
+          request_parameters:
+            fields: Owner,Subject,Due Date,Remind_At
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('info', {}).get('next_page_token', '') }}"
+            stop_condition: "{{ not response.get('info', {}).get('more_records', False) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Events
+          http_method: GET
+          request_parameters:
+            fields: Owner,Event_Title,Start_DateTime,End_DateTime
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 200
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Products
+          http_method: GET
+          request_parameters:
+            fields: >-
+              Owner,Product_Name,Product_Category,Unit_Price,Description,Product_Active
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('info', {}).get('next_page_token', '') }}"
+            stop_condition: "{{ not response.get('info', {}).get('more_records', False) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.zohoapis.{{ config["data_center"] }}/bigin/v2
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://accounts.zoho.{{ config["data_center"] }}/oauth/v2/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/modules"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/products"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - data_center
+      - client_secret
+      - client_refresh_token
+      - module_name
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      data_center:
+        type: string
+        description: The data center where the Bigin account's resources are hosted
+        enum:
+          - com
+          - com.au
+          - eu
+          - in
+          - com.cn
+          - jp
+        name: data_center
+        order: 1
+        title: Data Center
+        default: com
+      client_secret:
+        type: string
+        name: client_secret
+        order: 2
+        title: OAuth Client Secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 3
+        title: Refresh token
+        airbyte_secret: true
+      module_name:
+        type: string
+        order: 4
+        title: Module Name
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    modules: true
+    organizations: true
+    roles: true
+    notes: true
+    tags: true
+    companies: true
+    contacts: true
+    tasks: true
+    events: true
+    products: true
+  testedStreams:
+    users:
+      streamHash: f9c8fc4a62114f362eb6a984c79ba314d934be17
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    modules:
+      streamHash: 7027ed4afe12e9a9c1cb9528ed5f1d5bf99c8e76
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: 2db7dbec4301f64e9296f9d3150a26fcf9f97f3a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: 36e98e146a92bc49dc30c62dd6ba105598e962c8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    notes:
+      streamHash: 751e00f2202ac83eb64ee8ad4c2321287834f2e9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 1f8fce21c3a7316d352fa01f7bc49213556e74e2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    companies:
+      streamHash: f41b79d9489ccffd58e8de6fa8029eb8feeadeb0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: fb71d11b5a32e69fbcbf527c82e98bc8c3149a49
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: f28271e7d149c1f1590199c0835fdf32831fb20b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: f96faf2540b727a7e1cf24134f8f6cbec82133e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      hasRecords: true
+      streamHash: 8517b62f6a46b2eefaab27dc2a7ba6f6c7f48c9d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://www.bigin.com/developer/docs/apis/v2/modules-api.html
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Isonline:
+        type:
+          - boolean
+          - "null"
+      Modified_By:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      Modified_Time:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      confirm:
+        type:
+          - boolean
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      country_locale:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      customize_info:
+        type:
+          - object
+          - "null"
+        properties:
+          show_detail_view:
+            type:
+              - boolean
+              - "null"
+          show_home:
+            type:
+              - boolean
+              - "null"
+      date_format:
+        type:
+          - string
+          - "null"
+      decimal_separator:
+        type:
+          - string
+          - "null"
+      default_tab_group:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      language:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      microsoft:
+        type:
+          - boolean
+          - "null"
+      name_format:
+        type:
+          - string
+          - "null"
+      number_separator:
+        type:
+          - string
+          - "null"
+      offset:
+        type:
+          - number
+          - "null"
+      personal_account:
+        type:
+          - boolean
+          - "null"
+      profile:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      sandboxDeveloper:
+        type:
+          - boolean
+          - "null"
+      sort_order_preference:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      theme:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          background:
+            type:
+              - string
+              - "null"
+          normal_tab:
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              font_color:
+                type:
+                  - string
+                  - "null"
+          screen:
+            type:
+              - string
+              - "null"
+          selected_tab:
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              font_color:
+                type:
+                  - string
+                  - "null"
+      time_format:
+        type:
+          - string
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  modules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_type:
+        type:
+          - string
+          - "null"
+      actual_plural_label:
+        type:
+          - string
+          - "null"
+      actual_singular_label:
+        type:
+          - string
+          - "null"
+      api_name:
+        type:
+          - string
+          - "null"
+      api_supported:
+        type:
+          - boolean
+          - "null"
+      arguments:
+        type:
+          - array
+          - "null"
+      business_card_field_limit:
+        type:
+          - number
+          - "null"
+      convertable:
+        type:
+          - boolean
+          - "null"
+      creatable:
+        type:
+          - boolean
+          - "null"
+      deletable:
+        type:
+          - boolean
+          - "null"
+      editable:
+        type:
+          - boolean
+          - "null"
+      emailTemplate_support:
+        type:
+          - boolean
+          - "null"
+      email_parser_supported:
+        type:
+          - boolean
+          - "null"
+      feeds_required:
+        type:
+          - boolean
+          - "null"
+      filter_supported:
+        type:
+          - boolean
+          - "null"
+      generated_type:
+        type:
+          - string
+          - "null"
+      global_search_supported:
+        type:
+          - boolean
+          - "null"
+      has_more_profiles:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      inventory_template_supported:
+        type:
+          - boolean
+          - "null"
+      isBlueprintSupported:
+        type:
+          - boolean
+          - "null"
+      modified_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      modified_time:
+        type:
+          - string
+          - "null"
+      module_name:
+        type:
+          - string
+          - "null"
+      parent_module:
+        type:
+          - object
+          - "null"
+        properties:
+          api_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      plural_label:
+        type:
+          - string
+          - "null"
+      presence_sub_menu:
+        type:
+          - boolean
+          - "null"
+      profile_count:
+        type:
+          - number
+          - "null"
+      profiles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      public_fields_configured:
+        type:
+          - boolean
+          - "null"
+      quick_create:
+        type:
+          - boolean
+          - "null"
+      scoring_supported:
+        type:
+          - boolean
+          - "null"
+      sequence_number:
+        type:
+          - number
+          - "null"
+      show_as_tab:
+        type:
+          - boolean
+          - "null"
+      singular_label:
+        type:
+          - string
+          - "null"
+      triggers_supported:
+        type:
+          - boolean
+          - "null"
+      viewable:
+        type:
+          - boolean
+          - "null"
+      visibility:
+        type:
+          - number
+          - "null"
+      visible:
+        type:
+          - boolean
+          - "null"
+      webform_supported:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company_name:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      currency_locale:
+        type:
+          - string
+          - "null"
+      currency_symbol:
+        type:
+          - string
+          - "null"
+      deletable_org_account:
+        type:
+          - boolean
+          - "null"
+      domain_name:
+        type:
+          - string
+          - "null"
+      gapps_enabled:
+        type:
+          - boolean
+          - "null"
+      hierarchy_preferences:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      hipaa_compliance_enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      iso_code:
+        type:
+          - string
+          - "null"
+      license_details:
+        type:
+          - object
+          - "null"
+        properties:
+          paid:
+            type:
+              - boolean
+              - "null"
+          paid_type:
+            type:
+              - string
+              - "null"
+          portal_users_license_purchased:
+            type:
+              - number
+              - "null"
+          trial_expiry:
+            type:
+              - string
+              - "null"
+          trial_type:
+            type:
+              - string
+              - "null"
+          users_license_purchased:
+            type:
+              - number
+              - "null"
+      lite_users_enabled:
+        type:
+          - boolean
+          - "null"
+      mc_status:
+        type:
+          - boolean
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      primary_email:
+        type:
+          - string
+          - "null"
+      primary_zuid:
+        type:
+          - string
+          - "null"
+      privacy_settings:
+        type:
+          - boolean
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      translation_enabled:
+        type:
+          - boolean
+          - "null"
+      zgid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      display_label:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      reporting_to:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      share_with_peers:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Note_Content:
+        type:
+          - string
+          - "null"
+      Note_Title:
+        type:
+          - string
+          - "null"
+      Parent_Id:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      modified_time:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Account_Name:
+        type:
+          - string
+          - "null"
+      Phone:
+        type:
+          - string
+          - "null"
+      Website:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Email:
+        type:
+          - string
+          - "null"
+      Last_Name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Owner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      Subject:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      End_DateTime:
+        type:
+          - string
+          - "null"
+      Event_Title:
+        type:
+          - string
+          - "null"
+      Owner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      Start_DateTime:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Description:
+        type:
+          - string
+          - "null"
+      Owner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      Product_Active:
+        type:
+          - boolean
+          - "null"
+      Product_Category:
+        type:
+          - string
+          - "null"
+      Product_Name:
+        type:
+          - string
+          - "null"
+      Unit_Price:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+    required:
+      - id

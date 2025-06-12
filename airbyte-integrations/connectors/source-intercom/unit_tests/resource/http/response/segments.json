@@ -1,0 +1,21 @@
+{
+  "type": "segment.list",
+  "segments": [
+    {
+      "type": "segment",
+      "id": "677c56836abd011ad17ff58f",
+      "name": "John segment",
+      "created_at": 1736201859,
+      "updated_at": 1736201859,
+      "person_type": "user"
+    },
+    {
+      "type": "segment",
+      "id": "677c56846abd011ad17ff590",
+      "name": "Jane segment",
+      "created_at": 1736201860,
+      "updated_at": 1736201860,
+      "person_type": "user"
+    }
+  ]
+}

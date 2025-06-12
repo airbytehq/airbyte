@@ -24,7 +24,7 @@ async def get_container_from_id(dagger_client: dagger.Client, container_id: str)
         dagger_client (dagger.Client): The dagger client to use to import the connector image
     """
     try:
-        return await dagger_client.container(id=dagger.ContainerID(container_id))
+        return await dagger_client.load_container_from_id(dagger.ContainerID(container_id))
     except dagger.DaggerError as e:
         pytest.exit(f"Failed to load connector container: {e}")
 
@@ -33,7 +33,7 @@ async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_
     if not tarball_path.exists():
         pytest.exit(f"Connector image tarball {tarball_path} does not exist")
     container_under_test_tar_file = (
-        dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
+        dagger_client.host().directory(str(tarball_path.parent), include=[tarball_path.name]).file(tarball_path.name)
     )
     try:
         return await dagger_client.container().import_(container_under_test_tar_file)

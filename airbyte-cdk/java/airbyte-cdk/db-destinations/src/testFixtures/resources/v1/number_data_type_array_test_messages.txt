@@ -1,3 +1,3 @@
 {"type": "RECORD", "record": {"stream": "array_test_1", "emitted_at": 1602637589100, "data": { "array_number" : ["-12345.678", "100000000000000000.1234"],"array_float" : ["-12345.678", "0", "1000000000000000000000000000000000000000000000000000.1234"], "array_integer" : ["42", "0", "12345"]}}}
-{"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}
+{"type": "STATE", "state": { "type": "GLOBAL", "global": {"shared_state": {"start_date": "2022-02-14"}}}}
 {"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "array_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589301}}

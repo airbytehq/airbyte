@@ -9,16 +9,12 @@ import com.google.cloud.RetryOption
 import com.google.cloud.bigquery.*
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
-import io.airbyte.commons.json.Jsons.deserialize
-import io.airbyte.commons.json.Jsons.jsonNode
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.util.Jsons
 import java.util.*
 import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.logging.log4j.util.Strings
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.threeten.bp.Duration
@@ -56,7 +52,6 @@ object BigQueryUtils {
     fun waitForQuery(queryJob: Job): Job? {
         try {
             val job = queryJob.waitFor()
-            AirbyteExceptionHandler.addStringForDeinterpolation(job.etag)
             return job
         } catch (e: Exception) {
             LOGGER.error("Failed to wait for a query job:$queryJob")
@@ -92,36 +87,20 @@ object BigQueryUtils {
     @JvmStatic
     fun createPartitionedTableIfNotExists(bigquery: BigQuery, tableId: TableId?, schema: Schema?) {
         try {
-            // Partition by generation ID. This will be useful for when we want to build
-            // hybrid refreshes.
             val partitioning =
-                RangePartitioning.newBuilder()
-                    .setField(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
-                    .setRange(
-                        RangePartitioning.Range.newBuilder()
-                            .setStart(
-                                0L
-                            ) // Bigquery allows a table to have up to 10_000 partitions.
-                            .setEnd(
-                                10000L
-                            ) // Somewhat conservative estimate. This should avoid issues with
-                            // users running many merge refreshes.
-                            .setInterval(5L)
-                            .build()
-                    )
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+                    .setField(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
                     .build()
 
             val clustering =
                 Clustering.newBuilder()
-                    .setFields(
-                        ImmutableList.of<String>(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)
-                    )
+                    .setFields(ImmutableList.of(Meta.COLUMN_NAME_AB_EXTRACTED_AT))
                     .build()
 
             val tableDefinition =
                 StandardTableDefinition.newBuilder()
                     .setSchema(schema)
-                    .setRangePartitioning(partitioning)
+                    .setTimePartitioning(partitioning)
                     .setClustering(clustering)
                     .build()
             val tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build()
@@ -142,7 +121,7 @@ object BigQueryUtils {
     @JvmStatic
     fun getGcsJsonNodeConfig(config: JsonNode): JsonNode {
         val loadingMethod = config[BigQueryConsts.LOADING_METHOD]
-        return jsonNode(
+        return Jsons.valueToTree(
             ImmutableMap.builder<Any, Any>()
                 .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod[BigQueryConsts.GCS_BUCKET_NAME])
                 .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod[BigQueryConsts.GCS_BUCKET_PATH])
@@ -150,17 +129,15 @@ object BigQueryUtils {
                 .put(BigQueryConsts.CREDENTIAL, loadingMethod[BigQueryConsts.CREDENTIAL])
                 .put(
                     BigQueryConsts.FORMAT,
-                    deserialize("""{
-  "format_type": "CSV",
-  "flattening": "No flattening"
-}""")
+                    Jsons.readTree(
+                        """{
+                          "format_type": "CSV",
+                          "flattening": "No flattening"
+                        }""".trimIndent()
+                    )
                 )
                 .build()
         )
-    }
-
-    fun getGcsCsvDestinationConfig(config: JsonNode): GcsDestinationConfig {
-        return GcsDestinationConfig.getGcsDestinationConfig(getGcsJsonNodeConfig(config))
     }
 
     /** @return a default schema name based on the config. */
@@ -194,32 +171,6 @@ object BigQueryUtils {
         }
     }
 
-    fun getDisableTypeDedupFlag(config: JsonNode): Boolean {
-        if (config.has(BigQueryConsts.DISABLE_TYPE_DEDUPE)) {
-            return config[BigQueryConsts.DISABLE_TYPE_DEDUPE].asBoolean(false)
-        }
-
-        return false
-    }
-
-    // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
-    fun getBigQueryClientChunkSize(config: JsonNode): Int? {
-        var chunkSizeFromConfig: Int? = null
-        if (config.has(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE)) {
-            chunkSizeFromConfig = config[BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE].asInt()
-            if (chunkSizeFromConfig <= 0) {
-                LOGGER.error(
-                    "BigQuery client Chunk (buffer) size must be a positive number (MB), but was:$chunkSizeFromConfig"
-                )
-                throw IllegalArgumentException(
-                    "BigQuery client Chunk (buffer) size must be a positive number (MB)"
-                )
-            }
-            chunkSizeFromConfig = chunkSizeFromConfig * BigQueryConsts.MiB
-        }
-        return chunkSizeFromConfig
-    }
-
     @JvmStatic
     fun getLoadingMethod(config: JsonNode): UploadingMethod {
         val loadingMethod = config[BigQueryConsts.LOADING_METHOD]
@@ -235,26 +186,9 @@ object BigQueryUtils {
         }
     }
 
-    fun isKeepFilesInGcs(config: JsonNode): Boolean {
-        val loadingMethod = config[BigQueryConsts.LOADING_METHOD]
-        if (
-            loadingMethod != null &&
-                loadingMethod[BigQueryConsts.KEEP_GCS_FILES] != null &&
-                (BigQueryConsts.KEEP_GCS_FILES_VAL ==
-                    loadingMethod[BigQueryConsts.KEEP_GCS_FILES].asText())
-        ) {
-            LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished")
-            return true
-        } else {
-            LOGGER.info("All tmp files will be removed from GCS when replication is finished")
-            return false
-        }
-    }
-
     @Throws(InterruptedException::class)
     fun waitForJobFinish(job: Job?) {
         if (job != null) {
-            AirbyteExceptionHandler.addStringForDeinterpolation(job.etag)
             try {
                 LOGGER.info("Waiting for Job {} to finish. Status: {}", job.jobId, job.status)
                 // Default totalTimeout is 12 Hours, 30 minutes seems reasonable
@@ -318,6 +252,6 @@ object BigQueryUtils {
     private val connectorNameOrDefault: String
         get() =
             Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
-                .map { name: String -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/") }
+                .map { name: String -> name.replace("airbyte/", "").replace(":", "/") }
                 .orElse("destination-bigquery")
 }

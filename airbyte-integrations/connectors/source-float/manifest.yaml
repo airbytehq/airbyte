@@ -1,0 +1,1509 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  source-float airbyte connector is designed to sync scheduling and resource
+  management data between Float, a leading resource management platform, and
+  external systems. 
+
+
+  Float.com enables teams to plan and allocate resources effectively, manage
+  team availability, and track project timelines. This connector automates the
+  data flow between Float and other platforms, ensuring that resource schedules
+  and project plans are up-to-date across all tools you use.
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - account_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+        - department_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /departments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departments"
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - people_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    public_holidays:
+      type: DeclarativeStream
+      name: public_holidays
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /public-holidays
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/public_holidays"
+    holidays:
+      type: DeclarativeStream
+      name: holidays
+      primary_key:
+        - holiday_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /holidays
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holidays"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    status:
+      type: DeclarativeStream
+      name: status
+      primary_key:
+        - status_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /status
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/status"
+    time_off:
+      type: DeclarativeStream
+      name: time_off
+      primary_key:
+        - timeoff_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timeoffs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off"
+    timeoff-types:
+      type: DeclarativeStream
+      name: timeoff-types
+      primary_key:
+        - timeoff_type_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timeoff-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timeoff-types"
+    clients:
+      type: DeclarativeStream
+      name: clients
+      primary_key:
+        - client_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients"
+    phases:
+      type: DeclarativeStream
+      name: phases
+      primary_key:
+        - phase_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /phases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/phases"
+    project-tasks:
+      type: DeclarativeStream
+      name: project-tasks
+      primary_key:
+        - task_meta_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /project-tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project-tasks"
+    milestones:
+      type: DeclarativeStream
+      name: milestones
+      primary_key:
+        - milestone_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /milestones
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - task_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    logged-time:
+      type: DeclarativeStream
+      name: logged-time
+      primary_key:
+        - logged_time_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /logged-time
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per-page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/logged-time"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.float.com/v3
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"access_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/public_holidays"
+  - $ref: "#/definitions/streams/holidays"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/status"
+  - $ref: "#/definitions/streams/time_off"
+  - $ref: "#/definitions/streams/timeoff-types"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/phases"
+  - $ref: "#/definitions/streams/project-tasks"
+  - $ref: "#/definitions/streams/milestones"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/logged-time"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - start_date
+    properties:
+      access_token:
+        type: string
+        description: API token obtained from your Float Account Settings page
+        name: float_access_token
+        order: 0
+        title: Access Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: true
+    departments: true
+    people: true
+    roles: true
+    public_holidays: true
+    holidays: true
+    projects: true
+    status: true
+    time_off: true
+    timeoff-types: true
+    clients: true
+    phases: true
+    project-tasks: true
+    milestones: true
+    tasks: true
+    logged-time: true
+  testedStreams:
+    accounts:
+      streamHash: 6118f9c7287c7f77b2242900f1817f17e74335be
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    departments:
+      streamHash: 831a7bca5b55ff3948f9c1b7486dfd43b9bc1836
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people:
+      streamHash: 8ba8094b2d52784df6017e498095d8a42254965c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: d919fcbb6dc049ffe3b041e687d249fa92e9a17f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    public_holidays:
+      streamHash: 0c8ea3bc39c3bfbc2ad7a62be9fcea9b235b9144
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    holidays:
+      streamHash: b3ad9c97fc692fe5fe6d125ac53d27a1458e4a38
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: 56fdb456c22607624cb5797497fb6550dafd0e60
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    status:
+      streamHash: 72940384697fc99e77d561d9e44edf0020c03fa1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    time_off:
+      streamHash: 5661da0571d6bb9118fce08782dfeba0de439cb5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timeoff-types:
+      streamHash: 8047744d178cfdbb743801c0f58ec0a5b6b78947
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    clients:
+      streamHash: 2df83fc8b666c8ea803ec043e02f8ad1c213bd9e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    phases:
+      streamHash: cba79a345cb7ebdd0e394f3af1761080a7776292
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project-tasks:
+      streamHash: d5f09c338d1340df509a237adafe6cdd0f29b27d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    milestones:
+      streamHash: 03ff3a6ab59adc79d50186cddc0259d5eaa05f3e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: 88008b2bd0e24638a4a7bff6bb14d6ec30ca7b2c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    logged-time:
+      streamHash: c22e227fa5d2f2ba3e212d14a954dfd53ec232f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developer.float.com/api_reference.html
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+          - number
+          - "null"
+      account_id:
+        type: number
+      account_type:
+        type:
+          - number
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      avatar:
+        type:
+          - string
+          - "null"
+      budget_rights:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      edit_rights:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      view_rights:
+        type:
+          - number
+          - "null"
+    required:
+      - account_id
+  departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      department_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - department_id
+  people:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      auto_email:
+        type:
+          - number
+          - "null"
+      avatar_file:
+        type:
+          - string
+          - "null"
+      contractor:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      default_hourly_rate:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          department_id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      employee_type:
+        type:
+          - number
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      people_id:
+        type: number
+      people_type_id:
+        type:
+          - number
+          - "null"
+      region_id:
+        type:
+          - number
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - people_id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      modified:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  public_holidays:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  holidays:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      holiday_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - holiday_id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      all_pms_schedule:
+        type:
+          - number
+          - "null"
+      budget_per_phase:
+        type:
+          - number
+          - "null"
+      budget_priority:
+        type:
+          - number
+          - "null"
+      budget_type:
+        type:
+          - number
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      locked_task_list:
+        type:
+          - number
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      non_billable:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      project_id:
+        type: number
+      project_manager:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tentative:
+        type:
+          - number
+          - "null"
+    required:
+      - project_id
+  status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      people_id:
+        type:
+          - number
+          - "null"
+      repeat_state:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status_id:
+        type: number
+      status_type_id:
+        type:
+          - number
+          - "null"
+    required:
+      - status_id
+  time_off:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      full_day:
+        type:
+          - number
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - number
+          - "null"
+      people_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      repeat_state:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      timeoff_id:
+        type: number
+      timeoff_notes:
+        type:
+          - string
+          - "null"
+      timeoff_type_id:
+        type:
+          - number
+          - "null"
+      timeoff_type_name:
+        type:
+          - string
+          - "null"
+    required:
+      - timeoff_id
+  timeoff-types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      approval_required:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      timeoff_type_id:
+        type: number
+      timeoff_type_name:
+        type:
+          - string
+          - "null"
+    required:
+      - timeoff_type_id
+  clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      client_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - client_id
+  phases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      non_billable:
+        type:
+          - number
+          - "null"
+      phase_id:
+        type: number
+      project_id:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      tentative:
+        type:
+          - number
+          - "null"
+    required:
+      - phase_id
+  project-tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - number
+          - "null"
+      count_logged_time:
+        type:
+          - number
+          - "null"
+      count_tasks:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      phase_id:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      task_meta_id:
+        type: number
+      task_name:
+        type:
+          - string
+          - "null"
+    required:
+      - task_meta_id
+  milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      milestone_id:
+        type: number
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+    required:
+      - milestone_id
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      hours:
+        type:
+          - number
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      people_id:
+        type:
+          - number
+          - "null"
+      phase_id:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      repeat_state:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      task_id:
+        type: number
+      task_meta_id:
+        type:
+          - number
+          - "null"
+    required:
+      - task_id
+  logged-time:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      hours:
+        type:
+          - number
+          - "null"
+      locked:
+        type:
+          - boolean
+          - "null"
+      logged_time_id:
+        type: string
+      modified:
+        type: string
+      modified_by:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      people_id:
+        type:
+          - number
+          - "null"
+      phase_id:
+        type:
+          - number
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      task_id:
+        type:
+          - number
+          - "null"
+      task_meta_id:
+        type:
+          - number
+          - "null"
+      task_name:
+        type:
+          - string
+          - "null"
+    required:
+      - logged_time_id
+      - modified

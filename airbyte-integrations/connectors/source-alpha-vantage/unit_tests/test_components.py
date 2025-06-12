@@ -1,0 +1,177 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+import json
+from typing import Any
+
+from requests import Response
+
+
+def _create_response_with_body(body: Any) -> Response:
+    response = Response()
+    response._content = json.dumps(body).encode("utf-8")
+    return response
+
+
+def _create_response_with_dict_of_records() -> Response:
+    response_body = {
+        "data": {
+            "2022-01-01": {
+                "id": "id1",
+                "name": "name1",
+            },
+            "2022-01-02": {
+                "id": "id2",
+                "name": "name2",
+            },
+        }
+    }
+    return _create_response_with_body(response_body)
+
+
+def _create_response_with_list_of_records() -> Response:
+    response_body = {
+        "data": [
+            {
+                "id": "id1",
+                "name": "name1",
+            },
+            {
+                "id": "id2",
+                "name": "name2",
+            },
+        ]
+    }
+    return _create_response_with_body(response_body)
+
+
+def test_no_key_injection(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
+    extractor = ObjectDpathExtractor(
+        field_path=["data"],
+        config={},
+        parameters={},
+    )
+
+    response = _create_response_with_dict_of_records()
+    records = extractor.extract_records(response)
+
+    assert records == [
+        {
+            "id": "id1",
+            "name": "name1",
+        },
+        {
+            "id": "id2",
+            "name": "name2",
+        },
+    ]
+
+
+def test_key_injection(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
+    extractor = ObjectDpathExtractor(
+        field_path=["data"],
+        inject_key_as_field="date",
+        config={},
+        parameters={},
+    )
+
+    response = _create_response_with_dict_of_records()
+    records = extractor.extract_records(response)
+
+    assert records == [
+        {
+            "date": "2022-01-01",
+            "id": "id1",
+            "name": "name1",
+        },
+        {
+            "date": "2022-01-02",
+            "id": "id2",
+            "name": "name2",
+        },
+    ]
+
+
+def test_key_injection_with_interpolation(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
+    extractor = ObjectDpathExtractor(
+        field_path=["data"],
+        inject_key_as_field="{{ config['key_field'] }}",
+        config={"key_field": "date"},
+        parameters={},
+    )
+
+    response = _create_response_with_dict_of_records()
+    records = extractor.extract_records(response)
+
+    assert records == [
+        {
+            "date": "2022-01-01",
+            "id": "id1",
+            "name": "name1",
+        },
+        {
+            "date": "2022-01-02",
+            "id": "id2",
+            "name": "name2",
+        },
+    ]
+
+
+def test_list_of_records(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
+    extractor = ObjectDpathExtractor(
+        field_path=["data"],
+        config={},
+        parameters={},
+    )
+
+    response = _create_response_with_dict_of_records()
+    records = extractor.extract_records(response)
+
+    assert records == [
+        {
+            "id": "id1",
+            "name": "name1",
+        },
+        {
+            "id": "id2",
+            "name": "name2",
+        },
+    ]
+
+
+def test_no_records(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
+    extractor = ObjectDpathExtractor(
+        field_path=["data"],
+        config={},
+        parameters={},
+    )
+
+    obj_response = _create_response_with_body({"data": {}})
+    obj_records = extractor.extract_records(obj_response)
+
+    assert obj_records == []
+
+    list_response = _create_response_with_body({"data": []})
+    list_records = extractor.extract_records(list_response)
+
+    assert list_records == []
+
+
+def test_single_record(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
+    extractor = ObjectDpathExtractor(
+        field_path=["data"],
+        config={},
+        parameters={},
+    )
+
+    response = _create_response_with_body({"data": {"id": "id1", "name": "name1"}})
+    records = extractor.extract_records(response)
+
+    assert records == [{"id": "id1", "name": "name1"}]

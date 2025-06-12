@@ -5,9 +5,10 @@
 import logging
 from typing import Optional, Union
 
+from requests import Response
+
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
-from requests import Response
 
 
 class RechargeErrorHandler(HttpStatusErrorHandler):
@@ -16,7 +17,6 @@ class RechargeErrorHandler(HttpStatusErrorHandler):
         super().__init__(logger=logger)
 
     def interpret_response(self, response_or_exception: Optional[Union[Response, Exception]] = None) -> ErrorResolution:
-
         if isinstance(response_or_exception, Response):
             content_length = int(response_or_exception.headers.get("Content-Length", 0))
             incomplete_data_response = response_or_exception.status_code == 200 and content_length > len(response_or_exception.content)

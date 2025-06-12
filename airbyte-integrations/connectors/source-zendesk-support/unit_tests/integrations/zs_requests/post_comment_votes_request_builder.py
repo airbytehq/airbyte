@@ -10,7 +10,9 @@ from .request_authenticators.authenticator import Authenticator
 
 class PostCommentVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
     @classmethod
-    def post_comment_votes_endpoint(cls, authenticator: Authenticator, post_id: int, post_comment_id: int) -> "PostCommentVotesRequestBuilder":
+    def post_comment_votes_endpoint(
+        cls, authenticator: Authenticator, post_id: int, post_comment_id: int
+    ) -> "PostCommentVotesRequestBuilder":
         return cls("d3v-airbyte", f"community/posts/{post_id}/comments/{post_comment_id}/votes").with_authenticator(authenticator)
 
     def __init__(self, subdomain: str, resource: str) -> None:
@@ -30,7 +32,7 @@ class PostCommentVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["page[after]"] = self._page_after
         return params
 
-    def with_start_time(self, start_time: int) -> "PostCommentVotesRequestBuilder":
+    def with_start_time(self, start_time: str) -> "PostCommentVotesRequestBuilder":
         self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
         return self
 

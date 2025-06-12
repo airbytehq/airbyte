@@ -3,6 +3,7 @@
 #
 
 """This module declares common (abstract) classes and methods used by all base images."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -18,6 +19,11 @@ class AirbyteConnectorBaseImage(ABC):
     """An abstract class that represents an Airbyte base image.
     Please do not declare any Dagger with_exec instruction in this class as in the abstract class context we have no guarantee about the underlying system used in the base image.
     """
+
+    USER: str = "airbyte"
+    USER_ID: int = 1000
+    CACHE_DIR_PATH: str = "/custom_cache"
+    AIRBYTE_DIR_PATH: str = "/airbyte"
 
     @final
     def __init__(self, dagger_client: dagger.Client, version: semver.VersionInfo):
@@ -41,10 +47,8 @@ class AirbyteConnectorBaseImage(ABC):
         """
         return f"{self.repository}:{self.version}"
 
-    # MANDATORY SUBCLASSES ATTRIBUTES / PROPERTIES:
-
+    # Child classes should define their root image if the image is indeed managed by base_images.
     @property
-    @abstractmethod
     def root_image(self) -> PublishedImage:
         """Returns the base image used to build the Airbyte base image.
 
@@ -55,6 +59,8 @@ class AirbyteConnectorBaseImage(ABC):
             PublishedImage: The base image used to build the Airbyte base image.
         """
         raise NotImplementedError("Subclasses must define a 'root_image' attribute.")
+
+    # MANDATORY SUBCLASSES ATTRIBUTES / PROPERTIES:
 
     @property
     @abstractmethod
@@ -93,9 +99,23 @@ class AirbyteConnectorBaseImage(ABC):
     # INSTANCE METHODS:
     @final
     def get_base_container(self, platform: dagger.Platform) -> dagger.Container:
-        """Returns a container using the base image. This container is used to build the Airbyte base image.
+        """Returns a container using the base image.
+        This container is used to build the Airbyte base image.
+        We create the user 'airbyte' with the UID 1000 and GID 1000.
 
         Returns:
             dagger.Container: The container using the base python image.
         """
-        return self.dagger_client.pipeline(self.name_with_tag).container(platform=platform).from_(self.root_image.address)
+        return (
+            self.dagger_client.container(platform=platform)
+            .from_(self.root_image.address)
+            # Set the timezone to UTC
+            .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"])
+            # Create the user 'airbyte' with the UID 1000 and GID 1000
+            .with_exec(["adduser", "--uid", str(self.USER_ID), "--system", "--group", "--no-create-home", self.USER])
+            # Create the cache airbyte directories and set the right permissions
+            .with_exec(["mkdir", "--mode", "755", self.CACHE_DIR_PATH])
+            .with_exec(["mkdir", "--mode", "755", self.AIRBYTE_DIR_PATH])
+            # Change the owner of the airbyte directory to the user 'airbyte'
+            .with_exec(["chown", f"{self.USER}:{self.USER}", self.AIRBYTE_DIR_PATH])
+        )

@@ -11,12 +11,13 @@ from typing import Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
-from airbyte_cdk import AirbyteTracedException, FailureType
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from msal import ConfidentialClientApplication
 from msal.exceptions import MsalServiceError
 from office365.graph_client import GraphClient
+
+from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_onedrive.spec import SourceMicrosoftOneDriveSpec
 
 

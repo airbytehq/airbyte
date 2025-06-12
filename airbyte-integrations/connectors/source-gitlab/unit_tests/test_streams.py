@@ -4,8 +4,10 @@
 
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
+
+from airbyte_cdk.models import SyncMode
+
 
 CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 
@@ -123,7 +125,7 @@ test_cases = (
             "user_full_name": "John",
             "environment_name": "dev",
             "project_id": "p_1",
-        }
+        },
     ),
     (
         "merge_request_commits",
@@ -157,10 +159,11 @@ def test_stream_slices_child_stream(requests_mock):
         url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
         json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
     )
-    stream_state = {"13082000": {""'created_at': "2021-03-10T23:58:1213"}}
+    stream_state = {"13082000": {"" "created_at": "2021-03-10T23:58:1213"}}
 
     slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state))
     assert slices
+
 
 def test_request_params():
     commits = get_stream_by_name("commits", CONFIG)

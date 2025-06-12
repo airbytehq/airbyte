@@ -7,6 +7,7 @@ import pytest
 from source_shopify.auth import NotImplementedAuth, ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest
 
+
 TEST_ACCESS_TOKEN = "test_access_token"
 TEST_API_PASSWORD = "test_api_password"
 

@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": 200, "updated_at": "2001-01-01 00:00:00", "name": "Someone completely different"}}}

@@ -2,11 +2,11 @@
 
 Airbyte's certified Postgres connector offers the following features:
 
-- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](https://docs.airbyte.com/integrations/sources/postgres#xmin).
-- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
+- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](/platform/understanding-airbyte/cdc) and replication using the [xmin system column](/integrations/sources/postgres#xmin).
+- All available [sync modes](/platform/using-airbyte/core-concepts/sync-modes), providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with [checkpointing](/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
+![Airbyte Postgres Connection](assets/airbyte_postgres_source.png)
 
 ## Quick Start
 
@@ -63,7 +63,7 @@ If you are on Airbyte Cloud, you will always need to modify your database config
 
 ![Add a Network](./assets/airbyte_cloud_sql_postgres_add_network.png)
 
-2. Add a new network, and enter the Airbyte's IPs, which you can find in our [Airbyte Security documentation](../../../operating-airbyte/security#network-security-1).
+2. Add a new network, and enter the Airbyte's IPs, which you can find in our [Airbyte Security documentation](../../../platform/operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 
@@ -96,7 +96,8 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
+For CDC, you may connect to primary/master databases. To use a replica as source, which is available starting from Postgres 16.1, and provided additional configurations have been enabled on the database instance (please visit [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)), the most recent required connector's version is 3.6.21.
+
 
 #### Step 2: Provide additional permissions to read-only user
 

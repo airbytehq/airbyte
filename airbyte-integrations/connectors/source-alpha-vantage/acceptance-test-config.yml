@@ -3,7 +3,7 @@
 connector_image: airbyte/source-alpha-vantage:dev
 tests:
   spec:
-    - spec_path: "source_alpha_vantage/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

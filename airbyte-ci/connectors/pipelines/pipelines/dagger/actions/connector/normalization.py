@@ -5,6 +5,7 @@
 from typing import Any, Dict
 
 from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {

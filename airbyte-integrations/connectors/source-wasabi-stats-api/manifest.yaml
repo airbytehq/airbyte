@@ -1,0 +1,489 @@
+version: 5.7.5
+
+type: DeclarativeSource
+
+description: >-
+  Connector for https://www.wasabi.com stats API. API docs:
+  https://docs.wasabi.com/docs/wasabi-stats-api
+
+check:
+  type: CheckStream
+  stream_names:
+    - Standalone Utilizations
+
+definitions:
+  streams:
+    Standalone Utilizations:
+      type: DeclarativeStream
+      name: Standalone Utilizations
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNum
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/standalone/utilizations
+          http_method: GET
+          request_parameters:
+            includeRegionalUtilizations: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Records
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Standalone Utilizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: StartTime
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    Standalone Bucket Utilizations:
+      type: DeclarativeStream
+      name: Standalone Bucket Utilizations
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNum
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/standalone/utilizations/bucket
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Records
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Standalone Bucket Utilizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: StartTime
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+  base_requester:
+    type: HttpRequester
+    url_base: https://stats.wasabisys.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Standalone Utilizations"
+  - $ref: "#/definitions/streams/Standalone Bucket Utilizations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: The API key format is `AccessKey:SecretKey`
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 0
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Standalone Utilizations:
+      hasRecords: true
+      streamHash: a6e7efce5a1718c456382498fdd08ad27b845f78
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Standalone Bucket Utilizations:
+      hasRecords: true
+      streamHash: 35507d86920146614af160f9b6ebc95e40974c1a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Standalone Utilizations: true
+    Standalone Bucket Utilizations: true
+
+schemas:
+  Standalone Utilizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - StartTime
+    properties:
+      AcctNum:
+        type:
+          - number
+          - "null"
+      EndTime:
+        type:
+          - string
+          - "null"
+      StartTime:
+        type: string
+      CreateTime:
+        type:
+          - string
+          - "null"
+      AcctPlanNum:
+        type:
+          - number
+          - "null"
+      DeleteBytes:
+        type:
+          - number
+          - "null"
+      NumAPICalls:
+        type:
+          - number
+          - "null"
+      NumGETCalls:
+        type:
+          - number
+          - "null"
+      NumPUTCalls:
+        type:
+          - number
+          - "null"
+      UploadBytes:
+        type:
+          - number
+          - "null"
+      NumHEADCalls:
+        type:
+          - number
+          - "null"
+      NumLISTCalls:
+        type:
+          - number
+          - "null"
+      DownloadBytes:
+        type:
+          - number
+          - "null"
+      NumDELETECalls:
+        type:
+          - number
+          - "null"
+      UtilizationNum:
+        type:
+          - number
+          - "null"
+      StorageReadBytes:
+        type:
+          - number
+          - "null"
+      StorageWroteBytes:
+        type:
+          - number
+          - "null"
+      NumBillableObjects:
+        type:
+          - number
+          - "null"
+      RawStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      RegionalUtilizations:
+        type:
+          - object
+          - "null"
+        properties:
+          eu-central-1:
+            type:
+              - object
+              - "null"
+            properties:
+              DeleteBytes:
+                type:
+                  - number
+                  - "null"
+              NumAPICalls:
+                type:
+                  - number
+                  - "null"
+              NumGETCalls:
+                type:
+                  - number
+                  - "null"
+              NumPUTCalls:
+                type:
+                  - number
+                  - "null"
+              UploadBytes:
+                type:
+                  - number
+                  - "null"
+              NumHEADCalls:
+                type:
+                  - number
+                  - "null"
+              NumLISTCalls:
+                type:
+                  - number
+                  - "null"
+              DownloadBytes:
+                type:
+                  - number
+                  - "null"
+              NumDELETECalls:
+                type:
+                  - number
+                  - "null"
+              StorageReadBytes:
+                type:
+                  - number
+                  - "null"
+              StorageWroteBytes:
+                type:
+                  - number
+                  - "null"
+              NumBillableObjects:
+                type:
+                  - number
+                  - "null"
+              RawStorageSizeBytes:
+                type:
+                  - number
+                  - "null"
+              PaddedStorageSizeBytes:
+                type:
+                  - number
+                  - "null"
+              DeletedStorageSizeBytes:
+                type:
+                  - number
+                  - "null"
+              MetadataStorageSizeBytes:
+                type:
+                  - number
+                  - "null"
+              OrphanedStorageSizeBytes:
+                type:
+                  - number
+                  - "null"
+              NumBillableDeletedObjects:
+                type:
+                  - number
+                  - "null"
+      MinStorageChargeBytes:
+        type:
+          - number
+          - "null"
+      PaddedStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      DeletedStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      MetadataStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      OrphanedStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      NumBillableDeletedObjects:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Standalone Bucket Utilizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - StartTime
+    properties:
+      Bucket:
+        type:
+          - string
+          - "null"
+      Region:
+        type:
+          - string
+          - "null"
+      AcctNum:
+        type:
+          - number
+          - "null"
+      EndTime:
+        type:
+          - string
+          - "null"
+      BucketNum:
+        type:
+          - number
+          - "null"
+      StartTime:
+        type: string
+      CreateTime:
+        type:
+          - string
+          - "null"
+      AcctPlanNum:
+        type:
+          - number
+          - "null"
+      DeleteBytes:
+        type:
+          - number
+          - "null"
+      NumAPICalls:
+        type:
+          - number
+          - "null"
+      NumGETCalls:
+        type:
+          - number
+          - "null"
+      NumPUTCalls:
+        type:
+          - number
+          - "null"
+      UploadBytes:
+        type:
+          - number
+          - "null"
+      NumHEADCalls:
+        type:
+          - number
+          - "null"
+      NumLISTCalls:
+        type:
+          - number
+          - "null"
+      DownloadBytes:
+        type:
+          - number
+          - "null"
+      NumDELETECalls:
+        type:
+          - number
+          - "null"
+      StorageReadBytes:
+        type:
+          - number
+          - "null"
+      StorageWroteBytes:
+        type:
+          - number
+          - "null"
+      NumBillableObjects:
+        type:
+          - number
+          - "null"
+      RawStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      BucketUtilizationNum:
+        type:
+          - number
+          - "null"
+      PaddedStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      DeletedStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      MetadataStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      OrphanedStorageSizeBytes:
+        type:
+          - number
+          - "null"
+      NumBillableDeletedObjects:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

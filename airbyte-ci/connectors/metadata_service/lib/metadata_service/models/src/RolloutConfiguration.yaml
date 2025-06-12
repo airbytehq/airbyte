@@ -6,6 +6,10 @@ description: configuration for the rollout of a connector
 type: object
 additionalProperties: false
 properties:
+  enableProgressiveRollout:
+    type: boolean
+    default: false
+    description: Whether to enable progressive rollout for the connector.
   initialPercentage:
     type: integer
     minimum: 0

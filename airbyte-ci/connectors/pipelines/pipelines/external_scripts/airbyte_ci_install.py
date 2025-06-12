@@ -10,7 +10,6 @@ import os
 import shutil
 import ssl
 import sys
-import tempfile
 import urllib.request
 from typing import TYPE_CHECKING
 

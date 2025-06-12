@@ -1,0 +1,63 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the section.",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "The name of the section.",
+      "type": ["null", "string"]
+    },
+    "category_id": {
+      "description": "The id of the category to which this section belongs.",
+      "type": ["null", "integer"]
+    },
+    "parent_section_id": {
+      "description": "The id of the section to which this section belongs. Only writable for Guide Enterprise customers.",
+      "type": ["null", "integer"]
+    },
+    "position": {
+      "description": "The position of this section in the section list.",
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "description": "The description of the section.",
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "description": "The locale where the section is displayed.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The API url of this section.",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "The url of this section in Help Center.",
+      "type": ["null", "string"]
+    },
+    "source_locale": {
+      "description": "The source (default) locale of the section.",
+      "type": ["null", "string"]
+    },
+    "theme_template": {
+      "description": "The theme template name used to display this section in Help Center.",
+      "type": ["null", "string"]
+    },
+    "outdated": {
+      "description": "Whether the section is out of date.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The time at which the section was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The time at which the section was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

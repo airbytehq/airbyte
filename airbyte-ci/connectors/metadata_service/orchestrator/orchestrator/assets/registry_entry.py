@@ -31,6 +31,7 @@ from orchestrator.utils.object_helpers import CaseInsensitveKeys, deep_copy_para
 from pydantic import BaseModel, ValidationError
 from pydash.objects import get, set_with
 
+
 GROUP_NAME = "registry_entry"
 
 # TYPES
@@ -113,7 +114,6 @@ def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
 
     if releases is not None and releases.get("rolloutConfiguration"):
         final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
-    final_registry_releases["isReleaseCandidate"] = False if releases is None else metadata["releases"].get("isReleaseCandidate", False)
     return final_registry_releases
 
 
@@ -288,12 +288,31 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     return overridden_metadata_data
 
 
+def apply_entry_schema_migrations(registry_entry: dict) -> dict:
+    """Apply schema migrations to the registry entry.
+
+    Args:
+        registry_entry (dict): The registry entry.
+
+    Returns:
+        dict: The registry entry with the schema migrations applied.
+    """
+    # Remove the isReleaseCandidate field from the registry entry
+    if registry_entry.get("releases", {}).get("isReleaseCandidate") is not None:
+        registry_entry["releases"].pop("isReleaseCandidate")
+    # Remove the releases field if it is empty
+    if registry_entry.get("releases") == dict():
+        registry_entry.pop("releases")
+    return registry_entry
+
+
 @sentry_sdk.trace
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
     json_string = registry_entry_blob.download_as_string().decode("utf-8")
     registry_entry_dict = json.loads(json_string)
 
     connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
+    registry_entry_dict = apply_entry_schema_migrations(registry_entry_dict)
     registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
 
     return connector_type, registry_entry

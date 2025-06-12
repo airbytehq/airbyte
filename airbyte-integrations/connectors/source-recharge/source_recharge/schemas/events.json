@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "customer_id": {
+      "type": ["null", "integer"]
+    },
+    "object_id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "custom_attributes": {
+      "type": ["null", "array"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "object_type": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "object"],
+      "properties": {
+        "account_id": {
+          "type": ["null", "integer"]
+        },
+        "api_token_id": {
+          "type": ["null", "integer"]
+        },
+        "account_email": {
+          "type": ["null", "string"]
+        },
+        "api_token_name": {
+          "type": ["null", "string"]
+        },
+        "origin": {
+          "type": ["null", "string"]
+        },
+        "user_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "updated_attributes": {
+      "type": ["null", "array"]
+    },
+    "verb": {
+      "type": ["null", "string"]
+    }
+  }
+}

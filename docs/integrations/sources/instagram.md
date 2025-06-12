@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the [Instagram]
 <!-- env:oss -->
 
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
+- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/)
 
 <!-- /env:oss -->
 
@@ -145,9 +145,30 @@ for more information.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-
-| :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
-| 3.1.0   | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams.                                                        |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0-rc.1   | 2025-05-27 | [60848](https://github.com/airbytehq/airbyte/pull/60848) | Add `views` metric to `StoryInsights` and `MediaInsights` streams. |
+| 4.0.5 | 2025-05-10 | [59798](https://github.com/airbytehq/airbyte/pull/59798) | Update dependencies |
+| 4.0.4 | 2025-05-03 | [59243](https://github.com/airbytehq/airbyte/pull/59243) | Update dependencies |
+| 4.0.3 | 2025-04-26 | [58773](https://github.com/airbytehq/airbyte/pull/58773) | Update dependencies |
+| 4.0.2 | 2025-04-19 | [58167](https://github.com/airbytehq/airbyte/pull/58167) | Update dependencies |
+| 4.0.1 | 2025-04-12 | [57704](https://github.com/airbytehq/airbyte/pull/57704) | Update dependencies |
+| 4.0.0 | 2025-04-07 | [55860](https://github.com/airbytehq/airbyte/pull/55860) | Remove deprecated metrics from `StoryInsights`, `UserInsights` and `MediaInsights` streams. |
+| 3.2.5 | 2025-04-05 | [57069](https://github.com/airbytehq/airbyte/pull/57069) | Update dependencies |
+| 3.2.4 | 2025-03-29 | [56666](https://github.com/airbytehq/airbyte/pull/56666) | Update dependencies |
+| 3.2.3 | 2025-03-22 | [56020](https://github.com/airbytehq/airbyte/pull/56020) | Update dependencies |
+| 3.2.2 | 2025-03-10 | [55685](https://github.com/airbytehq/airbyte/pull/55685) | Disable cache for InstagramMediaChildrenTransformation |
+| 3.2.1 | 2025-03-08 | [55463](https://github.com/airbytehq/airbyte/pull/55463) | Update dependencies |
+| 3.2.0 | 2025-02-28 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update to CDK v6 |
+| 3.1.9 | 2025-03-01 | [54789](https://github.com/airbytehq/airbyte/pull/54789) | Update dependencies |
+| 3.1.8 | 2025-02-22 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update dependencies |
+| 3.1.7 | 2025-02-15 | [53846](https://github.com/airbytehq/airbyte/pull/53846) | Update dependencies |
+| 3.1.6 | 2025-02-08 | [53291](https://github.com/airbytehq/airbyte/pull/53291) | Update dependencies |
+| 3.1.5 | 2025-02-06 | [53171](https://github.com/airbytehq/airbyte/pull/53171) | Fix missing OAuth fields |
+| 3.1.4 | 2025-02-01 | [52260](https://github.com/airbytehq/airbyte/pull/52260) | Update dependencies |
+| 3.1.3 | 2025-01-20 | [52035](https://github.com/airbytehq/airbyte/pull/52035) | Upgrade to API v21.0 |
+| 3.1.2 | 2025-01-11 | [44223](https://github.com/airbytehq/airbyte/pull/44223) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.1.1 | 2025-01-09 | [51018](https://github.com/airbytehq/airbyte/pull/51018) | Remove deprecated metrics from `StoryInsights` and `MediaInsights` streams. |
+| 3.1.0 | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams. |
 | 3.0.22 | 2024-07-27 | [42721](https://github.com/airbytehq/airbyte/pull/42721) | Update dependencies |
 | 3.0.21 | 2024-07-20 | [42346](https://github.com/airbytehq/airbyte/pull/42346) | Update dependencies |
 | 3.0.20 | 2024-07-13 | [41784](https://github.com/airbytehq/airbyte/pull/41784) | Update dependencies |

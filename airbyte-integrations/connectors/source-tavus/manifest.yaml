@@ -1,0 +1,651 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://platform.tavus.io/
+
+  API Reference:
+  https://docs.tavus.io/api-reference/phoenix-replica-model/get-replicas
+
+check:
+  type: CheckStream
+  stream_names:
+    - replicas
+
+definitions:
+  streams:
+    replicas:
+      type: DeclarativeStream
+      name: replicas
+      primary_key:
+        - replica_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/replicas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+            page_size: 50
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/replicas"
+    videos:
+      type: DeclarativeStream
+      name: videos
+      primary_key:
+        - video_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/videos
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            inject_on_first_request: true
+            page_size: 50
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - conversation_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+            page_size: 50
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    personas:
+      type: DeclarativeStream
+      name: personas
+      primary_key:
+        - persona_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/personas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+            page_size: 50
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/personas"
+    speeches:
+      type: DeclarativeStream
+      name: speeches
+      primary_key:
+        - speech_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/speech
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: Need subscription plan
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+            page_size: 50
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/speeches"
+  base_requester:
+    type: HttpRequester
+    url_base: https://tavusapi.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/replicas"
+  - $ref: "#/definitions/streams/videos"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/personas"
+  - $ref: "#/definitions/streams/speeches"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Tavus API key. You can find this in your Tavus account settings
+          or API dashboard.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    replicas: true
+    videos: true
+    conversations: true
+    personas: true
+    speeches: false
+  testedStreams:
+    replicas:
+      streamHash: b6efe99d3299c020caf56090b321cb8c97eeaace
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    videos:
+      streamHash: 876235de9a0231d4ad3132decf30232ac65361d5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversations:
+      streamHash: 60bb7a2755af167142db8fa8de5d1f46836c8885
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    personas:
+      streamHash: d1f9cb4109f9702f5b186c9334ca7280a8e6c3e8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    speeches:
+      streamHash: e7fa1db12b0e769b212e7675c27f08cf699b3a17
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.tavus.io/api-reference/phoenix-replica-model/get-replicas
+
+schemas:
+  replicas:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      model_name:
+        type:
+          - string
+          - "null"
+      replica_id:
+        type: string
+      replica_name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      thumbnail_video_url:
+        type:
+          - string
+          - "null"
+      training_progress:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - replica_id
+      - updated_at
+  videos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          script:
+            type:
+              - string
+              - "null"
+      download_url:
+        type:
+          - string
+          - "null"
+      generation_progress:
+        type:
+          - string
+          - "null"
+      gif_thumbnail_url:
+        type:
+          - string
+          - "null"
+      hosted_url:
+        type:
+          - string
+          - "null"
+      replica_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_details:
+        type:
+          - string
+          - "null"
+      still_image_thumbnail_url:
+        type:
+          - string
+          - "null"
+      stream_url:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      video_id:
+        type: string
+      video_name:
+        type:
+          - string
+          - "null"
+    required:
+      - video_id
+  conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      conversation_id:
+        type: string
+      conversation_name:
+        type:
+          - string
+          - "null"
+      conversation_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      replica_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - conversation_id
+      - updated_at
+  personas:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      context:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      default_replica_id:
+        type:
+          - string
+          - "null"
+      layers:
+        type:
+          - object
+          - "null"
+        properties:
+          llm:
+            type:
+              - object
+              - "null"
+            properties:
+              speculative_inference:
+                type:
+                  - boolean
+                  - "null"
+          perception:
+            type:
+              - object
+              - "null"
+            properties:
+              ambient_awareness_queries:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              perception_model:
+                type:
+                  - string
+                  - "null"
+          stt:
+            type:
+              - object
+              - "null"
+            properties:
+              participant_interrupt_sensitivity:
+                type:
+                  - string
+                  - "null"
+              participant_pause_sensitivity:
+                type:
+                  - string
+                  - "null"
+              smart_turn_detection:
+                type:
+                  - boolean
+                  - "null"
+              stt_engine:
+                type:
+                  - string
+                  - "null"
+          transport:
+            type:
+              - object
+              - "null"
+            properties:
+              input_settings:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  microphone:
+                    type:
+                      - string
+                      - "null"
+              room_settings:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enable_chat:
+                    type:
+                      - boolean
+                      - "null"
+                  enable_network_ui:
+                    type:
+                      - boolean
+                      - "null"
+                  enable_noise_cancellation_ui:
+                    type:
+                      - boolean
+                      - "null"
+                  enable_people_ui:
+                    type:
+                      - boolean
+                      - "null"
+                  start_audio_off:
+                    type:
+                      - boolean
+                      - "null"
+                  start_video_off:
+                    type:
+                      - boolean
+                      - "null"
+      persona_id:
+        type: string
+      persona_name:
+        type:
+          - string
+          - "null"
+      pipeline_mode:
+        type:
+          - string
+          - "null"
+      system_prompt:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - persona_id
+      - updated_at
+  speeches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Generated schema for Root
+    properties:
+      speech_id:
+        type:
+          - string
+          - "null"
+      speech_name:
+        type:
+          - string
+          - "null"
+      speech_file_url:
+        type:
+          - string
+          - "null"
+      replica_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

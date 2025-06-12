@@ -11,6 +11,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
+from setuptools.command.alias import alias
 
 from .tools import BULK_PARENT_KEY, BulkTools
 
@@ -68,6 +69,7 @@ class ShopifyBulkTemplates:
                         createdAt
                     }
                     userErrors {
+                        code
                         field
                         message
                     }
@@ -80,6 +82,7 @@ class ShopifyBulkTemplates:
 @dataclass
 class ShopifyBulkQuery:
     config: Mapping[str, Any]
+    parent_stream_cursor_alias: Optional[str] = None
 
     @property
     def shop_id(self) -> int:
@@ -131,6 +134,12 @@ class ShopifyBulkQuery:
         https://shopify.dev/docs/api/admin-graphql
         """
         return ["__typename", "id"]
+
+    def inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
+        if self.parent_stream_cursor_alias:
+            # inject parent cursor key as alias to the `updatedAt` parent cursor field
+            nodes.insert(index, Field(name=key, alias=self.parent_stream_cursor_alias))
+        return nodes
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
         # define filter query string, if passed
@@ -285,15 +294,22 @@ class Metafield(ShopifyBulkQuery):
         List of available fields:
         https://shopify.dev/docs/api/admin-graphql/unstable/objects/Metafield
         """
+
+        nodes = super().query_nodes
+
         # define metafield node
         metafield_node = self.get_edge_node("metafields", self.metafield_fields)
 
         if isinstance(self.type.value, list):
-            return ["__typename", "id", self.get_edge_node(self.type.value[1], ["__typename", "id", metafield_node])]
+            nodes = [*nodes, self.get_edge_node(self.type.value[1], [*nodes, metafield_node])]
         elif isinstance(self.type.value, str):
-            return ["__typename", "id", metafield_node]
+            nodes = [*nodes, metafield_node]
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        nodes = self.inject_parent_cursor_field(nodes)
+
+        return nodes
+
+    def _process_metafield(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         # resolve parent id from `str` to `int`
         record["owner_id"] = self.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
         # add `owner_resource` field
@@ -304,7 +320,25 @@ class Metafield(ShopifyBulkQuery):
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
         record = self.tools.fields_names_to_snake_case(record)
-        yield record
+        return record
+
+    def _process_components(self, entity: List[dict]) -> Iterable[MutableMapping[str, Any]]:
+        for item in entity:
+            # resolve the id from string
+            item["admin_graphql_api_id"] = item.get("id")
+            item["id"] = self.tools.resolve_str_id(item.get("id"))
+            yield self._process_metafield(item)
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+        # process record components
+        if not record_components:
+            yield self._process_metafield(record)
+        else:
+            metafields = record_components.get("Metafield", [])
+            if len(metafields) > 0:
+                yield from self._process_components(metafields)
 
 
 class MetafieldCollection(Metafield):
@@ -343,7 +377,9 @@ class MetafieldCustomer(Metafield):
         customers(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
+                    customer_updated_at: updatedAt
                     metafields {
                         edges {
                             node {
@@ -365,6 +401,11 @@ class MetafieldCustomer(Metafield):
     """
 
     type = MetafieldType.CUSTOMERS
+
+    record_composition = {
+        "new_record": "Customer",
+        "record_components": ["Metafield"],
+    }
 
 
 class MetafieldLocation(Metafield):
@@ -464,7 +505,9 @@ class MetafieldProduct(Metafield):
         products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
+                    product_updated_at: updatedAt
                     metafields {
                         edges {
                             node {
@@ -487,6 +530,11 @@ class MetafieldProduct(Metafield):
 
     type = MetafieldType.PRODUCTS
 
+    record_composition = {
+        "new_record": "Product",
+        "record_components": ["Metafield"],
+    }
+
 
 class MetafieldProductImage(Metafield):
     """
@@ -496,6 +544,7 @@ class MetafieldProductImage(Metafield):
                 node {
                     __typename
                     id
+                    product_updated_at: updatedAt
                     media {
                         edges {
                             node {
@@ -527,6 +576,13 @@ class MetafieldProductImage(Metafield):
     }
     """
 
+    type = MetafieldType.PRODUCT_IMAGES
+
+    record_composition = {
+        "new_record": "Product",
+        "record_components": ["Metafield"],
+    }
+
     @property
     def query_nodes(self) -> List[Field]:
         """
@@ -537,19 +593,16 @@ class MetafieldProductImage(Metafield):
         More info here:
         https://shopify.dev/docs/api/release-notes/2024-04#productimage-value-removed
         """
+
         # define metafield node
         metafield_node = self.get_edge_node("metafields", self.metafield_fields)
-        media_fields: List[Field] = [
-            "__typename",
-            "id",
-            InlineFragment(type="MediaImage", fields=[metafield_node]),
-        ]
-        # define media node
+        media_fields: List[Field] = ["__typename", "id", InlineFragment(type="MediaImage", fields=[metafield_node])]
         media_node = self.get_edge_node("media", media_fields)
-        fields: List[Field] = ["__typename", "id", media_node]
-        return fields
 
-    type = MetafieldType.PRODUCT_IMAGES
+        fields: List[Field] = ["__typename", "id", media_node]
+        fields = self.inject_parent_cursor_field(fields)
+
+        return fields
 
 
 class MetafieldProductVariant(Metafield):
@@ -1054,6 +1107,29 @@ class CustomerJourney(ShopifyBulkQuery):
                                     term
                                 }
                             }
+                            customerJourney {
+                                moments {
+                                    ... on CustomerVisit {
+                                        id
+                                        landingPage
+                                        landingPageHtml
+                                        occurredAt
+                                        referralCode
+                                        referralInfoHtml
+                                        referrerUrl
+                                        source
+                                        sourceDescription
+                                        sourceType
+                                        utmParameters {
+                                            campaign
+                                            content
+                                            medium
+                                            source
+                                            term
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1076,6 +1152,16 @@ class CustomerJourney(ShopifyBulkQuery):
         "sourceDescription",
         Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
     ]
+
+    customer_visit_fragment: List[InlineFragment] = [
+        InlineFragment(type="CustomerVisit", fields=visit_fields),
+    ]
+
+    # # use this in the next version
+    # moments_fields: List[Field] = [
+    #     Field(name="edges", fields=[Field(name="node", fields=customer_visit_fragment)]),
+    # ]
+
     customer_journey_summary_fields: List[Field] = [
         "ready",
         Field(name="momentsCount", fields=["count", "precision"]),
@@ -1083,6 +1169,8 @@ class CustomerJourney(ShopifyBulkQuery):
         "daysToConversion",
         Field(name="firstVisit", fields=visit_fields),
         Field(name="lastVisit", fields=visit_fields),
+        # # use this in the next version
+        # Field(name="moments", fields=moments_fields),
     ]
 
     query_nodes: List[Field] = [
@@ -1091,6 +1179,12 @@ class CustomerJourney(ShopifyBulkQuery):
         "createdAt",
         "updatedAt",
         Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+        Field(
+            name="customerJourney",
+            fields=[
+                Field(name="moments", fields=customer_visit_fragment),
+            ],
+        ),
     ]
 
     record_composition = {
@@ -1101,6 +1195,9 @@ class CustomerJourney(ShopifyBulkQuery):
         self,
         visit_data: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
+        if not visit_data:
+            return {}
+
         # save the id before it's resolved
         visit_data["admin_graphql_api_id"] = visit_data.get("id")
         # resolve the order_id to str
@@ -1111,14 +1208,24 @@ class CustomerJourney(ShopifyBulkQuery):
         visit_data = self.tools.fields_names_to_snake_case(visit_data)
         return visit_data
 
+    def process_moments(self, entity: List[Mapping[str, Any]]) -> List[MutableMapping[str, Any]]:
+        moments = []
+        for item in entity:
+            moments.append(self.process_visit(item))
+        return moments
+
     def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         customer_journey_summary = record.get("customerJourneySummary", {})
         if customer_journey_summary:
             # process first, last visit data
-            first_visit = customer_journey_summary.get("firstVisit", {})
-            last_visit = customer_journey_summary.get("lastVisit", {})
-            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
-            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+            customer_journey_summary["firstVisit"] = self.process_visit(customer_journey_summary.get("firstVisit"))
+            customer_journey_summary["lastVisit"] = self.process_visit(customer_journey_summary.get("lastVisit"))
+
+            # # this will be a part of summary in the next api version
+            if customer_journey := record.get("customerJourney", {}):
+                moments = customer_journey.get("moments", [])
+                customer_journey_summary["moments"] = self.process_moments(moments)
+
         # cast field names to snake_case
         customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
         return customer_journey_summary
@@ -2238,6 +2345,7 @@ class ProductImage(ShopifyBulkQuery):
                 node {
                     __typename
                     id
+                    products_updated_at: updatedAt
                     # THE MEDIA NODE IS NEEDED TO PROVIDE THE CURSORS
                     media {
                         edges {
@@ -2314,8 +2422,7 @@ class ProductImage(ShopifyBulkQuery):
     # media property fields
     media_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=media_fragment)])]
 
-    # main query
-    query_nodes: List[Field] = [
+    nodes: List[Field] = [
         "__typename",
         "id",
         Field(name="media", fields=media_fields),
@@ -2329,6 +2436,10 @@ class ProductImage(ShopifyBulkQuery):
         # there could be multiple `MediaImage` and `Image` assigned to the product.
         "record_components": ["MediaImage", "Image"],
     }
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        return self.inject_parent_cursor_field(self.nodes)
 
     def _process_component(self, entity: List[dict]) -> List[dict]:
         for item in entity:
@@ -2413,7 +2524,6 @@ class ProductImage(ShopifyBulkQuery):
             if len(images) > 0:
                 # convert dates from ISO-8601 to RFC-3339
                 record["images"] = self._convert_datetime_to_rfc3339(images)
-
                 yield from self._emit_complete_records(images)
 
 
@@ -2456,6 +2566,10 @@ class ProductVariant(ShopifyBulkQuery):
                                 color
                                 image {
                                     id
+                                    image {
+                                        src
+                                        url
+                                    }
                                 }
                             }
                         }
@@ -2463,6 +2577,8 @@ class ProductVariant(ShopifyBulkQuery):
                     grams: weight
                     image {
                         image_id: id
+                        image_src: src
+                        image_url: url
                     }
                     old_inventory_quantity: inventoryQuantity
                     product {
@@ -2502,7 +2618,6 @@ class ProductVariant(ShopifyBulkQuery):
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
-
         prices_fields: List[str] = ["amount", "currencyCode"]
         presentment_prices_fields: List[Field] = [
             Field(
@@ -2523,7 +2638,7 @@ class ProductVariant(ShopifyBulkQuery):
             "id",
             "name",
             Field(name="hasVariants", alias="has_variants"),
-            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id", Field(name="image", fields=["src", "url"])])]),
         ]
         option_fields: List[Field] = [
             "name",
@@ -2534,6 +2649,20 @@ class ProductVariant(ShopifyBulkQuery):
             [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
 
+        image_fields = [
+            Field(name="id", alias="image_id"),
+            Field(name="src", alias="image_src"),
+            Field(name="url", alias="image_url"),
+        ]
+        measurement_fields = [
+            Field(name="weight", fields=["value", "unit"]),
+        ]
+        inventory_item_fields = [
+            Field(name="id", alias="inventory_item_id"),
+            Field(name="tracked", alias="tracked"),
+            Field(name="requiresShipping", alias="requires_shipping"),
+            Field(name="measurement", alias="measurement", fields=measurement_fields),
+        ]
         query_nodes: List[Field] = [
             "__typename",
             "id",
@@ -2543,25 +2672,19 @@ class ProductVariant(ShopifyBulkQuery):
             "position",
             "inventoryPolicy",
             "compareAtPrice",
-            "inventoryManagement",
             "createdAt",
             "updatedAt",
             "taxable",
             "barcode",
-            "weight",
-            "weightUnit",
             "inventoryQuantity",
-            "requiresShipping",
             "availableForSale",
             "displayName",
             "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
-            Field(name="weight", alias="grams"),
-            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
             Field(name="product", fields=[Field(name="id", alias="product_id")]),
-            Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
-            Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+            Field(name="inventoryItem", fields=inventory_item_fields),
         ] + presentment_prices
 
         return query_nodes
@@ -2622,14 +2745,21 @@ class ProductVariant(ShopifyBulkQuery):
         # unnest mandatory fields from their placeholders
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
         record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
+        inventory_item = record.get("inventoryItem")
+        measurement_weight = record.get("inventoryItem", {}).get("measurement", {}).get("weight")
+        record["weight"] = measurement_weight.get("value", 0.0) if measurement_weight is not None else 0.0
+        record["weight_unit"] = measurement_weight.get("unit") if measurement_weight else None
+        record["tracked"] = inventory_item.get("tracked") if inventory_item else None
+        record["requires_shipping"] = inventory_item.get("requires_shipping") if inventory_item else None
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
-        # unnest `fulfillment_service` from `fulfillmentService`
-        record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
+        image = record.get("image", {})
+        record["image_src"] = image.get("image_src") if image else None
+        record["image_url"] = image.get("image_url") if image else None
         # cast the `price` to number, could be literally `None`
         price = record.get("price")
         record["price"] = float(price) if price else None
         # cast the `grams` to integer
-        record["grams"] = int(record.get("grams", 0))
+        record["grams"] = int(record.get("weight", 0))
         # convert date-time cursors
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
@@ -3071,3 +3201,175 @@ class OrderAgreement(ShopifyBulkQuery):
         record["agreements"] = agreements_with_sales if agreements_with_sales else {}
 
         yield record
+
+
+class DeliveryZoneList:
+    query_name = "deliveryProfiles"
+    operation_name = "DeliveryZoneList"
+    operation_type = "query"
+
+    query_nodes: List[str] = []
+
+    page_size = 100
+
+    def resolve(self, query: Query) -> str:
+        # return the constructed query operation
+        return Operation(type=self.operation_type, name=self.operation_name, queries=[query]).render()
+
+    def build(self, name: str, query_args: Mapping[str, Any] = None) -> Query:
+        arguments = [Argument(name="first", value=self.page_size)]
+
+        if query_args:
+            if query_args.get("cursor"):
+                cursor = '"' + query_args["cursor"] + '"'
+                arguments.append(Argument(name="after", value=cursor))
+
+        query = Query(name=name, arguments=arguments, fields=self.query_nodes)
+        # return constructed query
+        return query
+
+    def query(self, query_args: Mapping[str, Any] = None) -> Query:
+        return self.build(self.query_name, query_args)
+
+    def get(self, query_args: Mapping[str, Any] = None) -> str:
+        query: Query = self.query(query_args)
+        return self.resolve(query)
+
+
+class ProfileLocationGroups(ShopifyBulkQuery):
+    query_name = "deliveryProfiles"
+    filter_field = None
+
+    record_composition = {"new_record": "DeliveryProfile"}
+
+    query_nodes: List[Field] = [
+        "__typename",
+        Field(
+            name="profileLocationGroups",
+            fields=[Field(name="locationGroup", fields=["id"])],
+        ),
+    ]
+
+
+class DeliveryProfile(DeliveryZoneList):
+    """
+        query DeliveryZoneList {
+      deliveryProfiles(
+        first: 1
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          profileLocationGroups(
+            locationGroupId: "<locationGroupId>"
+          ) {
+            locationGroupZones(
+              first: 100
+            ) {
+              nodes {
+                zone {
+                  id
+                  name
+                  countries {
+                    id
+                    name
+                    translatedName
+                    code {
+                      countryCode
+                      restOfWorld
+                    }
+                    provinces {
+                      id
+                      translatedName
+                      name
+                      code
+                    }
+                  }
+                }
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    page_size = 1
+    sub_page_size = 100
+
+    def __init__(self, location_group_id: str, location_group_zones_cursor: str = None):
+        self.location_group_id = location_group_id
+        self.location_group_zones_cursor = location_group_zones_cursor
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+        location_group_id = '"' + self.location_group_id + '"'
+        location_group_zones_arguments = [Argument(name="first", value=self.sub_page_size)]
+        if self.location_group_zones_cursor:
+            cursor = '"' + self.location_group_zones_cursor + '"'
+            location_group_zones_arguments.append(Argument(name="after", value=cursor))
+
+        query_nodes: List[Field] = [
+            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+            Field(
+                name="nodes",
+                fields=[
+                    Field(
+                        name="profileLocationGroups",
+                        arguments=[Argument(name="locationGroupId", value=location_group_id)],
+                        fields=[
+                            Field(
+                                name="locationGroupZones",
+                                arguments=location_group_zones_arguments,
+                                fields=[
+                                    Field(
+                                        name="nodes",
+                                        fields=[
+                                            Field(
+                                                name="zone",
+                                                fields=[
+                                                    "id",
+                                                    "name",
+                                                    Field(
+                                                        name="countries",
+                                                        fields=[
+                                                            "id",
+                                                            "name",
+                                                            Field(name="translatedName", alias="translated_name"),
+                                                            Field(
+                                                                name="code",
+                                                                fields=[
+                                                                    Field(name="countryCode", alias="country_code"),
+                                                                    Field(name="restOfWorld", alias="rest_of_world"),
+                                                                ],
+                                                            ),
+                                                            Field(
+                                                                name="provinces",
+                                                                fields=[
+                                                                    "id",
+                                                                    "name",
+                                                                    "code",
+                                                                    Field(name="translatedName", alias="translated_name"),
+                                                                ],
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                    Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+        return query_nodes

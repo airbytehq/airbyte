@@ -1,0 +1,11 @@
+[run]
+omit =
+    source_amazon_seller_partner/run.py
+
+    # We are temporarily leaving the Python implementations of analytics streams in the repository because
+    # eventually we should migrate them to low-code and it is helpful to know what needs to be supported
+    source_amazon_seller_partner/streams.py
+    source_amazon_seller_partner/utils.py
+
+    # rewrite to use CustomParsers instead of custom decoders
+    source_amazon_seller_partner/components/decoder.py

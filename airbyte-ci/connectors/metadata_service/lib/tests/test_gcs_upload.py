@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from pathlib import Path
 from typing import Optional
 
 import pytest
 import yaml
+from pydash.objects import get
+
 from metadata_service import gcs_upload
 from metadata_service.constants import (
     COMPONENTS_PY_FILE_NAME,
@@ -17,11 +18,9 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
-from metadata_service.helpers import files
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
-from pydash.objects import get
 
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["99.99.99", "0.0.0"]
 MISSING_SHA = "MISSINGSHA"
@@ -191,7 +190,7 @@ def setup_upload_mocks(
             else:
                 return mock_sha_version_blob
 
-        if file_path_str.endswith(f".zip"):
+        if file_path_str.endswith(".zip"):
             if is_latest:
                 return mock_zip_latest_blob
             else:
@@ -352,7 +351,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
     mocker.spy(gcs_upload, "_file_upload")
     mocker.spy(gcs_upload, "upload_file_if_changed")
     for valid_metadata_upload_file in valid_metadata_upload_files:
-        print(f"\nTesting upload of valid metadata file: " + valid_metadata_upload_file)
+        print("\nTesting upload of valid metadata file: " + valid_metadata_upload_file)
         metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
         mocks = setup_upload_mocks(
@@ -376,7 +375,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
         expected_version_doc_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{DOC_FILE_NAME}"
         expected_latest_doc_key = f"metadata/{metadata.data.dockerRepository}/latest/{DOC_FILE_NAME}"
 
-        is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
+        is_release_candidate = "-rc" in metadata.data.dockerImageTag
 
         # Call function under tests
 
@@ -490,7 +489,7 @@ def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
 
     # Test that all invalid metadata files throw a ValueError
     for invalid_metadata_file in invalid_metadata_yaml_files:
-        print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
+        print("\nTesting upload of invalid metadata file: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
 
         error_match_if_validation_fails_as_expected = "Validation error"
@@ -510,7 +509,7 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
 
     # Test that valid metadata files that reference invalid docker images throw a ValueError
     for invalid_metadata_file in invalid_metadata_upload_files:
-        print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
+        print("\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
 
         error_match_if_validation_fails_as_expected = "does not exist in DockerHub"
@@ -534,7 +533,7 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         if tmp_metadata_file_path.exists():
             tmp_metadata_file_path.unlink()
 
-        print(f"\nTesting prerelease upload of valid metadata file: " + valid_metadata_upload_file)
+        print("\nTesting prerelease upload of valid metadata file: " + valid_metadata_upload_file)
         metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
         expected_version_key = f"metadata/{metadata.data.dockerRepository}/{prerelease_image_tag}/{METADATA_FILE_NAME}"
@@ -643,7 +642,7 @@ def test_upload_metadata_to_gcs_release_candidate(mocker, get_fixture_path, tmp_
         "NamedTemporaryFile",
         mocker.Mock(return_value=mocker.Mock(__enter__=mocker.Mock(return_value=tmp_metadata_file_path.open("w")), __exit__=mocker.Mock())),
     )
-    assert metadata.data.releases.isReleaseCandidate
+    assert metadata.data.releases.rolloutConfiguration.enableProgressiveRollout
 
     prerelease_tag = "1.5.6-dev.f80318f754" if prerelease else None
 

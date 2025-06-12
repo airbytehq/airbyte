@@ -98,12 +98,14 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.2   | 2024-02-13 | [35234](https://github.com/airbytehq/airbyte/pull/35234) | Adopt CDK 0.20.4                                                                                                                          |
-| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
-| 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Removed LEGACY state                                                                                                                      |
-| 0.1.22  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                          |
-| 0.1.21  | 2023-03-14 | [24000](https://github.com/airbytehq/airbyte/pull/24000) | Removed check method call on read.                                                                                                        |
-| 0.1.20  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect                                                  |
+| 0.2.4 | 2025-01-10 | [51484](https://github.com/airbytehq/airbyte/pull/51484) | Use a non root base image |
+| 0.2.3 | 2024-12-18 | [49915](https://github.com/airbytehq/airbyte/pull/49915) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.2.2 | 2024-02-13 | [35234](https://github.com/airbytehq/airbyte/pull/35234) | Adopt CDK 0.20.4 |
+| 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.2.0 | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Removed LEGACY state |
+| 0.1.22 | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting |
+| 0.1.21 | 2023-03-14 | [24000](https://github.com/airbytehq/airbyte/pull/24000) | Removed check method call on read. |
+| 0.1.20 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect |
 | 0.1.19  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                     |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.18  | 2022-09-01 | [16394](https://github.com/airbytehq/airbyte/pull/16394) | Added custom jdbc properties field                                                                                                        |

@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     Status,
 )
+
 from destination_pgvector import pgvector_processor
 from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
 from destination_pgvector.config import ConfigModel
@@ -29,7 +30,9 @@ BATCH_SIZE = 150
 class DestinationPGVector(Destination):
     sql_processor: pgvector_processor.PGVectorProcessor
 
-    def _init_sql_processor(self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None) -> None:
+    def _init_sql_processor(
+        self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
+    ) -> None:
         self.sql_processor = pgvector_processor.PGVectorProcessor(
             sql_config=pgvector_processor.PostgresConfig(
                 host=config.indexing.host,
@@ -67,7 +70,9 @@ class DestinationPGVector(Destination):
             self.sql_processor.sql_config.connect()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(

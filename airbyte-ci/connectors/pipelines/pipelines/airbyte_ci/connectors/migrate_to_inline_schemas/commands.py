@@ -4,6 +4,7 @@
 
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.pipeline import run_connector_migrate_to_inline_schemas_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.connectors.command import run_connector_pipeline

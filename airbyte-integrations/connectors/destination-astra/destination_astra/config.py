@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from pydantic import BaseModel, Field
+
+from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 
 
 class AstraIndexingModel(BaseModel):

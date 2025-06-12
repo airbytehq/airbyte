@@ -8,6 +8,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
+
 INTELLIJ_VERSION_FLAG = "-intellij-version"
 
 

@@ -44,6 +44,29 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.23 | 2025-05-24 | [60674](https://github.com/airbytehq/airbyte/pull/60674) | Update dependencies |
+| 0.3.22 | 2025-05-10 | [59879](https://github.com/airbytehq/airbyte/pull/59879) | Update dependencies |
+| 0.3.21 | 2025-05-03 | [59248](https://github.com/airbytehq/airbyte/pull/59248) | Update dependencies |
+| 0.3.20 | 2025-04-26 | [58817](https://github.com/airbytehq/airbyte/pull/58817) | Update dependencies |
+| 0.3.19 | 2025-04-19 | [58158](https://github.com/airbytehq/airbyte/pull/58158) | Update dependencies |
+| 0.3.18 | 2025-04-12 | [57726](https://github.com/airbytehq/airbyte/pull/57726) | Update dependencies |
+| 0.3.17 | 2025-04-05 | [57028](https://github.com/airbytehq/airbyte/pull/57028) | Update dependencies |
+| 0.3.16 | 2025-03-29 | [56701](https://github.com/airbytehq/airbyte/pull/56701) | Update dependencies |
+| 0.3.15 | 2025-03-22 | [56002](https://github.com/airbytehq/airbyte/pull/56002) | Update dependencies |
+| 0.3.14 | 2025-03-08 | [55450](https://github.com/airbytehq/airbyte/pull/55450) | Update dependencies |
+| 0.3.13 | 2025-03-01 | [54773](https://github.com/airbytehq/airbyte/pull/54773) | Update dependencies |
+| 0.3.12 | 2025-02-22 | [54362](https://github.com/airbytehq/airbyte/pull/54362) | Update dependencies |
+| 0.3.11 | 2025-02-15 | [53805](https://github.com/airbytehq/airbyte/pull/53805) | Update dependencies |
+| 0.3.10 | 2025-02-08 | [53253](https://github.com/airbytehq/airbyte/pull/53253) | Update dependencies |
+| 0.3.9 | 2025-02-01 | [52716](https://github.com/airbytehq/airbyte/pull/52716) | Update dependencies |
+| 0.3.8 | 2025-01-25 | [51846](https://github.com/airbytehq/airbyte/pull/51846) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51142](https://github.com/airbytehq/airbyte/pull/51142) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50623](https://github.com/airbytehq/airbyte/pull/50623) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50075](https://github.com/airbytehq/airbyte/pull/50075) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49617](https://github.com/airbytehq/airbyte/pull/49617) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [48239](https://github.com/airbytehq/airbyte/pull/48239) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47738](https://github.com/airbytehq/airbyte/pull/47738) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47511](https://github.com/airbytehq/airbyte/pull/47511) | Update dependencies |
 | 0.3.0 | 2024-08-22 | [44569](https://github.com/airbytehq/airbyte/pull/44569) | Refactor connector to manifest-only format |
 | 0.2.12 | 2024-08-17 | [43903](https://github.com/airbytehq/airbyte/pull/43903) | Update dependencies |
 | 0.2.11 | 2024-08-10 | [43511](https://github.com/airbytehq/airbyte/pull/43511) | Update dependencies |

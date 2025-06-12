@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from source_mixpanel.config_migrations import MigrateProjectId
 from source_mixpanel.source import SourceMixpanel
+
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
+
 
 # Test data for parametrized test
 test_data = [
@@ -30,7 +32,7 @@ test_data = [
 @patch.object(SourceMixpanel, "write_config")
 @patch.object(SourceMixpanel, "read_config")
 def test_transform_config(source_read_config_mock, source_write_config_mock, ab_entrypoint_extract_config_mock, test_config, expected):
-    source = SourceMixpanel()
+    source = SourceMixpanel(MagicMock(), test_config, MagicMock())
 
     source_read_config_mock.return_value = test_config
     ab_entrypoint_extract_config_mock.return_value = "/path/to/config.json"

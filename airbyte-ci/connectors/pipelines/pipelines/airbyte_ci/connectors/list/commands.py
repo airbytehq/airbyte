@@ -2,17 +2,29 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from pathlib import Path
+
 import asyncclick as click
 from connector_ops.utils import console  # type: ignore
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from rich.table import Table
 from rich.text import Text
 
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+
 
 @click.command(cls=DaggerPipelineCommand, help="List all selected connectors.", name="list")
+@click.option(
+    "-o",
+    "--output",
+    "output_path",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    help="Path where the JSON output will be saved.",
+)
 @click.pass_context
 async def list_connectors(
     ctx: click.Context,
+    output_path: Path,
 ) -> bool:
     selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)
     table = Table(title=f"{len(selected_connectors)} selected connectors")
@@ -37,6 +49,8 @@ async def list_connectors(
             version = Text("N/A")
         folder = Text(str(connector.code_directory))
         table.add_row(modified, connector_name, language, support_level, version, folder)
-
+    if output_path:
+        with open(output_path, "w") as f:
+            json.dump([connector.technical_name for connector in selected_connectors], f)
     console.print(table)
     return True

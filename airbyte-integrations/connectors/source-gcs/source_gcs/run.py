@@ -7,10 +7,12 @@ import sys
 import time
 import traceback
 
+from orjson import orjson
+
 from airbyte_cdk import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
-from orjson import orjson
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
+from source_gcs.config_migrations import MigrateServiceAccount
 
 
 def run():
@@ -27,6 +29,7 @@ def run():
             SourceGCS.read_state(state_path) if state_path else None,
             cursor_cls=Cursor,
         )
+        MigrateServiceAccount.migrate(_args, source)
     except Exception:
         print(
             orjson.dumps(

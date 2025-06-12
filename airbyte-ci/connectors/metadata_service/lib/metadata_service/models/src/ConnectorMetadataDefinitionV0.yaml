@@ -125,3 +125,11 @@ properties:
         default: false
       generated:
         "$ref": GeneratedFields.yaml
+      supportsFileTransfer:
+        type: boolean
+        default: false
+      supportsDataActivation:
+        type: boolean
+        default: false
+      connectorIPCOptions:
+        "$ref": ConnectorIPCOptions.yaml

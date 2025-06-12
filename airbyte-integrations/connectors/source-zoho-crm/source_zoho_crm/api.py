@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -10,6 +10,7 @@ from urllib.parse import urlsplit, urlunsplit
 import requests
 
 from .auth import ZohoOauth2Authenticator
+
 
 logger = logging.getLogger(__name__)
 

@@ -3,8 +3,23 @@
  */
 package io.airbyte.workers.exception
 
-class TestHarnessException : Exception {
-    constructor(message: String?) : super(message)
+import io.airbyte.protocol.models.v0.AirbyteMessage
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+class TestHarnessException : Exception {
+    val outputMessages: List<AirbyteMessage>?
+    constructor(message: String?) : super(message) {
+        outputMessages = null
+    }
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause) {
+        outputMessages = null
+    }
+
+    constructor(
+        message: String?,
+        cause: Throwable?,
+        outputMessages: List<AirbyteMessage>
+    ) : super(message, cause) {
+        this.outputMessages = outputMessages
+    }
 }

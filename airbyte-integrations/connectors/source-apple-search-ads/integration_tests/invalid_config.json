@@ -2,5 +2,8 @@
   "org_id": "wrongid",
   "client_id": "aaaaaaaaaa",
   "client_secret": "eyvbvubevxUIBVUYEUYB",
-  "start_date": "9999-99-99"
+  "token_refresh_endpoint": "httpx://baba.baba",
+  "start_date": "9999-99-99",
+  "backoff_factor": 9999,
+  "lookback_window": 9999
 }

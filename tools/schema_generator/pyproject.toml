@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schema-generator"
-version = "0.1.0"
+version = "0.1.1"
 description = "Util to create catalog schemas for an Airbyte Connector."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -19,8 +19,8 @@ classifiers = [
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
-python = ">=3.9, <3.12"
-airbyte-cdk = " < 3"
+python = ">=3.10, <3.12"
+airbyte-cdk = ">=6.0.0, <7.0.0"
 genson = "< 2"
 
 [tool.poetry.group.dev.dependencies]

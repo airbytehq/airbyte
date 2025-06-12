@@ -71,6 +71,31 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.1.45 | 2025-05-24 | [60657](https://github.com/airbytehq/airbyte/pull/60657) | Update dependencies |
+| 0.1.44 | 2025-05-10 | [59816](https://github.com/airbytehq/airbyte/pull/59816) | Update dependencies |
+| 0.1.43 | 2025-05-03 | [59226](https://github.com/airbytehq/airbyte/pull/59226) | Update dependencies |
+| 0.1.42 | 2025-04-26 | [58751](https://github.com/airbytehq/airbyte/pull/58751) | Update dependencies |
+| 0.1.41 | 2025-04-19 | [58211](https://github.com/airbytehq/airbyte/pull/58211) | Update dependencies |
+| 0.1.40 | 2025-04-12 | [57711](https://github.com/airbytehq/airbyte/pull/57711) | Update dependencies |
+| 0.1.39 | 2025-04-05 | [57025](https://github.com/airbytehq/airbyte/pull/57025) | Update dependencies |
+| 0.1.38 | 2025-03-29 | [56654](https://github.com/airbytehq/airbyte/pull/56654) | Update dependencies |
+| 0.1.37 | 2025-03-22 | [56042](https://github.com/airbytehq/airbyte/pull/56042) | Update dependencies |
+| 0.1.36 | 2025-03-08 | [55425](https://github.com/airbytehq/airbyte/pull/55425) | Update dependencies |
+| 0.1.35 | 2025-03-01 | [54788](https://github.com/airbytehq/airbyte/pull/54788) | Update dependencies |
+| 0.1.34 | 2025-02-22 | [54320](https://github.com/airbytehq/airbyte/pull/54320) | Update dependencies |
+| 0.1.33 | 2025-02-15 | [53817](https://github.com/airbytehq/airbyte/pull/53817) | Update dependencies |
+| 0.1.32 | 2025-02-01 | [52788](https://github.com/airbytehq/airbyte/pull/52788) | Update dependencies |
+| 0.1.31 | 2025-01-25 | [51787](https://github.com/airbytehq/airbyte/pull/51787) | Update dependencies |
+| 0.1.30 | 2025-01-11 | [51171](https://github.com/airbytehq/airbyte/pull/51171) | Update dependencies |
+| 0.1.29 | 2024-12-28 | [50617](https://github.com/airbytehq/airbyte/pull/50617) | Update dependencies |
+| 0.1.28 | 2024-12-21 | [50147](https://github.com/airbytehq/airbyte/pull/50147) | Update dependencies |
+| 0.1.27 | 2024-12-14 | [48971](https://github.com/airbytehq/airbyte/pull/48971) | Update dependencies |
+| 0.1.26 | 2024-11-25 | [48670](https://github.com/airbytehq/airbyte/pull/48670) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.25 | 2024-11-04 | [48314](https://github.com/airbytehq/airbyte/pull/48314) | Update dependencies |
+| 0.1.24 | 2024-10-28 | [47079](https://github.com/airbytehq/airbyte/pull/47079) | Update dependencies |
+| 0.1.23 | 2024-10-12 | [46830](https://github.com/airbytehq/airbyte/pull/46830) | Update dependencies |
+| 0.1.22 | 2024-10-05 | [46459](https://github.com/airbytehq/airbyte/pull/46459) | Update dependencies |
+| 0.1.21 | 2024-09-28 | [46203](https://github.com/airbytehq/airbyte/pull/46203) | Update dependencies |
 | 0.1.20 | 2024-09-21 | [45816](https://github.com/airbytehq/airbyte/pull/45816) | Update dependencies |
 | 0.1.19 | 2024-09-14 | [45569](https://github.com/airbytehq/airbyte/pull/45569) | Update dependencies |
 | 0.1.18 | 2024-09-07 | [45306](https://github.com/airbytehq/airbyte/pull/45306) | Update dependencies |

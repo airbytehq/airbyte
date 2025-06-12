@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
 from airbyte.strategies import WriteStrategy
-import logging
 from airbyte_cdk.models import ConnectorSpecification, Status
 
 from destination_snowflake_cortex.config import ConfigModel

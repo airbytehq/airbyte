@@ -1,0 +1,654 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  Zoho Analytics Metadata api connector enables seamless data syncing from Zoho
+  Analytics metadata into data warehouses or BI tools. This connector automates
+  OAuth authentication and ensures reliable data transfer, empowering businesses
+  to streamline analytics workflows and gain deeper insights efficiently.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - emailId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/users
+          http_method: GET
+          request_headers:
+            ZANALYTICS-ORGID: "{{ config['org_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - workspaceId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - ownedWorkspaces
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - orgId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/orgs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - orgs
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    views:
+      type: DeclarativeStream
+      name: views
+      primary_key:
+        - viewId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/workspaces/{{ stream_partition.workspace }}/views
+          http_method: GET
+          request_headers:
+            ZANALYTICS-ORGID: "{{ config[\"org_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - views
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: workspaceId
+              partition_field: workspace
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/views"
+    dashboards:
+      type: DeclarativeStream
+      name: dashboards
+      primary_key:
+        - viewId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/dashboards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - ownedViews
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboards"
+    trash:
+      type: DeclarativeStream
+      name: trash
+      primary_key:
+        - viewId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/workspaces/{{ stream_partition.workspace }}/trash
+          http_method: GET
+          request_headers:
+            ZANALYTICS-ORGID: "{{ config[\"org_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - views
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: workspaceId
+              partition_field: workspace
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trash"
+    workspace_users:
+      type: DeclarativeStream
+      name: workspace_users
+      primary_key:
+        - emailId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/workspaces/{{ stream_partition.workspace }}/users
+          http_method: GET
+          request_headers:
+            ZANALYTICS-ORGID: "{{ config[\"org_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - users
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: workspaceId
+              partition_field: workspace
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspace_users"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - folderId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /restapi/v2/workspaces/{{ stream_partition.workspace }}/folders
+          http_method: GET
+          request_headers:
+            ZANALYTICS-ORGID: "{{ config[\"org_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - folders
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: workspaceId
+              partition_field: workspace
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+  base_requester:
+    type: HttpRequester
+    url_base: https://analyticsapi.zoho.{{ config["data_center"] }}
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://accounts.zoho.{{ config["data_center"] }}/oauth/v2/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/views"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/trash"
+  - $ref: "#/definitions/streams/workspace_users"
+  - $ref: "#/definitions/streams/folders"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+      - data_center
+      - org_id
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        name: client_secret
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        name: refresh_token
+        order: 2
+        title: OAuth Refresh Token
+        airbyte_secret: true
+      data_center:
+        type: string
+        enum:
+          - com
+          - eu
+          - in
+          - com.au
+          - com.cn
+          - jp
+        order: 3
+        title: Data Center
+        default: com
+      org_id:
+        type: number
+        order: 4
+        title: Org Id
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    workspaces: true
+    organizations: true
+    views: true
+    dashboards: true
+    trash: true
+    workspace_users: true
+    folders: true
+  testedStreams:
+    users:
+      hasRecords: true
+      streamHash: 30b9674113495c708b88b03206126e121d54637b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workspaces:
+      hasRecords: true
+      streamHash: 412f2d3ff4d56ea7401a905def908c42a0ee450a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organizations:
+      hasRecords: true
+      streamHash: fe29c6780e8b266bbe44d9feb13a6f0d486b425c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    views:
+      hasRecords: true
+      streamHash: 32af56a385b314e6e5c9238a605b9d0c2ad7f8b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dashboards:
+      hasRecords: true
+      streamHash: e13cb711a5f8a91eb42ac3f163d5a9c39f164346
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    trash:
+      hasRecords: true
+      streamHash: 0d8d1ecf9c0edad58d67d0a255234ee38278eb6c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workspace_users:
+      hasRecords: true
+      streamHash: dc51d9f2fc5b699cf7dad3a46a5396d85cca9d5c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    folders:
+      hasRecords: true
+      streamHash: 2c74239bed086e4cd23916c4f5f450df3215db18
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://www.zoho.com/analytics/api/v2/introduction.html
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      emailId:
+        type: string
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - boolean
+          - "null"
+    required:
+      - emailId
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      orgId:
+        type:
+          - string
+          - "null"
+      workspaceDesc:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type: string
+      workspaceName:
+        type:
+          - string
+          - "null"
+    required:
+      - workspaceId
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdByZuId:
+        type:
+          - string
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      numberOfWorkspaces:
+        type:
+          - number
+          - "null"
+      orgDesc:
+        type:
+          - string
+          - "null"
+      orgId:
+        type: string
+      orgName:
+        type:
+          - string
+          - "null"
+      planName:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+    required:
+      - orgId
+  views:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      folderId:
+        type:
+          - string
+          - "null"
+      isFavorite:
+        type:
+          - boolean
+          - "null"
+      lastModifiedBy:
+        type:
+          - string
+          - "null"
+      lastModifiedTime:
+        type:
+          - string
+          - "null"
+      parentViewId:
+        type:
+          - string
+          - "null"
+      sharedBy:
+        type:
+          - string
+          - "null"
+      viewDesc:
+        type:
+          - string
+          - "null"
+      viewId:
+        type: string
+      viewName:
+        type:
+          - string
+          - "null"
+      viewType:
+        type:
+          - string
+          - "null"
+    required:
+      - viewId
+  dashboards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      folderId:
+        type:
+          - string
+          - "null"
+      isFavorite:
+        type:
+          - boolean
+          - "null"
+      lastModifiedBy:
+        type:
+          - string
+          - "null"
+      lastModifiedTime:
+        type:
+          - string
+          - "null"
+      orgId:
+        type:
+          - string
+          - "null"
+      parentViewId:
+        type:
+          - string
+          - "null"
+      sharedBy:
+        type:
+          - string
+          - "null"
+      viewDesc:
+        type:
+          - string
+          - "null"
+      viewId:
+        type: string
+      viewName:
+        type:
+          - string
+          - "null"
+      viewType:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+    required:
+      - viewId
+  trash:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      deletedBy:
+        type:
+          - string
+          - "null"
+      deletedTime:
+        type:
+          - string
+          - "null"
+      viewId:
+        type: string
+      viewName:
+        type:
+          - string
+          - "null"
+      viewType:
+        type:
+          - string
+          - "null"
+    required:
+      - viewId
+  workspace_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      emailId:
+        type: string
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - boolean
+          - "null"
+    required:
+      - emailId
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      folderDesc:
+        type:
+          - string
+          - "null"
+      folderId:
+        type: string
+      folderIndex:
+        type:
+          - number
+          - "null"
+      folderName:
+        type:
+          - string
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      parentFolderId:
+        type:
+          - string
+          - "null"
+    required:
+      - folderId

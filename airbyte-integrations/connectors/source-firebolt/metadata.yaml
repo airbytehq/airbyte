@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 2.0.19
+  dockerImageTag: 2.0.24
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
   connectorBuildOptions:

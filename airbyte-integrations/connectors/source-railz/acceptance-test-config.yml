@@ -5,7 +5,7 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_railz/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -23,7 +23,9 @@ acceptance_tests:
           exact_order: no
         empty_streams:
           - name: "businesses"
-            bypass_reason: "Stream object fields like 'status' and 'updatedAt' can change pretty often"
+            bypass_reason:
+              "Stream object fields like 'status' and 'updatedAt' can change
+              pretty often"
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -32,6 +34,7 @@ acceptance_tests:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
-        # stream "accounting_transactions" too volatile
+      - config_path:
+          "secrets/config.json"
+          # stream "accounting_transactions" too volatile
         configured_catalog_path: "integration_tests/configured_catalog_skip_accounting_transactions.json"

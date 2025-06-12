@@ -1,0 +1,603 @@
+version: 5.11.1
+
+type: DeclarativeSource
+
+description: >-
+  The Smartwaiver connector for Airbyte enables seamless integration with the
+  Smartwaiver API, allowing users to automate the extraction of waiver-related
+  data. Smartwaiver is a platform that digitizes waivers, converting them into
+  customizable, legally-binding documents with signatures.
+
+check:
+  type: CheckStream
+  stream_names:
+    - templates
+
+definitions:
+  streams:
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - templateId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - templates
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    signed_waivers:
+      type: DeclarativeStream
+      name: signed_waivers
+      primary_key:
+        - waiverId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: waivers
+          http_method: GET
+          request_parameters:
+            limit: "300"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - waivers
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdOn
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDts
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: toDts
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signed_waivers"
+    detailed_signed_waiver:
+      type: DeclarativeStream
+      name: detailed_signed_waiver
+      primary_key:
+        - waiverId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: waivers/{{stream_partition.parent_id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - waiver
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: waiverId
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/signed_waivers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/detailed_signed_waiver"
+    checkins:
+      type: DeclarativeStream
+      name: checkins
+      primary_key:
+        - waiverId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: checkins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - checkins
+              - checkins
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDts
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: toDts
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/checkins"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.smartwaiver.com/v4/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/signed_waivers"
+  - $ref: "#/definitions/streams/detailed_signed_waiver"
+  - $ref: "#/definitions/streams/checkins"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - start_date_2
+    properties:
+      api_key:
+        type: string
+        description: >-
+          You can retrieve your token by visiting your dashboard then click on
+          My Account then click on API keys.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        default: "2017-01-24 13:12:29"
+      start_date_2:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    templates: true
+    signed_waivers: true
+    detailed_signed_waiver: true
+    checkins: true
+  testedStreams:
+    templates:
+      streamHash: 8b84fca96d10ec9fa374524feb71275759fd211d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signed_waivers:
+      streamHash: 04541410c98ab9b2bf558d8e7814ebc51525f6cc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    detailed_signed_waiver:
+      hasRecords: true
+      streamHash: 00186b68dbd27cc17a022233b376a00125446ebf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    checkins:
+      streamHash: aaaf25f925f28786feb50281f71720bc313a98bf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      kioskUrl:
+        type:
+          - string
+          - "null"
+      publishedOn:
+        type:
+          - string
+          - "null"
+      publishedVersion:
+        type:
+          - number
+          - "null"
+      templateId:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+      vanityUrls:
+        type:
+          - array
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - templateId
+  signed_waivers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      autoTag:
+        type:
+          - string
+          - "null"
+      createdOn:
+        type: string
+      dob:
+        type:
+          - string
+          - "null"
+      expirationDate:
+        type:
+          - string
+          - "null"
+      expired:
+        type:
+          - boolean
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      flags:
+        type:
+          - array
+          - "null"
+      isMinor:
+        type:
+          - boolean
+          - "null"
+      key-values:
+        type:
+          - array
+          - "null"
+      kiosk:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      middleName:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      templateId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+      waiverId:
+        type: string
+    required:
+      - waiverId
+      - createdOn
+  detailed_signed_waiver:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      addressCity:
+        type:
+          - string
+          - "null"
+      addressCountry:
+        type:
+          - string
+          - "null"
+      addressLineOne:
+        type:
+          - string
+          - "null"
+      addressLineTwo:
+        type:
+          - string
+          - "null"
+      addressState:
+        type:
+          - string
+          - "null"
+      addressZip:
+        type:
+          - string
+          - "null"
+      autoTag:
+        type:
+          - string
+          - "null"
+      clientIP:
+        type:
+          - string
+          - "null"
+      createdOn:
+        type:
+          - string
+          - "null"
+      customWaiverFields:
+        type:
+          - object
+          - "null"
+      dob:
+        type:
+          - string
+          - "null"
+      driversLicenseNumber:
+        type:
+          - string
+          - "null"
+      driversLicenseState:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emergencyContactName:
+        type:
+          - string
+          - "null"
+      emergencyContactPhone:
+        type:
+          - string
+          - "null"
+      expirationDate:
+        type:
+          - string
+          - "null"
+      expired:
+        type:
+          - boolean
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      flags:
+        type:
+          - array
+          - "null"
+      insuranceCarrier:
+        type:
+          - string
+          - "null"
+      insurancePolicyNumber:
+        type:
+          - string
+          - "null"
+      isMinor:
+        type:
+          - boolean
+          - "null"
+      kiosk:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      marketingAllowed:
+        type:
+          - boolean
+          - "null"
+      marketingAllowedCheckbox:
+        type:
+          - boolean
+          - "null"
+      middleName:
+        type:
+          - string
+          - "null"
+      participants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            customParticipantFields:
+              type:
+                - object
+                - "null"
+            dob:
+              type:
+                - string
+                - "null"
+            firstName:
+              type:
+                - string
+                - "null"
+            flags:
+              type:
+                - array
+                - "null"
+            gender:
+              type:
+                - string
+                - "null"
+            isMinor:
+              type:
+                - boolean
+                - "null"
+            lastName:
+              type:
+                - string
+                - "null"
+            middleName:
+              type:
+                - string
+                - "null"
+            minorExpired:
+              type:
+                - boolean
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            tags:
+              type:
+                - array
+                - "null"
+      pdf:
+        type:
+          - string
+          - "null"
+      photos:
+        type:
+          - number
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      templateId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      typedSignatures:
+        type:
+          - object
+          - "null"
+        properties:
+          bodyInitials:
+            type:
+              - array
+              - "null"
+          bodySignatures:
+            type:
+              - array
+              - "null"
+          guardian:
+            type:
+              - array
+              - "null"
+          participants:
+            type:
+              - array
+              - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+      waiverId:
+        type: string
+    required:
+      - waiverId
+  checkins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+      firstName:
+        type:
+          - string
+          - "null"
+      isMinor:
+        type:
+          - number
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      waiverId:
+        type: string
+    required:
+      - waiverId
+      - date

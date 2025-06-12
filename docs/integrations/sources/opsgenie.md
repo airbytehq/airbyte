@@ -54,7 +54,29 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.5.12 | 2025-05-24 | [60438](https://github.com/airbytehq/airbyte/pull/60438) | Update dependencies |
+| 0.5.11 | 2025-05-10 | [60121](https://github.com/airbytehq/airbyte/pull/60121) | Update dependencies |
+| 0.5.10 | 2025-05-03 | [59496](https://github.com/airbytehq/airbyte/pull/59496) | Update dependencies |
+| 0.5.9 | 2025-04-27 | [59077](https://github.com/airbytehq/airbyte/pull/59077) | Update dependencies |
+| 0.5.8 | 2025-04-19 | [58509](https://github.com/airbytehq/airbyte/pull/58509) | Update dependencies |
+| 0.5.7 | 2025-04-12 | [57863](https://github.com/airbytehq/airbyte/pull/57863) | Update dependencies |
+| 0.5.6 | 2025-04-05 | [57340](https://github.com/airbytehq/airbyte/pull/57340) | Update dependencies |
+| 0.5.5 | 2025-03-29 | [56726](https://github.com/airbytehq/airbyte/pull/56726) | Update dependencies |
+| 0.5.4 | 2025-03-22 | [56193](https://github.com/airbytehq/airbyte/pull/56193) | Update dependencies |
+| 0.5.3 | 2025-03-08 | [55066](https://github.com/airbytehq/airbyte/pull/55066) | Update dependencies |
+| 0.5.2 | 2025-02-23 | [54595](https://github.com/airbytehq/airbyte/pull/54595) | Update dependencies |
+| 0.5.1 | 2025-02-15 | [53983](https://github.com/airbytehq/airbyte/pull/53983) | Update dependencies |
+| 0.5.0 | 2025-01-10 | [50880](https://github.com/airbytehq/airbyte/pull/50880) | Add support for additional incident fields |
+| 0.4.10 | 2025-02-08 | [53466](https://github.com/airbytehq/airbyte/pull/53466) | Update dependencies |
+| 0.4.9 | 2025-02-01 | [52998](https://github.com/airbytehq/airbyte/pull/52998) | Update dependencies |
+| 0.4.8 | 2025-01-25 | [52465](https://github.com/airbytehq/airbyte/pull/52465) | Update dependencies |
+| 0.4.7 | 2025-01-18 | [51862](https://github.com/airbytehq/airbyte/pull/51862) | Update dependencies |
+| 0.4.6 | 2025-01-11 | [50293](https://github.com/airbytehq/airbyte/pull/50293) | Update dependencies |
+| 0.4.5 | 2024-12-14 | [49661](https://github.com/airbytehq/airbyte/pull/49661) | Update dependencies |
+| 0.4.4 | 2024-12-12 | [48253](https://github.com/airbytehq/airbyte/pull/48253) | Update dependencies |
+| 0.4.3 | 2024-10-29 | [47920](https://github.com/airbytehq/airbyte/pull/47920) | Update dependencies |
+| 0.4.2 | 2024-10-28 | [47653](https://github.com/airbytehq/airbyte/pull/47653) | Update dependencies |
+| 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.4.0 | 2024-08-15 | [44105](https://github.com/airbytehq/airbyte/pull/44105) | Refactor connector to manifest-only format |
 | 0.3.16 | 2024-08-10 | [43579](https://github.com/airbytehq/airbyte/pull/43579) | Update dependencies |
 | 0.3.15 | 2024-08-03 | [43248](https://github.com/airbytehq/airbyte/pull/43248) | Update dependencies |

@@ -17,6 +17,7 @@ from airbyte_protocol.models.airbyte_protocol import AirbyteLogMessage, Level
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.indexer import PineconeIndexer
 
+
 BATCH_SIZE = 32
 
 

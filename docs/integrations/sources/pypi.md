@@ -31,7 +31,29 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.23 | 2025-05-24 | [60527](https://github.com/airbytehq/airbyte/pull/60527) | Update dependencies |
+| 0.2.22 | 2025-05-10 | [60187](https://github.com/airbytehq/airbyte/pull/60187) | Update dependencies |
+| 0.2.21 | 2025-05-03 | [59456](https://github.com/airbytehq/airbyte/pull/59456) | Update dependencies |
+| 0.2.20 | 2025-04-27 | [59062](https://github.com/airbytehq/airbyte/pull/59062) | Update dependencies |
+| 0.2.19 | 2025-04-19 | [58460](https://github.com/airbytehq/airbyte/pull/58460) | Update dependencies |
+| 0.2.18 | 2025-04-12 | [57309](https://github.com/airbytehq/airbyte/pull/57309) | Update dependencies |
+| 0.2.17 | 2025-03-29 | [56734](https://github.com/airbytehq/airbyte/pull/56734) | Update dependencies |
+| 0.2.16 | 2025-03-22 | [56199](https://github.com/airbytehq/airbyte/pull/56199) | Update dependencies |
+| 0.2.15 | 2025-03-08 | [55518](https://github.com/airbytehq/airbyte/pull/55518) | Update dependencies |
+| 0.2.14 | 2025-03-01 | [55035](https://github.com/airbytehq/airbyte/pull/55035) | Update dependencies |
+| 0.2.13 | 2025-02-23 | [54578](https://github.com/airbytehq/airbyte/pull/54578) | Update dependencies |
+| 0.2.12 | 2025-02-15 | [53944](https://github.com/airbytehq/airbyte/pull/53944) | Update dependencies |
+| 0.2.11 | 2025-02-08 | [53449](https://github.com/airbytehq/airbyte/pull/53449) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [52965](https://github.com/airbytehq/airbyte/pull/52965) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52489](https://github.com/airbytehq/airbyte/pull/52489) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51874](https://github.com/airbytehq/airbyte/pull/51874) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51360](https://github.com/airbytehq/airbyte/pull/51360) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50677](https://github.com/airbytehq/airbyte/pull/50677) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50252](https://github.com/airbytehq/airbyte/pull/50252) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49682](https://github.com/airbytehq/airbyte/pull/49682) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48312](https://github.com/airbytehq/airbyte/pull/48312) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47528](https://github.com/airbytehq/airbyte/pull/47528) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44082](https://github.com/airbytehq/airbyte/pull/44082) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-10 | [43643](https://github.com/airbytehq/airbyte/pull/43643) | Update dependencies |
 | 0.1.14 | 2024-08-03 | [43137](https://github.com/airbytehq/airbyte/pull/43137) | Update dependencies |

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.8.11"
+version = "1.8.27"
 name = "source-github"
 description = "Source implementation for GitHub."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,5 +27,22 @@ source-github = "source_github.run:run"
 requests-mock = "^1.9.3"
 freezegun = "^1.2"
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "^8.0.0"
 responses = "^0.23.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+
+[tool.poe.tasks]
+# This overrides the default task for running unit tests specifically for the source-github connector.
+# This is a workaround to an issue that arises when running all of the unit tests in one execution of pytest 
+# due to incompatibilities between request mocking libraries requests-mock and responses.
+test-unit-tests.shell = '''
+poetry run pytest --junitxml=build/test-results/pytest-unit-tests-junit.xml --ignore=unit_tests/integration/ unit_tests
+poetry run pytest --junitxml=build/test-results/pytest-unit-integration-tests-junit.xml unit_tests/integration/
+'''

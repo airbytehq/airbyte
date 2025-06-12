@@ -22,6 +22,7 @@ from orchestrator.templates.render import (
 )
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
+
 GROUP_NAME = "registry_reports"
 
 OSS_SUFFIX = "_oss"

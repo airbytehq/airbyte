@@ -1,0 +1,2516 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: "Documentation: https://uk.castoredc.com/api#/"
+
+check:
+  type: CheckStream
+  stream_names:
+    - user
+
+definitions:
+  streams:
+    user:
+      type: DeclarativeStream
+      name: user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: user
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - user
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_login
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+    study:
+      type: DeclarativeStream
+      name: study
+      primary_key:
+        - crf_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - study
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study"
+    audit_trial:
+      type: DeclarativeStream
+      name: audit_trial
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/audit-trail
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ record[\"datetime\"][\"date\"].split(\".\")[0] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audit_trial"
+    country:
+      type: DeclarativeStream
+      name: country
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: country
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/country"
+    study_survey:
+      type: DeclarativeStream
+      name: study_survey
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/survey
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - surveys
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_survey"
+    study_survey_package:
+      type: DeclarativeStream
+      name: study_survey_package
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/survey-package
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - survey_packages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_survey_package"
+    study_site:
+      type: DeclarativeStream
+      name: study_site
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/site
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - sites
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_site"
+    study_fields:
+      type: DeclarativeStream
+      name: study_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/field
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - fields
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_fields"
+    study_field_dependency:
+      type: DeclarativeStream
+      name: study_field_dependency
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/field-dependency
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - fieldDependencies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_field_dependency"
+    study_field_validation:
+      type: DeclarativeStream
+      name: study_field_validation
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/field-validation
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - fieldValidations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_field_validation"
+    study_form:
+      type: DeclarativeStream
+      name: study_form
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/form
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_form"
+    study_role:
+      type: DeclarativeStream
+      name: study_role
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/role
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - roles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_role"
+    study_fieldoption_groups:
+      type: DeclarativeStream
+      name: study_fieldoption_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/field-optiongroup
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - fieldOptionGroups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_fieldoption_groups"
+    study_statistics:
+      type: DeclarativeStream
+      name: study_statistics
+      primary_key:
+        - study_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/statistics
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_statistics"
+    study_user:
+      type: DeclarativeStream
+      name: study_user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/user
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - studyUsers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_login
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_user"
+    study_visit:
+      type: DeclarativeStream
+      name: study_visit
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: study/{{ stream_partition['study_id'] }}/visit
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - visits
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: study_id
+              partition_field: study_id
+              stream:
+                $ref: "#/definitions/streams/study"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/study_visit"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['url_region'] }}.castoredc.com/api/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://{{ config['url_region'] }}.castoredc.com/oauth/token
+
+streams:
+  - $ref: "#/definitions/streams/user"
+  - $ref: "#/definitions/streams/study"
+  - $ref: "#/definitions/streams/audit_trial"
+  - $ref: "#/definitions/streams/country"
+  - $ref: "#/definitions/streams/study_survey"
+  - $ref: "#/definitions/streams/study_survey_package"
+  - $ref: "#/definitions/streams/study_site"
+  - $ref: "#/definitions/streams/study_fields"
+  - $ref: "#/definitions/streams/study_field_dependency"
+  - $ref: "#/definitions/streams/study_field_validation"
+  - $ref: "#/definitions/streams/study_form"
+  - $ref: "#/definitions/streams/study_role"
+  - $ref: "#/definitions/streams/study_fieldoption_groups"
+  - $ref: "#/definitions/streams/study_statistics"
+  - $ref: "#/definitions/streams/study_user"
+  - $ref: "#/definitions/streams/study_visit"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - url_region
+      - client_id
+      - client_secret
+      - start_date
+    properties:
+      url_region:
+        type: string
+        description: The url region given at time of registration
+        enum:
+          - uk
+          - nl
+          - us
+        order: 0
+        title: URL Region
+        default: uk
+      client_id:
+        type: string
+        description: Visit `https://YOUR_REGION.castoredc.com/account/settings`
+        order: 1
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        description: Visit `https://YOUR_REGION.castoredc.com/account/settings`
+        order: 2
+        title: Client secret
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    user: true
+    study: true
+    audit_trial: true
+    country: true
+    study_survey: true
+    study_survey_package: true
+    study_site: true
+    study_fields: true
+    study_field_dependency: true
+    study_field_validation: true
+    study_form: true
+    study_role: true
+    study_fieldoption_groups: true
+    study_statistics: true
+    study_user: true
+    study_visit: true
+  testedStreams:
+    user:
+      hasRecords: true
+      streamHash: e4be83a47840afcbe60015a9fd79b8d6c24616cf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study:
+      hasRecords: true
+      streamHash: d1dfaa856b56acc506600310b760abe604b1e0da
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audit_trial:
+      hasRecords: true
+      streamHash: 8e795e643c2cbd94f9086cc23768c9089c5cd0db
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    country:
+      hasRecords: true
+      streamHash: 4edeb56b6fc5345cf63c7edc8677aec159b9a7fd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_survey:
+      hasRecords: true
+      streamHash: 1a2bcfb2eabebc65881f09bee49d55ed0439d689
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_survey_package:
+      hasRecords: true
+      streamHash: 5660ff42aa3c7ee93c08808f3f4c6c6b3151c694
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_site:
+      hasRecords: true
+      streamHash: a3884a1f449dc14e5aa53b35e96d3c6ea0d2c9c5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_fields:
+      hasRecords: true
+      streamHash: 9bac3ca57ed2c96098ab751a2bb7e77c9e5fe2b9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_field_dependency:
+      hasRecords: true
+      streamHash: dce6c36f9d7725f4d5436b6fe086a108238e016e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_field_validation:
+      hasRecords: true
+      streamHash: 901fab3a36c14137abad6d19a1bca6475ca062f5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_form:
+      hasRecords: true
+      streamHash: a32849d2a3df0337b7c55179d71ba83f2982e462
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_role:
+      hasRecords: true
+      streamHash: 083cbdd8c959c981e563384f95d5d50e0a47415b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_fieldoption_groups:
+      hasRecords: true
+      streamHash: 05422c08007170811db015be8069f5b4f9306496
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_statistics:
+      hasRecords: true
+      streamHash: 48f4f4de6097cd64c524d3075733cc8ef83f4b93
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_user:
+      hasRecords: true
+      streamHash: 3628b2c81078905be23d8f2213c825ff65811587
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    study_visit:
+      hasRecords: true
+      streamHash: 2eef3043f6f22b55f69e870eaa1c887c29c61eb6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      email_address:
+        type:
+          - string
+          - "null"
+      entity_id:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_login:
+        type: string
+      name_first:
+        type:
+          - string
+          - "null"
+      name_last:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - last_login
+  study:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_on:
+        type: string
+      crf_id:
+        type: string
+      domain:
+        type:
+          - string
+          - "null"
+      expected_centers:
+        type:
+          - number
+          - "null"
+      expected_records:
+        type:
+          - number
+          - "null"
+      gcp_enabled:
+        type:
+          - boolean
+          - "null"
+      live:
+        type:
+          - boolean
+          - "null"
+      main_contact:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      premium_support_enabled:
+        type:
+          - boolean
+          - "null"
+      randomization_enabled:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      study_id:
+        type:
+          - string
+          - "null"
+      surveys_enabled:
+        type:
+          - boolean
+          - "null"
+      trial_registry_id:
+        type:
+          - string
+          - "null"
+    required:
+      - crf_id
+      - created_on
+  audit_trial:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+      datetime:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      event_details:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              Additional Config:
+                type: string
+              Allow Step Navigation:
+                type: string
+              Auto Lock On Finish:
+                type: string
+              Country Id:
+                type: number
+              Createdby:
+                type: string
+              Createdon:
+                type: string
+              DependencyChilds:
+                type: string
+              DependencyParents:
+                type: string
+              Duration:
+                type: "null"
+              Encryption Enabled:
+                type: boolean
+              Exclude On Data Export:
+                type: number
+              Field Alignment:
+                type: string
+              Field Enforce Decimals:
+                type: "null"
+              Field Hidden:
+                type: number
+              Field Id:
+                type: string
+              Field Image:
+                type:
+                  - "null"
+                  - string
+              Field Info:
+                type: string
+              Field Label:
+                type: string
+              Field Length:
+                type:
+                  - "null"
+                  - number
+              Field Max:
+                type:
+                  - "null"
+                  - number
+              Field Max Label:
+                type: string
+              Field Min:
+                type:
+                  - "null"
+                  - number
+              Field Min Label:
+                type: string
+              Field Number:
+                type: number
+              Field Number Display:
+                type: "null"
+              Field Option Group:
+                type: string
+              Field Required:
+                type: string
+              Field Required Description:
+                type: "null"
+              Field Slider Step:
+                type:
+                  - "null"
+                  - number
+              Field Summary Template:
+                type: string
+              Field Type:
+                type: string
+              Field Type Description:
+                type: string
+              Field Units:
+                type: string
+              Field Validation Id:
+                type: "null"
+              Field Validation Operator:
+                type: string
+              Field Validation Text:
+                type: string
+              Field Validation Type:
+                type: string
+              Field Validation Value:
+                type: string
+              Field Value:
+                type: "null"
+              Field Variable Name:
+                type:
+                  - "null"
+                  - string
+              Field Visibility:
+                type: "null"
+              Footer Text:
+                type: "null"
+              Force Step Completion:
+                type: string
+              Form Numbering:
+                type: string
+              Form Sync Id:
+                type: string
+              Institute Abbreviation:
+                type: string
+              Institute Code:
+                type:
+                  - "null"
+                  - string
+              Institute Id:
+                type: string
+              Institute Name:
+                type: string
+              Label Bold If Required:
+                type: boolean
+              Name:
+                type: string
+              Option Groups:
+                type: "null"
+              Parent Id:
+                type: string
+              Randomize Option Order:
+                type: boolean
+              Report Allowed Name Edit:
+                type: number
+              Report Description:
+                type: string
+              Report Id:
+                type: string
+              Report Name:
+                type: string
+              Report Naming Strategy:
+                type: string
+              Report Step Description:
+                type: string
+              Report Step Id:
+                type: string
+              Report Step Name:
+                type: string
+              Report Step Number:
+                type: number
+              Report Type:
+                type: string
+              Searchability Enabled:
+                type: boolean
+              Show Step Navigator:
+                type: string
+              Step Desc:
+                type: string
+              Step Id:
+                type: string
+              Step Name:
+                type: string
+              Step Number:
+                type: number
+              Step Status:
+                type: string
+              Study Phase Desc:
+                type: "null"
+              Study Phase Id:
+                type: string
+              Study Phase Name:
+                type: string
+              Study Phase Number:
+                type: "null"
+              Study Phase Order:
+                type: number
+              Survey Auto Send:
+                type: number
+              Survey Id:
+                type: string
+              Survey Intro Text:
+                type: string
+              Survey Name:
+                type: string
+              Survey Package Id:
+                type: "null"
+              Survey Reminder:
+                type: number
+              Survey Required:
+                type: number
+              Survey Send After:
+                type: string
+              Survey Sender Address:
+                type: string
+              Survey Sender Name:
+                type: string
+              Survey Step Description:
+                type: string
+              Survey Step Footer Text:
+                type: "null"
+              Survey Step Id:
+                type: string
+              Survey Step Name:
+                type: string
+              Survey Step Number:
+                type: number
+              Updated By:
+                type: string
+              Updated On:
+                type: string
+              Updatedby:
+                type: string
+              Updatedon:
+                type: string
+              Validation:
+                type: string
+      event_type:
+        type:
+          - string
+          - "null"
+      user_email:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      user_name:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - date
+  country:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country_cca2:
+        type:
+          - string
+          - "null"
+      country_cca3:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      country_tld:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  study_survey:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      intro_text:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      outro_text:
+        type:
+          - string
+          - "null"
+      survey_forms:
+        type:
+          - array
+          - "null"
+      survey_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  study_survey_package:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _embedded:
+        type:
+          - object
+          - "null"
+        properties:
+          surveys:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    self:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                intro_text:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                outro_text:
+                  type:
+                    - string
+                    - "null"
+                survey_forms:
+                  type:
+                    - array
+                    - "null"
+                survey_id:
+                  type:
+                    - string
+                    - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      allow_open_survey_link:
+        type:
+          - boolean
+          - "null"
+      allow_step_navigation:
+        type:
+          - boolean
+          - "null"
+      as_needed:
+        type:
+          - boolean
+          - "null"
+      auto_lock_on_finish:
+        type:
+          - boolean
+          - "null"
+      auto_send:
+        type:
+          - boolean
+          - "null"
+      default_invitation:
+        type:
+          - string
+          - "null"
+      default_invitation_subject:
+        type:
+          - string
+          - "null"
+      field_pagination:
+        type:
+          - string
+          - "null"
+      finish_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      intro_text:
+        type:
+          - string
+          - "null"
+      is_mobile:
+        type:
+          - boolean
+          - "null"
+      is_repeatable:
+        type:
+          - boolean
+          - "null"
+      is_resumable:
+        type:
+          - boolean
+          - "null"
+      is_training:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      outro_text:
+        type:
+          - string
+          - "null"
+      sender_email:
+        type:
+          - string
+          - "null"
+      sender_name:
+        type:
+          - string
+          - "null"
+      show_step_navigator:
+        type:
+          - boolean
+          - "null"
+      survey_package_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  study_site:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      abbreviation:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - number
+          - "null"
+      date_format:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      site_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  study_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      additional_config:
+        type:
+          - string
+          - "null"
+      dependency_children:
+        type:
+          - array
+          - "null"
+      dependency_parents:
+        type:
+          - array
+          - "null"
+      exclude_on_data_export:
+        type:
+          - boolean
+          - "null"
+      field_hidden:
+        type:
+          - number
+          - "null"
+      field_id:
+        type:
+          - string
+          - "null"
+      field_image:
+        type:
+          - string
+          - "null"
+      field_info:
+        type:
+          - string
+          - "null"
+      field_label:
+        type:
+          - string
+          - "null"
+      field_length:
+        type:
+          - number
+          - "null"
+      field_max:
+        type:
+          - number
+          - "null"
+      field_max_label:
+        type:
+          - string
+          - "null"
+      field_min:
+        type:
+          - number
+          - "null"
+      field_min_label:
+        type:
+          - string
+          - "null"
+      field_number:
+        type:
+          - number
+          - "null"
+      field_required:
+        type:
+          - number
+          - "null"
+      field_slider_step:
+        type:
+          - string
+          - "null"
+      field_slider_step_value:
+        type:
+          - number
+          - "null"
+      field_summary_template:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+      field_units:
+        type:
+          - string
+          - "null"
+      field_variable_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      metadata_points:
+        type:
+          - array
+          - "null"
+      parent_id:
+        type:
+          - string
+          - "null"
+      randomize_option_order:
+        type:
+          - boolean
+          - "null"
+      report_id:
+        type:
+          - string
+          - "null"
+      validations:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  study_field_dependency:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      child_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      operator:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  study_field_validation:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      field_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      operator:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  study_form:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _embedded:
+        type:
+          - object
+          - "null"
+        properties:
+          visit:
+            type:
+              - object
+              - "null"
+            properties:
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              visit_id:
+                type:
+                  - string
+                  - "null"
+              visit_name:
+                type:
+                  - string
+                  - "null"
+              visit_order:
+                type:
+                  - number
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      form_description:
+        type:
+          - string
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      form_name:
+        type:
+          - string
+          - "null"
+      form_order:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  study_role:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          add:
+            type:
+              - boolean
+              - "null"
+          decrypt:
+            type:
+              - boolean
+              - "null"
+          delete:
+            type:
+              - boolean
+              - "null"
+          edit:
+            type:
+              - boolean
+              - "null"
+          email_addresses:
+            type:
+              - boolean
+              - "null"
+          encrypt:
+            type:
+              - boolean
+              - "null"
+          export:
+            type:
+              - boolean
+              - "null"
+          lock:
+            type:
+              - boolean
+              - "null"
+          query:
+            type:
+              - boolean
+              - "null"
+          randomization_read:
+            type:
+              - boolean
+              - "null"
+          randomization_write:
+            type:
+              - boolean
+              - "null"
+          sdv:
+            type:
+              - boolean
+              - "null"
+          sign:
+            type:
+              - boolean
+              - "null"
+          survey_send:
+            type:
+              - boolean
+              - "null"
+          survey_view:
+            type:
+              - boolean
+              - "null"
+          view:
+            type:
+              - boolean
+              - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  study_fieldoption_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      layout:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            groupOrder:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  study_statistics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      records:
+        type:
+          - object
+          - "null"
+        properties:
+          institutes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                institute_id:
+                  type:
+                    - string
+                    - "null"
+                institute_name:
+                  type:
+                    - string
+                    - "null"
+                record_count:
+                  type:
+                    - number
+                    - "null"
+          total_count:
+            type:
+              - number
+              - "null"
+      study_id:
+        type: string
+    required:
+      - study_id
+  study_user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      email_address:
+        type:
+          - string
+          - "null"
+      entity_id:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_login:
+        type: string
+      manage_permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          manage_encryption:
+            type:
+              - boolean
+              - "null"
+          manage_form:
+            type:
+              - boolean
+              - "null"
+          manage_records:
+            type:
+              - boolean
+              - "null"
+          manage_settings:
+            type:
+              - boolean
+              - "null"
+          manage_users:
+            type:
+              - boolean
+              - "null"
+      name_first:
+        type:
+          - string
+          - "null"
+      name_last:
+        type:
+          - string
+          - "null"
+      role_assignments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            role_id:
+              type:
+                - number
+                - "null"
+            role_name:
+              type:
+                - string
+                - "null"
+            site_id:
+              type:
+                - string
+                - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - last_login
+  study_visit:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      visit_id:
+        type:
+          - string
+          - "null"
+      visit_name:
+        type:
+          - string
+          - "null"
+      visit_order:
+        type:
+          - number
+          - "null"
+    required:
+      - id

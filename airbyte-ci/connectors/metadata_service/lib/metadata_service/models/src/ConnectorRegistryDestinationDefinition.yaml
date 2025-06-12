@@ -75,6 +75,12 @@ properties:
   supportsRefreshes:
     type: boolean
     default: false
+  supportsFileTransfer:
+    type: boolean
+    default: false
+  supportsDataActivation:
+    type: boolean
+    default: false
   generated:
     "$ref": GeneratedFields.yaml
   packageInfo:

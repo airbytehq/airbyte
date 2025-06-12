@@ -1,0 +1,1469 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: >-
+  The Keka Connector for Airbyte allows seamless integration with the Keka
+  platform, enabling users to automate the extraction and synchronization of
+  employee management and payroll data into their preferred destinations for
+  reporting, analytics, or further processing.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Employees
+
+definitions:
+  streams:
+    Clients:
+      type: DeclarativeStream
+      name: Clients
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /psa/clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Clients"
+    Projects:
+      type: DeclarativeStream
+      name: Projects
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /psa/projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Projects"
+    Employees:
+      type: DeclarativeStream
+      name: Employees
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /hris/employees
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees"
+    Attendance:
+      type: DeclarativeStream
+      name: Attendance
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time/attendance
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Attendance"
+    Leave Type:
+      type: DeclarativeStream
+      name: Leave Type
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time/leavetypes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - identifier
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Leave Type"
+    Leave Request:
+      type: DeclarativeStream
+      name: Leave Request
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time/leaverequests
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Leave Request"
+    Project Timesheets:
+      type: DeclarativeStream
+      name: Project Timesheets
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: pageNumber
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /psa/timeentries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Project Timesheets"
+  base_requester:
+    type: HttpRequester
+    url_base: https://master.keka.com/api/v1
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        path: token
+        url_base: https://login.keka.com/connect
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers:
+          User-Agent: "*"
+        request_body_data:
+          scope: "{{ config[\"scope\"] }}"
+          api_key: "{{ config[\"api_key\"] }}"
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: "{{ config[\"grant_type\"] }}"
+          client_secret: "{{ config[\"client_secret\"] }}"
+        request_parameters: {}
+      session_token_path:
+        - access_token
+      expiration_duration: P1D
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/Employees"
+  - $ref: "#/definitions/streams/Attendance"
+  - $ref: "#/definitions/streams/Clients"
+  - $ref: "#/definitions/streams/Projects"
+  - $ref: "#/definitions/streams/Project Timesheets"
+  - $ref: "#/definitions/streams/Leave Type"
+  - $ref: "#/definitions/streams/Leave Request"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - api_key
+      - grant_type
+      - scope
+    properties:
+      scope:
+        type: string
+        order: 4
+        title: Scope
+      api_key:
+        type: string
+        order: 2
+        title: API Key
+      client_id:
+        type: string
+        description: Your client identifier for authentication.
+        order: 0
+        title: Client ID
+      grant_type:
+        type: string
+        order: 3
+        title: Grant Type
+      client_secret:
+        type: string
+        description: Your client secret for secure authentication.
+        order: 1
+        title: Client Secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Clients:
+      hasRecords: true
+      streamHash: bb5785a79c6f14acec6f12c0c4cd74808e2ecd9f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Projects:
+      hasRecords: true
+      streamHash: 2f2428b0ffb300255a2be2fff21e60dc06907f77
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Employees:
+      hasRecords: true
+      streamHash: 7d81161fa0e411d965b7dec0ee94645ccc663a09
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Attendance:
+      hasRecords: true
+      streamHash: 39ce5f2fade25268be21dade2757def6f6bbef40
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Leave Type:
+      hasRecords: true
+      streamHash: 0fd59211f3bd59eaa8be1bb21d1387fc318b021f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Leave Request:
+      hasRecords: true
+      streamHash: e0a32d09c498a29cd0188432915a079ffedc408f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Project Timesheets:
+      hasRecords: true
+      streamHash: c127c30a749af6d9b77d0479a79941c8b8501eac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Clients: true
+    Projects: true
+    Employees: true
+    Attendance: true
+    Leave Type: true
+    Leave Request: true
+    Project Timesheets: true
+
+schemas:
+  Clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      billingName:
+        type:
+          - string
+          - "null"
+      billingAddress:
+        type:
+          - object
+          - "null"
+        properties: {}
+      clientContacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            clientId:
+              type:
+                - string
+                - "null"
+      additionalFields:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  Projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      clientId:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isBillable:
+        type:
+          - boolean
+          - "null"
+      billingType:
+        type:
+          - number
+          - "null"
+      projectBudget:
+        type:
+          - number
+          - "null"
+      projectManagers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            lastName:
+              type:
+                - string
+                - "null"
+            firstName:
+              type:
+                - string
+                - "null"
+      customAttributes:
+        type:
+          - object
+          - "null"
+        properties:
+          cost Centre:
+            type:
+              - string
+              - "null"
+          project Budget:
+            type:
+              - string
+              - "null"
+          project Stages:
+            type:
+              - string
+              - "null"
+          contract Expiry Date:
+            type:
+              - string
+              - "null"
+          contract signed by client:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  Employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      image:
+        type:
+          - object
+          - "null"
+        properties:
+          thumbs:
+            type:
+              - object
+              - "null"
+            properties:
+              33x33:
+                type:
+                  - string
+                  - "null"
+              50x50:
+                type:
+                  - string
+                  - "null"
+              200x200:
+                type:
+                  - string
+                  - "null"
+          fileName:
+            type:
+              - string
+              - "null"
+      gender:
+        type:
+          - number
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            groupType:
+              type:
+                - number
+                - "null"
+      exitDate:
+        type:
+          - string
+          - "null"
+      exitType:
+        type:
+          - number
+          - "null"
+      jobTitle:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      timeType:
+        type:
+          - number
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      homePhone:
+        type:
+          - string
+          - "null"
+      isPrivate:
+        type:
+          - boolean
+          - "null"
+      l2Manager:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+      relations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            gender:
+              type:
+                - number
+                - "null"
+            mobile:
+              type:
+                - string
+                - "null"
+            lastName:
+              type:
+                - string
+                - "null"
+            firstName:
+              type:
+                - string
+                - "null"
+            profession:
+              type:
+                - string
+                - "null"
+            dateOfBirth:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            relationType:
+              type:
+                - number
+                - "null"
+      reportsTo:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+      workPhone:
+        type:
+          - string
+          - "null"
+      bloodGroup:
+        type:
+          - number
+          - "null"
+      exitReason:
+        type:
+          - string
+          - "null"
+      exitStatus:
+        type:
+          - number
+          - "null"
+      middleName:
+        type:
+          - string
+          - "null"
+      workerType:
+        type:
+          - number
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      dateOfBirth:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      joiningDate:
+        type:
+          - string
+          - "null"
+      mobilePhone:
+        type:
+          - string
+          - "null"
+      nationality:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      marriageDate:
+        type:
+          - string
+          - "null"
+      accountStatus:
+        type:
+          - number
+          - "null"
+      leavePlanInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      maritalStatus:
+        type:
+          - number
+          - "null"
+      personalEmail:
+        type:
+          - string
+          - "null"
+      contingentType:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      currentAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          countryCode:
+            type:
+              - string
+              - "null"
+          addressLine1:
+            type:
+              - string
+              - "null"
+          addressLine2:
+            type:
+              - string
+              - "null"
+      employeeNumber:
+        type:
+          - string
+          - "null"
+      shiftPolicyInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      attendanceNumber:
+        type:
+          - string
+          - "null"
+      educationDetails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            cgpa:
+              type:
+                - number
+                - "null"
+            branch:
+              type:
+                - string
+                - "null"
+            degree:
+              type:
+                - string
+                - "null"
+            university:
+              type:
+                - string
+                - "null"
+            customFields:
+              type:
+                - array
+                - "null"
+            yearOfJoining:
+              type:
+                - string
+                - "null"
+            yearOfCompletion:
+              type:
+                - string
+                - "null"
+      employmentStatus:
+        type:
+          - number
+          - "null"
+      invitationStatus:
+        type:
+          - number
+          - "null"
+      permanentAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          countryCode:
+            type:
+              - string
+              - "null"
+          addressLine1:
+            type:
+              - string
+              - "null"
+          addressLine2:
+            type:
+              - string
+              - "null"
+      probationEndDate:
+        type:
+          - string
+          - "null"
+      captureSchemeInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      dottedLineManager:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+      expensePolicyInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      experienceDetails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            jobTitle:
+              type:
+                - string
+                - "null"
+            location:
+              type:
+                - string
+                - "null"
+            companyName:
+              type:
+                - string
+                - "null"
+            customFields:
+              type:
+                - array
+                - "null"
+            dateOfJoining:
+              type:
+                - string
+                - "null"
+            dateOfRelieving:
+              type:
+                - string
+                - "null"
+      holidayCalendarId:
+        type:
+          - string
+          - "null"
+      isProfileComplete:
+        type:
+          - boolean
+          - "null"
+      trackingPolicyInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      professionalSummary:
+        type:
+          - string
+          - "null"
+      weeklyOffPolicyInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+      totalExperienceInDays:
+        type:
+          - number
+          - "null"
+      resignationSubmittedDate:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  Attendance:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      dayType:
+        type:
+          - number
+          - "null"
+      shiftEndTime:
+        type:
+          - string
+          - "null"
+      shiftDuration:
+        type:
+          - number
+          - "null"
+      attendanceDate:
+        type:
+          - string
+          - "null"
+      employeeNumber:
+        type:
+          - string
+          - "null"
+      shiftStartTime:
+        type:
+          - string
+          - "null"
+      firstInOfTheDay:
+        type:
+          - object
+          - "null"
+        properties:
+          timestamp:
+            type:
+              - string
+              - "null"
+          punchStatus:
+            type:
+              - number
+              - "null"
+          locationAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              zip:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              addressLine1:
+                type:
+                  - string
+                  - "null"
+              addressLine2:
+                type:
+                  - string
+                  - "null"
+          manualClockinType:
+            type:
+              - number
+              - "null"
+          employeeIdentifier:
+            type:
+              - string
+              - "null"
+          attendanceLogSource:
+            type:
+              - number
+              - "null"
+      lastOutOfTheDay:
+        type:
+          - object
+          - "null"
+        properties:
+          timestamp:
+            type:
+              - string
+              - "null"
+          punchStatus:
+            type:
+              - number
+              - "null"
+          locationAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              zip:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              addressLine1:
+                type:
+                  - string
+                  - "null"
+              addressLine2:
+                type:
+                  - string
+                  - "null"
+          manualClockinType:
+            type:
+              - number
+              - "null"
+          employeeIdentifier:
+            type:
+              - string
+              - "null"
+          attendanceLogSource:
+            type:
+              - number
+              - "null"
+      totalGrossHours:
+        type:
+          - number
+          - "null"
+      employeeIdentifier:
+        type:
+          - string
+          - "null"
+      shiftBreakDuration:
+        type:
+          - number
+          - "null"
+      totalBreakDuration:
+        type:
+          - number
+          - "null"
+      totalEffectiveHours:
+        type:
+          - number
+          - "null"
+      shiftEffectiveDuration:
+        type:
+          - number
+          - "null"
+      totalGrossOvertimeDuration:
+        type:
+          - number
+          - "null"
+      totalEffectiveOvertimeDuration:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Leave Type:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - identifier
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      isPaid:
+        type:
+          - boolean
+          - "null"
+      identifier:
+        type: string
+    additionalProperties: true
+  Leave Request:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      toDate:
+        type:
+          - string
+          - "null"
+      fromDate:
+        type:
+          - string
+          - "null"
+      selection:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            duration:
+              type:
+                - object
+                - "null"
+              properties:
+                unit:
+                  type:
+                    - number
+                    - "null"
+                duration:
+                  type:
+                    - number
+                    - "null"
+                durationString:
+                  type:
+                    - string
+                    - "null"
+            leaveTypeName:
+              type:
+                - string
+                - "null"
+            leaveTypeIdentifier:
+              type:
+                - string
+                - "null"
+      toSession:
+        type:
+          - number
+          - "null"
+      fromSession:
+        type:
+          - number
+          - "null"
+      requestedOn:
+        type:
+          - string
+          - "null"
+      employeeNumber:
+        type:
+          - string
+          - "null"
+      lastActionTakenOn:
+        type:
+          - string
+          - "null"
+      cancelRejectReason:
+        type:
+          - string
+          - "null"
+      employeeIdentifier:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  Project Timesheets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      taskId:
+        type:
+          - string
+          - "null"
+      endTime:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type:
+          - string
+          - "null"
+      isBillable:
+        type:
+          - boolean
+          - "null"
+      totalMinutes:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

@@ -11,6 +11,17 @@ from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
+from connector_acceptance_test.config import (
+    Config,
+    EmptyStreamConfiguration,
+    FutureStateConfig,
+    FutureStateCursorFormatConfiguration,
+    IncrementalConfig,
+)
+from connector_acceptance_test.tests import test_incremental
+from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
+from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -27,16 +38,7 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import (
-    Config,
-    EmptyStreamConfiguration,
-    FutureStateConfig,
-    FutureStateCursorFormatConfiguration,
-    IncrementalConfig,
-)
-from connector_acceptance_test.tests import test_incremental
-from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
-from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
+
 
 pytestmark = [
     pytest.mark.anyio,
@@ -56,7 +58,10 @@ def build_state_message(state: dict) -> AirbyteMessage:
 
 
 def build_per_stream_state_message(
-    descriptor: StreamDescriptor, stream_state: Optional[dict[str, Any]], data: Optional[dict[str, Any]] = None, source_stats: Optional[dict[str, Any]] = None
+    descriptor: StreamDescriptor,
+    stream_state: Optional[dict[str, Any]],
+    data: Optional[dict[str, Any]] = None,
+    source_stats: Optional[dict[str, Any]] = None,
 ) -> AirbyteMessage:
     if data is None:
         data = stream_state
@@ -70,7 +75,7 @@ def build_per_stream_state_message(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(stream_descriptor=descriptor, stream_state=stream_state_blob),
             sourceStats=AirbyteStateStats(**source_stats),
-            data=data
+            data=data,
         ),
     )
 
@@ -232,20 +237,40 @@ async def test_incremental_two_sequential_reads(
                 [
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 2.0}},
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-10"},
+                        "sourceStats": {"recordCount": 2.0},
+                    },
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-12"},
+                        "sourceStats": {"recordCount": 3.0},
+                    },
                 ],
                 # Read after 2022-05-10. This is the second (last) subsequent read.
                 [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 2.0}},
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-10"},
+                        "sourceStats": {"recordCount": 2.0},
+                    },
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
-                ]
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-12"},
+                        "sourceStats": {"recordCount": 3.0},
+                    },
+                ],
             ],
             IncrementalConfig(),
             does_not_raise(),
@@ -258,9 +283,7 @@ async def test_incremental_two_sequential_reads(
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 0.0}},
             ],
-            [
-                []
-            ],
+            [[]],
             IncrementalConfig(),
             does_not_raise(),
             id="test_incremental_no_records_on_first_read_skips_stream",
@@ -274,9 +297,7 @@ async def test_incremental_two_sequential_reads(
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
             ],
-            [
-                []
-            ],
+            [[]],
             IncrementalConfig(),
             does_not_raise(),
             id="test_incremental_no_states_on_first_read_skips_stream",
@@ -293,13 +314,28 @@ async def test_incremental_two_sequential_reads(
             ],
             [
                 [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-08"},
+                        "sourceStats": {"recordCount": 2.0},
+                    },
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
                     {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-13"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}, "sourceStats": {"recordCount": 2.0}},
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-13"},
+                        "sourceStats": {"recordCount": 2.0},
+                    },
                 ],
                 [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}, "sourceStats": {"recordCount": 2.0}},
+                    {
+                        "type": Type.STATE,
+                        "name": "test_stream",
+                        "stream_state": {"date": "2022-05-13"},
+                        "sourceStats": {"recordCount": 2.0},
+                    },
                 ],
             ],
             IncrementalConfig(),
@@ -373,7 +409,10 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
 
     call_read_output_messages = [
         build_per_stream_state_message(
-            descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None), source_stats=record.get("sourceStats")
+            descriptor=StreamDescriptor(name=record["name"]),
+            stream_state=record["stream_state"],
+            data=record.get("data", None),
+            source_stats=record.get("sourceStats"),
         )
         if record["type"] == Type.STATE
         else build_record_message(record["name"], record["data"])
@@ -382,7 +421,10 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
     call_read_with_state_output_messages = [
         [
             build_per_stream_state_message(
-                descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None), source_stats=record.get("sourceStats")
+                descriptor=StreamDescriptor(name=record["name"]),
+                stream_state=record["stream_state"],
+                data=record.get("data", None),
+                source_stats=record.get("sourceStats"),
             )
             if record["type"] == Type.STATE
             else build_record_message(stream=record["name"], data=record["data"])
@@ -416,22 +458,20 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
             [
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}}
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
             ],
             [],
             [],
-            id="combine_three_duplicates_into_a_single_state_message"
+            id="combine_three_duplicates_into_a_single_state_message",
         ),
         pytest.param(
             [
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}}
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
             ],
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}}
-            ],
+            [{"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}}],
             [0.0],
-            id="multiple_equal_states_with_different_sourceStats_considered_to_be_equal"
+            id="multiple_equal_states_with_different_sourceStats_considered_to_be_equal",
         ),
         pytest.param(
             [
@@ -443,27 +483,33 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 7.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
             ],
             [
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 7.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
             ],
-            [10.0, 3.0, 0.0]
-        )
+            [10.0, 3.0, 0.0],
+        ),
     ],
 )
 async def test_get_unique_state_messages(non_unique_states, expected_unique_states, expected_record_count_per_state):
     non_unique_states = [
         build_per_stream_state_message(
-            descriptor=StreamDescriptor(name=state["name"]), stream_state=state["stream_state"], data=state.get("data", None), source_stats=state.get("sourceStats")
+            descriptor=StreamDescriptor(name=state["name"]),
+            stream_state=state["stream_state"],
+            data=state.get("data", None),
+            source_stats=state.get("sourceStats"),
         )
         for state in non_unique_states
     ]
     expected_unique_states = [
         build_per_stream_state_message(
-            descriptor=StreamDescriptor(name=state["name"]), stream_state=state["stream_state"], data=state.get("data", None), source_stats=state.get("sourceStats")
+            descriptor=StreamDescriptor(name=state["name"]),
+            stream_state=state["stream_state"],
+            data=state.get("data", None),
+            source_stats=state.get("sourceStats"),
         )
         for state in expected_unique_states
     ]
@@ -471,7 +517,9 @@ async def test_get_unique_state_messages(non_unique_states, expected_unique_stat
     assert len(actual_unique_states) == len(expected_unique_states)
 
     if len(expected_unique_states):
-        for actual_state_data, expected_state, expected_record_count in zip(actual_unique_states, expected_unique_states, expected_record_count_per_state):
+        for actual_state_data, expected_state, expected_record_count in zip(
+            actual_unique_states, expected_unique_states, expected_record_count_per_state
+        ):
             actual_state, actual_record_count = actual_state_data
             assert actual_state == expected_state
             assert actual_record_count == expected_record_count
@@ -517,7 +565,8 @@ async def test_config_skip_test(mocker):
             IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
             [],
             {"type": "object", "properties": {"date": {"type": "str"}}},
-            pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"
+            pytest.raises(AssertionError),
+            id="Error because incremental stream should always emit state messages",
         ),
         pytest.param(
             [
@@ -561,20 +610,9 @@ async def test_config_skip_test(mocker):
                 {
                     "type": "STREAM",
                     "stream": {
-                        "stream_descriptor": {
-                            "name": "test_stream"
-                        },
-                        "stream_state": {
-                            "states": [
-                                {
-                                    "partition": {},
-                                    "cursor": {
-                                        "date": "2222-10-12"
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                        "stream_descriptor": {"name": "test_stream"},
+                        "stream_state": {"states": [{"partition": {}, "cursor": {"date": "2222-10-12"}}]},
+                    },
                 }
             ],
             {"type": "object", "properties": {"date": {"type": "str"}}},
@@ -594,25 +632,16 @@ async def test_config_skip_test(mocker):
                     ),
                 )
             ],
-            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration(format="^\\d{4}-\\d{2}-\\d{2}$"))),
+            IncrementalConfig(
+                future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration(format="^\\d{4}-\\d{2}-\\d{2}$"))
+            ),
             [
                 {
                     "type": "STREAM",
                     "stream": {
-                        "stream_descriptor": {
-                            "name": "test_stream"
-                        },
-                        "stream_state": {
-                            "states": [
-                                {
-                                    "partition": {},
-                                    "cursor": {
-                                        "date": "2222-10-12"
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                        "stream_descriptor": {"name": "test_stream"},
+                        "stream_state": {"states": [{"partition": {}, "cursor": {"date": "2222-10-12"}}]},
+                    },
                 }
             ],
             {"type": "object", "properties": {"date": {"type": "str"}}},
@@ -637,20 +666,9 @@ async def test_config_skip_test(mocker):
                 {
                     "type": "STREAM",
                     "stream": {
-                        "stream_descriptor": {
-                            "name": "test_stream"
-                        },
-                        "stream_state": {
-                            "states": [
-                                {
-                                    "partition": {},
-                                    "cursor": {
-                                        "date": "2222-05-08T03:04:45.139-0700"
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                        "stream_descriptor": {"name": "test_stream"},
+                        "stream_state": {"states": [{"partition": {}, "cursor": {"date": "2222-05-08T03:04:45.139-0700"}}]},
+                    },
                 }
             ],
             {"type": "object", "properties": {"date": {"type": "str"}}},
@@ -676,20 +694,9 @@ async def test_config_skip_test(mocker):
                 {
                     "type": "STREAM",
                     "stream": {
-                        "stream_descriptor": {
-                            "name": "test_stream"
-                        },
-                        "stream_state": {
-                            "states": [
-                                {
-                                    "partition": {},
-                                    "cursor": {
-                                        "date": 10000000.0
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                        "stream_descriptor": {"name": "test_stream"},
+                        "stream_state": {"states": [{"partition": {}, "cursor": {"date": 10000000.0}}]},
+                    },
                 }
             ],
             {"type": "object", "properties": {"date": {"type": ["int", "null"]}}},

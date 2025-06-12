@@ -4,15 +4,17 @@ import json
 from unittest import TestCase
 
 import freezegun
+from source_mailchimp import SourceMailchimp
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from source_mailchimp import SourceMailchimp
 
 from .config import ConfigBuilder
+
 
 _CONFIG = ConfigBuilder().with_start_date(datetime.datetime(2023, 1, 1, 0, 0, 0, 1000)).build()
 

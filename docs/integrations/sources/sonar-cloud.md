@@ -30,7 +30,27 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.21 | 2025-05-10 | [59578](https://github.com/airbytehq/airbyte/pull/59578) | Update dependencies |
+| 0.2.20 | 2025-04-27 | [59018](https://github.com/airbytehq/airbyte/pull/59018) | Update dependencies |
+| 0.2.19 | 2025-04-19 | [58392](https://github.com/airbytehq/airbyte/pull/58392) | Update dependencies |
+| 0.2.18 | 2025-04-12 | [57953](https://github.com/airbytehq/airbyte/pull/57953) | Update dependencies |
+| 0.2.17 | 2025-04-05 | [57461](https://github.com/airbytehq/airbyte/pull/57461) | Update dependencies |
+| 0.2.16 | 2025-03-29 | [56832](https://github.com/airbytehq/airbyte/pull/56832) | Update dependencies |
+| 0.2.15 | 2025-03-22 | [56293](https://github.com/airbytehq/airbyte/pull/56293) | Update dependencies |
+| 0.2.14 | 2025-03-08 | [55592](https://github.com/airbytehq/airbyte/pull/55592) | Update dependencies |
+| 0.2.13 | 2025-03-01 | [55133](https://github.com/airbytehq/airbyte/pull/55133) | Update dependencies |
+| 0.2.12 | 2025-02-22 | [54540](https://github.com/airbytehq/airbyte/pull/54540) | Update dependencies |
+| 0.2.11 | 2025-02-15 | [54097](https://github.com/airbytehq/airbyte/pull/54097) | Update dependencies |
+| 0.2.10 | 2025-02-08 | [53539](https://github.com/airbytehq/airbyte/pull/53539) | Update dependencies |
+| 0.2.9 | 2025-02-01 | [53052](https://github.com/airbytehq/airbyte/pull/53052) | Update dependencies |
+| 0.2.8 | 2025-01-25 | [52437](https://github.com/airbytehq/airbyte/pull/52437) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [52004](https://github.com/airbytehq/airbyte/pull/52004) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51448](https://github.com/airbytehq/airbyte/pull/51448) | Update dependencies |
+| 0.2.5 | 2024-12-28 | [50381](https://github.com/airbytehq/airbyte/pull/50381) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49746](https://github.com/airbytehq/airbyte/pull/49746) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48338](https://github.com/airbytehq/airbyte/pull/48338) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47673](https://github.com/airbytehq/airbyte/pull/47673) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44063](https://github.com/airbytehq/airbyte/pull/44063) | Refactor connector to manifest-only format |
 | 0.1.17 | 2024-08-10 | [43569](https://github.com/airbytehq/airbyte/pull/43569) | Update dependencies |
 | 0.1.16 | 2024-08-03 | [43249](https://github.com/airbytehq/airbyte/pull/43249) | Update dependencies |

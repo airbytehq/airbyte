@@ -8,7 +8,9 @@ from typing import List
 
 import anyio
 import pytest
+
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
+from pipelines.airbyte_ci.connectors.publish.context import RolloutMode
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -24,6 +26,7 @@ def publish_context(mocker, dagger_client, tmpdir):
         docker_hub_username=None,
         docker_hub_password=None,
         docker_image="hello-world:latest",
+        rollout_mode=RolloutMode.PUBLISH,
     )
 
 
@@ -93,7 +96,8 @@ class TestUploadSpecToCache:
         step = publish_pipeline.UploadSpecToCache(publish_context)
         step_result = await step.run(connector_container)
         if valid_spec:
-            publish_pipeline.upload_to_gcs.assert_called_once_with(
+            # First call should be for OSS spec
+            publish_pipeline.upload_to_gcs.assert_any_call(
                 publish_context.dagger_client,
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
@@ -101,6 +105,19 @@ class TestUploadSpecToCache:
                 publish_context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
+
+            # Second call should be for Cloud spec if different from OSS
+            cloud_spec = await step._get_connector_spec(connector_container, "CLOUD")
+            oss_spec = await step._get_connector_spec(connector_container, "OSS")
+            if cloud_spec != oss_spec:
+                publish_pipeline.upload_to_gcs.assert_any_call(
+                    publish_context.dagger_client,
+                    mocker.ANY,
+                    f"specs/{image_name.replace(':', '/')}/spec.cloud.json",
+                    publish_context.spec_cache_bucket_name,
+                    publish_context.spec_cache_gcs_credentials,
+                    flags=['--cache-control="no-cache"'],
+                )
 
             spec_file = publish_pipeline.upload_to_gcs.call_args.args[1]
             uploaded_content = await spec_file.contents()
@@ -168,7 +185,7 @@ async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre
     run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.FAILURE)
 
-    context = mocker.MagicMock(pre_release=pre_release)
+    context = mocker.MagicMock(pre_release=pre_release, rollout_mode=RolloutMode.PUBLISH)
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     run_metadata_validation.assert_called_once()
@@ -188,16 +205,22 @@ async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre
 
 
 @pytest.mark.parametrize(
-    "check_image_exists_status",
-    [StepStatus.SKIPPED, StepStatus.FAILURE],
+    "check_image_exists_status, pre_release",
+    [
+        (StepStatus.SKIPPED, False),
+        (StepStatus.SKIPPED, True),
+        (StepStatus.FAILURE, False),
+    ],
 )
-async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker, check_image_exists_status, publish_context):
+async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker, check_image_exists_status, pre_release, publish_context):
     """We validate that when the connector image exists or the check fails, we don't run the rest of the pipeline.
     We also validate that the metadata upload step is called when the image exists (Skipped status).
     We do this to ensure that the metadata is still updated in the case where the connector image already exists.
     It's the role of the metadata service upload command to actually upload the file if the metadata has changed.
     But we check that the metadata upload step does not happen if the image check fails (Failure status).
     """
+    publish_context.pre_release = pre_release
+
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
@@ -225,7 +248,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
         if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache", "UploadSbom"]:
             getattr(module, to_mock).return_value.run.assert_not_called()
 
-    if check_image_exists_status is StepStatus.SKIPPED:
+    if check_image_exists_status is StepStatus.SKIPPED and not pre_release:
         run_metadata_upload.assert_called_once()
         assert (
             report.steps_results
@@ -238,6 +261,9 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
                 run_metadata_upload.return_value,
             ]
         )
+
+    if check_image_exists_status is StepStatus.SKIPPED and pre_release:
+        run_metadata_upload.assert_not_called()
 
     if check_image_exists_status is StepStatus.FAILURE:
         run_metadata_upload.assert_not_called()
@@ -305,9 +331,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
-    context = mocker.MagicMock(
-        pre_release=pre_release,
-    )
+    context = mocker.MagicMock(pre_release=pre_release, rollout_mode=RolloutMode.PUBLISH)
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
 
@@ -361,7 +385,6 @@ async def test_run_connector_python_registry_publish_pipeline(
     expect_build_connector_called,
     api_token,
 ):
-
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
@@ -396,6 +419,7 @@ async def test_run_connector_python_registry_publish_pipeline(
         ),
         python_registry_token=api_token,
         python_registry_url="https://test.pypi.org/legacy/",
+        rollout_mode=RolloutMode.PUBLISH,
     )
     semaphore = anyio.Semaphore(1)
     if api_token is None:
@@ -420,19 +444,20 @@ async def test_run_connector_python_registry_publish_pipeline(
 
 class TestPushConnectorImageToRegistry:
     @pytest.mark.parametrize(
-        "is_pre_release, is_release_candidate, should_publish_latest",
+        "is_pre_release, version, should_publish_latest",
         [
-            (False, False, True),
-            (True, False, False),
-            (False, True, False),
-            (True, True, False),
+            (False, "1.0.0", True),
+            (True, "1.1.0-dev", False),
+            (False, "1.1.0-rc.1", False),
+            (True, "1.1.0-rc.1", False),
         ],
     )
-    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, is_release_candidate, should_publish_latest):
+    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, version, should_publish_latest):
         publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
         publish_context.docker_repository = "airbyte/source-pokeapi"
         publish_context.pre_release = is_pre_release
-        publish_context.connector.metadata = {"releases": {"isReleaseCandidate": is_release_candidate}}
+        publish_context.connector.version = version
+        publish_context.connector.metadata = {"dockerImageTag": version}
         step = publish_pipeline.PushConnectorImageToRegistry(publish_context)
         amd_built_container = mocker.Mock(publish=mocker.AsyncMock())
         arm_built_container = mocker.Mock(publish=mocker.AsyncMock())

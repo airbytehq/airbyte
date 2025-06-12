@@ -7,6 +7,7 @@ import os
 import dagger
 import docker
 import pytest
+
 from pipelines.airbyte_ci.connectors.build_image.steps import common
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.models.steps import StepStatus
@@ -60,7 +61,7 @@ class TestLoadContainerToLocalDockerHost:
             platform: dagger_client.container(platform=platform).from_(f'{test_context.connector.metadata["dockerRepository"]}:latest')
             for platform in platforms
         }
-        step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
+        step = common.LoadContainerToLocalDockerHost(test_context)
 
         assert step.image_tag == "dev"
         docker_client = docker.from_env()
@@ -71,7 +72,7 @@ class TestLoadContainerToLocalDockerHost:
                 docker_client.images.remove(full_image_name, force=True)
             except docker.errors.ImageNotFound:
                 pass
-        result = await step.run()
+        result = await step.run(built_containers)
         assert result.status is StepStatus.SUCCESS
         multi_platforms = len(platforms) > 1
         for platform in platforms:
@@ -93,10 +94,10 @@ class TestLoadContainerToLocalDockerHost:
                 f'{test_context.connector.metadata["dockerRepository"]}:latest'
             )
         }
-        step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
+        step = common.LoadContainerToLocalDockerHost(test_context)
 
         mocker.patch.object(common, "export_container_to_tarball", return_value=(None, None))
-        result = await step.run()
+        result = await step.run(built_containers)
         assert result.status is StepStatus.FAILURE
         assert "Failed to export the connector image" in result.stderr
 
@@ -107,9 +108,9 @@ class TestLoadContainerToLocalDockerHost:
                 f'{test_context.connector.metadata["dockerRepository"]}:latest'
             )
         }
-        step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
+        step = common.LoadContainerToLocalDockerHost(test_context)
         os.environ["DOCKER_HOST"] = bad_docker_host
-        result = await step.run()
+        result = await step.run(built_containers)
         assert result.status is StepStatus.FAILURE
         assert "Something went wrong while interacting with the local docker client" in result.stderr
 
@@ -120,11 +121,11 @@ class TestLoadContainerToLocalDockerHost:
                 f'{test_context.connector.metadata["dockerRepository"]}:latest'
             )
         }
-        step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
+        step = common.LoadContainerToLocalDockerHost(test_context)
         mock_docker_client = mocker.MagicMock()
         mock_docker_client.api.import_image_from_file.return_value = "bad response"
         mock_docker_client.images.load.side_effect = docker.errors.DockerException("test error")
         mocker.patch.object(common.docker, "from_env", return_value=mock_docker_client)
-        result = await step.run()
+        result = await step.run(built_containers)
         assert result.status is StepStatus.FAILURE
         assert "Something went wrong while interacting with the local docker client: test error" in result.stderr

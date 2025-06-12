@@ -101,7 +101,7 @@ class ManifestReferenceResolver:
         """
         return self._evaluate_node(manifest, manifest, set())  # type: ignore[no-any-return]
 
-    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set[Any]) -> Any:
+    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set[Any]) -> Any:  # noqa: ANN401
         if isinstance(node, dict):
             evaluated_dict = {k: self._evaluate_node(v, manifest, visited) for k, v in node.items() if not self._is_ref_key(k)}
             if REF_TAG in node:
@@ -126,7 +126,7 @@ class ManifestReferenceResolver:
         else:
             return node
 
-    def _lookup_ref_value(self, ref: str, manifest: Mapping[str, Any]) -> Any:
+    def _lookup_ref_value(self, ref: str, manifest: Mapping[str, Any]) -> Any:  # noqa: ANN401
         ref_match = re.match(r"#/(.*)", ref)
         if not ref_match:
             raise ValueError(f"Invalid reference format {ref}")
@@ -137,7 +137,7 @@ class ManifestReferenceResolver:
             raise ValueError(f"{path}, {ref}")
 
     @staticmethod
-    def _is_ref(node: Any) -> bool:
+    def _is_ref(node: Any) -> bool:  # noqa: ANN401
         return isinstance(node, str) and node.startswith("#/")
 
     @staticmethod
@@ -145,7 +145,7 @@ class ManifestReferenceResolver:
         return bool(key == REF_TAG)
 
     @staticmethod
-    def _read_ref_value(ref: str, manifest_node: Mapping[str, Any]) -> Any:
+    def _read_ref_value(ref: str, manifest_node: Mapping[str, Any]) -> Any:  # noqa: ANN401
         """
         Read the value at the referenced location of the manifest.
 

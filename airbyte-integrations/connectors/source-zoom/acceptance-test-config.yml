@@ -4,7 +4,7 @@ connector_image: airbyte/source-zoom:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_zoom/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -51,5 +51,7 @@ acceptance_tests:
         ignored_fields:
           meetings:
             - name: "start_url"
-              bypass_reason: "Causes sequential_read test to fail as the value is unique upon each read"
+              bypass_reason:
+                "Causes sequential_read test to fail as the value is unique
+                upon each read"
         timeout_seconds: 3600

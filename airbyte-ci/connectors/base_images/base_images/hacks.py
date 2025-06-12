@@ -4,6 +4,7 @@
 
 import dagger
 
+
 # If we perform addition dagger operations on the container, we need to make sure that a mapping exists for the new field name.
 DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION = {
     "from": lambda field: f'FROM {field.args.get("address")}',

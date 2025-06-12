@@ -228,10 +228,6 @@
       "relations": {}
     },
     {
-      "name": "products_graph_ql",
-      "relations": {}
-    },
-    {
       "name": "product_variants",
       "relations": {
         "product_id": "products.id",
@@ -263,10 +259,6 @@
         "parent_id": "transactions.id",
         "location_id": "locations.id"
       }
-    },
-    {
-      "name": "customer_saved_search",
-      "relations": {}
     },
     {
       "name": "customer_address",
