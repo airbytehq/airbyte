@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import jakarta.inject.Singleton
 
 @Singleton
@@ -284,10 +285,10 @@ class ClickhouseSqlGenerator {
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName =
-                    if (toDialectType(type.type).name == "DateTime") {
+                    if (type.type.toDialectType().name == "DateTime") {
                         "DateTime64(3)"
                     } else {
-                        toDialectType(type.type).name
+                        type.type.toDialectType().name
                     }
                 "`$columnName` $typeName"
             }
@@ -306,98 +307,32 @@ class ClickhouseSqlGenerator {
         return builder.toString()
     }
 
-    fun toDialectType(type: AirbyteType): ClickHouseDataType =
-        when (type) {
-            BooleanType -> ClickHouseDataType.Bool
-            DateType -> ClickHouseDataType.Date
-            IntegerType -> ClickHouseDataType.Int64
-            NumberType -> ClickHouseDataType.Decimal
-            StringType -> ClickHouseDataType.String
-            TimeTypeWithTimezone -> ClickHouseDataType.String
-            TimeTypeWithoutTimezone -> ClickHouseDataType.String
-            TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            is ArrayType,
-            ArrayTypeWithoutSchema,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> ClickHouseDataType.String
-            is UnionType ->
-                if (type.isLegacyUnion) {
-                    toDialectType(type.chooseType())
-                } else {
-                    ClickHouseDataType.String
-                }
-            is UnknownType -> ClickHouseDataType.String
-        }
-    fun toAirbyteType(type: ClickHouseDataType): AirbyteType =
-        when (type) {
-            ClickHouseDataType.Bool -> BooleanType
-            ClickHouseDataType.Date,
-            ClickHouseDataType.Date32-> DateType
-            ClickHouseDataType.Int8,
-            ClickHouseDataType.Int16,
-            ClickHouseDataType.Int32,
-            ClickHouseDataType.Int64,
-            ClickHouseDataType.Int128,
-            ClickHouseDataType.Int256,
-            ClickHouseDataType.UInt8,
-            ClickHouseDataType.UInt16,
-            ClickHouseDataType.UInt32,
-            ClickHouseDataType.UInt64,
-            ClickHouseDataType.UInt128,
-            ClickHouseDataType.UInt256 -> IntegerType
-            ClickHouseDataType.Float32,
-            ClickHouseDataType.Float64,
-            ClickHouseDataType.BFloat16,
-            ClickHouseDataType.Decimal,
-            ClickHouseDataType.Decimal32,
-            ClickHouseDataType.Decimal64,
-            ClickHouseDataType.Decimal128,
-            ClickHouseDataType.Decimal256 -> NumberType
-            ClickHouseDataType.LineString,
-            ClickHouseDataType.MultiLineString,
-            ClickHouseDataType.String,
-            ClickHouseDataType.FixedString -> StringType
-            ClickHouseDataType.DateTime,
-            ClickHouseDataType.DateTime32,
-            ClickHouseDataType.DateTime64 -> TimestampTypeWithoutTimezone
-
-            // Unsupported types that we map to String
-            ClickHouseDataType.Enum,
-            ClickHouseDataType.Enum8,
-            ClickHouseDataType.Enum16,
-            ClickHouseDataType.IntervalYear,
-            ClickHouseDataType.IntervalQuarter,
-            ClickHouseDataType.IntervalMonth,
-            ClickHouseDataType.IntervalWeek,
-            ClickHouseDataType.IntervalDay,
-            ClickHouseDataType.IntervalHour,
-            ClickHouseDataType.IntervalMinute,
-            ClickHouseDataType.IntervalSecond,
-            ClickHouseDataType.IntervalMicrosecond,
-            ClickHouseDataType.IntervalMillisecond,
-            ClickHouseDataType.IntervalNanosecond,
-            ClickHouseDataType.IPv4,
-            ClickHouseDataType.IPv6,
-            ClickHouseDataType.UUID,
-            ClickHouseDataType.Point,
-            ClickHouseDataType.Polygon,
-            ClickHouseDataType.MultiPolygon,
-            ClickHouseDataType.Ring,
-            ClickHouseDataType.JSON,
-            ClickHouseDataType.Object,
-            ClickHouseDataType.Nothing,
-            ClickHouseDataType.Nullable,
-            ClickHouseDataType.SimpleAggregateFunction,
-            ClickHouseDataType.LowCardinality,
-            ClickHouseDataType.AggregateFunction,
-            ClickHouseDataType.Variant,
-            ClickHouseDataType.Dynamic,
-            ClickHouseDataType.Array,
-            ClickHouseDataType.Map,
-            ClickHouseDataType.Tuple,
-            ClickHouseDataType.Nested -> StringType
-        }
-
+    fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {
+        return ""
+    }
 }
+
+fun AirbyteType.toDialectType(): ClickHouseDataType =
+    when (this) {
+        BooleanType -> ClickHouseDataType.Bool
+        DateType -> ClickHouseDataType.Date
+        IntegerType -> ClickHouseDataType.Int64
+        NumberType -> ClickHouseDataType.Decimal
+        StringType -> ClickHouseDataType.String
+        TimeTypeWithTimezone -> ClickHouseDataType.String
+        TimeTypeWithoutTimezone -> ClickHouseDataType.String
+        TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
+        TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
+        is ArrayType,
+        ArrayTypeWithoutSchema,
+        is ObjectType,
+        ObjectTypeWithEmptySchema,
+        ObjectTypeWithoutSchema -> ClickHouseDataType.String
+        is UnionType ->
+            if (this.isLegacyUnion) {
+                this.chooseType().toDialectType()
+            } else {
+                ClickHouseDataType.String
+            }
+        is UnknownType -> ClickHouseDataType.String
+    }
