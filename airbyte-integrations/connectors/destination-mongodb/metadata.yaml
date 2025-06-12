@@ -23,6 +23,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+    requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
