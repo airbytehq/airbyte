@@ -2627,6 +2627,12 @@ definitions:
         value: |
           {% set v = record.get('AllConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - RevenuePerAssist
+        value: |
+          {% set v = record.get('RevenuePerAssist') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
 
 streams:
   - $ref: "#/definitions/accounts_stream"
