@@ -3,7 +3,10 @@ package io.airbyte.cdk.output.sockets
 import io.airbyte.cdk.output.sockets.SocketWrapper.SocketStatus.*
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.net.StandardProtocolFamily
@@ -39,34 +42,37 @@ interface SocketWrapper {
     fun bindSocket()
     fun unbindSocket()
     var outputStream: OutputStream?
+    val available: Boolean
 }
 
-class UnixDomainSocketWrapper(private val socketFilePath: String, val outputFormat: String): SocketWrapper {
+class UnixDomainSocketWrapper(private val socketFilePath: String, val probePacket: ProbePacket): SocketWrapper {
 
     private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
 
     override var outputStream: OutputStream? = null
     override val status: SocketWrapper.SocketStatus
-        get() {
+        @Synchronized get() {
             if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
         }
-
+    override val available: Boolean
+        @Synchronized get() {
+            return socketStatus.get() == SOCKET_READY && socketBound.get().not()
+        }
+    /** Ensure the socket is still open and writable. */
     private fun ensureSocketState() {
         try {
-            if (outputFormat == "PROTOBUF") {
-                protoProbePacket.writeDelimitedTo(outputStream!!)
-            } else {
-                outputStream?.write('\n'.code)
-            }
-            // Ensure the socket is still open and writable
+            outputStream?.write(probePacket)
         } catch (e: Exception) {
             logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdownSocket()
             socketStatus.set(SOCKET_ERROR)
         }
     }
+
+    @get:Synchronized
+    @set:Synchronized
     override var bound: Boolean
         get() = socketBound.get()
         set(value) = socketBound.set(value)
@@ -103,9 +109,12 @@ class UnixDomainSocketWrapper(private val socketFilePath: String, val outputForm
         socketStatus.set(SOCKET_CLOSED)
     }
 
+    @Synchronized
     override fun bindSocket() {
         socketBound.set(true)
     }
+
+    @Synchronized
     override fun unbindSocket() {
         socketBound.set(false)
     }
@@ -122,9 +131,32 @@ interface SocketWrapperFactory {
 }
 
 @Singleton
-class DefaultSocketWrapperFactory: SocketWrapperFactory {
-    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}")
-    lateinit var outputFormat: String
+class DefaultSocketWrapperFactory(private val probePacket: ProbePacket): SocketWrapperFactory {
     override fun makeSocket(socketFilePath: String): SocketWrapper =
-        UnixDomainSocketWrapper(socketFilePath, outputFormat)
+        UnixDomainSocketWrapper(socketFilePath, probePacket)
+}
+
+private typealias ProbePacket = ByteArray
+
+@Factory
+private class ProbePacketFactory() {
+    @Singleton
+    @Requires(property = FORMAT_PROPERTY, value = "JSONL")
+    fun simpleProbePacket(): ProbePacket =
+        byteArrayOf('\n'.code.toByte())
+
+    @Singleton
+    @Requires(property = FORMAT_PROPERTY, value = "PROTOBUF")
+    fun protoProbePacket(): ProbePacket {
+        val baos = ByteArrayOutputStream()
+        protoProbePacket.writeDelimitedTo(baos)
+        return baos.toByteArray()
+    }
+
+    companion object {
+        val protoProbePacket: AirbyteMessage.AirbyteMessageProtobuf = AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
+            .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
+            .build()
+    }
+
 }

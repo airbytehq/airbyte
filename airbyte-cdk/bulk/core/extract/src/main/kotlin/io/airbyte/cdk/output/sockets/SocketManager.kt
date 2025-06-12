@@ -29,23 +29,9 @@ class SocketManager(
         }
     }
 
-
-     fun bindFreeSocket(): SocketWrapper? {
-        synchronized(sockets) {
-            val maybeSocket: SocketWrapper? =
-                sockets.firstOrNull {
-                    it.status == SocketWrapper.SocketStatus.SOCKET_READY && it.bound.not() }
-                    ?.also { it.bindSocket() }
-            return maybeSocket
-        }
-    }
-
-    /*companion object {
-        @Creator
-        fun getInstance(socketFactory: SocketWrapperFactory) : SocketManager {
-            return SocketManager(List(10) { "/tmp/tmp-socket-$it" }, socketFactory )
-        }
-    }*/
+    @Synchronized
+     fun bindFreeSocket(): SocketWrapper? =
+         sockets.firstOrNull { it.available }?.also { it.bindSocket() }
 }
 
 
