@@ -133,6 +133,14 @@ data class DestinationStream(
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
             .withIncludeFiles(includeFiles)
+            .withDestinationObjectName(destinationObjectName)
+            .apply {
+                if (matchingKey == null) {
+                    primaryKey = null
+                } else {
+                    primaryKey = matchingKey.map { listOf(it) }
+                }
+            }
             .apply {
                 when (importType) {
                     is Append -> {
@@ -146,8 +154,8 @@ data class DestinationStream(
                     Overwrite -> {
                         destinationSyncMode = DestinationSyncMode.OVERWRITE
                     }
-                    SoftDelete -> DestinationSyncMode.SOFT_DELETE
-                    Update -> DestinationSyncMode.UPDATE
+                    SoftDelete -> destinationSyncMode = DestinationSyncMode.SOFT_DELETE
+                    Update -> destinationSyncMode = DestinationSyncMode.UPDATE
                 }
             }
 
