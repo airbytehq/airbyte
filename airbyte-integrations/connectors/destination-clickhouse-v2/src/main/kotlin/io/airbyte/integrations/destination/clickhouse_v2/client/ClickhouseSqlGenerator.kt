@@ -304,9 +304,10 @@ class ClickhouseSqlGenerator {
     }
 
     fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {
-        val builder = StringBuilder()
-            .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
-            .appendLine()
+        val builder =
+            StringBuilder()
+                .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
+                .appendLine()
         alterationSummary.added.forEach { (columnName, columnType) ->
             builder.append(" ADD COLUMN `$columnName` $columnType,")
         }
@@ -338,5 +339,5 @@ fun AirbyteType.toDialectType(): String =
         ObjectTypeWithEmptySchema,
         ObjectTypeWithoutSchema,
         is UnionType,
-        is UnknownType-> ClickHouseDataType.String.name
+        is UnknownType -> ClickHouseDataType.String.name
     }

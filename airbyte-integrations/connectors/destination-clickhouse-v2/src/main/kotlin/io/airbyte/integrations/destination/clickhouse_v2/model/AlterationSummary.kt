@@ -1,6 +1,8 @@
-package io.airbyte.integrations.destination.clickhouse_v2.model
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
 
-import com.clickhouse.data.ClickHouseDataType
+package io.airbyte.integrations.destination.clickhouse_v2.model
 
 data class AlterationSummary(
     val added: Map<String, String>,
@@ -8,4 +10,5 @@ data class AlterationSummary(
     val deleted: Set<String>
 )
 
-fun AlterationSummary.isEmpty(): Boolean = added.isEmpty() && modified.isEmpty() && deleted.isEmpty()
+fun AlterationSummary.isEmpty(): Boolean =
+    added.isEmpty() && modified.isEmpty() && deleted.isEmpty()
