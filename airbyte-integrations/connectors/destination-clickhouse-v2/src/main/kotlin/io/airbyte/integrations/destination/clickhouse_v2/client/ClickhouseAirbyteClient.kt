@@ -11,6 +11,9 @@ import com.clickhouse.client.api.query.QueryResponse
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
@@ -101,8 +104,12 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        // TODO: ("Not yet implemented")
-        // ensure transitioning from dedupe to non-dedupe and back works
+        // TODO bmoric: ("Not yet implemented")
+        val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
+        val clickhouseSchema: LinkedHashMap<String, FieldType> = LinkedHashMap()
+        tableSchema.columns.forEach { column ->
+            column.dataType
+        }
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
