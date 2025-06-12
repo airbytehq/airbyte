@@ -2,70 +2,79 @@
 products: embedded
 ---
 
-# Develop your app with Embedded
+# Develop your web app
 
-Once you've completed the [prerequisites and one-time setup](prerequisites-setup), begin developing your app. This article provides instructions on how to use and run the Node.js sample web app with the Embedded Widget.
+The sample onboarding app is a full-stack React application with support for both local and production (Vercel) deployment architectures:
 
-## Fetch sample repo
+- **Development**: Frontend React19 with Vite build tool + Backend (Express) with proxy
+- **Production**: Frontend React19 with Vite build tool + API Routes (Vercel serverless functions)
 
-Fetch the sample web app from GitHub.
+## Backend
 
-```bash
-git clone https://github.com/airbytehq/embedded-sampleweb-nodejs.git
+Production deployment of the  application uses **Vercel Serverless Functions** instead of a traditional Express server for better performance and scalability:
+
+```markdown
+api/
+├── health.js          # GET /api/health - Health check
+├── logout.js          # POST /api/logout - User logout
+├── users/
+│   ├── index.js       # POST /api/users - Create/login user
+│   └── me.js          # GET /api/users/me - Get current user
+├── airbyte/
+│   └── token.js       # POST /api/airbyte/token - Generate widget token
+└── _lib/              # Shared utilities
+    ├── auth.js        # Authentication & CORS helpers
+    ├── db.js          # Database operations
+    └── airbyte.js     # Airbyte API integration
 ```
 
-## Set up .env
+Key Features
 
-If you have completed it already during the prerequisites, create a .env file from the provided `.env.example`.
+- **Serverless Architecture**: Each API endpoint is an independent function
+- **Auto-scaling**: Functions scale automatically based on demand
+- **Cookie-based Authentication**: Secure HTTP-only cookies
+- **CORS Support**: Configured for cross-origin requests
+- **File-based Database**: Simple JSON storage (upgradeable to Vercel KV)
 
-```bash
-cd embedded-sampleweb-node.js
-cp .env.example .env
+### Local deployment
+
+Ensure you are in the `sonar-demoapp` root directory, then install dependencies:
+
+```markdown
+npm install
 ```
 
-Your .env should look similar to below. Substitute the placeholder values with those created during the prerequisites step.
+Set /server/.env.local to use localhost
 
-```yaml
-# Airbyte Embedded Configuration
-## For security reasons, we require that the widget can only we attached to a specific origin.
-## If you're developing locally, it will look like: http://localhost:3000
-## Once you're in production, it will look like: https://app.abc.com
-ALLOWED_ORIGIN=your_webapp_origin
-## These 3 pieces of information are available in your initial workspace: Settings > Embedded
-AIRBYTE_ORGANIZATION_ID=your_organization_id
-AIRBYTE_CLIENT_ID=your_client_id
-AIRBYTE_CLIENT_SECRET=your_client_secret
-
-# AWS Credentials
-AWS_ACCESS_KEY=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-
-# S3 Configuration
-S3_BUCKET=your_s3_bucket_name
-S3_BUCKET_REGION=your_s3_bucket_region
-S3_BUCKET_PREFIX=your_s3_bucket_prefix
+```markdown
+SONAR_ALLOWED_ORIGIN=http://localhost:5173
 ```
 
-## Install dependencies
+Run the front end:
 
-Change directories to embedded-sampleweb-nodejs and run the following command.
-
-```bash
-npm build
+```markdown
+npm run dev
 ```
 
-## Configure allowed origin
+Run the backend server:
 
-To enable the app and Airbyte to communicate, please set `ALLOWED_ORIGIN` in the `.env` to the URL where you are running the sample web app. For example, if you are running the app on your local machine using the default configuration your `.env` entry is `ALLOWED_ORIGIN=http://localhost:3000`.
-
-## Start server
-
-Once you install dependencies successfully and configure your `.env`, start the app.
-
-```bash
-npm src/server.js
+```markdown
+cd server && npm start
 ```
 
-This starts both the server and web app. Open your browser to `http://localhost:300` to access the web interface.
+Your app will now be running on http://localhost:5173
 
-![Web app home](https://github.com/airbytehq/embedded-sampleweb-nodejs/raw/main/homepage.png)
+## Vercel Deployment
+
+The application is designed to run unchanged on Vercel, with the only configuration change required is setting environment keys via Settings > Environment Variables. It is recommended to use the Import .env button to avoid typo errors. Remember to change the SONAR_ALLOWED_ORIGIN to point to the vercel url.
+
+![Vercel environment variables.](./assets/vercel-env.png)
+
+## Widget Implementation
+
+The Airbyte Embedded widget is a javascript library with visibility of the component managed in the sample app via `src/components/UserProfile.jsx`. Actual lifecycle management of the Widget, including loading the Javascript library and managing authentication tokens is managed by `src/airbyteService.js`. This service endpoint provides the following functions. Developers are encouraged to add their own logging or instrumentation to these functions if additional management is required within the customer app.
+
+- `generateWidgetToken` - modify if you wish to use a custom UUID vs. email address as unique customer identifier
+- `loadAirbyteWidget` - creates the actual widget and retrieves widget library from cdn.
+- `openAirbyteWidget` - opens the  widget
+- `closeAirbyteWidget` - closes the widget
