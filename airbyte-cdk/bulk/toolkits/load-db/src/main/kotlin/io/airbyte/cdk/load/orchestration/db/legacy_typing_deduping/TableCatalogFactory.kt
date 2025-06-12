@@ -34,25 +34,33 @@ class TableCatalogFactory {
     @Singleton
     fun getTableCatalog(
         catalog: DestinationCatalog,
-        rawTableNameGenerator: RawTableNameGenerator,
+        // Raw table generator is optional. Direct-load destinations don't need it
+        // (unless they were previously T+D destinations, in which case it's still required
+        // so that we maintain stable names with the T+D version)
+        rawTableNameGenerator: RawTableNameGenerator?,
         finalTableNameGenerator: FinalTableNameGenerator,
         finalTableColumnNameGenerator: ColumnNameGenerator,
     ): TableCatalog {
-        val processedRawTableNames = mutableSetOf<TableName>()
+        val processedRawTableNames =
+            if (rawTableNameGenerator != null) {
+                mutableSetOf<TableName>()
+            } else {
+                null
+            }
         val processedFinalTableNames = mutableSetOf<TableName>()
 
         val result = mutableMapOf<DestinationStream, TableNameInfo>()
 
         catalog.streams.forEach { stream ->
-            val originalRawTableName = rawTableNameGenerator.getTableName(stream.descriptor)
+            val originalRawTableName = rawTableNameGenerator?.getTableName(stream.descriptor)
             val originalFinalTableName = finalTableNameGenerator.getTableName(stream.descriptor)
-            val currentRawProcessedName: TableName
+            val currentRawProcessedName: TableName?
             val currentFinalProcessedName: TableName
 
-            if (
-                originalRawTableName in processedRawTableNames ||
-                    originalFinalTableName in processedFinalTableNames
-            ) {
+            val rawTableNameColliding =
+                processedRawTableNames?.let { originalRawTableName in it } ?: false
+            val finalTableNameColliding = originalFinalTableName in processedFinalTableNames
+            if (rawTableNameColliding || finalTableNameColliding) {
                 LOGGER.info {
                     "Detected table name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}"
                 }
@@ -65,14 +73,13 @@ class TableCatalogFactory {
                 val newName = "${stream.descriptor.name}_$hash"
 
                 currentRawProcessedName =
-                    rawTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
-                processedRawTableNames.add(currentRawProcessedName)
-
+                    rawTableNameGenerator?.getTableName(stream.descriptor.copy(name = newName))
+                processedRawTableNames?.add(currentRawProcessedName!!)
                 currentFinalProcessedName =
                     finalTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
-                processedRawTableNames.add(originalRawTableName)
+                processedRawTableNames?.add(originalRawTableName!!)
                 processedFinalTableNames.add(originalFinalTableName)
                 currentRawProcessedName = originalRawTableName
                 currentFinalProcessedName = originalFinalTableName
