@@ -15,7 +15,7 @@ import kotlin.random.Random
  */
 class TestAssetResourceNamer(
     // Inject the clock and random segment generator for testability
-    private val clock: Clock = utcClock,
+    private val clock: Clock = Clock.systemUTC(), // always use UTC to avoid race conditions
     private val randomNameSegmentGenerator: RandomNameSegmentGenerator =
         RandomNameSegmentGenerator(),
 ) {
