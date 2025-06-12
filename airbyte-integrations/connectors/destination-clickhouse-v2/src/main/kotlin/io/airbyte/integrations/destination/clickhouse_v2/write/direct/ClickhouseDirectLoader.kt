@@ -5,10 +5,26 @@
 package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
+import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
+import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.data.ClickHouseFormat
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.protobuf.value
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta as CDKConstants
 import io.airbyte.cdk.load.util.UUIDGenerator
@@ -30,35 +46,61 @@ private val log = KotlinLogging.logger {}
 class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
-    private val uuidGenerator: UUIDGenerator,
 ) : DirectLoader {
     private var buffer: ByteArrayOutputStream = ByteArrayOutputStream()
-    private var recordCount = 0
+    private lateinit var schema: TableSchema
+    private lateinit var writer: RowBinaryFormatWriter
 
-    object Constants {
-        const val BATCH_SIZE_RECORDS = 500000
-        const val DELIMITER = "\n"
+    private fun init() {
+        schema = clickhouseClient.getTableSchema(descriptor.name, descriptor.namespace ?: "default")
+        writer = RowBinaryFormatWriter(buffer, schema, ClickHouseFormat.RowBinary)
     }
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        // we have to do this lazily because it depends on the table being created in the dest
+        if (!this::writer.isInitialized) {
+            init()
+        }
+
         // TODO: validate and coerce data if necessary
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
-        meta.put(CDKConstants.AIRBYTE_META_SYNC_ID_KEY, record.stream.syncId)
+        meta.put(CDKConstants.AIRBYTE_META_SYNC_ID, record.stream.syncId)
         // add internal columns
         val protocolRecord = record.asJsonRecord() as ObjectNode
-        protocolRecord.set<ObjectNode>(CDKConstants.COLUMN_NAME_AB_META, meta)
-        protocolRecord.put(CDKConstants.COLUMN_NAME_AB_EXTRACTED_AT, record.rawData.emittedAtMs)
-        protocolRecord.put(CDKConstants.COLUMN_NAME_AB_GENERATION_ID, record.stream.generationId)
-        protocolRecord.put(CDKConstants.COLUMN_NAME_AB_RAW_ID, uuidGenerator.v7().toString())
+
+        record.schema.asColumns().forEach {
+            val rawValue = protocolRecord[it.key]
+            when (val coerced = rawValue.toAirbyteValue()) {
+                is BooleanValue -> writer.setValue(it.key, coerced.value)
+                is IntegerValue -> writer.setValue(it.key, coerced.value)
+                is NumberValue -> writer.setValue(it.key, coerced.value)
+                is StringValue -> writer.setValue(it.key, coerced.value)
+                is ObjectValue -> writer.setValue(it.key, coerced.values.toString())
+                is ArrayValue -> writer.setValue(it.key, coerced.values.toString())
+                is NullValue -> writer.setValue(it.key, null)
+                else -> {}
+            }
+
+
+//            writer.setValue(it.key, rawValue)
+        }
+
+        val ts = java.time.Instant.ofEpochMilli(record.rawData.emittedAtMs)
+
+        writer.setValue(CDKConstants.COLUMN_NAME_AB_EXTRACTED_AT, ts)
+        writer.setValue(CDKConstants.COLUMN_NAME_AB_GENERATION_ID, record.stream.generationId)
+        writer.setValue(CDKConstants.COLUMN_NAME_AB_RAW_ID, record.airbyteRawId.toString())
+        writer.setValue(CDKConstants.COLUMN_NAME_AB_META, meta)
+        writer.commitRow()
 
         // serialize and buffer
-        buffer.write(protocolRecord.toString())
-        buffer.write(DELIMITER)
+//        buffer.write(protocolRecord.toString())
+//        buffer.write(DELIMITER)
 
-        recordCount++
+//        recordCount++
 
         // determine whether we're complete
-        if (recordCount >= Constants.BATCH_SIZE_RECORDS) {
+        if (writer.rowCount >= Constants.BATCH_SIZE_RECORDS) {
             // upload
             flush()
             return DirectLoader.Complete
@@ -68,20 +110,26 @@ class ClickhouseDirectLoader(
     }
 
     private suspend fun flush() {
-        val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
-        buffer = ByteArrayOutputStream()
+
+        log.info { "Copying buffer for insert into ${descriptor.name}" }
+        val bytes = ByteArrayInputStream(buffer.toByteArray())
+//        buffer = ByteArrayOutputStream()
+
+        log.info { "Beginning insert into ${descriptor.name}" }
 
         val insertResult =
             clickhouseClient
                 .insert(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
-                    jsonBytes,
-                    ClickHouseFormat.JSONEachRow,
+                    bytes,
+                    ClickHouseFormat.RowBinary
+//                    bytes,
+//                    ClickHouseFormat.JSONEachRow,
                 )
                 .await()
 
         log.info { "Finished insert of ${insertResult.writtenRows} rows into ${descriptor.name}" }
-        recordCount = 0
+//        recordCount = 0
     }
 
     // only calls this on force complete
@@ -91,4 +139,9 @@ class ClickhouseDirectLoader(
 
     // this is always called on complete
     override fun close() {}
+
+    object Constants {
+        const val BATCH_SIZE_RECORDS = 500000
+        const val DELIMITER = "\n"
+    }
 }
