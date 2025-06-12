@@ -10,10 +10,12 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
+import io.airbyte.cdk.load.message.Ignored
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
+import io.airbyte.cdk.load.message.ProbeMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.pipeline.InputPartitioner
@@ -25,6 +27,8 @@ import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.fold
+
+private val log = KotlinLogging.logger {}
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -44,7 +48,6 @@ class InputConsumerTask(
     private val partitioner: InputPartitioner,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 ) : Task {
-    private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
@@ -90,7 +93,11 @@ class InputConsumerTask(
                             pipelineEventBookkeepingRouter.handleCheckpoint(
                                 reserved.replace(message)
                             )
-                        is Undefined -> log.warn { "Unhandled message: $message" }
+                        Undefined -> log.warn { "Unhandled message: $message" }
+                        ProbeMessage,
+                        Ignored -> {
+                            /* do nothing */
+                        }
                     }
                     unopenedStreams
                 }

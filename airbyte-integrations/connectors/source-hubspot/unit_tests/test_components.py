@@ -7,15 +7,6 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 from requests import Response
-from source_hubspot.components import (
-    HubspotAssociationsExtractor,
-    HubspotFlattenAssociationsTransformation,
-    HubspotPropertyHistoryExtractor,
-    HubspotRenamePropertiesTransformation,
-    MigrateEmptyStringState,
-    NewtoLegacyFieldTransformation,
-)
-from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
@@ -92,8 +83,13 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
         "Does not overwrite value for legacy field if legacy field exists",
     ],
 )
-def test_new_to_legacy_field_transformation(input, expected):
-    transformer = NewtoLegacyFieldTransformation(DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
+def test_new_to_legacy_field_transformation(input, expected, components_module):
+    deals_new_to_legacy_mapping = {
+        "hs_date_entered_": "hs_v2_date_entered_",
+        "hs_date_exited_": "hs_v2_date_exited_",
+        "hs_time_in_": "hs_v2_latest_time_in_",
+    }
+    transformer = components_module.NewtoLegacyFieldTransformation(deals_new_to_legacy_mapping)
     transformer.transform(input)
     assert input == expected
 
@@ -109,8 +105,8 @@ def test_new_to_legacy_field_transformation(input, expected):
         "Valid state: date string, no need to migrate",
     ],
 )
-def test_migrate_empty_string_state(config, state, expected_should_migrate, expected_state):
-    state_migration = MigrateEmptyStringState("updatedAt", config)
+def test_migrate_empty_string_state(config, state, expected_should_migrate, expected_state, components_module):
+    state_migration = components_module.MigrateEmptyStringState("updatedAt", config)
 
     actual_should_migrate = state_migration.should_migrate(stream_state=state)
     assert actual_should_migrate is expected_should_migrate
@@ -119,7 +115,7 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
         assert state_migration.migrate(stream_state=state) == expected_state
 
 
-def test_hubspot_rename_properties_transformation():
+def test_hubspot_rename_properties_transformation(components_module):
     expected_properties = {
         "properties_amount": {"type": ["null", "number"]},
         "properties_hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
@@ -142,7 +138,7 @@ def test_hubspot_rename_properties_transformation():
         "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
         "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
     }
-    transformation = HubspotRenamePropertiesTransformation()
+    transformation = components_module.HubspotRenamePropertiesTransformation()
 
     transformation.transform(record=dynamic_properties_record)
 
@@ -162,7 +158,7 @@ def test_hubspot_rename_properties_transformation():
     assert dynamic_properties_record["properties"] == expected_properties["properties"]
 
 
-def test_property_history_extractor():
+def test_property_history_extractor(components_module):
     expected_records = [
         {
             "dealId": "1234",
@@ -297,7 +293,7 @@ def test_property_history_extractor():
     decoder = Mock()
     decoder.decode.return_value = response
 
-    extractor = HubspotPropertyHistoryExtractor(
+    extractor = components_module.HubspotPropertyHistoryExtractor(
         field_path=["results"], entity_primary_key="dealId", additional_keys=["archived"], decoder=decoder, config={}, parameters={}
     )
 
@@ -306,7 +302,7 @@ def test_property_history_extractor():
     assert actual_records == expected_records
 
 
-def test_property_history_extractor_ignore_hs_lastmodifieddate():
+def test_property_history_extractor_ignore_hs_lastmodifieddate(components_module):
     expected_records = [
         {
             "dealId": "1234",
@@ -361,7 +357,7 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate():
     decoder = Mock()
     decoder.decode.return_value = response
 
-    extractor = HubspotPropertyHistoryExtractor(
+    extractor = components_module.HubspotPropertyHistoryExtractor(
         field_path=["results"], entity_primary_key="dealId", additional_keys=[], decoder=decoder, config={}, parameters={}
     )
 
@@ -370,10 +366,10 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate():
     assert actual_records == expected_records
 
 
-def test_flatten_associations_transformation():
+def test_flatten_associations_transformation(components_module):
     expected_record = {"id": "a2b", "Contacts": [101, 102], "Companies": [202, 209]}
 
-    transformation = HubspotFlattenAssociationsTransformation()
+    transformation = components_module.HubspotFlattenAssociationsTransformation()
 
     current_record = {
         "id": "a2b",
@@ -388,7 +384,7 @@ def test_flatten_associations_transformation():
     assert current_record == expected_record
 
 
-def test_associations_extractor(config):
+def test_associations_extractor(config, components_module):
     expected_records = [
         {"id": "123", "companies": ["909", "424"], "contacts": ["408"]},
         {
@@ -436,7 +432,7 @@ def test_associations_extractor(config):
         },
     ]
 
-    extractor = HubspotAssociationsExtractor(
+    extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="deals",
         associations_list=["companies", "contacts"],
@@ -460,10 +456,10 @@ def test_associations_extractor(config):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
-def test_extractor_supports_entity_interpolation(config):
+def test_extractor_supports_entity_interpolation(config, components_module):
     parameters = {"entity": "engagements_emails"}
 
-    extractor = HubspotAssociationsExtractor(
+    extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="{{ parameters['entity'] }}",
         associations_list=["companies", "contacts"],
@@ -483,8 +479,8 @@ def test_extractor_supports_entity_interpolation(config):
         pytest.param("{{ parameters['associations'] }}", id="test_interpolated_associations"),
     ],
 )
-def test_extractor_supports_associations_list_interpolation(config, associations_list_value):
-    extractor = HubspotAssociationsExtractor(
+def test_extractor_supports_associations_list_interpolation(config, associations_list_value, components_module):
+    extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="emails",
         associations_list=associations_list_value,
@@ -500,3 +496,91 @@ def test_extractor_supports_associations_list_interpolation(config, associations
         evaluated_associations_list = extractor._associations_list
 
     assert evaluated_associations_list == ["contacts", "deals", "tickets"]
+
+
+@pytest.mark.parametrize(
+    "original_value,field_schema,expected_value",
+    [
+        pytest.param("", {"type": ["null", "number"]}, None, id="test_empty_string_is_none_for_non_string_types"),
+        pytest.param(
+            "1748246523456",
+            {"type": ["null", "date-time"], "format": "date-time"},
+            "2025-05-26T08:02:03+00:00",
+            id="test_convert_millisecond_timestamp_to_seconds",
+        ),
+        pytest.param(
+            "1748246523456.0",
+            {"type": ["null", "date-time"], "format": "date-time"},
+            "2025-05-26T08:02:03+00:00",
+            id="test_overflow_error_float_returns_correct_date_time",
+        ),
+        pytest.param(
+            "174824652345600.0",
+            {"type": ["null", "date-time"], "format": "date-time"},
+            "174824652345600.0",
+            id="test_unparsable_overflow_error_returns_original_value",
+        ),
+    ],
+)
+def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
+    entity_schema_normalization = components_module.EntitySchemaNormalization()
+
+    transform_function = entity_schema_normalization.get_transform_function()
+
+    normalized_value = transform_function(original_value=original_value, field_schema=field_schema)
+
+    assert normalized_value == expected_value
+
+
+@pytest.mark.parametrize(
+    "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
+    [
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}},
+            100,
+            {"id": 5000},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_last_page_is_less_than_page_size",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
+        ),
+        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
+        pytest.param(
+            {"paging": {"next": {"after": 10000}}},
+            200,
+            {"id": 25000},
+            {"after": 9800},
+            {"after": 0, "id": 25001},
+            id="test_reset_page_and_move_to_next_chunk",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 200}}},
+            200,
+            {"id": 30000},
+            {"after": 0, "id": 25001},
+            {"after": 200, "id": 25001},
+            id="test_next_page_on_next_chunk_of_records",
+        ),
+    ],
+)
+def test_crm_search_pagination_strategy(
+    components_module, json_response, last_page_size, last_record, last_page_token_value, expected_next_page_token
+):
+    pagination_strategy = components_module.HubspotCRMSearchPaginationStrategy(page_size=200)
+
+    response = Mock()
+    response.json.return_value = json_response
+
+    actual_next_page_token = pagination_strategy.next_page_token(
+        response=response,
+        last_page_size=last_page_size,
+        last_record=last_record,
+        last_page_token_value=last_page_token_value,
+    )
+
+    assert actual_next_page_token == expected_next_page_token

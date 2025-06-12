@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.5.17"
+version = "1.9.1"
 name = "source-google-search-console"
 description = "Source implementation for Google Search Console."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -30,6 +30,7 @@ requests-mock = "^1.11.0"
 pytest-lazy-fixture = "^0.6.3"
 pytest = "^7.4.0"
 pytest-mock = "^3.6.1"
+pytest-lazy-fixtures = "^1.1.2"
 
 
 [tool.poe]

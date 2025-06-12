@@ -9,23 +9,29 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.file.TcpPortReserver
+import io.airbyte.cdk.load.message.InputMessage
+import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.NUM_SOCKETS
+import io.airbyte.cdk.load.test.util.rotate
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedWriter
 import java.io.File
-import java.io.OutputStreamWriter
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Clock
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.io.path.outputStream
 import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -47,13 +53,15 @@ class DockerizedDestination(
     private val testName: String,
     private val useFileTransfer: Boolean,
     private val envVars: Map<String, String>,
-    private val dataChannelMedium: DataChannelMedium,
+    override val dataChannelMedium: DataChannelMedium,
+    val dataChannelFormat: DataChannelFormat,
+    val namespaceMappingConfig: NamespaceMappingConfig,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
     private var sidecarProcess: Process? = null
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
-    private val destinationStdin: BufferedWriter
+    private val destinationDataChannels: Array<OutputStream>
     // We use this suffix as part of the docker container name.
     // We'll also add it to the log prefix, which helps with debugging tests
     // that launch multiple containers.
@@ -68,29 +76,33 @@ class DockerizedDestination(
     // Mainly, used for file transfer but there are other consumers, name the AWS CRT HTTP client.
     private val tmpDir = Files.createTempDirectory("tmp").grantAllPermissions()
     private val socketPathDir = "/var/airbyte"
-    private val socketPath = "$socketPathDir/ab_socket_$randomSuffix.socket"
     private val sharedVolumeName = "airbyte-test-shared-volume-$randomSuffix"
     private val destinationAwaitingSocketConnection = CompletableDeferred<Unit>()
+    private val dataChannelIndex = AtomicInteger(0)
 
     init {
-        val sidecarPort = TcpPortReserver.findAvailablePort()
-
         createSharedVolume()
         process = startDestination(featureFlags)
 
         // Annoyingly, the process's stdin is called "outputStream"
-        destinationStdin =
+        destinationDataChannels =
             when (dataChannelMedium) {
-                DataChannelMedium.STDIO ->
-                    BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
-                DataChannelMedium.SOCKETS -> {
-                    sidecarProcess = startSidecar(sidecarPort)
-                    val tcpSocketWriter =
-                        TCPSocketWriter("localhost", sidecarPort, awaitFirstWrite = true)
-                    BufferedWriter(OutputStreamWriter(tcpSocketWriter))
+                DataChannelMedium.STDIO -> arrayOf(process.outputStream)
+                DataChannelMedium.SOCKET -> {
+                    (0 until NUM_SOCKETS)
+                        .map {
+                            val sidecarPort = TcpPortReserver.findAvailablePort()
+                            sidecarProcess = startSidecar(sidecarPort, makeSocketPath(it), it)
+
+                            TCPSocketWriter("localhost", sidecarPort, awaitFirstWrite = true)
+                        }
+                        .toTypedArray()
                 }
             }
     }
+
+    private fun makeSocketPath(socketIndex: Int): String =
+        "$socketPathDir/ab_socket_${randomSuffix}_$socketIndex.socket"
 
     private fun createSharedVolume() {
         val createVolumeCommand =
@@ -144,13 +156,24 @@ class DockerizedDestination(
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
 
+        val containerNamespaceMapperConfigPath =
+            Paths.get(containerDataRoot, "namespace-mapper-config.json")
+        val hostNamespaceMapperConfigPath = workspaceRoot.resolve("namespace-mapper-config.json")
+        hostNamespaceMapperConfigPath.outputStream().use {
+            it.write(namespaceMappingConfig.serializeToJsonBytes())
+        }
+        val socketPaths = (0 until NUM_SOCKETS).joinToString(",") { makeSocketPath(it) }
         val socketPathEnvVarsMaybe =
-            if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+            if (dataChannelMedium == DataChannelMedium.SOCKET) {
                 listOf(
                     "-e",
-                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKETS}",
+                    "${EnvVarConstants.DATA_CHANNEL_MEDIUM.environmentVariable}=${DataChannelMedium.SOCKET}",
                     "-e",
-                    "${EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS.environmentVariable}=$socketPath",
+                    "${EnvVarConstants.DATA_CHANNEL_FORMAT.environmentVariable}=$dataChannelFormat",
+                    "-e",
+                    "${EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS.environmentVariable}=$socketPaths",
+                    "-e",
+                    "${EnvVarConstants.NAMESPACE_MAPPER_CONFIG_PATH.environmentVariable}=$containerNamespaceMapperConfigPath",
                 )
             } else {
                 emptyList()
@@ -216,7 +239,7 @@ class DockerizedDestination(
         return ProcessBuilder(cmd).start()
     }
 
-    private fun startSidecar(sidecarPort: Int): Process {
+    private fun startSidecar(sidecarPort: Int, socketPath: String, index: Int): Process {
         // Starts the socat container first, which creates the socket with proper permissions
         // UNIX-LISTEN ensures socat will create the UNIX socket. It will also await connections
         // and block until a connection is made.
@@ -245,14 +268,13 @@ class DockerizedDestination(
                 "--rm",
                 "-d",
                 "--name",
-                "socat-sidecar-$randomSuffix",
+                "socat-sidecar-$randomSuffix-$index",
                 "--mount",
                 "source=$sharedVolumeName,target=/var/airbyte",
                 "-p",
                 "$sidecarPort:$sidecarPort",
                 "alpine/socat",
                 // level of logging; more d's => more verbose. At 15 it becomes sentient.
-                // socat will go away
                 "-dddd",
                 "UNIX-LISTEN:$socketPath,reuseaddr,mode=777",
                 "TCP-LISTEN:$sidecarPort,reuseaddr,nodelay=1",
@@ -274,7 +296,7 @@ class DockerizedDestination(
     }
 
     private suspend fun awaitReadyForSendingMessages() {
-        if (dataChannelMedium == DataChannelMedium.SOCKETS) {
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
             destinationAwaitingSocketConnection.await()
         }
     }
@@ -285,6 +307,8 @@ class DockerizedDestination(
                     // Consume stdout. These should all be properly-formatted messages.
                     // Annoyingly, the process's stdout is called "inputStream".
                     val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
+                    val unconnectedSockets =
+                        (0 until NUM_SOCKETS).map { makeSocketPath(it) }.toMutableSet()
                     while (destinationStdout.hasNextLine()) {
                         val line = destinationStdout.nextLine()
                         val message =
@@ -297,16 +321,21 @@ class DockerizedDestination(
                             }
                         if (message.type == AirbyteMessage.Type.LOG) {
                             // Don't capture logs, just echo them directly to our own stdout
-                            if (
-                                message.log.message.contains(
-                                    "Socket $socketPath connected for reading"
-                                )
-                            ) {
+                            val connectedSockets =
+                                unconnectedSockets.filter {
+                                    message.log.message.contains(
+                                        "Socket file $it connected for reading"
+                                    )
+                                }
+                            connectedSockets.forEach {
                                 // This is a hack to detect when the destination is ready to accept
                                 // messages.
                                 // We should probably find a better way to do this.
-                                logger.info { "Saw 'Socket $socketPath connected for reading'" }
-                                destinationAwaitingSocketConnection.complete(Unit)
+                                unconnectedSockets.remove(it)
+                                if (unconnectedSockets.isEmpty()) {
+                                    logger.info { "All sockets connected, unblocking writes." }
+                                    destinationAwaitingSocketConnection.complete(Unit)
+                                }
                             }
 
                             val combinedMessage =
@@ -362,16 +391,25 @@ class DockerizedDestination(
             }
     }
 
-    override suspend fun sendMessage(message: AirbyteMessage) {
+    override suspend fun sendMessage(message: InputMessage, broadcast: Boolean) {
         awaitReadyForSendingMessages()
-        destinationStdin.write(message.serializeToString())
-        destinationStdin.newLine()
+        val dataChannels =
+            if (broadcast) {
+                destinationDataChannels
+            } else {
+                arrayOf(
+                    destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)]
+                )
+            }
+        dataChannels.forEach { message.writeProtocolMessage(dataChannelFormat, it) }
     }
 
     override suspend fun sendMessage(string: String) {
         awaitReadyForSendingMessages()
-        destinationStdin.write(string)
-        destinationStdin.newLine()
+        destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)].let {
+            it.write(string.toByteArray(Charsets.UTF_8))
+            it.write('\n'.code)
+        }
     }
 
     override fun readMessages(): List<AirbyteMessage> {
@@ -381,7 +419,7 @@ class DockerizedDestination(
     override suspend fun shutdown() {
         withContext(Dispatchers.IO) {
             logger.info { "Destination $randomSuffix shutting down" }
-            destinationStdin.close()
+            destinationDataChannels.forEach { it.close() }
             // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
             // all the destination output (logs/trace messages).
             stdoutDrained.join()
@@ -402,7 +440,7 @@ class DockerizedDestination(
         }
     }
 
-    override fun kill() {
+    override suspend fun kill() {
         process.destroyForcibly()
     }
 
@@ -423,6 +461,8 @@ class DockerizedDestinationFactory(
         useFileTransfer: Boolean,
         micronautProperties: Map<Property, String>,
         dataChannelMedium: DataChannelMedium,
+        dataChannelFormat: DataChannelFormat,
+        namespaceMappingConfig: NamespaceMappingConfig,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -434,6 +474,8 @@ class DockerizedDestinationFactory(
             useFileTransfer,
             micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             dataChannelMedium,
+            dataChannelFormat,
+            namespaceMappingConfig = namespaceMappingConfig,
             *featureFlags,
         )
     }

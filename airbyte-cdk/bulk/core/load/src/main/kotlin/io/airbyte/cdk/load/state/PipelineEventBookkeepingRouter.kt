@@ -7,14 +7,13 @@ package io.airbyte.cdk.load.state
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.PipelineInputEvent
+import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
@@ -29,9 +28,14 @@ import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.BatchEndOfStream
+import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.util.CloseableCoroutine
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicInteger
+import org.apache.mina.util.ConcurrentHashSet
 
 /**
  * The stdio and socket input channel differ in subtle and critical ways
@@ -56,8 +60,18 @@ class PipelineEventBookkeepingRouter(
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val openStreamQueue: QueueWriter<DestinationStream>,
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    @Named("batchStateUpdateQueue")
+    private val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>,
+    @Named("numDataChannels") private val numDataChannels: Int,
+    @Named("markEndOfStreamAtEndOfSync") private val markEndOfStreamAtEndOfSync: Boolean
 ) : CloseableCoroutine {
     private val log = KotlinLogging.logger {}
+    private val clientCount = AtomicInteger(numDataChannels)
+    private val sawEndOfStreamComplete = ConcurrentHashSet<DestinationStream.Descriptor>()
+
+    init {
+        log.info { "Creating bookkeeping router for $numDataChannels data channels" }
+    }
 
     suspend fun handleStreamMessage(
         message: DestinationStreamAffinedMessage,
@@ -79,28 +93,31 @@ class PipelineEventBookkeepingRouter(
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
+                manager.incrementByteCount(record.serializedSizeBytes)
+                // Fallback to the manager if the record doesn't have a checkpointId
+                // This should only happen in STDIO mode.
+                val checkpointId =
+                    record.checkpointId ?: manager.inferNextCheckpointKey().checkpointId
                 PipelineMessage(
-                    mapOf(manager.getCurrentCheckpointId() to 1),
+                    mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.descriptor),
                     record,
                     postProcessingCallback
                 )
             }
             is DestinationRecordStreamComplete -> {
-                manager.markEndOfStream(true)
                 log.info { "Read COMPLETE for stream ${stream.descriptor}" }
-                PipelineEndOfStream(stream.descriptor)
-            }
-            is DestinationRecordStreamIncomplete -> {
-                manager.markEndOfStream(false)
-                log.info { "Read INCOMPLETE for stream ${stream.descriptor}" }
+                sawEndOfStreamComplete.add(stream.descriptor)
+                if (!markEndOfStreamAtEndOfSync) {
+                    manager.markEndOfStream(true)
+                }
                 PipelineEndOfStream(stream.descriptor)
             }
 
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
                 val index = manager.incrementReadCount()
-                val checkpointId = manager.getCurrentCheckpointId()
+                val checkpointId = manager.inferNextCheckpointKey().checkpointId
                 fileTransferQueue.publish(
                     FileTransferQueueRecord(stream, message, index, checkpointId)
                 )
@@ -111,10 +128,6 @@ class PipelineEventBookkeepingRouter(
                 fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
                 PipelineHeartbeat()
             }
-            is DestinationFileStreamIncomplete ->
-                throw IllegalStateException(
-                    "File stream ${stream.descriptor} failed upstream, cannot continue."
-                )
         }
     }
 
@@ -122,45 +135,98 @@ class PipelineEventBookkeepingRouter(
         when (val checkpoint = reservation.value) {
             is StreamCheckpoint -> {
                 val stream = checkpoint.checkpoint.stream
-                val manager = syncManager.getStreamManager(stream)
-                val checkpointId = manager.getCurrentCheckpointId()
-                val (_, countSinceLast) = manager.markCheckpoint()
+                val manager = syncManager.getStreamManager(stream.descriptor)
+                val (checkpointKey, checkpointRecordCount) = getKeyAndCounts(checkpoint, manager)
                 val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
+                    checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
                 checkpointQueue.publish(
                     reservation.replace(
-                        StreamCheckpointWrapped(stream, checkpointId, messageWithCount)
+                        StreamCheckpointWrapped(stream.descriptor, checkpointKey, messageWithCount)
                     )
                 )
             }
 
-            /**
-             * For a global state message, collect the index per stream, but add the total count to
-             * the destination stats.
-             */
+            /** For a global state message, gather the */
             is GlobalCheckpoint -> {
-                val streamWithIndexAndCount =
-                    catalog.streams.map { stream ->
-                        val manager = syncManager.getStreamManager(stream.descriptor)
-                        val checkpointId = manager.getCurrentCheckpointId()
-                        val (_, countSinceLast) = manager.markCheckpoint()
-                        Triple(stream, checkpointId, countSinceLast)
+                val (checkpointKey, checkpointRecordCount) =
+                    if (checkpoint.checkpointKey == null) {
+                        val streamWithKeyAndCount =
+                            catalog.streams.map { stream ->
+                                val manager = syncManager.getStreamManager(stream.descriptor)
+                                getKeyAndCounts(checkpoint, manager)
+                            }
+                        val singleKey =
+                            streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
+                        check(singleKey != null) {
+                            "For global state, all streams should have the same key: $streamWithKeyAndCount"
+                        }
+                        val totalCounts = streamWithKeyAndCount.sumOf { (_, count) -> count }
+                        Pair(singleKey, totalCounts)
+                    } else {
+                        val sourceCounts =
+                            checkpoint.sourceStats?.recordCount
+                                ?: throw IllegalStateException(
+                                    "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
+                                )
+                        syncManager.setGlobalReadCountForCheckpoint(
+                            checkpoint.checkpointKey!!.checkpointId,
+                            sourceCounts
+                        )
+                        Pair(checkpoint.checkpointKey!!, sourceCounts)
                     }
-                val totalCount = streamWithIndexAndCount.sumOf { it.third }
+
                 val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCount))
-                val streamIndexes = streamWithIndexAndCount.map { it.first.descriptor to it.second }
+                    checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
                 checkpointQueue.publish(
-                    reservation.replace(GlobalCheckpointWrapped(streamIndexes, messageWithCount))
+                    reservation.replace(GlobalCheckpointWrapped(checkpointKey, messageWithCount))
                 )
             }
         }
     }
 
+    // If the key is not on the record, assume we're expected to generate it.
+    private fun getKeyAndCounts(
+        checkpoint: CheckpointMessage,
+        manager: StreamManager
+    ): Pair<CheckpointKey, Long> {
+        // If the key is not on the record, assume we're expected to generate it.
+        // (Assume its presence will be appropriately enforced.)
+        return if (checkpoint.checkpointKey == null) {
+            val key = manager.inferNextCheckpointKey()
+            val (_, countSinceLast) = manager.markCheckpoint()
+            Pair(key, countSinceLast)
+        } else {
+            val sourceCounts =
+                checkpoint.sourceStats?.recordCount
+                    ?: throw IllegalStateException(
+                        "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
+                    )
+            manager.setReadCountForCheckpointFromState(
+                checkpoint.checkpointKey!!.checkpointId,
+                sourceCounts
+            )
+            Pair(checkpoint.checkpointKey!!, sourceCounts)
+        }
+    }
+
     override suspend fun close() {
-        fileTransferQueue.close()
-        checkpointQueue.close()
-        openStreamQueue.close()
-        syncManager.markInputConsumed()
+        log.info { "Maybe closing bookkeeping router ${clientCount.get()}" }
+        if (clientCount.decrementAndGet() == 0) {
+            if (markEndOfStreamAtEndOfSync) {
+                catalog.streams.forEach {
+                    val sawComplete = sawEndOfStreamComplete.contains(it.descriptor)
+                    val manager = syncManager.getStreamManager(it.descriptor)
+                    manager.markEndOfStream(sawComplete)
+                    batchStateUpdateQueue.publish(
+                        BatchEndOfStream(it.descriptor, "bookkeepingRouter", 0, manager.readCount())
+                    )
+                }
+            }
+            log.info { "Closing internal control channels" }
+            fileTransferQueue.close()
+            checkpointQueue.close()
+            openStreamQueue.close()
+            syncManager.markInputConsumed()
+        }
     }
 }

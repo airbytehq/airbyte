@@ -105,7 +105,14 @@ const config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        editUrl: ({version, docPath}) => {
+          if (version === 'current') { // For the "next" (unreleased) version
+            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
+          } 
+          else { // For released versions
+            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
+          }
+        },
         remarkPlugins: [
           docsHeaderDecoration,
           enterpriseDocsHeaderInformation,
@@ -189,7 +196,9 @@ const config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
-    markpromptProjectKey: process.env.MARKPROMPT_PROJECT_KEY,
+    markpromptProjectKey:
+      process.env.MARKPROMPT_PROJECT_KEY ||
+      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
