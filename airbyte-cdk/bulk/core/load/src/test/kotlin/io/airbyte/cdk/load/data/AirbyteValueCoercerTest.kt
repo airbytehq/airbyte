@@ -407,14 +407,6 @@ class AirbyteValueCoercerTest {
             {
                 assertThrows(DateTimeParseException::class.java) {
                     LocalDate.parse(
-                        "2024-13-01",
-                        AirbyteValueCoercer.DATE_TIME_FORMATTER
-                    ) // Invalid month
-                }
-            },
-            {
-                assertThrows(DateTimeParseException::class.java) {
-                    LocalDate.parse(
                         "2024_01_15",
                         AirbyteValueCoercer.DATE_TIME_FORMATTER
                     ) // Underscores not supported

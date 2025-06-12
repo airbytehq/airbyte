@@ -17,7 +17,9 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
+import java.time.format.ResolverStyle
 import java.time.format.SignStyle
+import java.time.format.TextStyle
 import java.time.temporal.ChronoField
 
 /**
@@ -190,17 +192,42 @@ object AirbyteValueCoercer {
 
     val DATE_TIME_FORMATTER: DateTimeFormatter =
         DateTimeFormatterBuilder()
-            .appendValue(ChronoField.YEAR, 2, 7, SignStyle.NORMAL)
+            .parseCaseInsensitive()
+            .appendValue(ChronoField.YEAR_OF_ERA, 2, 7, SignStyle.NORMAL)
             .optionalStart()
-            .appendPattern("[-][/][.][ ]")
+            .appendLiteral('-')
             .optionalEnd()
-            .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NOT_NEGATIVE)
             .optionalStart()
-            .appendPattern("[-][/][.][ ]")
+            .appendLiteral('/')
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral('.')
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral(' ')
+            .optionalEnd()
+            .optionalStart()
+            .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NOT_NEGATIVE)
+            .optionalEnd()
+            .optionalStart()
+            .appendText(ChronoField.MONTH_OF_YEAR, TextStyle.SHORT)
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral('-')
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral('/')
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral('.')
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral(' ')
             .optionalEnd()
             .appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE)
             .optionalStart()
-            .appendPattern("[' '][G]")
+            .appendLiteral(' ')
+            .appendText(ChronoField.ERA, TextStyle.SHORT)
             .optionalEnd()
             .optionalStart()
             .appendPattern("[' ']['T']")
@@ -212,18 +239,19 @@ object AirbyteValueCoercer {
             .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
             .optionalStart()
             .appendLiteral('.')
-            // Try 9 digits first, then fewer
             .appendValue(ChronoField.NANO_OF_SECOND, 1, 9, SignStyle.NOT_NEGATIVE)
             .optionalEnd()
             .optionalEnd()
             .optionalStart()
             .appendPattern("[' '][z][zzz][Z][O][x][XXX][XX][X]")
             .optionalEnd()
-            .optionalEnd()
             .optionalStart()
-            .appendPattern("[' '][G]")
+            .appendLiteral(' ')
+            .appendText(ChronoField.ERA, TextStyle.SHORT)
+            .optionalEnd()
             .optionalEnd()
             .toFormatter()
+            .withResolverStyle(ResolverStyle.LENIENT)
     val TIME_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern(
             "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
