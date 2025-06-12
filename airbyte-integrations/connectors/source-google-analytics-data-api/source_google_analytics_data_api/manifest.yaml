@@ -928,6 +928,7 @@ dynamic_streams:
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
         # it doesn't exist in this context yet as we populate the template
+        # If the `date_ranges_start_date`` is not set in the config, the startDate value will default to 2 years ago.
         - type: ComponentMappingDefinition
           field_path: ["transformations"]
           create_or_update: True
@@ -944,7 +945,7 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   - path: [ "startDate" ]
-                    value: "{% raw %}{{ stream_slice.start_time or config['date_ranges_start_date'] }}{% endraw %}"
+                    value: "{% raw %}{{ stream_slice.start_time or config.get('date_ranges_start_date', day_delta(-730, '%Y-%m-%d')) }}{% endraw %}"
               - type: AddFields
                 fields:
                   - path: [ "endDate" ]
@@ -969,6 +970,7 @@ dynamic_streams:
               {% endfor %}]
         # Since the Google Analytics API requires defining dateRanges for requests,
         # we need to set up a single slice of query parameters here for full-refresh streams only
+        # If the `date_ranges_start_date`` is not set in the config, the startDate value will default to 2 years ago.
         - type: ComponentMappingDefinition
           field_path:
             ["retriever", "requester", "request_body_json", "dateRanges"]
@@ -984,7 +986,7 @@ dynamic_streams:
             {% endfor %}
 
             {% if not ns.cursor %}
-              - startDate: "{{ config['date_ranges_start_date'] }}"
+              - startDate: "{{ config.get('date_ranges_start_date', day_delta(-730, '%Y-%m-%d')) }}"
                 endDate: "{{ format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}"
             {% else %}
               - startDate: "{{ '{{ stream_slice.start_time }}' }}"
@@ -993,6 +995,7 @@ dynamic_streams:
         # This mapping adds the incremental_sync component for streams that support incremental loads.
         # It is enabled if any of the following fields are present in the dimensions list:
         # "date", "yearWeek", "yearMonth", or "year"
+        # If the `date_ranges_start_date`` is not set in the config, it will default to 2 years ago.
         - type: ComponentMappingDefinition
           field_path: ["incremental_sync"]
           create_or_update: True
@@ -1022,7 +1025,7 @@ dynamic_streams:
               datetime_format: "%Y-%m-%d"
               start_datetime:
                 type: MinMaxDatetime
-                datetime: "{% raw %}{{ config['date_ranges_start_date'] }}{% endraw %}"
+                datetime: "{% raw %}{{ config.get('date_ranges_start_date', day_delta(-730, '%Y-%m-%d')) }}{% endraw %}"
                 datetime_format: "%Y-%m-%d"
               end_datetime:
                 type: MinMaxDatetime
