@@ -1452,6 +1452,20 @@ definitions:
       - DeviceOS
       - TopVsOther
       - BidMatchType
+    ad_group_performance:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - Language
 
   report_columns:
     age_gender_audience:
@@ -1607,6 +1621,114 @@ definitions:
       - HistoricalExpectedCtr
       - HistoricalAdRelevance
       - HistoricalLandingPageExperience
+
+    ad_group_performance_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - Language
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - AdGroupName
+      - AdGroupType
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - QualityScore
+      - ExpectedCtr
+      - AdRelevance
+      - LandingPageExperience
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Assists
+      - CostPerAssist
+      - CustomParameters
+      - FinalUrlSuffix
+      - ViewThroughConversions
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+
+    ad_group_performance_non_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - Language
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - AdGroupName
+      - AdGroupType
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - QualityScore
+      - ExpectedCtr
+      - AdRelevance
+      - LandingPageExperience
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Assists
+      - CostPerAssist
+      - CustomParameters
+      - FinalUrlSuffix
+      - ViewThroughConversions
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - HistoricalQualityScore
+      - HistoricalExpectedCtr
+      - HistoricalAdRelevance
+      - HistoricalLandingPageExperience
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
 
   ## Age Gender Audience Reports
 
@@ -1794,134 +1916,11 @@ definitions:
 
   ## Ad Group Performance Reports
 
-  ad_group_performance_report_stream_primary_key:
-    - AccountId
-    - CampaignId
-    - AdGroupId
-    - TimePeriod
-    - CurrencyCode
-    - AdDistribution
-    - DeviceType
-    - Network
-    - DeliveredMatchType
-    - DeviceOS
-    - TopVsOther
-    - BidMatchType
-    - Language
-
-  ad_group_performance_report_hourly_columns:
-    - AccountId
-    - CampaignId
-    - AdGroupId
-    - TimePeriod
-    - CurrencyCode
-    - AdDistribution
-    - DeviceType
-    - Network
-    - DeliveredMatchType
-    - DeviceOS
-    - TopVsOther
-    - BidMatchType
-    - Language
-    - AccountName
-    - CampaignName
-    - CampaignType
-    - AdGroupName
-    - AdGroupType
-    - Impressions
-    - Clicks
-    - Ctr
-    - Spend
-    - CostPerConversion
-    - QualityScore
-    - ExpectedCtr
-    - AdRelevance
-    - LandingPageExperience
-    - PhoneImpressions
-    - PhoneCalls
-    - Ptr
-    - Assists
-    - CostPerAssist
-    - CustomParameters
-    - FinalUrlSuffix
-    - ViewThroughConversions
-    - AllCostPerConversion
-    - AllReturnOnAdSpend
-    - AllConversions
-    - AllConversionRate
-    - AllRevenue
-    - AllRevenuePerConversion
-    - AverageCpc
-    - AveragePosition
-    - AverageCpm
-    - Conversions
-    - ConversionRate
-    - ConversionsQualified
-    - Revenue
-    - RevenuePerConversion
-    - RevenuePerAssist
-
-  ad_group_performance_report_non_hourly_columns:
-    - AccountId
-    - CampaignId
-    - AdGroupId
-    - TimePeriod
-    - CurrencyCode
-    - AdDistribution
-    - DeviceType
-    - Network
-    - DeliveredMatchType
-    - DeviceOS
-    - TopVsOther
-    - BidMatchType
-    - Language
-    - AccountName
-    - CampaignName
-    - CampaignType
-    - AdGroupName
-    - AdGroupType
-    - Impressions
-    - Clicks
-    - Ctr
-    - Spend
-    - CostPerConversion
-    - QualityScore
-    - ExpectedCtr
-    - AdRelevance
-    - LandingPageExperience
-    - PhoneImpressions
-    - PhoneCalls
-    - Ptr
-    - Assists
-    - CostPerAssist
-    - CustomParameters
-    - FinalUrlSuffix
-    - ViewThroughConversions
-    - AllCostPerConversion
-    - AllReturnOnAdSpend
-    - AllConversions
-    - AllConversionRate
-    - AllRevenue
-    - AllRevenuePerConversion
-    - AverageCpc
-    - AveragePosition
-    - AverageCpm
-    - Conversions
-    - ConversionRate
-    - ConversionsQualified
-    - HistoricalQualityScore
-    - HistoricalExpectedCtr
-    - HistoricalAdRelevance
-    - HistoricalLandingPageExperience
-    - Revenue
-    - RevenuePerConversion
-    - RevenuePerAssist
-
   ad_group_performance_report_hourly_stream:
     $ref: "#/definitions/report_base_stream"
     name: ad_group_performance_report_hourly
     primary_key:
-      $ref: "#/definitions/ad_group_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/ad_group_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1931,14 +1930,14 @@ definitions:
       report_name: AdGroupPerformanceReport
       report_type: AdGroupPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/ad_group_performance_report_hourly_columns"
+        $ref: "#/definitions/report_columns/ad_group_performance_hourly"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
 
   ad_group_performance_report_daily_stream:
     $ref: "#/definitions/report_base_stream"
     name: ad_group_performance_report_daily
     primary_key:
-      $ref: "#/definitions/ad_group_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/ad_group_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1948,13 +1947,13 @@ definitions:
       report_name: AdGroupPerformanceReport
       report_type: AdGroupPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/ad_group_performance_report_non_hourly_columns"
+        $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
 
   ad_group_performance_report_weekly_stream:
     $ref: "#/definitions/report_base_stream"
     name: ad_group_performance_report_weekly
     primary_key:
-      $ref: "#/definitions/ad_group_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/ad_group_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1964,13 +1963,13 @@ definitions:
       report_name: AdGroupPerformanceReport
       report_type: AdGroupPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/ad_group_performance_report_non_hourly_columns"
+        $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
 
   ad_group_performance_report_monthly_stream:
     $ref: "#/definitions/report_base_stream"
     name: ad_group_performance_report_monthly
     primary_key:
-      $ref: "#/definitions/ad_group_performance_report_stream_primary_key"
+      $ref: "#/definitions/report_primary_keys/ad_group_performance"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1980,7 +1979,7 @@ definitions:
       report_name: AdGroupPerformanceReport
       report_type: AdGroupPerformanceReportRequest
       report_columns:
-        $ref: "#/definitions/ad_group_performance_report_non_hourly_columns"
+        $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
 
   # bulk streams
   labels_stream:
