@@ -45,6 +45,10 @@ python = ">=3.11,<3.13"
 airbyte-cdk = ">=6.48.16,<7.0.0"
 pendulum = ">=3.1.0,<4.0.0"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-mock = "^3.14.1"
+
 [tool.poe]
 include = [
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
