@@ -3,15 +3,12 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.OutputMessageProcessor
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
-import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.Clock
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -321,7 +318,7 @@ class FeedReader(
     var acquiredSocket: SocketResource.AcquiredSocket? = null
 
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
-        var messageProcessor: OutputMessageProcessor? = null
+        var messageProcessor: OutputMessageRouter? = null
         try {
             val stateMessages: MutableList<AirbyteStateMessage> = root.stateManager.checkpoint().toMutableList()
             val messagesQueue = ArrayDeque<AirbyteStateMessage>(stateMessages)
@@ -336,12 +333,12 @@ class FeedReader(
 
                 val r = (acqs.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
 
-                messageProcessor = OutputMessageProcessor(
+                messageProcessor = OutputMessageRouter(
                     when (feedBootstrap.outputFormat){
-                        "JSONL" -> OutputMessageProcessor.OutputType.JSON_SOCKET
-                        "PROTOBUF" -> OutputMessageProcessor.OutputType.PROTOBUF_SOCKET
-                        else -> OutputMessageProcessor.OutputType.SIMPLE_OUTPUT
-                    },emptyMap(),feedBootstrap as StreamFeedBootstrap,feedBootstrap.outputConsumer,
+                        "JSONL" -> OutputMessageRouter.RecordsOutputChannel.JSON_SOCKET
+                        "PROTOBUF" -> OutputMessageRouter.RecordsOutputChannel.PROTOBUF_SOCKET
+                        else -> OutputMessageRouter.RecordsOutputChannel.STDIO_OUTPUT
+                    },feedBootstrap.outputConsumer,emptyMap(),feedBootstrap as StreamFeedBootstrap,
                     mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r),
                 )
 //                boostedOutputConsumer =

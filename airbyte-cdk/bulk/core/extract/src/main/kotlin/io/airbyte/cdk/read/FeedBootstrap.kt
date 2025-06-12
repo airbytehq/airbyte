@@ -11,11 +11,12 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
+import io.airbyte.cdk.output.SimpleOutputConsumer
+import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.output.sockets.NullProtoEncoder
-import io.airbyte.cdk.output.sockets.ProtoRecordOutputConsumer
+import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProto
 import io.airbyte.cdk.util.Jsons
@@ -38,7 +39,7 @@ import java.time.ZoneOffset
  */
 sealed class FeedBootstrap<T : Feed>(
     /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
-    val outputConsumer: OutputConsumer,
+    val outputConsumer: SimpleOutputConsumer,
     /**
      * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
      */
@@ -71,9 +72,9 @@ sealed class FeedBootstrap<T : Feed>(
     }
 
     /** A map of all [StreamRecordConsumer] for this [feed]. */
-    fun streamRecordConsumers(boostedOutputConsumer: BoostedOutputConsumer? = null): Map<StreamIdentifier, StreamRecordConsumer> =
+    fun streamRecordConsumers(socketJsonOutputConsumer: SocketJsonOutputConsumer? = null): Map<StreamIdentifier, StreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to EfficientStreamRecordConsumer(stream, boostedOutputConsumer)
+            stream.id to EfficientStreamRecordConsumer(stream, socketJsonOutputConsumer)
         }
 
     /**
@@ -83,9 +84,9 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    inner class EfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: BoostedOutputConsumer?) :
+    inner class EfficientStreamRecordConsumer(override val stream: Stream, socketJsonOutputConsumer: SocketJsonOutputConsumer?) :
         StreamRecordConsumer {
-        val outputer: OutputConsumer = boostedOutputConsumer ?: outputConsumer
+        val outputer: OutputConsumer = socketJsonOutputConsumer ?: outputConsumer
 
         override fun close() {
             outputer.close()
@@ -187,9 +188,9 @@ sealed class FeedBootstrap<T : Feed>(
                 )
     }
 
-    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: ProtoRecordOutputConsumer, val partitionId: String?) :
+    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: SocketProtobufOutputConsumer, val partitionId: String?) :
         StreamRecordConsumer {
-        val outputer: ProtoRecordOutputConsumer = boostedOutputConsumer
+        val outputer: SocketProtobufOutputConsumer = boostedOutputConsumer
         override fun close() {
             outputer.close()
         }
@@ -386,7 +387,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         /** [FeedBootstrap] factory method. */
         fun create(
-            outputConsumer: OutputConsumer,
+            outputConsumer: SimpleOutputConsumer,
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
@@ -438,7 +439,7 @@ enum class FieldValueChange {
 
 /** [FeedBootstrap] implementation for [Global] feeds. */
 class GlobalFeedBootstrap(
-    outputConsumer: OutputConsumer,
+    outputConsumer: SimpleOutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
@@ -448,7 +449,7 @@ class GlobalFeedBootstrap(
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
-    outputConsumer: OutputConsumer,
+    outputConsumer: SimpleOutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     stream: Stream,
@@ -457,10 +458,10 @@ class StreamFeedBootstrap(
 ) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, boostedOutputConsumerFactory, outputFormat) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun streamRecordConsumer(boostedOutputConsumer: BoostedOutputConsumer?): StreamRecordConsumer = EfficientStreamRecordConsumer(
+    fun streamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer?): StreamRecordConsumer = EfficientStreamRecordConsumer(
         feed.streams.filter { feed.id == it.id }.first(),
-        boostedOutputConsumer)
-    fun protoStreamRecordConsumer(protoOutputConsumer: ProtoRecordOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(
+        socketJsonOutputConsumer)
+    fun protoStreamRecordConsumer(protoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(
         feed.streams.filter { feed.id == it.id }.first(),
         protoOutputConsumer, partitionId)
 }

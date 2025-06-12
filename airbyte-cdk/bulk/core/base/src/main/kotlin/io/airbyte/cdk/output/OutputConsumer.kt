@@ -112,6 +112,8 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 
+abstract class SimpleOutputConsumer(clock: Clock): OutputConsumer(clock)
+
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
@@ -142,7 +144,7 @@ private class StdoutOutputConsumer(
      */
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
-) : OutputConsumer(clock) {
+) : SimpleOutputConsumer(clock) {
     private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)

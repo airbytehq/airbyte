@@ -4,8 +4,8 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.OutputMessageProcessor
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.SocketWrapper
 import io.airbyte.cdk.output.sockets.toJson
@@ -19,9 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -29,7 +27,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
 
-    lateinit var messageProcessor: OutputMessageProcessor
+    lateinit var messageProcessor: OutputMessageRouter
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun generatePartitionId(length: Int): String =
@@ -50,7 +48,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     /** The [AcquiredResources] acquired for this [JdbcPartitionReader]. */
 
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
-    protected var boostedOutputConsumer: BoostedOutputConsumer? = null
+    protected var socketJsonOutputConsumer: SocketJsonOutputConsumer? = null
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -72,14 +70,14 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         @Suppress("UNCHECKED_CAST")
         val r = (this.acquiredResources.get().get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as AcquiredResourceHolder<SocketResource.AcquiredSocket>)
             .resource // this is the socket resource we need for output
-        messageProcessor = OutputMessageProcessor(
+        messageProcessor = OutputMessageRouter(
             when (streamState.streamFeedBootstrap.outputFormat) {
-                "JSONL" -> OutputMessageProcessor.OutputType.JSON_SOCKET
-                "PROTOBUF" -> OutputMessageProcessor.OutputType.PROTOBUF_SOCKET
-                else -> OutputMessageProcessor.OutputType.SIMPLE_OUTPUT
-            },  mapOf("partition_id" to partitionId),
+                "JSONL" -> OutputMessageRouter.RecordsOutputChannel.JSON_SOCKET
+                "PROTOBUF" -> OutputMessageRouter.RecordsOutputChannel.PROTOBUF_SOCKET
+                else -> OutputMessageRouter.RecordsOutputChannel.STDIO_OUTPUT
+            },streamState.streamFeedBootstrap.outputConsumer,  mapOf("partition_id" to partitionId),
              streamState.streamFeedBootstrap,
-            streamState.streamFeedBootstrap.outputConsumer, mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r))
+             mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r))
 /*
         // touch it to initialize
         streamRecordConsumer
@@ -102,8 +100,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 @Suppress("UNCHECKED_CAST")
                 val socketWrapper: SocketWrapper =
                     (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
-                boostedOutputConsumer = boostedOutputConsumerFactory.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
-                boostedOutputConsumer
+                socketJsonOutputConsumer = boostedOutputConsumerFactory.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
+                socketJsonOutputConsumer
             }
         })
 
