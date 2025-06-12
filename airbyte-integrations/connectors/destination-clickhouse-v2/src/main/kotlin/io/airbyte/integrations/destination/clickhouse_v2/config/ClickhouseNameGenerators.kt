@@ -13,13 +13,13 @@ import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
-import java.util.UUID
 
 // Unused but needed by another bean
 @Singleton
-class ClickhouseRawTableNameGenerators(private val config: ClickhouseConfiguration,
-                                       private val uuidGenerator: UUIDGenerator) :
-    RawTableNameGenerator {
+class ClickhouseRawTableNameGenerators(
+    private val config: ClickhouseConfiguration,
+    private val uuidGenerator: UUIDGenerator
+) : RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
         // The raw table is not implemented by Clickhouse, in order to avoid fake table collision,
         // we are passing a random UUID for the name
