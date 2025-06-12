@@ -35,6 +35,11 @@ description = "Connector for the bookkeeping software exact online"
 authors = ["Jeroen de Vries <jeroen@maildevries.eu>", ]
 license = "MIT"
 readme = "README.md"
+[[tool.poetry.packages]]
+include = "source_exact"
+
+[tool.poetry.scripts]
+source-exact = "source_exact.run:run"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
