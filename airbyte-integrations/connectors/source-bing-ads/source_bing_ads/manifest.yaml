@@ -1452,7 +1452,7 @@ definitions:
       - DeviceOS
       - TopVsOther
       - BidMatchType
-  
+
   report_columns:
     age_gender_audience:
       - AccountName
@@ -1607,7 +1607,7 @@ definitions:
       - HistoricalExpectedCtr
       - HistoricalAdRelevance
       - HistoricalLandingPageExperience
-    
+
   ## Age Gender Audience Reports
 
   age_gender_audience_report_daily_stream:
