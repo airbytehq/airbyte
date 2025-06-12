@@ -2208,10 +2208,10 @@ class Product(ShopifyBulkQuery):
                         "createdAt",
                         "updatedAt",
                         Field(name="image", fields=["id", "url", "altText", "width", "height"]),
-                        Field(name="product", fields=["id", "title"])
-                    ]
+                        Field(name="product", fields=["id", "title"]),
+                    ],
                 )
-            ]
+            ],
         )
     ]
 
