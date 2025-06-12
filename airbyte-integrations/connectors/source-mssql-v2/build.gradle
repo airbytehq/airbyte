@@ -1,0 +1,34 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.mssql.MsSqlServerSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+    cdk = '0.443'
+}
+
+dependencies {
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.6.1.jre11'
+    implementation 'io.debezium:debezium-embedded:3.0.0.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:2.6.2.Final'
+    implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
+    api 'org.apache.commons:commons-lang3:3.17.0'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+
+    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
+    testImplementation 'com.zaxxer:HikariCP:5.1.0'
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
+    testImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
+    testImplementation("io.mockk:mockk:1.12.0")
+    api 'com.google.guava:guava:33.4.0-jre'
+}
