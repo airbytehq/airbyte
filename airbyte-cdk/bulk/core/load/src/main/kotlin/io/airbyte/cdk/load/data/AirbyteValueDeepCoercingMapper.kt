@@ -178,15 +178,4 @@ class AirbyteValueDeepCoercingMapper(
             )
             NullValue to context
         }
-
-    companion object {
-        val DATE_TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern(
-                "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
-            )
-        val TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern(
-                "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
-            )
-    }
 }
