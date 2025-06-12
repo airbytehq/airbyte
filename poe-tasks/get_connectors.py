@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional, Set
 
@@ -42,6 +43,7 @@ def get_all_connectors() -> List[str]:
     return sorted(connectors)
 
 
+@lru_cache(maxsize=None)
 def get_connector_language(connector_name: str) -> str:
     """Extract language from metadata.yaml tags"""
     metadata_path = Path(f"airbyte-integrations/connectors/{connector_name}/metadata.yaml")
