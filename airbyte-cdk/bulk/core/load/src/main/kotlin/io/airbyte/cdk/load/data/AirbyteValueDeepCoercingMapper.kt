@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
-import java.time.format.DateTimeFormatter
 
 /**
  * A mapper which coerces ALL values against the schema. This mapper MUST NOT be called after any

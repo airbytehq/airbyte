@@ -34,8 +34,7 @@ object TimeStringUtility {
     }
 
     private fun toMicrosOfDayWithTimezone(timeString: String): LocalTime {
-        return OffsetTime.parse(timeString, TIME_FORMATTER)
-            .toLocalTime()
+        return OffsetTime.parse(timeString, TIME_FORMATTER).toLocalTime()
     }
 
     private fun toMicrosOfDayWithoutTimezone(timeString: String): LocalTime {
@@ -51,18 +50,10 @@ object TimeStringUtility {
     }
 
     private fun toOffsetDateTimeWithTimezone(timestampString: String): OffsetDateTime {
-        return ZonedDateTime.parse(
-                timestampString,
-                DATE_TIME_FORMATTER
-            )
-            .toOffsetDateTime()
+        return ZonedDateTime.parse(timestampString, DATE_TIME_FORMATTER).toOffsetDateTime()
     }
 
     private fun toOffsetDateTimeWithoutTimezone(timestampString: String): OffsetDateTime {
-        return LocalDateTime.parse(
-                timestampString,
-                DATE_TIME_FORMATTER
-            )
-            .atOffset(ZoneOffset.UTC)
+        return LocalDateTime.parse(timestampString, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
     }
 }

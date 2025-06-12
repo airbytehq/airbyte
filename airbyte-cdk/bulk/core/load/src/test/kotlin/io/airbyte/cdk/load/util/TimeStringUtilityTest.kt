@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.util
 
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
-import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -41,10 +40,7 @@ internal class TimeStringUtilityTest {
         val localDateTimeString = "2024-11-18T12:34:56Z"
         val localDateTime = TimeStringUtility.toLocalDateTime(localDateTimeString)
         assertEquals(
-            LocalDateTime.parse(
-                localDateTimeString,
-                AirbyteValueCoercer.DATE_TIME_FORMATTER
-            ),
+            LocalDateTime.parse(localDateTimeString, AirbyteValueCoercer.DATE_TIME_FORMATTER),
             localDateTime
         )
     }
@@ -54,10 +50,7 @@ internal class TimeStringUtilityTest {
         val offsetWithTimezoneString = "12:34:56Z"
         val offsetWithTimezone = TimeStringUtility.toOffset(offsetWithTimezoneString)
         assertEquals(
-            OffsetTime.parse(
-                    offsetWithTimezoneString,
-                AirbyteValueCoercer.TIME_FORMATTER
-                )
+            OffsetTime.parse(offsetWithTimezoneString, AirbyteValueCoercer.TIME_FORMATTER)
                 .toLocalTime(),
             offsetWithTimezone
         )
@@ -68,10 +61,7 @@ internal class TimeStringUtilityTest {
         val offsetWithoutTimezoneString = "12:34:56"
         val offsetWithoutTimezone = TimeStringUtility.toOffset(offsetWithoutTimezoneString)
         assertEquals(
-            LocalTime.parse(
-                offsetWithoutTimezoneString,
-                AirbyteValueCoercer.TIME_FORMATTER
-            ),
+            LocalTime.parse(offsetWithoutTimezoneString, AirbyteValueCoercer.TIME_FORMATTER),
             offsetWithoutTimezone
         )
     }
@@ -81,10 +71,7 @@ internal class TimeStringUtilityTest {
         val offsetWithTimezoneString = "2024-11-18T12:34:56Z"
         val offsetWithTimezone = TimeStringUtility.toOffsetDateTime(offsetWithTimezoneString)
         assertEquals(
-            ZonedDateTime.parse(
-                    offsetWithTimezoneString,
-                AirbyteValueCoercer.DATE_TIME_FORMATTER
-                )
+            ZonedDateTime.parse(offsetWithTimezoneString, AirbyteValueCoercer.DATE_TIME_FORMATTER)
                 .toOffsetDateTime(),
             offsetWithTimezone
         )
@@ -97,7 +84,7 @@ internal class TimeStringUtilityTest {
         assertEquals(
             LocalDateTime.parse(
                     offsetWithoutTimezoneString,
-                AirbyteValueCoercer.DATE_TIME_FORMATTER
+                    AirbyteValueCoercer.DATE_TIME_FORMATTER
                 )
                 .atOffset(ZoneOffset.UTC),
             offsetWithoutTimezone
