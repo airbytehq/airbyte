@@ -1,13 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from copy import deepcopy
-
-from freezegun import freeze_time
 from test_report_stream import TestSuiteReportStream
-# from unit_tests.integrations.test_report_stream import MANIFEST_STREAMS
-
-from airbyte_cdk.models import SyncMode
-
 
 FIRST_STATE = {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}
 
