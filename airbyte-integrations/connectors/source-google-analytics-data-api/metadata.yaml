@@ -22,7 +22,7 @@ data:
   name: Google Analytics 4 (GA4)
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-google-analytics-data-api
   registryOverrides:
     cloud:
