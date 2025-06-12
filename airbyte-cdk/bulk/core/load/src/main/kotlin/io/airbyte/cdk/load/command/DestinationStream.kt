@@ -134,13 +134,7 @@ data class DestinationStream(
             .withSyncId(syncId)
             .withIncludeFiles(includeFiles)
             .withDestinationObjectName(destinationObjectName)
-            .apply {
-                if (matchingKey == null) {
-                    primaryKey = null
-                } else {
-                    primaryKey = matchingKey.map { listOf(it) }
-                }
-            }
+            .withPrimaryKey(matchingKey?.map { listOf(it) })
             .apply {
                 when (importType) {
                     is Append -> {
