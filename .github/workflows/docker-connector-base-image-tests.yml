@@ -316,8 +316,10 @@ jobs:
 
       - name: Install CDK CLI
         run: |
-          # uv tool install 'airbyte-cdk[dev]'
-          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
+          uv tool install 'airbyte-cdk[dev]'
+          # TODO: Delete the below after the related CDK PR Merges:
+          # - https://github.com/airbytehq/airbyte-python-cdk/pull/586
+          # uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
         env:
