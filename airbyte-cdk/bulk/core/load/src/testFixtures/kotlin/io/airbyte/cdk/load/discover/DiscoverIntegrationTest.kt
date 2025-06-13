@@ -24,7 +24,6 @@ data class DiscoverTestConfig(
     val configContents: String,
     val featureFlags: Set<FeatureFlag> = emptySet(),
     val name: String? = null,
-    val expectedCatalog: DestinationCatalog,
 )
 
 abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
