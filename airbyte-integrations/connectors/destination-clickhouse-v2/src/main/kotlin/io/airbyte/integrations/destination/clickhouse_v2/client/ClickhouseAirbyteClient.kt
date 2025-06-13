@@ -9,7 +9,6 @@ import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
-import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
@@ -143,7 +142,7 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    private fun getChangedColumns(
+    internal fun getChangedColumns(
         tableColumns: List<ClickHouseColumn>,
         catalogColumns: Map<String, String>,
     ): AlterationSummary {
