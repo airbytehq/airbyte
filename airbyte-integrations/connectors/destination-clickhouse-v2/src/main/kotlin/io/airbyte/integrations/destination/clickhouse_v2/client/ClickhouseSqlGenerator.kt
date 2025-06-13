@@ -320,8 +320,7 @@ class ClickhouseSqlGenerator {
         return builder.dropLast(1).toString()
     }
 
-    private fun String.sqlNullable(): String =
-            "Nullable($this)"
+    private fun String.sqlNullable(): String = "Nullable($this)"
 
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
@@ -347,4 +346,3 @@ fun AirbyteType.toDialectType(): String =
         is UnionType,
         is UnknownType -> ClickHouseDataType.String.name
     }
-

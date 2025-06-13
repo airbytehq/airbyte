@@ -28,21 +28,28 @@ class ClickhouseSqlGeneratorTest {
 
     @ParameterizedTest
     @MethodSource("alterTableTestCases")
-    fun testAlterTableContainsClauses(alterationSummary: AlterationSummary, expectedClauses: List<String>) {
+    fun testAlterTableContainsClauses(
+        alterationSummary: AlterationSummary,
+        expectedClauses: List<String>
+    ) {
         val tableName = TableName("my_namespace", "my_table")
         val actualSql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
         expectedClauses.forEach { clause ->
-            assertTrue(actualSql.contains(clause), "Expected SQL to contain: $clause, but got: $actualSql")
+            assertTrue(
+                actualSql.contains(clause),
+                "Expected SQL to contain: $clause, but got: $actualSql"
+            )
         }
     }
 
     @Test
     fun testAlterTableValidSql() {
-        val alterationSummary = AlterationSummary(
-            added = mapOf("col1" to "Int32", "col2" to "String"),
-            modified = mapOf("col3" to "String", "col4" to "Int64"),
-            deleted = setOf("col5", "col6")
-        )
+        val alterationSummary =
+            AlterationSummary(
+                added = mapOf("col1" to "Int32", "col2" to "String"),
+                modified = mapOf("col3" to "String", "col4" to "Int64"),
+                deleted = setOf("col5", "col6")
+            )
         val tableName = TableName("my_namespace", "my_table")
         val sql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
 
@@ -55,58 +62,59 @@ class ClickhouseSqlGeneratorTest {
 
     companion object {
         @JvmStatic
-        fun alterTableTestCases(): List<Arguments> = listOf(
-            Arguments.of(
-                AlterationSummary(
-                    added = mapOf("new_column" to "Int32"),
-                    modified = mapOf("existing_column" to "String"),
-                    deleted = setOf("old_column")
+        fun alterTableTestCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    AlterationSummary(
+                        added = mapOf("new_column" to "Int32"),
+                        modified = mapOf("existing_column" to "String"),
+                        deleted = setOf("old_column")
+                    ),
+                    listOf(
+                        " ADD COLUMN `new_column` Nullable(Int32)",
+                        " MODIFY COLUMN `existing_column` Nullable(String)",
+                        " DROP COLUMN `old_column`"
+                    )
                 ),
-                listOf(
-                    " ADD COLUMN `new_column` Nullable(Int32)",
-                    " MODIFY COLUMN `existing_column` Nullable(String)",
-                    " DROP COLUMN `old_column`"
-                )
-            ),
-            Arguments.of(
-                AlterationSummary(
-                    added = mapOf("new_column" to "Int32"),
-                    modified = emptyMap(),
-                    deleted = setOf()
+                Arguments.of(
+                    AlterationSummary(
+                        added = mapOf("new_column" to "Int32"),
+                        modified = emptyMap(),
+                        deleted = setOf()
+                    ),
+                    listOf(" ADD COLUMN `new_column` Nullable(Int32)")
                 ),
-                listOf(" ADD COLUMN `new_column` Nullable(Int32)")
-            ),
-            Arguments.of(
-                AlterationSummary(
-                    added = emptyMap(),
-                    modified = mapOf("existing_column" to "String"),
-                    deleted = setOf()
+                Arguments.of(
+                    AlterationSummary(
+                        added = emptyMap(),
+                        modified = mapOf("existing_column" to "String"),
+                        deleted = setOf()
+                    ),
+                    listOf(" MODIFY COLUMN `existing_column` Nullable(String)")
                 ),
-                listOf(" MODIFY COLUMN `existing_column` Nullable(String)")
-            ),
-            Arguments.of(
-                AlterationSummary(
-                    added = emptyMap(),
-                    modified = emptyMap(),
-                    deleted = setOf("old_column")
+                Arguments.of(
+                    AlterationSummary(
+                        added = emptyMap(),
+                        modified = emptyMap(),
+                        deleted = setOf("old_column")
+                    ),
+                    listOf(" DROP COLUMN `old_column`")
                 ),
-                listOf(" DROP COLUMN `old_column`")
-            ),
-            Arguments.of(
-                AlterationSummary(
-                    added = mapOf("col1" to "Int32", "col2" to "String"),
-                    modified = mapOf("col3" to "String", "col4" to "Int64"),
-                    deleted = setOf("col5", "col6")
+                Arguments.of(
+                    AlterationSummary(
+                        added = mapOf("col1" to "Int32", "col2" to "String"),
+                        modified = mapOf("col3" to "String", "col4" to "Int64"),
+                        deleted = setOf("col5", "col6")
+                    ),
+                    listOf(
+                        " ADD COLUMN `col1` Nullable(Int32)",
+                        " ADD COLUMN `col2` Nullable(String)",
+                        " MODIFY COLUMN `col3` Nullable(String)",
+                        " MODIFY COLUMN `col4` Nullable(Int64)",
+                        " DROP COLUMN `col5`",
+                        " DROP COLUMN `col6`"
+                    )
                 ),
-                listOf(
-                    " ADD COLUMN `col1` Nullable(Int32)",
-                    " ADD COLUMN `col2` Nullable(String)",
-                    " MODIFY COLUMN `col3` Nullable(String)",
-                    " MODIFY COLUMN `col4` Nullable(Int64)",
-                    " DROP COLUMN `col5`",
-                    " DROP COLUMN `col6`"
-                )
-            ),
-        )
+            )
     }
 }
