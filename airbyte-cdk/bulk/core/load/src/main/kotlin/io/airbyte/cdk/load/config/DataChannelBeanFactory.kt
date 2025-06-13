@@ -307,7 +307,9 @@ class DataChannelBeanFactory {
             DataChannelMedium.STDIO -> {
                 // Source is effectively "identity." In STDIO mode, we just take
                 // what we're given.
-                log.info { "Going to the use the given source value: ${NamespaceDefinitionType.SOURCE} for namespace" }
+                log.info {
+                    "Going to the use the given source value: ${NamespaceDefinitionType.SOURCE} for namespace"
+                }
                 return NamespaceMapper(NamespaceDefinitionType.SOURCE)
             }
             DataChannelMedium.SOCKET -> {
