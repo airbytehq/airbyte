@@ -169,8 +169,9 @@ dockerhub_tag_exists() {
     fi
   done
 
-  echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Assuming tag does not exist." >&2
-  return 1
+  # Blow up to be safe.
+  echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Exiting to be safe." >&2
+  exit 1
 }
 
 generate_dev_tag() {
