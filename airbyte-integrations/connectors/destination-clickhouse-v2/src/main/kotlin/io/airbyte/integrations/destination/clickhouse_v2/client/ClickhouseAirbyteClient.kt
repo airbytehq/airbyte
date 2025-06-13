@@ -165,7 +165,6 @@ class ClickhouseAirbyteClient(
                     clickhouseColumn.dataType.name.let {
                         if (it == "DateTime64") DATETIME_WITH_PRECISION else it
                     }
-                // Should we do something about datetime?
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
