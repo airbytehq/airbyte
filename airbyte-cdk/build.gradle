@@ -21,6 +21,7 @@ tasks.named("check") {
             try {
                 def extension = connectorProject.extensions.findByName('airbyteBulkConnector')
                 if (extension && extension.hasProperty('cdk') && extension.cdk == 'local') {
+                    println("adding bulk: $connectorProject")
                     connectorsWithLocalCdk << connectorProject
                 }
             } catch (Exception e) {
@@ -33,6 +34,7 @@ tasks.named("check") {
             try {
                 def extension = connectorProject.extensions.findByName('airbyteJavaConnector')
                 if (extension && extension.hasProperty('useLocalCdk') && extension.useLocalCdk == true) {
+                    println("adding normal: $connectorProject")
                     connectorsWithLocalCdk << connectorProject
                 }
             } catch (Exception e) {
