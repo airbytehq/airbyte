@@ -64,10 +64,8 @@ class StatsEmitterTest {
             }
         syncManager = mockk { every { getStreamManager(testDescriptor) } returns streamManager }
 
-        val dstStream = mockk<DestinationStream>()
-        every { dstStream.unmappedNamespace } returns "foo"
-        every { dstStream.unmappedName } returns "bar"
-        every { dstStream.descriptor } returns testDescriptor
+        val dstStream =
+            mockk<DestinationStream> { every { this@mockk.descriptor } returns testDescriptor }
         catalog = mockk { every { streams } returns listOf(dstStream) }
 
         recordingConsumer = RecordingOutputConsumer()

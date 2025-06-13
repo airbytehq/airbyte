@@ -68,7 +68,7 @@ data class CheckpointKey(
 class CheckpointManager<T>(
     val catalog: DestinationCatalog,
     val syncManager: SyncManager,
-    val outputConsumer: suspend (T, Long, Long) -> Unit,
+    val outputConsumer: suspend (T) -> Unit,
     val timeProvider: TimeProvider,
 ) {
     private val log = KotlinLogging.logger {}
@@ -245,11 +245,6 @@ class CheckpointManager<T>(
                         aggregate.records,
                         aggregate.serializedBytes,
                     )
-
-                    log.info {
-                        "Flushed checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey (records=${aggregate.records}, bytes=${aggregate.serializedBytes})"
-                    }
-
                     // don't remove until after we've successfully sent
                     streamCheckpoints.remove(nextCheckpointKey)
                 } else {
@@ -289,6 +284,7 @@ class CheckpointManager<T>(
         return true
     }
 
+    @Suppress("UNCHECKED_CAST")
     private suspend fun sendStateMessage(
         checkpointMessage: T,
         checkpointKey: CheckpointKey,
@@ -298,7 +294,13 @@ class CheckpointManager<T>(
     ) {
         streamCheckpoints.forEach { stream -> lastCheckpointKeyEmitted[stream] = checkpointKey }
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-        outputConsumer.invoke(checkpointMessage, totalRecords, totalBytes)
+        if (checkpointMessage is Reserved<*> && checkpointMessage.value is CheckpointMessage) {
+            val updated =
+                checkpointMessage.value.withTotalRecords(totalRecords).withTotalBytes(totalBytes)
+            outputConsumer.invoke(checkpointMessage.replace(updated) as T)
+        } else {
+            outputConsumer.invoke(checkpointMessage)
+        }
     }
 
     suspend fun awaitAllCheckpointsFlushed() {
@@ -326,18 +328,10 @@ class CheckpointManager<T>(
 )
 @Singleton
 class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
-    suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit {
-    override suspend fun invoke(
-        message: Reserved<CheckpointMessage>,
-        totalRecords: Long,
-        totalBytes: Long
-    ) {
+    suspend (Reserved<CheckpointMessage>) -> Unit {
+    override suspend fun invoke(message: Reserved<CheckpointMessage>) {
         message.use {
-            val outMessage =
-                it.value
-                    .withTotalRecords(totalRecords = totalRecords)
-                    .withTotalBytes(totalBytes = totalBytes)
-                    .asProtocolMessage()
+            val outMessage = it.value.asProtocolMessage()
             consumer.accept(outMessage)
         }
     }

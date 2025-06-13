@@ -27,7 +27,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 716ca874-520b-4902-9f80-9fad66754b89
-  dockerImageTag: 0.3.28
+  dockerImageTag: 0.3.29
   dockerRepository: airbyte/destination-s3-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-data-lake
   githubIssueLabel: destination-s3-data-lake
@@ -36,8 +36,11 @@ data:
   name: S3 Data Lake
   registryOverrides:
     cloud:
+      # Suspect a bug in state message namespace mapping, pinning back to last known-good version
+      dockerImageTag: 0.3.28
       enabled: true
     oss:
+      dockerImageTag: 0.3.28
       enabled: true
   releaseStage: alpha
   supportLevel: certified

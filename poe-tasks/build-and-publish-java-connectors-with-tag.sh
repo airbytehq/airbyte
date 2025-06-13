@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# This script builds and optionally publishes Java connector Docker images.
+#
+# Flag descriptions:
+#   --main-release: Publishes images with the exact version from metadata.yaml.
+#                   Only publishes if the image does not exists on Dockerhub.
+#                   Used for production releases on merge to master.
+#
+#   --pre-release:  Publishes images with a dev tag (version-dev.githash).
+#                   Only publishes if the image does not exists on Dockerhub.
+#                   Used for development/testing purposes.
+#
+#   --publish:      Actually publishes the images. Without this flag, the script runs in dry-run mode
+#                   and only shows what would be published without actually publishing.
+#
 # Usage examples:
 #   ./get-modified-connectors.sh --prev-commit --json | ./build-and-publish-java-connectors-with-tag.sh
 #
@@ -15,55 +29,66 @@
 #
 #   4) Mixed: positional + pre-release
 #   ./build-and-publish-java-connectors-with-tag.sh --pre-release foo-conn
+#
+#   5) Enable actual publishing (default is dry-run mode)
+#   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn
 set -euo pipefail
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
 
 # ── Rollout whitelist: only connectors listed here will be built/published
-declare -A rollout_map=(
-  [destination-azure-blob-storage]=1
-  [destination-bigquery]=1
-  [destination-clickhouse-strict-encrypt]=1
-  [destination-clickhouse]=1
-  [destination-csv]=1
-  [destination-databricks]=1
-  [destination-dev-null]=1
-  [destination-dynamodb]=1
-  [destination-elasticsearch-strict-encrypt]=1
-  [destination-elasticsearch]=1
-  [destination-gcs]=1
-  [destination-kafka]=1
-  [destination-local-json]=1
-  [destination-mongodb-strict-encrypt]=1
-  [destination-mongodb]=1
-  [destination-mysql-strict-encrypt]=1
-  [destination-mysql]=1
-  [destination-oracle-strict-encrypt]=1
-  [destination-oracle]=1
-  [destination-postgres-strict-encrypt]=1
-  [destination-postgres]=1
-  [destination-redis]=1
-  [destination-redshift]=1
-  [destination-s3-data-lake]=1
-  [destination-s3]=1
-  [destination-singlestore]=1
-  [destination-snowflake]=1
-  [destination-starburst-galaxy]=1
-  [destination-teradata]=1
-  [destination-yellowbrick]=1
-  [source-e2e-test]=1
-  [source-postgres]=1
-  [source-mysql]=1
-)
+# Function to check if a connector is in the whitelist
+is_in_whitelist() {
+  local connector="$1"
+  case "$connector" in
+    destination-azure-blob-storage|\
+    destination-bigquery|\
+    destination-csv|\
+    destination-databricks|\
+    destination-dev-null|\
+    destination-dynamodb|\
+    destination-elasticsearch-strict-encrypt|\
+    destination-elasticsearch|\
+    destination-gcs|\
+    destination-kafka|\
+    destination-local-json|\
+    destination-mongodb-strict-encrypt|\
+    destination-mongodb|\
+    destination-mysql-strict-encrypt|\
+    destination-mysql|\
+    destination-oracle-strict-encrypt|\
+    destination-oracle|\
+    destination-postgres-strict-encrypt|\
+    destination-postgres|\
+    destination-redis|\
+    destination-redshift|\
+    destination-s3-data-lake|\
+    destination-s3|\
+    destination-singlestore|\
+    destination-snowflake|\
+    destination-starburst-galaxy|\
+    destination-teradata|\
+    destination-yellowbrick|\
+    source-e2e-test|\
+    source-postgres|\
+    source-mysql)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
 
 # ------ Defaults & arg parsing -------
 publish_mode="pre-release"
+do_publish=false
 connectors=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
-      sed -n '1,20p' "$0"
+      sed -n '1,34p' "$0"
       exit 0
       ;;
     --main-release)
@@ -74,6 +99,10 @@ while [[ $# -gt 0 ]]; do
       publish_mode="pre-release"
       shift
       ;;
+    --publish)
+      do_publish=true
+      shift
+      ;;
     --name=*)
       connectors=("${1#*=}")
       shift
@@ -81,6 +110,10 @@ while [[ $# -gt 0 ]]; do
     --name)
       connectors=("$2")
       shift 2
+      ;;
+    --*)
+      echo "Error: Unknown flag $1" >&2
+      exit 1
       ;;
     *)
       connectors+=("$1")
@@ -107,6 +140,38 @@ get_connectors() {
   fi
 }
 
+dockerhub_tag_exists() {
+  local image="$1"   # e.g. airbyte/destination-postgres
+  local tag="$2"     # e.g. 0.7.27
+  local max_attempts=5
+  local delay=1
+
+  local namespace repo status url
+  namespace=$(cut -d/ -f1 <<<"$image")
+  repo=$(cut -d/ -f2 <<<"$image")
+  url="https://registry.hub.docker.com/v2/repositories/${namespace}/${repo}/tags/${tag}/"
+
+  for ((attempt=1; attempt<=max_attempts; attempt++)); do
+    # -s silences progress bar, -o specifies the output, and -w extract only http_code.
+    # essentially keep things clean.
+    status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+
+    if [[ "$status" == "200" ]]; then
+      return 0  # tag exists
+    elif [[ "$status" == "404" ]]; then
+      return 1  # tag does not exist
+    else
+      echo "⚠️  Docker Hub check failed (status $status), retrying in $delay seconds... ($attempt/$max_attempts)" >&2
+      sleep "$delay"
+      delay=$((delay * 2))  # exponential backoff
+    fi
+  done
+
+  # Blow up to be safe.
+  echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Exiting to be safe." >&2
+  exit 1
+}
+
 generate_dev_tag() {
   local base="$1"
   # force a 10-char short hash to match existing airbyte-ci behaviour.
@@ -117,8 +182,8 @@ generate_dev_tag() {
 
 # ---------- main loop ----------
 while read -r connector; do
-  # only publish if connector is in rollout_map
-  if [[ -z ${rollout_map[$connector]:-} ]]; then
+  # only publish if connector is in whitelist
+  if ! is_in_whitelist "$connector"; then
     echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
     continue
   fi
@@ -141,11 +206,26 @@ while read -r connector; do
     docker_tag=$(generate_dev_tag "$base_tag")
   fi
 
-  echo "Building & publishing ${connector} with tag ${docker_tag}"
-  ./gradlew -Pdocker.publish \
-            -DciMode=true \
-            -Psbom=false \
-            -Pdocker.tag="${docker_tag}" \
-            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  if $do_publish; then
+    echo "Building & publishing ${connector} with tag ${docker_tag}"
+
+    if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
+      echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
+      continue
+    fi
+
+    echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
+    ./gradlew -Pdocker.publish \
+              -DciMode=true \
+              -Psbom=false \
+              -Pdocker.tag="${docker_tag}" \
+              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  else
+    echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
+  fi
 done < <(get_connectors)
-echo "Done building & publishing."
+if $do_publish; then
+  echo "Done building & publishing."
+else
+  echo "DRY RUN: Done building. No images were published. Use --publish flag to enable publishing."
+fi
