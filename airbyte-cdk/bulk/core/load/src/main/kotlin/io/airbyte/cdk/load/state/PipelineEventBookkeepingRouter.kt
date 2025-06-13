@@ -135,13 +135,13 @@ class PipelineEventBookkeepingRouter(
         when (val checkpoint = reservation.value) {
             is StreamCheckpoint -> {
                 val stream = checkpoint.checkpoint.stream
-                val manager = syncManager.getStreamManager(stream.descriptor)
+                val manager = syncManager.getStreamManager(stream)
                 val (checkpointKey, checkpointRecordCount) = getKeyAndCounts(checkpoint, manager)
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
                 checkpointQueue.publish(
                     reservation.replace(
-                        StreamCheckpointWrapped(stream.descriptor, checkpointKey, messageWithCount)
+                        StreamCheckpointWrapped(stream, checkpointKey, messageWithCount)
                     )
                 )
             }

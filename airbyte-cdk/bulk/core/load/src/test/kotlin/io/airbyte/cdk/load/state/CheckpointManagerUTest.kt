@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test
 class CheckpointManagerUTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
     @MockK(relaxed = true) lateinit var syncManager: SyncManager
-    private val outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit =
-        mockk<suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit>(relaxed = true)
+    private val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit =
+        mockk<suspend (Reserved<CheckpointMessage>) -> Unit>(relaxed = true)
     @MockK(relaxed = true) lateinit var timeProvider: TimeProvider
     @MockK(relaxed = true) lateinit var streamManager1: StreamManager
     @MockK(relaxed = true) lateinit var streamManager2: StreamManager
@@ -55,7 +55,7 @@ class CheckpointManagerUTest {
     @BeforeEach
     fun setup() {
         coEvery { catalog.streams } returns listOf(stream1, stream2)
-        coEvery { outputConsumer.invoke(any(), any(), any()) } returns Unit
+        coEvery { outputConsumer.invoke(any()) } returns Unit
         coEvery { syncManager.getStreamManager(stream1.descriptor) } returns streamManager1
         coEvery { syncManager.getStreamManager(stream2.descriptor) } returns streamManager2
     }
@@ -85,8 +85,8 @@ class CheckpointManagerUTest {
 
         // Only stream2 should be flushed.
         checkpointManager.flushReadyCheckpointMessages()
-        coVerify(exactly = 0) { outputConsumer.invoke(message1, any(), any()) }
-        coVerify(exactly = 1) { outputConsumer.invoke(message2, any(), any()) }
+        coVerify(exactly = 0) { outputConsumer.invoke(message1) }
+        coVerify(exactly = 1) { outputConsumer.invoke(message2) }
     }
 
     @Test
@@ -111,7 +111,7 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 0) { outputConsumer.invoke(any(), any(), any()) }
+        coVerify(exactly = 0) { outputConsumer.invoke(any()) }
     }
 
     @Test
@@ -136,7 +136,7 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 2) { outputConsumer.invoke(any(), any(), any()) }
+        coVerify(exactly = 2) { outputConsumer.invoke(any()) }
     }
 
     @Test
@@ -161,6 +161,6 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 1) { outputConsumer.invoke(any(), any(), any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(any()) }
     }
 }
