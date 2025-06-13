@@ -3,11 +3,11 @@
 #
 # Flag descriptions:
 #   --main-release: Publishes images with the exact version from metadata.yaml.
-#                   Only publishes if the version has increased compared to the previous commit.
+#                   Only publishes if the image does not exists on Dockerhub.
 #                   Used for production releases on merge to master.
 #
 #   --pre-release:  Publishes images with a dev tag (version-dev.githash).
-#                   Always publishes regardless of version changes.
+#                   Only publishes if the image does not exists on Dockerhub.
 #                   Used for development/testing purposes.
 #
 #   --publish:      Actually publishes the images. Without this flag, the script runs in dry-run mode
@@ -142,51 +142,43 @@ get_connectors() {
   fi
 }
 
+dockerhub_tag_exists() {
+  local image="$1"   # e.g. airbyte/destination-postgres
+  local tag="$2"     # e.g. 0.7.27
+  local max_attempts=5
+  local delay=1
+
+  local namespace repo status url
+  namespace=$(cut -d/ -f1 <<<"$image")
+  repo=$(cut -d/ -f2 <<<"$image")
+  url="https://registry.hub.docker.com/v2/repositories/${namespace}/${repo}/tags/${tag}/"
+
+  for ((attempt=1; attempt<=max_attempts; attempt++)); do
+    # -s silences progress bar, -o specifies the output, and -w extract only http_code.
+    # essentially keep things clean.
+    status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+
+    if [[ "$status" == "200" ]]; then
+      return 0  # tag exists
+    elif [[ "$status" == "404" ]]; then
+      return 1  # tag does not exist
+    else
+      echo "⚠️  Docker Hub check failed (status $status), retrying in $delay seconds... ($attempt/$max_attempts)" >&2
+      sleep "$delay"
+      delay=$((delay * 2))  # exponential backoff
+    fi
+  done
+
+  echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Assuming tag does not exist." >&2
+  return 1
+}
+
 generate_dev_tag() {
   local base="$1"
   # force a 10-char short hash to match existing airbyte-ci behaviour.
   local hash
   hash=$(git rev-parse --short=10 HEAD)
   echo "${base}-dev.${hash}"
-}
-
-# Function to compare version strings
-# Returns 0 if version1 > version2
-# Returns 1 if version1 <= version2
-version_gt() {
-  local v1="$1"
-  local v2="$2"
-
-  # If versions are identical, return 1 (not greater)
-  if [[ "$v1" == "$v2" ]]; then
-    return 1
-  fi
-
-  # Extract components (assuming semantic versioning) on the . separator.
-  local IFS=.
-  local i v1_array=($v1) v2_array=($v2)
-
-  # Compare each component
-  for ((i=0; i<${#v1_array[@]} || i<${#v2_array[@]}; i++)); do
-    # Default to 0 if component doesn't exist. 1.2 -> 1.2.0
-    local v1_comp=${v1_array[i]:-0}
-    local v2_comp=${v2_array[i]:-0}
-
-    # Remove any non-numeric suffix (like -alpha, -beta, etc.) for simplicity.
-    v1_comp=$(echo "$v1_comp" | sed -E 's/([0-9]+).*/\1/')
-    v2_comp=$(echo "$v2_comp" | sed -E 's/([0-9]+).*/\1/')
-
-    # Compare numerically
-    if ((10#$v1_comp > 10#$v2_comp)); then
-      return 0  # version1 > version2
-    elif ((10#$v1_comp < 10#$v2_comp)); then
-      return 1  # version1 < version2
-    fi
-    # If equal, continue to next component
-  done
-
-  # If we get here, all components were equal or v1 ran out of components
-  return 1  # version1 <= version2
 }
 
 # ---------- main loop ----------
@@ -210,23 +202,6 @@ while read -r connector; do
   fi
 
   if [[ "$publish_mode" == "main-release" ]]; then
-    # Check if version has increased for main releases
-    previous_version=""
-    # Try to get the previous version from git history
-    previous_version=$(git show HEAD~1:"${meta}" 2>/dev/null | yq -r '.data.dockerImageTag' || echo "")
-
-    if [ -n "$previous_version" ]; then
-      # Check if current version is greater than previous version
-      if ! version_gt "$base_tag" "$previous_version"; then
-        echo "ℹ️  Skipping '$connector'; version not increased (current: $base_tag, previous: $previous_version)"
-        continue
-      fi
-
-      echo "✅ Publishing '$connector'; version increased: $previous_version -> $base_tag"
-    else
-      echo "✅ Publishing '$connector'; no previous version found, treating as new connector"
-    fi
-
     docker_tag="$base_tag"
   else
     docker_tag=$(generate_dev_tag "$base_tag")
@@ -234,6 +209,13 @@ while read -r connector; do
 
   if $do_publish; then
     echo "Building & publishing ${connector} with tag ${docker_tag}"
+
+    if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
+      echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
+      continue
+    fi
+
+    echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
     ./gradlew -Pdocker.publish \
               -DciMode=true \
               -Psbom=false \
