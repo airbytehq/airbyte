@@ -216,7 +216,9 @@ class PipelineEventBookkeepingRouter(
                 catalog.streams.forEach {
                     val sawComplete = sawEndOfStreamComplete.contains(it.descriptor)
                     val manager = syncManager.getStreamManager(it.descriptor)
-                    manager.markEndOfStream(sawComplete)
+                    if (sawComplete) {
+                        manager.markEndOfStream(sawComplete)
+                    }
                     batchStateUpdateQueue.publish(
                         BatchEndOfStream(it.descriptor, "bookkeepingRouter", 0, manager.readCount())
                     )
