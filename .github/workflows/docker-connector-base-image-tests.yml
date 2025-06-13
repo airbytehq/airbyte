@@ -18,6 +18,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write # allow pushing to GHCR
+
 jobs:
   detect-changes:
     name: Detect Changes
