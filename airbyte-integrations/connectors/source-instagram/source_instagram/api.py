@@ -78,14 +78,13 @@ class InstagramAPI:
     def _find_accounts(self) -> List[Mapping[str, Any]]:
         try:
             instagram_business_accounts = []
-            accounts = fb_user.User(fbid="me").get_accounts()
+            accounts = fb_user.User(fbid="me").get_accounts(params={"fields": "id,name,instagram_business_account{id}"})
             for account in accounts:
-                page = Page(account.get_id()).api_get(fields=["instagram_business_account"])
-                if page.get("instagram_business_account"):
+                if account.get("instagram_business_account"):
                     instagram_business_accounts.append(
                         {
                             "page_id": account.get_id(),
-                            "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
+                            "instagram_business_account": IGUser(account.get("instagram_business_account").get("id")),
                         }
                     )
         except FacebookRequestError as exc:
