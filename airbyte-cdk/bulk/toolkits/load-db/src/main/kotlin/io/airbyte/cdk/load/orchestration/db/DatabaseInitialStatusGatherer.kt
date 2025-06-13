@@ -35,7 +35,7 @@ fun interface DatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatu
 
 abstract class BaseDirectLoadInitialStatusGatherer(
     private val airbyteClient: AirbyteClient,
-    private val internalTableDataset: String
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
         streams: TableCatalog
@@ -67,13 +67,7 @@ abstract class BaseDirectLoadInitialStatusGatherer(
     private suspend fun getInitialStatus(tableName: TableName): DirectLoadInitialStatus {
         return DirectLoadInitialStatus(
             realTable = getTableStatus(tableName),
-            // TODO this feels sketchy. We maybe should compute the temp table name
-            //   in DirectLoadTableWriter, then pass that down to the status
-            //   gatherer (and wherever else we're using it)?
-            tempTable =
-                getTableStatus(
-                    tableName.asTempTable(internalNamespace = internalTableDataset),
-                ),
+            tempTable = getTableStatus(tempTableNameGenerator.generate(tableName)),
         )
     }
 }
