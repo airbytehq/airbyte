@@ -62,7 +62,7 @@ jobs:
         id: build-and-publish-JVM-connectors-images-master
         if: github.event_name == 'push'
         shell: bash
-        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release
+        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish
 
       - name: Publish modified connectors [On merge to master]
         # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
@@ -92,7 +92,7 @@ jobs:
         id: build-and-publish-JVM-connectors-images-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
-        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} ${{ inputs.connectors-options }}
+        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} ${{ inputs.connectors-options }} --publish
 
       - name: Publish connectors [manual]
         id: publish-connectors
