@@ -21,10 +21,6 @@ class ShelbyBeanFactory {
     fun getConfig(config: DestinationConfiguration) = config as ShelbyConfiguration
 
     @Singleton
-    fun getObjectStorageConfig(config: ShelbyConfiguration): ObjectStorageConfig<*> =
-        config.objectStorageConfig
-
-    @Singleton
     fun objectLoader(): ObjectLoader = object : ObjectLoader {
         override val inputPartitions = 1
         override val numPartWorkers = 1
