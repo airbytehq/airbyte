@@ -15,6 +15,9 @@
 #
 #   4) Mixed: positional + pre-release
 #   ./build-and-publish-java-connectors-with-tag.sh --pre-release foo-conn
+#
+#   5) Enable actual publishing (default is dry-run mode)
+#   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn
 set -euo pipefail
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
@@ -58,6 +61,7 @@ declare -A rollout_map=(
 
 # ------ Defaults & arg parsing -------
 publish_mode="pre-release"
+do_publish=false
 connectors=()
 
 while [[ $# -gt 0 ]]; do
@@ -74,6 +78,10 @@ while [[ $# -gt 0 ]]; do
       publish_mode="pre-release"
       shift
       ;;
+    --publish)
+      do_publish=true
+      shift
+      ;;
     --name=*)
       connectors=("${1#*=}")
       shift
@@ -81,6 +89,10 @@ while [[ $# -gt 0 ]]; do
     --name)
       connectors=("$2")
       shift 2
+      ;;
+    --*)
+      echo "Error: Unknown flag $1" >&2
+      exit 1
       ;;
     *)
       connectors+=("$1")
@@ -115,6 +127,45 @@ generate_dev_tag() {
   echo "${base}-dev.${hash}"
 }
 
+# Function to compare version strings
+# Returns 0 if version1 > version2
+# Returns 1 if version1 <= version2
+version_gt() {
+  local v1="$1"
+  local v2="$2"
+
+  # If versions are identical, return 1 (not greater)
+  if [[ "$v1" == "$v2" ]]; then
+    return 1
+  fi
+
+  # Extract components (assuming semantic versioning)
+  local IFS=.
+  local i v1_array=($v1) v2_array=($v2)
+
+  # Compare each component
+  for ((i=0; i<${#v1_array[@]} || i<${#v2_array[@]}; i++)); do
+    # Default to 0 if component doesn't exist
+    local v1_comp=${v1_array[i]:-0}
+    local v2_comp=${v2_array[i]:-0}
+
+    # Remove any non-numeric suffix (like -alpha, -beta, etc.)
+    v1_comp=$(echo "$v1_comp" | sed -E 's/([0-9]+).*/\1/')
+    v2_comp=$(echo "$v2_comp" | sed -E 's/([0-9]+).*/\1/')
+
+    # Compare numerically
+    if ((10#$v1_comp > 10#$v2_comp)); then
+      return 0  # version1 > version2
+    elif ((10#$v1_comp < 10#$v2_comp)); then
+      return 1  # version1 < version2
+    fi
+    # If equal, continue to next component
+  done
+
+  # If we get here, all components were equal or v1 ran out of components
+  return 1  # version1 <= version2
+}
+
 # ---------- main loop ----------
 while read -r connector; do
   # only publish if connector is in rollout_map
@@ -136,16 +187,45 @@ while read -r connector; do
   fi
 
   if [[ "$publish_mode" == "main-release" ]]; then
+    # Check if version has increased for main releases
+    previous_version=""
+    # Try to get the previous version from git history
+    previous_version=$(git show HEAD~1:"${meta}" 2>/dev/null | yq -r '.data.dockerImageTag' || echo "")
+
+    if [ -n "$previous_version" ]; then
+      # Check if current version is greater than previous version
+      if ! version_gt "$base_tag" "$previous_version"; then
+        echo "ℹ️  Skipping '$connector'; version not increased (current: $base_tag, previous: $previous_version)"
+        continue
+      fi
+
+      echo "✅ Publishing '$connector'; version increased: $previous_version -> $base_tag"
+    else
+      echo "✅ Publishing '$connector'; no previous version found, treating as new connector"
+    fi
+
     docker_tag="$base_tag"
   else
     docker_tag=$(generate_dev_tag "$base_tag")
   fi
 
-  echo "Building & publishing ${connector} with tag ${docker_tag}"
-  ./gradlew -Pdocker.publish \
-            -DciMode=true \
-            -Psbom=false \
-            -Pdocker.tag="${docker_tag}" \
-            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  if $do_publish; then
+    echo "Building & publishing ${connector} with tag ${docker_tag}"
+    ./gradlew -Pdocker.publish \
+              -DciMode=true \
+              -Psbom=false \
+              -Pdocker.tag="${docker_tag}" \
+              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  else
+    echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
+    ./gradlew -DciMode=true \
+              -Psbom=false \
+              -Pdocker.tag="${docker_tag}" \
+              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  fi
 done < <(get_connectors)
-echo "Done building & publishing."
+if $do_publish; then
+  echo "Done building & publishing."
+else
+  echo "DRY RUN: Done building. No images were published. Use --publish flag to enable publishing."
+fi
