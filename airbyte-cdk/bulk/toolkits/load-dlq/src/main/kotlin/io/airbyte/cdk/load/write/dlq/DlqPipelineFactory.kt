@@ -4,6 +4,12 @@
 
 package io.airbyte.cdk.load.write.dlq
 
+import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
+import io.airbyte.cdk.load.command.dlq.S3ObjectStorageConfig
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -23,7 +29,10 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleterSte
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
@@ -44,6 +53,7 @@ class DlqPipelineFactory(
                         outputQueue = dlqInputQueue,
                         taskFactory = pipelineStepTaskFactory,
                         dlqLoader = dlqLoader,
+                        deadLetterQueueEnabled = dlqPipelineSteps.isNotEmpty(),
                     ),
                     *dlqPipelineSteps.toTypedArray(),
                 )
@@ -114,9 +124,15 @@ class DlqPipelineFactoryFactory {
             flushStrategy = flushStrategy,
         )
 
-    /** References the traditional ObjectStorage pipeline steps. */
-    @Named("dlqPipelineSteps")
+    /**
+     * References the traditional ObjectStorage pipeline steps.
+     *
+     * We rely on an ObjectStorageConfig to exist and not be `DisabledObjectStorageConfig` to
+     * decide whether we should return the ObjectLoader pipeline steps as DLQ Steps.
+     */
     @Singleton
+    @Requires(bean=ObjectStorageConfig::class, beanProperty="type", notEquals="None")
+    @Named("dlqPipelineSteps")
     fun <K : WithStream, T : RemoteObject<*>> dlqPipelineSteps(
         @Named("dlqRecordFormatterStep") formatterStep: ObjectLoaderPartFormatterStep,
         @Named("recordPartLoaderStep") loaderStep: ObjectLoaderPartLoaderStep<T>,
@@ -127,4 +143,23 @@ class DlqPipelineFactoryFactory {
             loaderStep,
             completerStep,
         )
+
+    @Singleton
+    @Requires(bean=ObjectStorageConfig::class, beanProperty="type", value="None")
+    @Named("dlqPipelineSteps")
+    fun dlqPipelineSteps(): List<LoadPipelineStep> {
+        return emptyList()
+    }
+
+    /**
+     * Add a Singleton to extract the `ObjectStorageConfig` from the `DestinationConfiguration`.
+     */
+    @Singleton
+    fun objectStorageConfig(destinationConfig: DestinationConfiguration): ObjectStorageConfig =
+        (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig ?: throw
+        IllegalArgumentException("Unable to extract an ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider")
+
+    @Singleton
+    fun <T : OutputStream> s3ObjectStorageConfig(destinationConfig: DestinationConfiguration):
+        S3ObjectStorageConfig<T> = (destinationConfig as ObjectStorageConfigProvider).objectStorageConfig as S3ObjectStorageConfig<T>
 }
