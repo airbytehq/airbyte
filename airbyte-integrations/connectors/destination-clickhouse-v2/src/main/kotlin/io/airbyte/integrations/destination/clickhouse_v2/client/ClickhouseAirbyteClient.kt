@@ -107,7 +107,6 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        // TODO bmoric: ("Not yet implemented")
         val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
         val tableSchemaWithoutAirbyteColumns =
@@ -155,9 +154,6 @@ class ClickhouseAirbyteClient(
         println(mutableCatalogColumns)
 
         tableColumns.forEach { clickhouseColumn ->
-            println(
-                "Processing column: ${clickhouseColumn.columnName} with type ${clickhouseColumn.dataType}"
-            )
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
                 deleted.add(clickhouseColumn.columnName)
             } else {
@@ -181,8 +177,6 @@ class ClickhouseAirbyteClient(
                 modified = modified,
                 deleted = deleted,
             )
-
-        println(result)
 
         return result
     }
