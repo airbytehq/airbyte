@@ -313,9 +313,7 @@ class DataChannelBeanFactory {
                 return NamespaceMapper(NamespaceDefinitionType.SOURCE)
             }
             DataChannelMedium.SOCKET -> {
-                log.info {
-                    "In a SOCKET scenario. Using alternate version of the NamespaceMapper"
-                }
+                log.info { "In a SOCKET scenario. Using alternate version of the NamespaceMapper" }
                 val config =
                     File(namespaceMappingConfigPath)
                         .readText(Charsets.UTF_8)
