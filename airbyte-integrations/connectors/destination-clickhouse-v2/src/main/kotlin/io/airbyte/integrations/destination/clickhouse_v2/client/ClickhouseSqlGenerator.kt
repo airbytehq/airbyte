@@ -317,7 +317,6 @@ class ClickhouseSqlGenerator {
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
         }
-        println(builder.dropLast(1).toString())
         return builder.dropLast(1).toString()
     }
 
