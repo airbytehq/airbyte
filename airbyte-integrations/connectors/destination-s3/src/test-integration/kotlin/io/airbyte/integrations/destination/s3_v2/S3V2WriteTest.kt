@@ -536,7 +536,6 @@ class S3V2WriteTestJsonUncompressedSockets :
     }
 
     @Test
-    @Disabled("known bug - https://github.com/airbytehq/airbyte-internal-issues/issues/13354")
     override fun testTruncateRefresh() {
         super.testTruncateRefresh()
     }
@@ -565,7 +564,6 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     }
 
     @Test
-    @Disabled("known bug - https://github.com/airbytehq/airbyte-internal-issues/issues/13354")
     override fun testTruncateRefresh() {
         super.testTruncateRefresh()
     }
