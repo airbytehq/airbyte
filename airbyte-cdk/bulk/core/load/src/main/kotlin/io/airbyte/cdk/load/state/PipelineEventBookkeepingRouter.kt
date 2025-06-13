@@ -135,13 +135,13 @@ class PipelineEventBookkeepingRouter(
         when (val checkpoint = reservation.value) {
             is StreamCheckpoint -> {
                 val stream = checkpoint.checkpoint.stream
-                val manager = syncManager.getStreamManager(stream.descriptor)
+                val manager = syncManager.getStreamManager(stream)
                 val (checkpointKey, checkpointRecordCount) = getKeyAndCounts(checkpoint, manager)
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
                 checkpointQueue.publish(
                     reservation.replace(
-                        StreamCheckpointWrapped(stream.descriptor, checkpointKey, messageWithCount)
+                        StreamCheckpointWrapped(stream, checkpointKey, messageWithCount)
                     )
                 )
             }
@@ -216,7 +216,9 @@ class PipelineEventBookkeepingRouter(
                 catalog.streams.forEach {
                     val sawComplete = sawEndOfStreamComplete.contains(it.descriptor)
                     val manager = syncManager.getStreamManager(it.descriptor)
-                    manager.markEndOfStream(sawComplete)
+                    if (sawComplete) {
+                        manager.markEndOfStream(sawComplete)
+                    }
                     batchStateUpdateQueue.publish(
                         BatchEndOfStream(it.descriptor, "bookkeepingRouter", 0, manager.readCount())
                     )
