@@ -43,6 +43,8 @@ tasks.named("check") {
         }
     }
 
-    // Add check tasks for connectors with local CDK
-    dependsOn connectorsWithLocalCdk.collect { "${it.path}:check" }
+    // Add test tasks for connectors with local CDK
+    dependsOn connectorsWithLocalCdk.collect { "${it.path}:test" }
+    // Add integrationTestJava tasks for connectors with local CDK
+    dependsOn connectorsWithLocalCdk.collect { "${it.path}:integrationTestJava" }
 }
