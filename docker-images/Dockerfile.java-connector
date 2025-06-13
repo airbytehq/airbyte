@@ -17,7 +17,8 @@ RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
 ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 ENV APPLICATION="${CONNECTOR_NAME}"
 
-# Add the connector TAR file and extract it (try connector-specific name first, fallback to airbyte-app.tar)
+# Add the connector TAR file and extract it.
+# For compatibility reasons, first try connector-specific name, then `airbyte-app.tar`
 COPY ./build/distributions/ /tmp/distributions/
 RUN if [ -f /tmp/distributions/${CONNECTOR_NAME}.tar ]; then \
         cp /tmp/distributions/${CONNECTOR_NAME}.tar /tmp/${CONNECTOR_NAME}.tar; \
