@@ -49,6 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.27      | 2025-06-13 | [61587](https://github.com/airbytehq/airbyte/pull/61587) | Test publishing logic.                                                                       |
 | 0.7.26      | 2025-05-27 | [60938](https://github.com/airbytehq/airbyte/pull/60938) | Revert to base 2.0.1, test default IPC Options                                               |
 | 0.7.25      | 2025-05-15 | [60312](https://github.com/airbytehq/airbyte/pull/60312) | Migrate to base 2.0.2.                                                                       |
 | 0.7.24      | 2025-05-15 | [60301](https://github.com/airbytehq/airbyte/pull/60301) | Add support for file-based syncs                                                             |
