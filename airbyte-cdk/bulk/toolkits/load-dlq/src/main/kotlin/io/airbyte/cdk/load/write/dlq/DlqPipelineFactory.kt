@@ -155,10 +155,13 @@ class DlqPipelineFactoryFactory {
                 "Unable to extract an ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider"
             )
 
+    /** Singleton to extract the different object storage related config providers for S3 */
     @Singleton
-    fun <T : OutputStream> s3ObjectStorageConfig(
+    fun s3ObjectStorageConfig(
         destinationConfig: DestinationConfiguration
-    ): S3ObjectStorageConfig<T> =
-        (destinationConfig as ObjectStorageConfigProvider).objectStorageConfig
-            as S3ObjectStorageConfig<T>
+    ): S3ObjectStorageConfig<*> =
+        (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig
+            as? S3ObjectStorageConfig<*> ?: throw IllegalArgumentException(
+            "Unable to extract an S3ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider"
+        )
 }
