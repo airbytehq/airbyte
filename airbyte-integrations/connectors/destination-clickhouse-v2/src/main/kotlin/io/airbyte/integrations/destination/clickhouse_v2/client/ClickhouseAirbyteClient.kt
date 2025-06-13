@@ -188,16 +188,6 @@ class ClickhouseAirbyteClient(
         return result
     }
 
-    private fun toStringType(columns: Map<String, ClickHouseDataType>): Map<String, String> {
-        return columns.mapValues { (_, dataType) ->
-            if (dataType == ClickHouseDataType.DateTime64) {
-                "DateTime64(3)"
-            } else {
-                dataType.name
-            }
-        }
-    }
-
     override suspend fun countTable(tableName: TableName): Long? {
         try {
             val sql = sqlGenerator.countTable(tableName, "cnt")
