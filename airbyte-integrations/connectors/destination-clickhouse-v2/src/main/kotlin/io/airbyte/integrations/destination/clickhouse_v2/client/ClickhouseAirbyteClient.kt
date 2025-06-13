@@ -142,7 +142,7 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    private fun getChangedColumns(
+    internal fun getChangedColumns(
         tableColumns: List<ClickHouseColumn>,
         catalogColumns: Map<String, String>,
     ): AlterationSummary {
