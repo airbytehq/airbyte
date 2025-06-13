@@ -12,7 +12,6 @@ on:
       - "docker-images/Dockerfile.python-connector"
       - "docker-images/Dockerfile.python-connector-base"
       - "docker-images/Dockerfile.manifest-only-connector"
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
