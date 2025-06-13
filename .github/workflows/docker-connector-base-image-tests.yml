@@ -80,9 +80,6 @@ jobs:
           file: docker-images/Dockerfile.java-connector-base
           platforms: linux/amd64,linux/arm64
           push: true
-          # Cache layers in the GitHub Actions cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
             ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
@@ -130,9 +127,6 @@ jobs:
           file: docker-images/Dockerfile.python-connector-base
           platforms: linux/amd64,linux/arm64
           push: true
-          # Cache layers in the GitHub Actions cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
             ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
@@ -210,9 +204,6 @@ jobs:
           file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
           push: true
-          # Cache layers in the GitHub Actions cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
             CONNECTOR_NAME=${{ matrix.connector }}
@@ -300,9 +291,6 @@ jobs:
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
           push: true
-          # Cache layers in the GitHub Actions cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
             CONNECTOR_NAME=${{ matrix.connector }}
@@ -387,9 +375,6 @@ jobs:
           file: docker-images/Dockerfile.manifest-only-connector
           platforms: linux/amd64,linux/arm64
           push: true
-          # Cache layers in the GitHub Actions cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest
             CONNECTOR_NAME=${{ matrix.connector }}
