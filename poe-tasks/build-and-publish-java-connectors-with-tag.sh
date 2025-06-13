@@ -23,41 +23,50 @@ set -euo pipefail
 CONNECTORS_DIR="airbyte-integrations/connectors"
 
 # ── Rollout whitelist: only connectors listed here will be built/published
-declare -A rollout_map=(
-  [destination-azure-blob-storage]=1
-  [destination-bigquery]=1
-  [destination-clickhouse-strict-encrypt]=1
-  [destination-clickhouse]=1
-  [destination-csv]=1
-  [destination-databricks]=1
-  [destination-dev-null]=1
-  [destination-dynamodb]=1
-  [destination-elasticsearch-strict-encrypt]=1
-  [destination-elasticsearch]=1
-  [destination-gcs]=1
-  [destination-kafka]=1
-  [destination-local-json]=1
-  [destination-mongodb-strict-encrypt]=1
-  [destination-mongodb]=1
-  [destination-mysql-strict-encrypt]=1
-  [destination-mysql]=1
-  [destination-oracle-strict-encrypt]=1
-  [destination-oracle]=1
-  [destination-postgres-strict-encrypt]=1
-  [destination-postgres]=1
-  [destination-redis]=1
-  [destination-redshift]=1
-  [destination-s3-data-lake]=1
-  [destination-s3]=1
-  [destination-singlestore]=1
-  [destination-snowflake]=1
-  [destination-starburst-galaxy]=1
-  [destination-teradata]=1
-  [destination-yellowbrick]=1
-  [source-e2e-test]=1
-  [source-postgres]=1
-  [source-mysql]=1
-)
+# Function to check if a connector is in the whitelist
+is_in_whitelist() {
+  local connector="$1"
+  case "$connector" in
+    destination-azure-blob-storage|\
+    destination-bigquery|\
+    destination-clickhouse-strict-encrypt|\
+    destination-clickhouse|\
+    destination-csv|\
+    destination-databricks|\
+    destination-dev-null|\
+    destination-dynamodb|\
+    destination-elasticsearch-strict-encrypt|\
+    destination-elasticsearch|\
+    destination-gcs|\
+    destination-kafka|\
+    destination-local-json|\
+    destination-mongodb-strict-encrypt|\
+    destination-mongodb|\
+    destination-mysql-strict-encrypt|\
+    destination-mysql|\
+    destination-oracle-strict-encrypt|\
+    destination-oracle|\
+    destination-postgres-strict-encrypt|\
+    destination-postgres|\
+    destination-redis|\
+    destination-redshift|\
+    destination-s3-data-lake|\
+    destination-s3|\
+    destination-singlestore|\
+    destination-snowflake|\
+    destination-starburst-galaxy|\
+    destination-teradata|\
+    destination-yellowbrick|\
+    source-e2e-test|\
+    source-postgres|\
+    source-mysql)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
 
 # ------ Defaults & arg parsing -------
 publish_mode="pre-release"
@@ -168,8 +177,8 @@ version_gt() {
 
 # ---------- main loop ----------
 while read -r connector; do
-  # only publish if connector is in rollout_map
-  if [[ -z ${rollout_map[$connector]:-} ]]; then
+  # only publish if connector is in whitelist
+  if ! is_in_whitelist "$connector"; then
     echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
     continue
   fi
