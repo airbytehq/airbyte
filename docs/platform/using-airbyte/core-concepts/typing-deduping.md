@@ -4,6 +4,13 @@ products: all
 
 # Typing and Deduping
 
+:::warning
+**Typing and Deduping is currently being phased out in favor of Direct Loads.**
+
+With Direct Loads, there is no intermediate table result containing the raw JSON blob. Instead, top-level fields are typed during time of insert, and there is only a single destination table maintained per stream.
+:::
+
+
 This page refers to new functionality added by
 [Destinations V2](/release_notes/upgrading_to_destinations_v2/). Typing and deduping is the default
 method of transforming datasets within data warehouse and database destinations after they've been

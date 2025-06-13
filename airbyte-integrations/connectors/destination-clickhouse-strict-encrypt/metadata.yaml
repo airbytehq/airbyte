@@ -1,4 +1,6 @@
 data:
+  ab_internal:
+    requireVersionIncrementsInPullRequests: false
   registryOverrides:
     cloud:
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.

@@ -182,6 +182,9 @@ enum class UnionBehavior {
      * option, no validation is performed.
      */
     STRINGIFY,
+
+    /** Union fields are written as strings, no validation is performed */
+    STRICT_STRINGIFY,
 }
 
 enum class UnknownTypesBehavior {
@@ -533,7 +536,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespaceMapper = namespaceMapperForMedium()
                 )
             val stateMessage =
-                runSyncUntilStateAck(
+                runSyncUntilStateAckAndExpectFailure(
                     this@BasicFunctionalityIntegrationTest.updatedConfig,
                     stream,
                     listOf(
@@ -550,7 +553,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium()
                     ),
-                    allowGracefulShutdown = false,
+                    syncEndBehavior = UncleanSyncEndBehavior.KILL,
                 )
             runSync(this@BasicFunctionalityIntegrationTest.updatedConfig, stream, emptyList())
 
@@ -919,15 +922,65 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             )
         )
+
         val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
-        runSync(
+        // start a truncate refresh, but emit INCOMPLETE.
+        // This should retain the existing data, and maybe insert the new record.
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
                     stream = stream,
                     """{"id": 42, "name": "second_value"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 2345,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            ),
+            StreamCheckpoint(
+                finalStream,
+                """{}""",
+                sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
+            ),
+            syncEndBehavior = UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS,
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                // first record is still present
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 12,
+                    data = mapOf("id" to 42, "name" to "first_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                if (commitDataIncrementally) {
+                    OutputRecord(
+                        extractedAt = 2345,
+                        generationId = 13,
+                        data = mapOf("id" to 42, "name" to "second_value"),
+                        airbyteMeta = OutputRecord.Meta(syncId = 43),
+                    )
+                } else {
+                    null
+                }
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+
+        // finish the truncate. This should now delete the first sync's data,
+        // and definitely insert the second+third syncs' data.
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    stream = stream,
+                    """{"id": 42, "name": "third_value"}""",
+                    emittedAtMs = 3456,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
@@ -935,12 +988,19 @@ abstract class BasicFunctionalityIntegrationTest(
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
+                // retain the second+third records
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 2345,
                     generationId = 13,
                     data = mapOf("id" to 42, "name" to "second_value"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
-                )
+                ),
+                OutputRecord(
+                    extractedAt = 3456,
+                    generationId = 13,
+                    data = mapOf("id" to 42, "name" to "third_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),
@@ -1043,7 +1103,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         // Run a sync, but emit a status incomplete. This should not delete any existing data.
-        runSyncUntilStateAck(
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
@@ -1053,7 +1113,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
-            allowGracefulShutdown = false,
+            syncEndBehavior = UncleanSyncEndBehavior.KILL,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1175,7 +1235,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
             )
         // Run a sync, but emit a stream status incomplete.
-        runSyncUntilStateAck(
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
@@ -1185,7 +1245,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
-            allowGracefulShutdown = false,
+            syncEndBehavior = UncleanSyncEndBehavior.KILL,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1339,7 +1399,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a stream status incomplete. This should not delete any existing
         // data.
-        runSyncUntilStateAck(
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
@@ -1349,7 +1409,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
-            allowGracefulShutdown = false,
+            syncEndBehavior = UncleanSyncEndBehavior.KILL,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -3169,6 +3229,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         StringValue(value.serializeToString())
                     }
+                UnionBehavior.STRICT_STRINGIFY -> StringValue(value.toString())
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
@@ -3639,7 +3700,7 @@ abstract class BasicFunctionalityIntegrationTest(
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 
-    private fun checkpointKeyForMedium(): CheckpointKey? {
+    fun checkpointKeyForMedium(): CheckpointKey? {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> null
             DataChannelMedium.SOCKET -> CheckpointKey(CheckpointIndex(1), CheckpointId("1"))

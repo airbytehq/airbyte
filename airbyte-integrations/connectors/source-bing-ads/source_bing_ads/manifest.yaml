@@ -236,6 +236,668 @@ definitions:
         class_name: source_bing_ads.components.BingAdsCampaignsRecordTransformer
       - type: RemoveFields
         field_pointers: []
+  ad_groups_stream:
+    type: DeclarativeStream
+    name: ad_groups
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_groups"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/AdGroups/QueryByCampaignId
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerAccountId: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          CustomerId: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+        request_body_json:
+          CampaignId: "{{ stream_partition['campaign_id'][0] | string }}"
+          ReturnAdditionalFields: "AdGroupType,AdScheduleUseSearcherTimeZone,CpmBid,CpvBid,MultimediaAdsBidAdjustment"
+        authenticator: "#/definitions/authenticator"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/campaigns_stream"
+              extra_fields:
+                - - AccountId
+                - - CustomerId
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["AdGroups"]
+        schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CampaignId
+            value: "{{ stream_partition['campaign_id'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CustomerId
+            value: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - ForwardCompatibilityMap
+            value: "{{ record.get('ForwardCompatibilityMap') if record.get('ForwardCompatibilityMap') and record.get('ForwardCompatibilityMap') | length > 0 else none }}"
+  ads_stream:
+    type: DeclarativeStream
+    name: ads
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ads"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Ads/QueryByAdGroupId
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerAccountId: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          CustomerId: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+        request_body_json:
+          AdGroupId: "{{ stream_partition['ad_group_id'][0] | string }}"
+          AdTypes: '{{ [ "Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch" ] }}'
+          ReturnAdditionalFields: "ImpressionTrackingUrls,Videos,LongHeadlines"
+        authenticator: "#/definitions/authenticator"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: ad_group_id
+              stream:
+                $ref: "#/definitions/ad_groups_stream"
+              extra_fields:
+                - - AccountId
+                - - CustomerId
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["Ads"]
+        schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - AccountId
+            value: "{{ stream_slice.extra_fields['AccountId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - AdGroupId
+            value: "{{ stream_partition['ad_group_id'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - CustomerId
+            value: "{{ stream_slice.extra_fields['CustomerId'][0] }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Descriptions_AssetLink
+            value: "{{ record.get('Descriptions') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_FinalMobileUrls_string
+            value: "{{ record.get('FinalMobileUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_FinalUrls_string
+            value: "{{ record.get('FinalUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Headlines_AssetLink
+            value: "{{ record.get('Headlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Images_AssetLink
+            value: "{{ record.get('Images') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_LongHeadlines_AssetLink
+            value: "{{ record.get('LongHeadlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - _tmp_Videos_AssetLink
+            value: "{{ record.get('Videos') }}"
+          - type: AddedFieldDefinition
+            path:
+              - ForwardCompatibilityMap
+            value: "{{ record.get('ForwardCompatibilityMap') if record.get('ForwardCompatibilityMap') and record.get('ForwardCompatibilityMap') | length > 0 else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - Path1
+            value: "{{ none if record.get('Path1') == '' else record.get('Path1')}}"
+          - type: AddedFieldDefinition
+            path:
+              - Path2
+            value: "{{ none if record.get('Path2') == '' else record.get('Path2')}}"
+          - type: AddedFieldDefinition
+            path:
+              - TextPart2
+            value: "{{ none if record.get('TextPart2') == '' else record.get('TextPart2')}}"
+          - type: AddedFieldDefinition
+            path:
+              - TitlePart3
+            value: "{{ none if record.get('TitlePart3') == '' else record.get('TitlePart3')}}"
+      - type: RemoveFields
+        field_pointers:
+          - - Descriptions
+          - - FinalMobileUrls
+          - - FinalUrls
+          - - Headlines
+          - - Images
+          - - LongHeadlines
+          - - Videos
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - Descriptions
+              - AssetLink
+            value: "{{ record.get('_tmp_Descriptions_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalMobileUrls
+              - string
+            value: "{{ record.get('_tmp_FinalMobileUrls_string') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalUrls
+              - string
+            value: "{{ record.get('_tmp_FinalUrls_string') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Headlines
+              - AssetLink
+            value: "{{ record.get('_tmp_Headlines_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Images
+              - AssetLink
+            value: "{{ record.get('_tmp_Images_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - LongHeadlines
+              - AssetLink
+            value: "{{ record.get('_tmp_Images_AssetLink') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Videos
+              - AssetLink
+            value: "{{ record.get('_tmp_Videos_AssetLink') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - _tmp_Descriptions_AssetLink
+          - - _tmp_FinalMobileUrls_string
+          - - _tmp_FinalUrls_string
+          - - _tmp_Headlines_AssetLink
+          - - _tmp_Images_AssetLink
+          - - _tmp_LongHeadlines_AssetLink
+          - - _tmp_Videos_AssetLink
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - Descriptions
+            value: "{{ none if record.get('Descriptions', {}).get('AssetLink') == none else record.get('Descriptions') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalMobileUrls
+            value: "{{ none if record.get('FinalMobileUrls', {}).get('string') == none else record.get('FinalMobileUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - FinalUrls
+            value: "{{ none if record.get('FinalUrls', {}).get('string') == none else record.get('FinalUrls') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Headlines
+            value: "{{ none if record.get('Headlines', {}).get('AssetLink') == none else record.get('Headlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Images
+            value: "{{ none if record.get('Images', {}).get('AssetLink') == none else record.get('Images') }}"
+          - type: AddedFieldDefinition
+            path:
+              - LongHeadlines
+            value: "{{ none if record.get('LongHeadlines', {}).get('AssetLink') == none else record.get('LongHeadlines') }}"
+          - type: AddedFieldDefinition
+            path:
+              - Videos
+            value: "{{ none if record.get('Videos', {}).get('AssetLink') == none or record.get('Videos', {}).get('AssetLink') == [] else record.get('Videos') }}"
+  # Report Streams
+
+  ## Account Performance Reports
+  account_performance_report_hourly_stream:
+    type: DeclarativeStream
+    name: account_performance_report_hourly
+    primary_key:
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_performance_report_hourly"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AccountPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AccountPerformanceReportRequest
+            Aggregation: Hourly
+            Columns:
+              - AccountId
+              - TimePeriod
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Network
+              - DeliveredMatchType
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - AccountName
+              - AccountNumber
+              - PhoneImpressions
+              - PhoneCalls
+              - Clicks
+              - Ctr
+              - Spend
+              - Impressions
+              - Assists
+              - ReturnOnAdSpend
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - Conversions
+              - ConversionsQualified
+              - ConversionRate
+              - CostPerAssist
+              - CostPerConversion
+              - LowQualityClicks
+              - LowQualityClicksPercent
+              - LowQualityImpressions
+              - LowQualitySophisticatedClicks
+              - LowQualityConversions
+              - LowQualityConversionRate
+              - Revenue
+              - RevenuePerAssist
+              - RevenuePerConversion
+              - Ptr
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              ReportTimeZone: "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - TimePeriod
+            #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+            #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+            value: |
+              {%- set parts = record.TimePeriod.split('|') -%}
+              {%- set time_period = record.TimePeriod -%}
+              {%- set date_part = '' -%}
+              {%- set hour_part = 0 -%}
+              {%- if parts|length > 1 -%}
+                {%- set date_part = parts[0] -%}
+                {%- set hour_part = parts[1]|int -%}
+                {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
+              {%- endif -%}
+              {{ time_period }}
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+
+  account_performance_report_daily_stream:
+    type: DeclarativeStream
+    name: account_performance_report_daily
+    primary_key:
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AccountPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AccountPerformanceReportRequest
+            Aggregation: Daily
+            Columns:
+              - AccountId
+              - TimePeriod
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Network
+              - DeliveredMatchType
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - AccountName
+              - AccountNumber
+              - PhoneImpressions
+              - PhoneCalls
+              - Clicks
+              - Ctr
+              - Spend
+              - Impressions
+              - Assists
+              - ReturnOnAdSpend
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - Conversions
+              - ConversionsQualified
+              - ConversionRate
+              - CostPerAssist
+              - CostPerConversion
+              - LowQualityClicks
+              - LowQualityClicksPercent
+              - LowQualityImpressions
+              - LowQualitySophisticatedClicks
+              - LowQualityConversions
+              - LowQualityConversionRate
+              - Revenue
+              - RevenuePerAssist
+              - RevenuePerConversion
+              - Ptr
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              ReportTimeZone: "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+
+  account_performance_report_weekly_stream:
+    type: DeclarativeStream
+    name: account_performance_report_weekly
+    primary_key:
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AccountPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AccountPerformanceReportRequest
+            Aggregation: Weekly
+            Columns:
+              - AccountId
+              - TimePeriod
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Network
+              - DeliveredMatchType
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - AccountName
+              - AccountNumber
+              - PhoneImpressions
+              - PhoneCalls
+              - Clicks
+              - Ctr
+              - Spend
+              - Impressions
+              - Assists
+              - ReturnOnAdSpend
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - Conversions
+              - ConversionsQualified
+              - ConversionRate
+              - CostPerAssist
+              - CostPerConversion
+              - LowQualityClicks
+              - LowQualityClicksPercent
+              - LowQualityImpressions
+              - LowQualitySophisticatedClicks
+              - LowQualityConversions
+              - LowQualityConversionRate
+              - Revenue
+              - RevenuePerAssist
+              - RevenuePerConversion
+              - Ptr
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+
+  account_performance_report_monthly_stream:
+    type: DeclarativeStream
+    name: account_performance_report_monthly
+    primary_key:
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_performance_report"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AccountPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AccountPerformanceReportRequest
+            Aggregation: Monthly
+            Columns:
+              - AccountId
+              - TimePeriod
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Network
+              - DeliveredMatchType
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - AccountName
+              - AccountNumber
+              - PhoneImpressions
+              - PhoneCalls
+              - Clicks
+              - Ctr
+              - Spend
+              - Impressions
+              - Assists
+              - ReturnOnAdSpend
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - Conversions
+              - ConversionsQualified
+              - ConversionRate
+              - CostPerAssist
+              - CostPerConversion
+              - LowQualityClicks
+              - LowQualityClicksPercent
+              - LowQualityImpressions
+              - LowQualitySophisticatedClicks
+              - LowQualityConversions
+              - LowQualityConversionRate
+              - Revenue
+              - RevenuePerAssist
+              - RevenuePerConversion
+              - Ptr
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/account_performance_report_common_transformations"
+
+  ## Ad Performance Reports
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
@@ -364,6 +1026,9 @@ definitions:
               {{ time_period }}
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: RemoveFields
         field_pointers:
@@ -477,6 +1142,9 @@ definitions:
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
     transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
@@ -593,6 +1261,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: AddFields
         fields:
@@ -707,10 +1378,61 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          $ref: "#/definitions/transformations/performance_report_common_transformations"
+      - type: AddFields
+        fields:
           $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/ad_performance_report_transformations"
+  # bulk streams
+  labels_stream:
+    # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
+    type: DeclarativeStream
+    name: labels
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/labels"
+    retriever:
+      $ref: "#/definitions/basic_bulk_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_bulk_async_retriever/creation_requester"
+        request_body_json:
+          AccountIds: "['{{ stream_partition['account_id'] }}']"
+          DataScope: EntityData
+          DownloadEntities: ["Labels"]
+          DownloadFileType: Csv
+          FormatVersion: "'6.0'"
+          # Typically, you request a full download the first time you call the operation by setting this element to null.
+          # If you set a date and time that is more than 30 days ago, an error will be returned.
+          # ref: https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest#request-body
+          LastSyncTimeInUTC: >-
+            {%- set _start_date = stream_interval.get('start_time') -%}
+            {%- set min_available_date = format_datetime(now_utc() - duration('P30D'), '%Y-%m-%d') -%}
+            {{ str_to_datetime(_start_date).isoformat('T', 'milliseconds') if _start_date and format_datetime(_start_date, '%Y-%m-%d') >= min_available_date else "" }}
+          CompressionType: GZip
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - "Account Id"
+            value: "{{ stream_partition['account_id'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - Id
+            value: |
+              {{ record['Id'] | int if record.get('Id') else none }}
+      - type: CustomTransformation
+        class_name: source_bing_ads.components.BulkDatetimeToRFC3339
+      - type: RemoveFields
+        field_pointers:
+          - ["Type"]
+    incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
+    state_migrations:
+      - Type: LegacyToPerPartitionStateMigration
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -764,6 +1486,72 @@ definitions:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
       path: Reporting/v13/GenerateReport/Submit
+      http_method: POST
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      authenticator: "#/definitions/authenticator"
+  basic_bulk_async_retriever:
+    type: AsyncRetriever
+    partition_router:
+      $ref: "#/definitions/account_substream_partition_router"
+    status_mapping:
+      failed:
+        - Failed
+        - FailedFullSyncRequired
+      running:
+        - InProgress
+      completed:
+        - Completed
+      timeout: []
+    download_target_extractor:
+      type: DpathExtractor
+      field_path:
+        - ResultFileUrl
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record['Type'] not in ['Format Version', 'Account']}}"
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - RequestStatus
+    polling_requester:
+      # https://learn.microsoft.com/en-ie/advertising/bulk-service/getbulkdownloadstatus?view=bingads-13&tabs=prod&pivots=rest
+      type: HttpRequester
+      url_base: https://bulk.api.bingads.microsoft.com/
+      path: Bulk/v13/BulkDownloadStatus/Query
+      http_method: POST
+      authenticator: "#/definitions/authenticator"
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      request_body_json:
+        RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
+    download_requester:
+      type: HttpRequester
+      url_base: "{{download_target}}"
+      http_method: GET
+    download_decoder:
+      type: GzipDecoder
+      decoder:
+        type: CsvDecoder
+        encoding: "utf-8-sig"
+        set_values_to_none:
+          - ""
+    creation_requester:
+      # https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest
+      type: HttpRequester
+      url_base: https://bulk.api.bingads.microsoft.com/
+      path: Bulk/v13/Campaigns/DownloadByAccountIds
       http_method: POST
       request_headers:
         Content-Type: application/json
@@ -827,28 +1615,172 @@ definitions:
       # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S+00:00') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+  incremental_bulk_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: "Modified Time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%_ms%z"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      # falling back 1 year as anyway we will leave empty LastSyncTimeInUTC for dates > 30 Days
+      datetime: '{{ config["reports_start_date"] if config.get("reports_start_date") else format_datetime(now_utc() - duration("P1Y"), "%Y-%m-%d") }}'
+      datetime_format: "%Y-%m-%d"
   transformations:
-    # not used in hourly stream
-    ad_performance_report_transformations:
-      - type: AddedFieldDefinition
-        path:
-          - AbsoluteTopImpressionRatePercent
-        value: |
-          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - TopImpressionRatePercent
-        value: |
-          {% set v = record.get('TopImpressionRatePercent') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-    # used in all ad performance streams
-    ad_performance_report_common_transformations:
+    # Shared by multiple performance report streams (account + ad)
+    performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
           - AccountId
         value: |
           {{ record['AccountId'] | int if record.get('AccountId') else none }}
+      - type: AddedFieldDefinition
+        path:
+          - Assists
+        value: |
+          {{ record['Assists'] | int if record.get('Assists') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AverageCpc
+        value: |
+          {{ record['AverageCpc'] | float if record.get('AverageCpc') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AverageCpm
+        value: |
+          {{ record['AverageCpm'] | float if record.get('AverageCpm') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AveragePosition
+        value: |
+          {{ record['AveragePosition'] | float if record.get('AveragePosition') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - Clicks
+        value: |
+          {{ record['Clicks'] | int if record.get('Clicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Conversions
+        value: |
+          {{ record['Conversions'] | float if record.get('Conversions') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionsQualified
+        value: |
+          {{ record['ConversionsQualified'] | float if record.get('ConversionsQualified') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - CostPerAssist
+        value: |
+          {% set v = record.get('CostPerAssist') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - CostPerConversion
+        value: |
+          {% set v = record.get('CostPerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Impressions
+        value: |
+          {{ record['Impressions'] | int if record.get('Impressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ReturnOnAdSpend
+        value: |
+          {% set v = record.get('ReturnOnAdSpend') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Revenue
+        value: |
+          {{ record['Revenue'] | replace(',', '') | float if record.get('Revenue') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - RevenuePerAssist
+        value: |
+          {% set v = record.get('RevenuePerAssist') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - RevenuePerConversion
+        value: |
+          {% set v = record.get('RevenuePerConversion') %}
+          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Spend
+        value: |
+          {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
+
+    # used in all account performance report streams
+    account_performance_report_common_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - PhoneImpressions
+        value: |
+          {{ record['PhoneImpressions'] | int if record.get('PhoneImpressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - PhoneCalls
+        value: |
+          {{ record['PhoneCalls'] | int if record.get('PhoneCalls') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - Ptr
+        value: |
+          {% set v = record.get('Ptr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicks
+        value: |
+          {{ record['LowQualityClicks'] | int if record.get('LowQualityClicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicksPercent
+        value: |
+          {% set v = record.get('LowQualityClicksPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityImpressions
+        value: |
+          {{ record['LowQualityImpressions'] | int if record.get('LowQualityImpressions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualitySophisticatedClicks
+        value: |
+          {{ record['LowQualitySophisticatedClicks'] | int if record.get('LowQualitySophisticatedClicks') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversions
+        value: |
+          {{ record['LowQualityConversions'] | int if record.get('LowQualityConversions') else 0 }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversionRate
+        value: |
+          {% set v = record.get('LowQualityConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
+    # used in all ad performance report streams
+    ad_performance_report_common_transformations:
       - type: AddedFieldDefinition
         path:
           - AdGroupId
@@ -876,9 +1808,6 @@ definitions:
         value: |
           {% set v = record.get('AllReturnOnAdSpend') %}
           {{ v | float if v is not none and v != "" else None }}
-        # to remove the comma, specifically found for the AllRevenue field, but adding to the other revenue fields as well.
-        # ref: https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#formatversion
-      # format 2.0 is supposed to set things like 3,071.00 to 3071.00 but this is not always the case so im adding a "replace"
       - type: AddedFieldDefinition
         path:
           - AllRevenue
@@ -886,84 +1815,14 @@ definitions:
           {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
       - type: AddedFieldDefinition
         path:
-          - Assists
-        value: |
-          {{ record['Assists'] | int if record.get('Assists') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AverageCpc
-        value: |
-          {{ record['AverageCpc'] | float if record.get('AverageCpc') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AverageCpm
-        value: |
-          {{ record['AverageCpm'] | float if record.get('AverageCpm') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - AveragePosition
-        value: |
-          {{ record['AveragePosition'] | float if record.get('AveragePosition') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
           - CampaignId
         value: |
           {{ record['CampaignId'] | int if record.get('CampaignId') else 0 }}
       - type: AddedFieldDefinition
         path:
-          - Clicks
-        value: |
-          {{ record['Clicks'] | int if record.get('Clicks') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - ConversionRate
-        value: |
-          {% set v = record.get('ConversionRate') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - Conversions
-        value: |
-          {{ record['Conversions'] | float if record.get('Conversions') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - ConversionsQualified
-        value: |
-          {{ record['ConversionsQualified'] | float if record.get('ConversionsQualified') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - Ctr
-        value: |
-          {% set v = record.get('Ctr') %}
-          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - Impressions
-        value: |
-          {{ record['Impressions'] | int if record.get('Impressions') else 0 }}
-      - type: AddedFieldDefinition
-        path:
-          - ReturnOnAdSpend
-        value: |
-          {% set v = record.get('ReturnOnAdSpend') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - Revenue
-        value: |
-          {{ record['Revenue'] | replace(',', '') | float if record.get('Revenue') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
-          - Spend
-        value: |
-          {{ record['Spend'] | float if record.get('Spend') else 0.0 }}
-      - type: AddedFieldDefinition
-        path:
           - ViewThroughConversions
         value: |
           {{ record['ViewThroughConversions'] | int if record.get('ViewThroughConversions') else 0 }}
-
-      # Comparing to SOAP version following fields are not present in records if there is no data:
       - type: AddedFieldDefinition
         path:
           - AllCostPerConversion
@@ -976,30 +1835,6 @@ definitions:
         value: |
           {% set v = record.get('AllRevenuePerConversion') %}
           {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - CostPerAssist
-        value: |
-          {% set v = record.get('CostPerAssist') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - CostPerConversion
-        value: |
-          {% set v = record.get('CostPerConversion') %}
-          {{ v | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - RevenuePerAssist
-        value: |
-          {% set v = record.get('RevenuePerAssist') %}
-          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
-      - type: AddedFieldDefinition
-        path:
-          - RevenuePerConversion
-        value: |
-          {% set v = record.get('RevenuePerConversion') %}
-          {{ v | replace(',', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - ViewThroughConversionsQualified
@@ -1032,13 +1867,36 @@ definitions:
           - AdDescription2
         value: |
           {{ record['AdDescription2'] if record.get('AdDescription2') else none }}
+
+    # used in ad performance report streams (except hourly)
+    ad_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
 streams:
   - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/ad_groups_stream"
+  - $ref: "#/definitions/ads_stream"
   - $ref: "#/definitions/campaigns_stream"
+  - $ref: "#/definitions/account_performance_report_hourly_stream"
+  - $ref: "#/definitions/account_performance_report_daily_stream"
+  - $ref: "#/definitions/account_performance_report_weekly_stream"
+  - $ref: "#/definitions/account_performance_report_monthly_stream"
   - $ref: "#/definitions/ad_performance_report_hourly_stream"
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
   - $ref: "#/definitions/ad_performance_report_monthly_stream"
+  - $ref: "#/definitions/labels_stream"
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1502,6 +2360,1186 @@ schemas:
         type:
           - "null"
           - boolean
+  ad_groups:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      CampaignId:
+        description: The unique identifier of the campaign to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      AccountId:
+        description: The unique identifier of the account to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      CustomerId:
+        description: The unique identifier of the customer to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      AdRotation:
+        description: Defines how ads are rotated within the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          EndDate:
+            description: The end date for the ad rotation period.
+            type:
+              - "null"
+              - string
+          StartDate:
+            description: The start date for the ad rotation period.
+            type:
+              - "null"
+              - string
+          Type:
+            description: The type of ad rotation strategy being used.
+            type:
+              - "null"
+              - string
+      AudienceAdsBidAdjustment:
+        description: The bid adjustment for audience-based ads.
+        type:
+          - "null"
+          - number
+      BiddingScheme:
+        description: The bidding strategy used for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Type:
+            description: The type of bidding strategy being used.
+            type:
+              - "null"
+              - string
+          InheritedBidStrategyType:
+            description: The inherited bid strategy type from the parent campaign.
+            type:
+              - "null"
+              - string
+      CpcBid:
+        description: The cost-per-click bid for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Amount:
+            description: The amount of the cost-per-click bid.
+            type:
+              - "null"
+              - number
+      CpvBid:
+        description: The cost-per-view bid for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Amount:
+            description: The amount of the cost-per-view bid.
+            type:
+              - "null"
+              - number
+      CpmBid:
+        description: The cost-per-thousand-impressions bid for the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Amount:
+            description: The amount of the cost-per-thousand-impressions bid.
+            type:
+              - "null"
+              - number
+      EndDate:
+        description: The end date of the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Day:
+            description: The day part of the end date.
+            type:
+              - "null"
+              - integer
+          Month:
+            description: The month part of the end date.
+            type:
+              - "null"
+              - integer
+          Year:
+            description: The year part of the end date.
+            type:
+              - "null"
+              - integer
+      FinalUrlSuffix:
+        description: A string to append to the final URL.
+        type:
+          - "null"
+          - string
+      ForwardCompatibilityMap:
+        description: A map of key-value pairs for forward compatibility.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            key:
+              description: The key of the compatibility pair.
+              type:
+                - "null"
+                - string
+            value:
+              description: The value of the compatibility pair.
+              type:
+                - "null"
+                - string
+      Id:
+        description: The unique identifier of the ad group.
+        type:
+          - "null"
+          - integer
+      Language:
+        description: The language targeting setting for the ad group.
+        type:
+          - "null"
+          - string
+      Name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      Network:
+        description: The network targeting setting for the ad group.
+        type:
+          - "null"
+          - string
+      PrivacyStatus:
+        description: The privacy status of the ad group.
+        type:
+          - "null"
+          - string
+      Settings:
+        description: The settings associated with the ad group.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            Type:
+              description: The type of setting.
+              type:
+                - "null"
+                - string
+      StartDate:
+        description: The start date of the ad group.
+        type:
+          - "null"
+          - object
+        properties:
+          Day:
+            description: The day part of the start date.
+            type:
+              - "null"
+              - integer
+          Month:
+            description: The month part of the start date.
+            type:
+              - "null"
+              - integer
+          Year:
+            description: The year part of the start date.
+            type:
+              - "null"
+              - integer
+      Status:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      TrackingUrlTemplate:
+        description: The tracking URL template for the ad group.
+        type:
+          - "null"
+          - string
+      UrlCustomParameters:
+        description: Custom parameters for tracking URLs.
+        type:
+          - "null"
+          - object
+        properties:
+          Parameters:
+            description: The list of custom parameters.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  description: The key of the custom parameter.
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: The value of the custom parameter.
+                  type:
+                    - "null"
+                    - string
+      AdScheduleUseSearcherTimeZone:
+        description: Indicates whether ad scheduling uses the searcher's time zone.
+        type:
+          - "null"
+          - boolean
+      AdGroupType:
+        description: The type of the ad group (e.g., Search, Display, Video, etc).
+        type:
+          - "null"
+          - string
+      MultimediaAdsBidAdjustment:
+        description: The bid adjustment for multimedia ads.
+        type:
+          - "null"
+          - integer
+  ads:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AdGroupId:
+        description: The unique identifier for the ad group to which the ad belongs
+        type:
+          - "null"
+          - integer
+      AccountId:
+        description: The unique identifier for the account associated with the ad
+        type:
+          - "null"
+          - integer
+      CustomerId:
+        description: The unique identifier for the customer associated with the ad
+        type:
+          - "null"
+          - integer
+      AdFormatPreference:
+        description: Preference for the ad format
+        type:
+          - "null"
+          - string
+      DevicePreference:
+        description: Preference for the device on which the ad should be displayed
+        type:
+          - "null"
+          - integer
+      EditorialStatus:
+        description: The editorial review status of the ad
+        type:
+          - "null"
+          - string
+      BusinessName:
+        description: The name of the business or entity associated with the ad
+        type:
+          - "null"
+          - string
+      CallToAction:
+        description: The call-to-action message for the ad
+        type:
+          - "null"
+          - string
+      CallToActionLanguage:
+        description: The language used for the call-to-action message
+        type:
+          - "null"
+          - string
+      Headline:
+        description: The headline of the ad
+        type:
+          - "null"
+          - string
+      Images:
+        description: Contains images for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the images
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      Videos:
+        description: Contains videos for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the videos
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      LongHeadlines:
+        description: Contains long headlines for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the long headlines
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      LongHeadline:
+        description: Long headline for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          Asset:
+            description: Defines the asset properties for long headlines
+            type:
+              - "null"
+              - object
+            properties:
+              Id:
+                description: The unique identifier for the asset
+                type:
+                  - "null"
+                  - integer
+              Name:
+                description: The name of the asset
+                type:
+                  - "null"
+                  - integer
+              Type:
+                description: The type of the asset
+                type:
+                  - "null"
+                  - integer
+          AssetPerformanceLabel:
+            description: Label indicating the performance of the asset
+            type:
+              - "null"
+              - string
+          EditorialStatus:
+            description: The editorial review status of the asset
+            type:
+              - "null"
+              - string
+          PinnedField:
+            description: Indicates if the field is pinned
+            type:
+              - "null"
+              - string
+      LongHeadlineString:
+        description: The long headline content as a string
+        type:
+          - "null"
+          - string
+      Text:
+        description: The text content of the ad
+        type:
+          - "null"
+          - string
+      TextPart2:
+        description: The second part of the text content for the ad
+        type:
+          - "null"
+          - string
+      TitlePart1:
+        description: The first part of the ad title
+        type:
+          - "null"
+          - string
+      TitlePart2:
+        description: The second part of the ad title
+        type:
+          - "null"
+          - string
+      TitlePart3:
+        description: The third part of the ad title
+        type:
+          - "null"
+          - string
+      FinalAppUrls:
+        description: Final URLs for mobile app links
+        type: "null"
+      FinalMobileUrls:
+        description: Mobile final URLs for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          string:
+            description: String properties for mobile URLs
+            type:
+              - "null"
+              - array
+            items:
+              description: Final mobile URL
+              type:
+                - "null"
+                - string
+      FinalUrlSuffix:
+        description: Suffix to append to the final URL
+        type:
+          - "null"
+          - string
+      FinalUrls:
+        description: Final URLs for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          string:
+            description: String properties for URLs
+            type:
+              - "null"
+              - array
+            items:
+              description: Final URL
+              type:
+                - "null"
+                - string
+      ForwardCompatibilityMap:
+        description: Map for forward compatibility with future API changes
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            key:
+              description: Key for the compatibility map
+              type:
+                - "null"
+                - string
+            value:
+              description: Value for the compatibility map
+              type:
+                - "null"
+                - string
+      Id:
+        description: The unique identifier for the ad
+        type:
+          - "null"
+          - integer
+      Status:
+        description: The status of the ad
+        type:
+          - "null"
+          - string
+      TrackingUrlTemplate:
+        description: Template for tracking URLs
+        type:
+          - "null"
+          - string
+      Type:
+        description: The type of ad
+        type:
+          - "null"
+          - string
+      UrlCustomParameters:
+        description: Custom URL parameters for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          Parameters:
+            description: Defines the URL parameter properties
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  description: Parameter key
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: Parameter value
+                  type:
+                    - "null"
+                    - string
+      Descriptions:
+        description: Contains descriptions for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the descriptions
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      Domain:
+        description: The domain associated with the ad
+        type:
+          - "null"
+          - string
+      Headlines:
+        description: Contains headlines for the ads
+        type:
+          - "null"
+          - object
+        properties:
+          AssetLink:
+            type:
+              - "null"
+              - array
+            items:
+              description: Links to assets used in the headlines
+              type:
+                - "null"
+                - object
+              properties:
+                Asset:
+                  description: Defines the asset properties
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    Id:
+                      description: The unique identifier for the asset
+                      type:
+                        - "null"
+                        - integer
+                    Name:
+                      description: The name of the asset
+                      type:
+                        - "null"
+                        - string
+                    Type:
+                      description: The type of the asset
+                      type:
+                        - "null"
+                        - string
+                    Text:
+                      description: The text content of the asset
+                      type:
+                        - "null"
+                        - string
+                AssetPerformanceLabel:
+                  description: Label indicating the performance of the asset
+                  type:
+                    - "null"
+                    - string
+                EditorialStatus:
+                  description: The editorial review status of the asset
+                  type:
+                    - "null"
+                    - string
+                PinnedField:
+                  description: Indicates if the field is pinned
+                  type:
+                    - "null"
+                    - string
+      Path1:
+        description: The first part of the display URL path
+        type:
+          - "null"
+          - string
+      Path2:
+        description: The second part of the display URL path
+        type:
+          - "null"
+          - string
+  account_performance_report:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: Unique identifier for the Bing Ads account
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: Time period for the report
+        type:
+          - "null"
+          - string
+        format: date
+      CurrencyCode:
+        description: Currency code used for reporting
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description: Type of ad distribution (search, content, both)
+        type:
+          - "null"
+          - string
+      DeviceType:
+        description: Type of device used
+        type:
+          - "null"
+          - string
+      Network:
+        description: Type of network (search, audience)
+        type:
+          - "null"
+          - string
+      DeliveredMatchType:
+        description: Type of match in ad delivery
+        type:
+          - "null"
+          - string
+      DeviceOS:
+        description: Operating system of the device
+        type:
+          - "null"
+          - string
+      TopVsOther:
+        description: Performance comparison between top and other ad positions
+        type:
+          - "null"
+          - string
+      BidMatchType:
+        description: Type of bidding match (exact, phrase, broad)
+        type:
+          - "null"
+          - string
+      AccountName:
+        description: Name of the Bing Ads account
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: Numeric account number
+        type:
+          - "null"
+          - string
+      PhoneImpressions:
+        description: Number of ad impressions on phone devices
+        type:
+          - "null"
+          - integer
+      PhoneCalls:
+        description: Number of phone calls generated
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: Total number of clicks
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: Click-through rate
+        type:
+          - "null"
+          - number
+      Spend:
+        description: Total spend on ad campaigns
+        type:
+          - "null"
+          - number
+      Impressions:
+        description: Total number of ad impressions
+        type:
+          - "null"
+          - integer
+      CostPerConversion:
+        description: Cost per conversion
+        type:
+          - "null"
+          - number
+      Ptr:
+        description: Phone-through rate
+        type:
+          - "null"
+          - number
+      Assists:
+        description: Number of assist conversions
+        type:
+          - "null"
+          - integer
+      ReturnOnAdSpend:
+        description: Return on ad spend
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: Cost per assist conversion
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: Average cost per click
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: Average ad position
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: Average cost per thousand impressions
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: Total number of conversions
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: Number of qualified conversions
+        type:
+          - "null"
+          - number
+      ConversionRate:
+        description: Percentage of conversions from clicks
+        type:
+          - "null"
+          - number
+      LowQualityClicks:
+        description: Number of low-quality clicks
+        type:
+          - "null"
+          - integer
+      LowQualityClicksPercent:
+        description: Percentage of low-quality clicks
+        type:
+          - "null"
+          - number
+      LowQualityImpressions:
+        description: Number of low-quality impressions
+        type:
+          - "null"
+          - integer
+      LowQualitySophisticatedClicks:
+        description: Number of sophisticated low-quality clicks
+        type:
+          - "null"
+          - integer
+      LowQualityConversions:
+        description: Total number of low-quality conversions
+        type:
+          - "null"
+          - integer
+      LowQualityConversionRate:
+        description: Conversion rate for low-quality clicks
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: Total revenue generated
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: Revenue per conversion
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: Revenue per assist conversion
+        type:
+          - "null"
+          - number
+  account_performance_report_hourly:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The unique identifier for the Bing Ads account
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period for the report data
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      CurrencyCode:
+        description: The currency code used for monetary values
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description:
+          The distribution network for the ad (search partners, audience network,
+          etc.)
+        type:
+          - "null"
+          - string
+      DeviceType:
+        description: The type of device on which the ad was displayed
+        type:
+          - "null"
+          - string
+      Network:
+        description: The network on which the ad appeared (e.g., Bing, AOL)
+        type:
+          - "null"
+          - string
+      DeliveredMatchType:
+        description: The match type for the delivered ad
+        type:
+          - "null"
+          - string
+      DeviceOS:
+        description: The operating system of the device on which the ad was displayed
+        type:
+          - "null"
+          - string
+      TopVsOther:
+        description: Indicates whether the ad appeared at the top or other positions
+        type:
+          - "null"
+          - string
+      BidMatchType:
+        description: The match type for which the bid was set
+        type:
+          - "null"
+          - string
+      AccountName:
+        description: The name of the Bing Ads account
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number associated with the Bing Ads account
+        type:
+          - "null"
+          - string
+      PhoneImpressions:
+        description: The number of impressions that included a phone number
+        type:
+          - "null"
+          - integer
+      PhoneCalls:
+        description: The number of phone calls generated by the ad
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks on the ad
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate for the ad
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total spend on the ad campaign
+        type:
+          - "null"
+          - number
+      Impressions:
+        description: The total number of impressions generated by the ad
+        type:
+          - "null"
+          - integer
+      CostPerConversion:
+        description: The cost per conversion generated by the ad
+        type:
+          - "null"
+          - number
+      Ptr:
+        description: The phone-through rate for the ad
+        type:
+          - "null"
+          - number
+      Assists:
+        description: The number of assists generated by the ad
+        type:
+          - "null"
+          - integer
+      ReturnOnAdSpend:
+        description: The return on ad spend (ROAS) for the ad campaign
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: The cost per assist generated by the ad
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click for the ad
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description:
+          The average position where the ad appeared on the search results
+          page
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: The average cost per thousand impressions for the ad
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of conversions generated by the ad
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The number of conversions that met certain criteria
+        type:
+          - "null"
+          - number
+      ConversionRate:
+        description: The rate at which clicks on the ad led to conversions
+        type:
+          - "null"
+          - number
+      LowQualityClicks:
+        description: The number of low-quality clicks on the ad
+        type:
+          - "null"
+          - integer
+      LowQualityClicksPercent:
+        description: The percentage of low-quality clicks out of total clicks
+        type:
+          - "null"
+          - number
+      LowQualityImpressions:
+        description: The number of low-quality impressions generated by the ad
+        type:
+          - "null"
+          - integer
+      LowQualitySophisticatedClicks:
+        description: The number of sophisticated clicks recognized as low-quality
+        type:
+          - "null"
+          - integer
+      LowQualityConversions:
+        description: The number of conversions from low-quality clicks
+        type:
+          - "null"
+          - integer
+      LowQualityConversionRate:
+        description: The conversion rate for low-quality clicks
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue generated by the ad
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The revenue per conversion generated by the ad
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: The revenue per assist generated by the ad
+        type:
+          - "null"
+          - number
+
   ad_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -2014,6 +4052,55 @@ schemas:
         type:
           - "null"
           - number
+  labels:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      Account Id:
+        description: The unique identifier of the account associated with the
+          label.
+        type:
+          - "null"
+          - integer
+      Color:
+        description: The color code or name associated with the label for visual
+          identification purposes.
+        type:
+          - "null"
+          - string
+      Client Id:
+        description: The unique identifier of the client associated with the label.
+        type:
+          - "null"
+          - string
+      Description:
+        description: A brief description or notes related to the label.
+        type:
+          - "null"
+          - string
+      Id:
+        description: The unique identifier of the label.
+        type:
+          - "null"
+          - integer
+      Label:
+        description: The name or title given to the label for identification.
+        type:
+          - "null"
+          - string
+      Modified Time:
+        description: The date and time when the label was last modified.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      Status:
+        description: The current status of the label, such as active, inactive,
+          or archived.
+        type:
+          - "null"
+          - string
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 2

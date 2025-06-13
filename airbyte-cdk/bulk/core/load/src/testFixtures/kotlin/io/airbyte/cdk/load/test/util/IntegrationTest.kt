@@ -23,7 +23,7 @@ import io.airbyte.cdk.load.message.InputStreamComplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
-import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
+import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestination
 import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -37,10 +37,11 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.test.assertEquals
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
@@ -162,6 +163,12 @@ abstract class IntegrationTest(
                 }
                 fail(message)
             }
+
+        assertEquals(
+            actualRecords.size,
+            actualRecords.map { it.rawId }.toSet().size,
+            "Expected each record to have a unique UUID",
+        )
     }
 
     /**
@@ -236,6 +243,9 @@ abstract class IntegrationTest(
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
         namespaceMappingConfig: NamespaceMappingConfig? = null,
     ): List<AirbyteMessage> {
+        check(streamStatus == null || streamStatus == AirbyteStreamStatus.COMPLETE) {
+            "Invalid stream status: $streamStatus"
+        }
         destinationProcessFactory.testName = testPrettyName
 
         val destination =
@@ -257,11 +267,20 @@ abstract class IntegrationTest(
             messages.forEach { destination.sendMessage(it) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
+                    val streamStatusMessage =
+                        when (streamStatus) {
+                            AirbyteStreamStatus.COMPLETE ->
+                                InputStreamComplete(
+                                    DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                                )
+                            else ->
+                                throw IllegalStateException(
+                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
+                                )
+                        }
                     destination.sendMessage(
-                        InputStreamComplete(
-                            DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                        ),
-                        broadcast = true
+                        streamStatusMessage,
+                        broadcast = true,
                     )
                 }
             }
@@ -273,26 +292,40 @@ abstract class IntegrationTest(
         }
     }
 
+    enum class UncleanSyncEndBehavior {
+        /**
+         * End the sync normally (i.e. by closing stdin), but don't send a COMPLETE status message.
+         */
+        TERMINATE_WITH_NO_STREAM_STATUS,
+
+        // TODO no test actually uses this right now, should we just remove it?
+        UNPARSEABLE_MESSAGE,
+
+        /** Forcibly kill the sync. */
+        KILL,
+    }
+
     /**
      * Run a sync until it acknowledges the given state message, then kill the sync. This method is
      * useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
      * behaviors.
      *
-     * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
-     * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
+     * A common pattern is to call [runSyncUntilStateAckAndExpectFailure], and then call
+     * `dumpAndDiffRecords(..., allowUnexpectedRecord = true)` to verify that [records] were written
+     * to the destination.
      *
      * This forces the connector to run with microbatching enabled - without that option, tests
      * using this method would take significantly longer, because they would need to push 100MB
      * (ish) to the destination before it would ack a state message.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun runSyncUntilStateAck(
+    fun runSyncUntilStateAckAndExpectFailure(
         configContents: String,
         stream: DestinationStream,
         records: List<InputRecord>,
         inputStateMessage: StreamCheckpoint,
-        allowGracefulShutdown: Boolean,
+        syncEndBehavior: UncleanSyncEndBehavior,
         useFileTransfer: Boolean = false,
+        destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -305,33 +338,24 @@ abstract class IntegrationTest(
                 dataChannelFormat = dataChannelFormat,
                 namespaceMappingConfig = NamespaceMappingConfig(NamespaceDefinitionType.SOURCE),
             )
-        return runBlocking(Dispatchers.IO) {
-            launch {
-                // expect an exception. we're sending a stream incomplete or killing the
-                // destination, so it's expected to crash
-                // TODO: This is a hack, not sure what's going on
-                if (destination is NonDockerizedDestination) {
-                    assertThrows<DestinationUncleanExitException> { destination.run() }
-                } else {
-                    destination.run()
-                }
-            }
-            records.forEach { destination.sendMessage(it) }
-            destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
-            val noopTraceMessage =
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.ANALYTICS)
-                            .withAnalytics(
-                                AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
-                            )
-                            .withEmittedAt(System.currentTimeMillis().toDouble())
-                    )
+        var outputStateMessage: AirbyteStateMessage? = null
+        fun doRun() =
+            runBlocking(Dispatchers.IO) {
+                launch { destination.run() }
+                records.forEach { destination.sendMessage(it) }
+                destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
+                val noopTraceMessage =
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.ANALYTICS)
+                                .withAnalytics(
+                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
+                                )
+                                .withEmittedAt(System.currentTimeMillis().toDouble())
+                        )
 
-            val deferred = async {
-                val outputStateMessage: AirbyteStateMessage
                 while (true) {
                     destination.sendMessage(InputMessageOther(noopTraceMessage), false)
                     val returnedMessages = destination.readMessages()
@@ -343,19 +367,30 @@ abstract class IntegrationTest(
                                 .first()
                         break
                     }
+                    // don't just spam the input stream, give the destination time to actually
+                    // process the messages we're pushing into it
+                    delay(1)
                 }
-                outputStateMessage
+                when (syncEndBehavior) {
+                    UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
+                    UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
+                        destination.sendMessage("{\"unparseable")
+                        destination.shutdown()
+                    }
+                    UncleanSyncEndBehavior.KILL -> destination.kill()
+                }
             }
-            val outputStateMessage = deferred.await()
-            if (allowGracefulShutdown) {
-                destination.sendMessage("{\"unparseable")
-                destination.shutdown()
-            } else {
-                destination.kill()
-            }
-
-            outputStateMessage
+        if (
+            destination is DockerizedDestination && syncEndBehavior == UncleanSyncEndBehavior.KILL
+        ) {
+            // when you kill a docker process, it doesn't exit uncleanly apparently
+            doRun()
+        } else {
+            // expect an exception. we're sending a stream incomplete or killing the
+            // destination, so it's expected to crash
+            assertThrows<DestinationUncleanExitException> { doRun() }
         }
+        return outputStateMessage!!
     }
 
     fun updateConfig(config: String): String = configUpdater.update(config)
