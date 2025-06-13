@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# This script builds and optionally publishes Java connector Docker images.
+#
+# Flag descriptions:
+#   --main-release: Publishes images with the exact version from metadata.yaml.
+#                   Only publishes if the version has increased compared to the previous commit.
+#                   Used for production releases on merge to master.
+#
+#   --pre-release:  Publishes images with a dev tag (version-dev.githash).
+#                   Always publishes regardless of version changes.
+#                   Used for development/testing purposes.
+#
+#   --publish:      Actually publishes the images. Without this flag, the script runs in dry-run mode
+#                   and only shows what would be published without actually publishing.
+#
 # Usage examples:
 #   ./get-modified-connectors.sh --prev-commit --json | ./build-and-publish-java-connectors-with-tag.sh
 #
@@ -76,7 +90,7 @@ connectors=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
-      sed -n '1,20p' "$0"
+      sed -n '1,34p' "$0"
       exit 0
       ;;
     --main-release)
