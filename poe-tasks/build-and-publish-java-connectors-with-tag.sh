@@ -43,8 +43,6 @@ is_in_whitelist() {
   case "$connector" in
     destination-azure-blob-storage|\
     destination-bigquery|\
-    destination-clickhouse-strict-encrypt|\
-    destination-clickhouse|\
     destination-csv|\
     destination-databricks|\
     destination-dev-null|\
