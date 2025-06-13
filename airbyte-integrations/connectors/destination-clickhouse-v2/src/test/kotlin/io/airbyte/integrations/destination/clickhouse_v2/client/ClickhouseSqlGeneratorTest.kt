@@ -54,9 +54,9 @@ class ClickhouseSqlGeneratorTest {
         val sql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
 
         assertDoesNotThrow {
-            // Using the MySQL dialect as a substitute for clickhouse SQL syntax validation.
+            // Using the StandardSql dialect as a substitute for clickhouse SQL syntax validation.
             // The formatter will parse the SQL, and an invalid statement will throw an exception.
-            SqlFormatter.of(Dialect.MySql).format(sql)
+            SqlFormatter.of(Dialect.StandardSql).format(sql)
         }
     }
 
