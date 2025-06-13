@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.DestinationCatalog
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertFalse
