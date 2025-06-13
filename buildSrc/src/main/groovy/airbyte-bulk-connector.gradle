@@ -247,9 +247,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             enabled = false
         }
 
-        project.tasks.named('check').configure {
-            dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
-        }
 
         boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
         project.tasks.matching {
