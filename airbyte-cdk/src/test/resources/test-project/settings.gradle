@@ -1,7 +1,0 @@
-rootProject.name = 'airbyte'
-include 'airbyte-cdk'
-include 'airbyte-cdk:subproject'
-include 'airbyte-integrations:connectors:local-connector'
-include 'airbyte-integrations:connectors:non-local-connector'
-include 'airbyte-integrations:connectors:java-local-connector'
-include 'airbyte-integrations:connectors:java-non-local-connector'

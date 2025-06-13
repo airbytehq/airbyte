@@ -1,7 +1,0 @@
-apply plugin: 'base'
-
-tasks.named('check') {
-    doLast {
-        println "CDK subproject check task executed"
-    }
-}
