@@ -25,6 +25,8 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.DirectLoader
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseColumnNameGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -40,17 +42,24 @@ private val log = KotlinLogging.logger {}
 class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
+    private val columnMapper: ClickhouseColumnNameGenerator,
+    tableNameResolver: ClickhouseFinalTableNameGenerator,
 ) : DirectLoader {
+    // Initialize the buffer
+    private val tableName = tableNameResolver.getTableName(descriptor)
     private val buffer = InputOutputBuffer()
-    private val schema = clickhouseClient.getTableSchema(descriptor.name, descriptor.namespace ?: "default")
+    private val schema = clickhouseClient.getTableSchema(tableName.name, tableName.namespace)
     private val writer = RowBinaryFormatWriter(buffer, schema, ClickHouseFormat.RowBinary)
+    // the sum of serialized json bytes we've accumulated
+    private var jsonBytesProcessed = 0L
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         // accumulate the record
         accumulateRecord(record)
+        jsonBytesProcessed += record.serializedSizeBytes
 
         // determine whether we're complete
-        if (writer.rowCount >= Constants.BATCH_SIZE_RECORDS) {
+        if (writer.rowCount >= Constants.MAX_BATCH_SIZE_RECORDS || jsonBytesProcessed >= Constants.MAX_BATCH_SIZE_BYTES) {
             // upload
             flush()
             return DirectLoader.Complete
@@ -67,20 +76,20 @@ class ClickhouseDirectLoader(
     // this is always called on complete
     override fun close() {}
 
-    private fun writeAirbyteValue(key: String, abValue: AirbyteValue) {
+    private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {
         when (abValue) {
-            is NullValue -> writer.setValue(key, null)
-            is ObjectValue -> writer.setValue(key, abValue.values.serializeToString())
-            is ArrayValue -> writer.setValue(key, abValue.values.serializeToString())
-            is BooleanValue -> writer.setValue(key, abValue.value)
-            is IntegerValue -> writer.setValue(key, abValue.value)
-            is NumberValue -> writer.setValue(key, abValue.value)
-            is StringValue -> writer.setValue(key, abValue.value)
-            is DateValue -> writer.setValue(key, abValue.value)
-            is TimeWithTimezoneValue -> writer.setValue(key, abValue.value)
-            is TimeWithoutTimezoneValue -> writer.setValue(key, abValue.value)
-            is TimestampWithTimezoneValue -> writer.setValue(key, abValue.value)
-            is TimestampWithoutTimezoneValue -> writer.setValue(key, abValue.value)
+            is NullValue -> writer.setValue(columnName, null)
+            is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
+            is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
+            is BooleanValue -> writer.setValue(columnName, abValue.value)
+            is IntegerValue -> writer.setValue(columnName, abValue.value)
+            is NumberValue -> writer.setValue(columnName, abValue.value)
+            is StringValue -> writer.setValue(columnName, abValue.value)
+            is DateValue -> writer.setValue(columnName, abValue.value)
+            is TimeWithTimezoneValue -> writer.setValue(columnName, abValue.value)
+            is TimeWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
+            is TimestampWithTimezoneValue -> writer.setValue(columnName, abValue.value)
+            is TimestampWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
         }
     }
 
@@ -91,7 +100,8 @@ class ClickhouseDirectLoader(
         )
         val cols = enriched.allTypedFields
         cols.forEach {
-            writeAirbyteValue(it.key, it.value.abValue)
+            val column = columnMapper.getColumnName(it.key)
+            writeAirbyteValue(column.canonicalName, it.value.abValue)
         }
 
         writer.commitRow()
@@ -113,11 +123,17 @@ class ClickhouseDirectLoader(
     }
 
     object Constants {
-        const val BATCH_SIZE_RECORDS = 500000
+        // CH recommends 10k-100k batch sizes — since we block on IO we aim on the high side
+        // to amortize the overheads.
+        const val MAX_BATCH_SIZE_RECORDS = 100000
+        // To prevent undue backpressure, we try to cap the buffer size at something will safely fit
+        // in the "reserved" memory, which in practice is ~180MB.
+        const val MAX_BATCH_SIZE_BYTES = 70000000
     }
 
     /**
-     * Naive wrapper class to having to copy the buffer contents around.
+     * The CH writer wants an output stream and the client an input stream.
+     * This is a naive wrapper class to avoid having to copy the buffer contents around.
      */
     private class InputOutputBuffer : ByteArrayOutputStream() {
         /**
