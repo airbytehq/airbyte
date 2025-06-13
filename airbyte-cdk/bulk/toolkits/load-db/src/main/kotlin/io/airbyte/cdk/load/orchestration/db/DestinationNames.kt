@@ -5,6 +5,9 @@
 package io.airbyte.cdk.load.orchestration.db
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
+import org.apache.commons.codec.digest.DigestUtils
 
 data class TableNames(
     // this is pretty dumb, but in theory we could have:
@@ -20,10 +23,6 @@ data class TableNames(
         }
     }
 
-    fun hasNamingConflictWith(other: TableNames) =
-        this.rawTableName.hasNamingConflictWith(other.rawTableName) ||
-            this.finalTableName.hasNamingConflictWith(other.finalTableName)
-
     fun toPrettyString() =
         "Raw table: ${rawTableName?.toPrettyString()}; Final table: ${finalTableName?.toPrettyString()}"
 
@@ -38,13 +37,64 @@ data class TableNames(
 data class TableName(val namespace: String, val name: String) {
     fun toPrettyString(quote: String = "", suffix: String = "") =
         "$quote$namespace$quote.$quote$name$suffix$quote"
+
+    fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
 }
 
-fun TableName?.hasNamingConflictWith(other: TableName?): Boolean {
-    if (this == null || other == null) {
-        return false
+fun interface TempTableNameGenerator {
+    fun generate(originalName: TableName): TableName
+}
+
+/**
+ * better handling for temp table names - e.g. postgres has a 64-char table name limit, so we want
+ * to avoid running into that. This method generates a table name with (by default) at most 64
+ * characters (`4 * affixLength + 2 * affixSeparator.length + hashLength`).
+ *
+ * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
+ * [TableName.asOldStyleTempTable] instead
+ */
+class DefaultTempTableNameGenerator(
+    private val internalNamespace: String,
+    private val affixLength: Int = 8,
+    private val affixSeparator: String = "",
+    private val hashLength: Int = 32,
+) : TempTableNameGenerator {
+    override fun generate(originalName: TableName): TableName {
+        val shortNamespace =
+            originalName.namespace.takeFirstAndLastNChars(affixLength, separator = affixSeparator)
+        val shortName =
+            originalName.name.takeFirstAndLastNChars(affixLength, separator = affixSeparator)
+        val hash =
+            DigestUtils.sha256Hex(
+                    TypingDedupingUtil.concatenateRawTableName(
+                        originalName.namespace,
+                        originalName.name + TMP_TABLE_SUFFIX,
+                    ),
+                )
+                .take(hashLength)
+        return TableName(
+            name = "$shortNamespace$shortName$hash",
+            namespace = internalNamespace,
+        )
     }
-    return this.namespace == other.namespace && this.name == other.name
+
+    /**
+     * Examples:
+     * * `"123456".takeFirstAndLastNChars(1, "_") = "1_6"`
+     * * `"123456".takeFirstAndLastNChars(2, "_") = "12_56"`
+     * * `"123456".takeFirstAndLastNChars(3, "_") = "123456"`
+     * * `"123456".takeFirstAndLastNChars(4, "_") = "123456"`
+     */
+    private fun String.takeFirstAndLastNChars(n: Int, separator: String): String {
+        if (length <= 2 * n) {
+            // if the entire string fits within the prefix+suffix substrings,
+            // then just return the original string.
+            return this
+        }
+        val prefix = substring(0, n)
+        val suffix = substring(length - n, length)
+        return "$prefix$separator$suffix"
+    }
 }
 
 /**

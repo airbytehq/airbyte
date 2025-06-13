@@ -28,6 +28,8 @@ import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.fold
 
+private val log = KotlinLogging.logger {}
+
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
  * [CheckpointMessage]s to the state manager.
@@ -46,7 +48,6 @@ class InputConsumerTask(
     private val partitioner: InputPartitioner,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 ) : Task {
-    private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 

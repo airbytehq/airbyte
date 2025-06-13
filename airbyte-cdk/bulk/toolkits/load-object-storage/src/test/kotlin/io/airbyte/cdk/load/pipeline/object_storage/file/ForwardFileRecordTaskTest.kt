@@ -33,6 +33,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -181,7 +182,8 @@ class ForwardFileRecordTaskTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(message),
-                serializedSizeBytes = 0L
+                serializedSizeBytes = 0L,
+                airbyteRawId = UUID.randomUUID(),
             )
     }
 }

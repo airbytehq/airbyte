@@ -1,0 +1,3023 @@
+version: 6.48.16
+
+type: DeclarativeSource
+
+check:
+  type: CheckDynamicStream
+  stream_count: 1
+  use_check_availability: false
+
+definitions:
+  streams:
+    google_analytics_stream_template:
+      type: DeclarativeStream
+      name: google_analytics_stream_template
+      primary_key:
+        - property_id
+      retriever:
+        type: SimpleRetriever
+        requester: # the dynamic stream will override request_body_json
+          $ref: "#/definitions/base_requester"
+          path: PLACEHOLDER # the dynamic stream will override this value
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_google_analytics_data_api.components.CombinedExtractor
+            extractors:
+              - type: CustomRecordExtractor
+                class_name: source_google_analytics_data_api.components.KeyValueExtractor
+                keys_extractor:
+                  type: DpathExtractor
+                  field_path:
+                    - metricHeaders
+                    - "*"
+                    - name
+                values_extractor:
+                  type: DpathExtractor
+                  field_path:
+                    - rows
+                    - "*"
+                    - metricValues
+                    - "*"
+                    - value
+              - type: CustomRecordExtractor
+                class_name: source_google_analytics_data_api.components.KeyValueExtractor
+                keys_extractor:
+                  type: DpathExtractor
+                  field_path:
+                    - dimensionHeaders
+                    - "*"
+                    - name
+                values_extractor:
+                  type: DpathExtractor
+                  field_path:
+                    - rows
+                    - "*"
+                    - dimensionValues
+                    - "*"
+                    - value
+          transform_before_filtering: true
+          schema_normalization: Default
+        paginator: # the dynamic stream will override this value
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("offset", {}) }}'
+            stop_condition: '{{ not response.get("offset", {}) }}'
+      transformations: [] # the dynamic stream will override this value
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: PLACEHOLDER # the dynamic stream will override this value
+            http_method: GET
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+        schema_filter:
+          type: RecordFilter
+          condition: PLACEHOLDER # the dynamic stream will override this value
+        schema_transformations: []
+        schema_type_identifier:
+          type: SchemaTypeIdentifier
+          key_pointer:
+            - apiName
+          type_pointer:
+            - type
+          schema_pointer:
+            - metrics
+          types_mapping:
+            - type: TypesMap
+              target_type: string
+              current_type: METRIC_TYPE_UNSPECIFIED
+            - type: TypesMap
+              target_type: integer
+              current_type: TYPE_INTEGER
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_FLOAT
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_SECONDS
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_MILLISECONDS
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_MINUTES
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_HOURS
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_STANDARD
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_CURRENCY
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_FEET
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_MILES
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_METERS
+            - type: TypesMap
+              target_type: number
+              current_type: TYPE_KILOMETERS
+
+  jwt_authenticator:
+    type: JwtAuthenticator
+    secret_key: "{{ json_loads(config['credentials']['credentials_json'])['private_key'] }}"
+    algorithm: "RS256"
+    token_duration: 3600
+    jwt_payload:
+      aud: "{{ json_loads(config['credentials']['credentials_json'])['token_uri'] }}"
+      iss: "{{ json_loads(config['credentials']['credentials_json'])['client_email'] }}"
+    additional_jwt_payload:
+      scope: "https://www.googleapis.com/auth/analytics.readonly"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      $ref: "#/definitions/jwt_authenticator"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://analyticsdata.googleapis.com/v1beta
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 10
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 30
+      response_filters:
+        - predicate: ""
+          action: FAIL
+          failure_type: config_error
+          error_message: "Incorrect Property ID. Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id to find your Property ID."
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/google_analytics_stream_template"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        - type: StreamConfig
+          configs_pointer:
+            - custom_reports_array
+          default_values:
+            - name: daily_active_users
+              dimensions:
+                - date
+              metrics:
+                - active1DayUsers
+            - name: weekly_active_users
+              dimensions:
+                - date
+              metrics:
+                - active7DayUsers
+            - name: four_weekly_active_users
+              dimensions:
+                - date
+              metrics:
+                - active28DayUsers
+            - name: devices
+              dimensions:
+                - date
+                - deviceCategory
+                - operatingSystem
+                - browser
+              metrics:
+                - totalUsers
+                - newUsers
+                - sessions
+                - sessionsPerUser
+                - averageSessionDuration
+                - screenPageViews
+                - screenPageViewsPerSession
+                - bounceRate
+            - name: locations
+              dimensions:
+                - region
+                - country
+                - city
+                - date
+              metrics:
+                - totalUsers
+                - newUsers
+                - sessions
+                - sessionsPerUser
+                - averageSessionDuration
+                - screenPageViews
+                - screenPageViewsPerSession
+                - bounceRate
+            - name: pages
+              dimensions:
+                - date
+                - hostName
+                - pagePathPlusQueryString
+              metrics:
+                - screenPageViews
+                - bounceRate
+            - name: traffic_sources
+              dimensions:
+                - date
+                - sessionSource
+                - sessionMedium
+              metrics:
+                - totalUsers
+                - newUsers
+                - sessions
+                - sessionsPerUser
+                - averageSessionDuration
+                - screenPageViews
+                - screenPageViewsPerSession
+                - bounceRate
+            - name: website_overview
+              dimensions:
+                - date
+              metrics:
+                - totalUsers
+                - newUsers
+                - sessions
+                - sessionsPerUser
+                - averageSessionDuration
+                - screenPageViews
+                - screenPageViewsPerSession
+                - bounceRate
+            - name: user_acquisition_first_user_medium_report
+              dimensions:
+                - date
+                - firstUserMedium
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: user_acquisition_first_user_source_report
+              dimensions:
+                - date
+                - firstUserSource
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: user_acquisition_first_user_source_medium_report
+              dimensions:
+                - date
+                - firstUserSource
+                - firstUserMedium
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: user_acquisition_first_user_source_platform_report
+              dimensions:
+                - date
+                - firstUserSourcePlatform
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: user_acquisition_first_user_campaign_report
+              dimensions:
+                - date
+                - firstUserCampaignName
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: user_acquisition_first_user_google_ads_ad_network_type_report
+              dimensions:
+                - date
+                - firstUserGoogleAdsAdNetworkType
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: user_acquisition_first_user_google_ads_ad_group_name_report
+              dimensions:
+                - date
+                - firstUserGoogleAdsAdGroupName
+              metrics:
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - totalUsers
+                - userEngagementDuration
+            - name: traffic_acquisition_session_source_medium_report
+              dimensions:
+                - date
+                - sessionSource
+                - sessionMedium
+              metrics:
+                - totalUsers
+                - sessions
+                - engagedSessions
+                - eventsPerSession
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: traffic_acquisition_session_medium_report
+              dimensions:
+                - date
+                - sessionMedium
+              metrics:
+                - totalUsers
+                - sessions
+                - engagedSessions
+                - eventsPerSession
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: traffic_acquisition_session_source_report
+              dimensions:
+                - date
+                - sessionSource
+              metrics:
+                - totalUsers
+                - sessions
+                - engagedSessions
+                - eventsPerSession
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: traffic_acquisition_session_campaign_report
+              dimensions:
+                - date
+                - sessionCampaignName
+              metrics:
+                - totalUsers
+                - sessions
+                - engagedSessions
+                - eventsPerSession
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: traffic_acquisition_session_default_channel_grouping_report
+              dimensions:
+                - date
+                - sessionDefaultChannelGrouping
+              metrics:
+                - totalUsers
+                - sessions
+                - engagedSessions
+                - eventsPerSession
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: traffic_acquisition_session_source_platform_report
+              dimensions:
+                - date
+                - sessionSourcePlatform
+              metrics:
+                - totalUsers
+                - sessions
+                - engagedSessions
+                - eventsPerSession
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: events_report
+              dimensions:
+                - date
+                - eventName
+              metrics:
+                - eventCount
+                - totalUsers
+                - eventCountPerUser
+                - totalRevenue
+            - name: weekly_events_report
+              dimensions:
+                - yearWeek
+                - eventName
+              metrics:
+                - eventCount
+                - totalUsers
+                - eventCountPerUser
+                - totalRevenue
+            - name: conversions_report
+              dimensions:
+                - date
+                - eventName
+              metrics:
+                - conversions
+                - totalUsers
+                - totalRevenue
+            - name: pages_title_and_screen_class_report
+              dimensions:
+                - date
+                - unifiedScreenClass
+              metrics:
+                - screenPageViews
+                - totalUsers
+                - newUsers
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: pages_path_report
+              dimensions:
+                - date
+                - pagePath
+              metrics:
+                - screenPageViews
+                - totalUsers
+                - newUsers
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: pages_title_and_screen_name_report
+              dimensions:
+                - date
+                - unifiedScreenName
+              metrics:
+                - screenPageViews
+                - totalUsers
+                - newUsers
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: content_group_report
+              dimensions:
+                - date
+                - contentGroup
+              metrics:
+                - screenPageViews
+                - totalUsers
+                - newUsers
+                - eventCount
+                - conversions
+                - totalRevenue
+                - userEngagementDuration
+            - name: ecommerce_purchases_item_name_report
+              dimensions:
+                - date
+                - itemName
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_id_report
+              dimensions:
+                - date
+                - itemId
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_category_report_combined
+              dimensions:
+                - date
+                - itemCategory
+                - itemCategory2
+                - itemCategory3
+                - itemCategory4
+                - itemCategory5
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_category_report
+              dimensions:
+                - date
+                - itemCategory
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_category_2_report
+              dimensions:
+                - date
+                - itemCategory2
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_category_3_report
+              dimensions:
+                - date
+                - itemCategory3
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_category_4_report
+              dimensions:
+                - date
+                - itemCategory4
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_category_5_report
+              dimensions:
+                - date
+                - itemCategory5
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: ecommerce_purchases_item_brand_report
+              dimensions:
+                - date
+                - itemBrand
+              metrics:
+                - cartToViewRate
+                - purchaseToViewRate
+                - itemsPurchased
+                - itemRevenue
+                - itemsAddedToCart
+                - itemsViewed
+            - name: publisher_ads_ad_unit_report
+              dimensions:
+                - date
+                - adUnitName
+              metrics:
+                - publisherAdImpressions
+                - adUnitExposure
+                - publisherAdClicks
+                - totalAdRevenue
+            - name: publisher_ads_page_path_report
+              dimensions:
+                - date
+                - pagePath
+              metrics:
+                - publisherAdImpressions
+                - adUnitExposure
+                - publisherAdClicks
+                - totalAdRevenue
+            - name: publisher_ads_ad_format_report
+              dimensions:
+                - date
+                - adFormat
+              metrics:
+                - publisherAdImpressions
+                - adUnitExposure
+                - publisherAdClicks
+                - totalAdRevenue
+            - name: publisher_ads_ad_source_report
+              dimensions:
+                - date
+                - adSourceName
+              metrics:
+                - publisherAdImpressions
+                - adUnitExposure
+                - publisherAdClicks
+                - totalAdRevenue
+            - name: demographic_country_report
+              dimensions:
+                - date
+                - country
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: demographic_region_report
+              dimensions:
+                - date
+                - region
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: demographic_city_report
+              dimensions:
+                - date
+                - city
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: demographic_language_report
+              dimensions:
+                - date
+                - language
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: demographic_age_report
+              dimensions:
+                - date
+                - userAgeBracket
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: demographic_gender_report
+              dimensions:
+                - date
+                - userGender
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: demographic_interest_report
+              dimensions:
+                - date
+                - brandingInterest
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - conversions
+                - totalRevenue
+            - name: tech_browser_report
+              dimensions:
+                - date
+                - browser
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_device_category_report
+              dimensions:
+                - date
+                - deviceCategory
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_device_model_report
+              dimensions:
+                - date
+                - deviceModel
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_screen_resolution_report
+              dimensions:
+                - date
+                - screenResolution
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_app_version_report
+              dimensions:
+                - date
+                - appVersion
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_platform_report
+              dimensions:
+                - date
+                - platform
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_platform_device_category_report
+              dimensions:
+                - date
+                - platform
+                - deviceCategory
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_operating_system_report
+              dimensions:
+                - date
+                - operatingSystem
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+            - name: tech_os_with_version_report
+              dimensions:
+                - date
+                - operatingSystemWithVersion
+              metrics:
+                - totalUsers
+                - newUsers
+                - engagedSessions
+                - engagementRate
+                - eventCount
+                - conversions
+                - totalRevenue
+        - type: StreamConfig
+          configs_pointer:
+            - property_ids
+      components_mapping:
+        # This mapping configures the base request body with dimensions, metrics, keepEmptyRows and quota settings,
+        # conditionally update params for pivots and cohort
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_body_json"]
+          create_or_update: True
+          value: >
+            {% set pivots = components_values.get("pivots") %}
+            {% set cohort = components_values.get("cohortSpec") %}
+              dimensions: []
+              metrics: []
+              returnPropertyQuota: True
+              keepEmptyRows: {{ config.get("keep_empty_rows", False) }}
+              {% if pivots %}
+              pivots: {{ pivots }}
+              {% else %}
+              limit: 100000
+              {% endif %}
+              {% if not (cohort and cohort.get("enabled") == "true") %}
+              dateRanges: []
+              {% else %}
+              cohortSpec: {
+                {% for key, value in cohort.items() if key != 'enabled' %}
+                "{{ key }}": {{ value }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+              }
+              {% endif %}
+        # This mapping update pagination conditionally as pivots are not support pagination
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "paginator"]
+          create_or_update: True
+          value: >
+            {% if components_values.get("pivots") %}
+              type: NoPagination
+            {% else %}
+              type: DefaultPaginator
+              page_token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: offset
+              pagination_strategy:
+                type: CursorPagination
+                cursor_value: "{% raw %}{{ response.get('offset', {}) }}{% endraw %}"
+                stop_condition: "{% raw %}{{ not response.get('offset', {}) }}{% endraw %}"
+            {% endif %}
+        # This mapping defines the configuration path for the stream.
+        # Property sets are stored as a list under the `source_config_1` key,
+        # which is the second entry in the stream configs list.
+        # Access other entries with the pattern `source_config_<index>`.
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "path"]
+          value: >
+            {% if components_values.get("pivots") %}
+            "properties/{{ components_values['source_config_1'][1] }}:runPivotReport"
+            {% else %}
+            "properties/{{ components_values['source_config_1'][1] }}:runReport"
+            {% endif %}
+        # This mapping defines path for the schema loader and paste property_id for each stream
+        - type: ComponentMappingDefinition
+          field_path: ["schema_loader", "retriever", "requester", "path"]
+          value: "properties/{{ components_values['source_config_1'][1] }}/metadata"
+        # NOTE: Yes, this is weird, but it exists solely for backward-compatibility.
+        # When the config contains multiple property IDs, it keeps the
+        # first stream as <report_name>, and names each additional stream
+        # <report_name>Property<property_id>.
+        - type: ComponentMappingDefinition
+          field_path: ["**", "name"]
+          value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
+        # This mapping add transformation that add property_id and date slice value to record.
+        # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
+        # it doesn't exist in this context yet as we populate the template
+        # If the `date_ranges_start_date`` is not set in the config, the startDate value will default to 2 years ago.
+        - type: ComponentMappingDefinition
+          field_path: ["transformations"]
+          create_or_update: True
+          value: >
+            {% set property_id = components_values['source_config_1'][1] %}
+              - type: AddFields
+                fields:
+                  - path: [ "property_id" ]
+                    value: {{ property_id }}
+                    value_type: string
+
+            {% set cohort = components_values.get("cohortSpec") %}
+            {% if not (cohort and cohort.get("enabled") == "true") %}
+              - type: AddFields
+                fields:
+                  - path: [ "startDate" ]
+                    value: "{% raw %}{{ stream_slice.start_time or config.get('date_ranges_start_date', day_delta(-730, '%Y-%m-%d')) }}{% endraw %}"
+              - type: AddFields
+                fields:
+                  - path: [ "endDate" ]
+                    value: "{% raw %}{{ stream_slice.end_time or format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}{% endraw %}"
+            {% endif %}
+        # This mapping adds metrics to the request parameters, but first transforms
+        # them from a list of values into a list of dicts (e.g., {'name': <metric_name>})
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_body_json", "metrics"]
+          value: >
+            [{% for metric in components_values["metrics"] %}
+                {"name": "{{ metric }}"}{% if not loop.last %},{% endif %}
+              {% endfor %}]
+        # This mapping adds dimensions to the request parameters, but first transforms
+        # them from a list of values into a list of dicts (e.g., {'name': <dimension_name>})
+        - type: ComponentMappingDefinition
+          field_path:
+            ["retriever", "requester", "request_body_json", "dimensions"]
+          value: >
+            [{% for dimension in components_values["dimensions"] %}
+                {"name": "{{ dimension }}"}{% if not loop.last %},{% endif %}
+              {% endfor %}]
+        # Since the Google Analytics API requires defining dateRanges for requests,
+        # we need to set up a single slice of query parameters here for full-refresh streams only
+        # If the `date_ranges_start_date`` is not set in the config, the startDate value will default to 2 years ago.
+        - type: ComponentMappingDefinition
+          field_path:
+            ["retriever", "requester", "request_body_json", "dateRanges"]
+          value: >
+            {% set ns = namespace(cursor="") %}
+            {% set dimensions = components_values["dimensions"] %}
+            {% set date_fields = ["date", "yearWeek", "yearMonth", "year"] %}
+
+            {% for field in date_fields %}
+              {% if not ns.cursor and field in dimensions %}
+                {% set ns.cursor = field %}
+              {% endif %}
+            {% endfor %}
+
+            {% if not ns.cursor %}
+              - startDate: "{{ config.get('date_ranges_start_date', day_delta(-730, '%Y-%m-%d')) }}"
+                endDate: "{{ format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}"
+            {% else %}
+              - startDate: "{{ '{{ stream_slice.start_time }}' }}"
+                endDate: "{{ '{{ stream_slice.end_time }}' }}"
+            {% endif %}
+        # This mapping adds the incremental_sync component for streams that support incremental loads.
+        # It is enabled if any of the following fields are present in the dimensions list:
+        # "date", "yearWeek", "yearMonth", or "year"
+        # If the `date_ranges_start_date`` is not set in the config, it will default to 2 years ago.
+        - type: ComponentMappingDefinition
+          field_path: ["incremental_sync"]
+          create_or_update: True
+          value: >
+            {% set ns = namespace(cursor="") %}
+            {% set cohort = components_values.get("cohortSpec") %}
+            {% set dimensions = components_values["dimensions"] %}
+            {% set date_fields = ["date", "yearWeek", "yearMonth", "year"] %}
+
+            {% for field in date_fields %}
+              {% if not ns.cursor and field in dimensions %}
+                {% set ns.cursor = field %}
+              {% endif %}
+            {% endfor %}
+
+            {% if ns.cursor and not (cohort and cohort.get("enabled") == "true") %}
+              type: DatetimeBasedCursor
+              cursor_field: {{ ns.cursor }}
+              lookback_window: "P{{ config.get('lookback_window', 2) }}D"
+              step: "P{{ config.get('window_in_days', 365) }}D"
+              cursor_granularity: PT1S
+              cursor_datetime_formats:
+                - "%Y%m%d"
+                - "%Y%m"
+                - "%Y%W"
+                - "%Y"
+              datetime_format: "%Y-%m-%d"
+              start_datetime:
+                type: MinMaxDatetime
+                datetime: "{% raw %}{{ config.get('date_ranges_start_date', day_delta(-730, '%Y-%m-%d')) }}{% endraw %}"
+                datetime_format: "%Y-%m-%d"
+              end_datetime:
+                type: MinMaxDatetime
+                datetime: "{% raw %}{{ format_datetime(config['date_ranges_end_date'] if config.get('date_ranges_end_date') else now_utc(), '%Y-%m-%d') }}{% endraw %}"
+                datetime_format: "%Y-%m-%d"
+            {% endif %}
+        # This section is a bit tricky due to two levels of interpolation:
+        # 1. At the stream-template parsing level, we resolve components_values["metrics"].
+        # 2. After creating the stream instance, we perform a second interpolation using the record,
+        #    which represents the final schema field definition
+        #    (e.g., {<field_name>: [None, <data_type>]} for schema filtering).
+        #
+        # Note: We deliberately avoid interpolating the record during template building,
+        # since it doesn't exist at that point. However, it will be used later as part of
+        # the filter expression during the sync.
+        - type: ComponentMappingDefinition
+          field_path: ["schema_loader", "schema_filter", "condition"]
+          value: >
+            {{ '{{ record.keys() | list | first in ' ~ (components_values["metrics"] | tojson) ~ ' }}' }}
+        # This adds a schema transformation to include a field that was added previously.
+        - type: ComponentMappingDefinition
+          field_path: ["schema_loader", "schema_transformations"]
+          create_or_update: True
+          value: >
+            {% for dimension in components_values["dimensions"] %}
+                - type: AddFields
+                  fields:
+                    - path: [ {{ dimension }} ]
+                      value: "{{ {'type': ['null', 'string']} }}"
+            {% endfor %}
+                - type: AddFields
+                  fields:
+                    - path: [ "property_id" ]
+                      value: "{{ {'type': ['string']} }}"
+            {% set cohort = components_values.get("cohortSpec") %}
+            {% if not (cohort and cohort.get("enabled") == "true") %}
+                - type: AddFields
+                  fields:
+                    - path: [ "startDate" ]
+                      value: "{{ {'type': ['null', 'string']} }}"
+                - type: AddFields
+                  fields:
+                    - path: [ "endDate" ]
+                      value: "{{ {'type': ['null', 'string']} }}"
+            {% endif %}
+        # This adds a primary key to the stream.
+        - type: ComponentMappingDefinition
+          field_path: ["primary_key"]
+          value: >
+            {% set dimensions = components_values["dimensions"] %}
+            {% set cohort = components_values.get("cohortSpec") %}
+                - property_id
+
+            {% for dimension in dimensions %}
+                - {{ dimension }}
+            {% endfor %}
+
+            {% if "date" not in dimensions and not (cohort and cohort.get("enabled") == "true") %}
+                - startDate
+                - endDate
+            {% endif %}
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: https://json-schema.org/draft-07/schema#
+    title: Google Analytics (Data API) Spec
+    type: object
+    required:
+      - property_ids
+    additionalProperties: true
+    properties:
+      credentials:
+        order: 0
+        type: object
+        title: Credentials
+        description: Credentials for the service
+        oneOf:
+          - title: Authenticate via Google (Oauth)
+            type: object
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+                order: 0
+              client_id:
+                title: Client ID
+                type: string
+                description: The Client ID of your Google Analytics developer application.
+                order: 1
+              client_secret:
+                title: Client Secret
+                type: string
+                description: The Client Secret of your Google Analytics developer application.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: The token for obtaining a new access token.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                title: Access Token
+                type: string
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+                order: 4
+          - type: object
+            title: Service Account Key Authentication
+            required:
+              - credentials_json
+            properties:
+              auth_type:
+                type: string
+                const: Service
+                order: 0
+              credentials_json:
+                title: Service Account JSON Key
+                type: string
+                description:
+                  The JSON key linked to the service account used for authorization.
+                  For steps on obtaining this key, refer to <a href="https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide">the
+                  setup guide</a>.
+                examples:
+                  - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+                airbyte_secret: true
+                order: 1
+      property_ids:
+        title: Property IDs
+        description:
+          A list of your Property IDs. The Property ID is a unique number
+          assigned to each property in Google Analytics, found in your GA4 property
+          URL. This ID allows the connector to track the specific events associated
+          with your property. Refer to the <a href='https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id'>Google
+          Analytics documentation</a> to locate your property ID.
+        order: 1
+        type: array
+        items:
+          type: string
+          pattern: "^[0-9]*$"
+        examples:
+          - - "1738294"
+            - "5729978930"
+        uniqueItems: true
+      date_ranges_start_date:
+        type: string
+        title: Start Date
+        description:
+          The start date from which to replicate report data in the format
+          YYYY-MM-DD. Data generated before this date will not be included in the report.
+          Not applied to custom Cohort reports.
+        format: date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        pattern_descriptor: YYYY-MM-DD
+        examples:
+          - "2021-01-01"
+        order: 2
+      date_ranges_end_date:
+        type: string
+        title: End Date
+        description:
+          The end date from which to replicate report data in the format
+          YYYY-MM-DD. Data generated after this date will not be included in the report.
+          Not applied to custom Cohort reports. When no date is provided or the date
+          is in the future, the date from today is used.
+        format: date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        pattern_descriptor: YYYY-MM-DD
+        examples:
+          - "2021-01-31"
+        order: 3
+      custom_reports_array:
+        title: Custom Reports
+        description: You can add your Custom Analytics report by creating one.
+        order: 4
+        type: array
+        items:
+          title: Custom Report Config
+          type: object
+          properties:
+            name:
+              title: Name
+              description:
+                The name of the custom report, this name would be used as
+                stream name.
+              type: string
+              order: 0
+            dimensions:
+              title: Dimensions
+              description: A list of dimensions.
+              type: array
+              items:
+                type: string
+              minItems: 1
+              order: 1
+            metrics:
+              title: Metrics
+              description: A list of metrics.
+              type: array
+              items:
+                type: string
+              minItems: 1
+              order: 2
+            dimensionFilter:
+              title: Dimensions filter
+              description: Dimensions filter
+              type: object
+              order: 3
+              oneOf:
+                - title: andGroup
+                  description: The FilterExpressions in andGroup have an AND relationship.
+                  type: object
+                  properties:
+                    filter_type:
+                      type: string
+                      const: andGroup
+                      order: 0
+                    expressions:
+                      title: Expressions
+                      type: array
+                      order: 1
+                      items:
+                        title: Expression
+                        type: object
+                        properties:
+                          field_name:
+                            title: fieldName
+                            type: string
+                            order: 1
+                          filter:
+                            title: filter
+                            type: object
+                            order: 2
+                            oneOf:
+                              - title: stringFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: stringFilter
+                                  matchType:
+                                    title: matchType
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - MATCH_TYPE_UNSPECIFIED
+                                        - EXACT
+                                        - BEGINS_WITH
+                                        - ENDS_WITH
+                                        - CONTAINS
+                                        - FULL_REGEXP
+                                        - PARTIAL_REGEXP
+                                  value:
+                                    tittle: value
+                                    type: string
+                                    order: 0
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 2
+                                required:
+                                  - filter_name
+                                  - value
+                              - title: inListFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: inListFilter
+                                  values:
+                                    tittle: values
+                                    type: array
+                                    minItems: 1
+                                    order: 0
+                                    items:
+                                      type: string
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 1
+                                required:
+                                  - filter_name
+                                  - values
+                              - title: numericFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: numericFilter
+                                  operation:
+                                    title: operation
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - OPERATION_UNSPECIFIED
+                                        - EQUAL
+                                        - LESS_THAN
+                                        - LESS_THAN_OR_EQUAL
+                                        - GREATER_THAN
+                                        - GREATER_THAN_OR_EQUAL
+                                  value:
+                                    tittle: value
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - operation
+                                  - value
+                              - title: betweenFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: betweenFilter
+                                  fromValue:
+                                    tittle: fromValue
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                  toValue:
+                                    tittle: toValue
+                                    type: object
+                                    order: 1
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - fromValue
+                                  - toValue
+                        required:
+                          - field_name
+                          - filter
+                  required:
+                    - filter_type
+                    - expressions
+                - title: orGroup
+                  type: object
+                  description: The FilterExpressions in orGroup have an OR relationship.
+                  properties:
+                    filter_type:
+                      type: string
+                      const: orGroup
+                      order: 0
+                    expressions:
+                      title: Expressions
+                      type: array
+                      order: 1
+                      items:
+                        title: Expression
+                        type: object
+                        properties:
+                          field_name:
+                            title: fieldName
+                            type: string
+                            order: 1
+                          filter:
+                            title: filter
+                            type: object
+                            order: 2
+                            oneOf:
+                              - title: stringFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: stringFilter
+                                  matchType:
+                                    title: matchType
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - MATCH_TYPE_UNSPECIFIED
+                                        - EXACT
+                                        - BEGINS_WITH
+                                        - ENDS_WITH
+                                        - CONTAINS
+                                        - FULL_REGEXP
+                                        - PARTIAL_REGEXP
+                                  value:
+                                    tittle: value
+                                    type: string
+                                    order: 0
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 2
+                                required:
+                                  - filter_name
+                                  - value
+                              - title: inListFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: inListFilter
+                                  values:
+                                    tittle: values
+                                    type: array
+                                    minItems: 1
+                                    order: 0
+                                    items:
+                                      type: string
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 1
+                                required:
+                                  - filter_name
+                                  - values
+                              - title: numericFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: numericFilter
+                                  operation:
+                                    title: operation
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - OPERATION_UNSPECIFIED
+                                        - EQUAL
+                                        - LESS_THAN
+                                        - LESS_THAN_OR_EQUAL
+                                        - GREATER_THAN
+                                        - GREATER_THAN_OR_EQUAL
+                                  value:
+                                    tittle: value
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - operation
+                                  - value
+                              - title: betweenFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: betweenFilter
+                                  fromValue:
+                                    tittle: fromValue
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                  toValue:
+                                    tittle: toValue
+                                    type: object
+                                    order: 1
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - fromValue
+                                  - toValue
+                        required:
+                          - field_name
+                          - filter
+                  required:
+                    - filter_type
+                    - expressions
+                - title: notExpression
+                  type: object
+                  description: The FilterExpression is NOT of notExpression.
+                  properties:
+                    filter_type:
+                      type: string
+                      const: notExpression
+                      order: 0
+                    expression:
+                      title: Expression
+                      type: object
+                      properties:
+                        field_name:
+                          title: fieldName
+                          type: string
+                          order: 1
+                        filter:
+                          title: filter
+                          type: object
+                          order: 2
+                          oneOf:
+                            - title: stringFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: stringFilter
+                                matchType:
+                                  title: matchType
+                                  type: array
+                                  order: 1
+                                  items:
+                                    title: ValidEnums
+                                    enum:
+                                      - MATCH_TYPE_UNSPECIFIED
+                                      - EXACT
+                                      - BEGINS_WITH
+                                      - ENDS_WITH
+                                      - CONTAINS
+                                      - FULL_REGEXP
+                                      - PARTIAL_REGEXP
+                                value:
+                                  tittle: value
+                                  type: string
+                                  order: 0
+                                caseSensitive:
+                                  tittle: caseSensitive
+                                  type: boolean
+                                  order: 2
+                              required:
+                                - filter_name
+                                - value
+                            - title: inListFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: inListFilter
+                                values:
+                                  tittle: values
+                                  type: array
+                                  minItems: 1
+                                  order: 0
+                                  items:
+                                    type: string
+                                caseSensitive:
+                                  tittle: caseSensitive
+                                  type: boolean
+                                  order: 1
+                              required:
+                                - filter_name
+                                - values
+                            - title: numericFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: numericFilter
+                                operation:
+                                  title: operation
+                                  type: array
+                                  order: 1
+                                  items:
+                                    title: ValidEnums
+                                    enum:
+                                      - OPERATION_UNSPECIFIED
+                                      - EQUAL
+                                      - LESS_THAN
+                                      - LESS_THAN_OR_EQUAL
+                                      - GREATER_THAN
+                                      - GREATER_THAN_OR_EQUAL
+                                value:
+                                  tittle: value
+                                  type: object
+                                  order: 0
+                                  oneOf:
+                                    - title: int64Value
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: int64Value
+                                        value:
+                                          type: string
+                                      required:
+                                        - value_type
+                                        - value
+                                    - title: doubleValue
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: doubleValue
+                                        value:
+                                          type: number
+                                      required:
+                                        - value_type
+                                        - value
+                              required:
+                                - filter_name
+                                - operation
+                                - value
+                            - title: betweenFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: betweenFilter
+                                fromValue:
+                                  tittle: fromValue
+                                  type: object
+                                  order: 0
+                                  oneOf:
+                                    - title: int64Value
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: int64Value
+                                        value:
+                                          type: string
+                                      required:
+                                        - value_type
+                                        - value
+                                    - title: doubleValue
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: doubleValue
+                                        value:
+                                          type: number
+                                      required:
+                                        - value_type
+                                        - value
+                                toValue:
+                                  tittle: toValue
+                                  type: object
+                                  order: 1
+                                  oneOf:
+                                    - title: int64Value
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: int64Value
+                                        value:
+                                          type: string
+                                      required:
+                                        - value_type
+                                        - value
+                                    - title: doubleValue
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: doubleValue
+                                        value:
+                                          type: number
+                                      required:
+                                        - value_type
+                                        - value
+                              required:
+                                - filter_name
+                                - fromValue
+                                - toValue
+                      required:
+                        - field_name
+                        - filter
+                - title: filter
+                  type: object
+                  description:
+                    A primitive filter. In the same FilterExpression, all of
+                    the filter's field names need to be either all dimensions.
+                  properties:
+                    filter_type:
+                      type: string
+                      const: filter
+                      order: 0
+                    field_name:
+                      title: fieldName
+                      type: string
+                      order: 1
+                    filter:
+                      title: filter
+                      type: object
+                      order: 2
+                      oneOf:
+                        - title: stringFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: stringFilter
+                            matchType:
+                              title: matchType
+                              type: array
+                              order: 1
+                              items:
+                                title: ValidEnums
+                                enum:
+                                  - MATCH_TYPE_UNSPECIFIED
+                                  - EXACT
+                                  - BEGINS_WITH
+                                  - ENDS_WITH
+                                  - CONTAINS
+                                  - FULL_REGEXP
+                                  - PARTIAL_REGEXP
+                            value:
+                              tittle: value
+                              type: string
+                              order: 0
+                            caseSensitive:
+                              tittle: caseSensitive
+                              type: boolean
+                              order: 2
+                          required:
+                            - filter_name
+                            - value
+                        - title: inListFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: inListFilter
+                            values:
+                              tittle: values
+                              type: array
+                              minItems: 1
+                              order: 0
+                              items:
+                                type: string
+                            caseSensitive:
+                              tittle: caseSensitive
+                              type: boolean
+                              order: 1
+                          required:
+                            - filter_name
+                            - values
+                        - title: numericFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: numericFilter
+                            operation:
+                              title: operation
+                              type: array
+                              order: 1
+                              items:
+                                title: ValidEnums
+                                enum:
+                                  - OPERATION_UNSPECIFIED
+                                  - EQUAL
+                                  - LESS_THAN
+                                  - LESS_THAN_OR_EQUAL
+                                  - GREATER_THAN
+                                  - GREATER_THAN_OR_EQUAL
+                            value:
+                              tittle: value
+                              type: object
+                              order: 0
+                              oneOf:
+                                - title: int64Value
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: int64Value
+                                    value:
+                                      type: string
+                                  required:
+                                    - value_type
+                                    - value
+                                - title: doubleValue
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: doubleValue
+                                    value:
+                                      type: number
+                                  required:
+                                    - value_type
+                                    - value
+                          required:
+                            - filter_name
+                            - operation
+                            - value
+                        - title: betweenFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: betweenFilter
+                            fromValue:
+                              tittle: fromValue
+                              type: object
+                              order: 0
+                              oneOf:
+                                - title: int64Value
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: int64Value
+                                    value:
+                                      type: string
+                                  required:
+                                    - value_type
+                                    - value
+                                - title: doubleValue
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: doubleValue
+                                    value:
+                                      type: number
+                                  required:
+                                    - value_type
+                                    - value
+                            toValue:
+                              tittle: toValue
+                              type: object
+                              order: 1
+                              oneOf:
+                                - title: int64Value
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: int64Value
+                                    value:
+                                      type: string
+                                  required:
+                                    - value_type
+                                    - value
+                                - title: doubleValue
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: doubleValue
+                                    value:
+                                      type: number
+                                  required:
+                                    - value_type
+                                    - value
+                          required:
+                            - filter_name
+                            - fromValue
+                            - toValue
+                  required:
+                    - field_name
+                    - filter
+            metricFilter:
+              title: Metrics filter
+              description: Metrics filter
+              type: object
+              order: 4
+              oneOf:
+                - title: andGroup
+                  description: The FilterExpressions in andGroup have an AND relationship.
+                  type: object
+                  properties:
+                    filter_type:
+                      type: string
+                      const: andGroup
+                      order: 0
+                    expressions:
+                      title: Expressions
+                      type: array
+                      order: 1
+                      items:
+                        title: Expression
+                        type: object
+                        properties:
+                          field_name:
+                            title: fieldName
+                            type: string
+                            order: 1
+                          filter:
+                            title: filter
+                            type: object
+                            order: 2
+                            oneOf:
+                              - title: stringFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: stringFilter
+                                  matchType:
+                                    title: matchType
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - MATCH_TYPE_UNSPECIFIED
+                                        - EXACT
+                                        - BEGINS_WITH
+                                        - ENDS_WITH
+                                        - CONTAINS
+                                        - FULL_REGEXP
+                                        - PARTIAL_REGEXP
+                                  value:
+                                    tittle: value
+                                    type: string
+                                    order: 0
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 2
+                                required:
+                                  - filter_name
+                                  - value
+                              - title: inListFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: inListFilter
+                                  values:
+                                    tittle: values
+                                    type: array
+                                    minItems: 1
+                                    order: 0
+                                    items:
+                                      type: string
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 1
+                                required:
+                                  - filter_name
+                                  - values
+                              - title: numericFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: numericFilter
+                                  operation:
+                                    title: operation
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - OPERATION_UNSPECIFIED
+                                        - EQUAL
+                                        - LESS_THAN
+                                        - LESS_THAN_OR_EQUAL
+                                        - GREATER_THAN
+                                        - GREATER_THAN_OR_EQUAL
+                                  value:
+                                    tittle: value
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - operation
+                                  - value
+                              - title: betweenFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: betweenFilter
+                                  fromValue:
+                                    tittle: fromValue
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                  toValue:
+                                    tittle: toValue
+                                    type: object
+                                    order: 1
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - fromValue
+                                  - toValue
+                        required:
+                          - field_name
+                          - filter
+                  required:
+                    - filter_type
+                    - expressions
+                - title: orGroup
+                  type: object
+                  description: The FilterExpressions in orGroup have an OR relationship.
+                  properties:
+                    filter_type:
+                      type: string
+                      const: orGroup
+                      order: 0
+                    expressions:
+                      title: Expressions
+                      type: array
+                      order: 1
+                      items:
+                        title: Expression
+                        type: object
+                        properties:
+                          field_name:
+                            title: fieldName
+                            type: string
+                            order: 1
+                          filter:
+                            title: filter
+                            type: object
+                            order: 2
+                            oneOf:
+                              - title: stringFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: stringFilter
+                                  matchType:
+                                    title: matchType
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - MATCH_TYPE_UNSPECIFIED
+                                        - EXACT
+                                        - BEGINS_WITH
+                                        - ENDS_WITH
+                                        - CONTAINS
+                                        - FULL_REGEXP
+                                        - PARTIAL_REGEXP
+                                  value:
+                                    tittle: value
+                                    type: string
+                                    order: 0
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 2
+                                required:
+                                  - filter_name
+                                  - value
+                              - title: inListFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: inListFilter
+                                  values:
+                                    tittle: values
+                                    type: array
+                                    minItems: 1
+                                    order: 0
+                                    items:
+                                      type: string
+                                  caseSensitive:
+                                    tittle: caseSensitive
+                                    type: boolean
+                                    order: 1
+                                required:
+                                  - filter_name
+                                  - values
+                              - title: numericFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: numericFilter
+                                  operation:
+                                    title: operation
+                                    type: array
+                                    order: 1
+                                    items:
+                                      title: ValidEnums
+                                      enum:
+                                        - OPERATION_UNSPECIFIED
+                                        - EQUAL
+                                        - LESS_THAN
+                                        - LESS_THAN_OR_EQUAL
+                                        - GREATER_THAN
+                                        - GREATER_THAN_OR_EQUAL
+                                  value:
+                                    tittle: value
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - operation
+                                  - value
+                              - title: betweenFilter
+                                type: object
+                                properties:
+                                  filter_name:
+                                    type: string
+                                    const: betweenFilter
+                                  fromValue:
+                                    tittle: fromValue
+                                    type: object
+                                    order: 0
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                  toValue:
+                                    tittle: toValue
+                                    type: object
+                                    order: 1
+                                    oneOf:
+                                      - title: int64Value
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: int64Value
+                                          value:
+                                            type: string
+                                        required:
+                                          - value_type
+                                          - value
+                                      - title: doubleValue
+                                        type: object
+                                        properties:
+                                          value_type:
+                                            type: string
+                                            const: doubleValue
+                                          value:
+                                            type: number
+                                        required:
+                                          - value_type
+                                          - value
+                                required:
+                                  - filter_name
+                                  - fromValue
+                                  - toValue
+                        required:
+                          - field_name
+                          - filter
+                  required:
+                    - filter_type
+                    - expressions
+                - title: notExpression
+                  type: object
+                  description: The FilterExpression is NOT of notExpression.
+                  properties:
+                    filter_type:
+                      type: string
+                      const: notExpression
+                      order: 0
+                    expression:
+                      title: Expression
+                      type: object
+                      properties:
+                        field_name:
+                          title: fieldName
+                          type: string
+                          order: 1
+                        filter:
+                          title: filter
+                          type: object
+                          order: 2
+                          oneOf:
+                            - title: stringFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: stringFilter
+                                matchType:
+                                  title: matchType
+                                  type: array
+                                  order: 1
+                                  items:
+                                    title: ValidEnums
+                                    enum:
+                                      - MATCH_TYPE_UNSPECIFIED
+                                      - EXACT
+                                      - BEGINS_WITH
+                                      - ENDS_WITH
+                                      - CONTAINS
+                                      - FULL_REGEXP
+                                      - PARTIAL_REGEXP
+                                value:
+                                  tittle: value
+                                  type: string
+                                  order: 0
+                                caseSensitive:
+                                  tittle: caseSensitive
+                                  type: boolean
+                                  order: 2
+                              required:
+                                - filter_name
+                                - value
+                            - title: inListFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: inListFilter
+                                values:
+                                  tittle: values
+                                  type: array
+                                  minItems: 1
+                                  order: 0
+                                  items:
+                                    type: string
+                                caseSensitive:
+                                  tittle: caseSensitive
+                                  type: boolean
+                                  order: 1
+                              required:
+                                - filter_name
+                                - values
+                            - title: numericFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: numericFilter
+                                operation:
+                                  title: operation
+                                  type: array
+                                  order: 1
+                                  items:
+                                    title: ValidEnums
+                                    enum:
+                                      - OPERATION_UNSPECIFIED
+                                      - EQUAL
+                                      - LESS_THAN
+                                      - LESS_THAN_OR_EQUAL
+                                      - GREATER_THAN
+                                      - GREATER_THAN_OR_EQUAL
+                                value:
+                                  tittle: value
+                                  type: object
+                                  order: 0
+                                  oneOf:
+                                    - title: int64Value
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: int64Value
+                                        value:
+                                          type: string
+                                      required:
+                                        - value_type
+                                        - value
+                                    - title: doubleValue
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: doubleValue
+                                        value:
+                                          type: number
+                                      required:
+                                        - value_type
+                                        - value
+                              required:
+                                - filter_name
+                                - operation
+                                - value
+                            - title: betweenFilter
+                              type: object
+                              properties:
+                                filter_name:
+                                  type: string
+                                  const: betweenFilter
+                                fromValue:
+                                  tittle: fromValue
+                                  type: object
+                                  order: 0
+                                  oneOf:
+                                    - title: int64Value
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: int64Value
+                                        value:
+                                          type: string
+                                      required:
+                                        - value_type
+                                        - value
+                                    - title: doubleValue
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: doubleValue
+                                        value:
+                                          type: number
+                                      required:
+                                        - value_type
+                                        - value
+                                toValue:
+                                  tittle: toValue
+                                  type: object
+                                  order: 1
+                                  oneOf:
+                                    - title: int64Value
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: int64Value
+                                        value:
+                                          type: string
+                                      required:
+                                        - value_type
+                                        - value
+                                    - title: doubleValue
+                                      type: object
+                                      properties:
+                                        value_type:
+                                          type: string
+                                          const: doubleValue
+                                        value:
+                                          type: number
+                                      required:
+                                        - value_type
+                                        - value
+                              required:
+                                - filter_name
+                                - fromValue
+                                - toValue
+                      required:
+                        - field_name
+                        - filter
+                - title: filter
+                  type: object
+                  description:
+                    A primitive filter. In the same FilterExpression, all of
+                    the filter's field names need to be either all metrics.
+                  properties:
+                    filter_type:
+                      type: string
+                      const: filter
+                      order: 0
+                    field_name:
+                      title: fieldName
+                      type: string
+                      order: 1
+                    filter:
+                      title: filter
+                      type: object
+                      order: 2
+                      oneOf:
+                        - title: stringFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: stringFilter
+                            matchType:
+                              title: matchType
+                              type: array
+                              order: 1
+                              items:
+                                title: ValidEnums
+                                enum:
+                                  - MATCH_TYPE_UNSPECIFIED
+                                  - EXACT
+                                  - BEGINS_WITH
+                                  - ENDS_WITH
+                                  - CONTAINS
+                                  - FULL_REGEXP
+                                  - PARTIAL_REGEXP
+                            value:
+                              tittle: value
+                              type: string
+                              order: 0
+                            caseSensitive:
+                              tittle: caseSensitive
+                              type: boolean
+                              order: 2
+                          required:
+                            - filter_name
+                            - value
+                        - title: inListFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: inListFilter
+                            values:
+                              tittle: values
+                              type: array
+                              minItems: 1
+                              order: 0
+                              items:
+                                type: string
+                            caseSensitive:
+                              tittle: caseSensitive
+                              type: boolean
+                              order: 1
+                          required:
+                            - filter_name
+                            - values
+                        - title: numericFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: numericFilter
+                            operation:
+                              title: operation
+                              type: array
+                              order: 1
+                              items:
+                                title: ValidEnums
+                                enum:
+                                  - OPERATION_UNSPECIFIED
+                                  - EQUAL
+                                  - LESS_THAN
+                                  - LESS_THAN_OR_EQUAL
+                                  - GREATER_THAN
+                                  - GREATER_THAN_OR_EQUAL
+                            value:
+                              tittle: value
+                              type: object
+                              order: 0
+                              oneOf:
+                                - title: int64Value
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: int64Value
+                                    value:
+                                      type: string
+                                  required:
+                                    - value_type
+                                    - value
+                                - title: doubleValue
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: doubleValue
+                                    value:
+                                      type: number
+                                  required:
+                                    - value_type
+                                    - value
+                          required:
+                            - filter_name
+                            - operation
+                            - value
+                        - title: betweenFilter
+                          type: object
+                          properties:
+                            filter_name:
+                              type: string
+                              const: betweenFilter
+                            fromValue:
+                              tittle: fromValue
+                              type: object
+                              order: 0
+                              oneOf:
+                                - title: int64Value
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: int64Value
+                                    value:
+                                      type: string
+                                  required:
+                                    - value_type
+                                    - value
+                                - title: doubleValue
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: doubleValue
+                                    value:
+                                      type: number
+                                  required:
+                                    - value_type
+                                    - value
+                            toValue:
+                              tittle: toValue
+                              type: object
+                              order: 1
+                              oneOf:
+                                - title: int64Value
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: int64Value
+                                    value:
+                                      type: string
+                                  required:
+                                    - value_type
+                                    - value
+                                - title: doubleValue
+                                  type: object
+                                  properties:
+                                    value_type:
+                                      type: string
+                                      const: doubleValue
+                                    value:
+                                      type: number
+                                  required:
+                                    - value_type
+                                    - value
+                          required:
+                            - filter_name
+                            - fromValue
+                            - toValue
+                  required:
+                    - field_name
+                    - filter
+            cohortSpec:
+              title: Cohort Reports
+              description:
+                Cohort reports creates a time series of user retention for
+                the cohort.
+              type: object
+              order: 5
+              oneOf:
+                - title: Disabled
+                  type: object
+                  properties:
+                    enabled:
+                      type: string
+                      const: "false"
+                - title: Enabled
+                  type: object
+                  properties:
+                    enabled:
+                      type: string
+                      const: "true"
+                    cohorts:
+                      name: Cohorts
+                      order: 0
+                      type: array
+                      always_show: true
+                      items:
+                        title: Cohorts
+                        type: object
+                        required:
+                          - dimension
+                          - dateRange
+                        properties:
+                          name:
+                            title: Name
+                            type: string
+                            always_show: true
+                            pattern: "^(?!(cohort_|RESERVED_)).*$"
+                            description:
+                              Assigns a name to this cohort. If not set, cohorts
+                              are named by their zero based index cohort_0, cohort_1,
+                              etc.
+                            order: 0
+                          dimension:
+                            title: Dimension
+                            description:
+                              Dimension used by the cohort. Required and only
+                              supports `firstSessionDate`
+                            type: string
+                            enum:
+                              - firstSessionDate
+                            order: 1
+                          dateRange:
+                            type: object
+                            required:
+                              - startDate
+                              - endDate
+                            properties:
+                              startDate:
+                                title: Start Date
+                                type: string
+                                format: date
+                                pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                                pattern_descriptor: YYYY-MM-DD
+                                examples:
+                                  - "2021-01-01"
+                                order: 2
+                              endDate:
+                                title: End Date
+                                type: string
+                                format: date
+                                pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                                pattern_descriptor: YYYY-MM-DD
+                                examples:
+                                  - "2021-01-01"
+                                order: 3
+                    cohortsRange:
+                      type: object
+                      order: 1
+                      required:
+                        - granularity
+                        - endOffset
+                      properties:
+                        granularity:
+                          title: Granularity
+                          description:
+                            The granularity used to interpret the startOffset
+                            and endOffset for the extended reporting date range for a
+                            cohort report.
+                          type: string
+                          enum:
+                            - GRANULARITY_UNSPECIFIED
+                            - DAILY
+                            - WEEKLY
+                            - MONTHLY
+                          order: 0
+                        startOffset:
+                          title: Start Offset
+                          description:
+                            Specifies the start date of the extended reporting
+                            date range for a cohort report.
+                          type: integer
+                          minimum: 0
+                          order: 1
+                        endOffset:
+                          title: End Offset
+                          description:
+                            Specifies the end date of the extended reporting
+                            date range for a cohort report.
+                          type: integer
+                          minimum: 0
+                          order: 2
+                    cohortReportSettings:
+                      type: object
+                      title: Cohort Report Settings
+                      description: Optional settings for a cohort report.
+                      properties:
+                        accumulate:
+                          always_show: true
+                          title: Accumulate
+                          description:
+                            If true, accumulates the result from first touch
+                            day to the end day
+                          type: boolean
+          required:
+            - name
+            - dimensions
+            - metrics
+      window_in_days:
+        type: integer
+        title: Data Request Interval (Days)
+        description:
+          The interval in days for each data request made to the Google Analytics
+          API. A larger value speeds up data sync, but increases the chance of data
+          sampling, which may result in inaccuracies. We recommend a value of 1 to minimize
+          sampling, unless speed is an absolute priority over accuracy. Acceptable values
+          range from 1 to 364. Does not apply to custom Cohort reports. More information
+          is available in <a href="https://docs.airbyte.com/integrations/sources/google-analytics-data-api">the
+          documentation</a>.
+        examples:
+          - 30
+          - 60
+          - 90
+          - 120
+          - 200
+          - 364
+        minimum: 1
+        maximum: 364
+        default: 1
+        order: 5
+      lookback_window:
+        type: integer
+        title: Lookback window (Days)
+        description:
+          Since attribution changes after the event date, and Google Analytics
+          has a data processing latency, we should specify how many days in the past
+          we should refresh the data in every run. So if you set it at 5 days, in every
+          sync it will fetch the last bookmark date minus 5 days.
+        examples:
+          - 2
+          - 3
+          - 4
+          - 7
+          - 14
+          - 28
+        minimum: 2
+        maximum: 60
+        default: 2
+        order: 6
+      keep_empty_rows:
+        type: boolean
+        title: Keep Empty Rows
+        description:
+          If false, each row with all metrics equal to 0 will not be returned.
+          If true, these rows will be returned if they are not separately removed by
+          a filter. More information is available in <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body">the
+          documentation</a>.
+        default: false
+        order: 7
+      convert_conversions_event:
+        type: boolean
+        title: Convert `conversions:*` Metrics to Float
+        description:
+          Enables conversion of `conversions:*` event metrics from integers
+          to floats. This is beneficial for preventing data rounding when the API returns
+          float values for any `conversions:*` fields.
+        default: false
+        order: 8
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+# https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+      matchers:
+        - method: POST
+          url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
