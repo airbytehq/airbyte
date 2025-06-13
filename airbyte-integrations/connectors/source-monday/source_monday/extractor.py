@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.declarative.types import Config
 
 
 logger = logging.getLogger("airbyte")
@@ -34,7 +34,7 @@ class MondayActivityExtractor(RecordExtractor):
     """
 
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         response_body_generator = self.decoder.decode(response)
@@ -72,7 +72,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     field_path_pagination: List[Union[InterpolatedString, str]] = field(default_factory=list)
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         # Convert string paths to InterpolatedString for both field_path and field_path_pagination
