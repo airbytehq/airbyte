@@ -80,6 +80,7 @@ jobs:
           file: docker-images/Dockerfile.java-connector-base
           platforms: linux/amd64,linux/arm64
           push: true
+          # Cache layers in the GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
@@ -129,6 +130,7 @@ jobs:
           file: docker-images/Dockerfile.python-connector-base
           platforms: linux/amd64,linux/arm64
           push: true
+          # Cache layers in the GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
@@ -208,6 +210,7 @@ jobs:
           file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
           push: true
+          # Cache layers in the GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -297,6 +300,7 @@ jobs:
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
           push: true
+          # Cache layers in the GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -383,6 +387,7 @@ jobs:
           file: docker-images/Dockerfile.manifest-only-connector
           platforms: linux/amd64,linux/arm64
           push: true
+          # Cache layers in the GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
