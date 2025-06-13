@@ -473,21 +473,15 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream,
+        val stream: DestinationStream.Descriptor,
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState()
-                .withStreamDescriptor(
-                    StreamDescriptor()
-                        .withNamespace(stream.unmappedNamespace)
-                        .withName(stream.unmappedName)
-                )
-                .also {
-                    if (state != null) {
-                        it.streamState = state
-                    }
+            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
+                if (state != null) {
+                    it.streamState = state
                 }
+            }
     }
 
     val checkpointKey: CheckpointKey?
@@ -539,7 +533,8 @@ data class StreamCheckpoint(
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
-        stream: DestinationStream,
+        streamNamespace: String?,
+        streamName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -548,7 +543,7 @@ data class StreamCheckpoint(
         totalBytes: Long? = null
     ) : this(
         Checkpoint(
-            stream,
+            DestinationStream.Descriptor(streamNamespace, streamName),
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
