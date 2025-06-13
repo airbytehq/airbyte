@@ -59,6 +59,13 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
+      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
+      - name: Set up Python (For Airbyte-CI)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
       - name: Run Java CDK Tests
         uses: burrunan/gradle-cache-action@v3
         env:
