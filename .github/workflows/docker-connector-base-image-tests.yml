@@ -226,6 +226,8 @@ jobs:
       - name: Install CDK CLI
         run: |
           # uv tool install 'airbyte-cdk[dev]'
+          # TODO: Revert to normal install once this PR is merged:
+          # - https://github.com/airbytehq/airbyte-python-cdk/pull/586
           uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
@@ -234,11 +236,7 @@ jobs:
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }}
 
-      - name: Run connector tests
-        env:
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
-          DOCKER_BUILDKIT: 1
-          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+      - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
@@ -316,10 +314,10 @@ jobs:
 
       - name: Install CDK CLI
         run: |
-          uv tool install 'airbyte-cdk[dev]'
-          # TODO: Delete the below after the related CDK PR Merges:
+          # uv tool install 'airbyte-cdk[dev]'
+          # TODO: Revert to normal install once this PR is merged:
           # - https://github.com/airbytehq/airbyte-python-cdk/pull/586
-          # uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
+          uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
         env:
@@ -327,11 +325,7 @@ jobs:
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }}
 
-      - name: Run connector tests
-        env:
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
-          DOCKER_BUILDKIT: 1
-          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+      - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
@@ -407,6 +401,8 @@ jobs:
       - name: Install CDK CLI
         run: |
           # uv tool install 'airbyte-cdk[dev]'
+          # TODO: Revert to normal install once this PR is merged:
+          # - https://github.com/airbytehq/airbyte-python-cdk/pull/586
           uv tool install 'git+https://github.com/airbytehq/airbyte-python-cdk.git@aj/tests/add-docker-based-standard-tests[dev]'
 
       - name: Fetch connector secrets
@@ -415,11 +411,7 @@ jobs:
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }}
 
-      - name: Run connector tests
-        env:
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
-          DOCKER_BUILDKIT: 1
-          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+      - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
