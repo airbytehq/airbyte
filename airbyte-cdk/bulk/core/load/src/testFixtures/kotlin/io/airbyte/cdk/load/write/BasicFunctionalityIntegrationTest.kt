@@ -943,7 +943,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             ),
             StreamCheckpoint(
-                finalStream,
+                randomizedNamespace,
+                "test_stream",
                 """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),

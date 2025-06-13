@@ -136,16 +136,8 @@ class MockBasicFunctionalityIntegrationTest :
                         // send a state message for a stream that isn't in the catalog.
                         // this should cause the sync to crash.
                         InputStreamCheckpoint(
-                            DestinationStream(
-                                "potato",
-                                "tomato",
-                                Append,
-                                ObjectType(linkedMapOf("id" to intType)),
-                                generationId = 0,
-                                minimumGenerationId = 0,
-                                syncId = 42,
-                                namespaceMapper = namespaceMapperForMedium(),
-                            ),
+                            "potato",
+                            "tomato",
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
