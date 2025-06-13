@@ -307,7 +307,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------|
-| 0.3.29  | 2025-06-13 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | Publish version to account for possible duplicate publishing in pipeline. Noop change. |
+| 0.3.29  | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | Publish version to account for possible duplicate publishing in pipeline. Noop change. |
 | 0.3.28  | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                |
 | 0.3.27  | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                                  |
 | 0.3.26  | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104)   | Chore: Now passing a string around for the region                                      |
