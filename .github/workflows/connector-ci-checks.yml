@@ -270,7 +270,7 @@ jobs:
       - name: Run container tests
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+          airbyte-cdk image test
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
