@@ -148,17 +148,17 @@ version_gt() {
     return 1
   fi
 
-  # Extract components (assuming semantic versioning)
+  # Extract components (assuming semantic versioning) on the . separator.
   local IFS=.
   local i v1_array=($v1) v2_array=($v2)
 
   # Compare each component
   for ((i=0; i<${#v1_array[@]} || i<${#v2_array[@]}; i++)); do
-    # Default to 0 if component doesn't exist
+    # Default to 0 if component doesn't exist. 1.2 -> 1.2.0
     local v1_comp=${v1_array[i]:-0}
     local v2_comp=${v2_array[i]:-0}
 
-    # Remove any non-numeric suffix (like -alpha, -beta, etc.)
+    # Remove any non-numeric suffix (like -alpha, -beta, etc.) for simplicity.
     v1_comp=$(echo "$v1_comp" | sed -E 's/([0-9]+).*/\1/')
     v2_comp=$(echo "$v2_comp" | sed -E 's/([0-9]+).*/\1/')
 
@@ -227,10 +227,6 @@ while read -r connector; do
               ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
   else
     echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
-    ./gradlew -DciMode=true \
-              -Psbom=false \
-              -Pdocker.tag="${docker_tag}" \
-              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
   fi
 done < <(get_connectors)
 if $do_publish; then
