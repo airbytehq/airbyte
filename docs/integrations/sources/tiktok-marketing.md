@@ -147,12 +147,13 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.7.0     | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681)  | Ads / AdGroups report by country streams                                                                                                                               |
+| 4.7.1 | 2025-05-17 | [56872](https://github.com/airbytehq/airbyte/pull/56872) | Update dependencies |
+| 4.7.0 | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681) | Ads / AdGroups report by country streams |
 | 4.6.2 | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream |
 | 4.6.1 | 2025-03-22 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies |
-| 4.6.0     | 2025-03-09 | [55669](https://github.com/airbytehq/airbyte/pull/55669)  | Add `Pixels`, `PixelInstantPageEvents`, `PixelEventsStatistics` streams                                                                                                |
-| 4.5.0     | 2025-03-07 | [45081](https://github.com/airbytehq/airbyte/pull/45081)  | Add SparkAds stream                                                                                                                                                    |
-| 4.4.0     | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242)  | Promoting release candidate 4.4.0-rc3 to a main version.                                                                                                               |
+| 4.6.0 | 2025-03-09 | [55669](https://github.com/airbytehq/airbyte/pull/55669) | Add `Pixels`, `PixelInstantPageEvents`, `PixelEventsStatistics` streams |
+| 4.5.0 | 2025-03-07 | [45081](https://github.com/airbytehq/airbyte/pull/45081) | Add SparkAds stream |
+| 4.4.0 | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242) | Promoting release candidate 4.4.0-rc3 to a main version. |
 | 4.4.0-rc3 | 2025-03-04 | [55194](https://github.com/airbytehq/airbyte/pull/55194)  | Resolve state format issue                                                                                                                                             |
 | 4.4.0-rc2 | 2025-02-20 | [53645)](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors                                                                                                                   |
 | 4.4.0-rc1 | 2025-01-29 | [51584](https://github.com/airbytehq/airbyte/pull/51584)  | Update to concurrent CDK                                                                                                                                               |
