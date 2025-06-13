@@ -38,6 +38,7 @@ jobs:
             java:
               - 'airbyte-cdk/java/**/*'
               - 'airbyte-cdk/bulk/**/*'
+              - 'airbyte-cdk/build.gradle'
 
   run-check:
     needs:
