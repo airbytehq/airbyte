@@ -54,7 +54,6 @@ export const CopyPageButton = () => {
   };
 
   const claudeUrl = `https://claude.ai/new?q=Read+from+${fullMdUrl}+so+I+can+ask+questions+about+it`;
-  console.log("claudeUrl", claudeUrl);
 
   return (
     <div className={styles.container}>
