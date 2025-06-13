@@ -267,6 +267,11 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Run container tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
