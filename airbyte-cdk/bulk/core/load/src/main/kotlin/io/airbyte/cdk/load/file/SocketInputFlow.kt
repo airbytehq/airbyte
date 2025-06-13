@@ -45,6 +45,7 @@ class SocketInputFlow(
                         log.info { "Read $messagesRead messages from ${socket.socketPath}" }
                     }
 
+                    // This is where we read the message
                     when (message) {
                         is DestinationStreamAffinedMessage -> {
                             val event =

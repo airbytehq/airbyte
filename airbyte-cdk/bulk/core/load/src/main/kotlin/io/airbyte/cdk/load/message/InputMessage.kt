@@ -38,6 +38,8 @@ import java.io.OutputStream
 
 sealed interface InputMessage {
     fun asProtocolMessage(): AirbyteMessage
+
+    // this
     fun asProtobuf(): AirbyteMessageProtobuf =
         AirbyteMessageProtobuf.newBuilder()
             .setAirbyteProtocolMessage(asProtocolMessage().serializeToString())
