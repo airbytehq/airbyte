@@ -84,7 +84,8 @@ class ClickhouseAirbyteClientTest {
     @Test
     fun `test added columns`() {
         val tableColumns = listOf(getMockColumn(COL1, ClickHouseDataType.String))
-        val catalogColumns = mapOf(COL1 to STRING_TYPE, COL2 to "Int32", COL3 to "Float64") // Added col2 and col3
+        val catalogColumns =
+            mapOf(COL1 to STRING_TYPE, COL2 to "Int32", COL3 to "Float64") // Added col2 and col3
         val expected =
             AlterationSummary(
                 added = mapOf(COL2 to "Int32", COL3 to "Float64"),
@@ -115,14 +116,16 @@ class ClickhouseAirbyteClientTest {
 
     @Test
     fun `test deleted columns`() {
-        val tableColumns = listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String))
+        val tableColumns =
+            listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String))
         val catalogColumns = mapOf(COL1 to STRING_TYPE)
         val expected =
             AlterationSummary(added = emptyMap(), modified = emptyMap(), deleted = emptySet())
         val actual = clickhouseAirbyteClient.getChangedColumns(tableColumns, catalogColumns)
         Assertions.assertEquals(expected, actual)
 
-        val tableColumns2 = listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String))
+        val tableColumns2 =
+            listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String))
         val catalogColumns2 = mapOf(COL2 to STRING_TYPE, COL3 to "Int32")
         val expected2 =
             AlterationSummary(
