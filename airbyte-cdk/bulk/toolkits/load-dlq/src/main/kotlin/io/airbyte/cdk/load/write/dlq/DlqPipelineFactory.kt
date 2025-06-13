@@ -161,7 +161,8 @@ class DlqPipelineFactoryFactory {
         destinationConfig: DestinationConfiguration
     ): S3ObjectStorageConfig<*> =
         (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig
-            as? S3ObjectStorageConfig<*> ?: throw IllegalArgumentException(
-            "Unable to extract an S3ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider"
-        )
+            as? S3ObjectStorageConfig<*>
+            ?: throw IllegalArgumentException(
+                "Unable to extract an S3ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider"
+            )
 }
