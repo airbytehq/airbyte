@@ -2,7 +2,6 @@
 # check=skip=InvalidDefaultArgInFrom
 
 # Python connector Dockerfile for Airbyte
-# dummy change (revert-me)
 
 ARG BASE_IMAGE
 

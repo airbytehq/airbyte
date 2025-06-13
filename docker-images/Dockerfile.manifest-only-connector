@@ -3,7 +3,6 @@
 
 # Manifest-Only connector Dockerfile for Airbyte
 # Updated to include manifest-only testing in CI workflow
-# dummy change (revert-me)
 
 # Manifest-Only connector images are built on top of source-declarative-manifest image
 ARG BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest
