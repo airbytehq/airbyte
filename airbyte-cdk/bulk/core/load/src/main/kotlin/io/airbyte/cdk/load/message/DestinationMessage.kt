@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
+import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -45,7 +46,9 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.math.BigInteger
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
@@ -172,6 +175,19 @@ data class Meta(
                     )
             }
         }
+
+        fun getEmittedAtMs(
+            emittedAtMs: Long,
+            extractedAtAsTimestampWithTimezone: Boolean
+        ): AirbyteValue {
+            return if (extractedAtAsTimestampWithTimezone) {
+                TimestampWithTimezoneValue(
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC)
+                )
+            } else {
+                IntegerValue(emittedAtMs)
+            }
+        }
     }
 
     fun asProtocolObject(): AirbyteRecordMessageMeta =
@@ -265,6 +281,7 @@ data class EnrichedDestinationRecordAirbyteValue(
      */
     val sourceMeta: Meta,
     val serializedSizeBytes: Long = 0L,
+    private val extractedAtAsTimestampWithTimezone: Boolean = false,
     val airbyteRawId: UUID,
 ) {
     val airbyteMeta: EnrichedAirbyteValue
@@ -299,7 +316,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                     ),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     EnrichedAirbyteValue(
-                        IntegerValue(emittedAtMs),
+                        getEmittedAtMs(emittedAtMs, extractedAtAsTimestampWithTimezone),
                         Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                         name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                         airbyteMetaField = Meta.AirbyteMetaFields.EXTRACTED_AT,
