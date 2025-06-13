@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.orchestration.db.direct_load_table
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -158,7 +159,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
                     }
                     sqlTableOperations.createTable(
                         stream,
@@ -191,7 +192,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 isWritingToTemporaryTable = false
             } else {
                 logger.info {
-                    "Creating temp table (real table has old generation ID) for stream ${stream.descriptor.toPrettyString()}"
+                    "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.descriptor.toPrettyString()}"
                 }
                 sqlTableOperations.createTable(
                     stream,
@@ -241,13 +242,13 @@ class DirectLoadTableAppendTruncateStreamLoader(
 class DirectLoadTableDedupTruncateStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: DirectLoadInitialStatus,
-    private val internalNamespace: String,
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
     /**
@@ -278,7 +279,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.descriptor.toPrettyString()}"
                     }
                     sqlTableOperations.createTable(
                         stream,
@@ -357,7 +358,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
     /** Performs upsert using an additional temporary table for safer operation */
     private suspend fun performUpsertWithTemporaryTable() {
-        val tempTempTable = tempTableName.asTempTable(internalNamespace = internalNamespace)
+        val tempTempTable = tempTableNameGenerator.generate(tempTableName)
 
         // Create temporary table for intermediate operations
         sqlTableOperations.createTable(stream, tempTempTable, columnNameMapping, replace = true)

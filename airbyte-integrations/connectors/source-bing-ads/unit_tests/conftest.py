@@ -4,6 +4,9 @@
 from unittest.mock import patch
 
 import pytest
+from source_bing_ads import SourceBingAds
+
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 @pytest.fixture(name="config")
@@ -86,3 +89,21 @@ def config_with_custom_reports_fixture():
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
     return patch("source_bing_ads.source.logging.Logger")
+
+
+@pytest.fixture(name="mock_auth_token")
+def mock_auth_token_fixture(requests_mock):
+    requests_mock.post(
+        "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+        status_code=200,
+        json={"access_token": "test", "expires_in": "900", "refresh_token": "test"},
+    )
+
+
+def find_stream(stream_name, config, state=None):
+    state = StateBuilder().build() if not state else state
+    streams = SourceBingAds(catalog=None, config=config, state=state).streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
