@@ -24,7 +24,6 @@ declare -A rollout_map=(
   [destination-azure-blob-storage]=1
   [destination-bigquery]=1
   [destination-clickhouse-strict-encrypt]=1
-  [destination-clickhouse]=1
   [destination-csv]=1
   [destination-databricks]=1
   [destination-dev-null]=1
