@@ -325,6 +325,7 @@ abstract class IntegrationTest(
         inputStateMessage: StreamCheckpoint,
         syncEndBehavior: UncleanSyncEndBehavior,
         useFileTransfer: Boolean = false,
+        destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(
