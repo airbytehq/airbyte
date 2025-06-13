@@ -62,15 +62,15 @@ class FastJsonFormattingWriter(
     private fun writeValue(v: AirbyteValue) {
         when (v) {
             is NullValue -> gen.writeNull()
-            is StringValue -> gen.writeString(v.value)
-            is BooleanValue -> gen.writeBoolean(v.value)
-            is IntegerValue -> gen.writeNumber(v.value)
-            is NumberValue -> gen.writeNumber(v.value)
-            is DateValue -> gen.writeString(v.value.toString())
-            is TimestampWithTimezoneValue -> gen.writeString(v.value.toString())
-            is TimestampWithoutTimezoneValue -> gen.writeString(v.value.toString())
-            is TimeWithTimezoneValue -> gen.writeString(v.value.toString())
-            is TimeWithoutTimezoneValue -> gen.writeString(v.value.toString())
+            is StringValue -> gen.writeString(v.toJson())
+            is BooleanValue -> gen.writeBoolean(v.toJson())
+            is IntegerValue -> gen.writeNumber(v.toJson())
+            is NumberValue -> gen.writeNumber(v.toJson())
+            is DateValue -> gen.writeString(v.toJson())
+            is TimestampWithTimezoneValue -> gen.writeString(v.toJson())
+            is TimestampWithoutTimezoneValue -> gen.writeString(v.toJson())
+            is TimeWithTimezoneValue -> gen.writeString(v.toJson())
+            is TimeWithoutTimezoneValue -> gen.writeString(v.toJson())
             is ArrayValue -> {
                 gen.writeStartArray()
                 v.values.forEach { element: AirbyteValue -> writeValue(element) }
