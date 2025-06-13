@@ -37,6 +37,8 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_brands_v3_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_campaigns_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_display_campaigns_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_display_adgroups_report_stream
@@ -65,6 +67,8 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_product_ad_group_bid_recommendations
             bypass_reason: "data is updated frequently"
+          - name: sponsored_brands_campaigns_report_stream_daily
+            bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_display_campaigns_report_stream_daily
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_keywords_report_stream_daily
