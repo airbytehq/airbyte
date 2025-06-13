@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.SimpleOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -32,11 +33,12 @@ class RootReader(
     val stateManager: StateManager,
     val resourceAcquisitionHeartbeat: Duration,
     val timeout: Duration,
-    val outputConsumer: OutputConsumer,
+    val outputConsumer: SimpleOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val OutputFormat: String
 ) {
     private val log = KotlinLogging.logger {}
 

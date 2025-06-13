@@ -22,7 +22,7 @@ import java.time.Clock
 @Replaces(OutputConsumer::class)
 class BufferingOutputConsumer(
     clock: Clock,
-) : OutputConsumer(clock) {
+) : SimpleOutputConsumer(clock) {
 
     private val records = mutableListOf<AirbyteRecordMessage>()
     private val states = mutableListOf<AirbyteStateMessage>()

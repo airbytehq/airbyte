@@ -3,7 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -39,7 +39,7 @@ class FeedReader(
 
     private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory)
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory, root.OutputFormat)
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -316,21 +316,33 @@ class FeedReader(
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
     var acquiredSocket: SocketResource.AcquiredSocket? = null
-    private fun maybeCheckpoint(finalCheckpoint: Boolean) {
 
+    private fun maybeCheckpoint(finalCheckpoint: Boolean) {
+        var messageProcessor: OutputMessageRouter? = null
         try {
             val stateMessages: MutableList<AirbyteStateMessage> = root.stateManager.checkpoint().toMutableList()
             val messagesQueue = ArrayDeque<AirbyteStateMessage>(stateMessages)
-            var boostedOutputConsumer: BoostedOutputConsumer? = null
+//            var boostedOutputConsumer: BoostedOutputConsumer? = null
+
             var pendingMessageQueue = ArrayDeque<Any>()
             if (finalCheckpoint) {
-                val acqs = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
+                val acqs: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
                 acquiredSocket =
                     acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
                         ?: return // No output socket available, skip checkpoint.
 
-                boostedOutputConsumer =
-                    boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
+                val r = (acqs.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
+
+                messageProcessor = OutputMessageRouter(
+                    when (feedBootstrap.outputFormat){
+                        "JSONL" -> OutputMessageRouter.RecordsOutputChannel.JSON_SOCKET
+                        "PROTOBUF" -> OutputMessageRouter.RecordsOutputChannel.PROTOBUF_SOCKET
+                        else -> OutputMessageRouter.RecordsOutputChannel.STDIO_OUTPUT
+                    },feedBootstrap.outputConsumer,emptyMap(),feedBootstrap as StreamFeedBootstrap,
+                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r),
+                )
+//                boostedOutputConsumer =
+//                    boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
 
                 var s = PartitionReader.pendingStates.poll()
                 while (s != null) {
@@ -340,7 +352,7 @@ class FeedReader(
                 }
             }
 
-            if (finalCheckpoint && boostedOutputConsumer == null) {
+            if (finalCheckpoint && messageProcessor == null) {
                 log.warn { "No boosted output consumer available for final checkpoint." }
                 return
             }
@@ -354,8 +366,13 @@ class FeedReader(
             while (messagesQueue.isNotEmpty()) {
                 val stateMessage = messagesQueue.removeFirst()
                 when (finalCheckpoint) {
-                    true -> boostedOutputConsumer?.accept(stateMessage)
-                    false -> PartitionReader.pendingStates.add(stateMessage)
+                    true -> {
+                        messageProcessor?.acceptNonRecord(stateMessage, false)
+//                        boostedOutputConsumer?.accept(stateMessage)
+                    }
+                    false -> {
+                        PartitionReader.pendingStates.add(stateMessage)
+                    }
                 }
                 root.outputConsumer.accept(stateMessage)
             }
@@ -365,13 +382,27 @@ class FeedReader(
                 when (message) {
                     is AirbyteStateMessage -> {
                         when (finalCheckpoint) {
-                            true -> boostedOutputConsumer?.accept(message)
+                            true -> {
+//                                val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+//                                    Clock.systemUTC(), 256)
+//                                o.accept(message)
+//                                boostedOutputConsumer?.accept(message)
+                                messageProcessor?.acceptNonRecord(message, false)
+                            }
                             false -> PartitionReader.pendingStates.add(message)
                         }
                     }
                     is AirbyteStreamStatusTraceMessage -> {
                         when (finalCheckpoint) {
-                            true -> boostedOutputConsumer?.accept(message)
+                            true -> {
+/*
+                                val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                                    Clock.systemUTC(), 256)
+                                o.accept(message)
+*/
+//                                boostedOutputConsumer?.accept(message)
+                                messageProcessor?.acceptNonRecord(message, false)
+                            }
                             false -> PartitionReader.pendingStates.add(message)
                         }
                     }
@@ -383,6 +414,7 @@ class FeedReader(
             }
 
         } finally {
+            messageProcessor?.close()
             acquiredSocket?.close()
         }
 

@@ -4,17 +4,22 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.SocketWrapper
+import io.airbyte.cdk.output.sockets.toJson
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
+import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -22,6 +27,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
 
+    lateinit var messageProcessor: OutputMessageRouter
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun generatePartitionId(length: Int): String =
@@ -36,13 +42,13 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val boostedOutputConsumerFactory: BoostedOutputConsumerFactory? =
         streamState.streamFeedBootstrap.boostedOutputConsumerFactory
 
-    val streamRecordConsumer: StreamRecordConsumer by lazy {
+    /*val streamRecordConsumer: StreamRecordConsumer by lazy {
         initStreamRecordConsumer()
-    }
+    }*/
     /** The [AcquiredResources] acquired for this [JdbcPartitionReader]. */
 
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
-    protected var boostedOutputConsumer: BoostedOutputConsumer? = null
+    protected var socketJsonOutputConsumer: SocketJsonOutputConsumer? = null
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -61,8 +67,21 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
 
+        @Suppress("UNCHECKED_CAST")
+        val r = (this.acquiredResources.get().get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as AcquiredResourceHolder<SocketResource.AcquiredSocket>)
+            .resource // this is the socket resource we need for output
+        messageProcessor = OutputMessageRouter(
+            when (streamState.streamFeedBootstrap.outputFormat) {
+                "JSONL" -> OutputMessageRouter.RecordsOutputChannel.JSON_SOCKET
+                "PROTOBUF" -> OutputMessageRouter.RecordsOutputChannel.PROTOBUF_SOCKET
+                else -> OutputMessageRouter.RecordsOutputChannel.STDIO_OUTPUT
+            },streamState.streamFeedBootstrap.outputConsumer,  mapOf("partition_id" to partitionId),
+             streamState.streamFeedBootstrap,
+             mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r))
+/*
         // touch it to initialize
         streamRecordConsumer
+*/
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -81,17 +100,26 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                 @Suppress("UNCHECKED_CAST")
                 val socketWrapper: SocketWrapper =
                     (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
-                boostedOutputConsumer = boostedOutputConsumerFactory.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
-                boostedOutputConsumer
+                socketJsonOutputConsumer = boostedOutputConsumerFactory.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
+                socketJsonOutputConsumer
             }
         })
 
     fun out(row: SelectQuerier.ResultRow) {
-        streamRecordConsumer.accept(row.data, row.changes)
+        /*val s = streamState.streamFeedBootstrap.protoStreamRecordConsumer(ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+            Clock.systemUTC(), 256))
+            s.accept(row.data, row.changes)*/
+
+//        streamRecordConsumer.accept(row.data, row.changes)
+//        messageProcessor.acceptRecord(row.data)
+        messageProcessor.recordAcceptor(row.data)
     }
 
     override fun releaseResources() {
-        streamRecordConsumer.close() // TEMP: swith to .use {}
+//        streamRecordConsumer.close() // TEMP: swith to .use {}
+        if (::messageProcessor.isInitialized) {
+            messageProcessor.close()
+        }
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
         partitionId = generatePartitionId(4)
     }
@@ -110,8 +138,24 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
         while (s != null) {
             when (s) {
-                is AirbyteStateMessage -> boostedOutputConsumer?.accept(s)
-                is AirbyteStreamStatusTraceMessage -> boostedOutputConsumer?.accept(s)
+                is AirbyteStateMessage -> {
+/*
+                    val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                        Clock.systemUTC(), 256)
+                    o.accept(s)
+*/
+//                    boostedOutputConsumer?.accept(s)
+                    messageProcessor.acceptNonRecord(s, needAlsoSimpleOutout = false)
+                }
+                is AirbyteStreamStatusTraceMessage -> {
+/*
+                    val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
+                        Clock.systemUTC(), 256)
+                    o.accept(s)
+*/
+//                    boostedOutputConsumer?.accept(s)
+                    messageProcessor.acceptNonRecord(s, needAlsoSimpleOutout = false)
+                }
             }
             s = PartitionReader.pendingStates.poll()
         }
@@ -123,11 +167,17 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
-
+    private val log = KotlinLogging.logger {}
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
+    lateinit var dur: Instant
+
     override suspend fun run() {
+        synchronized(this) {
+            if (::dur.isInitialized.not()) { dur = Instant.now() }
+        }
+
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
@@ -147,10 +197,14 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
+//                    numRecords.incrementAndGet()
+                    if (numRecords.incrementAndGet() % 500_000 == 0L) {
+                        log.info { "*** Read $numRecords records from partition $partitionId" }
+                    }
                 }
             }
         runComplete.set(true)
+        log.info { "*** --------------- Partition time: ${Duration.between(dur, Instant.now()).toKotlinDuration()} ---------------" }
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
@@ -176,6 +230,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
+
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
@@ -195,14 +250,13 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    lastRecord.set(row.data)
+                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()
                     }
                 }
             }
-
 
         runComplete.set(true)
     }
