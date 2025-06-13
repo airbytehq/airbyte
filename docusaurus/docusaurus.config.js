@@ -12,6 +12,7 @@ const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
+const addButtonToTitle = require("./src/remark/addButtonToTitle");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -84,6 +85,7 @@ const config = {
             enterpriseDocsHeaderInformation,
             productInformation,
             docMetaTags,
+            addButtonToTitle,
           ],
         },
         blog: false,
@@ -102,11 +104,12 @@ const config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl: ({version, docPath}) => {
-          if (version === 'current') { // For the "next" (unreleased) version
+        editUrl: ({ version, docPath }) => {
+          if (version === "current") {
+            // For the "next" (unreleased) version
             return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
-          } 
-          else { // For released versions
+          } else {
+            // For released versions
             return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
           }
         },
@@ -115,6 +118,7 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
@@ -132,6 +136,7 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
@@ -149,6 +154,7 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
@@ -171,6 +177,19 @@ const config = {
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        siteTitle: "docs.airbyte.com llms.txt",
+        siteDescription:
+          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+        depth: 3,
+        content: {
+          includeBlog: true,
+          includePages: true,
+        },
+      },
+    ],
     () => ({
       name: "Yaml loader",
       configureWebpack() {

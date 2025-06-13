@@ -97,6 +97,7 @@
     "@markprompt/css": "^0.34.0",
     "@markprompt/react": "^0.62.1",
     "@mdx-js/react": "^3.0.0",
+    "@signalwire/docusaurus-plugin-llms-txt": "^1.0.1",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",
     "classnames": "^2.3.2",
