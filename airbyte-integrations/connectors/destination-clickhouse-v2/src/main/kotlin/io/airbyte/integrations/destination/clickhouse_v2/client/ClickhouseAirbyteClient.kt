@@ -151,7 +151,6 @@ class ClickhouseAirbyteClient(
         val modified = mutableMapOf<String, String>()
         val deleted = mutableSetOf<String>()
         val mutableCatalogColumns: MutableMap<String, String> = catalogColumns.toMutableMap()
-        println(mutableCatalogColumns)
 
         tableColumns.forEach { clickhouseColumn ->
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
@@ -210,7 +209,6 @@ class ClickhouseAirbyteClient(
     }
 
     private suspend fun execute(query: String): CommandResponse {
-        println("Executing query: $query")
         return client.execute(query).await()
     }
 
