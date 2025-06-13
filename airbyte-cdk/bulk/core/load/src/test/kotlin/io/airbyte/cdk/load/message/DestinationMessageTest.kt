@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -730,5 +731,46 @@ class DestinationMessageTest {
                 .build()
         val message = factory.fromAirbyteProtobufMessage(heartbeatMessage, 0L)
         Assertions.assertTrue(message is ProbeMessage)
+    }
+
+    @Test
+    fun `message factory does not throw on global state message with stream state belonging to unrecognized stream`() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(blob1)
+                                .withStreamStates(
+                                    listOf(
+                                        AirbyteStreamState()
+                                            .withStreamDescriptor(
+                                                StreamDescriptor()
+                                                    .withNamespace("potato")
+                                                    .withName("tomato")
+                                            )
+                                            .withStreamState(blob2),
+                                    ),
+                                ),
+                        )
+                        // Note: only source stats, no destination stats
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty("id", 1234)
+                )
+
+        val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
+
+        assertEquals(
+            inputMessage
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .serializeToString(),
+            parsedMessage
+                .withDestinationStats(CheckpointMessage.Stats(3))
+                .asProtocolMessage()
+                .serializeToString()
+        )
     }
 }
