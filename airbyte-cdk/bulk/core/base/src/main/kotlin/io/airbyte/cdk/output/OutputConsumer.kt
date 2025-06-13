@@ -17,7 +17,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.airbyte.protocol.models.v0.DestinationCatalog
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
