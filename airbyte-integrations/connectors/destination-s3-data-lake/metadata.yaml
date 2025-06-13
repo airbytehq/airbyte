@@ -36,8 +36,11 @@ data:
   name: S3 Data Lake
   registryOverrides:
     cloud:
+      # Suspect a bug in state message namespace mapping, pinning back to last known-good version
+      dockerImageTag: 0.3.28
       enabled: true
     oss:
+      dockerImageTag: 0.3.28
       enabled: true
   releaseStage: alpha
   supportLevel: certified
