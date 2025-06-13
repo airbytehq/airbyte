@@ -143,15 +143,15 @@ definitions:
   # Full-refresh streams
   account_attributes_stream:
     $ref: "#/definitions/base_stream"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/account_attributes"
     $parameters:
       name: "account_attributes"
       path: "routing/attributes"
       data_path: "attributes"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_attributes"
 
   attribute_definitions_stream:
     $ref: "#/definitions/base_stream"
@@ -1238,10 +1238,10 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 40
+
 schemas:
   article_attachments:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Article Attachments
     type:
       - "null"
       - object
@@ -1318,6 +1318,7 @@ schemas:
           - string
         format: date-time
   categories:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -1380,6 +1381,9 @@ schemas:
           - string
         format: date-time
   sla_policies:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - object
     properties:
       id:
         description: The unique identifier for the SLA policy.
@@ -1510,10 +1514,11 @@ schemas:
           - "null"
           - string
         format: date-time
-    type:
-      - object
   satisfaction_ratings:
-    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
     properties:
       id:
         description: The unique identifier of the satisfaction rating entry.
@@ -1583,7 +1588,9 @@ schemas:
           - string
   automations:
     $schema: https://json-schema.org/draft-07/schema#
-    type: object
+    type:
+      - "null"
+      - object
     properties:
       actions:
         type: array
@@ -1689,7 +1696,6 @@ schemas:
           - "null"
   post_comments:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Post Comments
     type:
       - "null"
       - object
@@ -1767,6 +1773,7 @@ schemas:
           - "null"
           - integer
   ticket_audits:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -2719,7 +2726,6 @@ schemas:
           additionalProperties: true
   ticket_comments:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Ticket Comments
     type:
       - "null"
       - object
@@ -3212,6 +3218,10 @@ schemas:
           - string
           - "null"
   ticket_metrics:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
     properties:
       metric:
         description: Ticket metrics data
@@ -3482,10 +3492,8 @@ schemas:
             type:
               - "null"
               - integer
-    type:
-      - "null"
-      - object
   account_attributes:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -3521,7 +3529,6 @@ schemas:
           - string
   deleted_tickets:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Deleted Tickets
     type:
       - "null"
       - object
@@ -3569,6 +3576,7 @@ schemas:
           - "null"
           - string
   organizations:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -3662,6 +3670,10 @@ schemas:
           - string
         format: date-time
   group_memberships:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
     properties:
       default:
         description: Flag indicating if this group membership is the default one.
@@ -3702,12 +3714,8 @@ schemas:
         type:
           - "null"
           - integer
-    type:
-      - "null"
-      - object
   organization_fields:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Ticket Activities
     type:
       - "null"
       - object
@@ -3812,7 +3820,6 @@ schemas:
           - string
   users:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Users
     type:
       - "null"
       - object
@@ -4134,6 +4141,10 @@ schemas:
           - "null"
           - string
   organization_memberships:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
     properties:
       default:
         description:
@@ -4184,12 +4195,8 @@ schemas:
         type:
           - "null"
           - boolean
-    type:
-      - "null"
-      - object
   user_identities:
     $schema: https://json-schema.org/draft-07/schema#
-    title: User Identities
     type:
       - "null"
       - object
@@ -4237,6 +4244,10 @@ schemas:
           - string
         format: date-time
   ticket_metric_events:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
     properties:
       metric:
         description: Type of metric being tracked for the ticket
@@ -4268,12 +4279,8 @@ schemas:
         type:
           - "null"
           - string
-    type:
-      - "null"
-      - object
   ticket_forms:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Ticket Forms
     type:
       - "null"
       - object
@@ -4383,7 +4390,6 @@ schemas:
             - integer
   attribute_definitions:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Attribute Definitions
     type:
       - "null"
       - object
@@ -4499,7 +4505,6 @@ schemas:
         additionalProperties: true
   macros:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Macros
     type:
       - "null"
       - object
@@ -4605,7 +4610,6 @@ schemas:
           - array
   ticket_fields:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Ticket Fields
     type:
       - "null"
       - object
@@ -4784,6 +4788,7 @@ schemas:
           - "null"
           - integer
   schedules:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -4836,6 +4841,7 @@ schemas:
           - string
         format: date-time
   sections:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -4918,7 +4924,6 @@ schemas:
         format: date-time
   tickets:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Tickets
     type:
       - "null"
       - object
@@ -5322,6 +5327,7 @@ schemas:
           - "null"
           - boolean
   groups:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -5375,7 +5381,6 @@ schemas:
           - boolean
   posts:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Posts
     type:
       - "null"
       - object
@@ -5505,8 +5510,9 @@ schemas:
         format: date-time
   user_fields:
     $schema: https://json-schema.org/draft-07/schema#
-    title: User Fields
-    type: object
+    type:
+      - "null"
+      - object
     properties:
       active:
         description: Flag indicating if the user field is currently active or not.
@@ -5589,7 +5595,6 @@ schemas:
           - string
   votes:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Votes
     type:
       - "null"
       - object
@@ -5637,6 +5642,7 @@ schemas:
           - "null"
           - integer
   brands:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -5725,7 +5731,6 @@ schemas:
         format: date-time
   articles:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Articles
     type:
       - "null"
       - object
@@ -5863,6 +5868,7 @@ schemas:
           - "null"
           - integer
   tags:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -5879,7 +5885,6 @@ schemas:
           - string
   audit_logs:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Audit Logs
     type:
       - "null"
       - object
@@ -5946,6 +5951,10 @@ schemas:
           - "null"
           - string
   ticket_skips:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
     properties:
       created_at:
         description: The timestamp when the ticket skip entry was created
@@ -6385,12 +6394,8 @@ schemas:
             type:
               - "null"
               - boolean
-    type:
-      - "null"
-      - object
   ticket_activities:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Ticket Activities
     type:
       - "null"
       - object
@@ -6478,6 +6483,7 @@ schemas:
           The type of activity. Can be "tickets.assignment", "tickets.comment",
           or "tickets.priority_increase"
   custom_roles:
+    $schema: https://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
@@ -6809,7 +6815,6 @@ schemas:
           - boolean
   article_comments:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Post Comments
     type:
       - "null"
       - object
@@ -6891,7 +6896,6 @@ schemas:
           - integer
   topics:
     $schema: https://json-schema.org/draft-07/schema#
-    title: Topics
     type:
       - "null"
       - object
