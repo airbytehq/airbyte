@@ -161,7 +161,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_zendesk_support.components.ZendeskSupportAttributeDefinitionsExtractor
+          class_name: source_declarative_manifest.components.ZendeskSupportAttributeDefinitionsExtractor
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -884,7 +884,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_zendesk_support.components.ZendeskSupportExtractorEvents
+          class_name: source_declarative_manifest.components.ZendeskSupportExtractorEvents
           field_path: ["ticket_events", "*", "child_events", "*"]
       paginator:
         $ref: "#/definitions/end_of_stream_paginator"
