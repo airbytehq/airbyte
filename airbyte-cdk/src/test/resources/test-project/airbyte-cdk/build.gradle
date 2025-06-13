@@ -1,0 +1,36 @@
+apply plugin: 'base'
+
+tasks.named("check") {
+    description = "Run check on *all* CDK modules and connectors that depend on local CDK"
+    // for each subproject under :airbyte-cdk, wire up its :<path>:check
+    dependsOn subprojects.collect { "${it.path}:check" }
+
+    // Find all connector projects that depend on local CDK
+    def connectorsWithLocalCdk = []
+    rootProject.project(':airbyte-integrations:connectors').subprojects.each { connectorProject ->
+        // Check if the project has the airbyteBulkConnector ext property with cdk = 'local'
+        try {
+            if (connectorProject.ext.has('airbyteBulkConnector') && 
+                connectorProject.ext.airbyteBulkConnector instanceof Map && 
+                connectorProject.ext.airbyteBulkConnector.cdk == 'local') {
+                connectorsWithLocalCdk << connectorProject
+            }
+        } catch (Exception e) {
+            // Skip if ext property not found or not accessible
+        }
+
+        // Check if the project has the airbyteJavaConnector ext property with useLocalCdk = true
+        try {
+            if (connectorProject.ext.has('airbyteJavaConnector') && 
+                connectorProject.ext.airbyteJavaConnector instanceof Map && 
+                connectorProject.ext.airbyteJavaConnector.useLocalCdk == true) {
+                connectorsWithLocalCdk << connectorProject
+            }
+        } catch (Exception e) {
+            // Skip if ext property not found or not accessible
+        }
+    }
+
+    // Add check tasks for connectors with local CDK
+    dependsOn connectorsWithLocalCdk.collect { "${it.path}:check" }
+}

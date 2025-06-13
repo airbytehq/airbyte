@@ -1,0 +1,12 @@
+plugins {
+    id 'base'
+}
+
+// Simulate the airbyte-java-connector plugin
+ext.airbyteJavaConnector = [useLocalCdk: false]
+
+tasks.named('check') {
+    doLast {
+        println "Java non-local connector check task executed"
+    }
+}
