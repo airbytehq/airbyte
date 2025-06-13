@@ -26,7 +26,7 @@ sealed interface ObjectStorageConfig {
     val type: String
 }
 
-class DisabledObjectStorageConfig: ObjectStorageConfig {
+class DisabledObjectStorageConfig : ObjectStorageConfig {
     override val type: String = "None"
 }
 
@@ -37,7 +37,7 @@ class S3ObjectStorageConfig<T : OutputStream>(
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
-    ) :
+) :
     ObjectStorageConfig,
     AWSAccessKeyConfigurationProvider,
     AWSArnRoleConfigurationProvider,
@@ -48,21 +48,24 @@ class S3ObjectStorageConfig<T : OutputStream>(
     override val type: String = "S3"
 }
 
-fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig = when (this) {
-    is DisabledObjectStorageSpec -> DisabledObjectStorageConfig()
-    is S3ObjectStorageSpec -> S3ObjectStorageConfig(
-        awsAccessKeyConfiguration = toAWSAccessKeyConfiguration(),
-        awsArnRoleConfiguration = toAWSArnRoleConfiguration(),
-        s3BucketConfiguration = toS3BucketConfiguration(),
-        objectStorageCompressionConfiguration = toCompressionConfiguration(),
-        objectStorageFormatConfiguration = toObjectStorageFormatConfiguration(),
-        objectStoragePathConfiguration = ObjectStoragePathConfiguration(
-            prefix = bucketPath,
-            pathPattern = normalizePathFormat(pathFormat),
-            fileNamePattern = fileNameFormat,
-        )
-    )
-}
+fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig =
+    when (this) {
+        is DisabledObjectStorageSpec -> DisabledObjectStorageConfig()
+        is S3ObjectStorageSpec ->
+            S3ObjectStorageConfig(
+                awsAccessKeyConfiguration = toAWSAccessKeyConfiguration(),
+                awsArnRoleConfiguration = toAWSArnRoleConfiguration(),
+                s3BucketConfiguration = toS3BucketConfiguration(),
+                objectStorageCompressionConfiguration = toCompressionConfiguration(),
+                objectStorageFormatConfiguration = toObjectStorageFormatConfiguration(),
+                objectStoragePathConfiguration =
+                    ObjectStoragePathConfiguration(
+                        prefix = bucketPath,
+                        pathPattern = normalizePathFormat(pathFormat),
+                        fileNamePattern = fileNameFormat,
+                    )
+            )
+    }
 
 /**
  * Normalize the path format to match how the internals of the object storage toolkit work.

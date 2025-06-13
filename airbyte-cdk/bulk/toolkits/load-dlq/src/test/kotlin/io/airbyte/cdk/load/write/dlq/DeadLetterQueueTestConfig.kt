@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.write.dlq
 
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageSpec
@@ -33,7 +36,10 @@ class DeadLetterQueueTestLoader : DlqLoader<DeadLetterQueueTestAggregator> {
         TODO("Not yet implemented")
     }
 
-    override fun accept(record: DestinationRecordRaw, state: DeadLetterQueueTestAggregator): DlqLoader.DlqLoadResult {
+    override fun accept(
+        record: DestinationRecordRaw,
+        state: DeadLetterQueueTestAggregator
+    ): DlqLoader.DlqLoadResult {
         TODO("Not yet implemented")
     }
 }
@@ -45,8 +51,11 @@ class DeadLetterQueueTestSpecification : ConfigurationSpecification() {
 
 @Singleton
 class DeadLetterQueueTestConfigurationFactory :
-    DestinationConfigurationFactory<DeadLetterQueueTestSpecification, DeadLetterQueueTestConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: DeadLetterQueueTestSpecification): DeadLetterQueueTestConfiguration =
+    DestinationConfigurationFactory<
+        DeadLetterQueueTestSpecification, DeadLetterQueueTestConfiguration> {
+    override fun makeWithoutExceptionHandling(
+        pojo: DeadLetterQueueTestSpecification
+    ): DeadLetterQueueTestConfiguration =
         DeadLetterQueueTestConfiguration(
             objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig(),
         )
@@ -54,8 +63,7 @@ class DeadLetterQueueTestConfigurationFactory :
 
 data class DeadLetterQueueTestConfiguration(
     override val objectStorageConfig: ObjectStorageConfig,
-) : DestinationConfiguration(),
-    ObjectStorageConfigProvider
+) : DestinationConfiguration(), ObjectStorageConfigProvider
 
 @Singleton
 fun loadPipeline(

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.write.dlq
 
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
@@ -12,7 +16,8 @@ import jakarta.inject.Named
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-private const val TEST_CONFIG = """
+private const val TEST_CONFIG =
+    """
     {
         "objectStorageConfig":{
             "storage_type":"None"
@@ -28,17 +33,15 @@ class NoDeadLetterQueueMicronautTest {
 
     // Sets the test to an object loader test
     @MockBean(ObjectLoader::class)
-    val objectloader =  object : ObjectLoader {
-        override val inputPartitions = 1
-        override val numPartWorkers = 1
-    }
+    val objectloader =
+        object : ObjectLoader {
+            override val inputPartitions = 1
+            override val numPartWorkers = 1
+        }
 
-    @Inject
-    lateinit var objectStorageConfig: ObjectStorageConfig
+    @Inject lateinit var objectStorageConfig: ObjectStorageConfig
 
-    @Named("dlqPipelineSteps")
-    @Inject
-    lateinit var pipelineSteps: List<LoadPipelineStep>
+    @Named("dlqPipelineSteps") @Inject lateinit var pipelineSteps: List<LoadPipelineStep>
 
     @Test
     fun `verify the configuration is the DisabledObjectStorageConfig`() {
