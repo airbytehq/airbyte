@@ -62,7 +62,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             streamState.streamFeedBootstrap.outputConsumer,
             mapOf("partition_id" to partitionId),
              streamState.streamFeedBootstrap,
-            acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap())
+            acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap()
+        )
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -74,7 +75,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
 //        streamRecordConsumer.accept(row.data, row.changes)
 //        messageProcessor.acceptRecord(row.data)
-        outputMessageRouter.recordAcceptor(row.data)
+        outputMessageRouter.acceptRecord(row.data, stream.id) // TEMP
+//        outputMessageRouter.recordAcceptor(row.data)
     }
 
     override fun releaseResources() {

@@ -11,6 +11,7 @@ import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.JSONL
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.PROTOBUF
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
+import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Resource
@@ -48,7 +49,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     val startingOffset: DebeziumOffset,
     val startingSchemaHistory: DebeziumSchemaHistory?,
     val isInputStateSynthetic: Boolean,
-    val recordsChannelType: OutputChannelType,
+    val feedBootstrap: GlobalFeedBootstrap
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
@@ -87,7 +88,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         }
 
         val resourceType: List<ResourceType> =
-            when (recordsChannelType) {
+            when (feedBootstrap.outputChannelType) {
                 JSONL,
                 PROTOBUF -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
@@ -98,10 +99,22 @@ class CdcPartitionReader<T : Comparable<T>>(
 
         acquiredResources.set(resources)
         this.stateFilesAccessor = DebeziumStateFilesAccessor()
+
+        outputMessageRouter = OutputMessageRouter(
+            feedBootstrap.outputChannelType,
+            feedBootstrap.outputConsumer,
+            emptyMap(), // TEMP
+            feedBootstrap,
+            acquiredResources.get().filter { it.value.resource != null }.map { it.key to it.value.resource!! }.toMap()
+        )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override fun releaseResources() {
+        if (::outputMessageRouter.isInitialized) {
+            outputMessageRouter.close()
+        }
+
         stateFilesAccessor.close()
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }

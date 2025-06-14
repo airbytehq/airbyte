@@ -337,7 +337,7 @@ class FeedReader(
                 messageProcessor = OutputMessageRouter(
                     feedBootstrap.outputChannelType,
                     feedBootstrap.outputConsumer,
-                    emptyMap(),feedBootstrap as StreamFeedBootstrap,
+                    emptyMap(),feedBootstrap,
                     mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r),
                 )
 //                boostedOutputConsumer =

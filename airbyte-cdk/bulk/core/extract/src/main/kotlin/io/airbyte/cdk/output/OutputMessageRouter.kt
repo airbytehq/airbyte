@@ -1,5 +1,6 @@
 package io.airbyte.cdk.output
 
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
@@ -20,7 +21,7 @@ class OutputMessageRouter(
     private val recordsChannelType: OutputChannelType,
     private val simpleOutputConsumer: SimpleOutputConsumer,
     private val additionalProperties: Map<String, String>,
-    private val streamFeedBootstrap: StreamFeedBootstrap,
+    private val feedBootstrap: FeedBootstrap<*>,
     private val acquiredResources: Map<ResourceType, Resource.Acquired>, )
     : AutoCloseable {
 
@@ -31,11 +32,11 @@ class OutputMessageRouter(
     }
 
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
-    private lateinit var efficientStreamRecordConsumer: StreamRecordConsumer
+    private lateinit var efficientStreamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
-    private lateinit var protoRecordOutputConsumer: FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer
-    private lateinit var simpleEfficientStreamConsumer: StreamRecordConsumer
-    lateinit var recordAcceptor: (InternalRow) -> Unit
+    private lateinit var protoRecordOutputConsumers: Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
+    private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
+//    lateinit var recordAcceptor: (InternalRow) -> Unit
 
     init {
 
@@ -47,10 +48,10 @@ class OutputMessageRouter(
                     8192,
                     additionalProperties
                 )
-                efficientStreamRecordConsumer = streamFeedBootstrap.streamRecordConsumer(socketJsonOutputConsumer)
-                recordAcceptor = { record ->
+                efficientStreamRecordConsumers = feedBootstrap.streamRecordConsumers(socketJsonOutputConsumer)
+                /*recordAcceptor = { record ->
                     efficientStreamRecordConsumer.accept(record, emptyMap())
-                }
+                }*/
             }
             OutputChannelType.PROTOBUF -> {
                 protoOutputConsumer = SocketProtobufOutputConsumer(
@@ -58,34 +59,34 @@ class OutputMessageRouter(
                     Clock.systemUTC(),
                     8192
                 )
-                protoRecordOutputConsumer = streamFeedBootstrap.protoStreamRecordConsumer(protoOutputConsumer, additionalProperties["partition_id"])
-                recordAcceptor = { record ->
+                protoRecordOutputConsumers = feedBootstrap.streamProtoRecordConsumers(protoOutputConsumer, additionalProperties["partition_id"])
+                /*recordAcceptor = { record ->
                     protoRecordOutputConsumer.accept(record, emptyMap())
-                }
+                }*/
             }
             OutputChannelType.STDIO -> {
-                simpleEfficientStreamConsumer = streamFeedBootstrap.streamRecordConsumer(null)
+                simpleEfficientStreamConsumers = feedBootstrap.streamRecordConsumers()
             }
             }
         }
 
     override fun close() {
-        if (::simpleEfficientStreamConsumer.isInitialized) {
-            simpleEfficientStreamConsumer.close()
+        if (::simpleEfficientStreamConsumers.isInitialized) {
+            simpleEfficientStreamConsumers.forEach { it.value.close() }
         }
-        if (::protoRecordOutputConsumer.isInitialized) {
-            protoRecordOutputConsumer.close()
+        if (::protoRecordOutputConsumers.isInitialized) {
+            protoRecordOutputConsumers.forEach { it.value.close() }
         }
-        if (::efficientStreamRecordConsumer.isInitialized) {
-            efficientStreamRecordConsumer.close()
+        if (::efficientStreamRecordConsumers.isInitialized) {
+            efficientStreamRecordConsumers.forEach { it.value.close() }
         }
     }
 
-    fun acceptRecord(record: InternalRow) {
+    fun acceptRecord(record: InternalRow, streamIdentifier: StreamIdentifier) {
         when (recordsChannelType) {
-            OutputChannelType.JSONL -> efficientStreamRecordConsumer.accept(record, emptyMap())
-            OutputChannelType.PROTOBUF -> protoRecordOutputConsumer.accept(record, emptyMap())
-            OutputChannelType.STDIO -> simpleEfficientStreamConsumer.accept(record, emptyMap())
+            OutputChannelType.JSONL -> efficientStreamRecordConsumers[streamIdentifier]?.accept(record, emptyMap()) // TEMP
+            OutputChannelType.PROTOBUF -> protoRecordOutputConsumers[streamIdentifier]?.accept(record, emptyMap())
+            OutputChannelType.STDIO -> simpleEfficientStreamConsumers[streamIdentifier]?.accept(record, emptyMap())
         }
 
     }

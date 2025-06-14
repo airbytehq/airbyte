@@ -117,7 +117,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 startingOffset,
                 startingSchemaHistory,
                 warmStartState !is ValidDebeziumWarmStartState,
-                feedBootstrap.outputChannelType
+                feedBootstrap
             )
         val lowerBound: T = creatorOps.position(startingOffset)
         val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)

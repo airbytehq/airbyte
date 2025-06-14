@@ -78,6 +78,10 @@ sealed class FeedBootstrap<T : Feed>(
             stream.id to EfficientStreamRecordConsumer(stream, socketJsonOutputConsumer)
         }
 
+    fun streamProtoRecordConsumers(socketProtoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
+        feed.streams.associate { stream: Stream ->
+            stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
+        }
     /**
      * Efficient implementation of [StreamRecordConsumer].
      *
