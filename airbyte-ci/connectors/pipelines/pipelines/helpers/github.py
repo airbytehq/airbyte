@@ -19,6 +19,7 @@ from pipelines import main_logger
 from pipelines.consts import CIContext
 from pipelines.models.secrets import Secret
 
+
 if TYPE_CHECKING:
     from logging import Logger
     from typing import Iterable, List, Optional
@@ -225,7 +226,7 @@ def create_or_update_github_pull_request(
 
     if github_auto_merge:
         logger.info("Enabling (native) GitHub auto-merge for the pull request")
-        pull_request.enable_auto_merge("SQUASH")
+        pull_request.enable_automerge("SQUASH")
 
     return pull_request
 
