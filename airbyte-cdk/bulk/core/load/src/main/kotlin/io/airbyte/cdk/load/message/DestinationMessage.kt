@@ -120,6 +120,9 @@ data class Meta(
         const val CHECKPOINT_ID_NAME: String = "partition_id"
         const val CHECKPOINT_INDEX_NAME: String = "id"
 
+        const val AIRBYTE_META_SYNC_ID = "sync_id"
+        const val AIRBYTE_META_CHANGES = "changes"
+
         const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
         const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
         const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
@@ -289,8 +292,8 @@ data class EnrichedDestinationRecordAirbyteValue(
             EnrichedAirbyteValue(
                 ObjectValue(
                     linkedMapOf(
-                        "sync_id" to IntegerValue(stream.syncId),
-                        "changes" to
+                        Meta.AIRBYTE_META_SYNC_ID to IntegerValue(stream.syncId),
+                        Meta.AIRBYTE_META_CHANGES to
                             ArrayValue(
                                 (sourceMeta.changes.toAirbyteValues()) +
                                     declaredFields
