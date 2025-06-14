@@ -23,8 +23,6 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -92,32 +90,22 @@ class DefaultObjectStorageFormattingWriterFactory(
 }
 
 class JsonFormattingWriter(
-    private val stream: DestinationStream,
-    private val outputStream: OutputStream,
-    private val rootLevelFlattening: Boolean,
+    stream: DestinationStream,
+    outputStream: OutputStream,
+    rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    private val writer: FastJsonFormattingWriter =
+        FastJsonFormattingWriter(stream, outputStream, rootLevelFlattening)
 
     override fun accept(record: DestinationRecordRaw) {
-        val data =
-            record
-                .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(
-                    stream = stream,
-                    flatten = rootLevelFlattening,
-                    airbyteRawId = record.airbyteRawId,
-                )
-                .toJson()
-                .serializeToString()
-        outputStream.write(data)
-        outputStream.write("\n")
+        writer.accept(record)
     }
 
     override fun flush() {
-        outputStream.flush()
+        writer.flush()
     }
-
     override fun close() {
-        outputStream.close()
+        writer.close()
     }
 }
 
