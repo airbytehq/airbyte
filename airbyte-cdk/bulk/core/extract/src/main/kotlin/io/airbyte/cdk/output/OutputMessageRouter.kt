@@ -70,24 +70,15 @@ class OutputMessageRouter(
         }
 
     override fun close() {
-/*
-        if (::boostedOutputConsumer.isInitialized) {
-            boostedOutputConsumer.close()
-        }
-    if (::protoOutputConsumer.isInitialized) {
-                protoOutputConsumer.close()
-    }
-*/
         if (::simpleEfficientStreamConsumer.isInitialized) {
             simpleEfficientStreamConsumer.close()
         }
         if (::protoRecordOutputConsumer.isInitialized) {
             protoRecordOutputConsumer.close()
         }
-    if (::efficientStreamRecordConsumer.isInitialized) {
-                efficientStreamRecordConsumer.close()
-            }
-
+        if (::efficientStreamRecordConsumer.isInitialized) {
+            efficientStreamRecordConsumer.close()
+        }
     }
 
     fun acceptRecord(record: InternalRow) {

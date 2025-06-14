@@ -37,14 +37,13 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val sharedState: JdbcSharedState = streamState.sharedState
     val selectQuerier: SelectQuerier = sharedState.selectQuerier
 
-    /** The [AcquiredResources] acquired for this [JdbcPartitionReader]. */
+    /** The [AcquiredResource] acquired for this [JdbcPartitionReader]. */
 
-    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
+    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
-    fun interface AcquiredResources : AutoCloseable
-    interface AcquiredResourceHolder<T>: AcquiredResources {
-        val resource: T
+    interface AcquiredResource: AutoCloseable {
+        val resource: Resource.Acquired?
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
@@ -53,24 +52,17 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             else -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
 
         }
-        val acquiredResources: Map<ResourceType, AcquiredResources> =
+        val acquiredResources: Map<ResourceType, AcquiredResource> =
             partition.tryAcquireResourcesForReader(resourceTypes)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
 
-        @Suppress("UNCHECKED_CAST")
-        val r = (this.acquiredResources.get().get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as AcquiredResourceHolder<SocketResource.AcquiredSocket>)
-            .resource // this is the socket resource we need for output
         outputMessageRouter = OutputMessageRouter(
             streamState.streamFeedBootstrap.outputChannelType,
             streamState.streamFeedBootstrap.outputConsumer,
             mapOf("partition_id" to partitionId),
              streamState.streamFeedBootstrap,
-             mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r))
-/*
-        // touch it to initialize
-        streamRecordConsumer
-*/
+            this.acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap())
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }

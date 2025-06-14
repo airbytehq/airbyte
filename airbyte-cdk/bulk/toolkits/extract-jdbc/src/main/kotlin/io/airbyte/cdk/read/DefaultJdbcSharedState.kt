@@ -56,16 +56,15 @@ class DefaultJdbcSharedState(
         return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
-    override fun tryAcquireResourcesForReader(resourcesTypes: List<ResourceType>): Map<ResourceType, JdbcPartitionReader.AcquiredResources>? {
+    override fun tryAcquireResourcesForReader(resourcesTypes: List<ResourceType>): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? {
         val acquiredResources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesTypes)
-
-        return acquiredResources?.map { it.key to when (it.value) {
-            is ConcurrencyResource.AcquiredThread -> JdbcPartitionReader.AcquiredResources { it.value.close() }
-            is SocketResource.AcquiredSocket -> object : JdbcPartitionReader.AcquiredResourceHolder<SocketResource.AcquiredSocket> {
-                override val resource: SocketResource.AcquiredSocket = it.value as SocketResource.AcquiredSocket
-                override fun close() = it.value.close()
+        return acquiredResources?.map { it.key to
+            object : JdbcPartitionReader.AcquiredResource {
+                override val resource: Resource.Acquired? = it.value
+                override fun close() {
+                    it.value.close()
+                }
             }
-            else -> throw IllegalStateException("Unknown resource type: ${it.value::class.java}")
-        } }?.toMap()
+        }?.toMap()
     }
 }
