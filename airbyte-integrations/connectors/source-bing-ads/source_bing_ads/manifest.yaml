@@ -1914,92 +1914,6 @@ definitions:
         fields:
           $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
 
-  ## Ad Group Performance Reports
-
-  ad_group_performance_report_hourly_stream:
-    $ref: "#/definitions/report_base_stream"
-    name: ad_group_performance_report_hourly
-    primary_key:
-      $ref: "#/definitions/report_primary_keys/ad_group_performance"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_group_performance_report_hourly"
-    $parameters:
-      report_aggregation: Hourly
-      report_name: AdGroupPerformanceReport
-      report_type: AdGroupPerformanceReportRequest
-      report_columns:
-        $ref: "#/definitions/report_columns/ad_group_performance_hourly"
-    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/hourly_report_transformations"
-
-  ad_group_performance_report_daily_stream:
-    $ref: "#/definitions/report_base_stream"
-    name: ad_group_performance_report_daily
-    primary_key:
-      $ref: "#/definitions/report_primary_keys/ad_group_performance"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_group_performance_report"
-    $parameters:
-      report_aggregation: Daily
-      report_name: AdGroupPerformanceReport
-      report_type: AdGroupPerformanceReportRequest
-      report_columns:
-        $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
-
-  ad_group_performance_report_weekly_stream:
-    $ref: "#/definitions/report_base_stream"
-    name: ad_group_performance_report_weekly
-    primary_key:
-      $ref: "#/definitions/report_primary_keys/ad_group_performance"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_group_performance_report"
-    $parameters:
-      report_aggregation: Weekly
-      report_name: AdGroupPerformanceReport
-      report_type: AdGroupPerformanceReportRequest
-      report_columns:
-        $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
-
-  ad_group_performance_report_monthly_stream:
-    $ref: "#/definitions/report_base_stream"
-    name: ad_group_performance_report_monthly
-    primary_key:
-      $ref: "#/definitions/report_primary_keys/ad_group_performance"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_group_performance_report"
-    $parameters:
-      report_aggregation: Monthly
-      report_name: AdGroupPerformanceReport
-      report_type: AdGroupPerformanceReportRequest
-      report_columns:
-        $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
-
   # bulk streams
   labels_stream:
     # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
@@ -2656,10 +2570,6 @@ streams:
   - $ref: "#/definitions/age_gender_audience_report_hourly_stream"
   - $ref: "#/definitions/age_gender_audience_report_weekly_stream"
   - $ref: "#/definitions/age_gender_audience_report_monthly_stream"
-  - $ref: "#/definitions/ad_group_performance_report_hourly_stream"
-  - $ref: "#/definitions/ad_group_performance_report_daily_stream"
-  - $ref: "#/definitions/ad_group_performance_report_weekly_stream"
-  - $ref: "#/definitions/ad_group_performance_report_monthly_stream"
 
 schemas:
   accounts:
@@ -6354,6 +6264,113 @@ schemas:
         type:
           - "null"
           - number
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/report_base_stream"
+    components_resolver:
+      type: ParametrizedComponentsResolver
+      stream_parameters:
+        type: StreamParametersDefinition
+        list_of_parameters_for_stream:
+          - name: ad_group_performance_report_hourly
+            parameters:
+              report_aggregation: Hourly
+              report_type: AdGroupPerformanceReportRequest
+              report_name: AdGroupPerformanceReport
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_group_performance_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_group_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_group_performance_report_hourly"
+            incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/hourly_report_transformations"
+          - name: ad_group_performance_report_daily
+            parameters:
+              report_aggregation: Daily
+              report_type: AdGroupPerformanceReportRequest
+              report_name: AdGroupPerformanceReport
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_group_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_group_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+          - name: ad_group_performance_report_weekly
+            parameters:
+              report_aggregation: Weekly
+              report_type: AdGroupPerformanceReportRequest
+              report_name: AdGroupPerformanceReport
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_group_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_group_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+          - name: ad_group_performance_report_monthly
+            parameters:
+              report_aggregation: Monthly
+              report_type: AdGroupPerformanceReportRequest
+              report_name: AdGroupPerformanceReport
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_group_performance_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_group_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_group_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters"]
+          value: "{{components_values['parameters']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["primary_key"]
+          value: "{{components_values['primary_key']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["schema_loader"]
+          value: "{{components_values['schema_loader']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["transformations"]
+          value: "{{components_values['transformations']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["incremental_sync"]
+          value: "{{components_values['incremental_sync'] if components_values.get('incremental_sync') else None}}"
 
 concurrency_level:
   type: ConcurrencyLevel
