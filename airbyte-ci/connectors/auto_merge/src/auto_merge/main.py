@@ -86,8 +86,7 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
     # TODO: We could consider returning a dummy callable which always returns False,
     # but for now, we raise an error to ensure we catch any misconfigurations.
     raise ValueError(
-        f"PR #{pr.number} does not have a valid auto-merge label. "
-        f"Currently only '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' is supported",
+        f"PR #{pr.number} does not have a valid auto-merge label. Currently only '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' is supported",
     )
 
 

@@ -21,7 +21,6 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 
 from .steps import DependencyUpdate, GetDependencyUpdates, PoetryUpdate
 
-
 if TYPE_CHECKING:
     from typing import Dict, Iterable, List, Set, Tuple
 
