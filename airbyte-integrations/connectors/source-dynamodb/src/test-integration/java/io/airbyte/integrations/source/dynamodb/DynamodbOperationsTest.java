@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.dynamodb;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-import com.fasterxml.jackson.databind.JsonNode;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -181,12 +181,12 @@ public class DynamodbOperationsTest {
         .hasSize(1);
 
     JSONAssert.assertEquals(objectMapper.writeValueAsString(responseAsList.get(0)), """
-                                                                              {
-                                                                              	"name": "2019-12-21T17:42:34Z",
-                                                                              	"attr_2": "str_7",
-                                                                              	"attr_1": "str_6"
-                                                                              }
-                                                                              """, true);
+                                                                                    {
+                                                                                    	"name": "2019-12-21T17:42:34Z",
+                                                                                    	"attr_2": "str_7",
+                                                                                    	"attr_1": "str_6"
+                                                                                    }
+                                                                                    """, true);
 
   }
 

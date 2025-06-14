@@ -30,7 +30,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -119,23 +118,24 @@ public class DynamodbSource extends BaseConnector implements Source {
     final var streamState = DynamodbUtils.deserializeStreamState(state);
 
     final StateManager stateManager = StateManagerFactory
-            .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
+        .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
 
     final var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
 
     final var dynamodbOperations = new DynamodbOperations(dynamodbConfig);
 
     final List<AutoCloseableIterator<AirbyteMessage>> streamIterators = catalog.getStreams().stream()
-            .map(str -> switch (str.getSyncMode()) {
-              case INCREMENTAL -> scanIncremental(dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
-              case FULL_REFRESH -> scanFullRefresh(dynamodbOperations, str.getStream());
-            })
-            .toList();
+        .map(str -> switch (str.getSyncMode()) {
+        case INCREMENTAL -> scanIncremental(dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
+        case FULL_REFRESH -> scanFullRefresh(dynamodbOperations, str.getStream());
+        })
+        .toList();
 
     final AutoCloseableIterator<AirbyteMessage> compositeIterator =
-            AutoCloseableIterators.concatWithEagerClose(streamIterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        AutoCloseableIterators.concatWithEagerClose(streamIterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
 
     return new AutoCloseableIterator<>() {
+
       @Override
       public boolean hasNext() {
         return compositeIterator.hasNext();
@@ -151,6 +151,7 @@ public class DynamodbSource extends BaseConnector implements Source {
         compositeIterator.close();
         dynamodbOperations.close();
       }
+
     };
   }
 
@@ -169,31 +170,31 @@ public class DynamodbSource extends BaseConnector implements Source {
     LOGGER.info("cursor type: {}", cursorType);
 
     final var iterator = cursorInfo.map(cursor -> {
-              final var filterType = switch (cursorType) {
-                case "\"string\"", "[\"null\",\"string\"]" -> DynamodbOperations.FilterAttribute.FilterType.S;
-                case "\"integer\"", "[\"null\",\"integer\"]" -> DynamodbOperations.FilterAttribute.FilterType.N;
-                case "\"number\"", "[\"null\",\"number\"]" -> {
-                  final JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
-                  if (airbyteType != null && airbyteType.asText().equals("integer")) {
-                    yield DynamodbOperations.FilterAttribute.FilterType.N;
-                  } else {
-                    throw new UnsupportedOperationException("Unsupported attribute type for filtering");
-                  }
-                }
-                default -> throw new UnsupportedOperationException("Unsupported attribute type for filtering");
-              };
+      final var filterType = switch (cursorType) {
+        case "\"string\"", "[\"null\",\"string\"]" -> DynamodbOperations.FilterAttribute.FilterType.S;
+        case "\"integer\"", "[\"null\",\"integer\"]" -> DynamodbOperations.FilterAttribute.FilterType.N;
+        case "\"number\"", "[\"null\",\"number\"]" -> {
+          final JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
+          if (airbyteType != null && airbyteType.asText().equals("integer")) {
+            yield DynamodbOperations.FilterAttribute.FilterType.N;
+          } else {
+            throw new UnsupportedOperationException("Unsupported attribute type for filtering");
+          }
+        }
+        default -> throw new UnsupportedOperationException("Unsupported attribute type for filtering");
+      };
 
-              final DynamodbOperations.FilterAttribute filterAttribute = new DynamodbOperations.FilterAttribute(
-                      cursor.getCursorField(),
-                      cursor.getCursor(),
-                      filterType);
+      final DynamodbOperations.FilterAttribute filterAttribute = new DynamodbOperations.FilterAttribute(
+          cursor.getCursorField(),
+          cursor.getCursor(),
+          filterType);
 
-              return dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, filterAttribute);
-            })
-            .orElse(dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, null));
+      return dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, filterAttribute);
+    })
+        .orElse(dynamodbOperations.scanTable(airbyteStream.getName(), selectedAttributes, null));
 
     final var messageStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
-            .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
+        .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
     final String primitiveType = switch (cursorType) {
       case "\"string\"", "[\"null\",\"string\"]" -> "string";
@@ -204,16 +205,16 @@ public class DynamodbSource extends BaseConnector implements Source {
     LOGGER.info("cursor primitive: {}", primitiveType);
 
     return AutoCloseableIterators.fromIterator(
-            new StateDecoratingIterator(
-                    AutoCloseableIterators.fromStream(
-                            messageStream,
-                            AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace())),
-                    stateManager,
-                    streamPair,
-                    cursorField,
-                    cursorInfo.map(CursorInfo::getCursor).orElse(null),
-                    JsonSchemaPrimitive.valueOf(primitiveType.toUpperCase()),
-                    0));
+        new StateDecoratingIterator(
+            AutoCloseableIterators.fromStream(
+                messageStream,
+                AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace())),
+            stateManager,
+            streamPair,
+            cursorField,
+            cursorInfo.map(CursorInfo::getCursor).orElse(null),
+            JsonSchemaPrimitive.valueOf(primitiveType.toUpperCase()),
+            0));
   }
 
   private AutoCloseableIterator<AirbyteMessage> scanFullRefresh(final DynamodbOperations dynamodbOperations,
@@ -222,14 +223,14 @@ public class DynamodbSource extends BaseConnector implements Source {
     final Set<String> selectedAttributes = properties.keySet();
 
     final var iterator = dynamodbOperations
-            .scanTable(airbyteStream.getName(), selectedAttributes, null);
+        .scanTable(airbyteStream.getName(), selectedAttributes, null);
 
     final var messageStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
-            .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
+        .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
     return AutoCloseableIterators.fromStream(
-            messageStream,
-            AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace()));
+        messageStream,
+        AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace()));
   }
 
 }
