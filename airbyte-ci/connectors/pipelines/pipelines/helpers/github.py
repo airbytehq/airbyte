@@ -19,7 +19,6 @@ from pipelines import main_logger
 from pipelines.consts import CIContext
 from pipelines.models.secrets import Secret
 
-
 if TYPE_CHECKING:
     from logging import Logger
     from typing import Iterable, List, Optional

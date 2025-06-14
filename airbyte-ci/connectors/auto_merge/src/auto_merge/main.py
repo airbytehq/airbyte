@@ -23,7 +23,6 @@ from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
 from .pr_validators import VALIDATOR_MAPPING
 
-
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
     from github.PullRequest import PullRequest
