@@ -1,14 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import timedelta
 from unittest import TestCase
 
 import freezegun
-import pendulum
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .utils import datetime_to_string, read_stream
@@ -18,8 +18,8 @@ from .zs_responses.records.users_records_builder import UsersRecordBuilder
 from .zs_responses.users_response_builder import UsersResponseBuilder
 
 
-_NOW = datetime.now(timezone.utc)
-_START_DATE = pendulum.now(tz="UTC").subtract(years=2)
+_NOW = ab_datetime_now()
+_START_DATE = ab_datetime_now().subtract(timedelta(weeks=104))
 _A_CURSOR = "a_cursor"
 
 
@@ -30,7 +30,7 @@ class TestUserIdentitiesStream(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(ab_datetime_now().subtract(timedelta(weeks=104)))
         )
 
     def _get_authenticator(self, config):
@@ -77,7 +77,7 @@ class TestUserIdentitiesStream(TestCase):
     def test_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        most_recent_cursor_value = _START_DATE.add(days=2)
+        most_recent_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
             UsersRequestBuilder.endpoint(api_token_authenticator).with_include("identities").with_start_time(_START_DATE).build(),
             UsersResponseBuilder.identities_response()
@@ -87,13 +87,13 @@ class TestUserIdentitiesStream(TestCase):
 
         output = read_stream("user_identities", SyncMode.full_refresh, config)
 
-        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(most_recent_cursor_value.int_timestamp)}
+        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(int(most_recent_cursor_value.timestamp()))}
 
     @HttpMocker()
     def test_given_input_state_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        state_cursor_value = _START_DATE.add(days=2)
+        state_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
             UsersRequestBuilder.endpoint(api_token_authenticator).with_include("identities").with_start_time(state_cursor_value).build(),
             UsersResponseBuilder.identities_response().with_record(UsersRecordBuilder.record()).build(),
