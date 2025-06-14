@@ -9,6 +9,7 @@ export default {
         id: "readme",
       },
       items: [
+        "v-1.7",
         "v-1.6",
         "v-1.5",
         "v-1.4",
