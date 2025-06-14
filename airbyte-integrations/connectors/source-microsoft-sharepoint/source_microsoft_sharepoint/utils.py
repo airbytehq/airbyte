@@ -3,12 +3,11 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
-from functools import lru_cache
 from http import HTTPStatus
-from typing import List, Tuple
+from typing import Any, Iterable, List, Tuple
 
+from office365.entity_collection import EntityCollection
 from office365.graph_client import GraphClient
-from office365.onedrive.sites.site import Site
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -182,3 +181,14 @@ def get_site_prefix(graph_client: GraphClient) -> Tuple[str, str]:
         raise ValueError(f"Invalid host name: {host_name}")
 
     return site_url, host_name_parts[0]
+
+
+def iterate_collection(entity_collection: EntityCollection) -> Iterable[Any]:
+    """
+    Paginate through all items in a collection using the Microsoft Graph API.
+    """
+    entity_collection.paged(page_size=100)
+    collection_items = execute_query_with_retry(entity_collection.get())
+    for collection_item in collection_items:
+        yield collection_item
+    return None
