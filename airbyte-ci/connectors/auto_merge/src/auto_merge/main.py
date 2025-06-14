@@ -23,6 +23,7 @@ from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
 from .pr_validators import VALIDATOR_MAPPING
 
+
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
     from github.PullRequest import PullRequest
@@ -161,7 +162,10 @@ def auto_merge() -> None:
             # + "label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} "
         )
         prs = [issue.as_pull_request() for issue in candidate_issues]
-        logger.info(f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with " f"the '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label")
+        logger.info(
+            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with "
+            + f"the '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label"
+        )
         merged_prs = []
         for pr in prs:
             back_off_if_rate_limited(gh_client)
