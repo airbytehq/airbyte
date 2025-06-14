@@ -23,7 +23,7 @@ class ClickhouseDirectLoaderFactory(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int
     ): ClickhouseDirectLoader {
-        val tableName = tableInfo[streamDescriptor]!!.tableNames.finalTableName!!
+        val tableName = tableInfo.getFinalTableName(streamDescriptor)!!
         val buffer = ClickhouseBinaryRowInsertBuffer(tableName, clickhouseClient)
 
         return ClickhouseDirectLoader(

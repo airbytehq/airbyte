@@ -15,15 +15,15 @@ class RecordMunger(
             extractedAtAsTimestampWithTimezone = true
         )
 
-        val columnMapping = catalogInfo[record.stream]!!.columnNameMapping
-
-        return buildMap {
-            enriched.declaredFields.forEach {
-                put(columnMapping[it.key]!!, it.value.abValue)
-            }
-            enriched.airbyteMetaFields.forEach {
-                put(it.key, it.value.abValue)
-            }
+        val munged = HashMap<String, AirbyteValue>()
+        enriched.declaredFields.forEach {
+            val mappedKey = catalogInfo.getMappedColumnName(record.stream, it.key)!!
+            munged[mappedKey] = it.value.abValue
         }
+        enriched.airbyteMetaFields.forEach {
+            munged[it.key] = it.value.abValue
+        }
+
+        return munged
     }
 }
