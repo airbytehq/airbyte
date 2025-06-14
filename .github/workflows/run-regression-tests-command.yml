@@ -18,6 +18,7 @@ on:
       repo:
         description: "The repository name"
         required: false
+        default: "airbytehq/airbyte"
         type: string
       gitref:
         description: "The git reference (branch or tag)"
@@ -53,7 +54,7 @@ on:
           - all
       streams:
         description: >
-          (Optional) Streams. Which streams to include in regression tests.
+          (Optional) Streams. Which streams to include in tests.
           If not set, these will be chosen automatically.
         required: false
         default: ""
