@@ -18,8 +18,11 @@ class RecordMunger(
         val columnMapping = catalogInfo[record.stream]!!.columnNameMapping
 
         return buildMap {
-            enriched.allTypedFields.forEach {
+            enriched.declaredFields.forEach {
                 put(columnMapping[it.key]!!, it.value.abValue)
+            }
+            enriched.airbyteMetaFields.forEach {
+                put(it.key, it.value.abValue)
             }
         }
     }
