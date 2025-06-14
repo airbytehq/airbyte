@@ -219,6 +219,8 @@ const deployAirbyte = {
       type: "doc",
       id: "deploying-airbyte/abctl-ec2",
     },
+    "deploying-airbyte/chart-2-0",
+    "deploying-airbyte/values",
   ],
 };
 
