@@ -8,7 +8,6 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineCo
 from pipelines.helpers import github
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-
 if TYPE_CHECKING:
     from pathlib import Path
     from typing import Iterable, Optional
