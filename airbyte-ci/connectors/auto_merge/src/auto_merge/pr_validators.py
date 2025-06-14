@@ -79,7 +79,7 @@ VALIDATOR_MAPPING: dict[str, set[Callable]] = {
     # Until we have an auto-approve mechanism, we use this pipeline to force-merge,
     # as long as all required checks pass. This doesn't bypass checks but it bypasses the
     # approval requirement:
-    AUTO_MERGE_LABEL: COMMON_VALIDATORS
+    AUTO_MERGE_LABEL: COMMON_VALIDATORS | {has_auto_merge_label, head_commit_passes_all_required_checks},
     | {has_auto_merge_label, head_commit_passes_all_required_checks},
     # These are pure registry updates, and can be auto-merged without any CI checks:
     AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: COMMON_VALIDATORS | {has_auto_merge_bypass_ci_checks_label},
