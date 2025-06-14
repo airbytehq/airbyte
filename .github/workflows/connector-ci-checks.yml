@@ -267,6 +267,12 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Container Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
