@@ -3,16 +3,17 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_tiktok_marketing import SourceTiktokMarketing
-from source_tiktok_marketing.components.advertiser_ids_partition_router import (
+from components import (
     MultipleAdvertiserIdsPerPartition,
     SingleAdvertiserIdPerPartition,
+    TransformEmptyMetrics,
 )
-from source_tiktok_marketing.components.transformations import TransformEmptyMetrics
 
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.types import StreamSlice
+
+from .conftest import get_source
 
 
 @pytest.mark.parametrize(
@@ -62,9 +63,7 @@ def test_get_partition_value_from_config(config, expected):
     ],
 )
 def test_stream_slices_multiple(config, expected, requests_mock, json_data):
-    advertiser_ids_stream = [
-        s for s in SourceTiktokMarketing(config=config, catalog=None, state=None).streams(config=config) if s.name == "advertiser_ids"
-    ]
+    advertiser_ids_stream = [s for s in get_source(config=config, state=None).streams(config=config) if s.name == "advertiser_ids"]
     advertiser_ids_stream = advertiser_ids_stream[0] if advertiser_ids_stream else MagicMock()
 
     router = MultipleAdvertiserIdsPerPartition(
@@ -111,9 +110,7 @@ def test_stream_slices_multiple(config, expected, requests_mock, json_data):
     ],
 )
 def test_stream_slices_single(config, expected, requests_mock, json_data):
-    advertiser_ids_stream = [
-        s for s in SourceTiktokMarketing(config=config, catalog=None, state=None).streams(config=config) if s.name == "advertiser_ids"
-    ]
+    advertiser_ids_stream = [s for s in get_source(config=config, state=None).streams(config=config) if s.name == "advertiser_ids"]
     advertiser_ids_stream = advertiser_ids_stream[0] if advertiser_ids_stream else MagicMock()
 
     router = SingleAdvertiserIdPerPartition(
