@@ -38,6 +38,7 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
         self._resource: str = resource
         self._subdomain: str = subdomain
         self._authenticator: str = None
+        self._client_access_token: Optional[str] = None
 
     @property
     def url(self) -> str:
@@ -47,6 +48,7 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
     def headers(self) -> Dict[str, Any]:
         return (super().headers or {}) | {
             "Authorization": self._authenticator.client_access_token,
+            # "Authorization": self._client_access_token or "",
         }
 
     @property
@@ -55,6 +57,10 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
 
     def with_authenticator(self, authenticator: Authenticator) -> "ZendeskSupportBaseRequestBuilder":
         self._authenticator: Authenticator = authenticator
+        return self
+
+    def with_client_access_token(self, client_access_token: str) -> "ZendeskSupportBaseRequestBuilder":
+        self._client_access_token: str = client_access_token
         return self
 
     def with_subdomain(self, subdomain: str) -> "ZendeskSupportBaseRequestBuilder":

@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - Tags
+    - tags
 
 definitions:
   bearer_authenticator:
