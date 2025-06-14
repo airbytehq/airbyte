@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-linear
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.55.1@sha256:f8563342ed2681dbee05122070722ff9565f3d8537feb8eeb13e85e3b70a7c24
   connectorSubtype: api
   connectorType: source
   definitionId: 1c5d8316-ed42-4473-8fbc-2626f03f070c
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg
