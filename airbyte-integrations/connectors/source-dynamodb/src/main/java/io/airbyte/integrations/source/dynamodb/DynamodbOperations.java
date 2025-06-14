@@ -14,6 +14,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,35 +127,34 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
     return schemaObjectMapper.convertValue(mergedItems, JsonNode.class);
   }
 
-  public List<JsonNode> scanTable(String tableName, Set<String> attributes, FilterAttribute filterAttribute) {
-    List<JsonNode> items = new ArrayList<>();
+  public Iterator<JsonNode> scanTable(String tableName, Set<String> attributes, FilterAttribute filterAttribute) {
 
     String prefix = "dyndb";
     // remove and replace reserved attribute names
     Set<String> copyAttributes = new HashSet<>(attributes);
     dynamodbConfig.reservedAttributeNames().forEach(copyAttributes::remove);
     dynamodbConfig.reservedAttributeNames().stream()
-        .filter(attributes::contains)
-        .map(str -> str.replaceAll("[-.]", ""))
-        .forEach(attr -> copyAttributes.add("#" + prefix + "_" + attr));
+            .filter(attributes::contains)
+            .map(str -> str.replaceAll("[-.]", ""))
+            .forEach(attr -> copyAttributes.add("#" + prefix + "_" + attr));
 
     Map<String, String> mappingAttributes = dynamodbConfig.reservedAttributeNames().stream()
-        .filter(attributes::contains)
-        .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
+            .filter(attributes::contains)
+            .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
 
     var projectionAttributes = String.join(", ", copyAttributes);
 
     ScanRequest.Builder scanRequestBuilder = ScanRequest.builder()
-        .tableName(tableName)
-        .projectionExpression(projectionAttributes);
+            .tableName(tableName)
+            .projectionExpression(projectionAttributes);
 
     if (!mappingAttributes.isEmpty()) {
       scanRequestBuilder
-          .expressionAttributeNames(mappingAttributes);
+              .expressionAttributeNames(mappingAttributes);
     }
 
     if (filterAttribute != null && filterAttribute.name() != null &&
-        filterAttribute.value() != null && filterAttribute.type() != null) {
+            filterAttribute.value() != null && filterAttribute.type() != null) {
 
       var filterName = filterAttribute.name();
       var filterValue = filterAttribute.value();
@@ -177,23 +177,18 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
       }
 
       String filterPlaceholder =
-          dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
+              dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
       scanRequestBuilder
-          .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
-          .expressionAttributeValues(Map.of(":timestamp", attributeValue));
+              .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
+              .expressionAttributeValues(Map.of(":timestamp", attributeValue));
 
     }
 
     var scanIterable = dynamoDbClient.scanPaginator(scanRequestBuilder.build());
-    for (var scanResponse : scanIterable) {
-
-      scanResponse.items().stream()
-          .map(attr -> attributeObjectMapper.convertValue(attr, JsonNode.class))
-          .forEach(items::add);
-
-    }
-
-    return items;
+    return scanIterable.stream()
+            .flatMap(scanResponse -> scanResponse.items().stream())
+            .map(attr -> attributeObjectMapper.convertValue(attr, JsonNode.class))
+            .iterator();
   }
 
   @Override
