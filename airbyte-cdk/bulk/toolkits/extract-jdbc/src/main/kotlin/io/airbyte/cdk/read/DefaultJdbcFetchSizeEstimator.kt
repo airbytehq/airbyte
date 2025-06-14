@@ -22,6 +22,7 @@ class DefaultJdbcFetchSizeEstimator(
         log.info {
             "Maximum row size in ${rowByteSizeSample.kind.name} table is $maxRowBytes bytes."
         }
+        log.info { "*** max memory bytes $maxMemoryBytes" } // TEMP
         val targetMemoryUse: Long = (maxMemoryBytes * memoryCapacityRatio).toLong()
         if (listOf(maxRowBytes, targetMemoryUse, maxConcurrency.toLong()).any { it <= 0L }) {
             return defaultFetchSize

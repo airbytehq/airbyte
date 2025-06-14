@@ -10,6 +10,8 @@ import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.PartitionsCreatorFactorySupplier
+import io.airbyte.cdk.read.ResourceAcquirer
+import io.airbyte.cdk.read.SocketResource
 import io.micronaut.core.annotation.Order
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicReference
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
+    val resourceAcquirer: ResourceAcquirer,
     val cdcPartitionsCreatorDbzOps: CdcPartitionsCreatorDebeziumOperations<T>,
     val cdcPartitionReaderDbzOps: CdcPartitionReaderDebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
@@ -46,6 +49,7 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
         }
         return CdcPartitionsCreator(
             concurrencyResource,
+            resourceAcquirer,
             feedBootstrap,
             cdcPartitionsCreatorDbzOps,
             cdcPartitionReaderDbzOps,
