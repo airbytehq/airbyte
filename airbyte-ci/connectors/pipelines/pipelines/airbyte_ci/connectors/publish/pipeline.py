@@ -13,6 +13,7 @@ from typing import Dict, Iterable, List, Tuple
 import anyio
 import semver
 import yaml
+from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from auto_merge.consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage  # type: ignore
 from dagger import (
@@ -26,7 +27,6 @@ from dagger import (
 )
 from pydantic import BaseModel, ValidationError
 
-from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
