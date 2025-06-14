@@ -89,7 +89,7 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
         raise ValueError(
             f"PR #{pr.number} does not have a valid auto-merge label. "
             f"Expected one of [{', '.join(VALIDATOR_MAPPING.keys())}], but got: "
-            f"[{', '.join(label.name for label in pr.labels)}]",
+            f"[{'; '.join(label.name for label in pr.labels)}]",
         )
 
     return validators
