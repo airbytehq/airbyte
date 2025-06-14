@@ -17,7 +17,7 @@ jobs:
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: get-app-token
         with:
           owner: "airbytehq"
