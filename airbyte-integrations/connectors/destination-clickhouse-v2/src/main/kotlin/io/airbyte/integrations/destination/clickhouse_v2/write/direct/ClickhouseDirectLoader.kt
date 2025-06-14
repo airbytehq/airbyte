@@ -27,7 +27,7 @@ class ClickhouseDirectLoader(
         buffer.accumulate(munged)
 
         bytesWindow.increment(record.serializedSizeBytes)
-        recordCountWindow.increment(record.serializedSizeBytes)
+        recordCountWindow.increment(1)
 
         if (bytesWindow.isComplete() || recordCountWindow.isComplete()) {
             buffer.flush()
@@ -45,8 +45,8 @@ class ClickhouseDirectLoader(
         // CH recommends 10k-100k batch sizes — since we block on IO we aim on the high side
         // to amortize the overheads.
         const val MAX_BATCH_SIZE_RECORDS = 100000L
-        // To prevent undue backpressure, we try to cap the buffer size at something will safely fit
-        // in the "reserved" memory, which in practice is ~180MB.
+        // To prevent undue backpressure, we try to cap the buffer size at something that will
+        // safely fit in the "reserved" memory, which in practice is ~180MB.
         const val MAX_BATCH_SIZE_BYTES = 70000000L
     }
 }
