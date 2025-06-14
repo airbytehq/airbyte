@@ -688,10 +688,13 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext, sema
             # Open PR when all previous steps are successful
             initial_pr_creation = CreateOrUpdatePullRequest(
                 context,
-                skip_ci=False,  # Don't skip CI, as it prevents the PR from auto-merging naturally.
-                # We will merge even if the CI checks fail, due to the "bypass-ci-checks" label:
+                # We will merge even if the CI checks fail, due to this label:
                 labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"],
+                # Let GitHub auto-merge this if all checks pass before the next run
+                # of our auto-merge workflow:
                 github_auto_merge=True,
+                # Don't skip CI, as it prevents the PR from auto-merging naturally:
+                skip_ci=False,
             )
             pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
             initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)

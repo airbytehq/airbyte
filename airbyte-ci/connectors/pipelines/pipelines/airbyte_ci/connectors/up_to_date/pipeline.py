@@ -21,6 +21,7 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 
 from .steps import DependencyUpdate, GetDependencyUpdates, PoetryUpdate
 
+
 if TYPE_CHECKING:
     from typing import Dict, Iterable, List, Set, Tuple
 
@@ -145,8 +146,10 @@ async def run_connector_up_to_date_pipeline(
                 # This might allow a developer to fix the build in the PR.
                 initial_pr_creation = CreateOrUpdatePullRequest(
                     context,
-                    skip_ci=False,
                     labels=DEFAULT_PR_LABELS,
+                    # Reduce pressure on rate limit, since we need to push a
+                    # a follow-on commit anyway once we have the PR number:
+                    skip_ci=True,
                 )
                 pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                     all_modified_files, context, step_results, dependency_updates
@@ -179,9 +182,12 @@ async def run_connector_up_to_date_pipeline(
                     final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS
                     post_changelog_pr_update = CreateOrUpdatePullRequest(
                         context,
-                        skip_ci=False,
                         labels=final_labels,
+                        # For this 'up-to-date' pipeline, we want GitHub to merge organically
+                        # if/when all required checks pass. Maintainers can also easily disable
+                        # auto-merge if they want to review or update the PR before merging.
                         github_auto_merge=auto_merge,
+                        skip_ci=False,
                     )
                     pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                         all_modified_files, context, step_results, dependency_updates
