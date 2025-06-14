@@ -11,6 +11,7 @@ from .consts import (
     CONNECTOR_PATH_PREFIXES,
 )
 
+
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
     from github.PullRequest import PullRequest
@@ -80,7 +81,6 @@ VALIDATOR_MAPPING: dict[str, set[Callable]] = {
     # as long as all required checks pass. This doesn't bypass checks but it bypasses the
     # approval requirement:
     AUTO_MERGE_LABEL: COMMON_VALIDATORS | {has_auto_merge_label, head_commit_passes_all_required_checks},
-    | {has_auto_merge_label, head_commit_passes_all_required_checks},
     # These are pure registry updates, and can be auto-merged without any CI checks:
     AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: COMMON_VALIDATORS | {has_auto_merge_bypass_ci_checks_label},
 }
