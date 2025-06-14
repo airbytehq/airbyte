@@ -76,7 +76,19 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
     Returns:
         list[callable]: The validators
     """
-    return VALIDATOR_MAPPING[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL]
+    for label in pr.labels:
+        if label.name == AUTO_MERGE_BYPASS_CI_CHECKS_LABEL:
+            logger.info(f"Using validator for label: {label.name}")
+            return VALIDATOR_MAPPING[label.name]
+
+    # We no longer use the 'AUTO_MERGE_LABEL' for auto-merging.
+    # We shouldn't reach this point, but if we do, we raise an error.
+    # TODO: We could consider returning a dummy callable which always returns False,
+    # but for now, we raise an error to ensure we catch any misconfigurations.
+    raise ValueError(
+        f"PR #{pr.number} does not have a valid auto-merge label. "
+        f"Currently only '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' is supported",
+    )
 
 
 def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:
