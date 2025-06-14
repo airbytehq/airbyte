@@ -822,6 +822,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                          | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 5.3.0   | [#61598](https://github.com/airbytehq/airbyte/pull/61598)  | Add trackable commit text and github-native auto-merge in up-to-date, auto-merge, rc-promote, and rc-rollback |
 | 5.2.5   | [#60325](https://github.com/airbytehq/airbyte/pull/60325)  | Update slack team to oc-extensibility-critical-systems |
 | 5.2.4   | [#59724](https://github.com/airbytehq/airbyte/pull/59724)  | Fix components mounting and test dependencies for manifest-only unit tests |
 | 5.1.0   | [#53238](https://github.com/airbytehq/airbyte/pull/53238)  | Add ability to opt out of version increment checks via metadata flag                                                         |
