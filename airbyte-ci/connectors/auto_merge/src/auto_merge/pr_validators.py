@@ -11,7 +11,6 @@ from .consts import (
     CONNECTOR_PATH_PREFIXES,
 )
 
-
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
     from github.PullRequest import PullRequest
