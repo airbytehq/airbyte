@@ -157,14 +157,12 @@ def auto_merge() -> None:
         logger.info(f"Fetching required passing contexts for {BASE_BRANCH}")
         required_passing_contexts = set(main_branch.get_required_status_checks().contexts)
         candidate_issues = gh_client.search_issues(
-            f"repo:{AIRBYTE_REPO} is:pr " + "base:{BASE_BRANCH} state:open " + "label:{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} "
+            f"repo:{AIRBYTE_REPO} is:pr base:{BASE_BRANCH} state:open label:{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}"
             # We no longer use this tool for auto-merging PRs that do not need to bypass CI checks
-            # + "label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} "
         )
         prs = [issue.as_pull_request() for issue in candidate_issues]
         logger.info(
-            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with "
-            + f"the '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label"
+            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label",
         )
         merged_prs = []
         for pr in prs:
