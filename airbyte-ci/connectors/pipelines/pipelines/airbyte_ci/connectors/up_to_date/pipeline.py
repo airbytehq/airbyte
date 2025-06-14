@@ -67,7 +67,7 @@ def get_pr_creation_arguments(
         {
             "branch_id": f"up-to-date/{context.connector.technical_name}",
             "commit_message": "[up-to-date]"  # << We can skip Vercel builds if this is in the commit message
-            + "\n".join(step_result.step.title for step_result in step_results if step_result.success),
+            + ", ".join(step_result.step.title for step_result in step_results if step_result.success),
             "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
             "pr_body": get_pr_body(context, step_results, dependency_updates),
         },
