@@ -21,6 +21,7 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 
 from .steps import DependencyUpdate, GetDependencyUpdates, PoetryUpdate
 
+
 if TYPE_CHECKING:
     from typing import Dict, Iterable, List, Set, Tuple
 
@@ -143,10 +144,11 @@ async def run_connector_up_to_date_pipeline(
 
                 # We open a PR even if build is failing.
                 # This might allow a developer to fix the build in the PR.
-                # ---
-                # We are skipping CI on this first PR creation attempt to avoid useless runs:
-                # the new changelog entry is missing, it will fail QA checks
-                initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True, labels=DEFAULT_PR_LABELS)
+                initial_pr_creation = CreateOrUpdatePullRequest(
+                    context,
+                    skip_ci=False,
+                    labels=DEFAULT_PR_LABELS,
+                )
                 pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                     all_modified_files, context, step_results, dependency_updates
                 )
@@ -176,7 +178,12 @@ async def run_connector_up_to_date_pipeline(
                     context.logger.info(f"Exported files following the changelog entry: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
                     final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS
-                    post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=final_labels)
+                    post_changelog_pr_update = CreateOrUpdatePullRequest(
+                        context,
+                        skip_ci=False,
+                        labels=final_labels,
+                        github_auto_merge=auto_merge,
+                    )
                     pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                         all_modified_files, context, step_results, dependency_updates
                     )

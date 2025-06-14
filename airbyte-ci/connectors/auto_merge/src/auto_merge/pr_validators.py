@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Optional, Tuple
 
-from .consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, AUTO_MERGE_LABEL, BASE_BRANCH, CONNECTOR_PATH_PREFIXES
+from .consts import (
+    AUTO_MERGE_BYPASS_CI_CHECKS_LABEL,
+    AUTO_MERGE_LABEL,
+    BASE_BRANCH,
+    CONNECTOR_PATH_PREFIXES,
+)
+
 
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
@@ -71,6 +77,7 @@ COMMON_VALIDATORS = {
 }
 # Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
 VALIDATOR_MAPPING: dict[str, set[Callable]] = {
-    AUTO_MERGE_LABEL: COMMON_VALIDATORS | {has_auto_merge_label, head_commit_passes_all_required_checks},
+    # Normal auto-merge is now handled by native GitHub auto-merge.
+    # AUTO_MERGE_LABEL: COMMON_VALIDATORS | {has_auto_merge_label, head_commit_passes_all_required_checks},
     AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: COMMON_VALIDATORS | {has_auto_merge_bypass_ci_checks_label},
 }

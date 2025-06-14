@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import json
 import os
@@ -12,12 +13,20 @@ from typing import Dict, Iterable, List, Tuple
 import anyio
 import semver
 import yaml
-from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from auto_merge.consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage  # type: ignore
-from dagger import Container, Directory, ExecError, File, ImageLayerCompression, Platform, QueryError
+from dagger import (
+    Container,
+    Directory,
+    ExecError,
+    File,
+    ImageLayerCompression,
+    Platform,
+    QueryError,
+)
 from pydantic import BaseModel, ValidationError
 
+from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
@@ -26,7 +35,10 @@ from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValid
 from pipelines.airbyte_ci.steps.bump_version import SetConnectorVersion
 from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
 from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
-from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
+from pipelines.airbyte_ci.steps.python_registry import (
+    PublishToPythonRegistry,
+    PythonRegistryPublishContext,
+)
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
@@ -675,7 +687,11 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext, sema
 
             # Open PR when all previous steps are successful
             initial_pr_creation = CreateOrUpdatePullRequest(
-                context, skip_ci=True, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"]
+                context,
+                skip_ci=False,  # Don't skip CI, as it prevents the PR from auto-merging naturally.
+                # We will merge even if the CI checks fail, due to the "bypass-ci-checks" label:
+                labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"],
+                github_auto_merge=True,
             )
             pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
             initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
@@ -742,7 +758,7 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
 
             # Open PR when all previous steps are successful
             promoted_version = set_promoted_version.promoted_version
-            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True)
+            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=False)
             pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
                 all_modified_files, context, results, current_version, promoted_version
             )
@@ -768,7 +784,11 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
                         await add_changelog_entry.export_modified_files(context.connector.local_connector_documentation_directory)
                     )
                 post_changelog_pr_update = CreateOrUpdatePullRequest(
-                    context, skip_ci=True, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "promoted-rc"]
+                    context,
+                    skip_ci=False,  # Don't skip CI, as it prevents the PR from auto-merging naturally.
+                    # We will merge even if the CI checks fail, due to the "bypass-ci-checks" label:
+                    labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "promoted-rc"],
+                    github_auto_merge=True,  # Let GitHub auto-merge this if/when all required checks have passed.
                 )
                 pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
                     all_modified_files, context, results, current_version, promoted_version
