@@ -10,6 +10,7 @@ import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.SimpleOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
@@ -38,7 +39,6 @@ class ReadOperation(
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: SimpleOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactoriesSupplier:
         List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
@@ -57,10 +57,9 @@ class ReadOperation(
                 config.checkpointTargetInterval,
                 outputConsumer,
                 metaFieldDecorator,
-                boostedOutputConsumerFactory,
                 resourceAcquirer,
                 partitionsCreatorFactoriesSupplier.map { it -> it.get() },
-                outputFormat
+                OutputMessageRouter.OutputChannelType.valueOf(outputFormat)
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->

@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -33,13 +34,13 @@ class FeedReader(
     val root: RootReader,
     val feed: Feed,
     val resourceAcquirer: ResourceAcquirer,
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
+    val outputChannelType: OutputChannelType,
 ) {
     private val log = KotlinLogging.logger {}
 
     private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, root.boostedOutputConsumerFactory, root.OutputFormat)
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, outputChannelType)
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -334,11 +335,9 @@ class FeedReader(
                 val r = (acqs.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
 
                 messageProcessor = OutputMessageRouter(
-                    when (feedBootstrap.outputFormat){
-                        "JSONL" -> OutputMessageRouter.RecordsOutputChannel.JSON_SOCKET
-                        "PROTOBUF" -> OutputMessageRouter.RecordsOutputChannel.PROTOBUF_SOCKET
-                        else -> OutputMessageRouter.RecordsOutputChannel.STDIO_OUTPUT
-                    },feedBootstrap.outputConsumer,emptyMap(),feedBootstrap as StreamFeedBootstrap,
+                    feedBootstrap.outputChannelType,
+                    feedBootstrap.outputConsumer,
+                    emptyMap(),feedBootstrap as StreamFeedBootstrap,
                     mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r),
                 )
 //                boostedOutputConsumer =

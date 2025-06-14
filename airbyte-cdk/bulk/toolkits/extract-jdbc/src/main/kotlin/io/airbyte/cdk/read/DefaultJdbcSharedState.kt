@@ -56,8 +56,8 @@ class DefaultJdbcSharedState(
         return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
-    override fun tryAcquireResourcesForReader(resourceTypes: List<ResourceType>): Map<ResourceType, JdbcPartitionReader.AcquiredResources>? {
-        val acquiredResources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourceTypes)
+    override fun tryAcquireResourcesForReader(resourcesTypes: List<ResourceType>): Map<ResourceType, JdbcPartitionReader.AcquiredResources>? {
+        val acquiredResources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesTypes)
 
         return acquiredResources?.map { it.key to when (it.value) {
             is ConcurrencyResource.AcquiredThread -> JdbcPartitionReader.AcquiredResources { it.value.close() }

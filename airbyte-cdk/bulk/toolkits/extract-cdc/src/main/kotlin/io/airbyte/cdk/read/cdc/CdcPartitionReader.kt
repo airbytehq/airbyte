@@ -6,9 +6,20 @@ package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.JSONL
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.PROTOBUF
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.Resource
+import io.airbyte.cdk.read.ResourceAcquirer
+import io.airbyte.cdk.read.ResourceType
+import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
+import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
+import io.airbyte.cdk.read.SocketResource
 import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -31,7 +42,7 @@ import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
 class CdcPartitionReader<T : Comparable<T>>(
-    val concurrencyResource: ConcurrencyResource,
+    val resourceAcquirer: ResourceAcquirer,
     val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
@@ -39,12 +50,14 @@ class CdcPartitionReader<T : Comparable<T>>(
     val startingOffset: DebeziumOffset,
     val startingSchemaHistory: DebeziumSchemaHistory?,
     val isInputStateSynthetic: Boolean,
+    val recordsChannelType: OutputChannelType,
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
-    private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
+    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
     private lateinit var decoratedProperties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
+    lateinit var outputMessageRouter: OutputMessageRouter
 
     internal val closeReasonReference = AtomicReference<CloseReason>()
     internal val numEvents = AtomicLong()
@@ -56,18 +69,50 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
 
+    fun interface AcquiredResources : AutoCloseable
+    interface AcquiredResourceHolder<T>: AcquiredResources {
+        val resource: T
+    }
+
+
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire()
+        fun tryAcquireResources(resourcesType: List<ResourceType>): Map<ResourceType, AcquiredResources>? {
+            val acquiredResources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesType)
+
+            return acquiredResources?.map { it.key to when (it.value) {
+                is ConcurrencyResource.AcquiredThread -> AcquiredResources { it.value.close() }
+                is SocketResource.AcquiredSocket -> object : AcquiredResourceHolder<SocketResource.AcquiredSocket> {
+                    override val resource: SocketResource.AcquiredSocket = it.value as SocketResource.AcquiredSocket
+                    override fun close() = it.value.close()
+                }
+                else -> throw IllegalStateException("Unknown resource type: ${it.value::class.java}")
+            } }?.toMap()
+        }
+
+        val resourceType: List<ResourceType> =
+            when (recordsChannelType) {
+                JSONL,
+                PROTOBUF -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
+                STDIO -> listOf(RESOURCE_DB_CONNECTION)
+        }
+        val acquiredResources: Map<ResourceType, AcquiredResources> =
+            tryAcquireResources(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
-        this.acquiredThread.set(acquiredThread)
+
+        this.acquiredResources.set(acquiredResources)
         this.stateFilesAccessor = DebeziumStateFilesAccessor()
+/*
+        outputMessageRouter = OutputMessageRouter(
+            recordsChannelType,
+
+        )
+*/
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override fun releaseResources() {
         stateFilesAccessor.close()
-        acquiredThread.getAndSet(null)?.close()
+        acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }
 
     override suspend fun run() {

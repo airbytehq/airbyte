@@ -11,6 +11,8 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
 import io.airbyte.cdk.output.SimpleOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
@@ -48,8 +50,7 @@ sealed class FeedBootstrap<T : Feed>(
     private val stateManager: StateManager,
     /** [Feed] to emit records for. */
     val feed: T,
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
-    val outputFormat: String,
+    val outputChannelType: OutputChannelType,
 ) {
 
     /** Delegates to [StateManager.feeds]. */
@@ -391,14 +392,13 @@ sealed class FeedBootstrap<T : Feed>(
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
-            boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
-            outputFormat: String
+            outputChannelType: OutputChannelType
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory, outputFormat)
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, outputChannelType)
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, boostedOutputConsumerFactory, outputFormat)
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, outputChannelType)
             }
     }
 }
@@ -443,9 +443,8 @@ class GlobalFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
-    boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
-    outputFormat: String
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, boostedOutputConsumerFactory, outputFormat)
+    outputChannelType: OutputChannelType
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, outputChannelType)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
@@ -453,9 +452,8 @@ class StreamFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     stream: Stream,
-    boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
-    outputFormat: String
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, boostedOutputConsumerFactory, outputFormat) {
+    outputChannelType: OutputChannelType
+) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, outputChannelType) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer?): StreamRecordConsumer = EfficientStreamRecordConsumer(

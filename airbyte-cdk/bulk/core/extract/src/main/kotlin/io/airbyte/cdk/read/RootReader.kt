@@ -3,7 +3,7 @@ package io.airbyte.cdk.read
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
 import io.airbyte.cdk.output.SimpleOutputConsumer
 import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
@@ -35,10 +35,9 @@ class RootReader(
     val timeout: Duration,
     val outputConsumer: SimpleOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory?,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
-    val OutputFormat: String
+    val outputChannelType: OutputChannelType,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -79,7 +78,7 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, boostedOutputConsumerFactory).read() }
+                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, outputChannelType).read() }
                 }
             // Call listener hook.
             listener(feedJobs)

@@ -17,17 +17,17 @@ import java.time.Clock
  * OutputMessageRouter is responsible for building the appropriate routes for messages output
  */
 class OutputMessageRouter(
-    private val recordsOutputChannel: RecordsOutputChannel,
+    private val recordsChannelType: OutputChannelType,
     private val simpleOutputConsumer: SimpleOutputConsumer,
     private val additionalProperties: Map<String, String>,
     private val streamFeedBootstrap: StreamFeedBootstrap,
     private val acquiredResources: Map<ResourceType, Resource.Acquired>, )
     : AutoCloseable {
 
-    enum class RecordsOutputChannel {
-        JSON_SOCKET,
-        PROTOBUF_SOCKET,
-        STDIO_OUTPUT
+    enum class OutputChannelType {
+        JSONL,
+        PROTOBUF,
+        STDIO
     }
 
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
@@ -39,8 +39,8 @@ class OutputMessageRouter(
 
     init {
 
-        when (recordsOutputChannel) {
-            RecordsOutputChannel.JSON_SOCKET -> {
+        when (recordsChannelType) {
+            OutputChannelType.JSONL -> {
                 socketJsonOutputConsumer = SocketJsonOutputConsumer(
                     (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
                     Clock.systemUTC(),
@@ -52,7 +52,7 @@ class OutputMessageRouter(
                     efficientStreamRecordConsumer.accept(record, emptyMap())
                 }
             }
-            RecordsOutputChannel.PROTOBUF_SOCKET -> {
+            OutputChannelType.PROTOBUF -> {
                 protoOutputConsumer = SocketProtobufOutputConsumer(
                     (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
                     Clock.systemUTC(),
@@ -63,7 +63,7 @@ class OutputMessageRouter(
                     protoRecordOutputConsumer.accept(record, emptyMap())
                 }
             }
-            RecordsOutputChannel.STDIO_OUTPUT -> {
+            OutputChannelType.STDIO -> {
                 simpleEfficientStreamConsumer = streamFeedBootstrap.streamRecordConsumer(null)
             }
             }
@@ -91,34 +91,34 @@ class OutputMessageRouter(
     }
 
     fun acceptRecord(record: InternalRow) {
-        when (recordsOutputChannel) {
-            RecordsOutputChannel.JSON_SOCKET -> efficientStreamRecordConsumer.accept(record, emptyMap())
-            RecordsOutputChannel.PROTOBUF_SOCKET -> protoRecordOutputConsumer.accept(record, emptyMap())
-            RecordsOutputChannel.STDIO_OUTPUT -> simpleEfficientStreamConsumer.accept(record, emptyMap())
+        when (recordsChannelType) {
+            OutputChannelType.JSONL -> efficientStreamRecordConsumer.accept(record, emptyMap())
+            OutputChannelType.PROTOBUF -> protoRecordOutputConsumer.accept(record, emptyMap())
+            OutputChannelType.STDIO -> simpleEfficientStreamConsumer.accept(record, emptyMap())
         }
 
     }
 
     fun acceptNonRecord(airbyteMessage: AirbyteStateMessage, needAlsoSimpleOutout: Boolean) {
-        when (recordsOutputChannel) {
-            RecordsOutputChannel.JSON_SOCKET -> socketJsonOutputConsumer.accept(airbyteMessage)
-            RecordsOutputChannel.PROTOBUF_SOCKET -> protoOutputConsumer.accept(airbyteMessage)
-            RecordsOutputChannel.STDIO_OUTPUT -> simpleOutputConsumer.accept(airbyteMessage)
+        when (recordsChannelType) {
+            OutputChannelType.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
+            OutputChannelType.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
+            OutputChannelType.STDIO -> simpleOutputConsumer.accept(airbyteMessage)
         }
 
-        if (needAlsoSimpleOutout && recordsOutputChannel != RecordsOutputChannel.STDIO_OUTPUT) {
+        if (needAlsoSimpleOutout && recordsChannelType != OutputChannelType.STDIO) {
             simpleOutputConsumer.accept(airbyteMessage)
         }
     }
 
     fun acceptNonRecord(airbyteMessage: AirbyteStreamStatusTraceMessage, needAlsoSimpleOutout: Boolean) {
-        when (recordsOutputChannel) {
-            RecordsOutputChannel.JSON_SOCKET -> socketJsonOutputConsumer.accept(airbyteMessage)
-            RecordsOutputChannel.PROTOBUF_SOCKET -> protoOutputConsumer.accept(airbyteMessage)
-            RecordsOutputChannel.STDIO_OUTPUT -> simpleOutputConsumer.accept(airbyteMessage)
+        when (recordsChannelType) {
+            OutputChannelType.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
+            OutputChannelType.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
+            OutputChannelType.STDIO -> simpleOutputConsumer.accept(airbyteMessage)
         }
 
-        if (needAlsoSimpleOutout && recordsOutputChannel != RecordsOutputChannel.STDIO_OUTPUT) {
+        if (needAlsoSimpleOutout && recordsChannelType != OutputChannelType.STDIO) {
             simpleOutputConsumer.accept(airbyteMessage)
         }
     }

@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
-import io.airbyte.cdk.output.sockets.SocketWrapper
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -27,7 +25,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
 
-    lateinit var messageProcessor: OutputMessageRouter
+    lateinit var outputMessageRouter: OutputMessageRouter
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun generatePartitionId(length: Int): String =
@@ -39,16 +37,9 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val sharedState: JdbcSharedState = streamState.sharedState
     val selectQuerier: SelectQuerier = sharedState.selectQuerier
 
-    val boostedOutputConsumerFactory: BoostedOutputConsumerFactory? =
-        streamState.streamFeedBootstrap.boostedOutputConsumerFactory
-
-    /*val streamRecordConsumer: StreamRecordConsumer by lazy {
-        initStreamRecordConsumer()
-    }*/
     /** The [AcquiredResources] acquired for this [JdbcPartitionReader]. */
 
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
-    protected var socketJsonOutputConsumer: SocketJsonOutputConsumer? = null
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -57,8 +48,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val resourceTypes = when (boostedOutputConsumerFactory) {
-            null -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+        val resourceTypes = when (streamState.streamFeedBootstrap.outputChannelType) {
+            STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
             else -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
 
         }
@@ -70,12 +61,10 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         @Suppress("UNCHECKED_CAST")
         val r = (this.acquiredResources.get().get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as AcquiredResourceHolder<SocketResource.AcquiredSocket>)
             .resource // this is the socket resource we need for output
-        messageProcessor = OutputMessageRouter(
-            when (streamState.streamFeedBootstrap.outputFormat) {
-                "JSONL" -> OutputMessageRouter.RecordsOutputChannel.JSON_SOCKET
-                "PROTOBUF" -> OutputMessageRouter.RecordsOutputChannel.PROTOBUF_SOCKET
-                else -> OutputMessageRouter.RecordsOutputChannel.STDIO_OUTPUT
-            },streamState.streamFeedBootstrap.outputConsumer,  mapOf("partition_id" to partitionId),
+        outputMessageRouter = OutputMessageRouter(
+            streamState.streamFeedBootstrap.outputChannelType,
+            streamState.streamFeedBootstrap.outputConsumer,
+            mapOf("partition_id" to partitionId),
              streamState.streamFeedBootstrap,
              mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r))
 /*
@@ -86,25 +75,6 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    fun initStreamRecordConsumer() : StreamRecordConsumer =
-        streamState.streamFeedBootstrap.streamRecordConsumer(
-        when (boostedOutputConsumerFactory) {
-            null -> {
-                null
-            }
-            else -> {
-                val acquireSocketResource: AcquiredResources? =
-                    acquiredResources.get().getOrElse(ResourceType.RESOURCE_OUTPUT_SOCKET) {
-                        throw IllegalStateException("No socket resource acquired for partition reader")
-                    }
-                @Suppress("UNCHECKED_CAST")
-                val socketWrapper: SocketWrapper =
-                    (acquireSocketResource as AcquiredResourceHolder<SocketResource.AcquiredSocket>).resource.socketWrapper
-                socketJsonOutputConsumer = boostedOutputConsumerFactory.boostedOutputConsumer(socketWrapper, mapOf("partition_id" to partitionId))
-                socketJsonOutputConsumer
-            }
-        })
-
     fun out(row: SelectQuerier.ResultRow) {
         /*val s = streamState.streamFeedBootstrap.protoStreamRecordConsumer(ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
             Clock.systemUTC(), 256))
@@ -112,13 +82,13 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
 //        streamRecordConsumer.accept(row.data, row.changes)
 //        messageProcessor.acceptRecord(row.data)
-        messageProcessor.recordAcceptor(row.data)
+        outputMessageRouter.recordAcceptor(row.data)
     }
 
     override fun releaseResources() {
 //        streamRecordConsumer.close() // TEMP: swith to .use {}
-        if (::messageProcessor.isInitialized) {
-            messageProcessor.close()
+        if (::outputMessageRouter.isInitialized) {
+            outputMessageRouter.close()
         }
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
         partitionId = generatePartitionId(4)
@@ -145,7 +115,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     o.accept(s)
 */
 //                    boostedOutputConsumer?.accept(s)
-                    messageProcessor.acceptNonRecord(s, needAlsoSimpleOutout = false)
+                    outputMessageRouter.acceptNonRecord(s, needAlsoSimpleOutout = false)
                 }
                 is AirbyteStreamStatusTraceMessage -> {
 /*
@@ -154,7 +124,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     o.accept(s)
 */
 //                    boostedOutputConsumer?.accept(s)
-                    messageProcessor.acceptNonRecord(s, needAlsoSimpleOutout = false)
+                    outputMessageRouter.acceptNonRecord(s, needAlsoSimpleOutout = false)
                 }
             }
             s = PartitionReader.pendingStates.poll()
