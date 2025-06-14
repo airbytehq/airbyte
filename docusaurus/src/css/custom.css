@@ -390,3 +390,19 @@ nav a.navbar__link--active {
 .MarkpromptPrompt {
   padding-block: 0.35rem !important;
 }
+
+/* Header with button styling */
+.header-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-with-button h1 {
+  margin-bottom: 0;
+}
+
+/* Force no margin on the bottom when inside a flex container */
+header h1 {
+  margin-bottom: 0;
+}
