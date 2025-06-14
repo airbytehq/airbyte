@@ -15,7 +15,7 @@ from github import Auth, Github
 from .consts import (
     AIRBYTE_REPO,
     AUTO_MERGE_BYPASS_CI_CHECKS_LABEL,
-    # AUTO_MERGE_LABEL,  # << This is taken care of by native GitHub auto-merge.
+    AUTO_MERGE_LABEL,
     BASE_BRANCH,
     MERGE_METHOD,
 )
@@ -172,12 +172,11 @@ def auto_merge() -> None:
         logger.info(f"Fetching required passing contexts for {BASE_BRANCH}")
         required_passing_contexts = set(main_branch.get_required_status_checks().contexts)
         candidate_issues = gh_client.search_issues(
-            f"repo:{AIRBYTE_REPO} is:pr base:{BASE_BRANCH} state:open label:{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}"
-            # We no longer use this tool for auto-merging PRs that do not need to bypass CI checks
+            f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} base:{BASE_BRANCH} state:open"
         )
         prs = [issue.as_pull_request() for issue in candidate_issues]
         logger.info(
-            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label",
+            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the '{AUTO_MERGE_LABEL}' or '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label"
         )
         merged_prs = []
         for pr in prs:
