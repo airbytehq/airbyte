@@ -52,17 +52,17 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             else -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
 
         }
-        val acquiredResources: Map<ResourceType, AcquiredResource> =
+        val resources: Map<ResourceType, AcquiredResource> =
             partition.tryAcquireResourcesForReader(resourceTypes)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
-        this.acquiredResources.set(acquiredResources)
+        acquiredResources.set(resources)
 
         outputMessageRouter = OutputMessageRouter(
             streamState.streamFeedBootstrap.outputChannelType,
             streamState.streamFeedBootstrap.outputConsumer,
             mapOf("partition_id" to partitionId),
              streamState.streamFeedBootstrap,
-            this.acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap())
+            acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap())
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }

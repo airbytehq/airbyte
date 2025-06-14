@@ -11,7 +11,6 @@ import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.JSONL
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.PROTOBUF
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
-import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Resource
@@ -19,7 +18,6 @@ import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
-import io.airbyte.cdk.read.SocketResource
 import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -53,7 +51,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     val recordsChannelType: OutputChannelType,
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
-    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResources>>()
+    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
     private lateinit var decoratedProperties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
@@ -69,24 +67,23 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
 
-    fun interface AcquiredResources : AutoCloseable
-    interface AcquiredResourceHolder<T>: AcquiredResources {
-        val resource: T
+
+    interface AcquiredResource: AutoCloseable {
+        val resource: Resource.Acquired?
     }
 
-
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        fun tryAcquireResources(resourcesType: List<ResourceType>): Map<ResourceType, AcquiredResources>? {
-            val acquiredResources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesType)
+        fun tryAcquireResources(resourcesType: List<ResourceType>): Map<ResourceType, AcquiredResource>? {
+            val resources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesType)
 
-            return acquiredResources?.map { it.key to when (it.value) {
-                is ConcurrencyResource.AcquiredThread -> AcquiredResources { it.value.close() }
-                is SocketResource.AcquiredSocket -> object : AcquiredResourceHolder<SocketResource.AcquiredSocket> {
-                    override val resource: SocketResource.AcquiredSocket = it.value as SocketResource.AcquiredSocket
-                    override fun close() = it.value.close()
+            return resources?.map {
+                it.key to object : AcquiredResource {
+                    override val resource: Resource.Acquired? = it.value
+                    override fun close() {
+                        resource?.close()
+                    }
                 }
-                else -> throw IllegalStateException("Unknown resource type: ${it.value::class.java}")
-            } }?.toMap()
+            }?.toMap()
         }
 
         val resourceType: List<ResourceType> =
@@ -95,18 +92,12 @@ class CdcPartitionReader<T : Comparable<T>>(
                 PROTOBUF -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
         }
-        val acquiredResources: Map<ResourceType, AcquiredResources> =
+        val resources: Map<ResourceType, AcquiredResource> =
             tryAcquireResources(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
 
-        this.acquiredResources.set(acquiredResources)
+        acquiredResources.set(resources)
         this.stateFilesAccessor = DebeziumStateFilesAccessor()
-/*
-        outputMessageRouter = OutputMessageRouter(
-            recordsChannelType,
-
-        )
-*/
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
