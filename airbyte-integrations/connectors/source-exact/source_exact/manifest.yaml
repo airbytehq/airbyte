@@ -24,7 +24,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -34,10 +34,10 @@ definitions:
     url_base: https://start.exactonline.nl/api/v1/3691924/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: '{{ config["client_id"] }}'
       grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token"] }}'
       refresh_request_body:
         client_id: "{{ config['client_id'] }}"
         grant_type: refresh_token
@@ -104,7 +104,7 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist: { }
+  assist: {}
   testedStreams:
     Employments:
       hasRecords: false
@@ -120,5 +120,5 @@ schemas:
   Employments:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    properties: { }
+    properties: {}
     additionalProperties: true
