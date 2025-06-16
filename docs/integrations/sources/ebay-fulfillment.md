@@ -26,6 +26,7 @@ Documentation: https://developer.ebay.com/api-docs/sell/fulfillment/overview.htm
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2025-06-14 | [61250](https://github.com/airbytehq/airbyte/pull/61250) | Update dependencies |
 | 0.0.1 | 2025-05-14 | | Initial release by [@adityamohta](https://github.com/adityamohta) via Connector Builder |
 
 </details>
