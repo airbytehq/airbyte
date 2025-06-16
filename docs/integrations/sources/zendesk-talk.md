@@ -79,6 +79,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 1.2.7 | 2025-05-24 | [60770](https://github.com/airbytehq/airbyte/pull/60770) | Update dependencies |
 | 1.2.6 | 2025-05-10 | [59917](https://github.com/airbytehq/airbyte/pull/59917) | Update dependencies |
 | 1.2.5 | 2025-05-04 | [58933](https://github.com/airbytehq/airbyte/pull/58933) | Update dependencies |
 | 1.2.4 | 2025-04-19 | [58541](https://github.com/airbytehq/airbyte/pull/58541) | Update dependencies |

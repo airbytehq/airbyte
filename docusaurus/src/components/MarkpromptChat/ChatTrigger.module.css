@@ -1,0 +1,35 @@
+.chatTrigger {
+  color: var(--color-grey-900);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 6px 8px;
+  margin-top:2px;
+  background:
+    linear-gradient(var(--color-blue-30), var(--color-blue-30)
+    ) padding-box,
+    linear-gradient(90deg, var(--ifm-color-primary-dark)
+    0%, var(--color-orange-400)
+    100%) border-box;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: .2s ease-in;
+  white-space: nowrap;
+  margin-right: 4px;
+ &:hover {
+  filter: brightness(0.9);
+  color: var(--color-grey-900) !important;
+ }
+
+}
+.chatTrigger__icon {
+  display: inline-block;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  justify-content: center;
+}

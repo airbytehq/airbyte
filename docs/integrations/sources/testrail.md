@@ -45,6 +45,7 @@ Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments`
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.24 | 2025-05-24 | [60460](https://github.com/airbytehq/airbyte/pull/60460) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [60093](https://github.com/airbytehq/airbyte/pull/60093) | Update dependencies |
 | 0.0.22 | 2025-05-04 | [59613](https://github.com/airbytehq/airbyte/pull/59613) | Update dependencies |
 | 0.0.21 | 2025-04-27 | [59028](https://github.com/airbytehq/airbyte/pull/59028) | Update dependencies |

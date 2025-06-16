@@ -20,11 +20,6 @@ class S3V2CheckTest :
                     S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
                 ),
-                //                Uncomment when staging is re-enabled.
-                //                CheckTestConfig(
-                //                    Path.of(S3V2TestUtils.JSON_STAGING_CONFIG_PATH),
-                //                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                //                ),
                 CheckTestConfig(
                     S3V2TestUtils.getConfig(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),

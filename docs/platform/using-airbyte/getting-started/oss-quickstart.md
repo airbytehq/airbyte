@@ -186,7 +186,7 @@ Use [Homebrew](https://brew.sh/) to install abctl.
     ``` 
     -->
 
-    To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command.
+    To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command. In low-resource mode, you are unable to access the Connector Builder.
 
     ```bash
     abctl local install --low-resource-mode

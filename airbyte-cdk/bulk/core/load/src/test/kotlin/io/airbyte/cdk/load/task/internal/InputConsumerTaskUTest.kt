@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -18,6 +17,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.mockk.coEvery
@@ -25,12 +25,16 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import java.util.UUID
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+// TODO merge this class into InputConsumerTaskTest.
+//   There are historical reasons that these are separate classes, but those
+//   reasons are no longer true.
 class InputConsumerTaskUTest {
     @MockK lateinit var catalog: DestinationCatalog
     @MockK lateinit var inputFlow: ReservingDeserializingInputFlow
@@ -42,6 +46,7 @@ class InputConsumerTaskUTest {
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
     @MockK lateinit var partitioner: InputPartitioner
     @MockK lateinit var openStreamQueue: QueueWriter<DestinationStream>
+    @MockK lateinit var pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 
     private val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
     private lateinit var dstream: DestinationStream
@@ -50,12 +55,9 @@ class InputConsumerTaskUTest {
         InputConsumerTask(
             catalog,
             inputFlow,
-            checkpointQueue,
-            syncManager,
-            fileTransferQueue,
             recordQueueForPipeline,
             partitioner,
-            openStreamQueue
+            pipelineEventBookkeepingRouter
         )
 
     @BeforeEach
@@ -84,8 +86,8 @@ class InputConsumerTaskUTest {
                             DestinationRecord(
                                 stream = dstream,
                                 message = mockk(relaxed = true),
-                                serialized = "",
-                                schema = ObjectTypeWithoutSchema
+                                serializedSizeBytes = 0L,
+                                airbyteRawId = UUID.randomUUID()
                             )
                         )
                     )

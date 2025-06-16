@@ -6,10 +6,10 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.io.OutputStream
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -51,7 +52,7 @@ class ObjectLoaderPartFormatterTest {
     fun setup() {
         pathFactory = mockk()
         bufferedWriterFactory = mockk()
-        stream = mockk()
+        stream = mockk(relaxed = true)
         bufferedWriter = mockk()
         catalog = mockk()
         stateManager = mockk()
@@ -84,13 +85,19 @@ class ObjectLoaderPartFormatterTest {
 
     private fun makeRecord(): DestinationRecordRaw =
         DestinationRecordRaw(
-            stream,
-            AirbyteMessage()
-                .withRecord(
-                    AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
+            stream = stream,
+            rawData =
+                DestinationRecordJsonSource(
+                    source =
+                        AirbyteMessage()
+                            .withRecord(
+                                AirbyteRecordMessage()
+                                    .withEmittedAt(42)
+                                    .withData(Jsons.createObjectNode())
+                            )
                 ),
-            serialized = "",
-            ObjectTypeWithEmptySchema,
+            serializedSizeBytes = 0L,
+            airbyteRawId = UUID.randomUUID(),
         )
 
     private fun makeRecords(n: Int): Iterator<DestinationRecordRaw> =

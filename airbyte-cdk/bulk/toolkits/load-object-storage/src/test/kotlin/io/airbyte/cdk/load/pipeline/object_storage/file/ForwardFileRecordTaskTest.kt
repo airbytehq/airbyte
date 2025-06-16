@@ -7,10 +7,12 @@ package io.airbyte.cdk.load.pipeline.object_storage.file
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -22,6 +24,7 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordTask
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -30,6 +33,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -70,7 +74,7 @@ class ForwardFileRecordTaskTest {
     fun `forwards end of stream`() = runTest {
         val input =
             PipelineEndOfStream<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>(
-                Fixtures.descriptor
+                Fixtures.unmappedDescriptor
             )
         task.handleEvent(input)
 
@@ -92,7 +96,7 @@ class ForwardFileRecordTaskTest {
             val key = StreamKey(stream.descriptor)
             val context =
                 PipelineContext(
-                    mapOf(CheckpointId(123) to 14L),
+                    mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
                     Fixtures.record(),
                 )
             val result =
@@ -118,7 +122,7 @@ class ForwardFileRecordTaskTest {
         val key = StreamKey(stream.descriptor)
         val context =
             PipelineContext(
-                mapOf(CheckpointId(123) to 14L),
+                mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
                 Fixtures.record(),
             )
         val result =
@@ -146,7 +150,7 @@ class ForwardFileRecordTaskTest {
     }
 
     object Fixtures {
-        val descriptor = DestinationStream.Descriptor("namespace-1", "name-1")
+        val unmappedDescriptor = DestinationStream.Descriptor("namespace-1", "name-1")
 
         private fun message() =
             AirbyteMessage()
@@ -163,25 +167,23 @@ class ForwardFileRecordTaskTest {
 
         fun stream(includeFiles: Boolean = true, schema: ObjectType = schema()) =
             DestinationStream(
-                descriptor = descriptor,
+                unmappedNamespace = unmappedDescriptor.namespace,
+                unmappedName = unmappedDescriptor.name,
                 importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
+                namespaceMapper = NamespaceMapper()
             )
 
-        fun record(
-            message: AirbyteMessage = message(),
-            schema: ObjectType = schema(),
-            stream: DestinationStream = stream()
-        ) =
+        fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =
             DestinationRecordRaw(
                 stream = stream,
-                rawData = message,
-                serialized = "",
-                schema = schema,
+                rawData = DestinationRecordJsonSource(message),
+                serializedSizeBytes = 0L,
+                airbyteRawId = UUID.randomUUID(),
             )
     }
 }

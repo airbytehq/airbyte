@@ -1,9 +1,11 @@
 plugins {
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.8'
+    cdkVersionRequired = '0.48.14'
     features = ['db-sources']
     useLocalCdk = false
 }

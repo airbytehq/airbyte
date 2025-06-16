@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -41,29 +42,53 @@ class BigqueryBatchStandardInsertsLoader(
     private val job: JobId,
 ) : DirectLoader {
     private val recordFormatter = BigQueryRecordFormatter()
-    private val buffer = ByteArrayOutputStream()
+    // a TableDataWriteChannel holds (by default) a 15MB buffer in memory.
+    // so we start out by writing to a BAOS, which grows dynamically.
+    // when the BAOS reaches 15MB, we create the TableDataWriteChannel and switch over
+    // to writing to the writechannel directly.
+    // invariant: either the buffer is nonnull, or the writer is initialized. They are never both
+    // active at the same time.
+    // bigquery sets daily limits on how many TableDataWriteChannel jobs you can run,
+    // so we can't just flush+close a TableDataWriteChannel as soon as we reach 15MB.
+    private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
+    private lateinit var writer: TableDataWriteChannel
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
-        buffer.write(byteArray)
-        // the default chunk size on the TableDataWriteChannel is 15MB,
-        // so just terminate when we get there.
-        if (buffer.size() > 15 * 1024 * 1024) {
-            finish()
-            return DirectLoader.Complete
+
+        if (this::writer.isInitialized) {
+            writer.write(ByteBuffer.wrap(byteArray))
         } else {
-            return DirectLoader.Incomplete
+            buffer!!.write(byteArray)
+            // the default chunk size on the TableDataWriteChannel is 15MB,
+            // so switch to writing to a real writechannel when we reach that size
+            if (buffer!!.size() > 15 * 1024 * 1024) {
+                switchToWriteChannel()
+            }
         }
+
+        // rely on the CDK to tell us when to finish()
+        return DirectLoader.Incomplete
     }
 
-    override fun finish() {
-        // this object holds a 15MB buffer in memory.
-        // we shouldn't initialize that until we actually need it,
-        // so just do it in finish.
-        // this minimizes the time we're occupying that chunk of memory.
-        val writer: TableDataWriteChannel =
+    override suspend fun finish() {
+        if (!this::writer.isInitialized) {
+            switchToWriteChannel()
+        }
+        writer.close()
+        BigQueryUtils.waitForJobFinish(writer.job)
+    }
+
+    override fun close() {}
+
+    // Somehow spotbugs thinks that `writer.write(ByteBuffer.wrap(byteArray))` is a redundant null
+    // check...
+    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
+    private fun switchToWriteChannel() {
+        writer =
             try {
                 bigquery.writer(job, writeChannelConfiguration)
             } catch (e: BigQueryException) {
@@ -73,11 +98,11 @@ class BigqueryBatchStandardInsertsLoader(
                     throw BigQueryException(e.code, e.message)
                 }
             }
-        writer.use { writer.write(ByteBuffer.wrap(buffer.toByteArray())) }
-        BigQueryUtils.waitForJobFinish(writer.job)
+        val byteArray = buffer!!.toByteArray()
+        // please GC this object :)
+        buffer = null
+        writer.write(ByteBuffer.wrap(byteArray))
     }
-
-    override fun close() {}
 }
 
 class BigqueryConfiguredForBatchStandardInserts : Condition {

@@ -63,7 +63,7 @@ class SourceGoogleAds(AbstractSource):
             except ValueError:
                 message = (
                     f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v17/query_validator"
+                    "https://developers.google.com/google-ads/api/fields/v18/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
@@ -181,10 +181,10 @@ class SourceGoogleAds(AbstractSource):
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
 
         # Check custom query request validity by sending metric request with non-existent time window
-        for query in config.get("custom_queries_array", []):
+        for config_query_dict in config.get("custom_queries_array", []):
             for customer in customers:
-                table_name = query["table_name"]
-                query = query["query"]
+                table_name = config_query_dict["table_name"]
+                query = config_query_dict["query"]
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                     logger.warning(
                         f"Metrics are not available for manager account {customer.id}. "

@@ -30,6 +30,7 @@ class FileChunkStep<T : RemoteObject<*>>(
     private val partQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     private val pathFactory: ObjectStoragePathFactory,
+    private val uploadIdGenerator: UploadIdGenerator,
 ) : LoadPipelineStep {
     override val numWorkers: Int = 1
 
@@ -39,7 +40,7 @@ class FileChunkStep<T : RemoteObject<*>>(
             catalog,
             pathFactory,
             FileHandleFactory(),
-            UploadIdGenerator(),
+            uploadIdGenerator,
             inputQueue,
             partQueue,
             ObjectLoaderFormattedPartPartitioner(),

@@ -71,6 +71,18 @@
       "title": "Profile visits title",
       "description": "Profile visits description.",
       "id": "66123508374641123/insights/profile_visits/lifetime"
+    },
+    {
+      "name": "views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 11000
+        }
+      ],
+      "title": "Views",
+      "description": "Number of times the carousel album was viewed.",
+      "id": "66123508374641123/insights/views/lifetime"
     }
   ]
 }

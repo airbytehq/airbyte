@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -108,12 +109,14 @@ abstract class BigqueryTDWriteTest(configContents: String) :
     open fun testAppendCdkMigration() {
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = NamespaceMapper()
             )
         // Run a sync on the old CDK
         runSync(
@@ -121,8 +124,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                 ),
@@ -139,8 +141,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 5678,
                 ),
@@ -193,12 +194,14 @@ abstract class BigqueryTDWriteTest(configContents: String) :
     open fun testDedupCdkMigration() {
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                namespaceMapper = NamespaceMapper(),
             )
         // Run a sync on the old CDK
         runSync(
@@ -206,8 +209,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                 ),
@@ -224,8 +226,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             stream,
             listOf(
                 InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
+                    stream = stream,
                     data = """{"id": 1234}""",
                     emittedAtMs = 5678,
                 ),

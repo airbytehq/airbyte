@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -65,20 +66,20 @@ class DefaultDestinationCatalogFactory {
         catalog: ConfiguredAirbyteCatalog,
         streamFactory: DestinationStreamFactory,
         @Value("\${${Operation.PROPERTY}}") operation: String,
+        @Named("checkNamespace") checkNamespace: String?,
+        namespaceMapper: NamespaceMapper
     ): DestinationCatalog {
         if (operation == "check") {
             // generate a string like "20240523"
             val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
             // generate 5 random characters
             val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
+            val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
             return DestinationCatalog(
                 listOf(
                     DestinationStream(
-                        descriptor =
-                            DestinationStream.Descriptor(
-                                CHECK_STREAM_NAMESPACE,
-                                "test$date$random"
-                            ),
+                        unmappedNamespace = namespace,
+                        unmappedName = "test$date$random",
                         importType = Append,
                         schema =
                             ObjectType(
@@ -87,6 +88,7 @@ class DefaultDestinationCatalogFactory {
                         generationId = 1,
                         minimumGenerationId = 0,
                         syncId = 1,
+                        namespaceMapper = namespaceMapper
                     )
                 )
             )

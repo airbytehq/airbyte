@@ -10,11 +10,29 @@ interface CloseableCoroutine {
     suspend fun close()
 }
 
-suspend fun <T : CloseableCoroutine, R> T.use(block: suspend (T) -> R) =
+// this is taken almost verbatim from kotlin's AutoCloseable?.use implementation,
+// but with `suspend` modifiers added.
+suspend inline fun <T : CloseableCoroutine, R> T.use(block: (T) -> R): R {
+    var exception: Throwable? = null
     try {
-        block(this)
+        return block(this)
+    } catch (e: Throwable) {
+        exception = e
+        throw e
     } finally {
-        close()
+        this.closeFinally(exception)
+    }
+}
+
+suspend inline fun CloseableCoroutine.closeFinally(cause: Throwable?): Unit =
+    when {
+        cause == null -> close()
+        else ->
+            try {
+                close()
+            } catch (closeException: Throwable) {
+                cause.addSuppressed(closeException)
+            }
     }
 
 /** Set the latch exactly once. Return true iff this is the first time we've set it. */

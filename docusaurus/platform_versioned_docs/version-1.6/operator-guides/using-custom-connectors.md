@@ -3,7 +3,7 @@ products: oss-*
 sidebar_label: Uploading custom connectors
 ---
 
-import ContainerProviders from '@site/static/\_docker_image_registries.md';
+import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Uploading Docker-based custom connectors
 
@@ -35,6 +35,10 @@ To push and pull images to your private Docker registry, you need to authenticat
 
 - Your local or CI environment (where you build your connector image) must be able to **push** images to your registry.
 - Your Airbyte instance must be able to **pull** images from your registry.
+
+## 3. Adhere to Airbyte's Docker Image Requirements
+
+See the [Airbyte Protocol Docker Interface](../understanding-airbyte/airbyte-protocol-docker.md) page for specific Docker image requirements, such as required environment variables.
 
 ### For Docker-compose Airbyte deployments
 
@@ -119,12 +123,12 @@ If you are running Airbyte in kind (kubernetes in docker -- this is the default 
 
 A connector container can be loaded using the following command:
 
-```
+```bash
 kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
 ```
 
 For the example above, the command would be:
 
-```
+```bash
 kind load docker-image airbyte/source-custom:1 -n airbyte-abctl
 ```

@@ -65,8 +65,8 @@ Send a POST request to /v1/regions/.
 ```bash
 curl --request POST \
   --url https://example.com/api/public/v1/regions \
-  --header 'authorization: Bearer $TOKEN' \
-  --header 'content-type: application/json' \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   --data '{
   "name": "aws-us-east-1",
   "organizationId": "00000000-0000-0000-0000-000000000000"
@@ -115,10 +115,10 @@ Send a POST request to /v1/dataplanes.
 
 ```bash
 curl -X POST https://example.com/api/public/v1/dataplanes \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
-    "name": "My Data Plane"
+    "name": "My Data Plane",
     "regionId": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319"
   }'
 ```
@@ -158,7 +158,23 @@ One you have a region and a data plane, you need to associate that region to you
 You can only associate each workspace with one region.
 :::
 
-### When creating a new workspace
+<Tabs>
+  <TabItem value="workspace-association-ui" label="UI" default>
+
+Follow these steps to associate your region to your current workspace using Airbyte's user interface.
+
+1. In the navigation panel, click **Settings**.
+
+2. Under **Workspace**, click **General**.
+
+3. Under **Region**, select your region.
+
+4. Click **Save changes**.
+
+  </TabItem>
+  <TabItem value="workspace-association-api" label="API">
+
+When creating a new workspace:
 
 <details>
   <summary>Request</summary>
@@ -167,8 +183,8 @@ Send a POST request to /v1/workspaces/
 
 ```bash
 curl -X POST "https://example.com/api/public/v1/workspaces" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
     "name": "My New Workspace",
     "dataResidency": "auto"
@@ -203,17 +219,17 @@ For additional request examples, see [the API reference](https://reference.airby
 
 </details>
 
-### When updating a workspace
+When updating a workspace:
 
 <details>
   <summary>Request</summary>
 
-Send a PATCH request to /v1/workspaces/`{workspaceId}`
+Send a PATCH request to /v1/workspaces/`{workspaceId}`.
 
 ```bash
 curl -X PATCH "https://example.com/api/public/v1/workspaces/{workspaceId}" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
   -d '{
     "name": "Updated Workspace Name",
     "dataResidency": "us-west"
@@ -247,16 +263,18 @@ For additional request examples, see [the API reference](https://reference.airby
 ```
 
 </details>
+  </TabItem>
+</Tabs>
+
+
 
 ## 4. Configure Kubernetes Secrets {#step-4}
 
 Your data plane relies on Kubernetes secrets to identify itself with the control plane.
 
-In the next step, you create a values.yaml file that references this Kubernetes secret store and these secret keys. Configure all required secrets before deploying your data plane.
+In step 5, you create a values.yaml file that references this Kubernetes secret store and these secret keys. Configure all required secrets before deploying your data plane.
 
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using kubectl directly. If your Kubernetes cluster already has permissions to make requests to an external entity via an instance profile, credentials aren't required. For example, if your Amazon EKS cluster has a sufficient AWS IAM role to make requests to AWS S3, you don't need to specify access keys.
-
-### Creating a Kubernetes secret
 
 While you can set the name of the secret to whatever you prefer, you need to set that name in your values.yaml file. For this reason it's easiest to keep the name of airbyte-config-secrets unless you have a reason to change it.
 
@@ -422,19 +440,21 @@ helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1
 
 ## Check which region your workspaces use
 
-### From Airbyte's UI
+<Tabs>
+  <TabItem value="check-regions" label="UI" default>
 
 You can see a list of your workspaces and the region associated to each from Airbyte's organization settings.
 
 1. In Airbyte's user interface, click **Settings**.
 
-2. Click **General**.
+2. Under **Organization**, click **General**.
 
 Airbyte displays your workspaces and each workspace region under **Regions**.
 
 ![Multiple regions displayed in Airbyte's General Organization settings](assets/multiple-regions-in-airbyte.png)
 
-### From Airbyte's API
+  </TabItem>
+  <TabItem value="check-regions-api" label="API">
 
 Request:
 
@@ -455,3 +475,9 @@ Response:
   "dataResidency": "auto",
 }
 ```
+
+  </TabItem>
+</Tabs>
+
+
+

@@ -13,10 +13,13 @@ import com.google.cloud.bigquery.TableDefinition
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TimePartitioning
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
@@ -270,6 +273,8 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
                         .primaryKey
                         .map { pk -> columnNameMapping[pk.first()]!! }
                         .toSet()
+                SoftDelete,
+                Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
             }
         }
     }

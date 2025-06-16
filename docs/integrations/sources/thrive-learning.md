@@ -23,6 +23,7 @@ A Connector for Thrive Learning
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2025-05-25 | [60447](https://github.com/airbytehq/airbyte/pull/60447) | Update dependencies |
 | 0.0.1 | 2025-05-16 | | Initial release by [@cjm-s](https://github.com/cjm-s) via Connector Builder |
 
 </details>
