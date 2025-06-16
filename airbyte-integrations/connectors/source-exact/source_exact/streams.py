@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import re
 from abc import ABC
 from typing import Any, Mapping, MutableMapping, Optional
