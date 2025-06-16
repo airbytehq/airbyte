@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.factory.object_storage
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -24,6 +23,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
+import io.micronaut.inject.qualifiers.Qualifiers
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
@@ -185,7 +185,6 @@ class ObjectLoaderQueueBeanFactory(
  */
 class IsFileTransferCondition : Condition {
     override fun matches(context: ConditionContext<*>): Boolean {
-        val catalog = context.beanContext.getBean(DestinationCatalog::class.java)
-        return catalog.streams.any { it.includeFiles }
+        return context.beanContext.getBean(Boolean::class.java, Qualifiers.byName("isFileTransfer"))
     }
 }

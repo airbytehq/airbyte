@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
@@ -51,7 +50,6 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
-    catalog: DestinationCatalog,
     routeEventStep: RouteEventStep,
     fileChunkStep: FileChunkStep<T>?,
     @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>?,
@@ -63,10 +61,11 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
     processFileTaskLegacyStep: ProcessFileTaskLegacyStep,
+    @Named("isFileTransfer") isFileTransfer: Boolean,
 ) :
     LoadPipeline(
         selectPipelineSteps(
-            catalog,
+            isFileTransfer,
             routeEventStep,
             fileChunkStep,
             fileChunkUploader,
@@ -81,11 +80,8 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
         )
     ) {
     companion object {
-        fun hasFileTransfer(catalog: DestinationCatalog): Boolean =
-            catalog.streams.any { it.includeFiles }
-
         fun <K : WithStream, T : RemoteObject<*>> selectPipelineSteps(
-            catalog: DestinationCatalog,
+            isFileTransfer: Boolean,
             routeEventStep: RouteEventStep,
             fileChunkStep: FileChunkStep<T>?,
             fileChunkUploader: ObjectLoaderPartLoaderStep<T>?,
@@ -98,7 +94,7 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             isLegacyFileTransfer: Boolean,
             legacyProcessFileStep: ProcessFileTaskLegacyStep,
         ): List<LoadPipelineStep> {
-            return if (hasFileTransfer(catalog)) {
+            return if (isFileTransfer) {
                 listOf(
                     routeEventStep,
                     fileChunkStep!!,
