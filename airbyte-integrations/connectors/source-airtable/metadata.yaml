@@ -18,8 +18,8 @@ data:
     jobSpecific:
       - jobType: discover_schema
         resourceRequirements:
-          memory_limit: 2048Mi
-          memory_request: 2048Mi
+          memory_limit: 1024Mi
+          memory_request: 1024Mi
   githubIssueLabel: source-airtable
   icon: airtable.svg
   license: MIT
