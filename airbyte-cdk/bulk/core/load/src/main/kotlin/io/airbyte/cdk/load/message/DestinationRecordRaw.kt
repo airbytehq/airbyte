@@ -38,6 +38,8 @@ data class DestinationRecordRaw(
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
+            // This is bad for proto, no point of using proto if we are converting it back to JSON
+            // again
             asJsonRecord().toAirbyteValue(),
             rawData.emittedAtMs,
             rawData.sourceMeta
