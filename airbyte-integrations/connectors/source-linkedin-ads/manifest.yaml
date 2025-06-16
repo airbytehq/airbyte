@@ -1808,11 +1808,12 @@ spec:
                 - YEARLY
         default: []
       num_workers:
-        type: integer
         title: Number of Workers
+        description: The number of workers to use for the connector. This is used to limit the number of concurrent requests to the LinkedIn Ads API. If not set, the default is 3 workers.
+        type: integer
         default: 3
         minimum: 2
-        description: The number of workers to use for the connector. This is used to limit the number of concurrent requests to the LinkedIn Ads API. If not set, the default is 3 workers.
+        maximum: 50
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
