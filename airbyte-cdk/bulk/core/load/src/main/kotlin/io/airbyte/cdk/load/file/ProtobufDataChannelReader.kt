@@ -17,8 +17,6 @@ import java.io.InputStream
 class ProtobufDataChannelReader(private val destinationMessageFactory: DestinationMessageFactory) :
     DataChannelReader {
     private val parser = AirbyteMessageProtobuf.parser()
-
-    // this
     override fun read(inputStream: InputStream): Sequence<DestinationMessage> = sequence {
         val countingInputStream = CountingInputStream(inputStream)
         var count = countingInputStream.count
