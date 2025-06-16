@@ -188,14 +188,18 @@ sealed interface InputCheckpoint : InputMessage
 
 data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckpoint {
     constructor(
-        stream: DestinationStream,
+        streamNamespace: String?,
+        streamName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
     ) : this(
         StreamCheckpoint(
-            Checkpoint(stream, state = blob.deserializeToNode()),
+            Checkpoint(
+                DestinationStream.Descriptor(streamNamespace, streamName),
+                state = blob.deserializeToNode()
+            ),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
@@ -208,7 +212,8 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
 
 data class InputGlobalCheckpoint(
     val sharedState: JsonNode?,
-    val checkpointKey: CheckpointKey? = null
+    val checkpointKey: CheckpointKey? = null,
+    val streamStates: List<Checkpoint> = emptyList(),
 ) : InputCheckpoint {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
@@ -216,7 +221,11 @@ data class InputGlobalCheckpoint(
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(AirbyteGlobalState().withSharedState(sharedState))
+                    .withGlobal(
+                        AirbyteGlobalState()
+                            .withSharedState(sharedState)
+                            .withStreamStates(streamStates.map { it.asProtocolObject() })
+                    )
                     .also {
                         if (checkpointKey != null) {
                             it.additionalProperties["partition_id"] =
