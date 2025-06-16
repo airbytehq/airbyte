@@ -110,11 +110,13 @@ class ClickhouseAirbyteClient(
         val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
-            tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
-                .map { column -> ClickHouseColumn.of(
-                    columnNameMapping[column.columnName] ?: column.columnName,
-                    column.dataType,
-                    column.isNullable,
+            tableSchema.columns
+                .filterNot { column -> column.columnName in COLUMN_NAMES }
+                .map { column ->
+                    ClickHouseColumn.of(
+                        columnNameMapping[column.columnName] ?: column.columnName,
+                        column.dataType,
+                        column.isNullable,
                     )
                 }
 
@@ -126,12 +128,16 @@ class ClickhouseAirbyteClient(
         }
 
         val airbyteSchemaWithClickhouseType: Map<String, String> =
-            stream.schema.asColumns().map { (fieldName, fieldType) ->
-                // We don't need to nullable information here because we are setting all fields as
-                // nullable in the destination
-                // Add map key
-                fieldName to fieldType.type.toDialectType()
-            }.toMap()
+            stream.schema
+                .asColumns()
+                .map { (fieldName, fieldType) ->
+                    // We don't need to nullable information here because we are setting all fields
+                    // as
+                    // nullable in the destination
+                    // Add map key
+                    fieldName to fieldType.type.toDialectType()
+                }
+                .toMap()
 
         val columnChanges: AlterationSummary =
             getChangedColumns(
@@ -163,8 +169,7 @@ class ClickhouseAirbyteClient(
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
                 deleted.add(clickhouseColumn.columnName)
             } else {
-                val clickhouseType =
-                    clickhouseColumn.dataType.getDataTypeAsString()
+                val clickhouseType = clickhouseColumn.dataType.getDataTypeAsString()
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
