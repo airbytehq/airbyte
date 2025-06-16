@@ -218,7 +218,6 @@ class PostgresSourceExceptionHandlerTest {
     @Test
     fun testUnhandledFatalException() {
         val exception = PSQLException("FATAL: database does not exist", null)
-        val externalMessage = exceptionHandler!!.getExternalMessage(exception)
         // This FATAL error shouldn't match any of your specific patterns
         Assertions.assertFalse(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertFalse(exceptionHandler!!.checkErrorType(exception, FailureType.CONFIG))
