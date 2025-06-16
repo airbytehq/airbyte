@@ -1225,6 +1225,11 @@ streams:
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/users_identities_stream"
+  # todo: The following streams are enterprise-only streams. However, the low-code CDK does not support
+  #  ConditionalStreams based on an API endpoint. These should be under that component once the CDK supports it.
+  # - $ref: "#/definitions/ticket_forms_stream"
+  # - $ref: "#/definitions/account_attributes_stream"
+  # - $ref: "#/definitions/attribute_definitions_stream"
 
 # Zendesk Support offers four tiers of rate limits:
 # - Team: 200 req/min (3.3 req/sec)
