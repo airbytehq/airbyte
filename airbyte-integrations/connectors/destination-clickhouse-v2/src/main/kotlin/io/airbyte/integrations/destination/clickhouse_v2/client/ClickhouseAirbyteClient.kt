@@ -159,7 +159,7 @@ class ClickhouseAirbyteClient(
         )
     }
 
-    private fun getChangedColumns(
+    internal fun getChangedColumns(
         tableColumns: List<ClickHouseColumn>,
         catalogColumns: Map<String, String>,
     ): AlterationSummary {
@@ -221,11 +221,11 @@ class ClickhouseAirbyteClient(
         }
     }
 
-    private suspend fun execute(query: String): CommandResponse {
+    internal suspend fun execute(query: String): CommandResponse {
         return client.execute(query).await()
     }
 
-    private suspend fun query(query: String): QueryResponse {
+    internal suspend fun query(query: String): QueryResponse {
         return client.query(query).await()
     }
 
