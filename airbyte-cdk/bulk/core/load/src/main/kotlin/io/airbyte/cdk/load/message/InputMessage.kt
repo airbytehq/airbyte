@@ -197,7 +197,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
     ) : this(
         StreamCheckpoint(
             Checkpoint(
-                DestinationStream.Descriptor(streamNamespace, streamName),
+                stream = DestinationStream.Descriptor(streamNamespace, streamName),
                 state = blob.deserializeToNode()
             ),
             Stats(sourceRecordCount),
