@@ -5,12 +5,9 @@
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /** Releasable reservation of memory. */
 class Reserved<T>(
@@ -42,15 +39,16 @@ class Reserved<T>(
  * TODO: Some degree of logging/monitoring around how accurate we're actually being?
  */
 class ReservationManager(val totalCapacityBytes: Long) {
+    val log = KotlinLogging.logger {}
 
     private var usedBytes = AtomicLong(0L)
-    private var updateChannel = MutableStateFlow(0L)
-    private val reserveLock = Mutex()
+    //    private var updateChannel = MutableStateFlow(0L)
+    //    private val reserveLock = Mutex()
 
     val remainingCapacityBytes: Long
         get() = totalCapacityBytes - usedBytes.get()
-    val totalBytesReserved: Long
-        get() = usedBytes.get()
+    //    val totalBytesReserved: Long
+    //        get() = usedBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
     suspend fun <T> reserve(bytes: Long, reservedFor: T): Reserved<T> {
@@ -60,20 +58,20 @@ class ReservationManager(val totalCapacityBytes: Long) {
     }
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
-    suspend fun reserve(bytes: Long) {
-        if (bytes > totalCapacityBytes) {
-            throw IllegalArgumentException(
-                "Requested ${bytes}b exceeds ${totalCapacityBytes}b total"
-            )
-        }
-
-        reserveLock.withLock {
-            while (usedBytes.get() + bytes > totalCapacityBytes) {
-                updateChannel.first()
-            }
-            usedBytes.addAndGet(bytes)
-        }
-    }
+    //    suspend fun reserve(bytes: Long) {
+    //        if (bytes > totalCapacityBytes) {
+    //            throw IllegalArgumentException(
+    //                "Requested ${bytes}b exceeds ${totalCapacityBytes}b total"
+    //            )
+    //        }
+    //
+    //        reserveLock.withLock {
+    //            while (usedBytes.get() + bytes > totalCapacityBytes) {
+    //                updateChannel.first()
+    //            }
+    //            usedBytes.addAndGet(bytes)
+    //        }
+    //    }
 
     suspend fun <T> reserveOrThrow(bytes: Long, reservedFor: T): Reserved<T> {
         //        reserveLock.withLock {
@@ -87,6 +85,7 @@ class ReservationManager(val totalCapacityBytes: Long) {
     }
 
     suspend fun release(bytes: Long) {
+        log.debug { "bytes $bytes" }
         //        updateChannel.value = usedBytes.addAndGet(-bytes)
     }
 }
