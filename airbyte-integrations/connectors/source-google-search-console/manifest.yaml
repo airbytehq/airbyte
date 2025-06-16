@@ -245,9 +245,12 @@ spec:
   config_normalization_rules:
     config_migrations:
       - type: ConfigMigration
-        description: "Migrate the custom_reports config to the new custom_reports_array format"
+        description: Migrate the custom_reports config to the new custom_reports_array format
         transformations:
           - type: ConfigAddFields
+            # Note that during jinja interpolation of the `custom_reports` value, jinja infers the datatype of the value.
+            # Therefore no conversion is needed to convert the string to a list. And if the value is already a list, it
+            # will remain a list.
             fields:
               - type: AddedFieldDefinition
                 path: ["custom_reports_array"]
