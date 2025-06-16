@@ -26,11 +26,11 @@ class SourceExact(AbstractSource):
         return api.check_connection()
 
     def streams(self, config) -> list[ExactStream]:
-        return [CRMAccountClassifications(config), ]
+        return [
+            CRMAccountClassifications(config),
+        ]
 
-    def discover(
-            self, logger: logging.Logger, config
-    ) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
 

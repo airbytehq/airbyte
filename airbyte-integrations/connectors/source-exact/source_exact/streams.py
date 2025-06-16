@@ -31,10 +31,10 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
     In addition, Exact enforces single use refresh tokens. The stream will automatically refresh the access token when
     it is expired.
     """
+
     endpoint = None
 
     def __init__(self, config):
-
         self._divisions = config["divisions"]
         self._base_url = config["base_url"]
         self.token_refresh_endpoint = f"{self._base_url}/api/oauth/token"
@@ -75,9 +75,12 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         return f"{self._base_url}/api/v1/{self._active_division}/"
 
-    def path(self, stream_state: Optional[Mapping[str, Any]] = None,
-             stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+            self,
+            stream_state: Optional[Mapping[str, Any]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         """
         Returns the URL to call. On first call uses the property `endpoint` of subclass.
         For subsequent pages, `next_page_token` is used.

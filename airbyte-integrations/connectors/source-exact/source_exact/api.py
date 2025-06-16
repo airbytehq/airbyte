@@ -16,8 +16,8 @@ class ExactAPI:
             authenticator = ExactOauth2Authenticator(
                 connector_config=self.config,
                 token_refresh_endpoint=f"{self.config['base_url']}/api/oauth2/token",
-                client_id=self.config['credentials']["client_id"],
-                client_secret=self.config['credentials']["client_secret"],
+                client_id=self.config["credentials"]["client_id"],
+                client_secret=self.config["credentials"]["client_secret"],
             )
             self._authenticator = authenticator
         return self._authenticator
