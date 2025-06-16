@@ -147,15 +147,14 @@ public class DynamodbSource extends BaseConnector implements Source {
       }
 
       @Override
-      public void close() throws Exception {
+      public void close() {
         Exception primaryException = null;
 
         try {
           compositeIterator.close();
         } catch (final Exception e) {
-          // Check for interruption and restore the thread's interrupted flag.
           if (e instanceof InterruptedException) {
-            Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();  // Preserve interrupt status
           }
           primaryException = e;
         }
@@ -163,7 +162,6 @@ public class DynamodbSource extends BaseConnector implements Source {
         try {
           dynamodbOperations.close();
         } catch (final Exception e) {
-          // Check for interruption and restore the thread's interrupted flag.
           if (e instanceof InterruptedException) {
             Thread.currentThread().interrupt();
           }
@@ -176,7 +174,10 @@ public class DynamodbSource extends BaseConnector implements Source {
         }
 
         if (primaryException != null) {
-          throw primaryException;
+          if (primaryException instanceof RuntimeException) {
+            throw (RuntimeException) primaryException;
+          }
+          throw new RuntimeException(primaryException);
         }
       }
     };
