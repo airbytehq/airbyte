@@ -22,6 +22,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -81,7 +82,13 @@ class PipelineEventBookkeepingRouterTest {
 
         val event =
             router.handleStreamMessage(
-                DestinationRecord(stream1, mockk(relaxed = true), 0L, null),
+                DestinationRecord(
+                    stream = stream1,
+                    message = mockk(relaxed = true),
+                    serializedSizeBytes = 0L,
+                    checkpointId = null,
+                    airbyteRawId = UUID.randomUUID()
+                ),
                 unopenedStreams = mutableSetOf(),
             ) as PipelineMessage
 
@@ -99,7 +106,13 @@ class PipelineEventBookkeepingRouterTest {
 
             val event =
                 router.handleStreamMessage(
-                    DestinationRecord(stream1, mockk(relaxed = true), 0L, CheckpointId("bar")),
+                    DestinationRecord(
+                        stream = stream1,
+                        message = mockk(relaxed = true),
+                        serializedSizeBytes = 0L,
+                        checkpointId = CheckpointId("bar"),
+                        airbyteRawId = UUID.randomUUID()
+                    ),
                     unopenedStreams = mutableSetOf(),
                 ) as PipelineMessage
 
@@ -116,7 +129,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1
+        every { checkpointMessage.stream } returns stream1.descriptor
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -142,7 +155,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1
+        every { checkpointMessage.stream } returns stream1.descriptor
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))

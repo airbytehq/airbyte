@@ -1,4 +1,4 @@
-# Connector Builder Intro
+# Connector Builder
 
 Connector Builder is a no-code tool that’s part of the Airbyte UI.
 It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and lets you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace.

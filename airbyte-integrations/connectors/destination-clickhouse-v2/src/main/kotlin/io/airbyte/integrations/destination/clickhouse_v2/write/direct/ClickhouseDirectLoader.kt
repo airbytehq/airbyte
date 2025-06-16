@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
@@ -34,7 +35,6 @@ class ClickhouseDirectLoader(
 
     object Constants {
         const val UUID = "bf7d3df8-8a91-4fd4-bd4c-89c293ba1d6b"
-        const val GEN_ID = 0L
         const val BATCH_SIZE_RECORDS = 500000
         const val DELIMITER = "\n"
 
@@ -46,9 +46,10 @@ class ClickhouseDirectLoader(
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
+
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
-        protocolRecord.put(Constants.FIELD_GEN_ID, Constants.GEN_ID)
-        protocolRecord.put(Constants.FIELD_RAW_ID, Constants.UUID)
+        protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
+        protocolRecord.put(Constants.FIELD_RAW_ID, UUID.randomUUID().toString())
 
         val meta = Jsons.jsonNode(record.rawData.sourceMeta) as ObjectNode
         meta.put("sync_id", record.stream.syncId)
@@ -70,14 +71,13 @@ class ClickhouseDirectLoader(
     private suspend fun flush() {
         val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
         buffer = ByteArrayOutputStream()
-        log.info { "Beginning insert of $recordCount rows into ${descriptor.name}" }
 
         val insertResult =
             clickhouseClient
                 .insert(
                     "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
                     jsonBytes,
-                    ClickHouseFormat.JSONEachRow
+                    ClickHouseFormat.JSONEachRow,
                 )
                 .await()
 

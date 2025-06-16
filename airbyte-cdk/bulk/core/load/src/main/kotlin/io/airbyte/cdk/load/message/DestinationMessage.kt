@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.AirbyteValueCoercer.DATE_TIME_FORMATTER
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
+import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -45,7 +46,9 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.math.BigInteger
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
@@ -158,7 +161,7 @@ data class Meta(
                         TimestampWithTimezoneValue(
                             OffsetDateTime.parse(
                                 value,
-                                AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER,
+                                DATE_TIME_FORMATTER,
                             ),
                         )
                     }
@@ -170,6 +173,19 @@ data class Meta(
                     throw NotImplementedError(
                         "Column name $metaColumnName is not yet supported. This is probably a bug.",
                     )
+            }
+        }
+
+        fun getEmittedAtMs(
+            emittedAtMs: Long,
+            extractedAtAsTimestampWithTimezone: Boolean
+        ): AirbyteValue {
+            return if (extractedAtAsTimestampWithTimezone) {
+                TimestampWithTimezoneValue(
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC)
+                )
+            } else {
+                IntegerValue(emittedAtMs)
             }
         }
     }
@@ -193,7 +209,8 @@ data class DestinationRecord(
     override val stream: DestinationStream,
     val message: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null
+    val checkpointId: CheckpointId? = null,
+    val airbyteRawId: UUID,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
@@ -225,7 +242,13 @@ data class DestinationRecord(
             )
 
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, message, serializedSizeBytes, checkpointId)
+        return DestinationRecordRaw(
+            stream = stream,
+            rawData = message,
+            serializedSizeBytes = serializedSizeBytes,
+            checkpointId = checkpointId,
+            airbyteRawId = airbyteRawId,
+        )
     }
 }
 
@@ -258,6 +281,8 @@ data class EnrichedDestinationRecordAirbyteValue(
      */
     val sourceMeta: Meta,
     val serializedSizeBytes: Long = 0L,
+    private val extractedAtAsTimestampWithTimezone: Boolean = false,
+    val airbyteRawId: UUID,
 ) {
     val airbyteMeta: EnrichedAirbyteValue
         get() =
@@ -284,14 +309,14 @@ data class EnrichedDestinationRecordAirbyteValue(
             mapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to
                     EnrichedAirbyteValue(
-                        StringValue(UUID.randomUUID().toString()),
+                        StringValue(airbyteRawId.toString()),
                         Meta.AirbyteMetaFields.RAW_ID.type,
                         name = Meta.COLUMN_NAME_AB_RAW_ID,
                         airbyteMetaField = Meta.AirbyteMetaFields.RAW_ID,
                     ),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     EnrichedAirbyteValue(
-                        IntegerValue(emittedAtMs),
+                        getEmittedAtMs(emittedAtMs, extractedAtAsTimestampWithTimezone),
                         Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                         name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                         airbyteMetaField = Meta.AirbyteMetaFields.EXTRACTED_AT,
@@ -448,21 +473,15 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream,
+        val stream: DestinationStream.Descriptor,
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState()
-                .withStreamDescriptor(
-                    StreamDescriptor()
-                        .withNamespace(stream.unmappedNamespace)
-                        .withName(stream.unmappedName)
-                )
-                .also {
-                    if (state != null) {
-                        it.streamState = state
-                    }
+            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
+                if (state != null) {
+                    it.streamState = state
                 }
+            }
     }
 
     val checkpointKey: CheckpointKey?
@@ -514,7 +533,8 @@ data class StreamCheckpoint(
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
-        stream: DestinationStream,
+        streamNamespace: String?,
+        streamName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -523,7 +543,7 @@ data class StreamCheckpoint(
         totalBytes: Long? = null
     ) : this(
         Checkpoint(
-            stream,
+            DestinationStream.Descriptor(streamNamespace, streamName),
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
