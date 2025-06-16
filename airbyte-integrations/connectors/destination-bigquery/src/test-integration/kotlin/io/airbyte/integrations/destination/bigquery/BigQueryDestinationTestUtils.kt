@@ -3,26 +3,31 @@
  */
 package io.airbyte.integrations.destination.bigquery
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.DeleteObjectsRequest
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.BigQueryOptions
-import com.google.cloud.bigquery.Dataset
-import com.google.cloud.bigquery.DatasetInfo
-import io.airbyte.commons.json.Jsons.deserialize
-import io.airbyte.integrations.destination.bigquery.BigQueryDestination.Companion.getServiceAccountCredentials
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
+import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 object BigQueryDestinationTestUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(BigQueryDestinationTestUtils::class.java)
+    const val RAW_DATASET_OVERRIDE = "overridden_raw_dataset"
+    const val STANDARD_INSERT_CONFIG = "secrets/credentials-1s1t-standard.json"
+    const val GCS_STAGING_CONFIG = "secrets/credentials-1s1t-gcs.json"
+
+    val standardInsertRawOverrideConfig =
+        createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+        )
+    val standardInsertConfig =
+        createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+        )
 
     /**
      * Parse the config file and replace dataset with rawNamespace and stagingPath randomly
@@ -30,127 +35,25 @@ object BigQueryDestinationTestUtils {
      *
      * @param configFile Path to the config file
      * @param datasetId Dataset id to use in the test. Should be randomized per test case.
-     * @param stagingPath Staging GCS path to use in the test, or null if the test is running in
-     * standard inserts mode. Should be randomized per test case.
      */
     @Throws(IOException::class)
-    fun createConfig(configFile: Path?, datasetId: String?, stagingPath: String?): ObjectNode {
-        LOGGER.info("Setting default dataset to {}", datasetId)
-        val tmpConfigAsString = Files.readString(configFile)
-        val config = deserialize(tmpConfigAsString) as ObjectNode
-        config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-
-        // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using
-        // the
-        // same staging path.
-        // Most likely there's a real bug in the connector - but we should investigate that and
-        // write a real
-        // test case,
-        // rather than relying on tests randomly failing to indicate that bug.
-        // See https://github.com/airbytehq/airbyte/issues/28372.
-        if (stagingPath != null && getLoadingMethod(config) == UploadingMethod.GCS) {
-            val loadingMethodNode = config[BigQueryConsts.LOADING_METHOD] as ObjectNode
-            loadingMethodNode.put(BigQueryConsts.GCS_BUCKET_PATH, stagingPath)
+    fun createConfig(
+        configFile: String,
+        rawDatasetId: String? = null,
+        disableTypingDeduping: Boolean? = null,
+    ): String {
+        val tmpConfigAsString = Files.readString(Path.of(configFile))
+        val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
+        config.put(BigQueryConsts.CONFIG_DATASET_ID, DEFAULT_NAMESPACE_PLACEHOLDER)
+        rawDatasetId?.let { config.put(BigQueryConsts.RAW_DATA_DATASET, rawDatasetId) }
+        disableTypingDeduping?.let {
+            config.put(BigQueryConsts.DISABLE_TYPE_DEDUPE, disableTypingDeduping)
         }
-        return config
+        return config.serializeToString()
     }
 
-    /**
-     * Get a handle for the BigQuery dataset instance used by the test. This dataset instance will
-     * be used to verify results of test operations and for cleaning up after the test runs
-     *
-     * @param config
-     * @param bigquery
-     * @param datasetId
-     * @return
-     */
-    fun initDataSet(config: JsonNode, bigquery: BigQuery?, datasetId: String?): Dataset? {
-        val datasetInfo =
-            DatasetInfo.newBuilder(datasetId)
-                .setLocation(config[BigQueryConsts.CONFIG_DATASET_LOCATION].asText())
-                .build()
-        try {
-            return bigquery!!.create(datasetInfo)
-        } catch (ex: Exception) {
-            if (ex.message!!.indexOf("Already Exists") > -1) {
-                return bigquery!!.getDataset(datasetId)
-            }
-        }
-        return null
-    }
-
-    /**
-     * Initialized bigQuery instance that will be used for verifying results of test operations and
-     * for cleaning up BigQuery dataset after the test
-     *
-     * @param config
-     * @param projectId
-     * @return
-     * @throws IOException
-     */
-    @Throws(IOException::class)
-    fun initBigQuery(config: JsonNode, projectId: String?): BigQuery {
-        val credentials = getServiceAccountCredentials(config)
-        return BigQueryOptions.newBuilder()
-            .setProjectId(projectId)
-            .setCredentials(credentials)
-            .build()
-            .service
-    }
-
-    /**
-     * Deletes bigquery data set created during the test
-     *
-     * @param bigquery
-     * @param dataset
-     * @param LOGGER
-     */
-    fun tearDownBigQuery(bigquery: BigQuery?, dataset: Dataset?, LOGGER: Logger) {
-        // allows deletion of a dataset that has contents
-        val option = BigQuery.DatasetDeleteOption.deleteContents()
-        if (bigquery == null || dataset == null) {
-            return
-        }
-        try {
-            val success = bigquery.delete(dataset.datasetId, option)
-            if (success) {
-                LOGGER.info("BQ Dataset $dataset deleted...")
-            } else {
-                LOGGER.info("BQ Dataset cleanup for $dataset failed!")
-            }
-        } catch (ex: Exception) {
-            LOGGER.error("Failed to remove BigQuery resources after the test", ex)
-        }
-    }
-
-    /** Remove all the GCS output from the tests. */
-    fun tearDownGcs(s3Client: AmazonS3?, config: JsonNode?, LOGGER: Logger) {
-        if (s3Client == null) {
-            return
-        }
-        if (getLoadingMethod(config!!) != UploadingMethod.GCS) {
-            return
-        }
-        val properties = config[BigQueryConsts.LOADING_METHOD]
-        val gcsBucketName = properties[BigQueryConsts.GCS_BUCKET_NAME].asText()
-        val gcs_bucket_path = properties[BigQueryConsts.GCS_BUCKET_PATH].asText()
-        try {
-            val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
-            val objects = s3Client.listObjects(gcsBucketName, gcs_bucket_path).objectSummaries
-            for (`object` in objects) {
-                keysToDelete.add(DeleteObjectsRequest.KeyVersion(`object`.key))
-            }
-
-            if (keysToDelete.size > 0) {
-                LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path)
-                // Google Cloud Storage doesn't accept request to delete multiple objects
-                for (keyToDelete in keysToDelete) {
-                    s3Client.deleteObject(gcsBucketName, keyToDelete.key)
-                }
-                LOGGER.info("Deleted {} file(s).", keysToDelete.size)
-            }
-        } catch (ex: Exception) {
-            LOGGER.error("Failed to remove GCS resources after the test", ex)
-        }
+    fun parseConfig(config: String): BigqueryConfiguration {
+        val spec = Jsons.treeToValue(config.deserializeToNode(), BigquerySpecification::class.java)
+        return BigqueryConfigurationFactory().make(spec)
     }
 }

@@ -1,0 +1,170 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/bigquery",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Bigquery Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "project_id" : {
+        "type" : "string",
+        "description" : "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
+        "title" : "Project ID",
+        "group" : "connection",
+        "order" : 0
+      },
+      "dataset_location" : {
+        "type" : "string",
+        "enum" : [ "EU", "US", "africa-south1", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central2", "europe-north1", "europe-north2", "europe-southwest1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "europe-west10", "europe-west12", "me-central1", "me-central2", "me-west1", "northamerica-northeast1", "northamerica-northeast2", "northamerica-south1", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west3", "us-west4" ],
+        "description" : "The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
+        "title" : "Dataset Location",
+        "group" : "connection",
+        "order" : 1
+      },
+      "dataset_id" : {
+        "type" : "string",
+        "description" : "The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>.",
+        "title" : "Default Dataset ID",
+        "group" : "connection",
+        "order" : 2
+      },
+      "loading_method" : {
+        "oneOf" : [ {
+          "title" : "Batched Standard Inserts",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "Standard" ],
+              "default" : "Standard"
+            }
+          },
+          "required" : [ "method" ]
+        }, {
+          "title" : "GCS Staging",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "GCS Staging" ],
+              "default" : "GCS Staging"
+            },
+            "credential" : {
+              "oneOf" : [ {
+                "title" : "HMAC key",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "credential_type" : {
+                    "type" : "string",
+                    "enum" : [ "HMAC_KEY" ],
+                    "default" : "HMAC_KEY"
+                  },
+                  "hmac_key_access_id" : {
+                    "type" : "string",
+                    "description" : "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
+                    "title" : "HMAC Access Key",
+                    "examples" : [ "1234567890abcdefghij1234" ],
+                    "airbyte_secret" : true,
+                    "order" : 0
+                  },
+                  "hmac_key_secret" : {
+                    "type" : "string",
+                    "description" : "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
+                    "title" : "HMAC Secret",
+                    "examples" : [ "1234567890abcdefghij1234567890ABCDEFGHIJ" ],
+                    "airbyte_secret" : true,
+                    "order" : 1
+                  }
+                },
+                "required" : [ "credential_type", "hmac_key_access_id", "hmac_key_secret" ]
+              } ],
+              "description" : "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
+              "title" : "Credential",
+              "order" : 0,
+              "type" : "object"
+            },
+            "keep_files_in_gcs-bucket" : {
+              "type" : "string",
+              "default" : "Delete all tmp files from GCS",
+              "enum" : [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
+              "description" : "This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
+              "title" : "GCS Tmp Files Post-Processing",
+              "order" : 3
+            },
+            "gcs_bucket_name" : {
+              "type" : "string",
+              "description" : "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
+              "title" : "GCS Bucket Name",
+              "examples" : [ "airbyte_sync" ],
+              "order" : 1
+            },
+            "gcs_bucket_path" : {
+              "type" : "string",
+              "description" : "Directory under the GCS bucket where data will be written.",
+              "title" : "GCS Bucket Path",
+              "examples" : [ "data_sync/test" ],
+              "order" : 2
+            }
+          },
+          "required" : [ "method", "credential", "gcs_bucket_name", "gcs_bucket_path" ]
+        } ],
+        "description" : "The way data will be uploaded to BigQuery.",
+        "title" : "Loading Method",
+        "group" : "connection",
+        "order" : 3,
+        "display_type" : "radio",
+        "type" : "object"
+      },
+      "credentials_json" : {
+        "type" : "string",
+        "description" : "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
+        "title" : "Service Account Key JSON (Required for cloud, optional for open-source)",
+        "group" : "connection",
+        "order" : 4,
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "transformation_priority" : {
+        "type" : "string",
+        "default" : "interactive",
+        "enum" : [ "interactive", "batch" ],
+        "description" : "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
+        "title" : "Transformation Query Run Type",
+        "group" : "advanced",
+        "order" : 5
+      },
+      "raw_data_dataset" : {
+        "type" : "string",
+        "description" : "The dataset to write raw tables into (default: airbyte_internal)",
+        "title" : "Raw Table Dataset Name",
+        "group" : "advanced",
+        "order" : 7
+      },
+      "disable_type_dedupe" : {
+        "type" : "boolean",
+        "description" : "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title" : "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "group" : "advanced",
+        "order" : 8,
+        "default" : false
+      }
+    },
+    "required" : [ "project_id", "dataset_location", "dataset_id" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
