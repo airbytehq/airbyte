@@ -98,7 +98,8 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :--------------------------------------------------------- |:----------------------------------------------------------------------------------------------|
+| 1.1.0   | 2024-06-16 | [\#34637](https://github.com/airbytehq/airbyte/pull/34637) | Migrate to new build flow + restrict connector to run on rootless ids.                        |
 | 1.0.0   | 2024-02-07 | [\#34637](https://github.com/airbytehq/airbyte/pull/34637) | Update the raw table schema                                                                   |
 | 0.2.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                             |
 | 0.2.4   | 2023-06-05 | [\#27036](https://github.com/airbytehq/airbyte/pull/27036) | Internal code change for future development (install normalization packages inside connector) |
