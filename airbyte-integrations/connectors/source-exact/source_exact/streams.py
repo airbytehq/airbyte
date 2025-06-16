@@ -76,10 +76,10 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         return f"{self._base_url}/api/v1/{self._active_division}/"
 
     def path(
-            self,
-            stream_state: Optional[Mapping[str, Any]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         """
         Returns the URL to call. On first call uses the property `endpoint` of subclass.
@@ -103,7 +103,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         return {"Accept": "application/json"}
 
     def request_params(
-            self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         """
         The sync endpoints requires selection of fields to return. We use the configured catalog to make selection
@@ -185,8 +185,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         """
 
         # Get the first not null type -> i.e., the expected type of the property
-        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in
-                                self.get_json_schema()["properties"].items()}
+        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^/Date\((\d+)\)/$")
 

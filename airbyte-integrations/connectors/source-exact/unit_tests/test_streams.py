@@ -98,34 +98,31 @@ def test_request_params_with_sync_stream(config_oauth: dict, next_page_token, cu
         ("token", "2022-12-12T00:00:00+00:00", {}),
         (None, None, {"$orderby": "Modified asc", "$select": "ID,Modified"}),
         (
-                None,
-                "2022-12-12T00:00:00+00:00",
-                {
-                    "$filter": "Modified gt datetime'2022-12-12T01:00:00'",
-                    "$orderby": "Modified asc",
-                    "$select": "ID,Modified",
-                },
+            None,
+            "2022-12-12T00:00:00+00:00",
+            {
+                "$filter": "Modified gt datetime'2022-12-12T01:00:00'",
+                "$orderby": "Modified asc",
+                "$select": "ID,Modified",
+            },
         ),
         # Test if resilient to other types of formatting
         (
-                None,
-                "2022-12-12T00:00:00Z",
-                {"$filter": "Modified gt datetime'2022-12-12T01:00:00'", "$orderby": "Modified asc",
-                 "$select": "ID,Modified"},
+            None,
+            "2022-12-12T00:00:00Z",
+            {"$filter": "Modified gt datetime'2022-12-12T01:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified"},
         ),
         # Should not happen: input is a timestamp not in UTC! A warning is logged.
         (
-                None,
-                "2022-12-12T00:00:00+01:00",
-                {"$filter": "Modified gt datetime'2022-12-12T00:00:00'", "$orderby": "Modified asc",
-                 "$select": "ID,Modified"},
+            None,
+            "2022-12-12T00:00:00+01:00",
+            {"$filter": "Modified gt datetime'2022-12-12T00:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified"},
         ),
         # Test if UTC is correctly handled in summer time
         (
-                None,
-                "2022-06-12T00:00:00+00:00",
-                {"$filter": "Modified gt datetime'2022-06-12T02:00:00'", "$orderby": "Modified asc",
-                 "$select": "ID,Modified"},
+            None,
+            "2022-06-12T00:00:00+00:00",
+            {"$filter": "Modified gt datetime'2022-06-12T02:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified"},
         ),
     ],
 )
@@ -233,6 +230,7 @@ def test_parse_item__type_casting(config_oauth: dict):
         "FloatField": 7.89,
         "BoolField": True,
     }
+
 
 # def test_send_request__reraise_if_on_non_request_exception(config_oauth):
 #     request_mock, request_kwargs = MagicMock(), MagicMock()
