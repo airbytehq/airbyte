@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -35,6 +36,7 @@ val log = KotlinLogging.logger {}
 class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
     private val sqlGenerator: ClickhouseSqlGenerator,
+    private val nameGenerator: ClickhouseFinalTableNameGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun createNamespace(namespace: String) {
@@ -107,7 +109,8 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
+        val properTableName = nameGenerator.getTableName(stream.descriptor)
+        val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns
@@ -145,13 +148,13 @@ class ClickhouseAirbyteClient(
                 airbyteSchemaWithClickhouseType,
             )
         if (columnChanges.isEmpty()) {
-            log.info { "No changes detected for table $tableName" }
+            log.info { "No changes detected for table $properTableName" }
             return
         }
         execute(
             sqlGenerator.alterTable(
                 columnChanges,
-                tableName,
+                properTableName,
             ),
         )
     }
