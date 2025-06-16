@@ -67,7 +67,11 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numEventsWithoutSourceRecord = AtomicLong()
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
+    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') // TEMP
+    private fun generatePartitionId(length: Int): String =
+        (1..length).map { charPool.random() }.joinToString("")
 
+    protected var partitionId: String = generatePartitionId(4)
 
     interface AcquiredResource: AutoCloseable {
         val resource: Resource.Acquired?
@@ -103,7 +107,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         outputMessageRouter = OutputMessageRouter(
             feedBootstrap.outputChannelType,
             feedBootstrap.outputConsumer,
-            emptyMap(), // TEMP
+            mapOf("partition_id" to partitionId), // TEMP
             feedBootstrap,
             acquiredResources.get().filter { it.value.resource != null }.map { it.key to it.value.resource!! }.toMap()
         )
@@ -180,7 +184,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 null
             }
         val serializedState: OpaqueStateValue = readerOps.serializeState(offset, schemaHistory)
-        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get(),"") // TEMP
+        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get(),partitionId) // TEMP
     }
 
     inner class EventConsumer(
@@ -247,6 +251,16 @@ class CdcPartitionReader<T : Comparable<T>>(
             val desc: StreamDescriptor = StreamDescriptor().withNamespace(namespace).withName(name)
             val streamID: StreamIdentifier = StreamIdentifier.from(desc)
             return streamRecordConsumers[streamID]
+        }
+
+        private fun findStreamIfByRecord(
+            key: DebeziumRecordKey,
+            value: DebeziumRecordValue
+        ): StreamIdentifier? {
+            val name: String = readerOps.findStreamName(key, value) ?: return null
+            val namespace: String? = readerOps.findStreamNamespace(key, value)
+            val desc: StreamDescriptor = StreamDescriptor().withNamespace(namespace).withName(name)
+            return StreamIdentifier.from(desc)
         }
 
         private fun updateCounters(event: DebeziumEvent, eventType: EventType) {

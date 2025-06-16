@@ -15,7 +15,9 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import java.time.Clock
 
 /**
- * OutputMessageRouter is responsible for building the appropriate routes for messages output
+ * OutputMessageRouter is responsible for building the appropriate routes for messages output.
+ * Record message stream state and status traces may go over std output, or over sockets in JSONL or Protobuf format.
+ * All other message like log or error messages go over std output.
  */
 class OutputMessageRouter(
     private val recordsChannelType: OutputChannelType,
@@ -36,7 +38,7 @@ class OutputMessageRouter(
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
     private lateinit var protoRecordOutputConsumers: Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
-//    lateinit var recordAcceptor: (InternalRow) -> Unit
+    lateinit var recordAcceptor: (InternalRow) -> Unit
 
     init {
 
