@@ -1,17 +1,21 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import datetime
+import os
 import sys
 from pathlib import Path
 
 import freezegun
 import pytest
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
+
+
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 def _get_manifest_path() -> Path:
