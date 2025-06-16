@@ -50,8 +50,9 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>>(
             log.info { "Truncate sync succeeded, Removing old files" }
             val state = destinationStateManager.getState(stream)
 
+            log.info { "Deleting old objects" }
             state.getObjectsToDelete().forEach { (generationId, objectAndPart) ->
-                log.info {
+                log.debug {
                     "Deleting old object for generation $generationId: ${objectAndPart.key}"
                 }
                 client.delete(objectAndPart.key)

@@ -40,7 +40,7 @@ data class S3V2Configuration<T : OutputStream>(
 
     // ObjectLoader-specific configuration
     val numPartWorkers: Int = 8,
-    val numUploadWorkers: Int = 8,
+    val numUploadWorkers: Int = 16,
     val maxMemoryRatioReservedForParts: Double = 0.5,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 20L * 1024 * 1024,
