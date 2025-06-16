@@ -11,11 +11,23 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
+import io.airbyte.cdk.output.SimpleOutputConsumer
+import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.NullProtoEncoder
+import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
+import io.airbyte.cdk.output.sockets.toJson
+import io.airbyte.cdk.output.sockets.toProto
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage.*
 import java.time.ZoneOffset
 
 /**
@@ -29,7 +41,7 @@ import java.time.ZoneOffset
  */
 sealed class FeedBootstrap<T : Feed>(
     /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
-    val outputConsumer: OutputConsumer,
+    val outputConsumer: SimpleOutputConsumer,
     /**
      * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
      */
@@ -37,7 +49,8 @@ sealed class FeedBootstrap<T : Feed>(
     /** [StateManager] singleton which is encapsulated by this [FeedBootstrap]. */
     private val stateManager: StateManager,
     /** [Feed] to emit records for. */
-    val feed: T
+    val feed: T,
+    val outputChannelType: OutputChannelType,
 ) {
 
     /** Delegates to [StateManager.feeds]. */
@@ -60,11 +73,15 @@ sealed class FeedBootstrap<T : Feed>(
     }
 
     /** A map of all [StreamRecordConsumer] for this [feed]. */
-    fun streamRecordConsumers(): Map<StreamIdentifier, StreamRecordConsumer> =
+    fun streamRecordConsumers(socketJsonOutputConsumer: SocketJsonOutputConsumer? = null): Map<StreamIdentifier, StreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to EfficientStreamRecordConsumer(stream)
+            stream.id to EfficientStreamRecordConsumer(stream, socketJsonOutputConsumer)
         }
 
+    fun streamProtoRecordConsumers(socketProtoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
+        feed.streams.associate { stream: Stream ->
+            stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
+        }
     /**
      * Efficient implementation of [StreamRecordConsumer].
      *
@@ -72,12 +89,17 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
+    inner class EfficientStreamRecordConsumer(override val stream: Stream, socketJsonOutputConsumer: SocketJsonOutputConsumer?) :
         StreamRecordConsumer {
+        val outputer: OutputConsumer = socketJsonOutputConsumer ?: outputConsumer
 
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
+        override fun close() {
+            outputer.close()
+        }
+
+        override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData)
+                acceptWithoutChanges(recordData.toJson())
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -86,7 +108,7 @@ sealed class FeedBootstrap<T : Feed>(
                             .withChange(fieldValueChange.protocolChange())
                             .withReason(fieldValueChange.protocolReason())
                     }
-                acceptWithChanges(recordData, protocolChanges)
+                acceptWithChanges(recordData.toJson(), protocolChanges)
             }
         }
 
@@ -95,7 +117,7 @@ sealed class FeedBootstrap<T : Feed>(
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
-                outputConsumer.accept(reusedMessageWithoutChanges)
+                outputer.accept(reusedMessageWithoutChanges)
             }
         }
 
@@ -108,7 +130,7 @@ sealed class FeedBootstrap<T : Feed>(
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
                 reusedRecordMeta.changes = changes
-                outputConsumer.accept(reusedMessageWithChanges)
+                outputer.accept(reusedMessageWithChanges)
             }
         }
 
@@ -132,7 +154,7 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.schema.forEach { recordData.putNull(it.id) }
                 if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
                     metaFieldDecorator.decorateRecordData(
-                        timestamp = outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
+                        timestamp = outputer.recordEmittedAt.atOffset(ZoneOffset.UTC),
                         globalStateValue =
                             if (precedingGlobalFeed != null)
                                 stateManager.scoped(precedingGlobalFeed).current()
@@ -152,7 +174,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                 )
 
@@ -165,10 +187,163 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                         .withMeta(reusedRecordMeta)
                 )
+    }
+
+    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: SocketProtobufOutputConsumer, val partitionId: String?) :
+        StreamRecordConsumer {
+        val outputer: SocketProtobufOutputConsumer = boostedOutputConsumer
+        override fun close() {
+            outputer.close()
+        }
+
+        val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
+        override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
+            if (changes.isNullOrEmpty()) {
+                /*var b = AirbyteRecordMessageProtobuf.newBuilder()
+                    .setStreamName(stream.name)
+                    .setStreamNamespace(stream.namespace)
+                    .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())*/
+                //                partitionId?.let { b.setPartitionId(it) }
+
+                var b = defaultRecordData
+                val p = recordData.toProto(b, valueVBuilder)
+
+                acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
+            } /*else {
+                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
+                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
+                        AirbyteRecordMessageMetaChange()
+                            .withField(field.id)
+                            .withChange(fieldValueChange.protocolChange())
+                            .withReason(fieldValueChange.protocolReason())
+                    }
+//                acceptWithChanges(recordData.toJson(), protocolChanges) // TEMP
+            }*/
+        }
+
+        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
+            synchronized(this) {
+/*
+                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+                }
+*/
+                outputer.accept(
+                    reusedMessageWithoutChanges
+                        .setRecord(recordData)
+                        .build() /*firstMessage*/)
+            }
+        }
+
+/*
+        private fun acceptWithChanges(
+            recordData: AirbyteRecordMessageProtobuf.Builder,
+            changes: List<AirbyteRecordMessageMetaChange>
+        ) {
+            synchronized(this) {
+                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+                }
+                reusedRecordMeta.changes = changes
+                outputer.accept(reusedMessageWithChanges)
+            }
+        }
+*/
+
+        private val precedingGlobalFeed: Global? =
+            stateManager.feeds
+                .filterIsInstance<Global>()
+                .filter { it.streams.contains(stream) }
+                .firstOrNull()
+
+        // Ideally we should check if sync is trigger-based CDC by checking source connector
+        // configuration. But we don't have that information here. So this is just a hacky solution
+        private val isTriggerBasedCdc: Boolean =
+            precedingGlobalFeed == null &&
+                metaFieldDecorator.globalCursor != null &&
+                stream.schema.none { it.id == metaFieldDecorator.globalCursor?.id } &&
+                stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
+                stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
+
+        private val defaultRecordData: AirbyteRecordMessageProtobuf.Builder =
+            AirbyteRecordMessageProtobuf.newBuilder()
+                .setStreamName(stream.name)
+                .setStreamNamespace(stream.namespace)
+                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                .also { builder -> partitionId?.let { builder.setPartitionId(it) } }
+                .also { builder ->
+                    stream.schema.sortedBy { it.id }.forEach {
+                        builder.addData(
+                            NullProtoEncoder.encode(valueVBuilder, true)
+                        )
+                    }
+                }
+/*        private val defaultRecordData: ObjectNode =
+            Jsons.objectNode().also { recordData: ObjectNode ->
+                stream.schema.forEach { recordData.putNull(it.id) }
+                if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
+                    metaFieldDecorator.decorateRecordData(
+                        timestamp = outputer.recordEmittedAt.atOffset(ZoneOffset.UTC),
+                        globalStateValue =
+                            if (precedingGlobalFeed != null)
+                                stateManager.scoped(precedingGlobalFeed).current()
+                            else null,
+                        stream,
+                        recordData,
+                    )
+                }
+            }*/
+
+//        private val reusedRecordData: ObjectNode = defaultRecordData.deepCopy()
+
+        private val reusedRecordMessageWithoutChanges: AirbyteRecordMessageProtobuf.Builder =
+            AirbyteRecordMessageProtobuf.newBuilder()
+                .setStreamName(stream.name)
+                .setStreamNamespace(stream.namespace)
+                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+//                .setData()
+//                .setMeta()
+
+            /*AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(stream.name)
+                        .withNamespace(stream.namespace)
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
+                        .withData(reusedRecordData)
+                )*/
+
+        private val reusedRecordMeta = AirbyteRecordMessageMeta()
+
+        val reusedMessageWithoutChanges: AirbyteMessageProtobuf.Builder =
+            AirbyteMessageProtobuf.newBuilder()
+
+
+        private val reusedRecordMessageWithChanges: AirbyteRecordMessageProtobuf.Builder =
+            AirbyteRecordMessageProtobuf.newBuilder()
+                .setStreamName(stream.name)
+                .setStreamNamespace(stream.namespace)
+                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+//                .setData()
+//                .setMeta()
+
+/*
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(stream.name)
+                        .withNamespace(stream.namespace)
+                        .withEmittedAt(outputer.recordEmittedAt.toEpochMilli())
+                        .withData(reusedRecordData)
+                        .withMeta(reusedRecordMeta)
+                )
+*/
     }
 
     companion object {
@@ -217,16 +392,17 @@ sealed class FeedBootstrap<T : Feed>(
 
         /** [FeedBootstrap] factory method. */
         fun create(
-            outputConsumer: OutputConsumer,
+            outputConsumer: SimpleOutputConsumer,
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
+            outputChannelType: OutputChannelType
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, outputChannelType)
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, outputChannelType)
             }
     }
 }
@@ -246,7 +422,8 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?)
+    fun close()
 }
 
 /**
@@ -266,20 +443,27 @@ enum class FieldValueChange {
 
 /** [FeedBootstrap] implementation for [Global] feeds. */
 class GlobalFeedBootstrap(
-    outputConsumer: OutputConsumer,
+    outputConsumer: SimpleOutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global)
+    outputChannelType: OutputChannelType
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, outputChannelType)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
-    outputConsumer: OutputConsumer,
+    outputConsumer: SimpleOutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     stream: Stream,
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream) {
+    outputChannelType: OutputChannelType
+) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, outputChannelType) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun streamRecordConsumer(): StreamRecordConsumer = streamRecordConsumers()[feed.id]!!
+    fun streamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer?): StreamRecordConsumer = EfficientStreamRecordConsumer(
+        feed.streams.filter { feed.id == it.id }.first(),
+        socketJsonOutputConsumer)
+    fun protoStreamRecordConsumer(protoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(
+        feed.streams.filter { feed.id == it.id }.first(),
+        protoOutputConsumer, partitionId)
 }

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.SimpleOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private class RecordingOutputConsumer(clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)) :
-    OutputConsumer(clock) {
+    SimpleOutputConsumer(clock) {
 
     private val _messages = mutableListOf<AirbyteMessage>()
     val messages: List<AirbyteMessage>

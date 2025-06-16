@@ -10,10 +10,15 @@ import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.SimpleOutputConsumer
+import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineScope
@@ -32,10 +37,13 @@ class ReadOperation(
     val configuredCatalog: ConfiguredAirbyteCatalog,
     val inputState: InputState,
     val stateManagerFactory: StateManagerFactory,
-    val outputConsumer: OutputConsumer,
+    val outputConsumer: SimpleOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
+    val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactoriesSupplier:
         List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}")
+    val outputFormat: String
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -49,7 +57,9 @@ class ReadOperation(
                 config.checkpointTargetInterval,
                 outputConsumer,
                 metaFieldDecorator,
-                partitionsCreatorFactoriesSupplier.map { it -> it.get() }
+                resourceAcquirer,
+                partitionsCreatorFactoriesSupplier.map { it -> it.get() },
+                OutputMessageRouter.OutputChannelType.valueOf(outputFormat)
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->
