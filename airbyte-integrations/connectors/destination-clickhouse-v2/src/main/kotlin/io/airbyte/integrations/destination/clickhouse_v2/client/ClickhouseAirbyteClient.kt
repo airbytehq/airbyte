@@ -109,8 +109,14 @@ class ClickhouseAirbyteClient(
     ) {
         val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
-        val tableSchemaWithoutAirbyteColumns =
+        val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
+                .map { column -> ClickHouseColumn.of(
+                    columnNameMapping[column.columnName] ?: column.columnName,
+                    column.dataType,
+                    column.isNullable,
+                    )
+                }
 
         if (!stream.schema.isObject) {
             val error =
@@ -120,11 +126,12 @@ class ClickhouseAirbyteClient(
         }
 
         val airbyteSchemaWithClickhouseType: Map<String, String> =
-            stream.schema.asColumns().mapValues { (_, fieldType) ->
+            stream.schema.asColumns().map { (fieldName, fieldType) ->
                 // We don't need to nullable information here because we are setting all fields as
                 // nullable in the destination
-                fieldType.type.toDialectType()
-            }
+                // Add map key
+                fieldName to fieldType.type.toDialectType()
+            }.toMap()
 
         val columnChanges: AlterationSummary =
             getChangedColumns(
