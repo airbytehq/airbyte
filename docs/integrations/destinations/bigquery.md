@@ -135,9 +135,9 @@ produced tables.)
 
 If you enable the `Legacy raw tables` option, the connector will write tables in this format.
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (can be
-overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
-deduplicated.
+Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (you can
+override this via the `Airbyte Internal Table Dataset Name` option). Contents in the raw table are
+_NOT_ deduplicated.
 
 The raw table contains these fields:
 - `_airbyte_raw_id`
