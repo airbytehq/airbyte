@@ -6,11 +6,11 @@ package io.airbyte.cdk.load.http.authentication
 
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Response
-import kotlin.test.assertFailsWith
 import io.micronaut.http.HttpHeaders
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlin.test.assertFailsWith
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response as OkHttpResponse
@@ -74,13 +74,12 @@ class OAuthAuthenticatorTest {
         mockBuilder(originalRequest)
         val oauthResponse: Response = mockk<Response>()
         every { oauthResponse.statusCode } returns 400
-        every { oauthResponse.body } returns "{\"error_message\":\"failed\"}".byteInputStream(Charsets.UTF_8)
+        every { oauthResponse.body } returns
+            "{\"error_message\":\"failed\"}".byteInputStream(Charsets.UTF_8)
         every { oauthResponse.close() } returns Unit
         every { httpClient.send(any()) } returns (oauthResponse)
 
-        assertFailsWith<IllegalStateException>(
-            block = { authenticator.intercept(chain) }
-        )
+        assertFailsWith<IllegalStateException>(block = { authenticator.intercept(chain) })
     }
 
     private fun mockCall() {

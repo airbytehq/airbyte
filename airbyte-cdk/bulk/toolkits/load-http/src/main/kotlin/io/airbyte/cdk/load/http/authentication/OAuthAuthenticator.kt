@@ -85,7 +85,9 @@ class OAuthAuthenticator(
                 )
             )
         if (response.statusCode !in 200..299) {
-            throw kotlin.IllegalStateException("Could not log in. Response from server is ${response.statusCode}: ${response.consumeBodyToString()}")
+            throw kotlin.IllegalStateException(
+                "Could not log in. Response from server is ${response.statusCode}: ${response.consumeBodyToString()}"
+            )
         }
         return response.use { it.body?.let { body -> decoder.decode(body) } }
             ?: throw IllegalStateException("Response body was expected but is empty")
