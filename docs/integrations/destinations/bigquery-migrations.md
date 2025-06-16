@@ -4,6 +4,8 @@
 
 This version upgrades Destination BigQuery to the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how direct-load differs from Typing and Deduping.
 
+This version also adds an option to enable CDC deletions as soft-deletes.
+
 If you do not interact with the raw tables, you can safely upgrade. There is no breakage for this usecase.
 
 If you _only_ interact with the raw tables, make sure that you have the `Disable Final Tables` option enabled before upgrading. This will automatically enable the `Legacy raw tables` option after upgrading.

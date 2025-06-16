@@ -210,6 +210,7 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0  | 2025-06-25 | [59752](https://github.com/airbytehq/airbyte/pull/59752) | Upgrade to direct-load tables; add option for soft CDC deletes. |
 | 2.12.0 | 2025-06-06 | [61432](https://github.com/airbytehq/airbyte/pull/61432) | Improve performance in GCS staging mode by writing GZIP-compressed files. |
 | 2.11.4 | 2025-05-30 | [61018](https://github.com/airbytehq/airbyte/pull/61018) | Always emit a useful error message when erroring during sync startup. |
 | 2.11.3 | 2025-06-02 | [61321](https://github.com/airbytehq/airbyte/pull/61321) | CHECK operation doesn't need to drop the dataset anymore. |
