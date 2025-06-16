@@ -2,7 +2,7 @@
 
 Direct-load is an improvement to [Typing and Deduping](typing-deduping). Airbyte intends to eventually replace typing and deduping with direct-load. Under direct-load, the final tables in your destination are identical to their typed and deduped version, but without the need to store the raw tables in your destination.
 
-## Why is this happening?
+## Why direct-loading is superior to typing and deduping
 
 Under Typing and Deduping, during a sync, a destination connector only writes JSON data into a "raw table." At the end of each sync, the connector then executes a SQL query (the "T+D" query) to load new records from that raw table into the true (fully-typed) "final table."
 
