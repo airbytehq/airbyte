@@ -48,7 +48,7 @@ class ObjectLoaderQueueBeanFactory(
     @Named("objectLoaderClampedPartSizeBytes")
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderClampedPartSizeBytes(
-        @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
+    //        @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
     ): Long = 30_000_000L
 
     /**
