@@ -34,7 +34,13 @@ class ClickhouseAirbyteClientTest {
 
     // Client
     private val clickhouseAirbyteClient =
-        spyk(ClickhouseAirbyteClient(client, clickhouseSqlGenerator, clickhouseFinalTableNameGenerator))
+        spyk(
+            ClickhouseAirbyteClient(
+                client,
+                clickhouseSqlGenerator,
+                clickhouseFinalTableNameGenerator
+            )
+        )
 
     @Test
     fun testExecute() = runTest {
@@ -213,31 +219,34 @@ class ClickhouseAirbyteClientTest {
 
     @Test
     fun `test ensure schema matches`() = runTest {
-        val mockAlterationSummary = mockk<AlterationSummary>(relaxed = true) {
-            every { isEmpty() } returns false
-        }
+        val mockAlterationSummary =
+            mockk<AlterationSummary>(relaxed = true) { every { isEmpty() } returns false }
 
         val mockTableName = mockk<TableName>(relaxed = true)
         val alterTableStatement = "ALTER TABLE my_table ADD COLUMN new_col String"
 
-        coEvery {
-            clickhouseAirbyteClient.getChangedColumns(any(), any())
-        } returns mockAlterationSummary
-        coEvery { clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName) } returns alterTableStatement
-        coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns mockk(relaxed = true)
+        coEvery { clickhouseAirbyteClient.getChangedColumns(any(), any()) } returns
+            mockAlterationSummary
+        coEvery { clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName) } returns
+            alterTableStatement
+        coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns
+            mockk(relaxed = true)
         every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns mockTableName
 
         val columnMapping = ColumnNameMapping(mapOf())
-        val stream = mockk<DestinationStream>() {
-            every { descriptor } returns mockk(relaxed = true) {
-                every { name } returns "my_table"
-                every { namespace } returns "my_namespace"
+        val stream =
+            mockk<DestinationStream>() {
+                every { descriptor } returns
+                    mockk(relaxed = true) {
+                        every { name } returns "my_table"
+                        every { namespace } returns "my_namespace"
+                    }
+                every { schema } returns
+                    mockk(relaxed = true) {
+                        every { isObject } returns true
+                        every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
+                    }
             }
-            every { schema } returns mockk(relaxed = true) {
-                every { isObject } returns true
-                every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
-            }
-        }
         clickhouseAirbyteClient.ensureSchemaMatches(stream, mockTableName, columnMapping)
 
         coVerify {
