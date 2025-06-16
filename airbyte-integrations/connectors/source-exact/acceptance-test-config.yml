@@ -4,4 +4,3 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: integration_tests/spec.yaml
-

@@ -1,8 +1,6 @@
 {
   "base_url": "https://start.exactonline.nl",
-  "divisions": [
-    "123"
-  ],
+  "divisions": ["123"],
   "credentials": {
     "client_id": "string",
     "client_secret": "string",

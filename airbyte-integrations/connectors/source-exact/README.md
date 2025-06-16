@@ -75,4 +75,3 @@ To run unit tests locally, from the connector directory `source_exact` run:
 ```
 uv run pytest unit_tests/
 ```
-
