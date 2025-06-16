@@ -49,7 +49,7 @@ class ObjectLoaderQueueBeanFactory(
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
-    ): Long = queue.clampedMessageSize
+    ): Long = 30_000_000L
 
     /**
      * Queue between step 1 (format parts) and step 2 (load them): it will hold the actual part
