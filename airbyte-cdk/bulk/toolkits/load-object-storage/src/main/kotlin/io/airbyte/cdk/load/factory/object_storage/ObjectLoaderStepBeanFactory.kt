@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.FilePartAccumulatorFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
@@ -78,6 +79,7 @@ class ObjectLoaderStepBeanFactory {
 
     @Named("filePartLoaderStep")
     @Singleton
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T : RemoteObject<*>> filePartLoader(
         loader: ObjectLoader,
         partLoader: ObjectLoaderPartLoader<T>,
@@ -125,6 +127,7 @@ class ObjectLoaderStepBeanFactory {
 
     @Named("fileUploadCompleterStep")
     @Singleton
+    @Requires(condition = IsFileTransferCondition::class)
     fun <K : WithStream, T : RemoteObject<*>> fileUploadCompleter(
         objectLoader: ObjectLoader,
         uploadCompleter: ObjectLoaderUploadCompleter<T>,
@@ -151,6 +154,7 @@ class ObjectLoaderStepBeanFactory {
 
     @Named("fileRecordPartFormatterStep")
     @Singleton
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T : OutputStream> fileRecordPartFormatterStep(
         @Named("numInputPartitions") numInputPartitions: Int,
         partFormatter: ObjectLoaderPartFormatter<T>,
