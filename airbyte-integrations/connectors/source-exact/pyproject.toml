@@ -5,6 +5,7 @@ description = "Source connector for Exact Online"
 authors = ["Jeroen de Vries <jeroen@maildevries.eu>"]
 license = "MIT"
 readme = "README.md"
+include = "source_exact"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
@@ -18,3 +19,14 @@ build-backend = "poetry.core.masonry.api"
 
 [project.scripts]
 source-exact = "source_exact.run:run"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-mock = "^3.14.1"
