@@ -9,14 +9,13 @@ import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
-import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
-import io.mockk.every
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import java.util.concurrent.CompletableFuture
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -42,28 +41,26 @@ class ClickhouseAirbyteClientTest {
     private val dummySentence = "SELECT 1"
 
     @Test
-    fun testExecute() =
-        runTest {
-            val expectedResponse = mockk<CommandResponse>(relaxed = true)
-            val completableFuture = CompletableFuture.completedFuture(expectedResponse)
-            coEvery { client.execute(dummySentence) } returns completableFuture
+    fun testExecute() = runTest {
+        val expectedResponse = mockk<CommandResponse>(relaxed = true)
+        val completableFuture = CompletableFuture.completedFuture(expectedResponse)
+        coEvery { client.execute(dummySentence) } returns completableFuture
 
-            clickhouseAirbyteClient.execute(dummySentence)
+        clickhouseAirbyteClient.execute(dummySentence)
 
-            coVerify { client.execute(dummySentence) }
-        }
+        coVerify { client.execute(dummySentence) }
+    }
 
     @Test
-    fun testQuery() =
-        runTest {
-            val expectedResponse = mockk<QueryResponse>(relaxed = true)
-            val completableFuture = CompletableFuture.completedFuture(expectedResponse)
-            coEvery { client.query(dummySentence) } returns completableFuture
+    fun testQuery() = runTest {
+        val expectedResponse = mockk<QueryResponse>(relaxed = true)
+        val completableFuture = CompletableFuture.completedFuture(expectedResponse)
+        coEvery { client.query(dummySentence) } returns completableFuture
 
-            clickhouseAirbyteClient.query(dummySentence)
+        clickhouseAirbyteClient.query(dummySentence)
 
-            coVerify { client.query(dummySentence) }
-        }
+        coVerify { client.query(dummySentence) }
+    }
 
     private fun getMockColumn(
         columnName: String,
