@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.http.authentication
 
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Response
+import kotlin.test.assertFailsWith
 import io.micronaut.http.HttpHeaders
 import io.mockk.every
 import io.mockk.mockk
@@ -66,8 +67,25 @@ class OAuthAuthenticatorTest {
         verify(exactly = 1) { httpClient.send(any()) }
     }
 
+    @Test
+    internal fun `test given status is not 2XX when performing a request then raise`() {
+        val originalRequest: Request = mockk()
+        val chain: Interceptor.Chain = mockChain(originalRequest)
+        mockBuilder(originalRequest)
+        val oauthResponse: Response = mockk<Response>()
+        every { oauthResponse.statusCode } returns 400
+        every { oauthResponse.body } returns "{\"error_message\":\"failed\"}".byteInputStream(Charsets.UTF_8)
+        every { oauthResponse.close() } returns Unit
+        every { httpClient.send(any()) } returns (oauthResponse)
+
+        assertFailsWith<IllegalStateException>(
+            block = { authenticator.intercept(chain) }
+        )
+    }
+
     private fun mockCall() {
         val oauthResponse: Response = mockk<Response>()
+        every { oauthResponse.statusCode } returns 200
         every { oauthResponse.body } returns
             "{\"access_token\":\"${AN_ACCESS_TOKEN}\"}".byteInputStream(Charsets.UTF_8)
         every { oauthResponse.close() } returns Unit
