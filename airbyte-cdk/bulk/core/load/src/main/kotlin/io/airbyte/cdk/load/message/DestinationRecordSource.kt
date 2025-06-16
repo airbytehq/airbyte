@@ -79,6 +79,8 @@ value class DestinationRecordProtobufSource(val source: AirbyteMessageProtobuf) 
         get() = null
 
     override fun asJsonRecord(orderedSchema: Array<FieldAccessor>): JsonNode =
+        // This should not be done for proto format, this is taking away the advantages of using
+        // proto
         asAirbyteValueProxy().asJson(orderedSchema)
 
     override fun asAirbyteValueProxy(): AirbyteValueProxy =

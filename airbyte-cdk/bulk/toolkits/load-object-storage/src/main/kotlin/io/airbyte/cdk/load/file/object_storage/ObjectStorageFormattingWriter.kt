@@ -23,8 +23,6 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -97,27 +95,33 @@ class JsonFormattingWriter(
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
 
+    private val fastNdJsonWriter: FastNdJsonWriter =
+        FastNdJsonWriter(stream, outputStream, rootLevelFlattening)
+
     override fun accept(record: DestinationRecordRaw) {
-        val data =
-            record
-                .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(
-                    stream = stream,
-                    flatten = rootLevelFlattening,
-                    airbyteRawId = record.airbyteRawId,
-                )
-                .toJson()
-                .serializeToString()
-        outputStream.write(data)
-        outputStream.write("\n")
+
+        fastNdJsonWriter.accept(record)
+        // slowest of em all, CPU hogging, 50% of CPU usage happens right here
+        //        val data =
+        //            record
+        //                .asDestinationRecordAirbyteValue()
+        //                .dataWithAirbyteMeta(
+        //                    stream = stream,
+        //                    flatten = rootLevelFlattening,
+        //                    airbyteRawId = record.airbyteRawId,
+        //                )
+        //                .toJson()
+        //                .serializeToString()
+        //        outputStream.write(data)
+        //        outputStream.write("\n")
     }
 
     override fun flush() {
-        outputStream.flush()
+        fastNdJsonWriter.flush()
     }
 
     override fun close() {
-        outputStream.close()
+        fastNdJsonWriter.close()
     }
 }
 

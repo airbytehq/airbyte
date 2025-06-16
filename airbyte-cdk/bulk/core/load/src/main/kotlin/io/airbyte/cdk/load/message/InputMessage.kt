@@ -38,6 +38,7 @@ import java.io.OutputStream
 
 sealed interface InputMessage {
     fun asProtocolMessage(): AirbyteMessage
+    // this
     fun asProtobuf(): AirbyteMessageProtobuf =
         AirbyteMessageProtobuf.newBuilder()
             .setAirbyteProtocolMessage(asProtocolMessage().serializeToString())
@@ -188,18 +189,14 @@ sealed interface InputCheckpoint : InputMessage
 
 data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckpoint {
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        stream: DestinationStream,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
     ) : this(
         StreamCheckpoint(
-            Checkpoint(
-                DestinationStream.Descriptor(streamNamespace, streamName),
-                state = blob.deserializeToNode()
-            ),
+            Checkpoint(stream, state = blob.deserializeToNode()),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
@@ -212,8 +209,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
 
 data class InputGlobalCheckpoint(
     val sharedState: JsonNode?,
-    val checkpointKey: CheckpointKey? = null,
-    val streamStates: List<Checkpoint> = emptyList(),
+    val checkpointKey: CheckpointKey? = null
 ) : InputCheckpoint {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
@@ -221,11 +217,7 @@ data class InputGlobalCheckpoint(
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(
-                        AirbyteGlobalState()
-                            .withSharedState(sharedState)
-                            .withStreamStates(streamStates.map { it.asProtocolObject() })
-                    )
+                    .withGlobal(AirbyteGlobalState().withSharedState(sharedState))
                     .also {
                         if (checkpointKey != null) {
                             it.additionalProperties["partition_id"] =
