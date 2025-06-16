@@ -39,6 +39,8 @@ dependencies {
 
     testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    // This is being used in the test to check that the generated SQL can be parsed correctly.
+    testImplementation("com.github.vertical-blank:sql-formatter:2.0.4")
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestImplementation 'org.testcontainers:clickhouse:1.21.1'
