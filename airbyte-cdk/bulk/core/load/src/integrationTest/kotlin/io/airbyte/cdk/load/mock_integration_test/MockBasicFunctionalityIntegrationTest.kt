@@ -120,6 +120,8 @@ class MockBasicFunctionalityIntegrationTest :
 
     @Test
     fun testCrashInInputLoop() {
+        val streamName = "tomato"
+        val streamNamespace = "potato"
         val stream =
             DestinationStream(
                 randomizedNamespace,
@@ -140,8 +142,8 @@ class MockBasicFunctionalityIntegrationTest :
                         // send a state message for a stream that isn't in the catalog.
                         // this should cause the sync to crash.
                         InputStreamCheckpoint(
-                            streamName = "potato",
-                            streamNamespace = "tomato",
+                            streamName = streamName,
+                            streamNamespace = streamNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
@@ -150,7 +152,7 @@ class MockBasicFunctionalityIntegrationTest :
                 )
             }
         assertEquals(
-            listOf("Stream not found: Descriptor(namespace=potato, name=tomato)"),
+            listOf("Stream not found: Descriptor(namespace=$streamNamespace, name=$streamName)"),
             e.traceMessages.map { it.message },
         )
     }
