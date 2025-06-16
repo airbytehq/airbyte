@@ -64,10 +64,11 @@ class ObjectLoaderQueueBeanFactory(
         PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
         return ResourceReservingPartitionedQueue(
             globalMemoryManager,
-            loader.maxMemoryRatioReservedForParts,
-            loader.numUploadWorkers,
-            loader.numPartWorkers,
-            loader.partSizeBytes
+            loader.maxMemoryRatioReservedForParts, // 0.4
+            loader.numUploadWorkers, // 5
+            loader.numPartWorkers, // 2 which is wrong, should be 8
+            loader.partSizeBytes, // 20971520
+            "objectLoaderPartQueue"
         )
     }
 
@@ -131,7 +132,8 @@ class ObjectLoaderQueueBeanFactory(
             loader.maxMemoryRatioReservedForParts,
             loader.numUploadWorkers,
             loader.numPartWorkers,
-            loader.partSizeBytes
+            loader.partSizeBytes,
+            "filePartQueue"
         )
     }
 

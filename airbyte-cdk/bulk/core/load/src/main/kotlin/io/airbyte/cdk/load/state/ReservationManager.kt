@@ -54,7 +54,7 @@ class ReservationManager(val totalCapacityBytes: Long) {
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
     suspend fun <T> reserve(bytes: Long, reservedFor: T): Reserved<T> {
-        reserve(bytes)
+        //        reserve(bytes)
 
         return Reserved(this, bytes, reservedFor)
     }
@@ -76,17 +76,17 @@ class ReservationManager(val totalCapacityBytes: Long) {
     }
 
     suspend fun <T> reserveOrThrow(bytes: Long, reservedFor: T): Reserved<T> {
-        reserveLock.withLock {
-            check(usedBytes.get() + bytes <= totalCapacityBytes) {
-                "Not enough memory to reserve $bytes bytes"
-            }
-            usedBytes.addAndGet(bytes)
-        }
+        //        reserveLock.withLock {
+        //            check(usedBytes.get() + bytes <= totalCapacityBytes) {
+        //                "Not enough memory to reserve $bytes bytes"
+        //            }
+        //            usedBytes.addAndGet(bytes)
+        //        }
 
         return Reserved(this, bytes, reservedFor)
     }
 
     suspend fun release(bytes: Long) {
-        updateChannel.value = usedBytes.addAndGet(-bytes)
+        //        updateChannel.value = usedBytes.addAndGet(-bytes)
     }
 }
