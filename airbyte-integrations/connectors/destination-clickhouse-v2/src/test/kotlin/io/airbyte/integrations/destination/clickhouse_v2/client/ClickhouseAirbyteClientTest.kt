@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse_v2.client
 
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -13,9 +14,12 @@ class ClickhouseAirbyteClientTest {
     // Mocks
     private val client: ClickHouseClientRaw = mockk(relaxed = true)
     private val clickhouseSqlGenerator: ClickhouseSqlGenerator = mockk(relaxed = true)
+    private val clickhouseFinalTableNameGenerator: ClickhouseFinalTableNameGenerator =
+        mockk(relaxed = true)
 
     // Client
-    private val clickhouseAirbyteClient = ClickhouseAirbyteClient(client, clickhouseSqlGenerator)
+    private val clickhouseAirbyteClient =
+        ClickhouseAirbyteClient(client, clickhouseSqlGenerator, clickhouseFinalTableNameGenerator)
 
     // Constants
     private val dummySentence = "SELECT 1"

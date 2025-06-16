@@ -8,13 +8,20 @@ import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.client.api.query.QueryResponse
+import com.clickhouse.data.ClickHouseColumn
+import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
+import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.future.await
@@ -29,6 +36,7 @@ val log = KotlinLogging.logger {}
 class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
     private val sqlGenerator: ClickhouseSqlGenerator,
+    private val nameGenerator: ClickhouseFinalTableNameGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun createNamespace(namespace: String) {
@@ -101,8 +109,88 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        // TODO: ("Not yet implemented")
-        // ensure transitioning from dedupe to non-dedupe and back works
+        val properTableName = nameGenerator.getTableName(stream.descriptor)
+        val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
+
+        val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
+            tableSchema.columns
+                .filterNot { column -> column.columnName in COLUMN_NAMES }
+                .map { column ->
+                    ClickHouseColumn.of(
+                        columnNameMapping[column.columnName] ?: column.columnName,
+                        column.dataType,
+                        column.isNullable,
+                    )
+                }
+
+        if (!stream.schema.isObject) {
+            val error =
+                "The root of the schema is not an Object which is not expected, the schema changes won't be propagated"
+            log.error { error }
+            throw IllegalStateException(error)
+        }
+
+        val airbyteSchemaWithClickhouseType: Map<String, String> =
+            stream.schema
+                .asColumns()
+                .map { (fieldName, fieldType) ->
+                    // We don't need to nullable information here because we are setting all fields
+                    // as
+                    // nullable in the destination
+                    // Add map key
+                    fieldName to fieldType.type.toDialectType()
+                }
+                .toMap()
+
+        val columnChanges: AlterationSummary =
+            getChangedColumns(
+                tableSchemaWithoutAirbyteColumns,
+                airbyteSchemaWithClickhouseType,
+            )
+        if (columnChanges.isEmpty()) {
+            log.info { "No changes detected for table $properTableName" }
+            return
+        }
+        execute(
+            sqlGenerator.alterTable(
+                columnChanges,
+                properTableName,
+            ),
+        )
+    }
+
+    private fun getChangedColumns(
+        tableColumns: List<ClickHouseColumn>,
+        catalogColumns: Map<String, String>,
+    ): AlterationSummary {
+
+        val modified = mutableMapOf<String, String>()
+        val deleted = mutableSetOf<String>()
+        val mutableCatalogColumns: MutableMap<String, String> = catalogColumns.toMutableMap()
+
+        tableColumns.forEach { clickhouseColumn ->
+            if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
+                deleted.add(clickhouseColumn.columnName)
+            } else {
+                val clickhouseType = clickhouseColumn.dataType.getDataTypeAsString()
+                if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
+                    modified[clickhouseColumn.columnName] =
+                        mutableCatalogColumns[clickhouseColumn.columnName]!!
+                }
+                mutableCatalogColumns.remove(clickhouseColumn.columnName)
+            }
+        }
+
+        val added: Map<String, String> = mutableCatalogColumns
+
+        val result =
+            AlterationSummary(
+                added = added,
+                modified = modified,
+                deleted = deleted,
+            )
+
+        return result
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
@@ -133,11 +221,19 @@ class ClickhouseAirbyteClient(
         }
     }
 
-    internal suspend fun execute(query: String): CommandResponse {
+    private suspend fun execute(query: String): CommandResponse {
         return client.execute(query).await()
     }
 
-    internal suspend fun query(query: String): QueryResponse {
+    private suspend fun query(query: String): QueryResponse {
         return client.query(query).await()
+    }
+
+    private fun ClickHouseDataType.getDataTypeAsString(): String {
+        return if (this.name == "DateTime64") {
+            DATETIME_WITH_PRECISION
+        } else {
+            this.name
+        }
     }
 }
