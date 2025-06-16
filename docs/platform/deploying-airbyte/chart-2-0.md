@@ -15,19 +15,21 @@ Airbyte runs on [Kubernetes](https://kubernetes.io/). [Helm](https://helm.sh/) i
 
 ## Why you should upgrade
 
-Upgrading to the new Helm charts now has several benefits.
+Upgrading to the new Helm charts now has the following benefits.
 
-1. By upgrading in advance, you can schedule this upgrade for a convenient time, and avoid blocking yourself from upgrading to a future version of Airbyte that requires the new Helm charts when you're too busy to convert.
+1. By upgrading in advance, you can schedule this upgrade for a convenient time. Avoid blocking yourself from upgrading Airbyte to a future version when the new chart is mandatory and you're busy.
 
 2. The new Helm charts don't require [Keycloak](https://www.keycloak.org/). If you don't want to use Keycloak for authentication, or want to use generic OIDC, you must run the new Helm charts.
 
-3. The new Helm charts are compliant with Helm's best practices for chart design.
+3. The new Helm charts are more aligned with Helm's best practices for chart design.
 
-4. The new Helm charts have broader and more detailed options to customize your deployment. In most cases, it's no longer necessary to specify environment variables in your `values.yaml` file because the chart offers a more detailed interface for customizaton. If you do need to use environment variables, you probably don't need many.
+4. The new Helm charts have broader and more detailed options to customize your deployment. In most cases, it's no longer necessary to specify environment variables in your `values.yaml` file because the chart offers a more detailed interface for customization. If you do need to use environment variables, you can use fewer of them.
 
 ## Which versions can upgrade to Helm chart 2.0
 
 Airbyte version 1.6.0 and later can use the new Helm charts.
+
+<!-- Can abctl use it yet? -->
 
 ## How to upgrade
 
@@ -37,9 +39,9 @@ In most cases, upgrading is straightforward. To upgrade to Helm charts V2, you'l
 
 2. Prepare to deploy a fresh installation of Airbyte.
 
-3. Update your `values.yaml` file.
+3. Create a new `values.yaml` file.
 
-4. Deploy a new version of Airbyte using your new `values.yaml` file, and using your existing external database, external bucket storage, and external secrets manager.
+4. Deploy a new version of Airbyte using your new `values.yaml` file.
 
 ### Configure external database, bucket storage, and secrets manager
 
@@ -59,13 +61,16 @@ Although Airbyte provides its own basic database, storage, and secrets managemen
 
 <!-- Need to research more and elaborate what exactly we mean when we say this -->
 
-### Add the Helm chart 2.0 repo
+### Add and index the Helm chart 2.0 repo
 
-While Helm chart 2.0 is optional, it uses a different repo while it's usage is optional. For now, add it separately.
+While its usage is optional, Helm chart 2.0 uses a separate repo. Add it separately and index it.
 
 ```bash
 helm repo add airbyte-v2 https://airbytehq.github.io/charts
+helm repo update
 ```
+
+You can browse all charts uploaded to your repository by running `helm search repo airbyte-v2`.
 
 ### Update your values.yaml file
 
@@ -73,17 +78,17 @@ The majority of the work when you migrate to the 2.0 chart involves making adjus
 
 This section walks you through the main updates you need to make. If you already know what to do, see [Values.yaml reference](values) to compare the interfaces in full.
 
-#### Main differences
+#### Main differences between Helm chart versions 1 and 2
 
 - **Global configuration**: Helm chart 2.0 has a more feature-rich `global` section, so you define common settings like database, storage, and auth once and can reference them later. Helm chart 2.0 renames or restructures some components to support this design.
 
 - **Multiple cluster support**: Helm chart 2.0 adds support for different cluster types: hybrid, control plane, and data planes.
 
-- **Authentication and security**: Configurable generic OIDC integration, and security settings for cookies and JWT
+- **Authentication and security**: Configurable generic OIDC integration, and security settings for cookies and JWT.
 
-- **Secrets management**: Comprehensive secrets management with support for multiple backends: Valut, AWS< GCP, and Azure.
+- **Secrets management**: Comprehensive secrets management with support for multiple backends: Vault, AWS, GCP, and Azure.
 
-- **Storage backend flexibility**: Multiple storage backend support (S3, GCS, Azure, Minio), separate bucket configuration for different data types, and component changes
+- **Storage backend flexibility**: Multiple storage backend support (S3, GCS, Azure, Minio), separate bucket configuration for different data types, and component changes.
 
 - **New components**: `workloadLauncher` to manage Kubernetes pod lifecycle, `connectorRolloutWorker` to handle connector version updates, `workloadApiServer` for API workload management, `featureflagServer` for feature flag management, and `keycloak` and `keycloakSetup` for identity management.
 
@@ -93,15 +98,15 @@ Airbyte recommends approaching this project in this way:
 
 1. Document the customizations in your v1 `values.yaml` file so you don't forget anything.
 
-2. Start with a basic v2 `values.yaml` and verify that it works, and expand it later.
+2. Start with a basic v2 `values.yaml` to verify that it works.
 
 3. Map your v1 settings to v2, transferring one set of configurations at a time.
 
-4. Use Helm template validation before applying changes. For example, `helm template -f your-v2-values.yaml airbyte/airbyte`.
+4. Use Helm template validation and linting before applying changes. For example, `helm template airbyte-v2-test airbyte/airbyte-v2 -f values.yaml` and `helm lint ./my-chart -f values.yaml`
 
-5. Test in a non-production environment before deploying to production.
+5. Don't test in production.
 
-#### How to approach this project
+<!-- #### How to approach this project
 
 Everyone has a slightly different configuration, so it's impossible to prescribe an exact migration path. However, for most people, upgrading your `values.yaml` generally follows this pattern:
 
@@ -123,7 +128,7 @@ Depending on your configuration and priorities, you may need or want to adjust t
 
 2. Configure workload resources and scheduling
 
-3. Set up enhanced metrics collection
+3. Set up enhanced metrics collection -->
 
 #### Create a `global` configuration
 
@@ -213,6 +218,329 @@ global:
 ```
 
 For more help implementing generic OIDC, see [TODO](#).
+
+</TabItem>
+<TabItem value="community" label="Self-Managed Community">
+
+```yaml
+# Not applicable
+```
+
+</TabItem>
+</Tabs>
+
+#### Add your database
+
+Disable Airbyte's default Postgres database and add your own. The main difference in Helm chart 2.0 is the `database` key has changed to `name`.
+
+<Tabs groupId="product">
+<TabItem value="enterprise" label="Self-Managed Enterprise">
+
+```yaml
+global: 
+
+  # -- Database configuration
+  database:
+
+    # -- Secret name where database credentials are stored
+    secretName: "" # e.g. "airbyte-config-secrets"
+
+    # -- The database host
+    host: ""
+
+    # -- The database port
+    port:
+
+    # -- The database name - this key used to be "database" in Helm chart 1.0
+    name: ""
+
+    # Use EITHER user or userSecretKey, but not both
+
+    # -- The database user
+    user: ""
+    # -- The key within `secretName` where the user is stored
+    userSecretKey: "" # e.g. "database-user"
+
+    # Use EITHER password or passwordSecretKey, but not both
+
+    # -- The database password
+    password: ""
+    # -- The key within `secretName` where the password is stored
+    passwordSecretKey: "" # e.g."database-password"
+
+postgresql:
+  enabled: false
+```
+
+</TabItem>
+<TabItem value="community" label="Self-Managed Community">
+
+```yaml
+global: 
+
+  # -- Database configuration
+  database:
+
+    # -- Secret name where database credentials are stored
+    secretName: "" # e.g. "airbyte-config-secrets"
+
+    # -- The database host
+    host: ""
+
+    # -- The database port
+    port:
+
+    # -- The database name - this key used to be "database" in Helm chart 1.0
+    name: ""
+
+    # Use EITHER user or userSecretKey, but not both
+
+    # -- The database user
+    user: ""
+    # -- The key within `secretName` where the user is stored
+    userSecretKey: "" # e.g. "database-user"
+
+    # Use EITHER password or passwordSecretKey, but not both
+
+    # -- The database password
+    password: ""
+    # -- The key within `secretName` where the password is stored
+    passwordSecretKey: "" # e.g."database-password"
+
+postgresql:
+  enabled: false
+```
+
+</TabItem>
+</Tabs>
+
+#### Add external logging
+
+<Tabs groupId="product">
+<TabItem value="enterprise" label="Self-Managed Enterprise">
+
+```yaml
+global:
+  storage:
+    secretName: ""
+    type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
+
+    bucket:
+      log: airbyte-bucket
+      auditLogging: airbyte-bucket # Version 1.7 or later, only if you're using audit logging
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
+
+    # Set ONE OF the following storage types, according to your specification above
+
+    # S3
+    s3:
+      region: "" ## e.g. us-east-1
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      accessKeyId: ""
+      secretAccessKey: ""
+
+    # GCS
+    gcs:
+      projectId: <project-id>
+      credentialsJson:  <base64-encoded>
+      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+
+    # Azure
+    azure:
+      # one of the following: connectionString, connectionStringSecretKey
+      connectionString: <azure storage connection string>
+      connectionStringSecretKey: <secret coordinate containing an existing connection-string secret>
+```
+
+</TabItem>
+<TabItem value="community" label="Self-Managed Community">
+
+```yaml
+global:
+  storage:
+    secretName: ""
+    type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
+
+    bucket:
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
+
+    # Set ONE OF the following storage types, according to your specification in global.storage.type.
+
+    # S3
+    s3:
+      region: "" ## e.g. us-east-1
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      accessKeyId: ""
+      secretAccessKey: ""
+
+    # GCS
+    gcs:
+      projectId: <project-id>
+      credentialsJson:  <base64-encoded>
+      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+
+    # Azure
+    azure:
+      # Set one of the following: connectionString, connectionStringSecretKey
+      connectionString: <azure storage connection string>
+      connectionStringSecretKey: <secret coordinate containing an existing connection-string secret>
+```
+
+</TabItem>
+</Tabs>
+
+#### Add external connector secret management
+
+<Tabs groupId="product">
+<TabItem value="enterprise" label="Self-Managed Enterprise">
+
+```yaml
+global:
+  secretsManager:
+    enabled: false
+    type: "" # one of: VAULT, GOOGLE_SECRET_MANAGER, AWS_SECRET_MANAGER, AZURE_KEY_VAULT, TESTING_CONFIG_DB_TABLE
+    secretName: "airbyte-config-secrets"
+
+    # Set ONE OF the following groups of configurations, based on your configuration in global.secretsManager.type.
+
+    awsSecretManager:
+      region: <aws-region>
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+      - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+      kms: ## Optional - ARN for KMS Decryption.
+
+    # OR
+
+    googleSecretManager:
+      projectId: <project-id>
+      credentialsSecretKey: gcp.json
+
+    # OR
+
+    azureKeyVault:
+      tenantId: ""
+      vaultUrl: ""
+      clientId: ""
+      clientIdSecretKey: ""
+      clientSecret: ""
+      clientSecretSecretKey: ""
+      tags: ""
+
+    # OR
+
+    vault:
+      address: ""
+      prefix: ""
+      authToken: ""
+      authTokenSecretKey: ""
+```
+
+</TabItem>
+<TabItem value="community" label="Self-Managed Community">
+
+```yaml
+global:
+  secretsManager:
+    enabled: false
+    type: "" # one of: VAULT, GOOGLE_SECRET_MANAGER, AWS_SECRET_MANAGER, AZURE_KEY_VAULT, TESTING_CONFIG_DB_TABLE
+    secretName: "airbyte-config-secrets"
+
+    # Set ONE OF the following groups of configurations, based on your configuration in global.secretsManager.type.
+
+    awsSecretManager:
+      region: <aws-region>
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+      - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+      kms: ## Optional - ARN for KMS Decryption.
+
+    # OR
+
+    googleSecretManager:
+      projectId: <project-id>
+      credentialsSecretKey: gcp.json
+
+    # OR
+
+    azureKeyVault:
+      tenantId: ""
+      vaultUrl: ""
+      clientId: ""
+      clientIdSecretKey: ""
+      clientSecret: ""
+      clientSecretSecretKey: ""
+      tags: ""
+
+    # OR
+
+    vault:
+      address: ""
+      prefix: ""
+      authToken: ""
+      authTokenSecretKey: ""
+```
+
+</TabItem>
+</Tabs>
+
+#### Add ingress
+
+<Tabs groupId="product">
+<TabItem value="enterprise" label="Self-Managed Enterprise">
+
+```yaml
+# Not applicable
+```
+
+</TabItem>
+<TabItem value="community" label="Self-Managed Community">
+
+```yaml
+# Not applicable
+```
+
+</TabItem>
+</Tabs>
+
+#### Topic
+
+<Tabs groupId="product">
+<TabItem value="enterprise" label="Self-Managed Enterprise">
+
+```yaml
+# Not applicable
+```
+
+</TabItem>
+<TabItem value="community" label="Self-Managed Community">
+
+```yaml
+# Not applicable
+```
+
+</TabItem>
+</Tabs>
+
+#### Topic
+
+<Tabs groupId="product">
+<TabItem value="enterprise" label="Self-Managed Enterprise">
+
+```yaml
+# Not applicable
+```
 
 </TabItem>
 <TabItem value="community" label="Self-Managed Community">
