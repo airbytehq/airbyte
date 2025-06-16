@@ -9,12 +9,17 @@ import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -29,7 +34,7 @@ class ClickhouseAirbyteClientTest {
 
     // Client
     private val clickhouseAirbyteClient =
-        ClickhouseAirbyteClient(client, clickhouseSqlGenerator, clickhouseFinalTableNameGenerator)
+        spyk(ClickhouseAirbyteClient(client, clickhouseSqlGenerator, clickhouseFinalTableNameGenerator))
 
     @Test
     fun testExecute() = runTest {
@@ -204,6 +209,42 @@ class ClickhouseAirbyteClientTest {
             )
         val actual4 = clickhouseAirbyteClient.getChangedColumns(tableColumns4, catalogColumns4)
         Assertions.assertEquals(expected4, actual4)
+    }
+
+    @Test
+    fun `test ensure schema matches`() = runTest {
+        val mockAlterationSummary = mockk<AlterationSummary>(relaxed = true) {
+            every { isEmpty() } returns false
+        }
+
+        val mockTableName = mockk<TableName>(relaxed = true)
+        val alterTableStatement = "ALTER TABLE my_table ADD COLUMN new_col String"
+
+        coEvery {
+            clickhouseAirbyteClient.getChangedColumns(any(), any())
+        } returns mockAlterationSummary
+        coEvery { clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName) } returns alterTableStatement
+        coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns mockk(relaxed = true)
+        every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns mockTableName
+
+        val columnMapping = ColumnNameMapping(mapOf())
+        val stream = mockk<DestinationStream>() {
+            every { descriptor } returns mockk(relaxed = true) {
+                every { name } returns "my_table"
+                every { namespace } returns "my_namespace"
+            }
+            every { schema } returns mockk(relaxed = true) {
+                every { isObject } returns true
+                every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
+            }
+        }
+        clickhouseAirbyteClient.ensureSchemaMatches(stream, mockTableName, columnMapping)
+
+        coVerify {
+            clickhouseAirbyteClient.getChangedColumns(any(), any())
+            clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName)
+            clickhouseAirbyteClient.execute(alterTableStatement)
+        }
     }
 
     companion object {
