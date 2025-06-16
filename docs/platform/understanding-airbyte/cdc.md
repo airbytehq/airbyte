@@ -10,7 +10,7 @@ The orchestration for syncing is similar to non-CDC database sources. After sele
 
 A single sync might have some tables configured for Full Refresh replication and others for Incremental. If CDC is configured at the source level, all tables with Incremental selected will use CDC. All Full Refresh tables will replicate using the same process as non-CDC sources.
 
-The Airbyte Protocol outputs records from sources. Records from `UPDATE` statements appear the same way as records from `INSERT` statements. We support different options for how to sync this data into destinations using primary keys, so you can choose to append this data, delete in place, etc.
+The Airbyte Protocol outputs records from sources. Records from `UPDATE` and `DELETE` statements appear the same way as records from `INSERT` statements. We support different options for how to sync this data into destinations using primary keys, so you can choose to append this data, delete in place, etc.
 
 We add some metadata columns for CDC sources which all begin with the `_ab_cdc_` prefix. The actual columns syced will vary per srouce, but might look like:
 
@@ -26,7 +26,6 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - The modifications you are trying to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made from `TRUNCATE`/`ALTER` won't appear in logs and therefore in your destination.
 - Newly created tables/collections in your schema will cause the CDC snapshot to be ahead of what Airbyte has in the connection state. A refresh is required after any new table/collection is added.
 - There are database-specific limitations. See the documentation pages for individual connectors for more information.
-- The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
 - The final table will not show the records whose most recent entry has been deleted, as denoted by _ab_cdc_deleted_at.
 
 ## Current Support
