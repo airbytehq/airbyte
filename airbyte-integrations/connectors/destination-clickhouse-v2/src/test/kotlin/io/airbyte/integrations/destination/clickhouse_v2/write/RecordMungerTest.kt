@@ -32,7 +32,7 @@ class RecordMungerTest {
     }
 
     @Test
-    fun `maps keys and values`() {
+    fun `transforms record into map of munged keys and values`() {
         // add "_munged" to every key so we can validate we get the mapped cols
         every { catalogInfo.getMappedColumnName(any(), any()) } answers { secondArg<String>() + "_munged" }
 

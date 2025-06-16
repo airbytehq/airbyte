@@ -15,8 +15,8 @@ import io.airbyte.integrations.destination.clickhouse_v2.write.SizedWindow
     justification = "suspend and fb's non-null analysis don't play well"
 )
 class ClickhouseDirectLoader(
-    private val munger: RecordMunger,
-    private val buffer: ClickhouseBinaryRowInsertBuffer,
+  private val munger: RecordMunger,
+  private val buffer: BinaryRowInsertBuffer,
 ) : DirectLoader {
     // the sum of serialized json bytes we've accumulated
     private var bytesWindow = SizedWindow(Constants.MAX_BATCH_SIZE_BYTES)

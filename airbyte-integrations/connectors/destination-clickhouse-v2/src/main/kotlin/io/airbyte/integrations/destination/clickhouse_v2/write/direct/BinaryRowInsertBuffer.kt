@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
 import com.clickhouse.data.ClickHouseFormat
+import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
@@ -26,7 +27,6 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
@@ -35,14 +35,16 @@ private val log = KotlinLogging.logger {}
     value = ["NP_NONNULL_PARAM_VIOLATION"],
     justification = "suspend and fb's non-null analysis don't play well"
 )
-class ClickhouseBinaryRowInsertBuffer(
+class BinaryRowInsertBuffer(
     private val tableName: TableName,
     private val clickhouseClient: Client,
 ) {
-    // Initialize the buffer
+    // Initialize the inner buffer
     private val schema = clickhouseClient.getTableSchema(tableName.name, tableName.namespace)
-    private val buffer = InputOutputBuffer()
-    private val writer = RowBinaryFormatWriter(buffer, schema, ClickHouseFormat.RowBinary)
+    @VisibleForTesting
+    internal var inner = InputOutputBuffer()
+    @VisibleForTesting
+    internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         recordFields.forEach {
@@ -59,7 +61,7 @@ class ClickhouseBinaryRowInsertBuffer(
             clickhouseClient
                 .insert(
                     "`${tableName.namespace}`.`${tableName.name}`",
-                    buffer.toInputStream(),
+                    inner.toInputStream(),
                     ClickHouseFormat.RowBinary
                 )
                 .await()
@@ -69,6 +71,7 @@ class ClickhouseBinaryRowInsertBuffer(
 
     private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {
         when (abValue) {
+            // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
             is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
@@ -88,13 +91,13 @@ class ClickhouseBinaryRowInsertBuffer(
      * The CH writer wants an output stream and the client an input stream.
      * This is a naive wrapper class to avoid having to copy the buffer contents around.
      */
-    private class InputOutputBuffer : ByteArrayOutputStream() {
+    internal class InputOutputBuffer : ByteArrayOutputStream() {
         /**
          * Get an input stream based on the contents of this output stream.
          * Do not use the output stream after calling this method.
          * @return an {@link InputStream}
          */
-        fun toInputStream(): InputStream {
+        fun toInputStream(): ByteArrayInputStream {
             return ByteArrayInputStream(this.buf, 0, this.count);
         }
     }
