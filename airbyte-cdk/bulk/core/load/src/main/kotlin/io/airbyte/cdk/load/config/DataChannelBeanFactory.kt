@@ -307,9 +307,13 @@ class DataChannelBeanFactory {
             DataChannelMedium.STDIO -> {
                 // Source is effectively "identity." In STDIO mode, we just take
                 // what we're given.
+                log.info {
+                    "Going to use the given source value: ${NamespaceDefinitionType.SOURCE} for namespace"
+                }
                 return NamespaceMapper(NamespaceDefinitionType.SOURCE)
             }
             DataChannelMedium.SOCKET -> {
+                log.info { "In a SOCKET scenario. Using alternate version of the NamespaceMapper" }
                 val config =
                     File(namespaceMappingConfigPath)
                         .readText(Charsets.UTF_8)
