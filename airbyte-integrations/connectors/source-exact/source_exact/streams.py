@@ -1,14 +1,14 @@
 import re
 from abc import ABC
-from typing import Any, Mapping, Optional, MutableMapping
+from typing import Any, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-
 from source_exact.api import ExactAPI
 
 
