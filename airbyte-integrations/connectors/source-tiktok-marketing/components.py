@@ -1,12 +1,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import json
-from typing import Any, Iterable, Mapping
+from dataclasses import dataclass
+from typing import Any, Iterable, Mapping, Optional
 
 import dpath
 
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 class MultipleAdvertiserIdsPerPartition(SubstreamPartitionRouter):
@@ -72,3 +74,21 @@ class SingleAdvertiserIdPerPartition(MultipleAdvertiserIdsPerPartition):
             yield StreamSlice(partition={self._partition_field: partition_value_in_config, "parent_slice": {}}, cursor_slice={})
         else:
             yield from super(MultipleAdvertiserIdsPerPartition, self).stream_slices()
+
+
+@dataclass
+class TransformEmptyMetrics(RecordTransformation):
+    empty_value = "-"
+
+    def transform(
+        self,
+        record: Mapping[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Mapping[str, Any]:
+        for metric_key, metric_value in record.get("metrics", {}).items():
+            if metric_value == self.empty_value:
+                record["metrics"][metric_key] = None
+
+        return record
