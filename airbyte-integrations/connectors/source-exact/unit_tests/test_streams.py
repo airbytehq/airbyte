@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-
 from source_exact.streams import ExactOtherStream, ExactSyncStream
 
 

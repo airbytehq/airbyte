@@ -3,7 +3,6 @@ from typing import Any
 
 from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-
 from source_exact.api import ExactAPI
 from source_exact.streams import CRMAccountClassifications, ExactStream
 

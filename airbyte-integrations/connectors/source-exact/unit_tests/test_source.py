@@ -5,7 +5,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from source_exact.source import SourceExact
 
 
