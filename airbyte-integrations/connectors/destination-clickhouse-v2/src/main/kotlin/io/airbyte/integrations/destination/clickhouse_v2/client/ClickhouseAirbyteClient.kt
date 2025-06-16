@@ -9,6 +9,7 @@ import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
+import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
@@ -156,9 +157,7 @@ class ClickhouseAirbyteClient(
                 deleted.add(clickhouseColumn.columnName)
             } else {
                 val clickhouseType =
-                    clickhouseColumn.dataType.name.let {
-                        if (it == "DateTime64") DATETIME_WITH_PRECISION else it
-                    }
+                    clickhouseColumn.dataType.getDataTypeAsString()
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
@@ -213,5 +212,13 @@ class ClickhouseAirbyteClient(
 
     private suspend fun query(query: String): QueryResponse {
         return client.query(query).await()
+    }
+
+    private fun ClickHouseDataType.getDataTypeAsString(): String {
+        return if (this.name == "DateTime64") {
+            DATETIME_WITH_PRECISION
+        } else {
+            this.name
+        }
     }
 }
