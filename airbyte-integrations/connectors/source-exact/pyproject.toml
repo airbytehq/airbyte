@@ -1,55 +1,17 @@
-[project]
-name = "source-exact"
-version = "0.2.0"
-description = "Connector for the bookkeeping software exact online"
-authors = [
-    { name = "Jeroen de Vries", email = "jeroen@maildevries.eu" }
-]
-license = { text = "MIT" }
-readme = "README.md"
-requires-python = ">=3.11,<3.13"
-dependencies = [
-    "airbyte-cdk (>=6.48.16,<7.0.0)",
-    "pendulum (>=3.1.0,<4.0.0)"
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.4.0",
-    "pytest-mock>=3.14.1",
-    "ruff>=0.11.12",
-    "source-acceptance-test>=1.0.0",
-]
-[project.scripts]
-source-exact = "source_exact.run:run"
-
-# Poetry related, mostly a duplicate of the above because of the build process of Airbyte, instead of using default pyproject.toml
-# As used by UV
-
-[build-system]
-requires = ["poetry-core>=1.0.0", ]
-build-backend = "poetry.core.masonry.api"
-
 [tool.poetry]
 name = "source-exact"
 version = "0.2.0"
-description = "Connector for the bookkeeping software exact online"
-authors = ["Jeroen de Vries <jeroen@maildevries.eu>", ]
+description = "Source connector for Exact Online"
+authors = ["Jeroen de Vries <jeroen@maildevries.eu>"]
 license = "MIT"
 readme = "README.md"
-[[tool.poetry.packages]]
-include = "source_exact"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-airbyte-cdk = ">=6.48.16,<7.0.0"
-pendulum = ">=3.1.0,<4.0.0"
+python = ">=3.11,<3.12"
+google-cloud-secret-manager = "^2.24.0"
+airbyte-cdk = "^6.55.1"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.4.0"
-pytest-mock = "^3.14.1"
 
-[tool.poe]
-include = [
-    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
-]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
