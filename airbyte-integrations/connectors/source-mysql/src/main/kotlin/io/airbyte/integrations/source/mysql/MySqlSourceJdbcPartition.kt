@@ -248,7 +248,23 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
         )
 }
 
-typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcRfrSnapshotPartition
+//typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
+class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val completeState: OpaqueStateValue
+        get() = MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
 
 /**
  * Implementation of a [JdbcPartition] for a CDC snapshot partition. Used for incremental CDC

@@ -44,7 +44,7 @@ typealias InternalRow = MutableMap<String, FieldValueEncoder>
 
 fun InternalRow.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
     for ((columnId, value) in this) {
-        val encodedValue = value.jsonEncoder.encode(value.value!!)
+        val encodedValue = value.jsonEncoder.encode(value.value ?: NullCodec.encode(null))
         parentNode.set<JsonNode>(columnId, encodedValue)
     }
     return parentNode
@@ -168,9 +168,9 @@ data object FloatProtoEncoder: ProtoEncoder<Float> {
         builder.setNumber(decoded.toDouble())
 }
 
-data object NullProtoEncoder : ProtoEncoder<Boolean> {
-    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: Boolean): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setIsNull(decoded)
+data object NullProtoEncoder : ProtoEncoder<Any?> {
+    override fun encode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, decoded: Any?): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
+        builder.setIsNull(true)
 }
 
 typealias AnyProtoEncoder = TextProtoEncoder
@@ -179,7 +179,8 @@ fun InternalRow.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Buil
         .apply {
             this@toProto.toSortedMap().onEachIndexed { index, entry ->
                 setData(index,
-                    entry.value.jsonEncoder.toProto().encode(valueVBuilder, entry.value.value!!))
+                    entry.value.value?.let { entry.value.jsonEncoder.toProto().encode(valueVBuilder, entry.value.value!!)}
+                        ?: NullProtoEncoder.encode(valueVBuilder, null))
                 setData(index, NullProtoEncoder.encode(valueVBuilder, entry.value.value == null))
             }
 /*

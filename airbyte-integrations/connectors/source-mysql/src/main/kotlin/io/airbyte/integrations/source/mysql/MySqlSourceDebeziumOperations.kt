@@ -10,15 +10,22 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.JsonCodec
+import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LongCodec
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.read.JdbcSelectQuerier.ResultRow
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
@@ -85,7 +92,15 @@ class MySqlSourceDebeziumOperations(
         // Use either `before` or `after` as the record data, depending on the nature of the change.
         val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
         // Turn string representations of numbers into BigDecimals.
+
+        val resultRow: InternalRow = mutableMapOf()
         for (field in stream.schema) {
+            val c: JsonCodec<*> = field.type.jsonEncoder as JsonCodec<*>
+            data[field.id] ?: continue
+            val a = c.decode(data[field.id])
+            resultRow[field.id] = FieldValueEncoder(
+                a, field.type.jsonEncoder as JsonCodec<Any>,)
+
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
                 LeafAirbyteSchemaType.NUMBER -> {
@@ -110,27 +125,48 @@ class MySqlSourceDebeziumOperations(
             CommonMetaField.CDC_UPDATED_AT.id,
             transactionTimestampJsonNode,
         )
+        resultRow[CommonMetaField.CDC_UPDATED_AT.id] = FieldValueEncoder(
+            transactionOffsetDateTime,
+            OffsetDateTimeCodec as JsonEncoder<Any>)
+
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
+        resultRow[CommonMetaField.CDC_DELETED_AT.id] = FieldValueEncoder(
+            if (isDelete) transactionOffsetDateTime else null,
+            (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>)
+
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
             TextCodec.encode(position.fileName)
         )
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] = FieldValueEncoder(
+            position.fileName,
+            TextCodec as JsonEncoder<Any>)
+
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             LongCodec.encode(position.position)
         )
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] = FieldValueEncoder(
+            position.position,
+            LongCodec as JsonEncoder<Any>)
+
         // Set the _ab_cdc_cursor meta-field value.
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_CURSOR.id,
             LongCodec.encode(position.cursorValue)
         )
+        resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] = FieldValueEncoder(
+            position.cursorValue,
+            LongCodec as JsonEncoder<Any>)
+
         // Return a DeserializedRecord instance.
-        return DeserializedRecord(data, changes = emptyMap())
+//        return DeserializedRecord(data, changes = emptyMap())
+        return DeserializedRecord(resultRow, emptyMap()) // TEMP
     }
 
     override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
@@ -405,7 +441,7 @@ class MySqlSourceDebeziumOperations(
                 .withDefault()
                 .withConnector(MySqlConnector::class.java)
                 .withDebeziumName(databaseName)
-                .withHeartbeats(configuration.debeziumHeartbeatInterval)
+                .withHeartbeats(configuration.debeziumHeartbeatInterval) // TEMP
                 // This to make sure that binary data represented as a base64-encoded String.
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
                 .with("binary.handling.mode", "base64")
