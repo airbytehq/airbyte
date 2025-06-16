@@ -150,32 +150,35 @@ public class DynamodbSource extends BaseConnector implements Source {
       public void close() throws Exception {
         Exception primaryException = null;
 
-        // First, try to close the main iterator.
         try {
           compositeIterator.close();
         } catch (final Exception e) {
+          // Check for interruption and restore the thread's interrupted flag.
+          if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+          }
           primaryException = e;
         }
 
-        // Then, always try to close the dynamodb operations.
         try {
           dynamodbOperations.close();
         } catch (final Exception e) {
+          // Check for interruption and restore the thread's interrupted flag.
+          if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+          }
+
           if (primaryException == null) {
-            // If this is the first exception, it becomes the primary one.
             primaryException = e;
           } else {
-            // Otherwise, add this exception as "suppressed" to the first one.
             primaryException.addSuppressed(e);
           }
         }
 
-        // If any exception occurred, throw it now.
         if (primaryException != null) {
           throw primaryException;
         }
       }
-
     };
   }
 
