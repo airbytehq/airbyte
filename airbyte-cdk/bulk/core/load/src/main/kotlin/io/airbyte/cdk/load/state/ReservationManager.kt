@@ -41,6 +41,10 @@ class Reserved<T>(
 class ReservationManager(val totalCapacityBytes: Long) {
     val log = KotlinLogging.logger {}
 
+    init {
+        log.info { "TOTAL_CAPACITY_BYTES $totalCapacityBytes" }
+    }
+
     private var usedBytes = AtomicLong(0L)
     //    private var updateChannel = MutableStateFlow(0L)
     //    private val reserveLock = Mutex()

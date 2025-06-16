@@ -21,21 +21,6 @@ class ResourceReservingPartitionedQueue<T>(
 ) : PartitionedQueue<T> {
     val log = KotlinLogging.logger {}
 
-    init {
-        log.info { "name : $name" }
-        log.info { "ratioOfTotalMemoryToReserve : $ratioOfTotalMemoryToReserve" }
-        log.info { "numConsumers : $numConsumers" }
-        log.info { "numProducers : $numProducers" }
-        log.info { "expectedResourceUsagePerUnit : $expectedResourceUsagePerUnit" }
-        log.info { "requestedResourceAmount : $requestedResourceAmount" }
-        log.info { "minNumUnits : $minNumUnits" }
-        log.info { "maxMessageSize : $maxMessageSize" }
-        log.info { "clampedMessageSize : $clampedMessageSize" }
-        log.info { "maxNumUnits : $maxNumUnits" }
-        log.info { "totalQueueCapacity : $totalQueueCapacity" }
-        log.info { "queuePartitionCapacity : $queuePartitionCapacity" }
-    }
-
     private val requestedResourceAmount =
         (ratioOfTotalMemoryToReserve * reservationManager.totalCapacityBytes)
             .toLong() // 4 gigs * 0.4 = 1638.4 // 1600000000
@@ -56,15 +41,33 @@ class ResourceReservingPartitionedQueue<T>(
     @VisibleForTesting
     val queuePartitionCapacity: Int = (totalQueueCapacity / numConsumers).coerceAtLeast(1) // 12
 
-    private val finalCapacity: Int =
-        if (queuePartitionCapacity > 1000) queuePartitionCapacity else 1000
-
     private val underlying =
         StrictPartitionedQueue<T>(
             (0 until numConsumers)
-                .map { ChannelMessageQueue<T>(Channel(finalCapacity)) }
+                .map { ChannelMessageQueue<T>(Channel(queuePartitionCapacity)) }
                 .toTypedArray()
         )
+    init {
+        log()
+    }
+
+    private fun log() {
+        log.info { "name : $name" }
+        log.info {
+            "reservationManager.totalCapacityBytes : ${reservationManager.totalCapacityBytes}"
+        }
+        log.info { "ratioOfTotalMemoryToReserve : $ratioOfTotalMemoryToReserve" }
+        log.info { "numConsumers : $numConsumers" }
+        log.info { "numProducers : $numProducers" }
+        log.info { "expectedResourceUsagePerUnit : $expectedResourceUsagePerUnit" }
+        log.info { "requestedResourceAmount : $requestedResourceAmount" }
+        log.info { "minNumUnits : $minNumUnits" }
+        log.info { "maxMessageSize : $maxMessageSize" }
+        log.info { "clampedMessageSize : $clampedMessageSize" }
+        log.info { "maxNumUnits : $maxNumUnits" }
+        log.info { "totalQueueCapacity : $totalQueueCapacity" }
+        log.info { "queuePartitionCapacity : $queuePartitionCapacity" }
+    }
 
     override val partitions: Int = numConsumers
 
