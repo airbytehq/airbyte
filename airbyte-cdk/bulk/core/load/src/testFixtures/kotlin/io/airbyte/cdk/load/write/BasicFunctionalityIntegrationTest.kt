@@ -358,8 +358,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
+                        streamName = stream.descriptor.name,
+                        streamNamespace = stream.descriptor.namespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -378,14 +378,14 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 val asProtocolMessage =
                     StreamCheckpoint(
-                            streamName = "test_stream",
-                            streamNamespace = randomizedNamespace,
+                            streamName = stream.descriptor.name,
+                            streamNamespace = stream.descriptor.namespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(234L, 253L, 59L)
+                            totalBytes = expectedBytesForMediumAndFormat(234L, 254L, 59L)
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -552,8 +552,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         )
                     ),
                     StreamCheckpoint(
-                        streamNamespace = randomizedNamespace,
-                        streamName = "test_stream",
+                        streamName = stream.descriptor.name,
+                        streamNamespace = stream.descriptor.namespace,
                         blob = """{"foo": "bar1"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium()
@@ -943,9 +943,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             ),
             StreamCheckpoint(
-                randomizedNamespace,
-                "test_stream",
-                """{}""",
+                streamName = finalStream.descriptor.name,
+                streamNamespace = finalStream.descriptor.namespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -1114,9 +1114,9 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream2.descriptor.name,
-                """{}""",
+                streamName = stream2.descriptor.name,
+                streamNamespace = stream2.descriptor.namespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -1247,9 +1247,9 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream.descriptor.name,
-                """{}""",
+                streamName = stream.descriptor.name,
+                streamNamespace = stream.descriptor.namespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -1412,9 +1412,9 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                randomizedNamespace,
-                stream2.descriptor.name,
-                """{}""",
+                streamName = stream2.descriptor.name,
+                streamNamespace = stream2.descriptor.namespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
