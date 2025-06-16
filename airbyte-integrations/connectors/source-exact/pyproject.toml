@@ -15,3 +15,6 @@ airbyte-cdk = "^6.55.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+source-exact = "source_exact.run:run"
