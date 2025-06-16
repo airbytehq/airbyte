@@ -82,7 +82,7 @@ definitions:
     is_client_side_incremental: true
 
   single_id_partition_router:
-    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.SingleAdvertiserIdPerPartition"
+    - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
       $parameters:
         path_in_config:
           - ["credentials", "advertiser_id"]
@@ -100,7 +100,7 @@ definitions:
             $ref: "#/definitions/advertiser_ids_stream"
 
   multiple_id_partition_router:
-    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.MultipleAdvertiserIdsPerPartition"
+    - class_name: "source_declarative_manifest.components.MultipleAdvertiserIdsPerPartition"
       $parameters:
         path_in_config:
           - ["credentials", "advertiser_id"]
@@ -622,7 +622,7 @@ definitions:
           - path: ["ad_id"]
             value: "{{ record.dimensions.ad_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -707,7 +707,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_groups_reports_daily_stream:
     type: DeclarativeStream
@@ -763,7 +763,7 @@ definitions:
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_groups_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -823,7 +823,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   advertisers_reports_daily_stream:
     type: DeclarativeStream
@@ -845,7 +845,7 @@ definitions:
           - path: ["advertiser_id"]
             value: "{{ record.dimensions.advertiser_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   campaigns_reports_daily_stream:
     type: DeclarativeStream
@@ -875,7 +875,7 @@ definitions:
           - path: ["campaign_id"]
             value: "{{ record.dimensions.campaign_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   audience_base_report_retriever:
     type: SimpleRetriever
@@ -944,7 +944,7 @@ definitions:
           - path: ["age"]
             value: "{{ record.dimensions.age }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_group_audience_reports_daily_stream:
     type: DeclarativeStream
@@ -995,7 +995,7 @@ definitions:
           - path: ["age"]
             value: "{{ record.dimensions.age }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_audience_reports_daily_stream:
     type: DeclarativeStream
@@ -1049,7 +1049,7 @@ definitions:
           - path: ["age"]
             value: "{{ record.dimensions.age }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   advertisers_audience_reports_daily_stream:
     type: DeclarativeStream
@@ -1076,7 +1076,7 @@ definitions:
           - path: ["age"]
             value: "{{ record.dimensions.age }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   campaigns_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -1102,7 +1102,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_group_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -1151,7 +1151,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -1203,7 +1203,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   advertisers_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -1228,7 +1228,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   campaigns_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -1254,7 +1254,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.platform }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_group_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -1303,7 +1303,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.platform }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -1355,7 +1355,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.platform }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   advertisers_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -1380,7 +1380,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.platform }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_audience_reports_by_province_daily_stream:
     type: DeclarativeStream
@@ -1431,7 +1431,7 @@ definitions:
           - path: ["province_id"]
             value: "{{ record.dimensions.province_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_reports_hourly_stream:
     type: DeclarativeStream
@@ -1515,7 +1515,7 @@ definitions:
           - path: ["ad_id"]
             value: "{{ record.dimensions.ad_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_reports_by_country_hourly_stream:
     type: DeclarativeStream
@@ -1600,7 +1600,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   advertisers_reports_hourly_stream:
     type: DeclarativeStream
@@ -1621,7 +1621,7 @@ definitions:
           - path: ["advertiser_id"]
             value: "{{ record.dimensions.advertiser_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   campaigns_reports_hourly_stream:
     type: DeclarativeStream
@@ -1651,7 +1651,7 @@ definitions:
           - path: ["campaign_id"]
             value: "{{ record.dimensions.campaign_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_groups_reports_hourly_stream:
     type: DeclarativeStream
@@ -1707,7 +1707,7 @@ definitions:
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_groups_reports_by_country_hourly_stream:
     type: DeclarativeStream
@@ -1767,7 +1767,7 @@ definitions:
             value_type: "string"
             value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ads_reports_lifetime_stream:
     type: DeclarativeStream
@@ -1840,7 +1840,7 @@ definitions:
           - path: ["ad_id"]
             value: "{{ record.dimensions.ad_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   advertisers_reports_lifetime_stream:
     type: DeclarativeStream
@@ -1858,7 +1858,7 @@ definitions:
           - path: ["advertiser_id"]
             value: "{{ record.dimensions.advertiser_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   campaigns_reports_lifetime_stream:
     type: DeclarativeStream
@@ -1877,7 +1877,7 @@ definitions:
           - path: ["campaign_id"]
             value: "{{ record.dimensions.campaign_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   ad_groups_reports_lifetime_stream:
     type: DeclarativeStream
@@ -1922,7 +1922,7 @@ definitions:
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   audience_base_report_lifetime:
     schema_loader:
@@ -1980,7 +1980,7 @@ definitions:
           - path: ["age"]
             value: "{{ record.dimensions.age }}"
       - type: CustomTransformation
-        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
   spark_ads_stream:
     type: DeclarativeStream
@@ -5621,50 +5621,54 @@ definitions:
                   - integer
 
 streams:
-  - $ref: "#/definitions/advertiser_ids_stream"
+  - $ref: "#/definitions/ad_group_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/ad_group_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/ad_group_audience_reports_daily_stream"
+  - $ref: "#/definitions/ad_groups_stream"
+  - $ref: "#/definitions/ad_groups_reports_daily_stream"
+  - $ref: "#/definitions/ad_groups_reports_hourly_stream"
+  - $ref: "#/definitions/ad_groups_reports_lifetime_stream"
+  - $ref: "#/definitions/ads_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_province_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_daily_stream"
+  - $ref: "#/definitions/ads_reports_daily_stream"
+  - $ref: "#/definitions/ads_reports_hourly_stream"
+  - $ref: "#/definitions/ads_reports_lifetime_stream"
   - $ref: "#/definitions/advertisers_stream"
   - $ref: "#/definitions/audiences_stream"
+  - $ref: "#/definitions/campaigns_stream"
+  - $ref: "#/definitions/campaigns_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/campaigns_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/campaigns_audience_reports_daily_stream"
+  - $ref: "#/definitions/campaigns_reports_daily_stream"
+  - $ref: "#/definitions/campaigns_reports_hourly_stream"
+  - $ref: "#/definitions/campaigns_reports_lifetime_stream"
+  - $ref: "#/definitions/creative_assets_images_stream"
   - $ref: "#/definitions/creative_assets_music_stream"
   - $ref: "#/definitions/creative_assets_portfolios_stream"
-  - $ref: "#/definitions/campaigns_stream"
-  - $ref: "#/definitions/ad_groups_stream"
-  - $ref: "#/definitions/ads_stream"
-  - $ref: "#/definitions/creative_assets_images_stream"
   - $ref: "#/definitions/creative_assets_videos_stream"
-  - $ref: "#/definitions/ads_reports_daily_stream"
-  - $ref: "#/definitions/ads_reports_by_country_daily_stream"
-  - $ref: "#/definitions/ad_groups_reports_daily_stream"
-  - $ref: "#/definitions/ad_groups_reports_by_country_daily_stream"
-  - $ref: "#/definitions/advertisers_reports_daily_stream"
-  - $ref: "#/definitions/campaigns_reports_daily_stream"
-  - $ref: "#/definitions/campaigns_audience_reports_daily_stream"
-  - $ref: "#/definitions/ad_group_audience_reports_daily_stream"
-  - $ref: "#/definitions/ads_audience_reports_daily_stream"
-  - $ref: "#/definitions/advertisers_audience_reports_daily_stream"
-  - $ref: "#/definitions/campaigns_audience_reports_by_country_daily_stream"
-  - $ref: "#/definitions/ad_group_audience_reports_by_country_daily_stream"
-  - $ref: "#/definitions/ads_audience_reports_by_country_daily_stream"
-  - $ref: "#/definitions/advertisers_audience_reports_by_country_daily_stream"
-  - $ref: "#/definitions/campaigns_audience_reports_by_platform_daily_stream"
-  - $ref: "#/definitions/ad_group_audience_reports_by_platform_daily_stream"
-  - $ref: "#/definitions/ads_audience_reports_by_platform_daily_stream"
-  - $ref: "#/definitions/advertisers_audience_reports_by_platform_daily_stream"
-  - $ref: "#/definitions/ads_audience_reports_by_province_daily_stream"
-  - $ref: "#/definitions/ads_reports_hourly_stream"
-  - $ref: "#/definitions/ads_reports_by_country_hourly_stream"
-  - $ref: "#/definitions/advertisers_reports_hourly_stream"
-  - $ref: "#/definitions/campaigns_reports_hourly_stream"
-  - $ref: "#/definitions/ad_groups_reports_hourly_stream"
-  - $ref: "#/definitions/ad_groups_reports_by_country_hourly_stream"
-  - $ref: "#/definitions/ads_reports_lifetime_stream"
-  - $ref: "#/definitions/advertisers_reports_lifetime_stream"
-  - $ref: "#/definitions/campaigns_reports_lifetime_stream"
-  - $ref: "#/definitions/ad_groups_reports_lifetime_stream"
-  - $ref: "#/definitions/advertisers_audience_reports_lifetime_stream"
-  - $ref: "#/definitions/spark_ads_stream"
-  - $ref: "#/definitions/pixels"
-  - $ref: "#/definitions/pixel_instant_page_events"
-  - $ref: "#/definitions/pixel_events_statistics"
+  # The following streams are only included if the config is not using a sandbox account for authentication
+  - type: ConditionalStreams
+    condition: "{{ config.get('credentials', {}).get('auth_type') != 'sandbox_access_token' if 'credentials' in config else config.get('environment', {}).get('secret') is not none }}"
+    streams:
+    - $ref: "#/definitions/advertiser_ids_stream"
+    - $ref: "#/definitions/ads_reports_by_country_daily_stream"
+    - $ref: "#/definitions/ad_groups_reports_by_country_daily_stream"
+    - $ref: "#/definitions/advertisers_reports_daily_stream"
+    - $ref: "#/definitions/advertisers_audience_reports_daily_stream"
+    - $ref: "#/definitions/advertisers_audience_reports_by_country_daily_stream"
+    - $ref: "#/definitions/advertisers_audience_reports_by_platform_daily_stream"
+    - $ref: "#/definitions/ads_reports_by_country_hourly_stream"
+    - $ref: "#/definitions/advertisers_reports_hourly_stream"
+    - $ref: "#/definitions/ad_groups_reports_by_country_hourly_stream"
+    - $ref: "#/definitions/advertisers_reports_lifetime_stream"
+    - $ref: "#/definitions/advertisers_audience_reports_lifetime_stream"
+    - $ref: "#/definitions/spark_ads_stream"
+    - $ref: "#/definitions/pixels"
+    - $ref: "#/definitions/pixel_instant_page_events"
+    - $ref: "#/definitions/pixel_events_statistics"
 
 spec:
   type: Spec
