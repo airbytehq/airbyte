@@ -127,6 +127,7 @@ class ObjectLoaderQueueBeanFactory(
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
         PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        // This is reserving memory even not required
         return ResourceReservingPartitionedQueue(
             globalMemoryManager,
             loader.maxMemoryRatioReservedForParts,

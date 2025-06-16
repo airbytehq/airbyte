@@ -246,7 +246,7 @@ class CheckpointManager<T>(
                         aggregate.serializedBytes,
                     )
 
-                    log.info {
+                    log.debug {
                         "Flushed checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey (records=${aggregate.records}, bytes=${aggregate.serializedBytes})"
                     }
 
