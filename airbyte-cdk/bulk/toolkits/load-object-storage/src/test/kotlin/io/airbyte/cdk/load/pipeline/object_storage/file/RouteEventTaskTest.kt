@@ -32,11 +32,14 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+
+private val airbyteRawId = UUID.randomUUID()
 
 @ExtendWith(MockKExtension::class)
 class RouteEventTaskTest {
@@ -200,7 +203,8 @@ class RouteEventTaskTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(message),
-                serializedSizeBytes = 0L
+                serializedSizeBytes = 0L,
+                airbyteRawId = airbyteRawId,
             )
     }
 }

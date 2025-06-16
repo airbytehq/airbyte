@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import java.util.UUID
 
 /*
  * Shared factory methods for making stub destination messages for testing.
@@ -32,7 +33,8 @@ object StubDestinationMessageFactory {
                             AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
                         )
                 ),
-            0L
+            serializedSizeBytes = 0L,
+            airbyteRawId = UUID.randomUUID()
         )
     }
 
@@ -55,7 +57,10 @@ object StubDestinationMessageFactory {
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
         return StreamCheckpoint(
             checkpoint =
-                CheckpointMessage.Checkpoint(stream, JsonNodeFactory.instance.objectNode()),
+                CheckpointMessage.Checkpoint(
+                    stream.descriptor,
+                    JsonNodeFactory.instance.objectNode()
+                ),
             sourceStats = CheckpointMessage.Stats(recordCount),
             serializedSizeBytes = 0L
         )

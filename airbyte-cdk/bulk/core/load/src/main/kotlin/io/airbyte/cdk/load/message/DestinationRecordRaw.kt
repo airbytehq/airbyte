@@ -21,7 +21,8 @@ data class DestinationRecordRaw(
     val stream: DestinationStream,
     val rawData: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null
+    val checkpointId: CheckpointId? = null,
+    val airbyteRawId: UUID,
 ) {
     val schema = stream.schema
 
@@ -50,7 +51,9 @@ data class DestinationRecordRaw(
      * (e.g. if `type` is [TimestampTypeWithTimezone], then `value` is either `NullValue`, or
      * [TimestampWithTimezoneValue]).
      */
-    fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
+    fun asEnrichedDestinationRecordAirbyteValue(
+        extractedAtAsTimestampWithTimezone: Boolean = false
+    ): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asJsonRecord()
 
         // Get the fields from the schema
@@ -100,7 +103,9 @@ data class DestinationRecordRaw(
             undeclaredFields = undeclaredFields,
             emittedAtMs = rawData.emittedAtMs,
             sourceMeta = rawData.sourceMeta,
-            serializedSizeBytes = serializedSizeBytes
+            serializedSizeBytes = serializedSizeBytes,
+            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+            airbyteRawId = airbyteRawId,
         )
     }
 

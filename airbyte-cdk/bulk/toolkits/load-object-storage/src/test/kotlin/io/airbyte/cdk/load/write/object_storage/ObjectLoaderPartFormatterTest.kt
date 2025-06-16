@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.io.OutputStream
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -84,14 +85,19 @@ class ObjectLoaderPartFormatterTest {
 
     private fun makeRecord(): DestinationRecordRaw =
         DestinationRecordRaw(
-            stream,
-            DestinationRecordJsonSource(
-                AirbyteMessage()
-                    .withRecord(
-                        AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
-                    )
-            ),
-            serializedSizeBytes = 0L
+            stream = stream,
+            rawData =
+                DestinationRecordJsonSource(
+                    source =
+                        AirbyteMessage()
+                            .withRecord(
+                                AirbyteRecordMessage()
+                                    .withEmittedAt(42)
+                                    .withData(Jsons.createObjectNode())
+                            )
+                ),
+            serializedSizeBytes = 0L,
+            airbyteRawId = UUID.randomUUID(),
         )
 
     private fun makeRecords(n: Int): Iterator<DestinationRecordRaw> =
