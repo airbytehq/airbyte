@@ -378,8 +378,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 val asProtocolMessage =
                     StreamCheckpoint(
-                        streamName = stream.descriptor.name,
-                        streamNamespace = stream.descriptor.namespace,
+                            streamName = stream.descriptor.name,
+                            streamNamespace = stream.descriptor.namespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,

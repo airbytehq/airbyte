@@ -196,7 +196,10 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
         checkpointKey: CheckpointKey? = null,
     ) : this(
         StreamCheckpoint(
-            Checkpoint(stream = DestinationStream.Descriptor(streamNamespace, streamName), state = blob.deserializeToNode()),
+            Checkpoint(
+                stream = DestinationStream.Descriptor(streamNamespace, streamName),
+                state = blob.deserializeToNode()
+            ),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
@@ -218,7 +221,11 @@ data class InputGlobalCheckpoint(
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(AirbyteGlobalState().withSharedState(sharedState).withStreamStates(streamStates.map { it.asProtocolObject() }))
+                    .withGlobal(
+                        AirbyteGlobalState()
+                            .withSharedState(sharedState)
+                            .withStreamStates(streamStates.map { it.asProtocolObject() })
+                    )
                     .also {
                         if (checkpointKey != null) {
                             it.additionalProperties["partition_id"] =
