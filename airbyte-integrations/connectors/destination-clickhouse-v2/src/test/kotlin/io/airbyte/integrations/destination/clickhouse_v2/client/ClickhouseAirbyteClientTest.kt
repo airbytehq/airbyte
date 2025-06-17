@@ -262,10 +262,12 @@ class ClickhouseAirbyteClientTest {
     fun `test overwrite table`() = runTest {
         val sourceTableName = TableName("source_db", "source_table")
         val targetTableName = TableName("target_db", "target_table")
-        val exchangeTableSql = "EXCHANGE TABLES `source_db`.`source_table` AND `target_db`.`target_table`"
+        val exchangeTableSql =
+            "EXCHANGE TABLES `source_db`.`source_table` AND `target_db`.`target_table`"
         val dropTableSql = "DROP TABLE `source_db`.`source_table`"
 
-        every { clickhouseSqlGenerator.exchangeTable(sourceTableName, targetTableName) } returns exchangeTableSql
+        every { clickhouseSqlGenerator.exchangeTable(sourceTableName, targetTableName) } returns
+            exchangeTableSql
         every { clickhouseSqlGenerator.dropTable(sourceTableName) } returns dropTableSql
         coEvery { clickhouseAirbyteClient.execute(exchangeTableSql) } returns mockk()
         coEvery { clickhouseAirbyteClient.execute(dropTableSql) } returns mockk()

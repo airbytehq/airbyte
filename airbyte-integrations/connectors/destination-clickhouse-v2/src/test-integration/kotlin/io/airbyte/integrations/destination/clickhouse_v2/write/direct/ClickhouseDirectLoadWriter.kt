@@ -589,8 +589,7 @@ class ClickhouseDataDumper(
                                 else StringValue(entry.value as String)
                             is ZonedDateTime ->
                                 TimestampWithTimezoneValue(
-                                    (entry.value as ZonedDateTime)
-                                        .toOffsetDateTime()
+                                    (entry.value as ZonedDateTime).toOffsetDateTime()
                                 )
                             null -> NullValue
                             else ->

@@ -65,13 +65,14 @@ class ClickhouseSqlGeneratorTest {
     fun `test exchangeTable`() {
         val sourceTable = TableName("source_db", "source_table")
         val targetTable = TableName("target_db", "target_table")
-        val expectedSql = """
+        val expectedSql =
+            """
             EXCHANGE TABLES `source_db`.`source_table`
                 AND `target_db`.`target_table`;
         """.trimIndent()
         val actualSql = clickhouseSqlGenerator.exchangeTable(sourceTable, targetTable)
 
-        Assertions.assertEquals(actualSql,expectedSql)
+        Assertions.assertEquals(actualSql, expectedSql)
     }
 
     companion object {
