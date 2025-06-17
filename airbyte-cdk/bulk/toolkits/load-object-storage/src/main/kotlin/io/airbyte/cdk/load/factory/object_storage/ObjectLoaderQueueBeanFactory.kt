@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.factory.object_storage
 
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -26,6 +27,7 @@ import io.micronaut.context.condition.ConditionContext
 import io.micronaut.inject.qualifiers.Qualifiers
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlin.math.max
 import kotlinx.coroutines.channels.Channel
 
 @Factory
@@ -52,7 +54,13 @@ class ObjectLoaderQueueBeanFactory(
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
-    ): Long = queue.clampedMessageSize
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+    ): Long {
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
+            return max(queue.clampedMessageSize, loader.partSizeBytes)
+        }
+        return queue.clampedMessageSize
+    }
 
     /**
      * Queue between step 1 (format parts) and step 2 (load them): it will hold the actual part
