@@ -18,8 +18,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.types import Record
 
-from .spec import SourceAmazonAdsSpec
-
 
 class SourceAmazonAds(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
@@ -74,40 +72,3 @@ class SourceAmazonAds(YamlDeclarativeSource):
                 if profile["profileId"] in requested_profiles or profile["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids
             ]
         return available_profiles
-
-    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
-        return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.com/integrations/sources/amazon-ads",
-            connectionSpecification=SourceAmazonAdsSpec.schema(),
-            supportsDBT=False,
-            advanced_auth=AdvancedAuth(
-                auth_flow_type=AuthFlowType.oauth2_0,
-                predicate_key=["auth_type"],
-                predicate_value="oauth2.0",
-                oauth_config_specification=OAuthConfigSpecification(
-                    oauth_user_input_from_connector_config_specification={
-                        "type": "object",
-                        "additionalProperties": False,
-                        "properties": {"region": {"type": "string", "path_in_connector_config": ["region"]}},
-                    },
-                    complete_oauth_output_specification={
-                        "type": "object",
-                        "additionalProperties": True,
-                        "properties": {"refresh_token": {"type": "string", "path_in_connector_config": ["refresh_token"]}},
-                    },
-                    complete_oauth_server_input_specification={
-                        "type": "object",
-                        "additionalProperties": True,
-                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
-                    },
-                    complete_oauth_server_output_specification={
-                        "type": "object",
-                        "additionalProperties": True,
-                        "properties": {
-                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
-                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
-                        },
-                    },
-                ),
-            ),
-        )
