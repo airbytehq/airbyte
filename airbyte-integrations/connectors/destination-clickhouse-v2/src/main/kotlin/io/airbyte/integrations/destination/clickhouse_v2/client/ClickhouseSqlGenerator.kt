@@ -75,9 +75,9 @@ class ClickhouseSqlGenerator {
         "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;"
 
     fun exchangeTable(sourceTableName: TableName, targetTableName: TableName): String = """
-        EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}` 
+        EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}`
             AND `${targetTableName.namespace}`.`${targetTableName.name}`;
-        """.trimMargin()
+        """.trimIndent()
 
     fun copyTable(
         columnNameMapping: ColumnNameMapping,

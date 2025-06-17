@@ -9,6 +9,7 @@ import com.github.vertical_blank.sqlformatter.languages.Dialect
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
@@ -58,6 +59,19 @@ class ClickhouseSqlGeneratorTest {
             // The formatter will parse the SQL, and an invalid statement will throw an exception.
             SqlFormatter.of(Dialect.StandardSql).format(sql)
         }
+    }
+
+    @Test
+    fun `test exchangeTable`() {
+        val sourceTable = TableName("source_db", "source_table")
+        val targetTable = TableName("target_db", "target_table")
+        val expectedSql = """
+            EXCHANGE TABLES `source_db`.`source_table`
+                AND `target_db`.`target_table`;
+        """.trimIndent()
+        val actualSql = clickhouseSqlGenerator.exchangeTable(sourceTable, targetTable)
+
+        Assertions.assertEquals(actualSql,expectedSql)
     }
 
     companion object {
