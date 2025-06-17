@@ -180,6 +180,7 @@ public class DynamodbSource extends BaseConnector implements Source {
           throw new RuntimeException(primaryException);
         }
       }
+
     };
   }
 
