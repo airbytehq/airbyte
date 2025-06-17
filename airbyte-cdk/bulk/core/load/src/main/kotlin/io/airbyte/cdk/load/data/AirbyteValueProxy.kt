@@ -31,6 +31,7 @@ interface AirbyteValueProxy {
     data class FieldAccessor(val index: Int, val name: String, val type: AirbyteType)
 }
 
+// TODO: This should not be done for proto, takes away all the benefits of using proto
 fun AirbyteValueProxy.asJson(orderedSchema: Array<FieldAccessor>): ObjectNode {
     val objectNode = JsonNodeFactory.instance.objectNode()
     orderedSchema.forEach {
