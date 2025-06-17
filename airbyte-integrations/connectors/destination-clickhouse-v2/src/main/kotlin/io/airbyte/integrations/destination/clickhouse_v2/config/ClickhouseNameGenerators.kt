@@ -7,22 +7,10 @@ package io.airbyte.integrations.destination.clickhouse_v2.config
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
-
-// Unused but needed by another bean
-@Singleton
-class ClickhouseRawTableNameGenerators(val config: ClickhouseConfiguration) :
-    RawTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName =
-        TableName(
-            config.resolvedDatabase,
-            "test_${streamDescriptor.name}",
-        )
-}
 
 @Singleton
 class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfiguration) :

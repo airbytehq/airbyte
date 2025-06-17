@@ -34,7 +34,6 @@ application {
 }
 
 dependencies {
-
     implementation 'com.clickhouse:client-v2:0.8.6'
 
     testImplementation("io.mockk:mockk:1.14.2")

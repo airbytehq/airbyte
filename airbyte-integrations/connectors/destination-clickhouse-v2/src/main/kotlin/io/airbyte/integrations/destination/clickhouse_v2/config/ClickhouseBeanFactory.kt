@@ -28,6 +28,7 @@ class ClickhouseBeanFactory {
             .setUsername(config.username)
             .setPassword(config.password)
             .setDefaultDatabase(config.resolvedDatabase)
+            .compressClientRequest(true)
             .build()
     }
 

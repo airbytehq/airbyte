@@ -23,11 +23,17 @@ const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"
 data class TableNameInfo(val tableNames: TableNames, val columnNameMapping: ColumnNameMapping)
 
 data class TableCatalog(private val catalog: Map<DestinationStream, TableNameInfo>) :
-    Map<DestinationStream, TableNameInfo> by catalog
+    Map<DestinationStream, TableNameInfo> by catalog {
+    fun getMappedColumnName(stream: DestinationStream, colName: String): String? =
+        this[stream]?.columnNameMapping?.get(colName)
+}
 
 data class TableCatalogByDescriptor(
     private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>
-) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog
+) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog {
+    fun getFinalTableName(desc: DestinationStream.Descriptor): TableName? =
+        this[desc]?.tableNames?.finalTableName
+}
 
 @Factory
 class TableCatalogFactory {
