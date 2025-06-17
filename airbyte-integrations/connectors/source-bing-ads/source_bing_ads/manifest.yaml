@@ -2264,9 +2264,21 @@ definitions:
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
+          - AllCostPerConversion
+        value: |
+          {% set v = record.get('AllCostPerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
           - AllRevenue
         value: |
           {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - AllRevenuePerConversion
+        value: |
+          {% set v = record.get('AllRevenuePerConversion') %}
+          {{ v | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
           - ConversionRate
