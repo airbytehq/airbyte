@@ -56,7 +56,7 @@ class InitialSnapshotHandlerTest {
   private static final String CURSOR_FIELD = "_id";
   private static final String NAME_FIELD = "name";
 
-  private static final String NAMESPACE = "database";
+  private static final String NAMESPACE = DB_NAME;
 
   private static final String COLLECTION1 = "collection1";
   private static final String COLLECTION2 = "collection2";
@@ -89,13 +89,11 @@ class InitialSnapshotHandlerTest {
   private static final String NAME7 = "name7";
   private static final String NAME8 = "name8";
 
-  private static final String DATABASE = "test-database";
-
   final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.jsonNode(
       Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
           Map.of(
               MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, List.of(DB_NAME)))));
 
   private static final List<ConfiguredAirbyteStream> STREAMS = List.of(
       CatalogHelpers.createConfiguredAirbyteStream(

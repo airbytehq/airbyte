@@ -7,8 +7,8 @@ from unittest.mock import Mock
 
 import pytest
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v17.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
-from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v18.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
+from google.ads.googleads.v18.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds

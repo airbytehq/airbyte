@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.0.7"
+version = "3.0.9"
 name = "source-notion"
 description = "Source implementation for Notion."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,8 @@ include = "source_notion"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "*"
+airbyte-cdk = "1.5.1" # pinning to 1.5.1 to avoid breaking changes. This will be removed once we migrated to manifest only
+airbyte-protocol-models = "0.11.0" # pinning to 0.11.0 to avoid breaking changes. This will be removed once we migrated to manifest only
 
 [tool.poetry.scripts]
 source-notion = "source_notion.run:run"

@@ -28,12 +28,8 @@ from source_bing_ads.report_streams import (
     AdGroupImpressionPerformanceReportHourly,
     AdGroupPerformanceReportDaily,
     AdGroupPerformanceReportHourly,
-    AdPerformanceReportDaily,
-    AdPerformanceReportHourly,
     AgeGenderAudienceReportDaily,
     AgeGenderAudienceReportHourly,
-    BingAdsReportingServicePerformanceStream,
-    BingAdsReportingServiceStream,
     BudgetSummaryReport,
     CampaignImpressionPerformanceReportDaily,
     CampaignImpressionPerformanceReportHourly,
@@ -49,6 +45,11 @@ from source_bing_ads.report_streams import (
     SearchQueryPerformanceReportHourly,
     UserLocationPerformanceReportDaily,
     UserLocationPerformanceReportHourly,
+)
+from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, BingAdsReportingServiceStream
+from source_bing_ads.reports.ad_performance_report import (
+    AdPerformanceReportDaily,
+    AdPerformanceReportHourly,
 )
 from source_bing_ads.source import SourceBingAds
 from suds import WebFault

@@ -1,0 +1,454 @@
+name: Connector CI
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+  # Available as a reusable workflow
+  # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
+  workflow_call:
+    inputs:
+      repo:
+        type: string
+        required: false
+        description: "The repository name"
+      gitref:
+        type: string
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        type: string
+        required: false
+        description: "The ID of the comment triggering the workflow. Unused as of now."
+      pr:
+        type: string
+        required: false
+        description: "The pull request number, if applicable. Unused as of now."
+
+permissions:
+  # Allow the workflow to read contents
+  # and to read/write checks and PR comments.
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  generate-matrix:
+    name: Generate Connector Matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Current Branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history
+          fetch-depth: 0
+
+      - name: Add upstream remote (forks only)
+        # This step only runs from forks.
+        # It ensures the `upstream` ref is properly declared before proceeding
+        # to the step of determining which connectors are modified.
+        if: >
+          (inputs.repo != '' &&
+           inputs.repo != 'airbytehq/airbyte'
+          ) ||
+          (github.event.pull_request.head.repo.full_name != '' &&
+           github.event.pull_request.head.repo.full_name != 'airbytehq/airbyte'
+          )
+        run: |
+          # only add upstream if it doesn't already exist
+          if ! git remote | grep -q upstream; then
+            git remote add upstream https://github.com/airbytehq/airbyte.git
+          fi
+          # fetch the default branch from upstream
+          git fetch --quiet upstream master
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: |
+          # Get the list of modified connectors
+          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+
+      - name: Set JVM Runner Type
+        id: set-jvm-runner-type
+        run: |
+          # Default to ubuntu-24.04 for all connectors
+          echo "jvm-runner-type=ubuntu-24.04" >> $GITHUB_OUTPUT
+          if [[ "${{ github.repository }}" == "airbytehq/airbyte" ]]; then
+            # Within our own repo, we can use the custom (larger) runner
+            echo "jvm-runner-type=linux-24.04-large" | tee -a "$GITHUB_OUTPUT"
+          fi
+
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
+      non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
+      jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+
+  jvm-connectors-test:
+    needs: [generate-matrix]
+    runs-on: ${{ needs.generate-matrix.outputs.jvm-runner-type }} # Custom runner, defined in GitHub org settings
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      DD_TAGS: "connector.name:${{ matrix.connector }}"
+
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || '' }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      # The default behaviour is read-only on PR branches and read/write on master.
+      # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
+      - uses: gradle/actions/setup-gradle@v4
+        if: matrix.connector
+
+      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
+      - name: Set up Python (For Airbyte-CI)
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        # Skip if cancelled, if no connector is specified, or if running from a fork.
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
+        with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
+          commit: ${{ steps.checkout.outputs.commit }}
+          large_files: true
+          files: |
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  non-jvm-connectors-test:
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || '' }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          fetch-depth: 1
+
+      # Python deps
+      - name: Set up Python
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        if: matrix.connector
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        if: matrix.connector
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared:
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
+
+      - name: Container Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        # Skip if cancelled, if no connector is specified, or if the repository is a fork.
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
+        with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
+          commit: ${{ steps.checkout.outputs.commit }}
+          large_files: true
+          files: |
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  # Lint and format checks
+
+  connectors-lint:
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10 # Limit number of parallel jobs
+    name: Lint ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no connectors modified)' || '' }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v4
+        if: matrix.connector
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # Python deps
+      - name: Set up Python
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        if: matrix.connector
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        if: matrix.connector
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared:
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Run format-check
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe format-check
+
+      - name: Run lint check (info only)
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe lint-check
+        # Most connectors can't pass lint checks, so this is non-blocking for now
+        continue-on-error: true
+
+  pre-release-checks:
+    if: github.event.pull_request.draft == false
+    needs: [generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: ${{ matrix.connector || 'No-Op' }} Pre-Release Checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          fetch-depth: 0
+      - name: Install uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+      - name: Install QA Checks
+        if: matrix.connector
+        run: |
+          uv tool install airbyte-ci/connectors/connectors_qa
+      - name: Run QA Checks
+        if: matrix.connector
+        # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
+        run: |
+          connector_name=${{ matrix.connector }}
+          connectors-qa run --name ${connector_name%-strict-encrypt}
+
+  connector-ci-checks-summary:
+    name: Connector CI Checks Summary
+    if: always()
+    needs:
+      - jvm-connectors-test
+      - non-jvm-connectors-test
+      - pre-release-checks
+      - connectors-lint
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Raise if Upstream Failure
+        if: >
+          needs.jvm-connectors-test.result != 'success' ||
+          needs.non-jvm-connectors-test.result != 'success' ||
+          needs.connectors-lint.result != 'success'
+        run: |
+          echo "❌ Some Checks failed. Marking summary as failed"
+          exit 1
+
+      - name: Report Success
+        run: |
+          # If we get here, all checks passed.
+          echo "✅ All checks passed successfully."
+
+      # Post completion status to the PR.
+      # This is required because otherwise slash commands won't automatically
+      # update the PR checks status.
+      - name: Create Check Status
+        if: always() && github.event_name == 'workflow_call' && inputs.gitref != ''
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: ${{ job.name }}
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
+          sha: ${{ inputs.gitref }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}

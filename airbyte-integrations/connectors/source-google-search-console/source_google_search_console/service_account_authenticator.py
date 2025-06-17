@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import json
 
 import requests
 from google.auth.transport.requests import Request
@@ -21,7 +22,8 @@ class ServiceAccountAuthenticator(AuthBase):
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         try:
-            credentials: Credentials = Credentials.from_service_account_info(self.service_account_info, scopes=self.scopes).with_subject(
+            service_account_info = json.loads(self.service_account_info)
+            credentials: Credentials = Credentials.from_service_account_info(service_account_info, scopes=self.scopes).with_subject(
                 self.email
             )
             if not credentials.valid:

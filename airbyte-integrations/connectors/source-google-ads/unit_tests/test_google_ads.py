@@ -8,7 +8,7 @@ from datetime import date
 
 import pendulum
 import pytest
-from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow
+from google.ads.googleads.v18.services.types.google_ads_service import GoogleAdsRow
 from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import chunk_date_range

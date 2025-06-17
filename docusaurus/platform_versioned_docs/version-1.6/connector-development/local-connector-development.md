@@ -193,6 +193,8 @@ Maintainers can execute any of the following connector admin commands upon reque
 - `/bump-version` - Run the bump version command, which advances the connector version(s) and adds a changelog entry for any modified connector(s).
 - `/format-fix` - Fixes any formatting issues.
 - `/run-connector-tests` - Run the connector tests for any modified connectors.
+- `/run-cat-tests` - Run the legacy connector acceptance tests (CAT) for any modified connectors. This is helpful if the connector has poor test coverage overall.
+- `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/poe` - Run a Poe task.
 
 When working on PRs from forks, maintainers can apply `/format-fix` to help expedite formatting fixes, and `/run-connector-tests` if the fork does not have sufficient secrets bootstrapping or other permissions needed to fully test the connector changes.

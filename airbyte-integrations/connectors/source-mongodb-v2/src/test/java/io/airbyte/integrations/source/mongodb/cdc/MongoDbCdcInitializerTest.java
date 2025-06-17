@@ -101,7 +101,7 @@ class MongoDbCdcInitializerTest {
       Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
           Map.of(
               MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, List.of(DATABASE)))));
 
   final Instant EMITTED_AT = Instant.now();
 
@@ -114,8 +114,13 @@ class MongoDbCdcInitializerTest {
   private MongoCursor<Document> findCursor;
   private ChangeStreamIterable<BsonDocument> changeStreamIterable;
   private MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector;
-  private static final List<Bson> PIPELINE = Collections.singletonList(Aggregates.match(
-      Filters.in("ns.coll", List.of(COLLECTION))));
+
+  private static final List<Bson> PIPELINE = Collections.singletonList(
+      Aggregates.match(
+          Filters.or(List.of(
+              Filters.and(
+                  Filters.eq("ns.db", DATABASE),
+                  Filters.in("ns.coll", List.of(COLLECTION)))))));
 
   @BeforeEach
   void setUp() {
@@ -142,10 +147,11 @@ class MongoDbCdcInitializerTest {
     when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(mongoDatabase.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
+    when(mongoDatabase.getName()).thenReturn(DATABASE);
     when(mongoCollection.aggregate(anyList())).thenReturn(aggregateIterable);
     when(aggregateIterable.iterator()).thenReturn(aggregateCursor);
     when(aggregateCursor.hasNext()).thenReturn(true, false);
@@ -260,7 +266,7 @@ class MongoDbCdcInitializerTest {
         .put(DATABASE_CONFIG_CONFIGURATION_KEY,
             Map.of(
                 MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-                MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))
+                MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, List.of(DATABASE)))
         .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)
         .build());
   }
@@ -292,7 +298,7 @@ class MongoDbCdcInitializerTest {
 
   private static JsonNode createInitialDebeziumState(final InitialSnapshotStatus initialSnapshotStatus) {
     final StreamDescriptor streamDescriptor = new StreamDescriptor().withNamespace(STREAM_NAMESPACE).withName(STREAM_NAME);
-    final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState(DATABASE, RESUME_TOKEN1));
+    final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState("mongodb://host:12345/", RESUME_TOKEN1));
     final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID, initialSnapshotStatus, IdType.OBJECT_ID);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
     final JsonNode streamState = Jsons.jsonNode(mongoDbStreamState);

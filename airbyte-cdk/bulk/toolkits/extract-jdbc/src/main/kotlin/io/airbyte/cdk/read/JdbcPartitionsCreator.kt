@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 /** Base class for JDBC implementations of [PartitionsCreator]. */
-sealed class JdbcPartitionsCreator<
+abstract class JdbcPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,

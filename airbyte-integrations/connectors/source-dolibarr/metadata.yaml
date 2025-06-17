@@ -1,0 +1,40 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-dolibarr
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.55.1@sha256:f8563342ed2681dbee05122070722ff9565f3d8537feb8eeb13e85e3b70a7c24
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 10c2652f-00cf-421a-bd16-7758357e5d99
+  dockerImageTag: 1.0.1
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This version implements the incremental sync and date_modification descendent sortfield for all parent streams, except the `company profile data` stream, as required for incremental sync for no date filter API endpoints. Please update Dolibarr to 21.0.0 version or higher, update the connector user inputs and all the streams, clean and refresh your destination"
+        upgradeDeadline: "2025-07-31"
+  dockerRepository: airbyte/source-dolibarr
+  githubIssueLabel: source-dolibarr
+  icon: icon.svg
+  license: MIT
+  name: Dolibarr
+  releaseDate: 2025-06-05
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dolibarr
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

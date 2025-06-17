@@ -1,3 +1,6 @@
+---
+dockerRepository: airbyte/destination-cobra
+---
 # Salesforce Destination
 
 ## Overview

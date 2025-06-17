@@ -232,18 +232,18 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="page_size">
-9. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
+11. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 </FieldAnchor>
 
 <FieldAnchor field="insights_lookback_window">
-10. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+12. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
 <FieldAnchor field="insights_job_timeout">
-11. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
+13. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
 </FieldAnchor>
 
-12. Click **Set up source** and wait for the tests to complete.
+14. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -352,6 +352,8 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.1 | 2025-06-14 | [61290](https://github.com/airbytehq/airbyte/pull/61290) | Update dependencies |
+| 3.5.0 | 2025-06-09 | [61477](https://github.com/airbytehq/airbyte/pull/61477) | Removed action_report_time from spec as deprecated |
 | 3.4.9 | 2025-05-24 | [60025](https://github.com/airbytehq/airbyte/pull/60025) | Update dependencies |
 | 3.4.8 | 2025-05-03 | [58889](https://github.com/airbytehq/airbyte/pull/58889) | Update dependencies |
 | 3.4.7 | 2025-04-19 | [58296](https://github.com/airbytehq/airbyte/pull/58296) | Update dependencies |
@@ -369,7 +371,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 | 3.3.31 | 2025-02-11 | [53626](https://github.com/airbytehq/airbyte/pull/53626) | Log Utilization type |
 | 3.3.30 | 2025-02-08 | [53330](https://github.com/airbytehq/airbyte/pull/53330) | Update dependencies |
 | 3.3.29 | 2025-02-01 | [52835](https://github.com/airbytehq/airbyte/pull/52835) | Update dependencies |
-| 3.3.28 | 2025-01-27 | [52032](https://github.com/airbytehq/airbyte/pull/52032) | Update to API version 21
+| 3.3.28 | 2025-01-27 | [52032](https://github.com/airbytehq/airbyte/pull/52032) | Update to API version 21 |
 | 3.3.27 | 2025-01-25 | [52365](https://github.com/airbytehq/airbyte/pull/52365) | Update dependencies |
 | 3.3.26 | 2025-01-18 | [51706](https://github.com/airbytehq/airbyte/pull/51706) | Update dependencies |
 | 3.3.25 | 2025-01-11 | [51080](https://github.com/airbytehq/airbyte/pull/51080) | Update dependencies |
