@@ -19,6 +19,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: false
+      packageName: airbyte-source-exact
   tags:
     - language:python
     - cdk:python
