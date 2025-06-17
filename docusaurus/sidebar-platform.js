@@ -324,6 +324,10 @@ module.exports = {
         connectionConfigurations,
         {
           type: "doc",
+          id: "using-airbyte/core-concepts/direct-load-tables",
+        },
+        {
+          type: "doc",
           id: "using-airbyte/core-concepts/typing-deduping",
         },
         {
