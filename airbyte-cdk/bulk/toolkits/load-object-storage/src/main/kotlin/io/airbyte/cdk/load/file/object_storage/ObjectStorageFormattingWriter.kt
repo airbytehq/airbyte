@@ -340,14 +340,19 @@ object ByteArrayPool {
     }
 }
 
-class PooledBaos(initial: Int = 32 * 1024) : ByteArrayOutputStream(initial) {
+class PooledBaos(private val minCapacity: Int = 32 * 1024) : ByteArrayOutputStream(0) {
     /** Borrow a new array exactly sized to `count`, copy data, return it. */
-    fun stealBytes(): ByteArray =
-        ByteArrayPool.borrow(count).also { System.arraycopy(buf, 0, it, 0, count) }
+    init {
+        buf = ByteArrayPool.borrow(minCapacity)
+    }
+
+    fun stealBytes(): ByteArray = ByteArray(count).also { System.arraycopy(buf, 0, it, 0, count) }
 
     /** Reset *and* recycle the previous backing buffer. */
     fun resetAndRecycle() {
-        ByteArrayPool.recycle(buf)
+        val old = buf
+        buf = ByteArrayPool.borrow(minCapacity)
         reset()
+        ByteArrayPool.recycle(old)
     }
 }
