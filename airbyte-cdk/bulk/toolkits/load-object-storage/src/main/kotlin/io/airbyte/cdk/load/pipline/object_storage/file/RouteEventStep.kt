@@ -24,7 +24,7 @@ class RouteEventStep(
     @Named("dataChannelInputFlows")
     private val inputFlows: Array<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
     @Named("fileQueue")
-    private val fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>?,
+    private val fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("recordQueue")
     private val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
 ) : LoadPipelineStep {
