@@ -1,0 +1,251 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  # We need to use Contacts stream once it is migrated
+  stream_names:
+    - customer_label1
+
+definitions:
+  # Authenticator Definitions
+  authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://www.googleapis.com/oauth2/v3/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+
+  base_requester:
+    type: HttpRequester
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    http_method: GET
+    request_headers:
+      Content-Type: application/json
+      developer-token: '{{ config["credentials"]["developer_token"] }}'
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+
+  base_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 500
+        error_message: >-
+          Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later. 
+
+  base_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - results
+
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+    record_selector:
+      $ref: "#/definitions/base_selector"
+    paginator:
+      type: NoPagination
+    decoder:
+      type: JsonDecoder
+
+  retriever_without_pagination:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+    record_selector:
+      $ref: "#/definitions/base_selector"
+    decoder:
+      type: JsonDecoder
+
+  stream_base:
+    type: DeclarativeStream
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+
+  stream_without_pagination:
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/retriever_without_pagination"
+
+  accessible_accounts:
+    $ref: "#/definitions/stream_base"
+    name: accessible_accounts
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url_base: "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers"
+        http_method: GET
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: CustomRecordExtractor
+          class_name: "source_google_ads.components.AccessibleAccountsExtractor"
+
+  customer_client:
+    $ref: "#/definitions/stream_base"
+    name: customer_client
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["results", "*", "customerClient"]
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/accessible_accounts"
+            parent_key: "resourceName"
+            partition_field: "customer_id"
+
+  customer_client_non_manager:
+    $ref: "#/definitions/stream_base"
+    name: customer_client_non_manager
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client WHERE customer_client.manager = FALSE
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: [ "results", "*", "customerClient" ]
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['id'] | string in config['customer_ids'] }}"
+        # record filter client status
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/accessible_accounts"
+            parent_key: "resourceName"
+            partition_field: "customer_id"
+
+
+  # Stream Definitions
+  customer_label1_stream:
+    $ref: "#/definitions/stream_base"
+    name: customer_label1
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: SELECT campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status, campaign.advertising_channel_sub_type, campaign.advertising_channel_type, campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store, campaign.app_campaign_setting.bidding_strategy_goal_type, campaign.base_campaign, campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.campaign_budget, campaign_budget.amount_micros, campaign.commission.commission_rate_micros, campaign.dynamic_search_ads_setting.domain_name, campaign.dynamic_search_ads_setting.feeds, campaign.dynamic_search_ads_setting.language_code, campaign.dynamic_search_ads_setting.use_supplied_urls_only, campaign.end_date, campaign.excluded_parent_asset_field_types, campaign.experiment_type, campaign.final_url_suffix, campaign.frequency_caps, campaign.geo_target_type_setting.negative_geo_target_type, campaign.geo_target_type_setting.positive_geo_target_type, campaign.hotel_setting.hotel_center_id, campaign.id, campaign.labels, campaign.local_campaign_setting.location_source_type, campaign.manual_cpc.enhanced_cpc_enabled, campaign.manual_cpm, campaign.manual_cpv, campaign.maximize_conversion_value.target_roas, campaign.maximize_conversions.target_cpa_micros, campaign.name, campaign.network_settings.target_content_network, campaign.network_settings.target_google_search, campaign.network_settings.target_partner_search_network, campaign.network_settings.target_search_network, campaign.optimization_goal_setting.optimization_goal_types, campaign.optimization_score, campaign.payment_mode, campaign.percent_cpc.cpc_bid_ceiling_micros, campaign.percent_cpc.enhanced_cpc_enabled, campaign.real_time_bidding_setting.opt_in, campaign.resource_name, campaign.selective_optimization.conversion_actions, campaign.serving_status, campaign.shopping_setting.campaign_priority, campaign.shopping_setting.enable_local, campaign.shopping_setting.merchant_id, campaign.start_date, campaign.status, campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_cpa.cpc_bid_floor_micros, campaign.target_cpa.target_cpa_micros, campaign.target_cpm.target_frequency_goal.target_count, campaign.target_cpm.target_frequency_goal.time_unit, campaign.target_impression_share.cpc_bid_ceiling_micros, campaign.target_impression_share.location, campaign.target_impression_share.location_fraction_micros, campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_floor_micros, campaign.target_roas.target_roas, campaign.target_spend.cpc_bid_ceiling_micros, campaign.target_spend.target_spend_micros, campaign.targeting_setting.target_restrictions, campaign.tracking_setting.tracking_url, campaign.tracking_url_template, campaign.url_custom_parameters, campaign.vanity_pharma.vanity_pharma_display_url_mode, campaign.vanity_pharma.vanity_pharma_text, campaign.video_brand_safety_suitability, metrics.clicks, metrics.ctr, metrics.conversions, metrics.conversions_value, metrics.cost_micros, metrics.impressions, metrics.video_views, metrics.video_quartile_p100_rate, metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, metrics.active_view_measurable_impressions, metrics.active_view_viewability, metrics.average_cost, metrics.average_cpc, metrics.average_cpm, metrics.interactions, metrics.interaction_event_types, metrics.value_per_conversion, metrics.cost_per_conversion, segments.date, segments.hour, segments.ad_network_type FROM campaign WHERE segments.date >= '{{ stream_interval['start_time'] }}' AND segments.date <= '{{ stream_interval['end_time'] }}' ORDER BY segments.date ASC
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client_non_manager"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
+    transformations:
+      - type: KeysToSnakeCase
+      - type: DpathFlattenFields
+        field_path: ["campaign"]
+        delete_origin_value: True
+        key_transformation:
+          type: KeyTransformation
+          prefix: "campaign."
+      - type: AddFields
+        fields:
+          - path: [ "campaign.url_custom_parameters" ]
+            value: "{{ record['campaign.url_custom_parameters'] | map('tojson') | list | tojson | safe }}"
+      - type: DpathFlattenFields
+        field_path: [ "campaign.network_settings" ]
+        delete_origin_value: True
+        key_transformation:
+          type: KeyTransformation
+          prefix: "campaign.network_settings."
+      - type: DpathFlattenFields
+        field_path: [ "campaign.geo_target_type_setting" ]
+        delete_origin_value: True
+        key_transformation:
+          type: KeyTransformation
+          prefix: "campaign.geo_target_type_setting."
+      - type: DpathFlattenFields
+        field_path: [ "metrics" ]
+        delete_origin_value: True
+        key_transformation:
+          type: KeyTransformation
+          prefix: "metrics."
+      - type: DpathFlattenFields
+        field_path: [ "segments" ]
+        delete_origin_value: True
+        key_transformation:
+          type: KeyTransformation
+          prefix: "segments."
+      - type: DpathFlattenFields
+        field_path: [ "campaign_budget" ]
+        delete_origin_value: True
+        key_transformation:
+          type: KeyTransformation
+          prefix: "campaign_budget."
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: segments.date
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P{{ config['conversion_window_days'] }}D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+
+streams:
+  - "#/definitions/customer_label1_stream"
+  - "#/definitions/customer_client_non_manager"
+  - "#/definitions/customer_client"
+  - "#/definitions/accessible_accounts"
+
+# HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 40

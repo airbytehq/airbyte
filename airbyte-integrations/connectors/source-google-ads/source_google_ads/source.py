@@ -4,12 +4,13 @@
 
 
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from pendulum import duration, parse, today
 
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -49,7 +50,10 @@ from .streams import (
 from .utils import GAQL, logger, traced_exception
 
 
-class SourceGoogleAds(AbstractSource):
+class SourceGoogleAds(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
     # Raise exceptions on missing streams
     raise_exception_on_missing_stream = True
 
@@ -222,6 +226,8 @@ class SourceGoogleAds(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = super().streams(config=config)
+
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
 
@@ -232,7 +238,8 @@ class SourceGoogleAds(AbstractSource):
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
-        streams = [
+
+        streams += [
             AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
