@@ -134,7 +134,7 @@ at [Exact Knowledge Base](https://support.exactonline.com/community/s/knowledge-
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                             |
-|---------|------------|----------------------------------------------------------|-------------------------------------|
-| 0.1.0   | 2022-12-14 | [20480](https://github.com/airbytehq/airbyte/pull/20480) | New Source: Exact                   | 
-| 0.2.0   | 2025-00-00 | nr of pr                                                 | Update of source to airbyte-cdk v.6 |
+| Version | Date       | Pull Request                                              | Subject                             |
+|---------|------------|-----------------------------------------------------------|-------------------------------------|
+| 0.1.0   | 2022-12-14 | [20480](https://github.com/airbytehq/airbyte/pull/20480)  | New Source: Exact                   | 
+| 0.2.0   | 2025-00-00 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update of source to airbyte-cdk v.6 |
