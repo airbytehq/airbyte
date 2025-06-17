@@ -2258,10 +2258,15 @@ definitions:
     ad_group_performance_report_transformations:
       - type: AddedFieldDefinition
         path:
-          - Ctr
+          - AllConversionRate
         value: |
-          {% set v = record.get('Ctr') %}
+          {% set v = record.get('AllConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllRevenue
+        value: |
+          {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
       - type: AddedFieldDefinition
         path:
           - ConversionRate
@@ -2270,9 +2275,15 @@ definitions:
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
-          - AllConversionRate
+          - Ctr
         value: |
-          {% set v = record.get('AllConversionRate') %}
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ptr
+        value: |
+          {% set v = record.get('Ptr') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
