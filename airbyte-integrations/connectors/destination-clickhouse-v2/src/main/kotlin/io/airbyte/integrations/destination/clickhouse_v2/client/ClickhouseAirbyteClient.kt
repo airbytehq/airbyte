@@ -109,7 +109,7 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        val properTableName = nameGenerator.getTableName(stream.descriptor)
+        val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =

@@ -569,7 +569,7 @@ class ClickhouseDataDumper(
         val response =
             client
                 .query(
-                    "SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}"
+                    "SELECT * FROM ${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
                 )
                 .get()
 
