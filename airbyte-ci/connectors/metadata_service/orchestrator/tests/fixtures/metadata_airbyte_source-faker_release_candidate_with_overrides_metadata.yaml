@@ -1,0 +1,72 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts: []
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: api
+  connectorType: source
+  definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
+  dockerImageTag: 6.2.26-rc.1
+  dockerRepository: airbyte/source-faker
+  documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  githubIssueLabel: source-faker
+  icon: faker.svg
+  license: MIT
+  name: Sample Data (Faker)
+  registryOverrides:
+    cloud:
+      dockerImageTag: 6.2.24
+      enabled: true
+    oss:
+      dockerImageTag: 6.2.24
+      enabled: true
+  releaseStage: beta
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+    breakingChanges:
+      4.0.0:
+        message: This is a breaking change message
+        upgradeDeadline: "2023-07-19"
+      5.0.0:
+        message: ID and products.year fields are changing to be integers instead of floats.
+        upgradeDeadline: "2023-08-31"
+      6.0.0:
+        message: Declare 'id' columns as primary keys.
+        upgradeDeadline: "2024-04-01"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-faker
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          cpu_limit: "4.0"
+          cpu_request: "1.0"
+  suggestedStreams:
+    streams:
+      - users
+      - products
+      - purchases
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: faker_config_dev_null
+          id: 73abc3a9-3fea-4e7c-b58d-2c8236464a95
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FAKER_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
