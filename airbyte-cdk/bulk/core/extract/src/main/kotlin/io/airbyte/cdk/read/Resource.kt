@@ -5,8 +5,8 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.output.sockets.SocketManager
-import io.airbyte.cdk.output.sockets.SocketWrapper
+import io.airbyte.cdk.output.sockets.SocketDataChannelHolder
+import io.airbyte.cdk.output.sockets.SocketDataChannel
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.sync.Semaphore
@@ -28,10 +28,15 @@ enum class ResourceType {
     RESOURCE_OUTPUT_SOCKET,
 }
 
+/* ResourceAcquirer is a utility class that tries to acquire multiple resources of different types.
+ * It returns a map of acquired resources if all requested resources are successfully acquired,
+ * or null if any resource acquisition fails.
+ */
 @Singleton
 class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
     fun tryAcquire(requested: List<ResourceType>): Map<ResourceType, Resource.Acquired>? {
         val acquired = mutableMapOf<ResourceType, Resource.Acquired>()
+        // We need a run {} to be able to break out of the forEach loop if any resource acquisition fails.
         run {
             requested.forEach { resourceType ->
                 val res = acqs.first { acq -> acq.type == resourceType }.tryAcquire()
@@ -71,16 +76,16 @@ class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.Ac
 }
 
 @Singleton
-class SocketResource(val socketManager: SocketManager?) : Resource<SocketResource.AcquiredSocket> {
+class SocketResource(val socketDataChannelHolder: SocketDataChannelHolder?) : Resource<SocketResource.AcquiredSocket> {
 
-    class AcquiredSocket(val socketWrapper: SocketWrapper): Resource.Acquired {
+    class AcquiredSocket(val socketWrapper: SocketDataChannel): Resource.Acquired {
         override fun close() {
             socketWrapper.unbindSocket()
         }
     }
 
     override fun tryAcquire(): AcquiredSocket? {
-        val maybeSocket = socketManager?.bindFreeSocket()
+        val maybeSocket = socketDataChannelHolder?.bindFreeSocket()
         return maybeSocket?.let { AcquiredSocket(it) }
 
     }

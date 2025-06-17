@@ -1,10 +1,7 @@
 package io.airbyte.cdk.output.sockets
 
-import io.airbyte.cdk.command.Configuration
-import io.airbyte.cdk.command.SourceConfiguration
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 
@@ -15,11 +12,11 @@ const val FORMAT_PROPERTY = "$DATA_CHANNEL_PROPERTY_PREFIX.format"
 
 @Singleton
 @Requires(property = MEDIUM_PROPERTY, value = "SOCKET")
-class SocketManager(
+class SocketDataChannelHolder(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}") socketPaths: List<String>,
-    socketFactory: SocketWrapperFactory,) {
+    socketFactory: SocketDataChannelFactory,) {
 
-    val sockets: List<SocketWrapper>
+    val sockets: List<SocketDataChannel>
     init {
         sockets = List(socketPaths.size) {
             socketFactory.makeSocket(socketPaths[it])
@@ -30,7 +27,7 @@ class SocketManager(
     }
 
     @Synchronized
-     fun bindFreeSocket(): SocketWrapper? =
+     fun bindFreeSocket(): SocketDataChannel? =
          sockets.firstOrNull { it.available }?.also { it.bindSocket() }
 }
 

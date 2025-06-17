@@ -1,11 +1,10 @@
 package io.airbyte.cdk.output.sockets
 
-import io.airbyte.cdk.output.sockets.SocketWrapper.SocketStatus.*
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.*
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Value
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
@@ -25,7 +24,7 @@ import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
-interface SocketWrapper {
+interface SocketDataChannel {
     enum class SocketStatus {
         SOCKET_INITIALIZED,
         SOCKET_WAITING_LISTENER,
@@ -45,13 +44,13 @@ interface SocketWrapper {
     val available: Boolean
 }
 
-class UnixDomainSocketWrapper(private val socketFilePath: String, val probePacket: ProbePacket): SocketWrapper {
+class UnixDomainSocketDataChannel(private val socketFilePath: String, private val probePacket: ProbePacket): SocketDataChannel {
 
-    private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SOCKET_CLOSED)
+    private var socketStatus = AtomicReference<SocketDataChannel.SocketStatus>(SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
 
     override var outputStream: OutputStream? = null
-    override val status: SocketWrapper.SocketStatus
+    override val status: SocketDataChannel.SocketStatus
         @Synchronized get() {
             if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
@@ -71,7 +70,6 @@ class UnixDomainSocketWrapper(private val socketFilePath: String, val probePacke
         }
     }
 
-    @get:Synchronized
     @set:Synchronized
     override var bound: Boolean
         get() = socketBound.get()
@@ -89,6 +87,9 @@ class UnixDomainSocketWrapper(private val socketFilePath: String, val probePacke
             ServerSocketChannel.open(StandardProtocolFamily.UNIX)
         serverSocketChannel.bind(socketAddress)
         socketStatus.set(SOCKET_INITIALIZED)
+        // Socket is initialized and waiting for a listener to connect.
+        // In order to let the outer RunBlocking {} to exit immediately,
+        // we launch a coroutine as an independent Job() on the IO dispatcher.
         launch(Dispatchers.IO + Job()) {
             socketStatus.set(SOCKET_WAITING_LISTENER)
             logger.info { "Waiting for $socketFilePath to connect..." }
@@ -118,26 +119,24 @@ class UnixDomainSocketWrapper(private val socketFilePath: String, val probePacke
     override fun unbindSocket() {
         socketBound.set(false)
     }
-
-    companion object {
-        val protoProbePacket: AirbyteMessage.AirbyteMessageProtobuf = AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
-            .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
-            .build()
-    }
 }
 
-interface SocketWrapperFactory {
-    fun makeSocket(socketFilePath: String): SocketWrapper
+interface SocketDataChannelFactory {
+    fun makeSocket(socketFilePath: String): SocketDataChannel
 }
 
 @Singleton
-class DefaultSocketWrapperFactory(private val probePacket: ProbePacket): SocketWrapperFactory {
-    override fun makeSocket(socketFilePath: String): SocketWrapper =
-        UnixDomainSocketWrapper(socketFilePath, probePacket)
+class DefaultSocketDataChannelFactory(private val probePacket: ProbePacket): SocketDataChannelFactory {
+    override fun makeSocket(socketFilePath: String): SocketDataChannel =
+        UnixDomainSocketDataChannel(socketFilePath, probePacket)
 }
 
 private typealias ProbePacket = ByteArray
 
+/**
+ * Factory to create a probe packet based on the configured format.
+ * JSON format is a single newline character, while Protobuf format is a serialized AirbyteProbeMessageProtobuf.
+ */
 @Factory
 private class ProbePacketFactory() {
     @Singleton

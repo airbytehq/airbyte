@@ -6,6 +6,7 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
+import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -26,6 +27,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 ) : PartitionReader {
 
     lateinit var outputMessageRouter: OutputMessageRouter
+    lateinit var outputRoute: ((InternalRow) -> Unit)
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun generatePartitionId(length: Int): String =
@@ -64,6 +66,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
              streamState.streamFeedBootstrap,
             acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap()
         )
+        outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -76,7 +79,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 //        streamRecordConsumer.accept(row.data, row.changes)
 //        messageProcessor.acceptRecord(row.data)
 //        outputMessageRouter.acceptRecord(row.data, stream.id) // TEMP
-        outputMessageRouter.recordAcceptors[stream.id]?.invoke(row.data)
+//        outputMessageRouter.recordAcceptors[stream.id]?.invoke(row.data)
+        outputRoute(row.data)
     }
 
     override fun releaseResources() {

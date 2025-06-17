@@ -27,13 +27,13 @@ class BoostedOutputConsumerFactory(
     val bufferByteSizeThresholdForFlush: Int,
 ) {
 
-    fun boostedOutputConsumer(socket: SocketWrapper, additionalProperties: Map<String, String>): SocketJsonOutputConsumer {
+    fun boostedOutputConsumer(socket: SocketDataChannel, additionalProperties: Map<String, String>): SocketJsonOutputConsumer {
         return SocketJsonOutputConsumer(socket, clock, bufferByteSizeThresholdForFlush, additionalProperties) // TEMP
     }
 }
 
 class SocketJsonOutputConsumer(
-    private val socket: SocketWrapper,
+    private val socket: SocketDataChannel,
     clock: Clock,
     val bufferByteSizeThresholdForFlush: Int,
     private val additionalProperties: Map<String, String>,
@@ -169,7 +169,7 @@ class SocketJsonOutputConsumer(
 }
 
 class SocketProtobufOutputConsumer(
-    private val socket: SocketWrapper,
+    private val socket: SocketDataChannel,
     private val clock: Clock,
     val bufferByteSizeThresholdForFlush: Int,
 ): OutputConsumer(clock)

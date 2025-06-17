@@ -17,20 +17,20 @@ import org.junit.jupiter.api.Test
             Property(name = SPEED_MODE_PROPERTY, value = "boosted"),
         ]
 )
-class SocketManagerTest(private val socketManager: SocketManager) {
+class SocketManagerTest(private val socketDataChannelHolder: SocketDataChannelHolder) {
 //    @Inject lateinit var socketManager: SocketManager
-    @Inject lateinit var socketFactory: SocketWrapperFactory
+    @Inject lateinit var socketFactory: SocketDataChannelFactory
     class MockSocketWrapper(
-    ) : SocketWrapper {
+    ) : SocketDataChannel {
         override suspend fun initializeSocket() {
         }
 
         override suspend fun shutdownSocket() {
         }
 
-        var innerStatus: SocketWrapper.SocketStatus = SocketWrapper.SocketStatus.SOCKET_INITIALIZED
+        var innerStatus: SocketDataChannel.SocketStatus = SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
         var innerBound: Boolean = false
-        override val status: SocketWrapper.SocketStatus
+        override val status: SocketDataChannel.SocketStatus
             get() = innerStatus
         override var bound: Boolean
             get() = innerBound
@@ -47,23 +47,23 @@ class SocketManagerTest(private val socketManager: SocketManager) {
     }
     @Primary
     @Singleton
-    class MockSocketWrapperFactory: SocketWrapperFactory {
-        override fun makeSocket(socketFilePath: String): SocketWrapper =
+    class MockSocketWrapperFactory: SocketDataChannelFactory {
+        override fun makeSocket(socketFilePath: String): SocketDataChannel =
             MockSocketWrapper()
 
     }
 
     @Test
     fun test() {
-        val socketManager: SocketManager = SocketManager(List<String>(10) {""}, socketFactory)
-        assertNull(socketManager.bindFreeSocket())
-        val m = socketManager.sockets[0] as MockSocketWrapper
-        m.innerStatus = SocketWrapper.SocketStatus.SOCKET_READY
-        assertNotNull(socketManager.bindFreeSocket())
-        m.innerStatus = SocketWrapper.SocketStatus.SOCKET_INITIALIZED
-        assertNull(socketManager.bindFreeSocket())
-        m.innerStatus = SocketWrapper.SocketStatus.SOCKET_READY
+        val socketDataChannelHolder: SocketDataChannelHolder = SocketDataChannelHolder(List<String>(10) {""}, socketFactory)
+        assertNull(socketDataChannelHolder.bindFreeSocket())
+        val m = socketDataChannelHolder.sockets[0] as MockSocketWrapper
+        m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
+        assertNotNull(socketDataChannelHolder.bindFreeSocket())
+        m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
+        assertNull(socketDataChannelHolder.bindFreeSocket())
+        m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
         m.innerBound = true
-        assertNull(socketManager.bindFreeSocket())
+        assertNull(socketDataChannelHolder.bindFreeSocket())
     }
 }
