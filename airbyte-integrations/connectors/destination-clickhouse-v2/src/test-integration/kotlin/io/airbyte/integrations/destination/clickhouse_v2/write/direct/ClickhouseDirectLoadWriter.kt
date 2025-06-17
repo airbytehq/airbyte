@@ -59,7 +59,7 @@ class ClickhouseDirectLoadWriter :
         unionBehavior = UnionBehavior.STRICT_STRINGIFY,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
-        commitDataIncrementally = true,
+        commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
@@ -194,7 +194,7 @@ class ClickhouseDirectLoadWriter :
      * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
-    @Disabled override fun testTruncateRefresh() {}
+    // @Disabled override fun testTruncateRefresh() {}
 
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
     @Disabled override fun testDedupWithStringKey() {}
@@ -316,7 +316,7 @@ class ClickhouseDirectLoadWriter :
      * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
-    @Disabled override fun testTruncateRefreshNoData() {}
+    // @Disabled override fun testTruncateRefreshNoData() {}
 
     /**
      * failing because of
@@ -377,7 +377,7 @@ class ClickhouseDirectLoadWriter :
      * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
-    @Disabled override fun testInterruptedTruncateWithPriorData() {}
+    // @Disabled override fun testInterruptedTruncateWithPriorData() {}
 
     /**
      * failing because of
@@ -566,6 +566,7 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
+        println("Running: SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}")
         val response =
             client
                 .query(
@@ -580,6 +581,7 @@ class ClickhouseDataDumper(
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .map { entry ->
+                    println("Processing entry: ${entry.key} -> ${entry.value}")
                     val airbyteValue =
                         when (entry.value) {
                             is Long -> IntegerValue(entry.value as Long)

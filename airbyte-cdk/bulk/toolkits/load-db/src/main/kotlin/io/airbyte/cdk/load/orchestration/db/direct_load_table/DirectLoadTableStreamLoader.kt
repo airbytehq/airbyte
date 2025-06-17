@@ -358,6 +358,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
     /** Performs upsert using an additional temporary table for safer operation */
     private suspend fun performUpsertWithTemporaryTable() {
+        println("We are here")
         val tempTempTable = tempTableNameGenerator.generate(tempTableName)
 
         // Create temporary table for intermediate operations

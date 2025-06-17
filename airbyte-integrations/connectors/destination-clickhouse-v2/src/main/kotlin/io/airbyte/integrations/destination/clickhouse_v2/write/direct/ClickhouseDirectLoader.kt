@@ -10,8 +10,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DirectLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.Constants.DELIMITER
 import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -29,6 +32,8 @@ private val log = KotlinLogging.logger {}
 class ClickhouseDirectLoader(
     private val descriptor: DestinationStream.Descriptor,
     private val clickhouseClient: Client,
+    // This is not related to the airbyte state, it is storing which table we should use
+    private val tableName: TableName
 ) : DirectLoader {
     private var buffer: ByteArrayOutputStream = ByteArrayOutputStream()
     private var recordCount = 0
@@ -47,6 +52,9 @@ class ClickhouseDirectLoader(
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
+        println(record.stream.descriptor)
+        println(record.stream.importType)
+        println("Writing record to ClickHouse: ${record.stream.unmappedNamespace}.${record.stream.unmappedName}} with value: ${protocolRecord.toPrettyString()}")
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, UUID.randomUUID().toString())
@@ -72,10 +80,11 @@ class ClickhouseDirectLoader(
         val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
         buffer = ByteArrayOutputStream()
 
+        println("Inserting into `${tableName.namespace}`.`${tableName.name}`")
         val insertResult =
             clickhouseClient
                 .insert(
-                    "`${descriptor.namespace ?: "default"}`.`${descriptor.name}`",
+                    "`${tableName.namespace}`.`${tableName.name}`",
                     jsonBytes,
                     ClickHouseFormat.JSONEachRow,
                 )

@@ -79,6 +79,7 @@ class PipelineEventBookkeepingRouter(
         unopenedStreams: MutableSet<DestinationStream.Descriptor>
     ): PipelineInputEvent {
         val stream = message.stream
+        println("Recieved message: $message")
         if (unopenedStreams.remove(stream.descriptor)) {
             log.info { "Saw first record for stream ${stream.descriptor}; awaiting setup complete" }
             syncManager.awaitSetupComplete()
