@@ -1,0 +1,6 @@
+Type,Status,Id,Parent Id,Campaign,Ad Group,Client Id,Modified Time,Title,Text,Display Url,Destination Url,Promotion,Device Preference,Name,App Platform,App Id,Final Url,Mobile Final Url,Tracking Template,Final Url Suffix,Custom Parameter
+Format Version,,,,,,,,,,,,,,6.0,,,,,,,
+App Install Ad,Active,,-1111,ParentCampaignNameGoesHere,AdGroupNameGoesHere,111111,01/01/2024 10:12:12.02837,Contoso Quick Setup,Find New Customers & Increase Sales!,,,,All,,Android,111111,FinalUrlGoesHere,,,,{_promoCode}=PROMO1; {_season}=summer
+App Install Ad,Active,,-1111,ParentCampaignNameGoesHere,AdGroupNameGoesHere,111111,01/01/2024 10:39:12.02837,Contoso Quick Setup,Find New Customers & Increase Sales!,,,,All,,Android,111111,FinalUrlGoesHere,,,,{_promoCode}=PROMO1; {_season}=summer
+App Install Ad,Active,,-1111,ParentCampaignNameGoesHere,AdGroupNameGoesHere,111111,01/01/2024 10:46:12.02837,Contoso Quick Setup,Find New Customers & Increase Sales!,,,,All,,Android,111111,FinalUrlGoesHere,,,,{_promoCode}=PROMO1; {_season}=summer
+App Install Ad,Active,,-1111,ParentCampaignNameGoesHere,AdGroupNameGoesHere,111111,01/01/2024 10:55:12.02837,Contoso Quick Setup,Find New Customers & Increase Sales!,,,,All,,Android,111111,FinalUrlGoesHere,,,,{_promoCode}=PROMO1; {_season}=summer
