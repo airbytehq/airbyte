@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -101,7 +103,8 @@ class InputConsumerTaskTest {
                 fileTransferQueue = mockk(relaxed = true),
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
-                false
+                false,
+                NamespaceMapper(NamespaceDefinitionType.SOURCE)
             )
         val task =
             InputConsumerTask(
@@ -152,7 +155,8 @@ class InputConsumerTaskTest {
                 fileTransferQueue = mockk(relaxed = true),
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
-                false
+                false,
+                NamespaceMapper(NamespaceDefinitionType.SOURCE)
             )
         val task =
             InputConsumerTask(
