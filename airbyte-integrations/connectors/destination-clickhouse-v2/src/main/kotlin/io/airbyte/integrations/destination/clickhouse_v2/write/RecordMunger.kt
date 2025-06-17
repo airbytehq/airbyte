@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.write
 
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -18,18 +22,17 @@ class RecordMunger(
 ) {
     fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
-        val enriched = record.asEnrichedDestinationRecordAirbyteValue(
-            extractedAtAsTimestampWithTimezone = true
-        )
+        val enriched =
+            record.asEnrichedDestinationRecordAirbyteValue(
+                extractedAtAsTimestampWithTimezone = true
+            )
 
         val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach {
             val mappedKey = catalogInfo.getMappedColumnName(record.stream, it.key)!!
             munged[mappedKey] = it.value.abValue
         }
-        enriched.airbyteMetaFields.forEach {
-            munged[it.key] = it.value.abValue
-        }
+        enriched.airbyteMetaFields.forEach { munged[it.key] = it.value.abValue }
 
         return munged
     }

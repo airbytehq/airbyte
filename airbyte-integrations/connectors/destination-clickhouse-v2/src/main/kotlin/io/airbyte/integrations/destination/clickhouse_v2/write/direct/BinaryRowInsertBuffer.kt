@@ -31,7 +31,6 @@ import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
 
-
 /*
  * Encapsulates ClickHouse specific buffering and writing logic separate from the loader
  * state machine.
@@ -46,15 +45,12 @@ class BinaryRowInsertBuffer(
 ) {
     // Initialize the inner buffer
     private val schema = clickhouseClient.getTableSchema(tableName.name, tableName.namespace)
-    @VisibleForTesting
-    internal var inner = InputOutputBuffer()
+    @VisibleForTesting internal var inner = InputOutputBuffer()
     @VisibleForTesting
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
-        recordFields.forEach {
-            writeAirbyteValue(it.key, it.value)
-        }
+        recordFields.forEach { writeAirbyteValue(it.key, it.value) }
 
         writer.commitRow()
     }
@@ -93,17 +89,17 @@ class BinaryRowInsertBuffer(
     }
 
     /**
-     * The CH writer wants an output stream and the client an input stream.
-     * This is a naive wrapper class to avoid having to copy the buffer contents around.
+     * The CH writer wants an output stream and the client an input stream. This is a naive wrapper
+     * class to avoid having to copy the buffer contents around.
      */
     internal class InputOutputBuffer : ByteArrayOutputStream() {
         /**
-         * Get an input stream based on the contents of this output stream.
-         * Do not use the output stream after calling this method.
+         * Get an input stream based on the contents of this output stream. Do not use the output
+         * stream after calling this method.
          * @return an {@link InputStream}
          */
         fun toInputStream(): ByteArrayInputStream {
-            return ByteArrayInputStream(this.buf, 0, this.count);
+            return ByteArrayInputStream(this.buf, 0, this.count)
         }
     }
 }

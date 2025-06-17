@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
 import com.clickhouse.client.api.Client
@@ -32,7 +36,10 @@ class ClickhouseDirectLoaderFactoryTest {
 
     @ParameterizedTest
     @MethodSource("streamDescriptors")
-    fun `creates loader with buffer and correctly mapped table name`(stream: DestinationStream.Descriptor, table: TableName) {
+    fun `creates loader with buffer and correctly mapped table name`(
+        stream: DestinationStream.Descriptor,
+        table: TableName
+    ) {
         every { tableInfo.getFinalTableName(stream) } returns table
 
         val result = factory.create(stream, 0) // part isn't used
@@ -68,5 +75,4 @@ class ClickhouseDirectLoaderFactoryTest {
         val table2 = TableName("munged namespace 2", "munged 2")
         val table3 = TableName("munged namespace 3", "munged 3")
     }
-
 }
