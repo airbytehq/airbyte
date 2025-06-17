@@ -52,9 +52,6 @@ class ClickhouseDirectLoader(
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val protocolRecord = record.asJsonRecord() as ObjectNode
 
-        println(record.stream.descriptor)
-        println(record.stream.importType)
-        println("Writing record to ClickHouse: ${record.stream.unmappedNamespace}.${record.stream.unmappedName}} with value: ${protocolRecord.toPrettyString()}")
         protocolRecord.put(Constants.FIELD_EXTRACTED_AT, record.rawData.emittedAtMs)
         protocolRecord.put(Constants.FIELD_GEN_ID, record.stream.generationId)
         protocolRecord.put(Constants.FIELD_RAW_ID, UUID.randomUUID().toString())
@@ -80,7 +77,6 @@ class ClickhouseDirectLoader(
         val jsonBytes = ByteArrayInputStream(buffer.toByteArray())
         buffer = ByteArrayOutputStream()
 
-        println("Inserting into `${tableName.namespace}`.`${tableName.name}`")
         val insertResult =
             clickhouseClient
                 .insert(

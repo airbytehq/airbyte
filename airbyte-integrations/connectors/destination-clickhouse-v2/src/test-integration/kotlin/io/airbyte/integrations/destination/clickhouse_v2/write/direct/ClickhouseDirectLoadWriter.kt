@@ -566,7 +566,6 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
-        println("Running: SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}")
         val response =
             client
                 .query(
@@ -581,7 +580,6 @@ class ClickhouseDataDumper(
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .map { entry ->
-                    println("Processing entry: ${entry.key} -> ${entry.value}")
                     val airbyteValue =
                         when (entry.value) {
                             is Long -> IntegerValue(entry.value as Long)

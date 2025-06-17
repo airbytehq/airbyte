@@ -58,7 +58,6 @@ class ClickhouseSqlGenerator {
                 else -> "MergeTree()"
             }
 
-        println("creating table `${tableName.namespace}`.`${tableName.name}`")
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
               $COLUMN_NAME_AB_RAW_ID String NOT NULL,
@@ -72,21 +71,13 @@ class ClickhouseSqlGenerator {
             """.trimIndent()
     }
 
-    fun dropTable(tableName: TableName): String {
-        println("dropping table `${tableName.namespace}`.`${tableName.name}`")
-        return "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;"
-    }
+    fun dropTable(tableName: TableName): String =
+        "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;"
 
-    fun exchangeTable(sourceTableName: TableName, targetTableName: TableName): String {
-        println("""
-        EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}` 
-            AND `${targetTableName.namespace}`.`${targetTableName.name}`;
-        """.trimMargin())
-        return """
+    fun exchangeTable(sourceTableName: TableName, targetTableName: TableName): String = """
         EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}` 
             AND `${targetTableName.namespace}`.`${targetTableName.name}`;
         """.trimMargin()
-    }
 
     fun copyTable(
         columnNameMapping: ColumnNameMapping,

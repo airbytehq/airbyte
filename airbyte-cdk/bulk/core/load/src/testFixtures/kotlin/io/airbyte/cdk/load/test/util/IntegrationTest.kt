@@ -278,7 +278,6 @@ abstract class IntegrationTest(
                                     "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
                                 )
                         }
-                    println("Sending stream status message: $streamStatusMessage")
                     destination.sendMessage(
                         streamStatusMessage,
                         broadcast = true,
