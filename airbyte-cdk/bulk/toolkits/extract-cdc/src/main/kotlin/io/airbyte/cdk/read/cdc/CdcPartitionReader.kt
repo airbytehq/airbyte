@@ -7,10 +7,10 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.JSONL
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.PROTOBUF
 import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
+import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
@@ -19,7 +19,7 @@ import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
-import io.airbyte.cdk.read.StreamRecordConsumer
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.engine.ChangeEvent
@@ -42,7 +42,7 @@ import org.apache.kafka.connect.source.SourceRecord
 /** [PartitionReader] implementation for CDC with Debezium. */
 class CdcPartitionReader<T : Comparable<T>>(
     val resourceAcquirer: ResourceAcquirer,
-    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
+//    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val debeziumProperties: Map<String, String>,
@@ -72,7 +72,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         (1..length).map { charPool.random() }.joinToString("")
 
     protected var partitionId: String = generatePartitionId(4)
-
+    private lateinit var acceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
     interface AcquiredResource: AutoCloseable {
         val resource: Resource.Acquired?
     }
@@ -228,29 +228,21 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // Sometimes, presumably due to bugs in Debezium, the value isn't valid JSON.
                 return EventType.VALUE_JSON_INVALID
             }
-            val streamRecordConsumer: StreamRecordConsumer =
+/*
+            val streamRecordConsumer:   =
                 findStreamRecordConsumer(event.key, event.value)
                 // Ignore events which can't be mapped to a stream.
                 ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+*/
+            val streamId = findStreamIfByRecord(event.key, event.value)
+            val stream: Stream = feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId } as? Stream
+                ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
-                readerOps.deserializeRecord(event.key, event.value, streamRecordConsumer.stream)
-                // Ignore events which can't be deserialized into records.
+                readerOps.deserializeRecord(event.key, event.value, stream)
                 ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
-//            streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes) // TEMP
-            outputMessageRouter.acceptRecord(deserializedRecord.data,streamRecordConsumer.stream.id )
+            outputMessageRouter.recordAcceptors[streamId]?.invoke(deserializedRecord.data)
             return EventType.RECORD_EMITTED
-        }
-
-        private fun findStreamRecordConsumer(
-            key: DebeziumRecordKey,
-            value: DebeziumRecordValue
-        ): StreamRecordConsumer? {
-            val name: String = readerOps.findStreamName(key, value) ?: return null
-            val namespace: String? = readerOps.findStreamNamespace(key, value)
-            val desc: StreamDescriptor = StreamDescriptor().withNamespace(namespace).withName(name)
-            val streamID: StreamIdentifier = StreamIdentifier.from(desc)
-            return streamRecordConsumers[streamID]
         }
 
         private fun findStreamIfByRecord(

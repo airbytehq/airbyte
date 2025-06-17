@@ -38,7 +38,7 @@ class OutputMessageRouter(
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
     private lateinit var protoRecordOutputConsumers: Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
-    lateinit var recordAcceptor: (InternalRow) -> Unit
+    lateinit var recordAcceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
 
     init {
 
@@ -51,9 +51,10 @@ class OutputMessageRouter(
                     additionalProperties
                 )
                 efficientStreamRecordConsumers = feedBootstrap.streamRecordConsumers(socketJsonOutputConsumer)
-                /*recordAcceptor = { record ->
-                    efficientStreamRecordConsumer.accept(record, emptyMap())
-                }*/
+                recordAcceptors = efficientStreamRecordConsumers.map {
+                    it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) } }
+                    .toMap()
+
             }
             OutputChannelType.PROTOBUF -> {
                 protoOutputConsumer = SocketProtobufOutputConsumer(
@@ -62,12 +63,14 @@ class OutputMessageRouter(
                     8192
                 )
                 protoRecordOutputConsumers = feedBootstrap.streamProtoRecordConsumers(protoOutputConsumer, additionalProperties["partition_id"])
-                /*recordAcceptor = { record ->
-                    protoRecordOutputConsumer.accept(record, emptyMap())
-                }*/
+                recordAcceptors = protoRecordOutputConsumers.map {
+                    it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) } }
+                    .toMap()
             }
             OutputChannelType.STDIO -> {
                 simpleEfficientStreamConsumers = feedBootstrap.streamRecordConsumers()
+
+                // TODO: add acceptors?
             }
             }
         }

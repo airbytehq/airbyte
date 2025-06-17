@@ -75,8 +75,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
 //        streamRecordConsumer.accept(row.data, row.changes)
 //        messageProcessor.acceptRecord(row.data)
-        outputMessageRouter.acceptRecord(row.data, stream.id) // TEMP
-//        outputMessageRouter.recordAcceptor(row.data)
+//        outputMessageRouter.acceptRecord(row.data, stream.id) // TEMP
+        outputMessageRouter.recordAcceptors[stream.id]?.invoke(row.data)
     }
 
     override fun releaseResources() {

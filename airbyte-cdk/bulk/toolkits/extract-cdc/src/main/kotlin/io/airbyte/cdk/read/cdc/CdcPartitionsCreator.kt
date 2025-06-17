@@ -110,7 +110,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         val partitionReader =
             CdcPartitionReader(
                 resourceAcquirer,
-                feedBootstrap.streamRecordConsumers(),
+//                feedBootstrap.streamRecordConsumers(),
                 readerOps,
                 upperBound,
                 debeziumProperties,
