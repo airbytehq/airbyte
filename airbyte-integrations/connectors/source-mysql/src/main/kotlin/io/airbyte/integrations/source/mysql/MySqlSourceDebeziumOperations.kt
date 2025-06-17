@@ -80,6 +80,7 @@ class MySqlSourceDebeziumOperations(
         configuration.incrementalConfiguration as CdcIncrementalConfiguration
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
