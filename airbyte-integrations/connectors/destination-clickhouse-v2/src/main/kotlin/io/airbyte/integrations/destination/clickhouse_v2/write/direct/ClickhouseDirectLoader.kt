@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 
+import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
@@ -15,19 +16,19 @@ import io.airbyte.integrations.destination.clickhouse_v2.write.SizedWindow
     justification = "suspend and fb's non-null analysis don't play well"
 )
 class ClickhouseDirectLoader(
-  private val munger: RecordMunger,
-  private val buffer: BinaryRowInsertBuffer,
+  @VisibleForTesting val munger: RecordMunger,
+  @VisibleForTesting val buffer: BinaryRowInsertBuffer,
 ) : DirectLoader {
+    private var recordCountWindow = SizedWindow(Constants.MAX_BATCH_SIZE_RECORDS)
     // the sum of serialized json bytes we've accumulated
     private var bytesWindow = SizedWindow(Constants.MAX_BATCH_SIZE_BYTES)
-    private var recordCountWindow = SizedWindow(Constants.MAX_BATCH_SIZE_RECORDS)
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val munged = munger.transformForDest(record)
         buffer.accumulate(munged)
 
-        bytesWindow.increment(record.serializedSizeBytes)
         recordCountWindow.increment(1)
+        bytesWindow.increment(record.serializedSizeBytes)
 
         if (bytesWindow.isComplete() || recordCountWindow.isComplete()) {
             buffer.flush()

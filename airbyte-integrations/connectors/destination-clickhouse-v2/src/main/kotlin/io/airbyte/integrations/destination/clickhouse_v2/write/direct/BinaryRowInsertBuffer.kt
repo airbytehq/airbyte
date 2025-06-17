@@ -36,7 +36,7 @@ private val log = KotlinLogging.logger {}
     justification = "suspend and fb's non-null analysis don't play well"
 )
 class BinaryRowInsertBuffer(
-    private val tableName: TableName,
+    val tableName: TableName,
     private val clickhouseClient: Client,
 ) {
     // Initialize the inner buffer

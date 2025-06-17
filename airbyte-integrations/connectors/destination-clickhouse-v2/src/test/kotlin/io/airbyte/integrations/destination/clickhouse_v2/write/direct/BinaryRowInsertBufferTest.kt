@@ -87,6 +87,8 @@ class BinaryRowInsertBufferTest {
                 else -> {}
             }
         }
+
+        verify { writer.commitRow() }
     }
 
     @ParameterizedTest
@@ -104,6 +106,8 @@ class BinaryRowInsertBufferTest {
                 else -> {}
             }
         }
+
+        verify { writer.commitRow() }
     }
 
     @Test
