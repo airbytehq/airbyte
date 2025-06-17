@@ -53,7 +53,7 @@ export const CopyPageButton = () => {
     }, 2500);
   };
 
-  const claudeUrl = `https://claude.ai/new?q=Read+from+${fullMdUrl}+so+I+can+ask+questions+about+it`;
+  const chatGptUrl = `https://chat.openai.com/?q=Read+from+${fullMdUrl}+so+I+can+ask+questions+about+it`;
 
   return (
     <div className={styles.container}>
@@ -108,7 +108,7 @@ export const CopyPageButton = () => {
             <MenuItem>
               <a
                 className={styles.menuItem}
-                href={claudeUrl}
+                href={chatGptUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -117,7 +117,7 @@ export const CopyPageButton = () => {
                   className={styles.menuItemIcon}
                 />
                 <div className={styles.menuItemContent}>
-                  <div className={styles.menuItemTitle}>Open in Claude</div>
+                  <div className={styles.menuItemTitle}>Open in ChatGPT</div>
                   <div className={styles.menuItemDescription}>
                     Ask questions about this page
                   </div>

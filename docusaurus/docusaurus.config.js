@@ -183,7 +183,7 @@ const config = {
         siteTitle: "docs.airbyte.com llms.txt",
         siteDescription:
           "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
-        depth: 3,
+        depth: 4,
         content: {
           includePages: true,
         },
