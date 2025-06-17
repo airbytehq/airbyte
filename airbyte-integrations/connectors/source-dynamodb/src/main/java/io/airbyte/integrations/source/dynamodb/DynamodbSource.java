@@ -154,7 +154,7 @@ public class DynamodbSource extends BaseConnector implements Source {
           compositeIterator.close();
         } catch (final Exception e) {
           if (e instanceof InterruptedException) {
-            Thread.currentThread().interrupt();  // Preserve interrupt status
+            Thread.currentThread().interrupt();
           }
           primaryException = e;
         }
