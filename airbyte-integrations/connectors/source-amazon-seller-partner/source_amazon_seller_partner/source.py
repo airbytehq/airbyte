@@ -11,7 +11,6 @@ from airbyte_cdk import TState
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner.constants import get_marketplaces
-from source_amazon_seller_partner.utils import AmazonConfigException
 
 
 class SourceAmazonSellerPartner(YamlDeclarativeSource):
@@ -30,22 +29,6 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         config.update(self.get_aws_config_settings(config))
         streams = super().streams(config)
         self.validate_stream_report_options(config)
-
-        # todo: Analytics streams were never enabled in Cloud and don't quite work right in OSS. We've removed them during the
-        #  migration to low-code, but eventually we may need to find time to fix and add these removed streams:
-        # if not is_cloud_environment():
-        #     brand_analytics_reports = [
-        #         BrandAnalyticsMarketBasketReports,
-        #         BrandAnalyticsSearchTermsReports,
-        #         BrandAnalyticsRepeatPurchaseReports,
-        #         SellerAnalyticsSalesAndTrafficReports,
-        #         VendorSalesReports,
-        #         VendorInventoryReports,
-        #         NetPureProductMarginReport,
-        #         RapidRetailAnalyticsInventoryReport,
-        #         VendorTrafficReport,
-        #     ]
-        #     stream_list += brand_analytics_reports
 
         return streams
 

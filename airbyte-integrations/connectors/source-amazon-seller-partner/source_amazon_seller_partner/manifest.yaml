@@ -302,6 +302,37 @@ spec:
             type: string
             path_in_connector_config:
             - lwa_client_secret
+  config_normalization_rules:
+    config_migrations:
+      - type: ConfigMigration
+        description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.\
+        transformations:
+          - type: AddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["account_type"]
+                value: Seller
+            condition: "{{ not config.get('account_type', False) }}"
+      - type: ConfigMigration
+        description: tbd
+        transformations:
+          - type: AddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["report_options_list"]
+                value: >-
+                  {% set report_options = [] %}
+                  {% set config_options = config.get('report_options', '[]') %}
+                  {% for stream_name, options in config_options.items() %}
+                      {% set options_list = [] %}
+                      {% for name, value in options.items() %}
+                          {% set _ = options_list.append({"option_name": name, "option_value": value}) %}
+                      {% endfor %}
+                      {% set _ = report_options.append({"report_name": stream_name, "stream_name": stream_name, "options_list": options_list}) %}
+                  {% endfor %}
+                  {{ report_options }}
+            condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
+
 
 definitions:
   authenticator:
