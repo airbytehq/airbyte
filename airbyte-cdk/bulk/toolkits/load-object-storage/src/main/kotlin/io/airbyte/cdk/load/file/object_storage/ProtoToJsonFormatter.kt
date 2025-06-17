@@ -17,11 +17,11 @@ class ProtoToJsonFormatter(
     rootLevelFlattening: Boolean
 ) : ObjectStorageFormattingWriter {
 
-    private val fastWriter = ProtoToJsonWriter(stream.airbyteValueProxyFieldAccessors, rootLevelFlattening)
+    private val fastWriter =
+        ProtoToJsonWriter(stream.airbyteValueProxyFieldAccessors, rootLevelFlattening)
 
     private val generator =
-        Jsons
-            .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+        Jsons.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
             .createGenerator(outputStream, JsonEncoding.UTF8)
             .apply { setRootValueSeparator(null) }
 
@@ -34,7 +34,6 @@ class ProtoToJsonFormatter(
                 generator.writeEndObject()
                 generator.writeRaw('\n')
             }
-
             else -> {
                 throw RuntimeException(
                     "ProtoToJsonFormatter only supports conversion of proto records to JSON",
