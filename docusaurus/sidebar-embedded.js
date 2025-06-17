@@ -1,6 +1,6 @@
 export default {
   embedded: [
-    {
+    { 
       type: "category",
       collapsible: false,
       label: "Airbyte Embedded",

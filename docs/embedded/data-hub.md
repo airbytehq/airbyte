@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Data Hub Blueprint
+# Why AI Data Hubs?
 
 To be successful, AI data hubs must support the following:
 

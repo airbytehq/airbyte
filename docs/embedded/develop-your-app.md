@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Develop your web app
+# Develop Your Web App
 
 The sample onboarding app is a full-stack React application with support for both local and production (Vercel) deployment architectures:
 
@@ -40,25 +40,25 @@ Key Features
 
 Ensure you are in the `sonar-demoapp` root directory, then install dependencies:
 
-```markdown
+```bash
 npm install
 ```
 
 Set /server/.env.local to use localhost
 
-```markdown
+```bash
 SONAR_ALLOWED_ORIGIN=http://localhost:5173
 ```
 
 Run the front end:
 
-```markdown
+```bash
 npm run dev
 ```
 
 Run the backend server:
 
-```markdown
+```bash
 cd server && npm start
 ```
 

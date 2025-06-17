@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Pre-requisites
+# Prerequisites & Setup
 
 ## Airbyte Credentials
 
@@ -20,20 +20,20 @@ In addition to the Embedded keys above, you will require an external user id, `E
 
 Clone the [sample app via Github](https://github.com/quintonwall/sonar-demoapp), and navigate to sonar-demoapp/server.
 
-```markdown
+```bash
 git clone <repository-url>
 cd sonar-demoapp/server
 ```
 
  Then, copy the .env.local.example to .env:
 
-```markdown
+```bash
  cp .env.example .env
 ```
 
 Set the `SONAR_ALLOWED_ORIGIN` to be the url where your onboarding app will be deployed. Or use http://localhost:5173 for the default React host/port when running locally
 
-```markdown
+```bash
 # Airbyte Embedded Configuration
 ## For security reasons, we require that the widget can only we attached to a specific origin.
 ## If you're developing locally, it will look like: http://localhost:5173
@@ -43,7 +43,7 @@ SONAR_ALLOWED_ORIGIN=your_deployed_webapp_url
 
 Paste in your the Organization Id, Client Id, Client Secret to the following keys:
 
-```markdown
+```bash
 ## These 3 pieces of information are available in your initial workspace: Settings > Embedded
 SONAR_AIRBYTE_ORGANIZATION_ID=your_organization_id
 SONAR_AIRBYTE_CLIENT_ID=your_client_id
@@ -52,13 +52,13 @@ SONAR_AIRBYTE_CLIENT_SECRET=your_client_secret
 
 The sample web app uses basic authentication to protect the webapp. This is fine for testing, but it is recommended to be changed for product use. Set your password in the .env file:
 
-```markdown
+```bash
 SONAR_WEBAPP_PASSWORD=your_password
 ```
 
 Next, you need to provide configuration details to an [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html) running on AWS. This S3 bucket is the AI Destination Store from the AI Hub Blueprint. It is where customer data will be written.
 
-```markdown
+```bash
 # AWS Credentials
 SONAR_AWS_ACCESS_KEY=your_aws_access_key
 SONAR_AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
@@ -73,7 +73,7 @@ The following values are examples of what an S3 configuration should look like:
 
 ![S3 Bucket configuration.](./assets/s3-bucket-config.png)
 
-```markdown
+```bash
 # S3 Configuration
 SONAR_S3_BUCKET=airbyte-embed
 SONAR_S3_BUCKET_REGION=us-east-2
@@ -84,7 +84,9 @@ SONAR_S3_BUCKET_PREFIX=quinton-test
 
 Next, you need to create the S3 destination connector within your Airbyte Embedded instance. You can use the provided script within the sample app, which relies on the values in the .env file created above.
 
-`sonar-demoapp/./setup-s3.sh`
+```bash
+sonar-demoapp/./setup-s3.sh
+```
 
 :::caution
 Only run this script once. Running it multiple times will create multiple connections to s3 and may cause errors when customer data syncs.
