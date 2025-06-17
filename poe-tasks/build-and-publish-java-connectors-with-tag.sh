@@ -42,8 +42,9 @@ is_in_whitelist() {
   local connector="$1"
   case "$connector" in
     destination-azure-blob-storage|\
-    destination-bigquery|\
     destination-csv|\
+    destination-clickhouse|\
+    destination-clickhouse-strict-encrypt|\
     destination-databricks|\
     destination-dev-null|\
     destination-dynamodb|\
