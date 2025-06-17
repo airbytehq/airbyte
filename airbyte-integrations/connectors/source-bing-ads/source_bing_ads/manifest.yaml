@@ -1466,6 +1466,12 @@ definitions:
       - TopVsOther
       - BidMatchType
       - Language
+    audience_performance:
+      - AudienceId
+      - TimePeriod
+      - AccountId
+      - CampaignId
+      - AdGroupId
 
   report_columns:
     age_gender_audience:
@@ -1727,6 +1733,55 @@ definitions:
       - Revenue
       - RevenuePerConversion
       - RevenuePerAssist
+    audience_performance:
+      - AccountName
+      - AccountNumber
+      - AccountId
+      - TimePeriod
+      - CampaignName
+      - CampaignId
+      - AdGroupName
+      - AdGroupId
+      - AudienceId
+      - AudienceName
+      - AssociationStatus
+      - BidAdjustment
+      - TargetingSetting
+      - Impressions
+      - Clicks
+      - Ctr
+      - AverageCpc
+      - Spend
+      - AveragePosition
+      - Conversions
+      - ConversionRate
+      - CostPerConversion
+      - Revenue
+      - ReturnOnAdSpend
+      - RevenuePerConversion
+      - AccountStatus
+      - CampaignStatus
+      - AdGroupStatus
+      - AudienceType
+      - BaseCampaignId
+      - AllConversions
+      - AllRevenue
+      - AllConversionRate
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllRevenuePerConversion
+      - AssociationId
+      - AssociationLevel
+      - ViewThroughConversions
+      - Goal
+      - GoalType
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - AverageCpm
+      - ConversionsQualified
+      - AllConversionsQualified
+      - ViewThroughConversionsQualified
+      - ViewThroughRevenue
 
   # bulk streams
   labels_stream:
@@ -2281,6 +2336,38 @@ definitions:
           {% set v = record.get('RevenuePerAssist') %}
           {{ v | replace(',', '') | float if v is not none and v != "" else None }}
 
+    audience_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllConversionRate
+        value: |
+          {% set v = record.get('AllConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+
     # used in hourly report streams to convert date-time format for backward compatibility
     hourly_report_transformations:
       - type: AddedFieldDefinition
@@ -2543,6 +2630,7 @@ dynamic_streams:
                   $ref: "#/definitions/transformations/campaign_performance_report_common_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          ## Ad Group Performance Reports
           - name: ad_group_performance_report_hourly
             parameters:
               report_aggregation: Hourly
@@ -2620,6 +2708,86 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/ad_group_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          ## Audience Performance Reports
+          - name: audience_performance_report_hourly
+            parameters:
+              report_aggregation: Hourly
+              report_name: AudiencePerformanceReport
+              report_type: AudiencePerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/audience_performance"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/audience_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/audience_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/hourly_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+          - name: audience_performance_report_daily
+            parameters:
+              report_aggregation: Daily
+              report_name: AudiencePerformanceReport
+              report_type: AudiencePerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/audience_performance"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/audience_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/audience_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          - name: audience_performance_report_weekly
+            parameters:
+              report_aggregation: Weekly
+              report_name: AudiencePerformanceReport
+              report_type: AudiencePerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/audience_performance"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/audience_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/audience_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          - name: audience_performance_report_monthly
+            parameters:
+              report_aggregation: Monthly
+              report_name: AudiencePerformanceReport
+              report_type: AudiencePerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/audience_performance"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/audience_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/audience_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/audience_performance_report_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       components_mapping:
@@ -6352,6 +6520,501 @@ schemas:
           - number
       RevenuePerAssist:
         description: Average revenue per assist.
+        type:
+          - "null"
+          - number
+  audience_performance_report:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      AccountName:
+        description: The name of the account
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number
+        type:
+          - "null"
+          - string
+      AccountId:
+        description: The unique identifier for the account
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period of the report
+        type:
+          - "null"
+          - string
+        format: date
+      CampaignName:
+        description: The name of the campaign
+        type:
+          - "null"
+          - string
+      CampaignId:
+        description: The unique identifier for the campaign
+        type:
+          - "null"
+          - integer
+      AdGroupName:
+        description: The name of the ad group
+        type:
+          - "null"
+          - string
+      AdGroupId:
+        description: The unique identifier for the ad group
+        type:
+          - "null"
+          - integer
+      AudienceId:
+        description: The unique identifier for the audience
+        type:
+          - "null"
+          - integer
+      AudienceName:
+        description: The name of the audience
+        type:
+          - "null"
+          - string
+      AssociationStatus:
+        description: The status of the association
+        type:
+          - "null"
+          - string
+      BidAdjustment:
+        description: The bid adjustment value
+        type:
+          - "null"
+          - number
+      TargetingSetting:
+        description: The targeting settings used
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of impressions
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total spend
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position of the ad
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of conversions
+        type:
+          - "null"
+          - integer
+      ConversionRate:
+        description: The rate of conversions
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The cost per conversion
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue
+        type:
+          - "null"
+          - number
+      ReturnOnAdSpend:
+        description: The return on ad spend
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The revenue per conversion
+        type:
+          - "null"
+          - number
+      AccountStatus:
+        description: The status of the account
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign
+        type:
+          - "null"
+          - string
+      AdGroupStatus:
+        description: The status of the ad group
+        type:
+          - "null"
+          - string
+      AudienceType:
+        description: The type of the audience
+        type:
+          - "null"
+          - string
+      BaseCampaignId:
+        description: The base campaign's ID
+        type:
+          - "null"
+          - integer
+      AllConversions:
+        description: The total number of all conversions
+        type:
+          - "null"
+          - integer
+      AllRevenue:
+        description: The total revenue generated from all conversions
+        type:
+          - "null"
+          - number
+      AllConversionRate:
+        description: The rate of all conversions generated
+        type:
+          - "null"
+          - number
+      AllCostPerConversion:
+        description: The cost per all conversion
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend for all conversions
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The revenue per all conversion
+        type:
+          - "null"
+          - number
+      AssociationId:
+        description: The unique identifier for the association
+        type:
+          - "null"
+          - integer
+      AssociationLevel:
+        description: The level of the association
+        type:
+          - "null"
+          - string
+      ViewThroughConversions:
+        description: The total number of view-through conversions
+        type:
+          - "null"
+          - integer
+      Goal:
+        description: The goal of the report
+        type:
+          - "null"
+          - string
+      GoalType:
+        description: The type of goal
+        type:
+          - "null"
+          - string
+      AbsoluteTopImpressionRatePercent:
+        description: The percentage of absolute top impressions compared to total impressions
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description: The percentage of top impressions compared to total impressions
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: The average cost per thousand impressions
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The number of conversions qualified
+        type:
+          - "null"
+          - number
+      AllConversionsQualified:
+        description: The number of all conversions qualified
+        type:
+          - "null"
+          - number
+      ViewThroughConversionsQualified:
+        description: The number of view-through conversions qualified
+        type:
+          - "null"
+          - number
+      ViewThroughRevenue:
+        description: The total revenue generated from view-through conversions
+        type:
+          - "null"
+          - number
+  audience_performance_report_hourly:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      AccountName:
+        description: The name of the account.
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number associated with the account.
+        type:
+          - "null"
+          - string
+      AccountId:
+        description: The unique identifier for the account.
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period associated with the data.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      CampaignName:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      CampaignId:
+        description: The unique identifier for the campaign.
+        type:
+          - "null"
+          - integer
+      AdGroupName:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      AdGroupId:
+        description: The unique identifier for the ad group.
+        type:
+          - "null"
+          - integer
+      AudienceId:
+        description: The unique identifier for the audience.
+        type:
+          - "null"
+          - integer
+      AudienceName:
+        description: The name of the audience.
+        type:
+          - "null"
+          - string
+      AssociationStatus:
+        description: The status of the association.
+        type:
+          - "null"
+          - string
+      BidAdjustment:
+        description: The bid adjustment value.
+        type:
+          - "null"
+          - number
+      TargetingSetting:
+        description: The targeting setting used for the data.
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of ad impressions.
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks.
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate.
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click.
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total amount spent.
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position of the ad.
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of specific conversions.
+        type:
+          - "null"
+          - integer
+      ConversionRate:
+        description: The conversion rate for specific conversions.
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The cost per specific conversion.
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue generated.
+        type:
+          - "null"
+          - number
+      ReturnOnAdSpend:
+        description: The return on ad spend.
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The revenue per specific conversion.
+        type:
+          - "null"
+          - number
+      AccountStatus:
+        description: The status of the account.
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      AdGroupStatus:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      AudienceType:
+        description: The type of audience.
+        type:
+          - "null"
+          - string
+      BaseCampaignId:
+        description: The unique identifier for the base campaign.
+        type:
+          - "null"
+          - integer
+      AllConversions:
+        description: The total number of all conversions.
+        type:
+          - "null"
+          - integer
+      AllRevenue:
+        description: The total revenue generated from all conversions.
+        type:
+          - "null"
+          - number
+      AllConversionRate:
+        description: The conversion rate for all conversions.
+        type:
+          - "null"
+          - number
+      AllCostPerConversion:
+        description: The cost per conversion for all conversions.
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend for all conversions.
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The revenue per conversion for all conversions.
+        type:
+          - "null"
+          - number
+      AssociationId:
+        description: The unique identifier for the association.
+        type:
+          - "null"
+          - integer
+      AssociationLevel:
+        description: The level of association for the data.
+        type:
+          - "null"
+          - string
+      ViewThroughConversions:
+        description: The total number of view-through conversions.
+        type:
+          - "null"
+          - integer
+      Goal:
+        description: The goal associated with the data.
+        type:
+          - "null"
+          - string
+      GoalType:
+        description: The type of goal.
+        type:
+          - "null"
+          - string
+      AbsoluteTopImpressionRatePercent:
+        description:
+          The percentage of absolute top impressions out of the total eligible
+          impressions.
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description: The percentage of top impressions out of the total eligible impressions.
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: The average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The total number of qualified specific conversions.
+        type:
+          - "null"
+          - number
+      AllConversionsQualified:
+        description: The total number of all qualified conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughConversionsQualified:
+        description: The total number of qualified view-through conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughRevenue:
+        description: The revenue generated from view-through conversions.
         type:
           - "null"
           - number
