@@ -63,7 +63,7 @@ class ClickhouseSqlGenerator {
               $COLUMN_NAME_AB_RAW_ID String NOT NULL,
               $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
               $COLUMN_NAME_AB_META String NOT NULL,
-              $COLUMN_NAME_AB_GENERATION_ID UInt32,
+              $COLUMN_NAME_AB_GENERATION_ID UInt32 NOT NULL,
               $columnDeclarations
             )
             ENGINE = ${engine}
@@ -286,7 +286,7 @@ class ClickhouseSqlGenerator {
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = type.type.toDialectType()
-                "`$columnName` $typeName"
+                "`$columnName` Nullable($typeName)"
             }
             .joinToString(",\n")
 
