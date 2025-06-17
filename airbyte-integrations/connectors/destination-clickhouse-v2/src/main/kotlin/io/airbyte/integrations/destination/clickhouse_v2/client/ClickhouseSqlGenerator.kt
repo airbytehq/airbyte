@@ -52,9 +52,14 @@ class ClickhouseSqlGenerator {
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
+        val pks = when (stream.importType) {
+            is Dedupe -> extractPks((stream.importType as Dedupe).primaryKey, columnNameMapping)
+            else -> ""
+        }
+
         val engine =
             when (stream.importType) {
-                is Dedupe -> "ReplacingMergeTree()"
+                is Dedupe -> "ReplacingMergeTree($pks)"
                 else -> "MergeTree()"
             }
 
@@ -69,6 +74,19 @@ class ClickhouseSqlGenerator {
             ENGINE = ${engine}
             ORDER BY ($COLUMN_NAME_AB_RAW_ID)
             """.trimIndent()
+    }
+
+    internal fun extractPks(primaryKey: List<List<String>>, columnNameMapping: ColumnNameMapping): String {
+        return primaryKey.joinToString(",") { fieldPath ->
+            if (fieldPath.size != 1) {
+                throw UnsupportedOperationException(
+                    "Only top-level primary keys are supported, got $fieldPath",
+                )
+            }
+            val fieldName = fieldPath.first()
+            val columnName = columnNameMapping[fieldName] ?: fieldName
+            "`$columnName`"
+        }
     }
 
     fun dropTable(tableName: TableName): String =

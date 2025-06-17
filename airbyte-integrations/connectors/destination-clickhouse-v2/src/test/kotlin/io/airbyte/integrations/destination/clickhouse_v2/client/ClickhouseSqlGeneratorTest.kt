@@ -6,11 +6,14 @@ package io.airbyte.integrations.destination.clickhouse_v2.client
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter
 import com.github.vertical_blank.sqlformatter.languages.Dialect
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -57,6 +60,51 @@ class ClickhouseSqlGeneratorTest {
             // Using the StandardSql dialect as a substitute for clickhouse SQL syntax validation.
             // The formatter will parse the SQL, and an invalid statement will throw an exception.
             SqlFormatter.of(Dialect.StandardSql).format(sql)
+        }
+    }
+
+    @Test
+    fun `test extractPks with single primary key`() {
+        val primaryKey = listOf(listOf("id"))
+        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id_column"))
+        val expected = "`id_column`"
+        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test extractPks with multiple primary keys`() {
+        val primaryKey = listOf(listOf("id"), listOf("name"))
+        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id_column", "name" to "name_column"))
+        val expected = "`id_column`,`name_column`"
+        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test extractPks with empty primary key list`() {
+        val primaryKey = emptyList<List<String>>()
+        val columnNameMapping = ColumnNameMapping(emptyMap<String, String>())
+        val expected = ""
+        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test extractPks without column mapping`() {
+        val primaryKey = listOf(listOf("id"))
+        val columnNameMapping = ColumnNameMapping(mapOf())
+        val expected = "`id`"
+        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test extractPks with nested primary key`() {
+        val primaryKey = listOf(listOf("user", "id"))
+        val columnNameMapping = ColumnNameMapping(mapOf("user.id" to "user_id_column")) // This mapping is not used but here for completeness.
+        assertThrows<UnsupportedOperationException> {
+            clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         }
     }
 
