@@ -51,11 +51,11 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
-    routeEventStep: RouteEventStep,
+    routeEventStep: RouteEventStep?,
     fileChunkStep: FileChunkStep<T>?,
     @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>?,
     @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>?,
-    forwardFileRecordStep: ForwardFileRecordStep<T>,
+    forwardFileRecordStep: ForwardFileRecordStep<T>?,
     @Named("fileRecordPartFormatterStep") fileRecordFormatStep: ObjectLoaderPartFormatterStep?,
     @Named("recordPartFormatterStep") recordFormatStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
@@ -88,11 +88,11 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     companion object {
         fun <K : WithStream, T : RemoteObject<*>> selectPipelineSteps(
             isFileTransfer: Boolean,
-            routeEventStep: RouteEventStep,
+            routeEventStep: RouteEventStep?,
             fileChunkStep: FileChunkStep<T>?,
             fileChunkUploader: ObjectLoaderPartLoaderStep<T>?,
             fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>?,
-            forwardFileRecordStep: ForwardFileRecordStep<T>,
+            forwardFileRecordStep: ForwardFileRecordStep<T>?,
             fileRecordFormatStep: ObjectLoaderPartFormatterStep?,
             recordPartStep: ObjectLoaderPartFormatterStep,
             recordUploadStep: ObjectLoaderPartLoaderStep<T>,
@@ -106,11 +106,11 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
                 listOf(oneShotObjectLoaderStep)
             } else if (isFileTransfer) {
                 listOf(
-                    routeEventStep,
+                    routeEventStep!!,
                     fileChunkStep!!,
                     fileChunkUploader!!,
                     fileCompleterStep!!,
-                    forwardFileRecordStep,
+                    forwardFileRecordStep!!,
                     fileRecordFormatStep!!,
                     recordUploadStep,
                     recordCompleterStep,
