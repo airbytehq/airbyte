@@ -23,7 +23,7 @@ pytest = "^8.4.0"
 pytest-mock = "^3.14.1"
 
 
-[project.scripts]
+[tool.poetry.scripts]
 source-exact = "source_exact.run:run"
 
 [tool.poe]
