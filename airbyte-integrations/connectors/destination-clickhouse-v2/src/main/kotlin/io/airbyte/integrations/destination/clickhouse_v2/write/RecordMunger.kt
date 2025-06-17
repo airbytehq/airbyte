@@ -19,6 +19,7 @@ import jakarta.inject.Singleton
 @Singleton
 class RecordMunger(
     private val catalogInfo: TableCatalog,
+    private val validator: ClickhouseValueValidator,
 ) {
     fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
@@ -30,8 +31,10 @@ class RecordMunger(
         val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach {
             val mappedKey = catalogInfo.getMappedColumnName(record.stream, it.key)!!
-            munged[mappedKey] = it.value.abValue
+            val mappedValue = validator.validateAndCoerce(it.value)
+            munged[mappedKey] = mappedValue.abValue
         }
+        // must be called second so it picks up any meta changes from above
         enriched.airbyteMetaFields.forEach { munged[it.key] = it.value.abValue }
 
         return munged
