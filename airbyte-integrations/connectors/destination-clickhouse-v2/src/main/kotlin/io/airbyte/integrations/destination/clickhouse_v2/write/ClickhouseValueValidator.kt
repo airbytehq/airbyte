@@ -35,8 +35,7 @@ import jakarta.inject.Singleton
 @Singleton
 class ClickhouseValueValidator {
     fun validateAndCoerce(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        val abValue = value.abValue
-        when (abValue) {
+        when (val abValue = value.abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NumberValue -> if (abValue.value <= DECIMAL64_MIN || abValue.value >= DECIMAL64_MAX) {
                 value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)

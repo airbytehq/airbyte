@@ -27,11 +27,13 @@ import org.junit.jupiter.api.extension.ExtendWith
 class RecordMungerTest {
     @MockK lateinit var catalogInfo: TableCatalog
 
+    @MockK lateinit var validator: ClickhouseValueValidator
+
     private lateinit var munger: RecordMunger
 
     @BeforeEach
     fun setup() {
-        munger = RecordMunger(catalogInfo)
+        munger = RecordMunger(catalogInfo, validator)
     }
 
     @Test

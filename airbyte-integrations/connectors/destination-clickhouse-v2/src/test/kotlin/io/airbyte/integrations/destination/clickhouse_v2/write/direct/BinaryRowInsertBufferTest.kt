@@ -80,28 +80,28 @@ class BinaryRowInsertBufferTest {
         buffer.accumulate(record)
 
         record.forEach {
-            when (it.value) {
+            when (val abValue = it.value) {
                 is NullValue -> verify { writer.setValue(it.key, null) }
                 is BooleanValue ->
-                    verify { writer.setValue(it.key, (it.value as BooleanValue).value) }
+                    verify { writer.setValue(it.key, abValue.value) }
                 is IntegerValue ->
-                    verify { writer.setValue(it.key, (it.value as IntegerValue).value) }
+                    verify { writer.setValue(it.key, abValue.value) }
                 is NumberValue ->
-                    verify { writer.setValue(it.key, (it.value as NumberValue).value) }
+                    verify { writer.setValue(it.key, abValue.value) }
                 is StringValue ->
-                    verify { writer.setValue(it.key, (it.value as StringValue).value) }
-                is DateValue -> verify { writer.setValue(it.key, (it.value as DateValue).value) }
+                    verify { writer.setValue(it.key, abValue.value) }
+                is DateValue -> verify { writer.setValue(it.key, abValue.value) }
                 is TimeWithTimezoneValue ->
-                    verify { writer.setValue(it.key, (it.value as TimeWithTimezoneValue).value) }
+                    verify { writer.setValue(it.key, abValue.value) }
                 is TimeWithoutTimezoneValue ->
-                    verify { writer.setValue(it.key, (it.value as TimeWithoutTimezoneValue).value) }
+                    verify { writer.setValue(it.key, abValue.value) }
                 is TimestampWithTimezoneValue ->
                     verify {
-                        writer.setValue(it.key, (it.value as TimestampWithTimezoneValue).value)
+                        writer.setValue(it.key, abValue.value)
                     }
                 is TimestampWithoutTimezoneValue ->
                     verify {
-                        writer.setValue(it.key, (it.value as TimestampWithoutTimezoneValue).value)
+                        writer.setValue(it.key, abValue.value)
                     }
                 else -> {}
             }
@@ -121,17 +121,17 @@ class BinaryRowInsertBufferTest {
         buffer.accumulate(record)
 
         record.forEach {
-            when (it.value) {
+            when (val abValue = it.value) {
                 is ObjectValue ->
                     verify {
                         writer.setValue(
                             it.key,
-                            (it.value as ObjectValue).values.serializeToString()
+                            abValue.values.serializeToString()
                         )
                     }
                 is ArrayValue ->
                     verify {
-                        writer.setValue(it.key, (it.value as ArrayValue).values.serializeToString())
+                        writer.setValue(it.key, abValue.values.serializeToString())
                     }
                 else -> {}
             }
