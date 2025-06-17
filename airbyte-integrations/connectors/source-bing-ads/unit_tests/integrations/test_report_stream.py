@@ -16,7 +16,10 @@ from airbyte_cdk.models import SyncMode
 
 
 SOURCE_BING_ADS = resolve_manifest(source=SourceBingAds(None, None, None)).record.data["manifest"]
-MANIFEST_STREAMS = [stream["name"] for stream in SOURCE_BING_ADS["streams"]]
+MANIFEST_STREAMS = [stream["name"] for stream in SOURCE_BING_ADS["streams"]] + [
+    stream_params.get("name")
+    for stream_params in SOURCE_BING_ADS["dynamic_streams"][0]["components_resolver"]["stream_parameters"]["list_of_parameters_for_stream"]
+]
 
 SECOND_READ_FREEZE_TIME = "2024-05-08"
 
