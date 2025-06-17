@@ -5,7 +5,7 @@ data:
   dockerImageTag: "0.2.0"
   dockerRepository: airbyte/source-exact
   connectorType: source
-  connectorSubtype: API
+  connectorSubtype: api
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   definitionId: 64fc8162-14f3-4fc3-9a49-edc5c6cd12e5
@@ -21,4 +21,5 @@ data:
       enabled: false
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"
