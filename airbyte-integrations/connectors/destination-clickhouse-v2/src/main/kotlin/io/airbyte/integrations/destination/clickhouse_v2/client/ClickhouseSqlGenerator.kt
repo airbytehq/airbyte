@@ -31,6 +31,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import jakarta.inject.Singleton
 
 @Singleton
@@ -283,7 +285,7 @@ class ClickhouseSqlGenerator {
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
-                val typeName = toDialectType(type.type).name
+                val typeName = type.type.toDialectType()
                 "`$columnName` $typeName"
             }
             .joinToString(",\n")
@@ -301,28 +303,46 @@ class ClickhouseSqlGenerator {
         return builder.toString()
     }
 
-    fun toDialectType(type: AirbyteType): ClickHouseDataType =
-        when (type) {
-            BooleanType -> ClickHouseDataType.Bool
-            DateType -> ClickHouseDataType.Date
-            IntegerType -> ClickHouseDataType.Int64
-            NumberType -> ClickHouseDataType.Int256
-            StringType -> ClickHouseDataType.String
-            TimeTypeWithTimezone -> ClickHouseDataType.String
-            TimeTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithTimezone -> ClickHouseDataType.DateTime
-            TimestampTypeWithoutTimezone -> ClickHouseDataType.DateTime
-            is ArrayType,
-            ArrayTypeWithoutSchema,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> ClickHouseDataType.JSON
-            is UnionType ->
-                if (type.isLegacyUnion) {
-                    toDialectType(type.chooseType())
-                } else {
-                    ClickHouseDataType.JSON
-                }
-            is UnknownType -> ClickHouseDataType.JSON
+    fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {
+        val builder =
+            StringBuilder()
+                .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
+                .appendLine()
+        alterationSummary.added.forEach { (columnName, columnType) ->
+            builder.append(" ADD COLUMN `$columnName` ${columnType.sqlNullable()},")
         }
+        alterationSummary.modified.forEach { (columnName, columnType) ->
+            builder.append(" MODIFY COLUMN `$columnName` ${columnType.sqlNullable()},")
+        }
+        alterationSummary.deleted.forEach { columnName ->
+            builder.append(" DROP COLUMN `$columnName`,")
+        }
+        return builder.dropLast(1).toString()
+    }
+
+    private fun String.sqlNullable(): String = "Nullable($this)"
+
+    companion object {
+        const val DATETIME_WITH_PRECISION = "DateTime64(3)"
+    }
 }
+
+fun AirbyteType.toDialectType(): String =
+    when (this) {
+        BooleanType -> ClickHouseDataType.Bool.name
+        DateType -> ClickHouseDataType.Date.name
+        IntegerType -> ClickHouseDataType.Int64.name
+        NumberType -> ClickHouseDataType.Decimal.name
+        StringType -> ClickHouseDataType.String.name
+        TimeTypeWithTimezone -> ClickHouseDataType.String.name
+        TimeTypeWithoutTimezone -> ClickHouseDataType.String.name
+        TimestampTypeWithTimezone,
+        TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
+        is ArrayType,
+        ArrayTypeWithoutSchema,
+        is ObjectType,
+        ObjectTypeWithEmptySchema,
+        ObjectTypeWithoutSchema,
+        is UnionType,
+        is UnknownType -> ClickHouseDataType.String.name
+    }
