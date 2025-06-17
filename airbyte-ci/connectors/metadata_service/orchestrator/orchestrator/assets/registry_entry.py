@@ -127,9 +127,9 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
-    _rc_version = metadata_data["dockerImageTag"]
+    _rc_version = metadata_data.get("dockerImageTag", "")
     is_release_candidate = "-rc" in _rc_version
-    is_release_candidate_enabled = metadata_data["releases"].get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
+    is_release_candidate_enabled = metadata_data.get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
 
     override_registry = metadata_data["registryOverrides"][override_registry_key]
     del override_registry["enabled"]
