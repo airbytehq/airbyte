@@ -21,6 +21,9 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
+import io.micronaut.inject.qualifiers.Qualifiers
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
@@ -108,6 +111,7 @@ class ObjectLoaderQueueBeanFactory(
     /** A queue for records with file references for file uploading. */
     @Singleton
     @Named("fileQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun fileQueue(
         @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
@@ -122,6 +126,7 @@ class ObjectLoaderQueueBeanFactory(
      */
     @Singleton
     @Named("filePartQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun fileObjectLoaderPartQueue(
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
@@ -142,6 +147,7 @@ class ObjectLoaderQueueBeanFactory(
      */
     @Singleton
     @Named("fileLoadedPartQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T : RemoteObject<*>> fileLoadedPartQueue():
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>> {
         return StrictPartitionedQueue(
@@ -160,6 +166,7 @@ class ObjectLoaderQueueBeanFactory(
     /** Completed file uploads. */
     @Singleton
     @Named("fileCompletedQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T> completedUploadQueue() =
         StrictPartitionedQueue(
             (0 until loader.numUploadCompleters)
@@ -171,4 +178,13 @@ class ObjectLoaderQueueBeanFactory(
                 }
                 .toTypedArray()
         )
+}
+
+/**
+ * Custom Micronaut [Condition] that is used to conditionally create file transfer related beans.
+ */
+class IsFileTransferCondition : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        return context.beanContext.getBean(Boolean::class.java, Qualifiers.byName("isFileTransfer"))
+    }
 }
