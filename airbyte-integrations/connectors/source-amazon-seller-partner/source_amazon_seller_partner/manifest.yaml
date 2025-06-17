@@ -332,6 +332,45 @@ spec:
                   {% endfor %}
                   {{ report_options }}
             condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["endpoint"]
+            value: "{{ config['aws_environment'] }}"
+          - type: AddedFieldDefinition
+            path: ["marketplace_id"]
+            value: "{{ config['region'] }}"
+      - type: ConfigRemapField
+        field_path: ["endpoint"]
+        map:
+          PRODUCTION: https://sellingpartnerapi
+          SANDBOX:
+      - type: ConfigRemapField
+        field_path: ["endpoint"]
+        map:
+          AE: "{{ }}"
+          AU:
+          BE:
+          BR:
+          CA:
+          DE:
+          EG:
+          ES:
+          FR:
+          GB:
+          IN:
+          IT:
+          JP:
+          MX:
+          NL:
+          PL:
+          SA:
+          SE:
+          SG:
+          TR:
+          UK:
+          US:
 
 
 definitions:
