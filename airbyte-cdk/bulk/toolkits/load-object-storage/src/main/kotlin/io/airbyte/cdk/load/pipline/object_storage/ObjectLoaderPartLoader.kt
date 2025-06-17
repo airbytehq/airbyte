@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 
 /**
@@ -106,7 +107,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
 
         val upload =
             if (state.streamingUpload.isCompleted) {
-                state.streamingUpload.getCompleted()
+                @OptIn(ExperimentalCoroutinesApi::class) state.streamingUpload.getCompleted()
             } else {
                 state.streamingUpload.await()
             }

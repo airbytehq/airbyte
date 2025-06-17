@@ -20,6 +20,7 @@ import java.io.OutputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -50,6 +51,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     > {
 
     private val log = KotlinLogging.logger {}
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val uploadDispatcher = Dispatchers.IO.limitedParallelism(32)
 
     data class State<O : OutputStream, T : RemoteObject<*>>(
