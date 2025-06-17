@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.Flow
 class RouteEventTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    private val fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>?,
+    private val fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partition: Int,
 ) : Task {
@@ -48,7 +48,7 @@ class RouteEventTask(
                             event.value,
                         )
 
-                    fileQueue?.publish(event, partition)
+                    fileQueue.publish(event, partition)
                 } else {
                     recordQueue.publish(event, partition)
                 }
@@ -66,7 +66,7 @@ class RouteEventTask(
                 val stream = catalog.getStream(streamDesc)
 
                 if (stream.includeFiles) {
-                    fileQueue?.publish(event, partition)
+                    fileQueue.publish(event, partition)
                 } else {
                     recordQueue.publish(event, partition)
                 }
