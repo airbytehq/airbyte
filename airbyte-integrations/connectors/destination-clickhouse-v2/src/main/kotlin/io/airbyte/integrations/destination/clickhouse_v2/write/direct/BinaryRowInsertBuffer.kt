@@ -31,6 +31,11 @@ import kotlinx.coroutines.future.await
 
 private val log = KotlinLogging.logger {}
 
+
+/*
+ * Encapsulates ClickHouse specific buffering and writing logic separate from the loader
+ * state machine.
+ */
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
     justification = "suspend and fb's non-null analysis don't play well"

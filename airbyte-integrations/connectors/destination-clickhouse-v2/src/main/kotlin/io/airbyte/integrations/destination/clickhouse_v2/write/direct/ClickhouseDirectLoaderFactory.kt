@@ -11,6 +11,9 @@ import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.integrations.destination.clickhouse_v2.write.RecordMunger
 import jakarta.inject.Singleton
 
+/*
+ * Munges the table name and creates the buffer for easier testing.
+ */
 @Singleton
 class ClickhouseDirectLoaderFactory(
     private val clickhouseClient: Client,
