@@ -9,9 +9,25 @@ import java.util.concurrent.ConcurrentHashMap
 
 class NamespaceMapper(
     private val namespaceDefinitionType: NamespaceDefinitionType = NamespaceDefinitionType.SOURCE,
-    namespaceFormat: String? = null,
-    streamPrefix: String? = null,
+    private val namespaceFormat: String? = null,
+    private val streamPrefix: String? = null,
 ) {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is NamespaceMapper) return false
+
+        return namespaceDefinitionType == other.namespaceDefinitionType &&
+            namespaceFormat == other.namespaceFormat &&
+            streamPrefix == other.streamPrefix
+    }
+
+    override fun hashCode(): Int {
+        var result = namespaceDefinitionType.hashCode()
+        result = 31 * result + (namespaceFormat?.hashCode() ?: 0)
+        result = 31 * result + (streamPrefix?.hashCode() ?: 0)
+        return result
+    }
 
     private val hasPrefix = !streamPrefix.isNullOrBlank()
     private val prefix = streamPrefix ?: ""
