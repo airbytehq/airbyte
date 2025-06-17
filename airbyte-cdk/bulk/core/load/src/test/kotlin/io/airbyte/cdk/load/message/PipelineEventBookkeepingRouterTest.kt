@@ -66,7 +66,7 @@ class PipelineEventBookkeepingRouterTest {
     @BeforeEach
     fun setup() {
         every { catalog.streams } returns listOf(stream1)
-        every { syncManager.getStreamManager(stream1.descriptor) } returns streamManager
+        every { syncManager.getStreamManager(stream1.mappedDescriptor) } returns streamManager
         every { streamManager.incrementReadCount() } returns 1L
     }
 
@@ -129,7 +129,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -155,7 +155,7 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.stream } returns stream1
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
