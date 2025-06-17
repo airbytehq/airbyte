@@ -57,7 +57,9 @@ class ObjectLoaderQueueBeanFactory(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     ): Long {
         if (dataChannelMedium == DataChannelMedium.SOCKET) {
-            return max(queue.clampedMessageSize, loader.partSizeBytes)
+            val max = max(queue.clampedMessageSize, loader.partSizeBytes)
+            log.info { "objectLoaderClampedPartSizeBytes $max" }
+            return 32L * 1024 * 1024
         }
         return queue.clampedMessageSize
     }

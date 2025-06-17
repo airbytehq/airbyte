@@ -31,7 +31,6 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.sync.Semaphore
 
 @Factory
 class ObjectLoaderStepBeanFactory {
@@ -217,9 +216,4 @@ class ObjectLoaderStepBeanFactory {
             taskFactory,
             numInputPartitions,
         )
-
-    @Named("sharedUploadPermits")
-    @Singleton
-    fun sharedUploadPermits(@Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>) =
-        Semaphore(dataChannelSocketPaths.size)
 }

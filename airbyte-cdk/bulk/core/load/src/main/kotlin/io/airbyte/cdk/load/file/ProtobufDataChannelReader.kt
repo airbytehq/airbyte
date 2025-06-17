@@ -24,7 +24,7 @@ class ProtobufDataChannelReader(
 
                     /** One buffered reader for the whole stream. */
                     private val cis: CodedInputStream =
-                        CodedInputStream.newInstance(inputStream, 16384).apply {
+                        CodedInputStream.newInstance(inputStream, 32768).apply {
                             enableAliasing(true) // zero-copy substrings
                         }
 
