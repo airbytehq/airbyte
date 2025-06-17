@@ -7,7 +7,8 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.direct
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse_v2.write.RecordMunger
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -23,7 +24,7 @@ import org.junit.jupiter.params.provider.MethodSource
 class ClickhouseDirectLoaderFactoryTest {
     @MockK(relaxed = true) lateinit var clickhouseClient: Client
 
-    @MockK lateinit var tableInfo: TableCatalogByDescriptor
+    @MockK lateinit var stateStore: StreamStateStore<DirectLoadTableExecutionConfig>
 
     @MockK lateinit var munger: RecordMunger
 
@@ -31,7 +32,7 @@ class ClickhouseDirectLoaderFactoryTest {
 
     @BeforeEach
     fun setup() {
-        factory = ClickhouseDirectLoaderFactory(clickhouseClient, tableInfo, munger)
+        factory = ClickhouseDirectLoaderFactory(clickhouseClient, stateStore, munger)
     }
 
     @ParameterizedTest
@@ -40,7 +41,7 @@ class ClickhouseDirectLoaderFactoryTest {
         stream: DestinationStream.Descriptor,
         table: TableName
     ) {
-        every { tableInfo.getFinalTableName(stream) } returns table
+        every { stateStore.get(stream) } returns DirectLoadTableExecutionConfig(table)
 
         val result = factory.create(stream, 0) // part isn't used
 
