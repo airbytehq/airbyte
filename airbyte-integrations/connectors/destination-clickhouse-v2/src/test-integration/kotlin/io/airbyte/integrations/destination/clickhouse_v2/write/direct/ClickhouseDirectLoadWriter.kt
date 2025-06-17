@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -586,6 +587,11 @@ class ClickhouseDataDumper(
                             is String ->
                                 if (entry.value == "") NullValue
                                 else StringValue(entry.value as String)
+                            is ZonedDateTime ->
+                                TimestampWithTimezoneValue(
+                                    (entry.value as ZonedDateTime)
+                                        .toOffsetDateTime()
+                                )
                             null -> NullValue
                             else ->
                                 throw UnsupportedOperationException(
