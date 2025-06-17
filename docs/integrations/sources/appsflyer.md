@@ -23,6 +23,7 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.2.41 | 2025-06-17 | [61520](https://github.com/airbytehq/airbyte/pull/61520) | fix 90 days limit for revelent streams |
 | 0.2.40 | 2025-05-17 | [60656](https://github.com/airbytehq/airbyte/pull/60656) | Update dependencies |
 | 0.2.39 | 2025-05-10 | [59774](https://github.com/airbytehq/airbyte/pull/59774) | Update dependencies |
 | 0.2.38 | 2025-05-03 | [59359](https://github.com/airbytehq/airbyte/pull/59359) | Update dependencies |
