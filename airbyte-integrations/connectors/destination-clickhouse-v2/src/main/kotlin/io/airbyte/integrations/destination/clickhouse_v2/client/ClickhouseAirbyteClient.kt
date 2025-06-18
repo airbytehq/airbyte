@@ -66,12 +66,8 @@ class ClickhouseAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        execute(
-            sqlGenerator.wrapInTransaction(
-                sqlGenerator.dropTable(targetTableName),
-                sqlGenerator.swapTable(sourceTableName, targetTableName),
-            ),
-        )
+        execute(sqlGenerator.exchangeTable(sourceTableName, targetTableName))
+        execute(sqlGenerator.dropTable(sourceTableName))
     }
 
     override suspend fun copyTable(
