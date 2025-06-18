@@ -51,9 +51,12 @@ class ProtobufDataChannelReader(
                             "Negative length prefix ($msgSize) at byte $bytesBefore"
                         }
 
-                        /* readRawBytes() refills the stream as needed – no premature limit check. */
-                        val payload = cis.readRawBytes(msgSize)
-                        val proto = parser.parseFrom(payload)
+                        val oldLimit = cis.pushLimit(msgSize)
+                        val proto = parser.parseFrom(cis)
+                        cis.checkLastTagWas(0)
+                        cis.popLimit(oldLimit)
+
+                        cis.resetSizeCounter()
 
                         val wireSize = cis.totalBytesRead - bytesBefore
                         return factory.fromAirbyteProtobufMessage(proto, wireSize.toLong())
