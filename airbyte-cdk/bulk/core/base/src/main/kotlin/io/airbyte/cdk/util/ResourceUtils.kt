@@ -17,6 +17,6 @@ object ResourceUtils {
                 )
                 .firstOrNull()
                 ?: throw RuntimeException("no ClassLoader found")
-        return loader.getResource(resourceName) ?: throw RuntimeException("resource not found")
+        return loader.getResource(resourceName) ?: throw RuntimeException("resource not found $resourceName")
     }
 }
