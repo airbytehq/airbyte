@@ -176,12 +176,8 @@ class ObjectStoragePathFactory(
         }
 
         return listOf(
-            PathVariable("NAMESPACE") {
-                transformName(it.stream.mappedDescriptor.namespace ?: "")
-            },
-            PathVariable("STREAM_NAME") {
-                transformName(it.stream.mappedDescriptor.name)
-            },
+            PathVariable("NAMESPACE") { transformName(it.stream.mappedDescriptor.namespace ?: "") },
+            PathVariable("STREAM_NAME") { transformName(it.stream.mappedDescriptor.name) },
             PathVariable("YEAR", """\d{4}""") {
                 ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
             },
@@ -198,22 +194,13 @@ class ObjectStoragePathFactory(
                 )
             },
             PathVariable("HOUR", """\d{2}""") {
-                String.format(
-                    "%02d",
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour
-                )
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour)
             },
             PathVariable("MINUTE", """\d{2}""") {
-                String.format(
-                    "%02d",
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute
-                )
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute)
             },
             PathVariable("SECOND", """\d{2}""") {
-                String.format(
-                    "%02d",
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second
-                )
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second)
             },
             PathVariable("MILLISECOND", """\d{4}""") {
                 // Unclear why this is %04d, but that's what it was in the old code
