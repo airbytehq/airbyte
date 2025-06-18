@@ -103,10 +103,10 @@ class ObjectStoragePathFactory(
             fileFormatExtension ?: compressionExtension
         }
 
-    private val PATH_VARIABLES = getPathVariables(pathConfig)
+    private val pathVariablesConstant = getPathVariables(pathConfig)
 
-    private val PATH_VARIABLES_STREAM_CONSTANT =
-        PATH_VARIABLES.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
+    private val pathVariablesStreamConstant =
+        pathVariablesConstant.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
 
     /**
      * Variable substitution is complex.
@@ -277,8 +277,8 @@ class ObjectStoragePathFactory(
         val path =
             getFormattedPath(
                 stream,
-                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES,
+                if (substituteStreamAndNamespaceOnly) pathVariablesStreamConstant
+                else pathVariablesConstant,
             )
         return resolveRetainingTerminalSlash(path)
     }
@@ -308,7 +308,7 @@ class ObjectStoragePathFactory(
 
     private fun getFormattedPath(
         stream: DestinationStream,
-        variables: List<PathVariable> = PATH_VARIABLES,
+        variables: List<PathVariable> = pathVariablesConstant,
     ): String {
         val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
@@ -323,7 +323,7 @@ class ObjectStoragePathFactory(
     }
 
     private fun getPathVariableToPattern(stream: DestinationStream): Map<String, String> {
-        return PATH_VARIABLES.associate {
+        return pathVariablesConstant.associate {
             it.variable to
                 (
                 // Only escape the pattern if
