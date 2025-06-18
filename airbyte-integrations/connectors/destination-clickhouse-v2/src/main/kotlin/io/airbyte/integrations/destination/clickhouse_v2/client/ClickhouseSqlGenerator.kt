@@ -83,6 +83,8 @@ class ClickhouseSqlGenerator {
             ORDER BY (${if (pks.isEmpty()) {
                 "$COLUMN_NAME_AB_RAW_ID"
             } else {
+                // For DEDUP, the primary key is defined in ORDER BY clause. It is counterintuitive, but it is how ClickHouse works.
+                // See the first line of the documentation: https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree
                 pksAsString
             }})
             """.trimIndent()

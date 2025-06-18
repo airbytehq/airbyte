@@ -67,7 +67,7 @@ class ClickhouseSqlGeneratorTest {
     fun `test extractPks with single primary key`() {
         val primaryKey = listOf(listOf("id"))
         val columnNameMapping = ColumnNameMapping(mapOf("id" to "id_column"))
-        val expected = "`id_column`"
+        val expected = listOf("id_column")
         val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         Assertions.assertEquals(expected, actual)
     }
@@ -77,7 +77,7 @@ class ClickhouseSqlGeneratorTest {
         val primaryKey = listOf(listOf("id"), listOf("name"))
         val columnNameMapping =
             ColumnNameMapping(mapOf("id" to "id_column", "name" to "name_column"))
-        val expected = "`id_column`,`name_column`"
+        val expected = listOf("id_column","name_column")
         val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         Assertions.assertEquals(expected, actual)
     }
@@ -86,7 +86,7 @@ class ClickhouseSqlGeneratorTest {
     fun `test extractPks with empty primary key list`() {
         val primaryKey = emptyList<List<String>>()
         val columnNameMapping = ColumnNameMapping(emptyMap<String, String>())
-        val expected = ""
+        val expected = listOf<String>()
         val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         Assertions.assertEquals(expected, actual)
     }
@@ -95,7 +95,7 @@ class ClickhouseSqlGeneratorTest {
     fun `test extractPks without column mapping`() {
         val primaryKey = listOf(listOf("id"))
         val columnNameMapping = ColumnNameMapping(mapOf())
-        val expected = "`id`"
+        val expected = listOf("id")
         val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         Assertions.assertEquals(expected, actual)
     }

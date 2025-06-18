@@ -10,12 +10,15 @@ import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -52,7 +55,7 @@ class ClickhouseDirectLoadWriter :
             },
         destinationCleaner = ClickhouseDataCleaner,
         isStreamSchemaRetroactive = true,
-        dedupBehavior = DedupBehavior(),
+        dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
@@ -196,12 +199,6 @@ class ClickhouseDirectLoadWriter :
      */
     @Disabled override fun testTruncateRefresh() {}
 
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupWithStringKey() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupChangeCursor() {}
-
     /**
      * Failing because of com.clickhouse.client.api.ServerException: Code: 27. DB::Exception: Cannot
      * parse input: expected ',' before:
@@ -259,12 +256,6 @@ class ClickhouseDirectLoadWriter :
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
     @Disabled override fun testBasicTypes() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupChangePk() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    // @Disabled override fun testDedup() {}
 
     /**
      * failing because of com.clickhouse.client.api.ServerException: Code: 62. DB::Exception: Syntax
@@ -564,12 +555,14 @@ class ClickhouseDataDumper(
         val config = configProvider(spec)
         val client = getClient(config)
 
+        val isDedup = stream.importType is Dedupe
+
         val output = mutableListOf<OutputRecord>()
 
         val response =
             client
                 .query(
-                    "SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name}"
+                    "SELECT * FROM ${stream.descriptor.namespace ?: config.resolvedDatabase}.${stream.descriptor.name} ${if (isDedup) "FINAL" else ""}"
                 )
                 .get()
 
@@ -586,6 +579,10 @@ class ClickhouseDataDumper(
                             is String ->
                                 if (entry.value == "") NullValue
                                 else StringValue(entry.value as String)
+                            is ZonedDateTime ->
+                                TimestampWithTimezoneValue(
+                                    (entry.value as ZonedDateTime).toOffsetDateTime()
+                                )
                             null -> NullValue
                             else ->
                                 throw UnsupportedOperationException(
