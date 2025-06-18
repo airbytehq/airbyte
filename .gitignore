@@ -9,7 +9,9 @@ out
 .classpath
 .project
 .settings
-.vscode
+.vscode/
+!.vscode/
+!.vscode/launch.json
 .kotlin
 **/gmon.out
 static_checker_reports/

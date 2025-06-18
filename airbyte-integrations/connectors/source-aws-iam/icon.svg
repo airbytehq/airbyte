@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 64 64">
+  <polygon points="32,4 52,16 52,48 32,60 12,48 12,16" fill="#4B612C"/>
+  <text x="32" y="40" font-family="Arial, sans-serif" font-size="20" fill="#fff" text-anchor="middle">IAM</text>
+</svg>

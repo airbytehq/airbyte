@@ -1,0 +1,134 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "PolicyName": {"type": "string"},
+            "PolicyId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "Path": {"type": "string"},
+            "DefaultVersionId": {"type": "string"},
+            "AttachmentCount": {"type": "integer"},
+            "PermissionsBoundaryUsageCount": {"type": "integer"},
+            "IsAttachable": {"type": "boolean"},
+            "Description": {"type": ["string", "null"]},
+            "CreateDate": {"type": "string", "format": "date-time"},
+            "UpdateDate": {"type": "string", "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "role",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "RoleName": {"type": "string"},
+            "RoleId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "Path": {"type": "string"},
+            "CreateDate": {"type": "string", "format": "date-time"},
+            "AssumeRolePolicyDocument": {"type": ["string", "null"]},
+            "Description": {"type": ["string", "null"]},
+            "MaxSessionDuration": {"type": "integer"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "UserName": {"type": "string"},
+            "UserId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "Path": {"type": "string"},
+            "CreateDate": {"type": "string", "format": "date-time"},
+            "PasswordLastUsed": {"type": ["string", "null"], "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "GroupName": {"type": "string"},
+            "GroupId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "Path": {"type": "string"},
+            "CreateDate": {"type": "string", "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "saml_provider",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Arn": {"type": "string"},
+            "ValidUntil": {"type": ["string", "null"], "format": "date-time"},
+            "CreateDate": {"type": ["string", "null"], "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user_inline_policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "UserName": {"type": "string"},
+            "PolicyName": {"type": "string"},
+            "PolicyDocument": {"type": ["object", "string", "null"]}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "role_inline_policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "RoleName": {"type": "string"},
+            "PolicyName": {"type": "string"},
+            "PolicyDocument": {"type": ["object", "string", "null"]}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+} 
