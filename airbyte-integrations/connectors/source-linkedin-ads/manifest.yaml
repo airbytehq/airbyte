@@ -1676,7 +1676,7 @@ dynamic_streams:
 # limiting issues with v5.5.0 of the connector -- migration to manifest-only.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 50
 
 spec:
