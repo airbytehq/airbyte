@@ -9,6 +9,7 @@ import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 
+
 logger = logging.getLogger("airbyte")
 
 
