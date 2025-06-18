@@ -388,12 +388,12 @@ class Leads(MarketoExportBase):
             return Leads._schema_cache
 
         standard_properties = super().get_json_schema()
-        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self._session.auth.get_auth_header())
         fields = resp.json().get("result")
         if fields is None:
             self.logger.info('retrying to get fields, sleeping 10 seconds...')
             sleep(10)
-            resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+            resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self._session.auth.get_auth_header())
             fields = resp.json().get("result")
             self.logger.info('retried retriving fields')
         
