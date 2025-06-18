@@ -46,5 +46,5 @@ class SourceExact(AbstractSource):
 
         return AirbyteCatalog(streams=filtered)
 
-    def spec(self, logger:logging.Logger):
+    def spec(self, logger: logging.Logger):
         super().spec(logger)
