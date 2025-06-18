@@ -177,10 +177,10 @@ class ObjectStoragePathFactory(
 
         return listOf(
             PathVariable("NAMESPACE") {
-                transformName(it.stream.descriptor.namespace ?: "")
+                transformName(it.stream.mappedDescriptor.namespace ?: "")
             },
             PathVariable("STREAM_NAME") {
-                transformName(it.stream.descriptor.name)
+                transformName(it.stream.mappedDescriptor.name)
             },
             PathVariable("YEAR", """\d{4}""") {
                 ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
