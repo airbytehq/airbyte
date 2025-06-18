@@ -1,0 +1,743 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: connects to churnkey to retrieve session details
+
+check:
+  type: CheckStream
+  stream_names:
+    - sessions
+
+definitions:
+  streams:
+    sessions:
+      type: DeclarativeStream
+      name: sessions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sessions
+          http_method: GET
+          request_headers:
+            x-ck-app: "{{ config[\"x-ck-app\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sessions"
+    session-aggregation:
+      type: DeclarativeStream
+      name: session-aggregation
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /session-aggregation
+          http_method: GET
+          request_headers:
+            x-ck-app: "{{ config[\"x-ck-app\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/session-aggregation"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.churnkey.co/v1/data
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-ck-api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/sessions"
+  - $ref: "#/definitions/streams/session-aggregation"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - x-ck-app
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      x-ck-app:
+        type: string
+        order: 1
+        title: App ID
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    sessions:
+      hasRecords: true
+      streamHash: e021244f3398702faf84e49134841cbb6de41f47
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    session-aggregation:
+      hasRecords: true
+      streamHash: 506fb1749310093d231e442b2e1b11e48899974c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    sessions: true
+    session-aggregation: true
+
+schemas:
+  sessions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      __v:
+        type:
+          - number
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      org:
+        type:
+          - string
+          - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      mode:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - object
+          - "null"
+        properties:
+          clickToCancel:
+            type:
+              - boolean
+              - "null"
+          matchedRegion:
+            type:
+              - string
+              - "null"
+          matchedRegionCode:
+            type:
+              - string
+              - "null"
+          strictFTCCompliance:
+            type:
+              - boolean
+              - "null"
+      aborted:
+        type:
+          - boolean
+          - "null"
+      canceled:
+        type:
+          - boolean
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          paused:
+            type:
+              - boolean
+              - "null"
+          planId:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          discount:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              start:
+                type:
+                  - string
+                  - "null"
+              coupon:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  couponType:
+                    type:
+                      - string
+                      - "null"
+                  couponAmount:
+                    type:
+                      - number
+                      - "null"
+                  couponDuration:
+                    type:
+                      - number
+                      - "null"
+          pauseEnd:
+            type:
+              - string
+              - "null"
+          planPrice:
+            type:
+              - number
+              - "null"
+          itemQuantity:
+            type:
+              - number
+              - "null"
+          subscriptionId:
+            type:
+              - string
+              - "null"
+          billingInterval:
+            type:
+              - string
+              - "null"
+          subscriptionStart:
+            type:
+              - string
+              - "null"
+          billingIntervalCount:
+            type:
+              - number
+              - "null"
+          subscriptionPeriodEnd:
+            type:
+              - string
+              - "null"
+          subscriptionPeriodStart:
+            type:
+              - string
+              - "null"
+          latestDiscountExpiration:
+            type:
+              - string
+              - "null"
+      feedback:
+        type:
+          - string
+          - "null"
+      provider:
+        type:
+          - string
+          - "null"
+      saveType:
+        type:
+          - string
+          - "null"
+      surveyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      recording:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      blueprintId:
+        type:
+          - string
+          - "null"
+      managedFlow:
+        type:
+          - boolean
+          - "null"
+      stepsViewed:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            end:
+              type:
+                - string
+                - "null"
+            guid:
+              type:
+                - string
+                - "null"
+            start:
+              type:
+                - string
+                - "null"
+            duration:
+              type:
+                - number
+                - "null"
+            stepType:
+              type:
+                - string
+                - "null"
+            numChoices:
+              type:
+                - number
+                - "null"
+      acceptedOffer:
+        type:
+          - object
+          - "null"
+        properties:
+          guid:
+            type:
+              - string
+              - "null"
+          couponId:
+            type:
+              - string
+              - "null"
+          offerType:
+            type:
+              - string
+              - "null"
+          couponType:
+            type:
+              - string
+              - "null"
+          couponAmount:
+            type:
+              - number
+              - "null"
+          pauseDuration:
+            type:
+              - number
+              - "null"
+          pauseInterval:
+            type:
+              - string
+              - "null"
+          couponDuration:
+            type:
+              - number
+              - "null"
+      surveyChoiceId:
+        type:
+          - string
+          - "null"
+      presentedOffers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            guid:
+              type:
+                - string
+                - "null"
+            accepted:
+              type:
+                - boolean
+                - "null"
+            offerType:
+              type:
+                - string
+                - "null"
+            acceptedAt:
+              type:
+                - string
+                - "null"
+            declinedAt:
+              type:
+                - string
+                - "null"
+            pauseConfig:
+              type:
+                - object
+                - "null"
+              properties:
+                pauseInterval:
+                  type:
+                    - string
+                    - "null"
+                maxPauseLength:
+                  type:
+                    - number
+                    - "null"
+            presentedAt:
+              type:
+                - string
+                - "null"
+            surveyOffer:
+              type:
+                - boolean
+                - "null"
+            discountConfig:
+              type:
+                - object
+                - "null"
+              properties:
+                couponId:
+                  type:
+                    - string
+                    - "null"
+                customAmount:
+                  type:
+                    - number
+                    - "null"
+                customDuration:
+                  type:
+                    - string
+                    - "null"
+      sentimentScores:
+        type:
+          - object
+          - "null"
+        properties:
+          reasonA:
+            type:
+              - object
+              - "null"
+            properties:
+              ease:
+                type:
+                  - number
+                  - "null"
+              need:
+                type:
+                  - number
+                  - "null"
+              budget:
+                type:
+                  - number
+                  - "null"
+              refund:
+                type:
+                  - number
+                  - "null"
+              feature:
+                type:
+                  - number
+                  - "null"
+              technical:
+                type:
+                  - number
+                  - "null"
+          reasonB:
+            type:
+              - object
+              - "null"
+            properties:
+              ease:
+                type:
+                  - number
+                  - "null"
+              need:
+                type:
+                  - number
+                  - "null"
+              budget:
+                type:
+                  - number
+                  - "null"
+              refund:
+                type:
+                  - number
+                  - "null"
+              feature:
+                type:
+                  - number
+                  - "null"
+              technical:
+                type:
+                  - number
+                  - "null"
+          emotionA:
+            type:
+              - object
+              - "null"
+            properties:
+              angry:
+                type:
+                  - number
+                  - "null"
+              confused:
+                type:
+                  - number
+                  - "null"
+              grateful:
+                type:
+                  - number
+                  - "null"
+              practical:
+                type:
+                  - number
+                  - "null"
+          emotionB:
+            type:
+              - object
+              - "null"
+            properties:
+              angry:
+                type:
+                  - number
+                  - "null"
+              confused:
+                type:
+                  - number
+                  - "null"
+              grateful:
+                type:
+                  - number
+                  - "null"
+              practical:
+                type:
+                  - number
+                  - "null"
+          productA:
+            type:
+              - object
+              - "null"
+            properties:
+              negative:
+                type:
+                  - number
+                  - "null"
+              positive:
+                type:
+                  - number
+                  - "null"
+          productB:
+            type:
+              - object
+              - "null"
+            properties:
+              negative:
+                type:
+                  - number
+                  - "null"
+              recommend:
+                type:
+                  - number
+                  - "null"
+          productC:
+            type:
+              - object
+              - "null"
+            properties:
+              poor:
+                type:
+                  - number
+                  - "null"
+              great:
+                type:
+                  - number
+                  - "null"
+          productD:
+            type:
+              - object
+              - "null"
+            properties:
+              hate:
+                type:
+                  - number
+                  - "null"
+              like:
+                type:
+                  - number
+                  - "null"
+              love:
+                type:
+                  - number
+                  - "null"
+              dislike:
+                type:
+                  - number
+                  - "null"
+          reactivateA:
+            type:
+              - object
+              - "null"
+            properties:
+              negative:
+                type:
+                  - number
+                  - "null"
+              reactivate:
+                type:
+                  - number
+                  - "null"
+          reactivateB:
+            type:
+              - object
+              - "null"
+            properties:
+              negative:
+                type:
+                  - number
+                  - "null"
+              reactivate:
+                type:
+                  - number
+                  - "null"
+          subjectiveA:
+            type:
+              - object
+              - "null"
+            properties:
+              emotional:
+                type:
+                  - number
+                  - "null"
+              reasonable:
+                type:
+                  - number
+                  - "null"
+      feedbackAnalysis:
+        type:
+          - object
+          - "null"
+        properties:
+          question:
+            type:
+              - string
+              - "null"
+          response:
+            type:
+              - string
+              - "null"
+          sessionId:
+            type:
+              - string
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+          feedbackTypes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                category:
+                  type:
+                    - string
+                    - "null"
+                explanation:
+                  type:
+                    - string
+                    - "null"
+          feedbackAnalyzerVersion:
+            type:
+              - string
+              - "null"
+      followupQuestion:
+        type:
+          - string
+          - "null"
+      followupResponse:
+        type:
+          - string
+          - "null"
+      recordingEndTime:
+        type:
+          - string
+          - "null"
+      surveyChoiceValue:
+        type:
+          - string
+          - "null"
+      usedClickToCancel:
+        type:
+          - boolean
+          - "null"
+      recordingStartTime:
+        type:
+          - string
+          - "null"
+      clickToCancelEnabled:
+        type:
+          - boolean
+          - "null"
+      pauseCooldownApplied:
+        type:
+          - boolean
+          - "null"
+      discountCooldownApplied:
+        type:
+          - boolean
+          - "null"
+      strictFTCComplianceEnabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  session-aggregation:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

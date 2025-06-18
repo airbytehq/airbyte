@@ -188,8 +188,8 @@ sealed interface InputCheckpoint : InputMessage
 
 data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckpoint {
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        unmappedNamespace: String?,
+        unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -197,7 +197,8 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
     ) : this(
         StreamCheckpoint(
             Checkpoint(
-                DestinationStream.Descriptor(streamNamespace, streamName),
+                unmappedNamespace = unmappedNamespace,
+                unmappedName = unmappedName,
                 state = blob.deserializeToNode()
             ),
             Stats(sourceRecordCount),
