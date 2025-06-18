@@ -79,7 +79,7 @@ class FlattenQueueAdapterTest {
         val checkpointId = CheckpointId("checkpoint-id")
         val checkpointValue = CheckpointValue(records = 12, serializedBytes = 123)
         val pipelineContext = PipelineContext(null, null)
-        val streamKey = StreamKey(STREAM.descriptor)
+        val streamKey = StreamKey(STREAM.mappedDescriptor)
 
         runBlocking {
             queue.publish(
