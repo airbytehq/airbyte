@@ -792,7 +792,7 @@ protected constructor(driverClassName: String) :
         tableName: String,
         cursorInfo: CursorInfo,
         cursorFieldType: DataType,
-        excludeTodaysData: Boolean = /*false*/true, // TEMP
+        excludeTodaysData: Boolean = false,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     protected open val stateEmissionFrequency: Int
