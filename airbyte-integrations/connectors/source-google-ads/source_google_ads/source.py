@@ -262,7 +262,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
         if non_manager_accounts:
             streams.extend(
                 [
-                    Campaign(**non_manager_incremental_config),
                     CampaignBudget(**non_manager_incremental_config),
                     UserLocationView(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),

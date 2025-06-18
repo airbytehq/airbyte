@@ -22,7 +22,6 @@ class CustomerModel:
         seen_ids = set()
 
         for account in accounts:
-            print("Account", account)
             time_zone_name = account.get("customer_client.time_zone")
             tz = Timezone(time_zone_name) if time_zone_name else local_timezone()
             customer_id = str(account["customer_client.id"])

@@ -17,4 +17,4 @@ class AccessibleAccountsExtractor(RecordExtractor):
         response_data = response.json().get("resourceNames", [])
         if response_data:
             for resource_name in response_data:
-                yield {"resourceName": resource_name}
+                yield {"accessible_customer_id": resource_name.split("/")[-1]}
