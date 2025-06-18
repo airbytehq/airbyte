@@ -236,7 +236,7 @@ class ClickhouseAirbyteClientTest {
         val columnMapping = ColumnNameMapping(mapOf())
         val stream =
             mockk<DestinationStream>() {
-                every { descriptor } returns
+                every { mappedDescriptor } returns
                     mockk(relaxed = true) {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
