@@ -1,13 +1,19 @@
+metadataSpecVersion: 1.0
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   connectorSubtype: api
   connectorType: source
-  name: AWS IAM
+  definitionId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-aws-iam
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aws-iam
   githubIssueLabel: source-aws-iam
   icon: icon.svg
   license: MIT
-  documentationUrl: https://docs.airbyte.com/integrations/sources/aws-iam
+  name: AWS IAM
+  releaseStage: alpha
+  supportLevel: community
   tags:
     - language:python
     - cdk:python
-metadataSpecVersion: "1.0"
