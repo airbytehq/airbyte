@@ -45,20 +45,16 @@ class ProtobufDataChannelReader(
                     private fun fetch(): DestinationMessage? {
                         if (cis.isAtEnd) return null
 
-                        val bytesBefore = cis.totalBytesRead
                         val msgSize = cis.readRawVarint32()
-                        require(msgSize >= 0) {
-                            "Negative length prefix ($msgSize) at byte $bytesBefore"
-                        }
+                        require(msgSize >= 0) { "Negative length prefix ($msgSize)" }
 
                         val oldLimit = cis.pushLimit(msgSize)
                         val proto = parser.parseFrom(cis)
                         cis.checkLastTagWas(0)
                         cis.popLimit(oldLimit)
-
+                        val wireSize = cis.totalBytesRead
                         cis.resetSizeCounter()
 
-                        val wireSize = cis.totalBytesRead - bytesBefore
                         return factory.fromAirbyteProtobufMessage(proto, wireSize.toLong())
                     }
                 }

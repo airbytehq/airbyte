@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.supervisorScope
 
 /**
  * Wraps the PartFormatter, PartLoader, and UploadCompleter in a single BatchAccumulator.
@@ -44,7 +44,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     private val partFormatter: ObjectLoaderPartFormatter<O>,
     private val partLoader: ObjectLoaderPartLoader<T>,
     private val uploadCompleter: ObjectLoaderUploadCompleter<T>,
-    @Named("uploadParallelismForSocket") private val uploadParallelism: Int,
+    @Named("uploadParallelismForSocket") uploadParallelism: Int,
 ) :
     BatchAccumulator<
         ObjectLoaderOneShotUploader.State<O, T>,
@@ -56,6 +56,13 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     private val log = KotlinLogging.logger {}
     @OptIn(ExperimentalCoroutinesApi::class)
     private val uploadDispatcher = Dispatchers.IO.limitedParallelism(uploadParallelism)
+
+    /**
+     * One structured scope that owns *all* part-upload coroutines. Using a SupervisorJob prevents
+     * *one* failed upload from killing the rest.
+     */
+    //    private val uploadScope = CoroutineScope(uploadDispatcher + SupervisorJob())
+    private val uploadScope = CoroutineScope(uploadDispatcher)
 
     data class State<O : OutputStream, T : RemoteObject<*>>(
         val formatterState: ObjectLoaderPartFormatter.State<O>,
@@ -83,9 +90,8 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     override suspend fun accept(
         input: DestinationRecordRaw,
         state: State<O, T>,
-    ): BatchAccumulatorResult<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> {
-
-        return when (val fmtResult = partFormatter.accept(input, state.formatterState)) {
+    ): BatchAccumulatorResult<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> =
+        when (val fmtResult = partFormatter.accept(input, state.formatterState)) {
             is NoOutput -> NoOutput(state.copy(formatterState = fmtResult.nextState))
             is IntermediateOutput -> {
                 state.uploads += launchUpload(fmtResult.output, state.partLoaderState)
@@ -93,7 +99,6 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
             }
             is FinalOutput -> uploadFinalAndFinish(fmtResult.output, state)
         }
-    }
 
     override suspend fun finish(
         state: State<O, T>
@@ -104,7 +109,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
         part: ObjectLoaderPartFormatter.FormattedPart,
         loaderState: ObjectLoaderPartLoader.State<T>,
     ): Deferred<ObjectLoaderPartLoader.PartResult<T>> =
-        CoroutineScope(uploadDispatcher).async {
+        uploadScope.async {
             try {
                 when (val res = partLoader.accept(part, loaderState)) {
                     is IntermediateOutput -> res.output
@@ -117,18 +122,31 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
 
     private suspend fun uploadFinalAndFinish(
         finalPart: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<O, T>
-    ): FinalOutput<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> = coroutineScope {
+        state: State<O, T>,
+    ): FinalOutput<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> = supervisorScope {
         state.uploads += launchUpload(finalPart, state.partLoaderState)
 
-        log.info { "Awaiting ${state.uploads.size} part uploads…" }
-        state.uploads.awaitAll().forEach { part ->
-            when (val res = uploadCompleter.accept(part, state.completerState)) {
-                is NoOutput -> Unit
-                is FinalOutput -> return@coroutineScope FinalOutput(res.output)
-                else -> error("Unexpected output from completer")
+        log.info { "Waiting on ${state.uploads.size} multipart uploads…" }
+
+        val completerResult =
+            async(uploadDispatcher) {
+                // Feed each upload to the completer *as soon as it is ready*.
+                state.uploads
+                    .map { deferredPart ->
+                        async(uploadDispatcher) {
+                            val part = deferredPart.await()
+                            uploadCompleter.accept(part, state.completerState)
+                        }
+                    }
+                    .awaitAll() // Still non-blocking – we simply suspend
+                    .firstOrNull { it is FinalOutput }
+                    ?.let { it as FinalOutput<*, *> }
+                    ?: error("Completer never produced FinalOutput – logic bug?")
             }
-        }
-        error("Completer never produced FinalOutput – logic bug?")
+
+        // Suspend until the completer tells us we’re done,
+        // then bubble its payload downstream.
+        @Suppress("UNCHECKED_CAST")
+        FinalOutput(completerResult.await().output as ObjectLoaderUploadCompleter.UploadResult<T>)
     }
 }
