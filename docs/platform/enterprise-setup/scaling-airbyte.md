@@ -20,7 +20,7 @@ Some connectors are memory and CPU intensive, while others are not. Using an inf
 * Requested Memory %
 * Memory Usage %
 
-If your nodes are under high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a larger number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yml` file:
+If your nodes are under high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a larger number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yaml` file:
 
 ```yaml
 global:
