@@ -613,7 +613,8 @@ abstract class AbstractJdbcSource<Datatype>(
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: Datatype
+        cursorFieldType: Datatype,
+        excludeTodaysData: Boolean,
     ): AutoCloseableIterator<AirbyteRecordData> {
         LOGGER.info { "Queueing query for table: $tableName" }
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -663,16 +664,12 @@ abstract class AbstractJdbcSource<Datatype>(
                                         schemaName,
                                         tableName
                                     )
-                                val sql =
-                                    StringBuilder(
-                                        String.format(
-                                            "SELECT %s FROM %s WHERE %s %s ?",
-                                            wrappedColumnNames,
-                                            fullTableName,
-                                            quotedCursorField,
-                                            operator
-                                        )
-                                    )
+
+                                val sql = StringBuilder(
+                                    when (excludeTodaysData && cursorInfo.cutoffTime != null) {
+                                        true -> "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ? AND $quotedCursorField < ?"
+                                        false -> "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ?"
+                                    })
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
                                 // field
@@ -689,6 +686,15 @@ abstract class AbstractJdbcSource<Datatype>(
                                     cursorFieldType,
                                     cursorInfo.cursor!!
                                 )
+
+                                if (excludeTodaysData && cursorInfo.cutoffTime != null) {
+                                    sourceOperations.setCursorField(
+                                        preparedStatement,
+                                        2,
+                                        cursorFieldType,
+                                        cursorInfo.cutoffTime,
+                                    )
+                                }
                                 preparedStatement
                             },
                             sourceOperations::convertDatabaseRowToAirbyteRecordData

@@ -178,6 +178,14 @@
                 "type": "string",
                 "const": "STANDARD",
                 "order": 0
+              },
+              "exclude_todays_data": {
+                "title": "Exclude Today's Data",
+                "description": "When enabled, Incremental syncs using a cursor of a temporal type (date time) will include cursor values up until last night's midnight (Advanced)",
+                "default": false,
+                "type": "boolean",
+                "always_show": true,
+                "order": 1
               }
             }
           }

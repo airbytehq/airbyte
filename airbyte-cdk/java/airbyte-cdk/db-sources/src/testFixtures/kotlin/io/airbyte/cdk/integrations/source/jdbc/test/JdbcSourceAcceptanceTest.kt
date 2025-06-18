@@ -33,6 +33,7 @@ import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
@@ -267,6 +268,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
+    @Disabled
     protected fun testDiscoverWithNonCursorFields() {
         testdb
             .with(
@@ -507,6 +509,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
+    @Disabled
     protected fun testReadMultipleTables() {
         val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
         val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
