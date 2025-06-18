@@ -25,7 +25,6 @@ class ClickhouseDirectLoader(
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val munged = munger.transformForDest(record)
-        println("Processing record: ${munged}")
         buffer.accumulate(munged)
 
         recordCountWindow.increment(1)

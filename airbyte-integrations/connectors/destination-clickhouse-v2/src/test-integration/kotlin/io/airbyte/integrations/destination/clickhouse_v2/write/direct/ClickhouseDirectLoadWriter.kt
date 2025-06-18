@@ -394,7 +394,7 @@ class ClickhouseDataDumper(
         val response =
             client
                 .query(
-                    "SELECT * FROM ${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
+                    "SELECT * FROM ${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name} ${if (isDedup) "FINAL" else ""}"
                 )
                 .get()
 
@@ -402,7 +402,6 @@ class ClickhouseDataDumper(
         while (reader.hasNext()) {
             val record = reader.next()
             val dataMap = linkedMapOf<String, AirbyteValue>()
-            println("Record: ${record.entries}")
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .map { entry ->

@@ -354,9 +354,8 @@ class ClickhouseSqlGenerator {
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
         }
-        val alterStatement = builder.dropLast(1).toString()
-        println("Alter table statement: $alterStatement")
-        return alterStatement // builder.dropLast(1).toString()
+
+        return builder.dropLast(1).toString()
     }
 
     private fun String.sqlNullable(): String = "Nullable($this)"
