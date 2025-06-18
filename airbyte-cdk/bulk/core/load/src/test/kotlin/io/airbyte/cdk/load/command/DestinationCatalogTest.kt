@@ -47,7 +47,9 @@ class DestinationCatalogTest {
                         .withIncludeFiles(true)
                         .withStream(
                             AirbyteStream()
-                                .withJsonSchema("""{"type": "object"}""".deserializeToNode())
+                                .withJsonSchema(
+                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}""".deserializeToNode()
+                                )
                                 .withNamespace("namespace2")
                                 .withName("name2")
                                 .withIsFileBased(true)
@@ -75,7 +77,9 @@ class DestinationCatalogTest {
                         .withIncludeFiles(false)
                         .withStream(
                             AirbyteStream()
-                                .withJsonSchema("""{"type": "object"}""".deserializeToNode())
+                                .withJsonSchema(
+                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}""".deserializeToNode()
+                                )
                                 .withNamespace("namespace4")
                                 .withName("name4")
                                 .withIsFileBased(true)
@@ -174,53 +178,55 @@ class DestinationCatalogTest {
 
     @Test
     fun validatePkExists() {
-        val catalog =
-            DestinationCatalog(
-                listOf(
-                    DestinationStream(
-                        unmappedNamespace = null,
-                        unmappedName = "foo",
-                        importType =
-                            Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                        generationId = 1,
-                        minimumGenerationId = 0,
-                        syncId = 1,
-                        includeFiles = false,
-                        schema = ObjectType(linkedMapOf()),
-                        namespaceMapper = NamespaceMapper(),
+        val e =
+            assertThrows<ConfigErrorException> {
+                DestinationCatalog(
+                    listOf(
+                        DestinationStream(
+                            unmappedNamespace = null,
+                            unmappedName = "foo",
+                            importType =
+                                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                            generationId = 1,
+                            minimumGenerationId = 0,
+                            syncId = 1,
+                            includeFiles = false,
+                            schema = ObjectType(linkedMapOf()),
+                            namespaceMapper = NamespaceMapper(),
+                        )
                     )
                 )
-            )
-        val e = assertThrows<ConfigErrorException> { catalog.throwIfInvalidDedupConfig() }
+            }
         assertEquals("A primary key column does not exist in the schema: id", e.message)
     }
 
     @Test
     fun validateCursorExists() {
-        val catalog =
-            DestinationCatalog(
-                listOf(
-                    DestinationStream(
-                        unmappedNamespace = null,
-                        unmappedName = "foo",
-                        importType =
-                            Dedupe(
-                                primaryKey = listOf(listOf("id")),
-                                cursor = listOf("updated_at"),
-                            ),
-                        generationId = 1,
-                        minimumGenerationId = 0,
-                        syncId = 1,
-                        includeFiles = false,
-                        schema =
-                            ObjectType(
-                                linkedMapOf("id" to FieldType(IntegerType, nullable = true))
-                            ),
-                        namespaceMapper = NamespaceMapper(),
+        val e =
+            assertThrows<ConfigErrorException> {
+                DestinationCatalog(
+                    listOf(
+                        DestinationStream(
+                            unmappedNamespace = null,
+                            unmappedName = "foo",
+                            importType =
+                                Dedupe(
+                                    primaryKey = listOf(listOf("id")),
+                                    cursor = listOf("updated_at"),
+                                ),
+                            generationId = 1,
+                            minimumGenerationId = 0,
+                            syncId = 1,
+                            includeFiles = false,
+                            schema =
+                                ObjectType(
+                                    linkedMapOf("id" to FieldType(IntegerType, nullable = true))
+                                ),
+                            namespaceMapper = NamespaceMapper(),
+                        )
                     )
                 )
-            )
-        val e = assertThrows<ConfigErrorException> { catalog.throwIfInvalidDedupConfig() }
+            }
         assertEquals("The cursor does not exist in the schema: updated_at", e.message)
     }
 }
