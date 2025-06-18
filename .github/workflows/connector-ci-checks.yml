@@ -46,6 +46,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 0
 
@@ -55,10 +56,10 @@ jobs:
         # to the step of determining which connectors are modified.
         if: >
           (inputs.repo != '' &&
-           inputs.repo != 'airbytehq/airbyte'
+           ! startswith(inputs.repo, 'airbytehq/')
           ) ||
           (github.event.pull_request.head.repo.full_name != '' &&
-           github.event.pull_request.head.repo.full_name != 'airbytehq/airbyte'
+           ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
           )
         run: |
           # only add upstream if it doesn't already exist
@@ -113,6 +114,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Java deps
@@ -201,6 +203,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Python deps
@@ -301,6 +304,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Java deps
@@ -390,6 +394,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
       - name: Install uv
         if: matrix.connector
