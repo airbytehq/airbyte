@@ -25,6 +25,11 @@ from .streams import (
     IAMRoleInlinePoliciesStream,
     IAMUserInlinePoliciesStream,
     IAMUsersStream,
+    IAMGroupInlinePoliciesStream,
+    IAMInlinePoliciesStream,
+    IAMUserPolicyBindingsStream,
+    IAMRolePolicyBindingsStream,
+    IAMGroupPolicyBindingsStream,
 )
 
 
@@ -129,7 +134,6 @@ class SourceAwsIam(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = self._get_iam_client(config)
-        state_manager = ConnectorStateManager(state=self.state)
         
         # Create base streams
         base_streams = [
@@ -140,17 +144,22 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             IAMSAMLProvidersStream(client),
             IAMUsersStream(client),
             IAMRoleInlinePoliciesStream(client),
+            IAMGroupInlinePoliciesStream(client),
+            IAMInlinePoliciesStream(client),
+            IAMUserPolicyBindingsStream(client),
+            IAMRolePolicyBindingsStream(client),
+            IAMGroupPolicyBindingsStream(client),
         ]
         
         # Wrap streams for concurrent execution
         concurrent_streams = []
         for stream in base_streams:
-            concurrent_stream = self._wrap_stream_for_concurrency(stream, state_manager)
+            concurrent_stream = self._wrap_stream_for_concurrency(stream)
             concurrent_streams.append(concurrent_stream)
             
         return concurrent_streams
     
-    def _wrap_stream_for_concurrency(self, stream: Stream, state_manager: ConnectorStateManager) -> Stream:
+    def _wrap_stream_for_concurrency(self, stream: Stream) -> Stream:
         """
         Wrap a stream for concurrent execution. Since AWS IAM streams are full-refresh only,
         we use FinalStateCursor for all streams.
@@ -159,7 +168,7 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             stream,
             self,
             entrypoint_logger,
-            self.state or {},
+            {},  # Empty state for full-refresh streams
             FinalStateCursor(
                 stream_name=stream.name, 
                 stream_namespace=stream.namespace, 
