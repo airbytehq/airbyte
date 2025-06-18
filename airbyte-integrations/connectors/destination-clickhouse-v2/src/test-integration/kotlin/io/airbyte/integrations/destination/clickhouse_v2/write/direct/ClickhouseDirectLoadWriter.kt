@@ -72,6 +72,7 @@ class ClickhouseDirectLoadWriter :
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
+        dedupChangeUsesDefault = true,
     ) {
     companion object {
         @JvmStatic
@@ -402,6 +403,7 @@ class ClickhouseDataDumper(
         while (reader.hasNext()) {
             val record = reader.next()
             val dataMap = linkedMapOf<String, AirbyteValue>()
+            println("Record: ${record.entries}")
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .map { entry ->

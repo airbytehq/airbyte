@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
-import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
+import io.airbyte.integrations.destination.clickhouse_v2.model.hasAlterations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -222,7 +222,7 @@ class ClickhouseAirbyteClientTest {
     @Test
     fun `test ensure schema matches`() = runTest {
         val mockAlterationSummary =
-            mockk<AlterationSummary>(relaxed = true) { every { isEmpty() } returns false }
+            mockk<AlterationSummary>(relaxed = true) { every { hasAlterations() } returns false }
 
         val mockTableName = mockk<TableName>(relaxed = true)
         val alterTableStatement = "ALTER TABLE my_table ADD COLUMN new_col String"

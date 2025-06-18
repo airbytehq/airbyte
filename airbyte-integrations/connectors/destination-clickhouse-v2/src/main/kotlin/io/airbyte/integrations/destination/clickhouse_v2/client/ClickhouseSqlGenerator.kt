@@ -70,26 +70,6 @@ class ClickhouseSqlGenerator {
                 else -> "MergeTree()"
             }
 
-        println(
-            """
-            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
-              $COLUMN_NAME_AB_RAW_ID String NOT NULL,
-              $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
-              $COLUMN_NAME_AB_META String NOT NULL,
-              $COLUMN_NAME_AB_GENERATION_ID UInt32 NOT NULL,
-              $columnDeclarations
-            )
-            ENGINE = ${engine}
-            ORDER BY (${if (pks.isEmpty()) {
-                "$COLUMN_NAME_AB_RAW_ID"
-            } else {
-                // For DEDUP, the primary key is defined in ORDER BY clause. It is counterintuitive, but it is how ClickHouse works.
-                // See the first line of the documentation: https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree
-                pksAsString
-            }})
-            """.trimIndent()
-        )
-
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
               $COLUMN_NAME_AB_RAW_ID String NOT NULL,
@@ -138,7 +118,6 @@ class ClickhouseSqlGenerator {
         targetTableName: TableName,
     ): String {
         val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
-
         // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
         return """
             INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
@@ -375,7 +354,9 @@ class ClickhouseSqlGenerator {
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
         }
-        return builder.dropLast(1).toString()
+        val alterStatement = builder.dropLast(1).toString()
+        println("Alter table statement: $alterStatement")
+        return alterStatement//builder.dropLast(1).toString()
     }
 
     private fun String.sqlNullable(): String = "Nullable($this)"

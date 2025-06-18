@@ -300,6 +300,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     // If it simply isn't possible to represent a mismatched type on the wire (ie, protobuf).
     val mismatchedTypesUnrepresentable: Boolean = false,
+    val dedupChangeUsesDefault: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     // Which medium to use as your input source for the test
@@ -2261,7 +2262,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id2" to 200,
                             "updated_at" to 1,
                             "name" to "foo_100",
-                        ),
+                        ) + if (dedupChangeUsesDefault) mapOf("id3" to 0) else emptyMap(),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
