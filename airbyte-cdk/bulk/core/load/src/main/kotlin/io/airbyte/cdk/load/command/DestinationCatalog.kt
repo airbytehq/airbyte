@@ -38,7 +38,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
         }
 
         val duplicateStreamDescriptors =
-            streams.groupingBy { it.descriptor }.eachCount().filter { it.value > 1 }.keys
+            streams.groupingBy { it.mappedDescriptor }.eachCount().filter { it.value > 1 }.keys
         if (duplicateStreamDescriptors.isNotEmpty()) {
             throw ConfigErrorException(
                 "Some streams appeared multiple times: ${duplicateStreamDescriptors.map { it.toPrettyString() }}"
