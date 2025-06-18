@@ -11,7 +11,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.bulk_streams import (
-    AppInstallAds,
     Budget,
     CampaignLabels,
     KeywordLabels,
@@ -146,7 +145,6 @@ class SourceBingAds(YamlDeclarativeSource):
 
         client = Client(**config)
         streams = [
-            AppInstallAds(client, config),
             Budget(client, config),
             BudgetSummaryReport(client, config),
             # Labels(client, config),

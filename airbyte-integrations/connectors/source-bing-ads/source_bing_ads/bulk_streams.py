@@ -138,15 +138,6 @@ class BingAdsBulkStream(BingAdsBaseStream, CheckpointMixin, ABC):
         return actual_record
 
 
-class AppInstallAds(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
-    """
-
-    data_scope = ["EntityData"]
-    download_entities = ["AppInstallAds"]
-
-
 class KeywordLabels(BingAdsBulkStream):
     """
     https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
