@@ -66,12 +66,8 @@ class ClickhouseAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        execute(
-            sqlGenerator.wrapInTransaction(
-                sqlGenerator.dropTable(targetTableName),
-                sqlGenerator.swapTable(sourceTableName, targetTableName),
-            ),
-        )
+        execute(sqlGenerator.exchangeTable(sourceTableName, targetTableName))
+        execute(sqlGenerator.dropTable(sourceTableName))
     }
 
     override suspend fun copyTable(
@@ -111,7 +107,7 @@ class ClickhouseAirbyteClient(
     ) {
         val properTableName = nameGenerator.getTableName(stream.descriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
-
+        tableSchema.columns
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns
                 .filterNot { column -> column.columnName in COLUMN_NAMES }
