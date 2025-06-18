@@ -336,6 +336,7 @@ abstract class IntegrationTest(
                 micronautProperties = micronautProperties + micronautPropertyEnableMicrobatching,
                 dataChannelMedium = dataChannelMedium,
                 dataChannelFormat = dataChannelFormat,
+                namespaceMappingConfig = NamespaceMappingConfig(NamespaceDefinitionType.SOURCE),
             )
         var outputStateMessage: AirbyteStateMessage? = null
         fun doRun() =

@@ -38,6 +38,7 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2025-06-14 | [61059](https://github.com/airbytehq/airbyte/pull/61059) | Update dependencies |
 | 0.0.23 | 2025-05-24 | [60525](https://github.com/airbytehq/airbyte/pull/60525) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [60112](https://github.com/airbytehq/airbyte/pull/60112) | Update dependencies |
 | 0.0.21 | 2025-05-03 | [59495](https://github.com/airbytehq/airbyte/pull/59495) | Update dependencies |
