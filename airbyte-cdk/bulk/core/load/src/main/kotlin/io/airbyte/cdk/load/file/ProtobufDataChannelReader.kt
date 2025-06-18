@@ -4,33 +4,60 @@
 
 package io.airbyte.cdk.load.file
 
-import com.google.common.io.CountingInputStream
+import com.google.protobuf.CodedInputStream
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import java.io.InputStream
+import kotlin.NoSuchElementException
 
-/**
- * Parses a stream of size-prefixed protobuf messages, yielding a sequence of sized
- * [DestinationMessage]'s.
- */
-class ProtobufDataChannelReader(private val destinationMessageFactory: DestinationMessageFactory) :
-    DataChannelReader {
+class ProtobufDataChannelReader(
+    private val factory: DestinationMessageFactory,
+    private val bufferSize: Int = 16 * 1024,
+) : DataChannelReader {
+
     private val parser = AirbyteMessageProtobuf.parser()
-    override fun read(inputStream: InputStream): Sequence<DestinationMessage> = sequence {
-        val countingInputStream = CountingInputStream(inputStream)
-        var count = countingInputStream.count
-        while (true) {
-            val protoMessage = parser.parseDelimitedFrom(countingInputStream) ?: break
-            val newCount = countingInputStream.count
-            val serializedSizeBytes = newCount - count
-            count = newCount
-            yield(
-                destinationMessageFactory.fromAirbyteProtobufMessage(
-                    protoMessage,
-                    serializedSizeBytes
-                )
-            )
+
+    override fun read(inputStream: InputStream): Sequence<DestinationMessage> =
+        object : Sequence<DestinationMessage> {
+            override fun iterator(): Iterator<DestinationMessage> =
+                object : Iterator<DestinationMessage> {
+
+                    /** Re-use a single decoder for the whole socket lifetime. */
+                    private val cis: CodedInputStream =
+                        CodedInputStream.newInstance(inputStream, bufferSize).apply {
+                            /* Aliasing is unsafe on a streaming socket. */
+                            enableAliasing(false)
+                            setSizeLimit(Int.MAX_VALUE)
+                        }
+
+                    private var nextMsg: DestinationMessage? = fetch()
+
+                    override fun hasNext(): Boolean = nextMsg != null
+
+                    override fun next(): DestinationMessage {
+                        val out = nextMsg ?: throw NoSuchElementException()
+                        nextMsg = fetch()
+                        return out
+                    }
+
+                    /** Reads one message, or null at EOF. */
+                    private fun fetch(): DestinationMessage? {
+                        if (cis.isAtEnd) return null
+
+                        val bytesBefore = cis.totalBytesRead
+                        val msgSize = cis.readRawVarint32()
+                        require(msgSize >= 0) {
+                            "Negative length prefix ($msgSize) at byte $bytesBefore"
+                        }
+
+                        /* readRawBytes() refills the stream as needed – no premature limit check. */
+                        val payload = cis.readRawBytes(msgSize)
+                        val proto = parser.parseFrom(payload)
+
+                        val wireSize = cis.totalBytesRead - bytesBefore
+                        return factory.fromAirbyteProtobufMessage(proto, wireSize.toLong())
+                    }
+                }
         }
-    }
 }
