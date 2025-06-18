@@ -28,7 +28,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
     private val log = KotlinLogging.logger {}
 
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
-        streams.associateBy { it.descriptor }
+        streams.associateBy { it.mappedDescriptor }
 
     init {
         if (streams.isEmpty()) {

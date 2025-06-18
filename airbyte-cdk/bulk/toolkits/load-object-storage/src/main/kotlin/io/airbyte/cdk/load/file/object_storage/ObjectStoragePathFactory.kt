@@ -172,10 +172,10 @@ class ObjectStoragePathFactory(
         val PATH_VARIABLES =
             listOf(
                 PathVariable("NAMESPACE") {
-                    Transformations.toS3SafeCharacters(it.stream.descriptor.namespace ?: "")
+                    Transformations.toS3SafeCharacters(it.stream.mappedDescriptor.namespace ?: "")
                 },
                 PathVariable("STREAM_NAME") {
-                    Transformations.toS3SafeCharacters(it.stream.descriptor.name)
+                    Transformations.toS3SafeCharacters(it.stream.mappedDescriptor.name)
                 },
                 PathVariable("YEAR", """\d{4}""") {
                     ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
