@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.command
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.config.CHECK_STREAM_NAMESPACE
 import io.airbyte.cdk.load.data.FieldType
@@ -35,6 +36,16 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
                 "Catalog must have at least one stream: check that files are in the correct location."
             )
         }
+
+        val duplicateStreamDescriptors =
+            streams.groupingBy { it.descriptor }.eachCount().filter { it.value > 1 }.keys
+        if (duplicateStreamDescriptors.isNotEmpty()) {
+            throw ConfigErrorException(
+                "Some streams appeared multiple times: ${duplicateStreamDescriptors.map { it.toPrettyString() }}"
+            )
+        }
+        throwIfInvalidDedupConfig()
+
         log.info { "Destination catalog initialized: $streams" }
     }
 
@@ -53,6 +64,31 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
         ConfiguredAirbyteCatalog().withStreams(streams.map { it.asProtocolObject() })
 
     fun size(): Int = streams.size
+
+    internal fun throwIfInvalidDedupConfig() {
+        streams.forEach { stream ->
+            if (stream.importType is Dedupe) {
+                stream.importType.primaryKey.forEach { pk ->
+                    if (pk.isNotEmpty()) {
+                        val firstPkElement = pk.first()
+                        if (!stream.schema.asColumns().containsKey(firstPkElement)) {
+                            throw ConfigErrorException(
+                                "A primary key column does not exist in the schema: $firstPkElement"
+                            )
+                        }
+                    }
+                }
+                if (stream.importType.cursor.isNotEmpty()) {
+                    val firstCursorElement = stream.importType.cursor.first()
+                    if (!stream.schema.asColumns().containsKey(firstCursorElement)) {
+                        throw ConfigErrorException(
+                            "The cursor does not exist in the schema: $firstCursorElement"
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 interface DestinationCatalogFactory {

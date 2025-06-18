@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.command
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
@@ -18,6 +19,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class DestinationCatalogTest {
     private val originalCatalog =
@@ -134,5 +136,91 @@ class DestinationCatalogTest {
             expectedOrderedSchema.toList(),
             stream.airbyteValueProxyFieldAccessors.toList()
         )
+    }
+
+    @Test
+    fun throwOnDuplicateStreams() {
+        val e =
+            assertThrows<ConfigErrorException> {
+                DestinationCatalog(
+                    listOf(
+                        DestinationStream(
+                            unmappedNamespace = null,
+                            unmappedName = "foo",
+                            importType = Append,
+                            generationId = 1,
+                            minimumGenerationId = 0,
+                            syncId = 1,
+                            includeFiles = false,
+                            schema = ObjectType(linkedMapOf()),
+                            namespaceMapper = NamespaceMapper(),
+                        ),
+                        DestinationStream(
+                            unmappedNamespace = null,
+                            unmappedName = "foo",
+                            importType = Append,
+                            generationId = 1,
+                            minimumGenerationId = 0,
+                            syncId = 1,
+                            includeFiles = false,
+                            schema = ObjectType(linkedMapOf()),
+                            namespaceMapper = NamespaceMapper(),
+                        ),
+                    )
+                )
+            }
+        assertEquals("Some streams appeared multiple times: [foo]", e.message)
+    }
+
+    @Test
+    fun validatePkExists() {
+        val catalog =
+            DestinationCatalog(
+                listOf(
+                    DestinationStream(
+                        unmappedNamespace = null,
+                        unmappedName = "foo",
+                        importType =
+                            Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        includeFiles = false,
+                        schema = ObjectType(linkedMapOf()),
+                        namespaceMapper = NamespaceMapper(),
+                    )
+                )
+            )
+        val e = assertThrows<ConfigErrorException> { catalog.throwIfInvalidDedupConfig() }
+        assertEquals("A primary key column does not exist in the schema: id", e.message)
+    }
+
+    @Test
+    fun validateCursorExists() {
+        val catalog =
+            DestinationCatalog(
+                listOf(
+                    DestinationStream(
+                        unmappedNamespace = null,
+                        unmappedName = "foo",
+                        importType =
+                            Dedupe(
+                                primaryKey = listOf(listOf("id")),
+                                cursor = listOf("updated_at"),
+                            ),
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        includeFiles = false,
+                        schema =
+                            ObjectType(
+                                linkedMapOf("id" to FieldType(IntegerType, nullable = true))
+                            ),
+                        namespaceMapper = NamespaceMapper(),
+                    )
+                )
+            )
+        val e = assertThrows<ConfigErrorException> { catalog.throwIfInvalidDedupConfig() }
+        assertEquals("The cursor does not exist in the schema: updated_at", e.message)
     }
 }
