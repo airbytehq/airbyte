@@ -75,9 +75,9 @@ class BigquerySpecification : ConfigurationSpecification() {
     )
     val credentialsJson: String? = null
 
-    @get:JsonSchemaTitle("CDC hard deletes")
+    @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
-        """Whether to execute CDC deletions as hard deletes (i.e. actually delete the record from the destination), or soft deletes (i.e. leave a tombstone record).""",
+        """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
     // default hard delete for backwards compatibility
     @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
@@ -85,14 +85,6 @@ class BigquerySpecification : ConfigurationSpecification() {
         json = """{"group": "sync_behavior", "order": 5, "always_show": true}""",
     )
     val cdcDeletionMode: CdcDeletionMode? = null
-
-    @get:JsonSchemaTitle("Transformation Query Run Type")
-    @get:JsonPropertyDescription(
-        """Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">here</a>. The default "interactive" value is used if not set explicitly.""",
-    )
-    @get:JsonProperty("transformation_priority", defaultValue = "interactive")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 6}""")
-    val transformationPriority: TransformationPriority? = null
 
     @get:JsonSchemaTitle(
         """Legacy raw tables""",
@@ -107,7 +99,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
     @get:JsonPropertyDescription(
-        """Airbyte will use this dataset for various internal tables (default: airbyte_internal). In legacy raw tables mode, the raw tables will be stored in this dataset.""",
+        """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
     )
     // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("raw_data_dataset")

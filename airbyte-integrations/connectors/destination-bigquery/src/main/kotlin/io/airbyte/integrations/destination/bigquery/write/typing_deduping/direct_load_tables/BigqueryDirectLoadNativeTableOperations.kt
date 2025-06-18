@@ -52,12 +52,12 @@ class BigqueryDirectLoadNativeTableOperations(
         val shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
         val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
         logger.info {
-            "Stream ${stream.descriptor.toPrettyString()} had alter table report $alterTableReport"
+            "Stream ${stream.mappedDescriptor.toPrettyString()} had alter table report $alterTableReport"
         }
         try {
             if (shouldRecreateTable) {
                 logger.info {
-                    "Stream ${stream.descriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
+                    "Stream ${stream.mappedDescriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
                 }
                 recreateTable(
                     stream,
@@ -68,7 +68,7 @@ class BigqueryDirectLoadNativeTableOperations(
                 )
             } else if (!alterTableReport.isNoOp) {
                 logger.info {
-                    "Stream ${stream.descriptor.toPrettyString()} detected schema change. Altering the table."
+                    "Stream ${stream.mappedDescriptor.toPrettyString()} detected schema change. Altering the table."
                 }
                 runBlocking {
                     alterTable(
@@ -80,12 +80,12 @@ class BigqueryDirectLoadNativeTableOperations(
                 }
             } else {
                 logger.info {
-                    "Stream ${stream.descriptor.toPrettyString()} has correct schema; no action needed."
+                    "Stream ${stream.mappedDescriptor.toPrettyString()} has correct schema; no action needed."
                 }
             }
         } catch (e: Exception) {
             logger.error(e) {
-                "Encountered an error while modifying the schema for stream ${stream.descriptor.toPrettyString()}. If this error persists, you may need to manually modify the table's schema."
+                "Encountered an error while modifying the schema for stream ${stream.mappedDescriptor.toPrettyString()}. If this error persists, you may need to manually modify the table's schema."
             }
             throw e
         }
@@ -270,7 +270,7 @@ class BigqueryDirectLoadNativeTableOperations(
             )
 
         logger.info {
-            "Stream ${stream.descriptor.toPrettyString()} using temporary table ${tempTableName.toPrettyString()} to recreate table ${tableName.toPrettyString()}."
+            "Stream ${stream.mappedDescriptor.toPrettyString()} using temporary table ${tempTableName.toPrettyString()} to recreate table ${tableName.toPrettyString()}."
         }
         sqlOperations.createTable(
             stream,
