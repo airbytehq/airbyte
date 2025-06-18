@@ -348,9 +348,4 @@ class Gcs :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
 }
