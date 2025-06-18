@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class RecordMungerTest {
     @MockK lateinit var catalogInfo: TableCatalog
 
-    @MockK lateinit var validator: ClickhouseValueValidator
+    @MockK lateinit var validator: ClickhouseCoercingValidator
 
     private lateinit var munger: RecordMunger
 

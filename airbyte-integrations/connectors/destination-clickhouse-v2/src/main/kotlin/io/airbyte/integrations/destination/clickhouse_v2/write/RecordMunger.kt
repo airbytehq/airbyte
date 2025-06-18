@@ -19,7 +19,7 @@ import jakarta.inject.Singleton
 @Singleton
 class RecordMunger(
     private val catalogInfo: TableCatalog,
-    private val validator: ClickhouseValueValidator,
+    private val validator: ClickhouseCoercingValidator,
 ) {
     fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
