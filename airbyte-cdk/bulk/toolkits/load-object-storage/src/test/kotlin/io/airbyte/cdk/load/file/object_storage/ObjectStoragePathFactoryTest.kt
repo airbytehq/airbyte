@@ -117,7 +117,7 @@ class ObjectStoragePathFactoryTest {
             val syncTime = timeProvider.syncTimeMillis()
             val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
-            val (namespace, name) = stream1.descriptor
+            val (namespace, name) = stream1.mappedDescriptor
             val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
             val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
@@ -149,7 +149,7 @@ class ObjectStoragePathFactoryTest {
             val syncTime = timeProvider.syncTimeMillis()
             val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
-            val (namespace, name) = stream1.descriptor
+            val (namespace, name) = stream1.mappedDescriptor
             val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/${syncTime}_"
             val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(

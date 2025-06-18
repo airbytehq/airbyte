@@ -16,11 +16,15 @@ class BigqueryCheckCleaner : CheckCleaner<BigqueryConfiguration> {
     override fun cleanup(config: BigqueryConfiguration, stream: DestinationStream) {
         val bq = BigqueryBeansFactory().getBigqueryClient(config)
         bq.getTable(
-                BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor).toTableId()
+                BigqueryRawTableNameGenerator(config)
+                    .getTableName(stream.mappedDescriptor)
+                    .toTableId()
             )
             ?.delete()
         bq.getTable(
-                BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor).toTableId()
+                BigqueryFinalTableNameGenerator(config)
+                    .getTableName(stream.mappedDescriptor)
+                    .toTableId()
             )
             ?.delete()
     }
