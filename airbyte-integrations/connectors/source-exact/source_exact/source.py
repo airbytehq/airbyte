@@ -45,3 +45,6 @@ class SourceExact(AbstractSource):
                 logger.info(f"Filtered out following stream: {stream.name}")
 
         return AirbyteCatalog(streams=filtered)
+
+    def spec(self, logger:logging.Logger):
+        super().spec(logger)

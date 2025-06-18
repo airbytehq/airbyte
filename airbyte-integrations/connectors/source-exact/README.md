@@ -6,19 +6,13 @@ This is the repository for the Exact source connector, written in Python.
 
 ### Prerequisites
 
-**To iterate on this connector, make sure to complete this prerequisites section.**
+- Python `~= 3.11.0`
+- Poetry `~= 1.8` - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-#### Minimum Python version required `= 3.11.0`
+Note: it is quite difficult to work with Poetry 1.8 at the moment because tools like Homebrew update Poetry to 2.0 
+which have some differences. Create a virtual environment and install Poetry version 1.8 and use Poetry from there.
 
-#### Build & Activate Virtual Environment and install dependencies
-
-From this connectory directory, create a virtual environment using UV
-
-```shell
-uv sync
-```
-
-#### Create credentials
+### Create credentials
 
 **If you are a community contributor**, follow the instructions in
 the [documentation](https://docs.airbyte.io/integrations/sources/exact)
@@ -31,15 +25,20 @@ See `integration_tests/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source exact test creds`
 and place them into `secrets/config.json`.
 
-### Locally running the connector
+### Installing the connector
 
-Using UV
+From this connector directory, run:
 
 ```shell
-uv run main.py spec
-uv run main.py check --config secrets/config.json
-uv run main.py discover --config secrets/config.json
-uv run main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry install --with dev
+```
+
+### Locally running the connector
+
+Using Poetry
+
+```shell
+poetry run source-exact spec
 ```
 
 Or with the current virtual environment activated
@@ -74,4 +73,9 @@ To run unit tests locally, from the connector directory `source_exact` run:
 
 ```
 uv run pytest unit_tests/
+```
+
+Via airbyte-cdk
+```shell
+airbyte-cdk image test
 ```
