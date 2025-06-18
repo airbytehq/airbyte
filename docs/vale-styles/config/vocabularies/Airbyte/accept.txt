@@ -69,7 +69,7 @@ npm
 HubSpot
 Zendesk
 Okta
-Entra ID
+Entra
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
