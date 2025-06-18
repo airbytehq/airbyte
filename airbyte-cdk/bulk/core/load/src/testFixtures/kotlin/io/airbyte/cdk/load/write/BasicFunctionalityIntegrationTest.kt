@@ -744,6 +744,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("stream_name_with_operator+1"),
                     makeStream("stream_name_with_numbers_123"),
                     makeStream("1stream_with_a_leading_number"),
+                    makeStream("c'est une belle histoire,./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-="),
                     makeStream(
                         "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
