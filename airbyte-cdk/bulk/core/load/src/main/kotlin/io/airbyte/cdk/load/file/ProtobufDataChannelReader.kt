@@ -13,6 +13,8 @@ import kotlin.NoSuchElementException
 
 class ProtobufDataChannelReader(
     private val factory: DestinationMessageFactory,
+    private val bufferSize: Int = 16 * 1024,
+    private val sizeLimit: Int = 256 * 1024 * 1024,
 ) : DataChannelReader {
 
     private val parser = AirbyteMessageProtobuf.parser()
@@ -24,8 +26,9 @@ class ProtobufDataChannelReader(
 
                     /** One buffered reader for the whole stream. */
                     private val cis: CodedInputStream =
-                        CodedInputStream.newInstance(inputStream, 32768).apply {
-                            enableAliasing(true) // zero-copy substrings
+                        CodedInputStream.newInstance(inputStream, bufferSize).apply {
+                            enableAliasing(true)
+                            setSizeLimit(sizeLimit)
                         }
 
                     /** Stash for look-ahead. */
@@ -44,15 +47,20 @@ class ProtobufDataChannelReader(
                         if (cis.isAtEnd) return null
 
                         val bytesBefore = cis.totalBytesRead
-                        val msgSize = cis.readRawVarint32() // length-prefix
+                        val msgSize = cis.readRawVarint32()
+
+                        require(msgSize >= 0) { // catch bad prefixes early
+                            "Negative length prefix ($msgSize) at byte $bytesBefore"
+                        }
+
                         val oldLimit = cis.pushLimit(msgSize)
 
                         val proto = parser.parseFrom(cis)
                         cis.checkLastTagWas(0) // message done
                         cis.popLimit(oldLimit)
 
-                        val serializedSize = cis.totalBytesRead - bytesBefore
-                        return factory.fromAirbyteProtobufMessage(proto, serializedSize.toLong())
+                        val wireSize = cis.totalBytesRead - bytesBefore
+                        return factory.fromAirbyteProtobufMessage(proto, wireSize.toLong())
                     }
                 }
         }
