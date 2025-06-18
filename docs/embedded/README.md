@@ -4,7 +4,7 @@ products: embedded
 
 # Airbyte Embedded
 
-[Airbyte Embedded](https://airbyte.com/ai) provides product and software teams an easy way to centrally configure and manage source connectors. This platform enables your customers to leverage new AI workloads and app models, with data being synced to modern, centralized destinations such as s3, data lakes.
+[Airbyte Embedded](https://airbyte.com/ai) provides product and software teams an easy way to centrally configure and manage source connectors. This platform enables your customers to leverage new AI workloads and app models, with data being synced to modern, centralized destinations such as S3 and data lakes.
 
 AI has revolutionized how we learn and interact with the world around us. Apps like ChatGPT and Claude have shown how LLMs (large language models) can be used to translate natural language questions into intelligent insight in a matter of seconds. The result is: traditional SaaS style applications, which build user interfaces atop domain specific data such as CRM or finance, are quickly becoming obsolete.  
 
