@@ -9,6 +9,11 @@ from source_bing_ads import SourceBingAds
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")
+
+
 @pytest.fixture(name="config")
 def config_fixture():
     """Generates streams settings from a config file"""
