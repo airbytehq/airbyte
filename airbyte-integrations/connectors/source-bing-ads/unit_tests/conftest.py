@@ -100,6 +100,30 @@ def mock_auth_token_fixture(requests_mock):
     )
 
 
+@pytest.fixture(name="mock_user_query")
+def mock_user_query_fixture(requests_mock):
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query",
+        status_code=200,
+        json={"User": {"Id": 1}},
+    )
+
+
+@pytest.fixture(name="mock_account_query")
+def mock_account_query_fixture(requests_mock):
+    requests_mock.post(
+        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
+        status_code=200,
+        json={
+            "Accounts": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
+                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
+            ]
+        },
+    )
+
+
 def find_stream(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state
     streams = SourceBingAds(catalog=None, config=config, state=state).streams(config=config)

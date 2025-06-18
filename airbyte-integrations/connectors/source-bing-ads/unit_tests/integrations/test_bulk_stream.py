@@ -5,30 +5,60 @@ from typing import Optional
 
 from base_test import BaseTest
 from bingads.v13.bulk.bulk_service_manager import BulkServiceManager
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from request_builder import RequestBuilder
+
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
+
 class TestBulkStream(BaseTest):
+    download_entity: str = None
+
     @property
     def service_manager(self) -> BulkServiceManager:
         return BulkServiceManager
 
-    def mock_bulk_download_request(self):
-        http_mocker = self.http_mocker
-        http_mocker.post(
-            RequestBuilder(resource="Bulk/v13/Campaigns/DownloadByAccountIds", api="bulk").with_body(
-                '{"AccountIds": ["180535609"], "DataScope": "EntityData", "DownloadEntities": ["AppInstallAdLabels"], "DownloadFileType": "Csv", "FormatVersion": "6.0", "CompressionType": "GZip"}'
-            ).build(),
-            HttpResponse(json.dumps(find_template(resource="bulk_download", execution_folder=__file__)), 200),
+    def mock_apis(self, file: str, read_with_state: Optional[bool] = False):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
         )
-    
+        self.mock_bulk_download_request(read_with_state)
+        self.mock_bulk_download_status_query()
+        self.mock_download(file=file)
+
+    def mock_bulk_download_request(self, read_with_state: Optional[bool] = False):
+        http_mocker = self.http_mocker
+        if not read_with_state:
+            http_mocker.post(
+                RequestBuilder(resource="Bulk/v13/Campaigns/DownloadByAccountIds", api="bulk")
+                .with_body(
+                    '{"AccountIds": ["180535609"], "DataScope": "EntityData", "DownloadEntities":'
+                    f' ["{self.download_entity}"], '
+                    '"DownloadFileType": "Csv", "FormatVersion": "6.0", "CompressionType": "GZip"}'
+                )
+                .build(),
+                HttpResponse(json.dumps(find_template(resource="bulk_download", execution_folder=__file__)), 200),
+            )
+        else:
+            http_mocker.post(
+                RequestBuilder(resource="Bulk/v13/Campaigns/DownloadByAccountIds", api="bulk")
+                .with_body(
+                    '{"AccountIds": ["180535609"], "DataScope": "EntityData", '
+                    f'"DownloadEntities": ["{self.download_entity}"], '
+                    '"DownloadFileType": "Csv", "FormatVersion": "6.0", "LastSyncTimeInUTC": "2024-01-29T12:54:12.028+00:00", "CompressionType": "GZip"}'
+                )
+                .build(),
+                HttpResponse(json.dumps(find_template(resource="bulk_download", execution_folder=__file__)), 200),
+            )
+
     def mock_bulk_download_status_query(self):
         http_mocker = self.http_mocker
         http_mocker.post(
-            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk").with_body(
-                '{"RequestId": "TestDownloadRequestId"}'
-            ).build(),
+            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk")
+            .with_body('{"RequestId": "TestDownloadRequestId"}')
+            .build(),
             HttpResponse(json.dumps(find_template(resource="bulk_status", execution_folder=__file__)), 200),
         )
 
