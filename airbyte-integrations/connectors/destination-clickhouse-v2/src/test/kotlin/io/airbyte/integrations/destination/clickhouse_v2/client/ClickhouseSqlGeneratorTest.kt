@@ -134,7 +134,8 @@ class ClickhouseSqlGeneratorTest {
         val columnNameMapping =
             ColumnNameMapping(mapOf("source_col1" to "target_col1", "source_col2" to "target_col2"))
 
-        val expectedSql = """
+        val expectedSql =
+            """
             INSERT INTO `target_namespace`.`target_table`
             (
                 _airbyte_raw_id,
@@ -152,7 +153,8 @@ class ClickhouseSqlGeneratorTest {
             FROM `source_namespace`.`source_table`
         """.trimIndent()
 
-        val actualSql = clickhouseSqlGenerator.copyTable(columnNameMapping, sourceTable, targetTable)
+        val actualSql =
+            clickhouseSqlGenerator.copyTable(columnNameMapping, sourceTable, targetTable)
         Assertions.assertEquals(expectedSql, actualSql)
     }
 
