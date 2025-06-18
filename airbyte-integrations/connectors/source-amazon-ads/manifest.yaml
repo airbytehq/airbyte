@@ -5,7 +5,11 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - streams
+    # todo: This should actually use the `profiles_filtered` stream which only returns records that
+    #  contain the profiles and marketplace ids that are provided in the config. However, the low-code
+    #  CDK does not support check-only streams at this time. Once it supports this feature, we should
+    #  replace `profiles` with `profiles_filtered`.
+    - profiles
 
 max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count', 10) }}"
 
@@ -74,7 +78,7 @@ definitions:
           "EU": "https://advertising-api-eu.amazon.com/",
           "FE": "https://advertising-api-fe.amazon.com/"
       } -%}
-      {{ URL_MAPPING[config["region"]] }}
+      {{ URL_MAPPING[config.get("region", "NA")] }}
     authenticator: "#/definitions/oauth_authenticator"
     request_headers:
       Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -3241,7 +3245,7 @@ definitions:
             "EU": "https://advertising-api-eu.amazon.com/",
             "FE": "https://advertising-api-fe.amazon.com/"
         } -%}
-        {{ URL_MAPPING[config["region"]] }}
+        {{ URL_MAPPING[config.get("region", "NA")] }}
       authenticator: "#/definitions/oauth_authenticator"
       http_method: POST
       request_headers:
@@ -3275,7 +3279,7 @@ definitions:
             "EU": "https://advertising-api-eu.amazon.com/",
             "FE": "https://advertising-api-fe.amazon.com/"
         } -%}
-        {{ URL_MAPPING[config["region"]] }}
+        {{ URL_MAPPING[config.get("region", "NA")] }}
       authenticator: "#/definitions/oauth_authenticator"
       http_method: GET
       request_headers:
