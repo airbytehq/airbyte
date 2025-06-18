@@ -28,7 +28,7 @@ class ProtobufDataChannelReader(
                     private val cis: CodedInputStream =
                         CodedInputStream.newInstance(inputStream, bufferSize).apply {
                             enableAliasing(true)
-                            setSizeLimit(sizeLimit)
+//                            setSizeLimit(sizeLimit)
                         }
 
                     /** Stash for look-ahead. */
