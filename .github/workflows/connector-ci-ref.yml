@@ -1,0 +1,21 @@
+name: Connector CI (External Ref)
+# This workflow is used to run connector tests and checks.
+# It runs on pull requests and can also be triggered via workflow dispatch.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  call-connector-ci-tests:
+    # Run always for 'workflow_dispatch' events.
+    # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
+    name: "Call Connector CI Tests"
+    uses: airbytehq/airbyte/.github/workflows/connector-ci-checks.yml@master
+    with:
+      repo: "${{ github.repository }}"
+      gitref: "${{ github.event.pull_request.head.ref }}"
+      pr: "${{ github.event.pull_request.number }}"
+    secrets: inherit

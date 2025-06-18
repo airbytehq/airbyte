@@ -1,0 +1,3 @@
+include = [
+    "${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml",
+]
