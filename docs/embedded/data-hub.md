@@ -9,7 +9,7 @@ To be successful, AI data hubs must support the following:
 - Access to connectors' data source: structured, unstructured, business app, or custom API
 - Centralized management console to create, configure, and manage connectors available to customers
 - End customer self-service ability to connect their data sources
-- Reliable, scalable, and governable data movement to a data lake or data warehouse to enable modern AI apps to built atop using the latest tools, frameworks, and technologies.
+- Reliable, scalable, and governable data movement to a data lake or data warehouse, enabling modern AI apps to build atom these using the latest tools, frameworks, and technologies
 - Customer data privacy - no data is stored in the hub, only moved, and transformed, if required, to destination
 
 The following blueprint depicts a typical AI data hub architecture.
