@@ -106,7 +106,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     ): Deferred<ObjectLoaderPartLoader.PartResult<T>> =
         CoroutineScope(uploadDispatcher).async {
             try {
-                when (val res = partLoader.accept(part, loaderState)) {
+                when (val res = partLoader.acceptWithExperimentalCoroutinesApi(part, loaderState)) {
                     is IntermediateOutput -> res.output
                     else -> error("PartLoader should emit IntermediateOutput only")
                 }

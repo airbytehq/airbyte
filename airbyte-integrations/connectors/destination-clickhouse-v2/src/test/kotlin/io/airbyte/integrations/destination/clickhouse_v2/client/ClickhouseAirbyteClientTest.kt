@@ -17,9 +17,11 @@ import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -236,7 +238,7 @@ class ClickhouseAirbyteClientTest {
         val columnMapping = ColumnNameMapping(mapOf())
         val stream =
             mockk<DestinationStream>() {
-                every { descriptor } returns
+                every { mappedDescriptor } returns
                     mockk(relaxed = true) {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
@@ -253,6 +255,30 @@ class ClickhouseAirbyteClientTest {
             clickhouseAirbyteClient.getChangedColumns(any(), any())
             clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName)
             clickhouseAirbyteClient.execute(alterTableStatement)
+        }
+    }
+
+    @Test
+    fun `test overwrite table`() = runTest {
+        val sourceTableName = TableName("source_db", "source_table")
+        val targetTableName = TableName("target_db", "target_table")
+        val exchangeTableSql =
+            "EXCHANGE TABLES `source_db`.`source_table` AND `target_db`.`target_table`"
+        val dropTableSql = "DROP TABLE `source_db`.`source_table`"
+
+        every { clickhouseSqlGenerator.exchangeTable(sourceTableName, targetTableName) } returns
+            exchangeTableSql
+        every { clickhouseSqlGenerator.dropTable(sourceTableName) } returns dropTableSql
+        coEvery { clickhouseAirbyteClient.execute(exchangeTableSql) } returns mockk()
+        coEvery { clickhouseAirbyteClient.execute(dropTableSql) } returns mockk()
+
+        clickhouseAirbyteClient.overwriteTable(sourceTableName, targetTableName)
+
+        verify { clickhouseSqlGenerator.exchangeTable(sourceTableName, targetTableName) }
+        verify { clickhouseSqlGenerator.dropTable(sourceTableName) }
+        coVerifyOrder {
+            clickhouseAirbyteClient.execute(exchangeTableSql)
+            clickhouseAirbyteClient.execute(dropTableSql)
         }
     }
 
