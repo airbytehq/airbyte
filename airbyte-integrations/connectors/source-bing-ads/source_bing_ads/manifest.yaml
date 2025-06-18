@@ -2215,8 +2215,6 @@ definitions:
           {% set v = record.get('LowQualityConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
-
-
 dynamic_streams:
   # Report streams
   - type: DynamicDeclarativeStream
@@ -4877,7 +4875,7 @@ schemas:
         type:
           - "null"
           - number
-  
+
   age_gender_audience_report_hourly:
     $schema: https://json-schema.org/draft-07/schema#
     type: object
@@ -5066,7 +5064,7 @@ schemas:
         type:
           - "null"
           - number
-  
+
   campaign_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5722,13 +5720,15 @@ schemas:
     type: object
     properties:
       Account Id:
-        description: The unique identifier for the account associated with the app install
+        description:
+          The unique identifier for the account associated with the app install
           ad.
         type:
           - "null"
           - integer
       Client Id:
-        description: The unique identifier for the client associated with the app install
+        description:
+          The unique identifier for the client associated with the app install
           ad.
         type:
           - "null"
@@ -5739,7 +5739,8 @@ schemas:
           - "null"
           - integer
       Parent Id:
-        description: The unique identifier for the parent resource that this app install
+        description:
+          The unique identifier for the parent resource that this app install
           ad belongs to.
         type:
           - "null"
@@ -5772,7 +5773,8 @@ schemas:
           - "null"
           - integer
       Campaign:
-        description: The name or ID of the advertising campaign associated with the app
+        description:
+          The name or ID of the advertising campaign associated with the app
           install ad.
         type:
           - "null"
@@ -5803,7 +5805,8 @@ schemas:
           - "null"
           - string
       Editorial Reason Code:
-        description: The editorial reason code indicating the reason for disapproval of
+        description:
+          The editorial reason code indicating the reason for disapproval of
           the ad.
         type:
           - "null"
@@ -5819,7 +5822,8 @@ schemas:
           - "null"
           - string
       Final Url:
-        description: The final URL users are directed to after clicking the app install
+        description:
+          The final URL users are directed to after clicking the app install
           ad.
         type:
           - "null"
