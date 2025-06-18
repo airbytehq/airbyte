@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.file.object_storage.ByteArrayPool
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -112,10 +111,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
                 state.streamingUpload.await()
             }
 
-        input.part.bytes?.let { bytes ->
-            upload.uploadPart(bytes, input.part.partIndex)
-            ByteArrayPool.recycle(bytes)
-        }
+        input.part.bytes?.let { bytes -> upload.uploadPart(bytes, input.part.partIndex) }
         val output =
             LoadedPart(
                 state.streamingUpload,

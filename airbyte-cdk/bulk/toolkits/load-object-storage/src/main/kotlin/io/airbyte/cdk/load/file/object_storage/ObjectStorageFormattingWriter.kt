@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfig
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -40,6 +41,17 @@ import org.apache.avro.Schema
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecordRaw)
     fun flush()
+}
+
+abstract class ManagedByteArrayOutputStream(initialCapacity: Int) :
+    ByteArrayOutputStream(initialCapacity) {
+    abstract fun extractBytes(): ByteArray
+    abstract fun resetBuffer()
+}
+
+class StandardByteArrayOutputStream : ManagedByteArrayOutputStream(32) {
+    override fun extractBytes(): ByteArray = toByteArray()
+    override fun resetBuffer() = reset()
 }
 
 interface ObjectStorageFormattingWriterFactory {
@@ -253,9 +265,16 @@ class ParquetFormattingWriter(
 class BufferedFormattingWriterFactory<T : OutputStream>(
     private val writerFactory: ObjectStorageFormattingWriterFactory,
     private val compressionConfigurationProvider: ObjectStorageCompressionConfigurationProvider<T>,
+    @Named("dataChannelMedium") private val dataChannelMedium: DataChannelMedium,
 ) {
     fun create(stream: DestinationStream): BufferedFormattingWriter<T> {
-        val underlying = PooledByteArrayOutputStream()
+        val underlying: ManagedByteArrayOutputStream =
+            if (dataChannelMedium == DataChannelMedium.SOCKET) {
+                PooledByteArrayOutputStream()
+            } else {
+                StandardByteArrayOutputStream()
+            }
+
         val processor =
             compressionConfigurationProvider.objectStorageCompressionConfiguration.compressor
         val wrapping = processor.wrapper.invoke(underlying)
@@ -266,7 +285,7 @@ class BufferedFormattingWriterFactory<T : OutputStream>(
 
 class BufferedFormattingWriter<T : OutputStream>(
     private val writer: ObjectStorageFormattingWriter,
-    private val buffer: PooledByteArrayOutputStream,
+    private val buffer: ManagedByteArrayOutputStream,
     private val streamProcessor: StreamProcessor<T>,
     private val wrappingBuffer: T
 ) : ObjectStorageFormattingWriter {
@@ -292,8 +311,8 @@ class BufferedFormattingWriter<T : OutputStream>(
             return null
         }
 
-        val bytes = buffer.stealBytes()
-        buffer.resetAndRecycle()
+        val bytes = buffer.extractBytes()
+        buffer.resetBuffer()
         return bytes
     }
 
@@ -302,7 +321,7 @@ class BufferedFormattingWriter<T : OutputStream>(
         writer.close()
         streamProcessor.partFinisher.invoke(wrappingBuffer)
         return if (bufferSize > 0) {
-            buffer.stealBytes()
+            buffer.extractBytes()
         } else {
             null
         }
@@ -340,16 +359,17 @@ object ByteArrayPool {
 }
 
 class PooledByteArrayOutputStream(private val minCapacity: Int = 32 * 1024) :
-    ByteArrayOutputStream(0) {
+    ManagedByteArrayOutputStream(0) {
     /** Borrow a new array exactly sized to `count`, copy data, return it. */
     init {
         buf = ByteArrayPool.borrow(minCapacity)
     }
 
-    fun stealBytes(): ByteArray = ByteArray(count).also { System.arraycopy(buf, 0, it, 0, count) }
+    override fun extractBytes(): ByteArray =
+        ByteArray(count).also { System.arraycopy(buf, 0, it, 0, count) }
 
     /** Reset *and* recycle the previous backing buffer. */
-    fun resetAndRecycle() {
+    override fun resetBuffer() {
         val old = buf
         buf = ByteArrayPool.borrow(minCapacity)
         reset()
