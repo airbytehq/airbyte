@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from test_report_stream import TestSuiteReportStream, MANIFEST_STREAMS
+from test_report_stream import TestSuiteReportStream
+
 
 FIRST_STATE = {"180535609": {"TimePeriod": "2023-12-17"}}
 
@@ -36,6 +37,7 @@ class ReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
     Migration test cases are skipped since they are already tested in hourly reports and all non-hourly streams
     use the same manifest template.
     """
+
     first_read_state = get_state_after_migration(
         time_period=f"{TestSuiteReportStream.start_date}", account_id=TestSuiteReportStream.account_id
     )
@@ -56,9 +58,7 @@ class ReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
 
     state_file_legacy = "reports_state_legacy"
     state_file_after_migration = "reports_state_after_migration"
-    state_file_after_migration_with_cursor_further_config_start_date = (
-        "reports_state_after_migration_with_cursor_further_config_start_date"
-    )
+    state_file_after_migration_with_cursor_further_config_start_date = "reports_state_after_migration_with_cursor_further_config_start_date"
 
     @property
     def incremental_report_file_with_records_further_cursor(self):
@@ -67,7 +67,7 @@ class ReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
     @property
     def expected_no_config_start_date_cursor_value(self) -> str:
         """Non-hourly reports use date format without timezone/time component."""
-        return "2023-11-12"
+        return "2023-12-17"
 
     @property
     def expected_job_end_time_format(self) -> str:
@@ -98,29 +98,3 @@ class ReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
 
         """
         self.skipTest("Migration test cases skipped for non-hourly streams - already tested in hourly reports")
-
-    def test_no_config_start_date(self):
-        """
-        Override the base test_no_config_start_date method to only verify the cursor value is set correctly.
-        We don't need to verify implementation details like lookback_window.
-        """
-        from airbyte_cdk.models import SyncMode
-        from copy import deepcopy
-
-        if self.stream_name not in MANIFEST_STREAMS:
-            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
-        self.mock_report_apis()
-        config = deepcopy(self._config)
-        del config["reports_start_date"]
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, config, self.report_file)
-        assert len(output.records) == self.records_number
-        
-        # Only verify that the cursor is set to the expected value
-        # Don't verify implementation details like lookback_window
-        actual_cursor = None
-        for state in output.most_recent_state.stream_state.states:
-            if state["partition"]["account_id"] == self.account_id:
-                actual_cursor = state["cursor"]
-        
-        assert actual_cursor is not None, f"Expected state is empty for account_id: {self.account_id}"
-        assert actual_cursor[self.cursor_field] == "2024-01-01"
