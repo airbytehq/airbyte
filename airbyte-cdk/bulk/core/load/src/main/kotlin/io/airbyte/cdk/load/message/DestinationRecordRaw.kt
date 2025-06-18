@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.data.protobuf.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*
@@ -37,10 +38,13 @@ data class DestinationRecordRaw(
 
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
-            stream,
-            asJsonRecord().toAirbyteValue(),
-            rawData.emittedAtMs,
-            rawData.sourceMeta
+            stream = stream,
+            data =
+                if (rawData is DestinationRecordProtobufSource) {
+                    rawData.toAirbyteValue(stream.airbyteValueProxyFieldAccessors)
+                } else asJsonRecord().toAirbyteValue(),
+            emittedAtMs = rawData.emittedAtMs,
+            meta = rawData.sourceMeta,
         )
     }
 
