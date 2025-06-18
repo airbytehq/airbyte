@@ -5,21 +5,29 @@ on:
     inputs:
       # The following 4 inputs are always passed by the Slash Command Dispatch:
       repo:
-        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        description: Repo Name. Ignored.
         type: choice
         required: false
-        default: airbytehq/airbyte
+        default: airbytehq/airbyte-enterprise
         options:
-          - airbytehq/airbyte
+          - airbytehq/airbyte-enterprise
       gitref:
-        description: "The git ref to check out from the specified repository."
+        description: Git Ref. Ignored.
         required: false
       comment-id:
-        description: "Optional comment-id of the slash command. Ignore if not applicable."
+        description: Comment ID. Optional.
         required: false
       pr:
-        description: "PR Number (Unused)"
+        description: PR Number.
         type: number
+        required: false
+
+      # The following is specific to this workflow:
+      command:
+        description: |
+          Poe command to run (without the 'poe' prefix). Optional.
+          If not provided, will be detected from the comment text.
+        type: string
         required: false
 
 permissions:
@@ -29,13 +37,12 @@ permissions:
 
 jobs:
   run-poe-command:
-    env:
-      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     runs-on: ubuntu-latest
     steps:
       - name: Run Poe Slash Command Processor
-        uses: aaronsteers/poe-command-processor@v1
+        uses: aaronsteers/poe-command-processor@v1.2.3
         with:
           pr: ${{ github.event.inputs.pr }}
           comment-id: ${{ github.event.inputs.comment-id }}
           github-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          command: ${{ inputs.command || '' }}

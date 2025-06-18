@@ -8,6 +8,7 @@ include = [
 
 bump-airbyte-submodule.shell = """
 set -eu # Ensure we return non-zero exit code upon failure
+set -x # Print commands as they are executed (for debugging)
 
 # Update the airbyte submodule, uses `branch=master`, per `.gitmodules` settings:
 git submodule update --remote airbyte-submodule
@@ -16,3 +17,23 @@ git submodule update --remote airbyte-submodule
 git add airbyte-submodule
 """
 bump-airbyte-submodule.help = "Updates `airbyte-submodule` to the latest commit on the master branch."
+
+format-fix.help = "Run pre-commit hooks to fix formatting issues in the codebase."
+format-fix.cmd = "pre-commit run --all-files"
+
+install.help = "Install the Airbyte Enterprise repository dependencies."
+install.shell = """
+set -eu # Ensure we return non-zero exit code upon failure
+set -x # Print commands as they are executed (for debugging)
+
+# Ensure uv is installed:
+if ! command -v uv &> /dev/null; then
+    echo "Detected that 'uv' is not installed. Attempting to install..."
+    brew install --upgrade uv || echo "Failed to install 'uv'. Continuing..."
+fi
+# Ensure pre-commit is installed:
+if ! command -v pre-commit &> /dev/null; then
+    echo "Detected that 'pre-commit' is not installed. Attempting to install..."
+    uv tool install pre-commit || echo "Failed to install 'pre-commit'. Continuing..."
+fi
+"""

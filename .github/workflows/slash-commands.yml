@@ -1,4 +1,6 @@
 # Copied from `airbytehq/airbyte`.
+# Modified to use `cloudposse-github-actions/get-pr` to get PR info,
+# which we can eventually backport to `airbytehq/airbyte` as well.
 # NOTE: Not all slash commands are supported in this repo.
 # See `README.md` in this directory for details.
 name: Slash Command Dispatch
@@ -9,13 +11,13 @@ jobs:
   slashCommandDispatch:
     runs-on: ubuntu-24.04
     steps:
-      - name: Get PR repo and ref
+      # Use pre-made action (handles private repo auth):
+      - name: Get PR Info
         if: ${{ github.event.issue.pull_request }}
-        id: getref
-        run: |
-          pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
-          echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
-          echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
+        id: pr-info
+        uses: cloudposse-github-actions/get-pr@v2.0.0
+        with:
+          id: ${{ github.event.issue.number }}
 
       - name: Slash Command Dispatch (Workflow)
         id: scd
@@ -46,8 +48,8 @@ jobs:
           # - If the slash command is invoked from an issue, we intentionally pass 'null' as the PR number.
           # - Comment ID will always be sent, and this is sufficient to post back status updates to the originating comment.
           static-args: |
-            repo=${{ steps.getref.outputs.repo }}
-            gitref=${{ steps.getref.outputs.ref }}
+            repo=${{ fromJSON(steps.pr-info.outputs.json).head.repo.full_name || github.repository }}
+            gitref=${{ fromJSON(steps.pr-info.outputs.json).head.ref }}
             comment-id=${{ github.event.comment.id }}
             pr=${{ github.event.issue.pull_request != null && github.event.issue.number || '' }}
 

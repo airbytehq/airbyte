@@ -29,5 +29,8 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 -->
 <!-- These are distinct to the Enterprise repo: -->
 - `/bump-airbyte-submodule` - Update the PR's `airbyte-submodule` ref, using the latest from `master`.
+- `/poe command="COMMAND"` - Run any Poe command as a slash command. If changes are applied, these will be added in a commit back to the PR's branch.
+
+The slash commands above do not require arguments, unless otherwise stated.
 
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte-enterprise/blob/master/.github/pr-welcome-internal.md)
