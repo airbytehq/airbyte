@@ -8,6 +8,7 @@ data class ObjectStoragePathConfiguration(
     val prefix: String,
     val pathPattern: String?,
     val fileNamePattern: String?,
+    val resolveNamesMethod: ((String) -> String)? = null
 )
 
 interface ObjectStoragePathConfigurationProvider {
