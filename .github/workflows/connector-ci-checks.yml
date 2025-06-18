@@ -56,10 +56,10 @@ jobs:
         # to the step of determining which connectors are modified.
         if: >
           (inputs.repo != '' &&
-           startswith(inputs.repo, 'airbytehq/')
+           ! startswith(inputs.repo, 'airbytehq/')
           ) ||
           (github.event.pull_request.head.repo.full_name != '' &&
-           startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
+           ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
           )
         run: |
           # only add upstream if it doesn't already exist
