@@ -1640,6 +1640,9 @@ definitions:
             path:
               - "Account Id"
             value: "{{ stream_partition['account_id'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["Type"]
       - type: CustomTransformation
         class_name: source_bing_ads.components.BulkDatetimeToRFC3339
     incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
