@@ -82,7 +82,7 @@ class InputConsumerTask(
      */
     override suspend fun execute() {
         log.info { "Starting consuming messages from the input flow" }
-        val unopenedStreams = catalog.streams.map { it.descriptor }.toMutableSet()
+        val unopenedStreams = catalog.streams.map { it.mappedDescriptor }.toMutableSet()
         pipelineInputQueue.use {
             pipelineEventBookkeepingRouter.use {
                 inputFlow.fold(unopenedStreams) { unopenedStreams, (_, reserved) ->

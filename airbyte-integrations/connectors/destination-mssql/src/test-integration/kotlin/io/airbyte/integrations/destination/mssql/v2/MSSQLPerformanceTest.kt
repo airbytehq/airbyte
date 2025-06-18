@@ -87,7 +87,7 @@ class MSSQLStandardInsertPerformanceTest :
             val configOverrides =
                 mutableMapOf("host" to MSSQLContainerHelper.getHost()).apply {
                     MSSQLContainerHelper.getPort()?.let { port -> put("port", port.toString()) }
-                    stream.descriptor.namespace?.let { schema -> put("schema", schema) }
+                    stream.mappedDescriptor.namespace?.let { schema -> put("schema", schema) }
                 }
             MSSQLConfigurationFactory()
                 .makeWithOverrides(spec = spec as MSSQLSpecification, overrides = configOverrides)

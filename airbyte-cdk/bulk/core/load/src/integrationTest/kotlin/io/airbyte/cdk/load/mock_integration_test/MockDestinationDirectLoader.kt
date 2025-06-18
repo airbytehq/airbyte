@@ -30,7 +30,7 @@ class MockDestinationDirectLoaderFactory : DirectLoaderFactory<MockDestinationDi
 class MockDestinationDirectLoader : DirectLoader {
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val recordAirbyteValue = record.asDestinationRecordAirbyteValue()
-        val filename = getFilename(record.stream.descriptor, staging = true)
+        val filename = getFilename(record.stream.mappedDescriptor, staging = true)
         val outputRecord =
             OutputRecord(
                 UUID.randomUUID(),

@@ -17,7 +17,7 @@ open class MockPathFactory : PathFactory {
         get() = "prefix"
 
     private fun fromStream(stream: DestinationStream): String {
-        return "${stream.descriptor.namespace}/${stream.descriptor.name}"
+        return "${stream.mappedDescriptor.namespace}/${stream.mappedDescriptor.name}"
     }
 
     override fun getFinalDirectory(
@@ -49,7 +49,7 @@ open class MockPathFactory : PathFactory {
         return PathMatcher(
             regex =
                 Regex(
-                    "$finalPrefix/(${stream.descriptor.namespace})/(${stream.descriptor.name})/(.*)-(.*)$"
+                    "$finalPrefix/(${stream.mappedDescriptor.namespace})/(${stream.mappedDescriptor.name})/(.*)-(.*)$"
                 ),
             variableToIndex = mapOf("part_number" to 4)
         )

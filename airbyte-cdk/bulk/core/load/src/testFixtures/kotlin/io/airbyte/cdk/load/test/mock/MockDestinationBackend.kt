@@ -137,7 +137,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-            getFilename(stream.descriptor.namespace, stream.descriptor.name)
+            getFilename(stream.mappedDescriptor.namespace, stream.mappedDescriptor.name)
         )
     }
 

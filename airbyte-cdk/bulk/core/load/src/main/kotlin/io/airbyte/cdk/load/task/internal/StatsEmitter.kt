@@ -47,7 +47,7 @@ class StatsEmitter(
     override suspend fun execute() {
         while (true) {
             catalog.streams.forEach { stream ->
-                val manager = syncManager.getStreamManager(stream.descriptor)
+                val manager = syncManager.getStreamManager(stream.mappedDescriptor)
 
                 if (manager.receivedStreamComplete()) return@forEach
 

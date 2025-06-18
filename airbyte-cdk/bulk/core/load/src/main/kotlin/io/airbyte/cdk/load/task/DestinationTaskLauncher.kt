@@ -230,11 +230,11 @@ class DestinationTaskLauncher(
         catalog.streams
             .map {
                 val shouldRunStreamLoaderClose =
-                    syncManager.getStreamManager(it.descriptor).setClosed()
+                    syncManager.getStreamManager(it.mappedDescriptor).setClosed()
                 failStreamTaskFactory.make(
                     this,
                     e,
-                    it.descriptor,
+                    it.mappedDescriptor,
                     shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
                 )
             }

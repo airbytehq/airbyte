@@ -150,7 +150,7 @@ class CheckpointManager<T>(
             val head = globalCheckpoints.firstEntry() ?: break
             val previousStateEmitted =
                 catalog.streams.all { stream ->
-                    wasPreviousStateEmitted(stream.descriptor, head.key.checkpointIndex)
+                    wasPreviousStateEmitted(stream.mappedDescriptor, head.key.checkpointIndex)
                 }
             if (!previousStateEmitted) {
                 log.debug { "State for checkpoint before ${head.key} has not been emitted yet." }
@@ -163,7 +163,7 @@ class CheckpointManager<T>(
                 } else {
                     catalog.streams.all {
                         syncManager
-                            .getStreamManager(it.descriptor)
+                            .getStreamManager(it.mappedDescriptor)
                             .areRecordsPersistedForCheckpoint(head.key.checkpointId)
                     }
                 }
@@ -176,11 +176,11 @@ class CheckpointManager<T>(
                         .map { stream ->
                             val delta =
                                 syncManager
-                                    .getStreamManager(stream.descriptor)
+                                    .getStreamManager(stream.mappedDescriptor)
                                     .committedCount(head.key.checkpointId)
 
                             /* increment() returns the new aggregate for this stream. */
-                            committedCount.increment(stream.descriptor, delta)
+                            committedCount.increment(stream.mappedDescriptor, delta)
                         }
                         .fold(0L to 0L) { acc, value ->
                             acc.first + value.records to acc.second + value.serializedBytes
@@ -189,7 +189,7 @@ class CheckpointManager<T>(
                 sendStateMessage(
                     head.value.checkpointMessage,
                     head.key,
-                    catalog.streams.map { it.descriptor },
+                    catalog.streams.map { it.mappedDescriptor },
                     totalRecords,
                     totalBytes
                 )
@@ -215,10 +215,10 @@ class CheckpointManager<T>(
         val noCheckpointStreams = mutableSetOf<DestinationStream.Descriptor>()
         for (stream in catalog.streams) {
 
-            val manager = syncManager.getStreamManager(stream.descriptor)
-            val streamCheckpoints = streamCheckpoints[stream.descriptor]
+            val manager = syncManager.getStreamManager(stream.mappedDescriptor)
+            val streamCheckpoints = streamCheckpoints[stream.mappedDescriptor]
             if (streamCheckpoints == null) {
-                noCheckpointStreams.add(stream.descriptor)
+                noCheckpointStreams.add(stream.mappedDescriptor)
 
                 continue
             }
@@ -226,7 +226,10 @@ class CheckpointManager<T>(
                 val (nextCheckpointKey, nextMessage) = streamCheckpoints.firstEntry() ?: break
 
                 if (
-                    !wasPreviousStateEmitted(stream.descriptor, nextCheckpointKey.checkpointIndex)
+                    !wasPreviousStateEmitted(
+                        stream.mappedDescriptor,
+                        nextCheckpointKey.checkpointIndex
+                    )
                 ) {
                     break
                 }
@@ -236,18 +239,18 @@ class CheckpointManager<T>(
                 if (persisted) {
 
                     val delta = manager.committedCount(nextCheckpointKey.checkpointId)
-                    val aggregate = committedCount.increment(stream.descriptor, delta)
+                    val aggregate = committedCount.increment(stream.mappedDescriptor, delta)
 
                     sendStateMessage(
                         nextMessage,
                         nextCheckpointKey,
-                        listOf(stream.descriptor),
+                        listOf(stream.mappedDescriptor),
                         aggregate.records,
                         aggregate.serializedBytes,
                     )
 
                     log.info {
-                        "Flushed checkpoint for stream: ${stream.descriptor} at index: $nextCheckpointKey (records=${aggregate.records}, bytes=${aggregate.serializedBytes})"
+                        "Flushed checkpoint for stream: ${stream.mappedDescriptor} at index: $nextCheckpointKey (records=${aggregate.records}, bytes=${aggregate.serializedBytes})"
                     }
 
                     // don't remove until after we've successfully sent

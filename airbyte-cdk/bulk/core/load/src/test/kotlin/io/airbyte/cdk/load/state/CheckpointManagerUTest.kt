@@ -56,8 +56,8 @@ class CheckpointManagerUTest {
     fun setup() {
         coEvery { catalog.streams } returns listOf(stream1, stream2)
         coEvery { outputConsumer.invoke(any(), any(), any()) } returns Unit
-        coEvery { syncManager.getStreamManager(stream1.descriptor) } returns streamManager1
-        coEvery { syncManager.getStreamManager(stream2.descriptor) } returns streamManager2
+        coEvery { syncManager.getStreamManager(stream1.mappedDescriptor) } returns streamManager1
+        coEvery { syncManager.getStreamManager(stream2.mappedDescriptor) } returns streamManager2
     }
 
     private fun makeCheckpointManager(): CheckpointManager<Reserved<CheckpointMessage>> {
@@ -77,8 +77,8 @@ class CheckpointManagerUTest {
         val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
         val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
 
-        checkpointManager.addStreamCheckpoint(stream1.descriptor, makeKey(1), message1)
-        checkpointManager.addStreamCheckpoint(stream2.descriptor, makeKey(1), message2)
+        checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, makeKey(1), message1)
+        checkpointManager.addStreamCheckpoint(stream2.mappedDescriptor, makeKey(1), message2)
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("1")) } returns false
         coEvery { streamManager2.areRecordsPersistedForCheckpoint(CheckpointId("1")) } returns true
@@ -94,12 +94,12 @@ class CheckpointManagerUTest {
         val checkpointManager = makeCheckpointManager()
 
         checkpointManager.addStreamCheckpoint(
-            stream1.descriptor,
+            stream1.mappedDescriptor,
             makeKey(1, "one"),
             mockk(relaxed = true)
         )
         checkpointManager.addStreamCheckpoint(
-            stream1.descriptor,
+            stream1.mappedDescriptor,
             makeKey(2, "two"),
             mockk(relaxed = true)
         )
@@ -119,12 +119,12 @@ class CheckpointManagerUTest {
         val checkpointManager = makeCheckpointManager()
 
         checkpointManager.addStreamCheckpoint(
-            stream1.descriptor,
+            stream1.mappedDescriptor,
             makeKey(1, "one"),
             mockk(relaxed = true)
         )
         checkpointManager.addStreamCheckpoint(
-            stream1.descriptor,
+            stream1.mappedDescriptor,
             makeKey(2, "two"),
             mockk(relaxed = true)
         )
@@ -144,12 +144,12 @@ class CheckpointManagerUTest {
         val checkpointManager = makeCheckpointManager()
 
         checkpointManager.addStreamCheckpoint(
-            stream1.descriptor,
+            stream1.mappedDescriptor,
             makeKey(2, "two"),
             mockk(relaxed = true)
         )
         checkpointManager.addStreamCheckpoint(
-            stream1.descriptor,
+            stream1.mappedDescriptor,
             makeKey(1, "one"),
             mockk(relaxed = true)
         )

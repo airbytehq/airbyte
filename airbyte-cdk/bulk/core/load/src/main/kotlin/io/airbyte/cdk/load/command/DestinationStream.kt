@@ -63,7 +63,7 @@ data class DestinationStream(
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper
 ) {
-    val descriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
+    val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
 
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =

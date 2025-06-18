@@ -77,7 +77,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
         // Initialize the part factory and writer.
         val partFactory = PartFactory(fileName, fileNo)
-        log.info { "Starting part generation for $fileName (${stream.descriptor})" }
+        log.info { "Starting part generation for $fileName (${stream.mappedDescriptor})" }
         return State(stream, writerFactory.create(stream), partFactory)
     }
 
