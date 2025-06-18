@@ -176,7 +176,7 @@ class AvroFormattingWriter(
     @Suppress("DEPRECATION")
     private val pipeline = io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory().create(stream)
     private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
-    private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
+    private val avroSchema = mappedSchema.toAvroSchema(stream.mappedDescriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
 
@@ -218,7 +218,7 @@ class ParquetFormattingWriter(
     private val pipeline =
         io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest().create(stream)
     private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
-    private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
+    private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.mappedDescriptor)
     private val writer: ParquetWriter =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
 
