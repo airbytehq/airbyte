@@ -42,7 +42,7 @@ import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 class ProtobufToAirbyteValue(
     private val fields: Array<AirbyteValueProxy.FieldAccessor>,
 ) {
-    
+
     private val jsonToAirbyteValue = JsonToAirbyteValue()
 
     fun convert(record: DestinationRecordProtobufSource): AirbyteValue {
