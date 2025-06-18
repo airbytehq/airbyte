@@ -158,6 +158,14 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - query
+            value: "{{ record['query'] }}"
+            value_type: string
+        condition: "{{ record.get('query', False) }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -386,6 +394,14 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - query
+            value: "{{ record['query'] }}"
+            value_type: string
+        condition: "{{ record.get('query', False) }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
