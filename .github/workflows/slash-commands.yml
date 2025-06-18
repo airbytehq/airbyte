@@ -39,6 +39,7 @@ jobs:
             run-cat-tests
             run-connector-tests
             test-performance
+            bump-airbyte-submodule
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.

@@ -1,3 +1,18 @@
+# Include tasks from the main `airbyte` repository (`poe-tasks` is symlinked)
 include = [
     "${POE_GIT_DIR}/poe-tasks/repo-root-tasks.toml",
 ]
+
+[tasks]
+# Custom tasks for the Enterprise repository.
+
+bump-airbyte-submodule.shell = """
+set -eu # Ensure we return non-zero exit code upon failure
+
+# Update the airbyte submodule, uses `branch=master`, per `.gitmodules` settings:
+git submodule update --remote airbyte-submodule
+
+# Explicitly stage the change:
+git add airbyte-submodule
+"""
+bump-airbyte-submodule.help = "Updates `airbyte-submodule` to the latest commit on the master branch."

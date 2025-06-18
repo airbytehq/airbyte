@@ -1,3 +1,4 @@
 [submodule "airbyte"]
 	path = airbyte-submodule
 	url = git@github.com:airbytehq/airbyte.git
+    branch = master
