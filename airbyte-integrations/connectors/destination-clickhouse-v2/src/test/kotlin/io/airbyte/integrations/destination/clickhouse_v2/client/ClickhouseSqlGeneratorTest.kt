@@ -127,6 +127,35 @@ class ClickhouseSqlGeneratorTest {
         Assertions.assertEquals(actualSql, expectedSql)
     }
 
+    @Test
+    fun `test copyTable`() {
+        val sourceTable = TableName("source_namespace", "source_table")
+        val targetTable = TableName("target_namespace", "target_table")
+        val columnNameMapping =
+            ColumnNameMapping(mapOf("source_col1" to "target_col1", "source_col2" to "target_col2"))
+
+        val expectedSql = """
+            INSERT INTO `target_namespace`.`target_table`
+            (
+                _airbyte_raw_id,
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id,
+                target_col1,target_col2
+            )
+            SELECT
+                _airbyte_raw_id,
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id,
+                target_col1,target_col2
+            FROM `source_namespace`.`source_table`
+        """.trimIndent()
+
+        val actualSql = clickhouseSqlGenerator.copyTable(columnNameMapping, sourceTable, targetTable)
+        Assertions.assertEquals(expectedSql, actualSql)
+    }
+
     companion object {
         @JvmStatic
         fun alterTableTestCases(): List<Arguments> =
