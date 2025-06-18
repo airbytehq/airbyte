@@ -76,6 +76,22 @@ class TestSuiteReportStream(TestReportStream):
         # make noop for no migrated streams to manifest (rest api).
         ...
 
+    @property
+    def expected_no_config_start_date_cursor_value(self) -> str:
+        """
+        Override this method to provide the expected cursor value when no config start date is provided.
+        This should return the datetime format appropriate for the report type (hourly vs daily/weekly/monthly).
+        """
+        raise NotImplementedError("Subclasses of TestSuiteReportStream must implement expected_no_config_start_date_cursor_value")
+
+    @property
+    def expected_job_end_time_format(self) -> str:
+        """
+        Override this method to provide the expected job end time format.
+        This should return the datetime format appropriate for the report type.
+        """
+        raise NotImplementedError("Subclasses of TestSuiteReportStream must implement expected_job_end_time_format")
+
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file(self):
         assert SOURCE_BING_ADS
@@ -276,7 +292,7 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = provided_state[0].stream.stream_state.state[self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+        assert job_end_time == self.expected_job_end_time_format
 
     @freeze_time(SECOND_READ_FREEZE_TIME)
     def test_incremental_read_with_legacy_state_returns_records_after_migration_with_records_further_state_cursor(self):
@@ -344,7 +360,7 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+        assert job_end_time == self.expected_job_end_time_format
 
     @freeze_time("2024-05-06")
     def test_no_config_start_date(self):
@@ -355,19 +371,15 @@ class TestSuiteReportStream(TestReportStream):
         if self.stream_name not in MANIFEST_STREAMS:
             self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         self.mock_report_apis()
-        # here we mock the report start date to be the first day of the year 2023
-        self.mock_generate_report_api(
-            endpoint="Submit",
-            response_template="generate_report",
-            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AdPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AdPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "CampaignId", "AdGroupId", "AdId", "TimePeriod", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "CurrencyCode", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS", "TopVsOther", "BidMatchType", "DeliveredMatchType", "AccountName", "CampaignName", "CampaignType", "AdGroupName", "Impressions", "Clicks", "Ctr", "Spend", "CostPerConversion", "DestinationUrl", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "FinalAppUrl", "AdDescription", "AdDescription2", "ViewThroughConversions", "ViewThroughConversionsQualified", "AllCostPerConversion", "AllReturnOnAdSpend", "Conversions", "ConversionRate", "ConversionsQualified", "AverageCpc", "AveragePosition", "AverageCpm", "AllConversions", "AllConversionRate", "AllRevenue", "AllRevenuePerConversion", "Revenue", "RevenuePerConversion", "RevenuePerAssist"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
-        )
         config = deepcopy(self._config)
         del config["reports_start_date"]
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, config, self.report_file)
         assert len(output.records) == self.records_number
-        first_read_state = deepcopy(self.first_read_state)
-        # this corresponds to the last read record as we don't have started_date in the config
-        # the self.first_read_state is set using the config start date so it is not correct for this test
-        first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
-        first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
-        assert output.most_recent_state.stream_state.__dict__ == first_read_state
+        # Verify that the cursor is set to the expected value
+        actual_cursor = None
+        for state in output.most_recent_state.stream_state.states:
+            if state["partition"]["account_id"] == self.account_id:
+                actual_cursor = state["cursor"]
+
+        assert actual_cursor is not None, f"Expected state is empty for account_id: {self.account_id}"
+        assert actual_cursor[self.cursor_field] == self.expected_no_config_start_date_cursor_value

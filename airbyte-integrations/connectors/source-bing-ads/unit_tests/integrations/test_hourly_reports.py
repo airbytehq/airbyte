@@ -31,8 +31,18 @@ class HourlyReportsTest(TestSuiteReportStream):
     first_read_state = FIRST_STATE
     second_read_state = SECOND_STATE
 
+    @property
+    def expected_no_config_start_date_cursor_value(self) -> str:
+        """Hourly reports use ISO datetime format with timezone."""
+        return "2023-11-12T00:00:00+00:00"
 
-class HourlyReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
+    @property
+    def expected_job_end_time_format(self) -> str:
+        """Hourly reports use ISO datetime format with timezone."""
+        return "2024-05-08T00:00:00+00:00"
+
+
+class HourlyReportsTestWithStateChangesAfterMigration(HourlyReportsTest):
     first_read_state = get_state_after_migration(
         time_period=f"{TestSuiteReportStream.start_date}T00:00:00+00:00", account_id=TestSuiteReportStream.account_id
     )
