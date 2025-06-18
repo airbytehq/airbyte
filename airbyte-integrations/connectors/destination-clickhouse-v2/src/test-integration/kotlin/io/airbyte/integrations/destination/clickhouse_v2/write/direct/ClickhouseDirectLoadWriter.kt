@@ -528,19 +528,13 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
 }
 
 object ClientProvider {
-    private var client: Client? = null
-
     fun getClient(config: ClickhouseConfiguration): Client {
-        if (client == null) {
-            client =
-                Client.Builder()
+        return Client.Builder()
                     .setPassword(config.password)
                     .setUsername(config.username)
                     .addEndpoint(config.endpoint)
                     .setDefaultDatabase(config.resolvedDatabase)
                     .retryOnFailures(ClientFaultCause.None)
                     .build()
-        }
-        return client!!
     }
 }
