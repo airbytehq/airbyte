@@ -1,4 +1,4 @@
-name: Bump Airbyte Submodule (On-Demand)
+name: Format Fix (On-Demand)
 
 on:
   workflow_dispatch:
@@ -28,13 +28,13 @@ permissions:
   issues: write
 
 jobs:
-  run-poe-command:
+  run-format-fix:
     runs-on: ubuntu-latest
     steps:
-      - name: Run `poe bump-airbyte-submodule` [Poe Command Processor]
+      - name: Run `poe format-fix` [Poe Command Processor]
         uses: aaronsteers/poe-command-processor@v1.2.3
         with:
           pr: ${{ github.event.inputs.pr }}
           comment-id: ${{ github.event.inputs.comment-id }}
           github-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          command: bump-airbyte-submodule
+          command: format-fix
