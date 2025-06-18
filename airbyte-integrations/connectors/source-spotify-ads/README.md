@@ -1,7 +1,7 @@
 # Spotify Ads
 This directory contains the manifest-only connector for `source-spotify-ads`.
 
-potify Ads Connector
+Spotify Ads Connector
 Extract campaign performance data from Spotify&#39;s advertising platform
 This connector syncs advertising data from Spotify&#39;s Partner API, enabling you to analyze campaign performance metrics and optimize your Spotify advertising strategy. Perfect for marketers, agencies, and businesses running audio and video advertising campaigns on Spotify.
 Available Data
