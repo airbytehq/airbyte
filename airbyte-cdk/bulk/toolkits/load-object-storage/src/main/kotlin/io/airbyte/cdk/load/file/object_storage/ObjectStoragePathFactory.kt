@@ -104,9 +104,9 @@ class ObjectStoragePathFactory(
             fileFormatExtension ?: compressionExtension
         }
 
-    val PATH_VARIABLES = getPathVariables(pathConfig)
+    private val PATH_VARIABLES = getPathVariables(pathConfig)
 
-    val PATH_VARIABLES_STREAM_CONSTANT =
+    private val PATH_VARIABLES_STREAM_CONSTANT =
         PATH_VARIABLES.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
 
     /**
