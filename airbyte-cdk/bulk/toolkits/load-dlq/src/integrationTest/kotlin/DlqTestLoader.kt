@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.integrationTest
 
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -33,8 +37,8 @@ class DlqTestSpec : ConfigurationSpecification() {
     val objectStorageConfig: ObjectStorageSpec = DisabledObjectStorageSpec()
 }
 
-class DlqTestConfig(override val objectStorageConfig: ObjectStorageConfig)
-    : DestinationConfiguration(), ObjectStorageConfigProvider
+class DlqTestConfig(override val objectStorageConfig: ObjectStorageConfig) :
+    DestinationConfiguration(), ObjectStorageConfigProvider
 
 class DlqTestStreamLoader(override val stream: DestinationStream) : StreamLoader
 
@@ -52,12 +56,11 @@ class DlqTestState : AutoCloseable {
     // Just so that we do not write everything to the dead letter queue
     // we only write even ids that are less than 10
     private fun DestinationRecordRaw.hasAnEvenId(): Boolean {
-        val id = this.rawData.asAirbyteValueProxy().getInteger(
-            AirbyteValueProxy.FieldAccessor(0, "id", IntegerType)
-        )
-        return id?.let {
-            it < BigInteger.TEN && it.mod(BigInteger.TWO) == BigInteger.ZERO
-        } ?: true
+        val id =
+            this.rawData
+                .asAirbyteValueProxy()
+                .getInteger(AirbyteValueProxy.FieldAccessor(0, "id", IntegerType))
+        return id?.let { it < BigInteger.TEN && it.mod(BigInteger.TWO) == BigInteger.ZERO } ?: true
     }
 }
 
@@ -79,33 +82,38 @@ class DlqTestLoader : DlqLoader<DlqTestState> {
 
 @Factory
 class DlqTestFactory {
-    @Singleton
-    fun spec() = DlqTestSpec()
+    @Singleton fun spec() = DlqTestSpec()
 
     @Singleton
-    fun specExtension() = object : DestinationSpecificationExtension {
-        override val supportedSyncModes = listOf(DestinationSyncMode.APPEND)
-        override val supportsIncremental = true
-    }
-
-    @Singleton
-    fun configurationFactory() = object : DestinationConfigurationFactory<DlqTestSpec, DlqTestConfig> {
-        override fun makeWithoutExceptionHandling(pojo: DlqTestSpec): DlqTestConfig =
-            DlqTestConfig(objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig())
-    }
-
-    @Singleton
-    fun objectLoader() = object : ObjectLoader {
-        override val inputPartitions = 1
-        override val numPartWorkers = 1
-    }
-
-    @Singleton
-    fun writer() = object : DestinationWriter {
-        override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-            return DlqTestStreamLoader(stream)
+    fun specExtension() =
+        object : DestinationSpecificationExtension {
+            override val supportedSyncModes = listOf(DestinationSyncMode.APPEND)
+            override val supportsIncremental = true
         }
-    }
+
+    @Singleton
+    fun configurationFactory() =
+        object : DestinationConfigurationFactory<DlqTestSpec, DlqTestConfig> {
+            override fun makeWithoutExceptionHandling(pojo: DlqTestSpec): DlqTestConfig =
+                DlqTestConfig(
+                    objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig()
+                )
+        }
+
+    @Singleton
+    fun objectLoader() =
+        object : ObjectLoader {
+            override val inputPartitions = 1
+            override val numPartWorkers = 1
+        }
+
+    @Singleton
+    fun writer() =
+        object : DestinationWriter {
+            override fun createStreamLoader(stream: DestinationStream): StreamLoader {
+                return DlqTestStreamLoader(stream)
+            }
+        }
 
     @Singleton
     fun loadPipeline(

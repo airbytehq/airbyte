@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.dlq
 
 import io.airbyte.cdk.load.command.Append
@@ -28,7 +32,8 @@ import org.junit.jupiter.api.Test
 class FlattenQueueAdapterTest {
 
     class TestQueue : PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
-        val broadcasted: MutableList<PipelineEvent<StreamKey, DestinationRecordRaw>> = mutableListOf()
+        val broadcasted: MutableList<PipelineEvent<StreamKey, DestinationRecordRaw>> =
+            mutableListOf()
         val published: MutableList<PipelineEvent<StreamKey, DestinationRecordRaw>> = mutableListOf()
         override val partitions: Int = 0
 
@@ -64,11 +69,12 @@ class FlattenQueueAdapterTest {
     @Test
     fun `flattening lists preserve the total count`() {
         val state = BatchState.COMPLETE
-        val records = listOf(
-            record(1),
-            record(2),
-            record(3),
-        )
+        val records =
+            listOf(
+                record(1),
+                record(2),
+                record(3),
+            )
         val input = DlqStepOutput(state, records)
         val checkpointId = CheckpointId("checkpoint-id")
         val checkpointValue = CheckpointValue(records = 12, serializedBytes = 123)
@@ -98,10 +104,11 @@ class FlattenQueueAdapterTest {
         assertEquals(records, actualRecords)
 
         // this sums all the counts across the emitted events by checkpointId
-        val actualCounts = messages
-            .flatMap { it.checkpointCounts.entries }
-            .groupBy({ it.key }, { it.value })
-            .mapValues { it.value.reduce { acc, value -> acc.plus(value) } }
+        val actualCounts =
+            messages
+                .flatMap { it.checkpointCounts.entries }
+                .groupBy({ it.key }, { it.value })
+                .mapValues { it.value.reduce { acc, value -> acc.plus(value) } }
         // Verifying the aggregate counts remain the same
         assertEquals(mapOf(checkpointId to checkpointValue), actualCounts)
 
@@ -113,32 +120,34 @@ class FlattenQueueAdapterTest {
     }
 
     companion object {
-        val STREAM = DestinationStream(
-        unmappedNamespace = null,
-        unmappedName = "name",
-        importType = Append,
-        schema = ObjectTypeWithoutSchema,
-        generationId = 0,
-        minimumGenerationId = 0,
-        syncId = 1,
-        isFileBased = false,
-        includeFiles = false,
-        destinationObjectName = null,
-        matchingKey = null,
-        namespaceMapper = NamespaceMapper(),
-        )
+        val STREAM =
+            DestinationStream(
+                unmappedNamespace = null,
+                unmappedName = "name",
+                importType = Append,
+                schema = ObjectTypeWithoutSchema,
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 1,
+                isFileBased = false,
+                includeFiles = false,
+                destinationObjectName = null,
+                matchingKey = null,
+                namespaceMapper = NamespaceMapper(),
+            )
     }
 
     private fun record(id: Int): DestinationRecordRaw =
         DestinationRecordRaw(
             stream = STREAM,
-            rawData = DestinationRecordJsonSource(
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(
-                        AirbyteRecordMessage().withData(Jsons.deserialize("""{"id":"$id"}"""))
-                    )
-            ),
+            rawData =
+                DestinationRecordJsonSource(
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.RECORD)
+                        .withRecord(
+                            AirbyteRecordMessage().withData(Jsons.deserialize("""{"id":"$id"}"""))
+                        )
+                ),
             serializedSizeBytes = 1,
             checkpointId = null,
             airbyteRawId = UUID.randomUUID(),

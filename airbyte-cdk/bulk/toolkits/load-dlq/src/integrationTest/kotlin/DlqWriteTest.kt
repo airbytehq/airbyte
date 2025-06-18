@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -22,14 +26,15 @@ import org.junit.jupiter.api.assertAll
 open class AbstractDlqWriteTest(
     val configContent: String,
     additionalMicronautEnvs: List<String> = listOf(),
-) : IntegrationTest(
-    dataDumper = MockDestinationDataDumper,
-    destinationCleaner = NoopDestinationCleaner,
-    recordMangler = UncoercedExpectedRecordMapper,
-    nameMapper = NoopNameMapper,
-    dataChannelMedium = DataChannelMedium.STDIO,
-    dataChannelFormat = DataChannelFormat.JSONL,
-    additionalMicronautEnvs = additionalMicronautEnvs,
+) :
+    IntegrationTest(
+        dataDumper = MockDestinationDataDumper,
+        destinationCleaner = NoopDestinationCleaner,
+        recordMangler = UncoercedExpectedRecordMapper,
+        nameMapper = NoopNameMapper,
+        dataChannelMedium = DataChannelMedium.STDIO,
+        dataChannelFormat = DataChannelFormat.JSONL,
+        additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
 
     open fun testBasicWrite() {
@@ -48,89 +53,100 @@ open class AbstractDlqWriteTest(
             runSync(
                 configContents = configContent,
                 stream = stream,
-                messages = listOf(
-                    record(stream, id = 1),
-                    record(stream, id = 2),
-                    record(stream, id = 3),
-                    record(stream, id = 4),
-                    record(stream, id = 5),
-                    record(stream, id = 6),
-                    record(stream, id = 7),
-                    record(stream, id = 8),
-                    record(stream, id = 9),
-                    checkpoint(stream, sourceRecordCount = 9),
-                    record(stream, id = 10),
-                    record(stream, id = 11),
-                    checkpoint(stream, sourceRecordCount = 2),
-                ),
+                messages =
+                    listOf(
+                        record(stream, id = 1),
+                        record(stream, id = 2),
+                        record(stream, id = 3),
+                        record(stream, id = 4),
+                        record(stream, id = 5),
+                        record(stream, id = 6),
+                        record(stream, id = 7),
+                        record(stream, id = 8),
+                        record(stream, id = 9),
+                        checkpoint(stream, sourceRecordCount = 9),
+                        record(stream, id = 10),
+                        record(stream, id = 11),
+                        checkpoint(stream, sourceRecordCount = 2),
+                    ),
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
-        assertAll(
-            {
-                assertEquals(2, stateMessages.size)
+        assertAll({
+            assertEquals(2, stateMessages.size)
 
-                val checkpoints = listOf(
+            val checkpoints =
+                listOf(
                     StreamCheckpoint(
-                        streamName = stream.unmappedName,
-                        streamNamespace = stream.unmappedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 9,
-                        destinationRecordCount = 9,
-                        checkpointKey = null,
-                        totalRecords = 9L,
-                        totalBytes = 1242,
-                    ).asProtocolMessage(),
+                            streamName = stream.unmappedName,
+                            streamNamespace = stream.unmappedNamespace,
+                            blob = """{"foo": "bar"}""",
+                            sourceRecordCount = 9,
+                            destinationRecordCount = 9,
+                            checkpointKey = null,
+                            totalRecords = 9L,
+                            totalBytes = 1242,
+                        )
+                        .asProtocolMessage(),
                     StreamCheckpoint(
-                        streamName = stream.unmappedName,
-                        streamNamespace = stream.unmappedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 2,
-                        destinationRecordCount = 2,
-                        checkpointKey = null,
-                        totalRecords = 11L,
-                        totalBytes = 1520,
-                    ).asProtocolMessage(),
+                            streamName = stream.unmappedName,
+                            streamNamespace = stream.unmappedNamespace,
+                            blob = """{"foo": "bar"}""",
+                            sourceRecordCount = 2,
+                            destinationRecordCount = 2,
+                            checkpointKey = null,
+                            totalRecords = 11L,
+                            totalBytes = 1520,
+                        )
+                        .asProtocolMessage(),
                 )
 
-                val expectedStateMessages = checkpoints.map {
+            val expectedStateMessages =
+                checkpoints.map {
                     Jsons.readValue(Jsons.writeValueAsBytes(it), AirbyteMessage::class.java)
                 }
-                assertEquals(expectedStateMessages, stateMessages)
-            },
-        )
+            assertEquals(expectedStateMessages, stateMessages)
+        },)
     }
 
     companion object {
-        fun record(stream: DestinationStream, id: Int) = InputRecord(
-            stream = stream,
-            data = """{"id": $id}""",
-            emittedAtMs = 1234,
-            changes = mutableListOf(),
-            checkpointId = null,
-        )
+        fun record(stream: DestinationStream, id: Int) =
+            InputRecord(
+                stream = stream,
+                data = """{"id": $id}""",
+                emittedAtMs = 1234,
+                changes = mutableListOf(),
+                checkpointId = null,
+            )
 
-        fun checkpoint(stream: DestinationStream, sourceRecordCount: Long) = InputStreamCheckpoint(
-            streamName = stream.unmappedName,
-            streamNamespace = stream.unmappedNamespace,
-            blob = """{"foo": "bar"}""",
-            sourceRecordCount = sourceRecordCount,
-            checkpointKey = null,
-        )
+        fun checkpoint(stream: DestinationStream, sourceRecordCount: Long) =
+            InputStreamCheckpoint(
+                streamName = stream.unmappedName,
+                streamNamespace = stream.unmappedNamespace,
+                blob = """{"foo": "bar"}""",
+                sourceRecordCount = sourceRecordCount,
+                checkpointKey = null,
+            )
     }
 }
 
-class NoBucketDlqWriteTest : AbstractDlqWriteTest(
-    configContent = """{"objectStorageConfig":{"storage_type":"None"}}""",
-) {
+class NoBucketDlqWriteTest :
+    AbstractDlqWriteTest(
+        configContent = """{"objectStorageConfig":{"storage_type":"None"}}""",
+    ) {
     @Test
-    override fun testBasicWrite() { super.testBasicWrite() }
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
 }
 
-class MockBucketDlqWriteTest : AbstractDlqWriteTest(
-    configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
-    additionalMicronautEnvs = listOf("MockObjectStorage"),
-) {
+class MockBucketDlqWriteTest :
+    AbstractDlqWriteTest(
+        configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
+        additionalMicronautEnvs = listOf("MockObjectStorage"),
+    ) {
     @Test
-    override fun testBasicWrite() { super.testBasicWrite() }
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
 }
