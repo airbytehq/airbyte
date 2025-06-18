@@ -14,6 +14,9 @@ import java.math.BigInteger
 
 @Singleton
 class ClickhouseValueValidator {
+    /*
+     * Mutative for performance reasons.
+     */
     fun validateAndCoerce(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         when (val abValue = value.abValue) {
             is NumberValue -> if (abValue.value <= DECIMAL64_MIN || abValue.value >= DECIMAL64_MAX) {
@@ -29,7 +32,7 @@ class ClickhouseValueValidator {
     }
 
     object Constants {
-        // CH will convert the larger ints with overflow without erroring
+        // CH will overflow ints without erroring
         val INT64_MAX = BigInteger(Long.MAX_VALUE.toString())
         val INT64_MIN = BigInteger(Long.MIN_VALUE.toString())
         // copied from "deprecated" but still actively used
