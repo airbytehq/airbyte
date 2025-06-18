@@ -3098,6 +3098,18 @@ Table "workflows" {
     "portalId" integer
 }
 
+Table "details" {
+    "portalId" number
+    "accountType" string
+    "additionalCurrencies" array
+    "companyCurrency" string
+    "dataHostingLocation" string
+    "timeZone" string
+    "uiDomain" string
+    "utcOffset" string
+    "utcOffsetMilliseconds" number
+}
+
 Ref {
     "companies"."properties_hs_created_by_user_id" <> "owners"."userId"
 }
