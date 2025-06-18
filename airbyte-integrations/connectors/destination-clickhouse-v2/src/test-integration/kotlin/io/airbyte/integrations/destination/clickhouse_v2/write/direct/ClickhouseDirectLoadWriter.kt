@@ -12,11 +12,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -31,6 +27,7 @@ import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse_v2.Utils
+import io.airbyte.integrations.destination.clickhouse_v2.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
@@ -52,6 +49,7 @@ class ClickhouseDirectLoadWriter :
                     .makeWithOverrides(spec as ClickhouseSpecification, configOverrides)
             },
         destinationCleaner = ClickhouseDataCleaner,
+        recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = true,
@@ -344,37 +342,25 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
+        val namespacedTableName = "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
+
         val response =
             client
                 .query(
-                    "SELECT * FROM ${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
+                    "SELECT * FROM $namespacedTableName"
                 )
                 .get()
 
-        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
+        val schema = client.getTableSchema(namespacedTableName)
+
+        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response, schema)
         while (reader.hasNext()) {
             val record = reader.next()
             val dataMap = linkedMapOf<String, AirbyteValue>()
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
-                .map { entry ->
-                    val airbyteValue =
-                        when (entry.value) {
-                            is Long -> IntegerValue(entry.value as Long)
-                            is String ->
-                                if (entry.value == "") NullValue
-                                else StringValue(entry.value as String)
-                            is ZonedDateTime ->
-                                TimestampWithTimezoneValue(
-                                    (entry.value as ZonedDateTime).toOffsetDateTime()
-                                )
-                            null -> NullValue
-                            else ->
-                                throw UnsupportedOperationException(
-                                    "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
-                                )
-                        }
-                    dataMap.put(entry.key, airbyteValue)
+                .forEach { entry ->
+                    dataMap[entry.key] = AirbyteValue.from(entry.value)
                 }
             val outputRecord =
                 OutputRecord(
