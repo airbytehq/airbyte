@@ -133,20 +133,11 @@
         "type" : "string",
         "default" : "Hard delete",
         "enum" : [ "Hard delete", "Soft delete" ],
-        "description" : "Whether to execute CDC deletions as hard deletes (i.e. actually delete the record from the destination), or soft deletes (i.e. leave a tombstone record).",
-        "title" : "CDC hard deletes",
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
+        "title" : "CDC deletion mode",
         "group" : "sync_behavior",
         "order" : 5,
         "always_show" : true
-      },
-      "transformation_priority" : {
-        "type" : "string",
-        "default" : "interactive",
-        "enum" : [ "interactive", "batch" ],
-        "description" : "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
-        "title" : "Transformation Query Run Type",
-        "group" : "advanced",
-        "order" : 6
       },
       "disable_type_dedupe" : {
         "type" : "boolean",
@@ -158,7 +149,7 @@
       },
       "raw_data_dataset" : {
         "type" : "string",
-        "description" : "Airbyte will use this dataset for various internal tables (default: airbyte_internal). In legacy raw tables mode, the raw tables will be stored in this dataset.",
+        "description" : "Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to \"airbyte_internal\".",
         "title" : "Airbyte Internal Table Dataset Name",
         "group" : "advanced",
         "order" : 8
