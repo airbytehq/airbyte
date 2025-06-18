@@ -158,6 +158,11 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      # The purpose of the following transformation is to
+      # cast the query value as a string. The GSC API allows
+      # users to make queries with a wide array of datatypes resulting
+      # in occasional non-string values. This transformation ensures
+      # the Airbyte Entrypoint can serialize these non-string values.
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -394,6 +399,11 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      # The purpose of the following transformation is to
+      # cast the query value as a string. The GSC API allows
+      # users to make queries with a wide array of datatypes resulting
+      # in occasional non-string values. This transformation ensures
+      # the Airbyte Entrypoint can serialize these non-string values.
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
