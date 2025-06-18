@@ -24,9 +24,9 @@ public class MssqlCdcHelper {
   private static final String LEGACY_REPLICATION_FIELD = "replication_method";
   // new replication method config since version 0.4.0
   // it is an oneOf object
-  private static final String REPLICATION_FIELD = "replication";
-  private static final String REPLICATION_TYPE_FIELD = "replication_type";
-  private static final String METHOD_FIELD = "method";
+  public static final String REPLICATION_FIELD = "replication";
+  public static final String REPLICATION_TYPE_FIELD = "replication_type";
+  public static final String METHOD_FIELD = "method";
 
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
 

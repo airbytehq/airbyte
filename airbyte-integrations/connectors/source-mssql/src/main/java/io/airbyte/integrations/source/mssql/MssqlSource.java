@@ -9,7 +9,7 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConver
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
-import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.isCdc;
+import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.*;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.*;
@@ -113,6 +113,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private List<String> schemas;
   private int stateEmissionFrequency;
   private final FeatureFlags featureFlags;
+  public static final String REPLICATION_INCREMENTAL_EXCLUDE_TODAYS = "exclude_todays_data";
 
   public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -428,10 +429,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         LOGGER.info("Syncing via Primary Key");
         final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
 
-        final Boolean excludeTodaysData = true; //TEMP
-
-        if (excludeTodaysData) {
-
+        if (isExcludeTodayDateForCursorIncremental(sourceConfig)) {
+          LOGGER.info("Excluding Today Date for incremental streams with temporal cursors");
           final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = cursorBasedStateManager.getPairToCursorInfoMap();
           pairToCursorInfoMap.forEach((pair, cursorInfo) -> {
             final var tableInfo = tableNameToTable.get("%s.%s".formatted(pair.getNamespace(), pair.getName())); // TODO: no namespace
@@ -439,6 +438,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                             f.getName().equals(cursorInfo.getCursorField()))
                     .findFirst();
             maybeField.ifPresent(f -> {
+              LOGGER.info("Setting cutoff time for stream {} with cursor field {} to exclude today's data", pair, f.getName());
               switch (f.getType()) {
                 case JDBCType.DATE -> {
                   final var instant = Instant.now().minus(1, ChronoUnit.DAYS);
@@ -456,6 +456,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                   cursorInfo.setCutoffTime(cutoff.toString());
                 }
               }
+              LOGGER.info("Set cutoff time for stream {} with cursor field {} to {}", pair, f.getName(), cursorInfo.getCutoffTime());
             });
           });
         }
@@ -706,4 +707,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
   }
 
+  private Boolean isExcludeTodayDateForCursorIncremental(@NotNull final JsonNode config) {
+    if (config.hasNonNull(REPLICATION_FIELD)) {
+      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+      if (MssqlCdcHelper.ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == MssqlCdcHelper.ReplicationMethod.CDC) {
+        if (replicationConfig.hasNonNull(REPLICATION_INCREMENTAL_EXCLUDE_TODAYS)) {
+          return replicationConfig.get(REPLICATION_INCREMENTAL_EXCLUDE_TODAYS).asBoolean(false);
+        }
+      }
+    }
+    return false;
+  }
 }
