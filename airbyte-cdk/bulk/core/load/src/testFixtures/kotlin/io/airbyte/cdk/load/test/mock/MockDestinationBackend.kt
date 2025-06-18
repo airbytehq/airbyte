@@ -71,8 +71,14 @@ object MockDestinationBackend {
                 file.firstOrNull {
                     RecordDiffer.comparePks(incomingPk, getPk(it), nullEqualsUnset = false) == 0
                 }
+            val isNotDeletion =
+                getField(listOf("_ab_cdc_deleted_at"), incomingRecord).let {
+                    it == null || it is NullValue
+                }
             if (existingRecord == null) {
-                file.add(incomingRecord)
+                if (isNotDeletion) {
+                    file.add(incomingRecord)
+                }
             } else {
                 val incomingCursor = getCursor(incomingRecord)
                 val existingCursor = getCursor(existingRecord)
@@ -87,8 +93,7 @@ object MockDestinationBackend {
                         (compare == 0 && incomingRecord.extractedAt > existingRecord.extractedAt)
                 ) {
                     file.remove(existingRecord)
-                    val deletion = getField(listOf("_ab_cdc_deleted_at"), incomingRecord)
-                    if (deletion == null || deletion is NullValue) {
+                    if (isNotDeletion) {
                         file.add(incomingRecord)
                     }
                 }

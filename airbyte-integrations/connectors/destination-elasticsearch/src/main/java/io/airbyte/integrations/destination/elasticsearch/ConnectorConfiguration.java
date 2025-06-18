@@ -19,6 +19,7 @@ public class ConnectorConfiguration {
   private boolean upsert;
   @JsonProperty("ca_certificate")
   private String caCertificate;
+  private String pathPrefix;
   private AuthenticationMethod authenticationMethod = new AuthenticationMethod();
 
   public static ConnectorConfiguration fromJsonNode(JsonNode config) {

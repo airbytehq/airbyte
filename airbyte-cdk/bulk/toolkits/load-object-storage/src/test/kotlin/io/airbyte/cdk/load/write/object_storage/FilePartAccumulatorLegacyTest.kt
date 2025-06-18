@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -55,7 +56,8 @@ class FilePartAccumulatorLegacyTest {
         coVerify(exactly = 1) {
             outputQueue.publish(
                 match {
-                    (it as PipelineMessage).checkpointCounts == mapOf(CheckpointId("0") to 1L)
+                    (it as PipelineMessage).checkpointCounts ==
+                        mapOf(CheckpointId("0") to CheckpointValue(1, 1))
                 },
                 0
             )

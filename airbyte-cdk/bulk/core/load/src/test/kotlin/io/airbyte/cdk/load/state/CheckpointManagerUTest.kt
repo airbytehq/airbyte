@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.state
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -21,36 +22,40 @@ import org.junit.jupiter.api.Test
 class CheckpointManagerUTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
     @MockK(relaxed = true) lateinit var syncManager: SyncManager
-    private val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit =
-        mockk<suspend (Reserved<CheckpointMessage>) -> Unit>(relaxed = true)
+    private val outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit =
+        mockk<suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit>(relaxed = true)
     @MockK(relaxed = true) lateinit var timeProvider: TimeProvider
     @MockK(relaxed = true) lateinit var streamManager1: StreamManager
     @MockK(relaxed = true) lateinit var streamManager2: StreamManager
 
     private val stream1 =
         DestinationStream(
-            DestinationStream.Descriptor("test", "stream1"),
+            unmappedNamespace = "test",
+            unmappedName = "stream1",
             importType = Append,
             schema = ObjectTypeWithEmptySchema,
             generationId = 10L,
             minimumGenerationId = 10L,
-            syncId = 101L
+            syncId = 101L,
+            namespaceMapper = NamespaceMapper()
         )
 
     private val stream2 =
         DestinationStream(
-            DestinationStream.Descriptor("test", "stream2"),
+            unmappedNamespace = "test",
+            unmappedName = "stream2",
             importType = Append,
             schema = ObjectTypeWithEmptySchema,
             generationId = 10L,
             minimumGenerationId = 10L,
-            syncId = 101L
+            syncId = 101L,
+            namespaceMapper = NamespaceMapper()
         )
 
     @BeforeEach
     fun setup() {
         coEvery { catalog.streams } returns listOf(stream1, stream2)
-        coEvery { outputConsumer.invoke(any()) } returns Unit
+        coEvery { outputConsumer.invoke(any(), any(), any()) } returns Unit
         coEvery { syncManager.getStreamManager(stream1.descriptor) } returns streamManager1
         coEvery { syncManager.getStreamManager(stream2.descriptor) } returns streamManager2
     }
@@ -80,8 +85,8 @@ class CheckpointManagerUTest {
 
         // Only stream2 should be flushed.
         checkpointManager.flushReadyCheckpointMessages()
-        coVerify(exactly = 0) { outputConsumer.invoke(message1) }
-        coVerify(exactly = 1) { outputConsumer.invoke(message2) }
+        coVerify(exactly = 0) { outputConsumer.invoke(message1, any(), any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(message2, any(), any()) }
     }
 
     @Test
@@ -106,7 +111,7 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 0) { outputConsumer.invoke(any()) }
+        coVerify(exactly = 0) { outputConsumer.invoke(any(), any(), any()) }
     }
 
     @Test
@@ -131,7 +136,7 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 2) { outputConsumer.invoke(any()) }
+        coVerify(exactly = 2) { outputConsumer.invoke(any(), any(), any()) }
     }
 
     @Test
@@ -156,6 +161,6 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 1) { outputConsumer.invoke(any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(any(), any(), any()) }
     }
 }

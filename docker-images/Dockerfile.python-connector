@@ -10,6 +10,11 @@ ARG BASE_IMAGE
 ARG CONNECTOR_NAME
 ARG EXTRA_PREREQS_SCRIPT=""
 
+# Install git and openssh-client are needed to clone repositories for testing connectors on pre-release versions of the CDK
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /airbyte/integration_code
 
 COPY . ./
