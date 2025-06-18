@@ -78,8 +78,8 @@ open class AbstractDlqWriteTest(
             val checkpoints =
                 listOf(
                     StreamCheckpoint(
-                            streamName = stream.unmappedName,
-                            streamNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            unmappedNamespace = stream.unmappedNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 9,
                             destinationRecordCount = 9,
@@ -89,8 +89,8 @@ open class AbstractDlqWriteTest(
                         )
                         .asProtocolMessage(),
                     StreamCheckpoint(
-                            streamName = stream.unmappedName,
-                            streamNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            unmappedNamespace = stream.unmappedNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 2,
                             destinationRecordCount = 2,
@@ -121,8 +121,8 @@ open class AbstractDlqWriteTest(
 
         fun checkpoint(stream: DestinationStream, sourceRecordCount: Long) =
             InputStreamCheckpoint(
-                streamName = stream.unmappedName,
-                streamNamespace = stream.unmappedNamespace,
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
                 blob = """{"foo": "bar"}""",
                 sourceRecordCount = sourceRecordCount,
                 checkpointKey = null,
