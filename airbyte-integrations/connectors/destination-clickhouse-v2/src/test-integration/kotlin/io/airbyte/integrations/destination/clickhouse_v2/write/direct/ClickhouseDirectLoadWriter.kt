@@ -530,11 +530,11 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
 object ClientProvider {
     fun getClient(config: ClickhouseConfiguration): Client {
         return Client.Builder()
-                    .setPassword(config.password)
-                    .setUsername(config.username)
-                    .addEndpoint(config.endpoint)
-                    .setDefaultDatabase(config.resolvedDatabase)
-                    .retryOnFailures(ClientFaultCause.None)
-                    .build()
+            .setPassword(config.password)
+            .setUsername(config.username)
+            .addEndpoint(config.endpoint)
+            .setDefaultDatabase(config.resolvedDatabase)
+            .retryOnFailures(ClientFaultCause.None)
+            .build()
     }
 }
