@@ -1,0 +1,25 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "role",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "RoleName": {"type": "string"},
+            "RoleId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "Path": {"type": "string"},
+            "CreateDate": {"type": "string", "format": "date-time"},
+            "AssumeRolePolicyDocument": {"type": ["string", "null"]},
+            "Description": {"type": ["string", "null"]},
+            "MaxSessionDuration": {"type": "integer"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+} 

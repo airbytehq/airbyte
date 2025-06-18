@@ -1,0 +1,28 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "policy",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "PolicyName": {"type": "string"},
+            "PolicyId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "Path": {"type": "string"},
+            "DefaultVersionId": {"type": "string"},
+            "AttachmentCount": {"type": "integer"},
+            "PermissionsBoundaryUsageCount": {"type": "integer"},
+            "IsAttachable": {"type": "boolean"},
+            "Description": {"type": ["string", "null"]},
+            "CreateDate": {"type": "string", "format": "date-time"},
+            "UpdateDate": {"type": "string", "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+} 
