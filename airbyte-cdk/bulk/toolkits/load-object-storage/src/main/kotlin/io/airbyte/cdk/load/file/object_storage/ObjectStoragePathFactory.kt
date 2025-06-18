@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfig
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
-import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
@@ -168,16 +167,13 @@ class ObjectStoragePathFactory(
     }
 
     private fun getPathVariables(pathConfig: ObjectStoragePathConfiguration): List<PathVariable> {
-        fun transformName(name: String): String {
-            return when {
-                pathConfig.resolveNamesMethod != null -> pathConfig.resolveNamesMethod.invoke(name)
-                else -> Transformations.toS3SafeCharacters(name)
-            }
-        }
-
         return listOf(
-            PathVariable("NAMESPACE") { transformName(it.stream.mappedDescriptor.namespace ?: "") },
-            PathVariable("STREAM_NAME") { transformName(it.stream.mappedDescriptor.name) },
+            PathVariable("NAMESPACE") {
+                pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.namespace ?: "")
+            },
+            PathVariable("STREAM_NAME") {
+                pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.name)
+            },
             PathVariable("YEAR", """\d{4}""") {
                 ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
             },
