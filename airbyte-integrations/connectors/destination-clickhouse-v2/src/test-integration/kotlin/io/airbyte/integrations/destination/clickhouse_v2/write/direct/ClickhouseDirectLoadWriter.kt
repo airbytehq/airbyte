@@ -264,7 +264,7 @@ class ClickhouseDirectLoadWriter :
     @Disabled override fun testDedupChangePk() {}
 
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedup() {}
+    // @Disabled override fun testDedup() {}
 
     /**
      * failing because of com.clickhouse.client.api.ServerException: Code: 62. DB::Exception: Syntax

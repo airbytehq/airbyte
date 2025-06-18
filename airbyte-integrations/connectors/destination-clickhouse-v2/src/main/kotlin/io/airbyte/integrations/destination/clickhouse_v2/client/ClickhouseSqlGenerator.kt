@@ -48,20 +48,45 @@ class ClickhouseSqlGenerator {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+        val pks: List<String> =
+            when (stream.importType) {
+                is Dedupe -> extractPks((stream.importType as Dedupe).primaryKey, columnNameMapping)
+                else -> listOf()
+            }
+
+        val columnDeclarations = columnsAndTypes(stream, columnNameMapping, pks)
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
-        val pks = when (stream.importType) {
-            is Dedupe -> extractPks((stream.importType as Dedupe).primaryKey, columnNameMapping)
-            else -> ""
-        }
+        val pksAsString =
+            pks.joinToString(",") {
+                // Escape the columns
+                "`$it`"
+            }
 
         val engine =
             when (stream.importType) {
-                is Dedupe -> "ReplacingMergeTree($pks)"
+                is Dedupe -> "ReplacingMergeTree()"
                 else -> "MergeTree()"
             }
+
+        println(
+            """
+            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
+              $COLUMN_NAME_AB_RAW_ID String NOT NULL,
+              $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
+              $COLUMN_NAME_AB_META String NOT NULL,
+              $COLUMN_NAME_AB_GENERATION_ID UInt32 NOT NULL,
+              $columnDeclarations
+            )
+            ENGINE = ${engine}
+            ORDER BY (${if (pks.isEmpty()) {
+                "$COLUMN_NAME_AB_RAW_ID"
+            } else {
+                pksAsString
+            }})
+            """.trimIndent()
+        )
 
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
@@ -72,12 +97,19 @@ class ClickhouseSqlGenerator {
               $columnDeclarations
             )
             ENGINE = ${engine}
-            ORDER BY ($COLUMN_NAME_AB_RAW_ID)
+            ORDER BY (${if (pks.isEmpty()) {
+                "$COLUMN_NAME_AB_RAW_ID"
+            } else {
+                pksAsString
+            }})
             """.trimIndent()
     }
 
-    internal fun extractPks(primaryKey: List<List<String>>, columnNameMapping: ColumnNameMapping): String {
-        return primaryKey.joinToString(",") { fieldPath ->
+    internal fun extractPks(
+        primaryKey: List<List<String>>,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
+        return primaryKey.map { fieldPath ->
             if (fieldPath.size != 1) {
                 throw UnsupportedOperationException(
                     "Only top-level primary keys are supported, got $fieldPath",
@@ -85,7 +117,7 @@ class ClickhouseSqlGenerator {
             }
             val fieldName = fieldPath.first()
             val columnName = columnNameMapping[fieldName] ?: fieldName
-            "`$columnName`"
+            columnName
         }
     }
 
@@ -297,16 +329,22 @@ class ClickhouseSqlGenerator {
 
     private fun columnsAndTypes(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): String =
-        stream.schema
+        columnNameMapping: ColumnNameMapping,
+        pks: List<String>,
+    ): String {
+        return stream.schema
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = type.type.toDialectType()
-                "`$columnName` Nullable($typeName)"
+                "`$columnName` ${if (pks.contains(columnName))
+                    "$typeName" 
+                else 
+                        "Nullable($typeName)"
+                }"
             }
             .joinToString(",\n")
+    }
 
     fun wrapInTransaction(vararg sqlStatements: String): String {
         val builder = StringBuilder()

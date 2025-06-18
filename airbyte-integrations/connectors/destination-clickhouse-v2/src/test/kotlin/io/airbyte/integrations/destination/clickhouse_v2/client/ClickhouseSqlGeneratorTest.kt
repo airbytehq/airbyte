@@ -75,7 +75,8 @@ class ClickhouseSqlGeneratorTest {
     @Test
     fun `test extractPks with multiple primary keys`() {
         val primaryKey = listOf(listOf("id"), listOf("name"))
-        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id_column", "name" to "name_column"))
+        val columnNameMapping =
+            ColumnNameMapping(mapOf("id" to "id_column", "name" to "name_column"))
         val expected = "`id_column`,`name_column`"
         val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         Assertions.assertEquals(expected, actual)
@@ -102,7 +103,10 @@ class ClickhouseSqlGeneratorTest {
     @Test
     fun `test extractPks with nested primary key`() {
         val primaryKey = listOf(listOf("user", "id"))
-        val columnNameMapping = ColumnNameMapping(mapOf("user.id" to "user_id_column")) // This mapping is not used but here for completeness.
+        val columnNameMapping =
+            ColumnNameMapping(
+                mapOf("user.id" to "user_id_column")
+            ) // This mapping is not used but here for completeness.
         assertThrows<UnsupportedOperationException> {
             clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         }
