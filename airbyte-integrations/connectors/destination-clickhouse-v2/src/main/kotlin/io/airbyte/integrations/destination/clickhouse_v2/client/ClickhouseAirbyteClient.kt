@@ -23,8 +23,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSql
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
-import io.airbyte.integrations.destination.clickhouse_v2.model.hasAlterations
-import io.airbyte.integrations.destination.clickhouse_v2.model.hasApplicablesAlterations
+import io.airbyte.integrations.destination.clickhouse_v2.model.hasApplicableAlterations
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.future.await
@@ -40,7 +39,7 @@ class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
     private val sqlGenerator: ClickhouseSqlGenerator,
     private val nameGenerator: ClickhouseFinalTableNameGenerator,
-    private val tempTableNameGenerator: TempTableNameGenerator
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun createNamespace(namespace: String) {
@@ -109,13 +108,11 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        println("Ensuring schema matches for stream: ${stream.descriptor.name} in table: $tableName")
         val properTableName = nameGenerator.getTableName(stream.descriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
-            tableSchema.columns
-                .filterNot { column -> column.columnName in COLUMN_NAMES }
+            tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
 
         if (!stream.schema.isObject) {
             val error =
@@ -136,18 +133,18 @@ class ClickhouseAirbyteClient(
                 }
                 .toMap()
 
-        val clickhousePks: List<String> = tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }
-            .map { it.columnName }
+        val clickhousePks: List<String> =
+            tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
         val airbytePks: List<String> =
             when (stream.importType) {
-                is Dedupe -> sqlGenerator.extractPks((stream.importType as Dedupe).primaryKey, columnNameMapping)
+                is Dedupe ->
+                    sqlGenerator.extractPks(
+                        (stream.importType as Dedupe).primaryKey,
+                        columnNameMapping
+                    )
                 else -> listOf()
             }
 
-        println(clickhousePks)
-        println(airbytePks)
-
-        // TODO: If add boolean saying if we are in dedup change
         val columnChanges: AlterationSummary =
             getChangedColumns(
                 tableSchemaWithoutAirbyteColumns,
@@ -156,14 +153,7 @@ class ClickhouseAirbyteClient(
                 airbytePks,
             )
 
-        // If we are in a dedup change and not running a refresh (if we are in a refresh, we will recreate the table anyway):
-        // - Create temp table with the new schema
-        // - Copy data from the final table to the temp table
-        // - Exchange the final and the temp table
-        // - Drop the temp table
-
-        if (columnChanges.hasApplicablesAlterations())
-        {
+        if (columnChanges.hasApplicableAlterations()) {
             execute(
                 sqlGenerator.alterTable(
                     columnChanges,
@@ -173,11 +163,11 @@ class ClickhouseAirbyteClient(
         }
 
         if (columnChanges.hasDedupChange) {
-            println("Detected deduplication change for table $properTableName, applying deduplication changes")
-            log.info { "Detected deduplication change for table $properTableName, applying deduplication changes" }
+            log.info {
+                "Detected deduplication change for table $properTableName, applying deduplication changes"
+            }
             val tempTableName = tempTableNameGenerator.generate(properTableName)
             execute(sqlGenerator.createNamespace(tempTableName.namespace))
-            println("Creating temporary table: $tempTableName")
             execute(
                 sqlGenerator.createTable(
                     stream,
@@ -224,14 +214,15 @@ class ClickhouseAirbyteClient(
 
         val added: Map<String, String> = mutableCatalogColumns
 
-        val hasDedupChange = !(clickhousePks.containsAll(airbytePks) && airbytePks.containsAll(clickhousePks))
+        val hasDedupChange =
+            !(clickhousePks.containsAll(airbytePks) && airbytePks.containsAll(clickhousePks))
 
         return AlterationSummary(
-                added = added,
-                modified = modified,
-                deleted = deleted,
-                hasDedupChange = hasDedupChange
-            )
+            added = added,
+            modified = modified,
+            deleted = deleted,
+            hasDedupChange = hasDedupChange
+        )
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
@@ -263,7 +254,6 @@ class ClickhouseAirbyteClient(
     }
 
     internal suspend fun execute(query: String): CommandResponse {
-        println("Executing query: $query")
         return client.execute(query).await()
     }
 

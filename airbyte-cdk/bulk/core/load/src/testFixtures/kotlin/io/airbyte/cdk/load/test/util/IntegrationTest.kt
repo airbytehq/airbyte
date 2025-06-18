@@ -146,10 +146,6 @@ abstract class IntegrationTest(
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
-        println("actual")
-        actualRecords.forEach { println(it.data) }
-        println("expected")
-        expectedRecords.forEach { println(it.data) }
         val descriptor = recordMangler.mapStreamDescriptor(stream.descriptor)
 
         RecordDiffer(

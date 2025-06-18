@@ -51,7 +51,8 @@ class ClickhouseSqlGeneratorTest {
             AlterationSummary(
                 added = mapOf("col1" to "Int32", "col2" to "String"),
                 modified = mapOf("col3" to "String", "col4" to "Int64"),
-                deleted = setOf("col5", "col6")
+                deleted = setOf("col5", "col6"),
+                hasDedupChange = false
             )
         val tableName = TableName("my_namespace", "my_table")
         val sql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
@@ -77,7 +78,7 @@ class ClickhouseSqlGeneratorTest {
         val primaryKey = listOf(listOf("id"), listOf("name"))
         val columnNameMapping =
             ColumnNameMapping(mapOf("id" to "id_column", "name" to "name_column"))
-        val expected = listOf("id_column","name_column")
+        val expected = listOf("id_column", "name_column")
         val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
         Assertions.assertEquals(expected, actual)
     }
@@ -112,8 +113,8 @@ class ClickhouseSqlGeneratorTest {
         }
     }
 
-     @Test
-     fun `test exchangeTable`() {
+    @Test
+    fun `test exchangeTable`() {
         val sourceTable = TableName("source_db", "source_table")
         val targetTable = TableName("target_db", "target_table")
         val expectedSql =
@@ -134,7 +135,8 @@ class ClickhouseSqlGeneratorTest {
                     AlterationSummary(
                         added = mapOf("new_column" to "Int32"),
                         modified = mapOf("existing_column" to "String"),
-                        deleted = setOf("old_column")
+                        deleted = setOf("old_column"),
+                        hasDedupChange = false,
                     ),
                     listOf(
                         " ADD COLUMN `new_column` Nullable(Int32)",
@@ -146,7 +148,8 @@ class ClickhouseSqlGeneratorTest {
                     AlterationSummary(
                         added = mapOf("new_column" to "Int32"),
                         modified = emptyMap(),
-                        deleted = setOf()
+                        deleted = setOf(),
+                        hasDedupChange = false,
                     ),
                     listOf(" ADD COLUMN `new_column` Nullable(Int32)")
                 ),
@@ -154,7 +157,8 @@ class ClickhouseSqlGeneratorTest {
                     AlterationSummary(
                         added = emptyMap(),
                         modified = mapOf("existing_column" to "String"),
-                        deleted = setOf()
+                        deleted = setOf(),
+                        hasDedupChange = false,
                     ),
                     listOf(" MODIFY COLUMN `existing_column` Nullable(String)")
                 ),
@@ -162,7 +166,8 @@ class ClickhouseSqlGeneratorTest {
                     AlterationSummary(
                         added = emptyMap(),
                         modified = emptyMap(),
-                        deleted = setOf("old_column")
+                        deleted = setOf("old_column"),
+                        hasDedupChange = false,
                     ),
                     listOf(" DROP COLUMN `old_column`")
                 ),
@@ -170,7 +175,8 @@ class ClickhouseSqlGeneratorTest {
                     AlterationSummary(
                         added = mapOf("col1" to "Int32", "col2" to "String"),
                         modified = mapOf("col3" to "String", "col4" to "Int64"),
-                        deleted = setOf("col5", "col6")
+                        deleted = setOf("col5", "col6"),
+                        hasDedupChange = false,
                     ),
                     listOf(
                         " ADD COLUMN `col1` Nullable(Int32)",

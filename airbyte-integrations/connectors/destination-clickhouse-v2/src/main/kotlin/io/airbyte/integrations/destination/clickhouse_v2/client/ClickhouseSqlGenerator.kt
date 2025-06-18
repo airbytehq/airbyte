@@ -356,7 +356,7 @@ class ClickhouseSqlGenerator {
         }
         val alterStatement = builder.dropLast(1).toString()
         println("Alter table statement: $alterStatement")
-        return alterStatement//builder.dropLast(1).toString()
+        return alterStatement // builder.dropLast(1).toString()
     }
 
     private fun String.sqlNullable(): String = "Nullable($this)"

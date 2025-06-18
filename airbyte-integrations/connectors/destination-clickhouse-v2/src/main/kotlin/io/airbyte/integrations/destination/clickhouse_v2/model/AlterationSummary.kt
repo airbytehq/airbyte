@@ -10,17 +10,9 @@ data class AlterationSummary(
     val deleted: Set<String>,
     val hasDedupChange: Boolean,
 )
-
 /**
- * This indicates if any changes were made to the table, including PK changes
+ * This indicates if any changes were made to the table, excluding PK changes It indicates that we
+ * need to run an alter statement.
  */
-fun AlterationSummary.hasAlterations(): Boolean =
-    added.isEmpty() && modified.isEmpty() && deleted.isEmpty() && !hasDedupChange
-
-/**
- * This indicates if any changes were made to the table, excluding PK changes
- * It indicates that we need to run an alter statement.
- */
-fun AlterationSummary.hasApplicablesAlterations(): Boolean =
+fun AlterationSummary.hasApplicableAlterations(): Boolean =
     !(added.isEmpty() && modified.isEmpty() && deleted.isEmpty())
-
