@@ -1608,7 +1608,7 @@ definitions:
       - HistoricalAdRelevance
       - HistoricalLandingPageExperience
 
-  # bulk streams
+  # base bulk streams
   base_bulk_stream:
     # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
     type: DeclarativeStream
@@ -1645,50 +1645,6 @@ definitions:
     incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
-
-  labels_stream:
-    # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
-    $ref: "#/definitions/base_bulk_stream"
-    name: labels
-    $parameters:
-      DownloadEntities: ["Labels"]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/labels"
-
-  ad_group_labels_stream:
-    # https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
-    $ref: "#/definitions/base_bulk_stream"
-    name: ad_group_labels
-    $parameters:
-      DownloadEntities: ["AdGroupLabels"]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_group_labels"
-
-  app_install_ad_labels_stream:
-    # https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
-    $ref: "#/definitions/base_bulk_stream"
-    name: app_install_ad_labels
-    $parameters:
-      DownloadEntities: ["AppInstallAdLabels"]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/app_install_ad_labels"
-
-  app_install_ads_stream:
-    # https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
-    $ref: "#/definitions/base_bulk_stream"
-    name: app_install_ads
-    $parameters:
-      DownloadEntities: ["AppInstallAds"]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/app_install_ads"
 
   # base retrievers
   basic_async_retriever:
@@ -2257,6 +2213,7 @@ definitions:
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
 
+
 dynamic_streams:
   # Report streams
   - type: DynamicDeclarativeStream
@@ -2464,6 +2421,56 @@ dynamic_streams:
           create_or_update: true
           field_path: ["incremental_sync"]
           value: "{{components_values['incremental_sync']}}"
+  # Bulk streams
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/base_bulk_stream"
+    components_resolver:
+      type: ParametrizedComponentsResolver
+      stream_parameters:
+        type: StreamParametersDefinition
+        list_of_parameters_for_stream:
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
+          - name: labels
+            DownloadEntities: ["Labels"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/labels"
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
+          - name: ad_group_labels
+            DownloadEntities: ["AdGroupLabels"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_group_labels"
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
+          - name: app_install_ad_labels
+            DownloadEntities: ["AppInstallAdLabels"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/app_install_ad_labels"
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
+          - name: app_install_ads
+            DownloadEntities: ["AppInstallAds"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/app_install_ads"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "DownloadEntities"]
+          value: "{{components_values['DownloadEntities']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["schema_loader"]
+          value: "{{components_values['schema_loader']}}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
@@ -2478,10 +2485,6 @@ streams:
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
   - $ref: "#/definitions/ad_performance_report_monthly_stream"
-  - $ref: "#/definitions/labels_stream"
-  - $ref: "#/definitions/ad_group_labels_stream"
-  - $ref: "#/definitions/app_install_ad_labels_stream"
-  - $ref: "#/definitions/app_install_ads_stream"
 
 schemas:
   accounts:
