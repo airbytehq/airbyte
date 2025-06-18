@@ -1,12 +1,12 @@
-package io.airbyte.integrations.destination.clickhouse_v2.write
+package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseCoercingValidator.Constants.DECIMAL64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseCoercingValidator.Constants.DECIMAL64_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseCoercingValidator.Constants.INT64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.ClickhouseCoercingValidator.Constants.INT64_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL64_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL64_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MIN
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
 import java.math.BigDecimal

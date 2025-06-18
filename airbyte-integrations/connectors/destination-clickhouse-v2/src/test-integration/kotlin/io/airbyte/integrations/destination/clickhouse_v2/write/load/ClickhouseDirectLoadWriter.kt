@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse_v2.write.direct
+package io.airbyte.integrations.destination.clickhouse_v2.write.load
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.ClientFaultCause
@@ -31,7 +31,7 @@ import io.airbyte.integrations.destination.clickhouse_v2.fixtures.ClickhouseExpe
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
-import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClientProvider.getClient
+import io.airbyte.integrations.destination.clickhouse_v2.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.time.ZonedDateTime

@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse_v2.write
+package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -56,7 +56,11 @@ class RecordMungerTest {
             mapOf(
                 "internal_field_1" to Fixtures.mockCoercedValue(StringValue("internal1")),
                 "internal_field_2" to Fixtures.mockCoercedValue(IntegerValue(0)),
-                "internal_field_3" to Fixtures.mockCoercedValue(BooleanValue(true)),
+                "internal_field_3" to Fixtures.mockCoercedValue(
+                    BooleanValue(
+                        true
+                    )
+                ),
             )
         val coerced =
             mockk<EnrichedDestinationRecordAirbyteValue> {
