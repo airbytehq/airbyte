@@ -94,8 +94,8 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
             )
         }
     }
-
-    override suspend fun accept(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun acceptWithExperimentalCoroutinesApi(
         input: ObjectLoaderPartFormatter.FormattedPart,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
@@ -106,12 +106,32 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
 
         val upload =
             if (state.streamingUpload.isCompleted) {
-                @OptIn(ExperimentalCoroutinesApi::class) state.streamingUpload.getCompleted()
+                state.streamingUpload.getCompleted()
             } else {
                 state.streamingUpload.await()
             }
 
         input.part.bytes?.let { bytes -> upload.uploadPart(bytes, input.part.partIndex) }
+        val output =
+            LoadedPart(
+                state.streamingUpload,
+                input.part.key,
+                input.part.partIndex,
+                input.part.isFinal,
+                input.part.bytes == null,
+            )
+        return IntermediateOutput(state, output)
+    }
+
+    override suspend fun accept(
+        input: ObjectLoaderPartFormatter.FormattedPart,
+        state: State<T>
+    ): BatchAccumulatorResult<State<T>, PartResult<T>> {
+        log.info { "Uploading part $input" }
+        if (!input.part.isFinal && input.part.bytes == null) {
+            throw IllegalStateException("Empty non-final part received: this should not happen")
+        }
+        input.part.bytes?.let { state.streamingUpload.await().uploadPart(it, input.part.partIndex) }
         val output =
             LoadedPart(
                 state.streamingUpload,
