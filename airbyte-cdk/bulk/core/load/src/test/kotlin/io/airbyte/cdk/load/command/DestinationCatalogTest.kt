@@ -197,7 +197,10 @@ class DestinationCatalogTest {
                     )
                 )
             }
-        assertEquals("A primary key column does not exist in the schema: id", e.message)
+        assertEquals(
+            "For stream foo: A primary key column does not exist in the schema: id",
+            e.message
+        )
     }
 
     @Test
@@ -227,6 +230,9 @@ class DestinationCatalogTest {
                     )
                 )
             }
-        assertEquals("The cursor does not exist in the schema: updated_at", e.message)
+        assertEquals(
+            "For stream foo: The cursor does not exist in the schema: updated_at",
+            e.message
+        )
     }
 }

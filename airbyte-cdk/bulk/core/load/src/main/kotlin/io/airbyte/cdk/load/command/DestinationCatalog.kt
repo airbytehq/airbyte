@@ -73,7 +73,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
                         val firstPkElement = pk.first()
                         if (!stream.schema.asColumns().containsKey(firstPkElement)) {
                             throw ConfigErrorException(
-                                "A primary key column does not exist in the schema: $firstPkElement"
+                                "For stream ${stream.mappedDescriptor.toPrettyString()}: A primary key column does not exist in the schema: $firstPkElement"
                             )
                         }
                     }
@@ -82,7 +82,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
                     val firstCursorElement = stream.importType.cursor.first()
                     if (!stream.schema.asColumns().containsKey(firstCursorElement)) {
                         throw ConfigErrorException(
-                            "The cursor does not exist in the schema: $firstCursorElement"
+                            "For stream ${stream.mappedDescriptor.toPrettyString()}: The cursor does not exist in the schema: $firstCursorElement"
                         )
                     }
                 }
