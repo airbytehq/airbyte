@@ -2245,6 +2245,7 @@ definitions:
           {% set v = record.get('LowQualityConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
+
 dynamic_streams:
   # Report streams
   - type: DynamicDeclarativeStream
