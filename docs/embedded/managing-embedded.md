@@ -49,5 +49,5 @@ curl --request GET \
 ```
 
 :::note
-this endpoint is only available to Embedded customers. At the time of writing, developers can only create new configuration templates, not update, modify, or delete existing ones.
+This endpoint is only available to Embedded customers. You can only create new configuration templates, not update, modify, or delete existing ones.
 :::
