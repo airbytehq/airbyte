@@ -21,7 +21,7 @@ public class MssqlCdcHelper {
 
   // legacy replication method config before version 0.4.0
   // it is an enum with possible values: STANDARD and CDC
-  private static final String LEGACY_REPLICATION_FIELD = "replication_method";
+  public static final String LEGACY_REPLICATION_FIELD = "replication_method";
   // new replication method config since version 0.4.0
   // it is an oneOf object
   public static final String REPLICATION_FIELD = "replication";

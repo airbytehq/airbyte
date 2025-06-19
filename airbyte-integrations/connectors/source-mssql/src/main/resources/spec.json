@@ -181,7 +181,7 @@
               },
               "exclude_todays_data": {
                 "title": "Exclude Today's Data",
-                "description": "When enabled, Incremental syncs using a cursor of a temporal type (date time) will include cursor values up until last night's midnight (Advanced)",
+                "description": "When enabled incremental syncs using a cursor of a temporal types (date or datetime) will include cursor values only up until last midnight (Advanced)",
                 "default": false,
                 "type": "boolean",
                 "always_show": true,
