@@ -56,7 +56,7 @@ jobs:
             echo skip-build=false | tee -a $GITHUB_OUTPUT
           fi
 
-      - name: Set up pnpm
+      - name: Set Up pnpm
         if: steps.check-skip.outputs.skip-build != 'true'
         # pnpm is used to manage the dependencies of the documentation build.
         uses: pnpm/action-setup@v4
