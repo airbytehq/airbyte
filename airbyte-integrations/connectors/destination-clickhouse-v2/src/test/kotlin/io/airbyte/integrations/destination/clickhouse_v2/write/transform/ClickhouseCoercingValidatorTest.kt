@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -18,7 +22,6 @@ import io.mockk.junit5.MockKExtension
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -27,8 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource
 @ExtendWith(MockKExtension::class)
 class ClickhouseCoercingValidatorTest {
 
-    @InjectMockKs
-    private lateinit var validator: ClickhouseCoercingValidator
+    @InjectMockKs private lateinit var validator: ClickhouseCoercingValidator
 
     @ParameterizedTest
     @MethodSource("validFloats")
@@ -50,7 +52,10 @@ class ClickhouseCoercingValidatorTest {
         val result = validator.validateAndCoerce(input)
 
         assertEquals(NullValue, result.abValue)
-        assertEquals(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION, result.changes[0].reason)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            result.changes[0].reason
+        )
     }
 
     @ParameterizedTest
@@ -62,7 +67,8 @@ class ClickhouseCoercingValidatorTest {
 
         assertEquals(input, result)
         assertEquals(input.abValue, result.abValue)
-        assertEquals(mutableListOf(), result.changes)    }
+        assertEquals(mutableListOf(), result.changes)
+    }
 
     @ParameterizedTest
     @MethodSource("invalidIntegers")
@@ -71,8 +77,11 @@ class ClickhouseCoercingValidatorTest {
 
         val result = validator.validateAndCoerce(input)
 
-         assertEquals(NullValue, result.abValue)
-         assertEquals(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION, result.changes[0].reason)
+        assertEquals(NullValue, result.abValue)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            result.changes[0].reason
+        )
     }
 
     companion object {
@@ -145,5 +154,4 @@ class ClickhouseCoercingValidatorTest {
                 airbyteMetaField = null,
             )
     }
-
 }

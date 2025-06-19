@@ -24,7 +24,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.integrations.destination.clickhouse_v2.write.load.BinaryRowInsertBuffer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -60,20 +59,14 @@ class BinaryRowInsertBufferTest {
     @BeforeEach
     fun setup() {
         every {
-            clickhouseClient.getTableSchema(
-                Fixtures.TEST_NAME,
-                Fixtures.TEST_NAMESPACE
-            )
+            clickhouseClient.getTableSchema(Fixtures.TEST_NAME, Fixtures.TEST_NAMESPACE)
         } returns schema
         buffer = BinaryRowInsertBuffer(tableName, clickhouseClient)
     }
 
     @Test
     fun `initializes the ch row binary writer`() {
-        verify { clickhouseClient.getTableSchema(
-            Fixtures.TEST_NAME,
-            Fixtures.TEST_NAMESPACE
-        ) }
+        verify { clickhouseClient.getTableSchema(Fixtures.TEST_NAME, Fixtures.TEST_NAMESPACE) }
 
         assertEquals(ClickHouseFormat.RowBinary, buffer.writer.format)
     }
@@ -89,27 +82,16 @@ class BinaryRowInsertBufferTest {
         record.forEach {
             when (val abValue = it.value) {
                 is NullValue -> verify { writer.setValue(it.key, null) }
-                is BooleanValue ->
-                    verify { writer.setValue(it.key, abValue.value) }
-                is IntegerValue ->
-                    verify { writer.setValue(it.key, abValue.value) }
-                is NumberValue ->
-                    verify { writer.setValue(it.key, abValue.value) }
-                is StringValue ->
-                    verify { writer.setValue(it.key, abValue.value) }
+                is BooleanValue -> verify { writer.setValue(it.key, abValue.value) }
+                is IntegerValue -> verify { writer.setValue(it.key, abValue.value) }
+                is NumberValue -> verify { writer.setValue(it.key, abValue.value) }
+                is StringValue -> verify { writer.setValue(it.key, abValue.value) }
                 is DateValue -> verify { writer.setValue(it.key, abValue.value) }
-                is TimeWithTimezoneValue ->
-                    verify { writer.setValue(it.key, abValue.value) }
-                is TimeWithoutTimezoneValue ->
-                    verify { writer.setValue(it.key, abValue.value) }
-                is TimestampWithTimezoneValue ->
-                    verify {
-                        writer.setValue(it.key, abValue.value)
-                    }
+                is TimeWithTimezoneValue -> verify { writer.setValue(it.key, abValue.value) }
+                is TimeWithoutTimezoneValue -> verify { writer.setValue(it.key, abValue.value) }
+                is TimestampWithTimezoneValue -> verify { writer.setValue(it.key, abValue.value) }
                 is TimestampWithoutTimezoneValue ->
-                    verify {
-                        writer.setValue(it.key, abValue.value)
-                    }
+                    verify { writer.setValue(it.key, abValue.value) }
                 else -> {}
             }
         }
@@ -130,16 +112,9 @@ class BinaryRowInsertBufferTest {
         record.forEach {
             when (val abValue = it.value) {
                 is ObjectValue ->
-                    verify {
-                        writer.setValue(
-                            it.key,
-                            abValue.values.serializeToString()
-                        )
-                    }
+                    verify { writer.setValue(it.key, abValue.values.serializeToString()) }
                 is ArrayValue ->
-                    verify {
-                        writer.setValue(it.key, abValue.values.serializeToString())
-                    }
+                    verify { writer.setValue(it.key, abValue.values.serializeToString()) }
                 else -> {}
             }
         }

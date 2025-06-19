@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -19,12 +23,18 @@ class ClickhouseCoercingValidator {
      */
     fun validateAndCoerce(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         when (val abValue = value.abValue) {
-            is NumberValue -> if (abValue.value <= DECIMAL64_MIN || abValue.value >= DECIMAL64_MAX) {
-                value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-            }
-            is IntegerValue -> if (abValue.value < INT64_MIN || abValue.value > INT64_MAX ) {
-                value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-            }
+            is NumberValue ->
+                if (abValue.value <= DECIMAL64_MIN || abValue.value >= DECIMAL64_MAX) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
+            is IntegerValue ->
+                if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
             else -> {}
         }
 

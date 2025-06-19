@@ -78,9 +78,7 @@ class RecordMungerTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
         }
-        coerced.declaredFields.forEach {
-            verify { validator.validateAndCoerce(it.value) }
-        }
+        coerced.declaredFields.forEach { verify { validator.validateAndCoerce(it.value) } }
 
         // munged keys map to unwrapped / coerced values
         val expected =

@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.load
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.integrations.destination.clickhouse_v2.write.load.BinaryRowInsertBuffer
-import io.airbyte.integrations.destination.clickhouse_v2.write.load.ClickhouseDirectLoader
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.RecordMunger
 import io.mockk.coVerify
 import io.mockk.every
