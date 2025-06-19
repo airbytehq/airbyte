@@ -521,6 +521,7 @@ class MySqlSourceJdbcPartitionFactory(
 
         val lbs: List<Long> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<Long?> = queryPlan + null
+        log.info { "partitions: ${lbs.zip(ubs)}" }
         return lbs.zip(ubs).toMap()
     }
 

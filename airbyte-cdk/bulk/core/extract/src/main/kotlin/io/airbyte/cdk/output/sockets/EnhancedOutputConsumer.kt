@@ -44,7 +44,7 @@ typealias InternalRow = MutableMap<String, FieldValueEncoder>
 
 fun InternalRow.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
     for ((columnId, value) in this) {
-        val encodedValue = value.jsonEncoder.encode(value.value ?: NullCodec.encode(null))
+        val encodedValue = value.value?.let {value.jsonEncoder.encode(value.value)} ?: NullCodec.encode(null)
         parentNode.set<JsonNode>(columnId, encodedValue)
     }
     return parentNode
