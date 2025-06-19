@@ -10,7 +10,6 @@ set -eu
 latest_commit_message=$(git log -n 1 --oneline)
 echo "⚙️ Checking for a skip directive in the commit message: ('$latest_commit_message')"
 if echo "$latest_commit_message" | grep -Eq "\[(up-to-date|auto-publish)\]"; then
-    # Both conditions met - no changes and commit has required tag
     echo "✅ Skipping. Commit marked as [up-to-date]/[auto-publish]. ('$latest_commit_message')"
     exit 0
 fi
@@ -23,7 +22,6 @@ COMPARE_TO_REF="${REMOTE}/${DEFAULT_BRANCH}"
 
 echo "⚙️ Checking for git changes within the docs paths..."
 if git diff "${COMPARE_TO_REF}"...HEAD --quiet ./docusaurus ./docs .markdownlint.jsonc; then
-    # If there are no changes, we're good to skip the build.
     echo "✅ No changes in docs paths. Skipping build."
     exit 0
 fi
