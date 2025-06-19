@@ -73,15 +73,15 @@ import io.airbyte.cdk.load.write.LoadStrategy
  */
 interface ObjectLoader : LoadStrategy {
     val numPartWorkers: Int
-        get() = 2
+        get() = 8
     val numUploadWorkers: Int
-        get() = 5
+        get() = 16
     val numUploadCompleters: Int
-        get() = 1
+        get() = 4
     val maxMemoryRatioReservedForParts: Double
-        get() = 0.2
+        get() = 0.5
     val partSizeBytes: Long
-        get() = 10L * 1024 * 1024
+        get() = 32L * 1024 * 1024
     val objectSizeBytes: Long
         get() = 200L * 1024 * 1024
 

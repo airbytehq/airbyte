@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.state.ReservationManager
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -35,6 +36,11 @@ class ResourceReservingPartitionedQueue<T>(
     // we'll clamp it to be safe.
     @VisibleForTesting
     val queuePartitionCapacity: Int = (totalQueueCapacity / numConsumers).coerceAtLeast(1)
+    val log = KotlinLogging.logger {}
+    init {
+        log.info { "queuePartitionCapacity $queuePartitionCapacity" }
+        log.info { "clampedMessageSize $clampedMessageSize" }
+    }
 
     private val underlying =
         StrictPartitionedQueue<T>(
