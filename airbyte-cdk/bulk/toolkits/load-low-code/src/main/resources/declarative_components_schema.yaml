@@ -1,0 +1,68 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Declarative Destination
+description: An API destination that upload data according to its declarative components.
+
+type: object
+required:
+  - checker
+properties:
+  checker:
+    type: object
+    description: Configuration for destination check operations
+    properties:
+      type:
+        type: string
+        enum: [HttpRequestChecker]
+        description: Performs a HTTP request to the destination API to check if the configuration is valid
+      requester:
+        $ref: "#/definitions/httpRequester"
+    required:
+      - type
+      - requester
+    additionalProperties: false
+
+definitions:
+  httpRequester:
+    type: object
+    description: Describes a HTTP request
+    required:
+      - type
+      - url
+      - method
+    properties:
+      type:
+        type: string
+        enum: [HttpRequester]
+        description: The type of requester
+      url:
+        type: string
+        description: The URL to make requests to
+      method:
+        type: string
+        enum: [GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS]
+        description: The HTTP method to use
+      authenticator:
+        $ref: "#/definitions/basicAccessAuthenticator"
+    additionalProperties: false
+
+  basicAccessAuthenticator:
+    type: object
+    description: Configuration for authentication
+    properties:
+      type:
+        type: string
+        enum: [BasicAccessAuthenticator]
+        description: The type of authenticator
+      username:
+        type: string
+        description: Username for authentication (can reference config values)
+      password:
+        type: string
+        description: Password for authentication (can reference config values)
+    required:
+      - type
+      - username
+      - password
+    additionalProperties: false
+
+additionalProperties: false
