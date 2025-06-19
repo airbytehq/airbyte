@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -27,6 +28,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
@@ -47,6 +49,7 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -57,11 +60,19 @@ class DefaultObjectStorageFormattingWriterFactory(
 
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
             is JsonFormatConfiguration ->
-                JsonFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    rootLevelFlattening = flatten,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToJsonFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                    )
+                } else {
+                    JsonFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                    )
+                }
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
                     stream = stream,
@@ -164,7 +175,7 @@ class AvroFormattingWriter(
     @Suppress("DEPRECATION")
     private val pipeline = io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory().create(stream)
     private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
-    private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
+    private val avroSchema = mappedSchema.toAvroSchema(stream.mappedDescriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
 
@@ -206,7 +217,7 @@ class ParquetFormattingWriter(
     private val pipeline =
         io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest().create(stream)
     private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
-    private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
+    private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.mappedDescriptor)
     private val writer: ParquetWriter =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
 

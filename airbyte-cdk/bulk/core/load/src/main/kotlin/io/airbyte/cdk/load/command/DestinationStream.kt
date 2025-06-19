@@ -63,7 +63,7 @@ data class DestinationStream(
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper
 ) {
-    val descriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
+    val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
 
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -133,6 +133,8 @@ data class DestinationStream(
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
             .withIncludeFiles(includeFiles)
+            .withDestinationObjectName(destinationObjectName)
+            .withPrimaryKey(matchingKey?.map { listOf(it) }.orEmpty())
             .apply {
                 when (importType) {
                     is Append -> {
@@ -146,8 +148,8 @@ data class DestinationStream(
                     Overwrite -> {
                         destinationSyncMode = DestinationSyncMode.OVERWRITE
                     }
-                    SoftDelete -> DestinationSyncMode.SOFT_DELETE
-                    Update -> DestinationSyncMode.UPDATE
+                    SoftDelete -> destinationSyncMode = DestinationSyncMode.SOFT_DELETE
+                    Update -> destinationSyncMode = DestinationSyncMode.UPDATE
                 }
             }
 
