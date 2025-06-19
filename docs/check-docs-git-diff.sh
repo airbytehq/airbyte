@@ -19,7 +19,7 @@ REMOTE=origin
 DEFAULT_BRANCH=master
 
 echo "⚙️ Checking for git changes within the docs paths..."
-if git diff --name-only "${REMOTE}/${DEFAULT_BRANCH}"...HEAD --quiet ./docusaurus ./docs .markdownlint.jsonc; then
+if git diff "${REMOTE}/${DEFAULT_BRANCH}"...HEAD --quiet ./docusaurus ./docs .markdownlint.jsonc; then
     # If there are no changes, we're good to skip the build.
     echo "✅ No changes in docs paths. Skipping build."
     exit 0
