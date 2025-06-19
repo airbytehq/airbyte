@@ -38,20 +38,39 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Check For Skip Conditions
+        id: check-skip
+        run: |
+          # Run the script and capture both output and exit code
+          output=$(./docs/check-docs-git-diff.sh 2>&1)
+          exit_code=$?
+
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ Documentation already up-to-date. No build required."
+            echo skip-build=true | tee -a $GITHUB_OUTPUT
+          else
+            echo "❌ Documentation needs to be built."
+            echo skip-build=false | tee -a $GITHUB_OUTPUT
+          fi
+
       - name: Set up pnpm
+        if: steps.check-skip.outputs.skip-build != 'true'
         # pnpm is used to manage the dependencies of the documentation build.
         uses: pnpm/action-setup@v4
         with:
           version: 10.12.1
 
       - name: Install uv
+        if: steps.check-skip.outputs.skip-build != 'true'
         uses: astral-sh/setup-uv@v6
 
       - name: Install Poe
+        if: steps.check-skip.outputs.skip-build != 'true'
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
       - name: Build Docs
+        if: steps.check-skip.outputs.skip-build != 'true'
         run: |
           poe docs-build
