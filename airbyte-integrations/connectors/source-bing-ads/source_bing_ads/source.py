@@ -10,7 +10,6 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.base_streams import Accounts
-
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     AccountImpressionPerformanceReportDaily,

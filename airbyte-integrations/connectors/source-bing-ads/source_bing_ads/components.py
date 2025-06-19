@@ -267,6 +267,7 @@ class BulkDatetimeToRFC3339(RecordTransformation):
                 datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
             )
 
+
 @dataclass
 class LightSubstreamPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:

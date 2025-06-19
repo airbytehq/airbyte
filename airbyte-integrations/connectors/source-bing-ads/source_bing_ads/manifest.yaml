@@ -6124,7 +6124,7 @@ schemas:
         type:
           - "null"
           - string
-  
+
   campaign_labels:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -6160,7 +6160,8 @@ schemas:
           - "null"
           - string
       Parent Id:
-        description: The unique identifier of the parent item associated with the campaign
+        description:
+          The unique identifier of the parent item associated with the campaign
           label.
         type:
           - "null"
@@ -6177,7 +6178,7 @@ schemas:
         type:
           - "null"
           - string
-  
+
   budget:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -6203,7 +6204,8 @@ schemas:
           - "null"
           - integer
       Parent Id:
-        description: The identifier of the parent entity to which the budget belongs, if
+        description:
+          The identifier of the parent entity to which the budget belongs, if
           applicable.
         type:
           - "null"
