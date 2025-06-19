@@ -19,7 +19,8 @@ git add airbyte-submodule
 bump-airbyte-submodule.help = "Updates `airbyte-submodule` to the latest commit on the master branch."
 
 format-fix.help = "Run pre-commit hooks to fix formatting issues in the codebase."
-format-fix.cmd = "pre-commit run --all-files"
+format-fix.shell = "pre-commit run --all-files || true" # Changes should not be interpreted as errors.
+
 
 install.help = "Install the Airbyte Enterprise repository dependencies."
 install.shell = """
