@@ -47,7 +47,7 @@ class ProtobufDataChannelReaderTest {
         val inputStream = bytes.inputStream()
         reader.read(inputStream).toList().also { Assertions.assertEquals(10, it.size) }
         verifySequence {
-            (0 until 10).forEach { factory.fromAirbyteProtobufMessage(getMessage(it), any()) }
+            (0 until 10).forEach { factory.fromAirbyteProtobufMessage(getMessage(it), 45) }
         }
     }
 

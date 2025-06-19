@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.pipeline.OutputPartitioner
  */
 class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> :
     OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult<U>> {
+    private val nextConsumerIndex = java.util.concurrent.atomic.AtomicInteger(0)
 
     override fun getOutputKey(
         inputKey: K,
@@ -24,6 +25,6 @@ class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> 
     }
 
     override fun getPart(outputKey: ObjectKey, inputPart: Int, numParts: Int): Int {
-        return Math.floorMod(outputKey.objectKey.hashCode(), numParts)
+        return nextConsumerIndex.getAndIncrement() % numParts
     }
 }

@@ -39,11 +39,11 @@ data class S3V2Configuration<T : OutputStream>(
     override val numProcessRecordsWorkers: Int = 1,
 
     // ObjectLoader-specific configuration
-    val numPartWorkers: Int = 2,
-    val numUploadWorkers: Int = 5,
-    val maxMemoryRatioReservedForParts: Double = 0.4,
+    val numPartWorkers: Int = 8,
+    val numUploadWorkers: Int = 16,
+    val maxMemoryRatioReservedForParts: Double = 0.5,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
-    val partSizeBytes: Long = 20L * 1024 * 1024,
+    val partSizeBytes: Long = 32L * 1024 * 1024,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,

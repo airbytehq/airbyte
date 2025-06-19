@@ -63,8 +63,8 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
     processFileTaskLegacyStep: ProcessFileTaskLegacyStep,
     @Named("isFileTransfer") isFileTransfer: Boolean,
-    @Named("oneShotObjectLoaderStep")
-    oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
+    //    @Named("oneShotObjectLoaderStep")
+    //    oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
     @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
 ) :
     LoadPipeline(
@@ -81,7 +81,7 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordCompleterStep,
             isLegacyFileTransfer,
             processFileTaskLegacyStep,
-            oneShotObjectLoaderStep,
+            //            oneShotObjectLoaderStep,
             dataChannelMedium
         )
     ) {
@@ -99,11 +99,11 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
             isLegacyFileTransfer: Boolean,
             legacyProcessFileStep: ProcessFileTaskLegacyStep,
-            oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
+            //            oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
             dataChannelMedium: DataChannelMedium
         ): List<LoadPipelineStep> {
             return if (dataChannelMedium == DataChannelMedium.SOCKET) {
-                listOf(oneShotObjectLoaderStep)
+                listOf(recordPartStep, recordUploadStep, recordCompleterStep)
             } else if (isFileTransfer) {
                 listOf(
                     routeEventStep!!,
