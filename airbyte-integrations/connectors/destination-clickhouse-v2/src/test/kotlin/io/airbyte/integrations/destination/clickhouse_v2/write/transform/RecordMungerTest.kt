@@ -58,11 +58,7 @@ class RecordMungerTest {
             mapOf(
                 "internal_field_1" to Fixtures.mockCoercedValue(StringValue("internal1")),
                 "internal_field_2" to Fixtures.mockCoercedValue(IntegerValue(0)),
-                "internal_field_3" to Fixtures.mockCoercedValue(
-                    BooleanValue(
-                        true
-                    ),
-                ),
+                "internal_field_3" to Fixtures.mockCoercedValue(BooleanValue(true)),
             )
         val coerced =
             mockk<EnrichedDestinationRecordAirbyteValue> {
