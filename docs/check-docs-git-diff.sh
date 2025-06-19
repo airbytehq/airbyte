@@ -1,4 +1,5 @@
 #!bin/bash
+set -eux
 
 # This script checks the status of the documentation files in the docs directory.
 # It should return '1' if a build is needed, and '0' if everything is up to date.
