@@ -6,6 +6,12 @@ set -eu
 #
 # This script will be called by Vercel here:
 # - https://vercel.com/airbyte-growth/airbyte-docs/settings/git#ignored-build-step
+#
+# This script is intended to be run from the root of the Airbyte repository.
+#
+# Usage:
+#   ./docs/check-docs-git-diff.sh                       # Check for any changes in the branch.
+#   ./docs/check-docs-git-diff.sh --latest-commit-only  # Only check the latest commit for changes.
 
 # parse flags
 LATEST_COMMIT_ONLY=false
