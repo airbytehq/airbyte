@@ -3,7 +3,7 @@ import TabItem from '@theme/TabItem';
 
 # Values.yaml reference
 
-This is the complete reference for Airbyte's values.yaml file. Use the one that corresponds to the [version of the Helm chart](chart-2-0) you're implementing.
+This is the complete reference for Airbyte's values.yaml file. Use the one that corresponds to the version of the helm chart you're implementing. More information: [For Community](chart-v2-community), [For Enterprise](../enterprise-setup/chart-v2-enterprise).
 
 <Tabs>
   <TabItem value="helm-1" label="Helm chart V1" default>

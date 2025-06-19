@@ -127,7 +127,7 @@ To set up single sign using generic OIDC for Airbyte Self-Managed Enterprise, co
 - [Redeploy Airbyte](#sme-deploy)
 
 :::note
-You can only use generic OIDC after you migrate to [Helm chart 2.0](../../deploying-airbyte/chart-2-0).
+You can only use generic OIDC after you migrate to [Helm chart 2.0](../enterprise-setup/chart-v2-enterprise).
 :::
 
 ### Create an Okta app for Airbyte {#sme-create-okta-app}
