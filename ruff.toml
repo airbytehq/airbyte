@@ -12,8 +12,6 @@ select = [
 ]
 
 
-
-
 # TODO: Re-enable these once we have time to address them
 # select = [
 #     # For rules reference, see https://docs.astral.sh/ruff/rules/
