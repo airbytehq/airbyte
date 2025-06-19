@@ -44,6 +44,8 @@ class RecordMungerTest {
                 secondArg<String>() + "_munged"
             }
 
+        every { validator.validateAndCoerce(any()) } answers { firstArg() }
+
         // mock coercion output
         val userFields =
             linkedMapOf(
@@ -59,7 +61,7 @@ class RecordMungerTest {
                 "internal_field_3" to Fixtures.mockCoercedValue(
                     BooleanValue(
                         true
-                    )
+                    ),
                 ),
             )
         val coerced =
@@ -79,6 +81,9 @@ class RecordMungerTest {
         // if we refactor to do the coercing directly here, we need more comprehensive tests
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
+        }
+        coerced.declaredFields.forEach {
+            verify { validator.validateAndCoerce(it.value) }
         }
 
         // munged keys map to unwrapped / coerced values

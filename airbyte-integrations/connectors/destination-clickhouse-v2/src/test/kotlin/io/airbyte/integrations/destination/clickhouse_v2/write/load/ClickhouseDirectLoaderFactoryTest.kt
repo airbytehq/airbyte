@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.clickhouse_v2.write.load.ClickhouseDirectLoaderFactory
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.RecordMunger
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
