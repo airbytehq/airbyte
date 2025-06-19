@@ -7,16 +7,15 @@ set -eux
 # This script will be called by Vercel here:
 # - https://vercel.com/airbyte-growth/airbyte-docs/settings/git#ignored-build-step
 
-git diff HEAD^ HEAD --quiet . ../docs && git log -n 1 --oneline | grep -Eq "\[(up-to-date|auto-publish)\]" || exit 1
-
 latest_commit_message=$(git log -n 1 --oneline)
+echo "⚙️ Checking for a skip directive in the commit message: ('$latest_commit_message')"
 if echo "$latest_commit_message" | grep -Eq "\[(up-to-date|auto-publish)\]"; then
     # Both conditions met - no changes and commit has required tag
     echo "✅ Skipping. Commit marked as [up-to-date]/[auto-publish]. ('$latest_commit_message')"
     exit 0
 fi
 
-# Check if the docs directories have changed in the latest commit
+echo "⚙️ Checking for git changes within the docs paths..."
 if git diff HEAD^ HEAD --quiet ./docusaurus ./docs; then
     # If there are no changes, we're good to skip the build.
     echo "✅ No changes in docs paths. Skipping build."
