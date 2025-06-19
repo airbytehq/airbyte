@@ -41,9 +41,12 @@ jobs:
       - name: Check For Skip Conditions
         id: check-skip
         run: |
-          # Run the script and capture both output and exit code
-          output=$(./docs/check-docs-git-diff.sh 2>&1)
+          # temporarily disable -e so we can capture a non-zero exit
+          set +e
+          # Run the script and capture the exit code.
+          ./docs/check-docs-git-diff.sh
           exit_code=$?
+          set -e
 
           if [ $exit_code -eq 0 ]; then
             echo "✅ Documentation already up-to-date. No build required."
