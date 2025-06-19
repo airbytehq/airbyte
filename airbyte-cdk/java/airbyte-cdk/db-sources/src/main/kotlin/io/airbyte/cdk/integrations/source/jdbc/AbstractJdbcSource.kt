@@ -665,12 +665,15 @@ abstract class AbstractJdbcSource<Datatype>(
                                         tableName
                                     )
 
-                                val sql = StringBuilder(
-                                    when (excludeTodaysData && cursorInfo.cutoffTime != null) {
-                                        true -> "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ? AND $quotedCursorField < ?"
-                                        false -> "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ?"
-                                    }
-                                )
+                                val sql =
+                                    StringBuilder(
+                                        when (excludeTodaysData && cursorInfo.cutoffTime != null) {
+                                            true ->
+                                                "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ? AND $quotedCursorField < ?"
+                                            false ->
+                                                "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ?"
+                                        }
+                                    )
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
                                 // field

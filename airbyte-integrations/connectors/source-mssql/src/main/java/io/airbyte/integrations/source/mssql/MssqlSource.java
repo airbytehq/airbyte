@@ -75,7 +75,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -433,9 +432,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = cursorBasedStateManager.getPairToCursorInfoMap();
           pairToCursorInfoMap.forEach((pair, cursorInfo) -> {
             final var tableInfo = tableNameToTable.get("%s.%s".formatted(pair.getNamespace(), pair.getName())); // TODO: no namespace
-            final var maybeField = tableInfo.getFields().stream().filter(f ->
-                            f.getName().equals(cursorInfo.getCursorField()))
-                    .findFirst();
+            final var maybeField = tableInfo.getFields().stream().filter(f -> f.getName().equals(cursorInfo.getCursorField()))
+                .findFirst();
             maybeField.ifPresent(f -> {
               LOGGER.info("Setting cutoff time for stream {} with cursor field {} ({}) to exclude today's data", pair, f.getName(), f.getType());
               switch (f.getType()) {
@@ -456,7 +454,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
             });
           });
         }
-
 
         final InitialLoadStreams initialLoadStreams =
             filterStreamInIncrementalMode(streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog));
@@ -597,7 +594,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedType = getSupportedStateType(config);
     final StateManager stateManager = StateManagerFactory.createStateManager(supportedType,
@@ -681,8 +680,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
-      return airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
-              && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty();
+    return airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
+        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty();
   }
 
   @Override
@@ -715,4 +714,5 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
     return false;
   }
+
 }
