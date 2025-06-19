@@ -262,10 +262,10 @@ class BulkDatetimeToRFC3339(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
         original_value = record["Modified Time"]
-        record["Modified Time"] = (
-            datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
-        )
-
+        if original_value is not None:
+            record["Modified Time"] = (
+                datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
+            )
 
 @dataclass
 class LightSubstreamPartitionRouter(SubstreamPartitionRouter):
