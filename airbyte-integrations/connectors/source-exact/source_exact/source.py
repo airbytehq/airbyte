@@ -2,7 +2,7 @@
 import logging
 from typing import Any
 
-from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
+from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from source_exact.api import ExactAPI
 from source_exact.streams import CRMAccountClassifications, ExactStream
@@ -24,6 +24,9 @@ class SourceExact(AbstractSource):
 
         api = ExactAPI(config)
         return api.check_connection()
+
+    def check(self, logger: logging.Logger, config) -> AirbyteConnectionStatus:
+        return super().check(logger=logger, config=config)
 
     def streams(self, config) -> list[ExactStream]:
         return [
