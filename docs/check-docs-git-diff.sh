@@ -13,6 +13,7 @@ set -eu
 #   ./docs/check-docs-git-diff.sh                       # Check for any changes in the branch.
 #   ./docs/check-docs-git-diff.sh --latest-commit-only  # Only check the latest commit for changes.
 
+
 # parse flags
 LATEST_COMMIT_ONLY=false
 while [[ $# -gt 0 ]]; do
