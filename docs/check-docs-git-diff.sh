@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eux
+set -eu
 
 # This script checks the status of the documentation files in the docs directory.
 # It should return '1' if a build is needed, and '0' if everything is up to date.
@@ -17,9 +17,12 @@ fi
 
 REMOTE=origin
 DEFAULT_BRANCH=master
+COMPARE_TO_REF="${REMOTE}/${DEFAULT_BRANCH}"
+# If we only wanted to compare against the previous commit:
+# COMPARE_TO_REF="HEAD^"
 
 echo "⚙️ Checking for git changes within the docs paths..."
-if git diff "${REMOTE}/${DEFAULT_BRANCH}"...HEAD --quiet ./docusaurus ./docs .markdownlint.jsonc; then
+if git diff "${COMPARE_TO_REF}"...HEAD --quiet ./docusaurus ./docs .markdownlint.jsonc; then
     # If there are no changes, we're good to skip the build.
     echo "✅ No changes in docs paths. Skipping build."
     exit 0
