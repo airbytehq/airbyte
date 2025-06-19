@@ -6,13 +6,13 @@ jobs:
   slashCommandDispatch:
     runs-on: ubuntu-24.04
     steps:
-      # Use pre-made action (handles private repo auth):
-      - name: Get PR Info
+      - name: Get PR repo and ref
         if: ${{ github.event.issue.pull_request }}
-        id: pr-info
-        uses: cloudposse-github-actions/get-pr@v2.0.0
-        with:
-          id: ${{ github.event.issue.number }}
+        id: getref
+        run: |
+          pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
+          echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
+          echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
       - name: Slash Command Dispatch (Workflow)
         id: scd
@@ -42,8 +42,8 @@ jobs:
           # - If the slash command is invoked from an issue, we intentionally pass 'null' as the PR number.
           # - Comment ID will always be sent, and this is sufficient to post back status updates to the originating comment.
           static-args: |
-            repo=${{ fromJSON(steps.pr-info.outputs.json).head.repo.full_name || github.repository }}
-            gitref=${{ fromJSON(steps.pr-info.outputs.json).head.ref }}
+            repo=${{ steps.getref.outputs.repo }}
+            gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
             pr=${{ github.event.issue.pull_request != null && github.event.issue.number || '' }}
 
