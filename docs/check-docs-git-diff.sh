@@ -1,4 +1,4 @@
-#!bin/bash
+#!/usr/bin/env bash
 set -eux
 
 # This script checks the status of the documentation files in the docs directory.
