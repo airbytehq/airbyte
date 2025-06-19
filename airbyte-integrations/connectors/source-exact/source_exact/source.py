@@ -2,7 +2,7 @@
 import logging
 from typing import Any
 
-from airbyte_cdk.models import AirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from source_exact.api import ExactAPI
 from source_exact.streams import CRMAccountClassifications, ExactStream
@@ -46,5 +46,5 @@ class SourceExact(AbstractSource):
 
         return AirbyteCatalog(streams=filtered)
 
-    def spec(self, logger: logging.Logger):
-        super().spec(logger)
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+        return super().spec(logger)
