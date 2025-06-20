@@ -358,7 +358,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -377,7 +378,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 val asProtocolMessage =
                     StreamCheckpoint(
-                            stream = stream,
+                            unmappedName = stream.unmappedName,
+                            unmappedNamespace = stream.unmappedNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
@@ -481,7 +483,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     input,
                     InputStreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -499,7 +502,8 @@ abstract class BasicFunctionalityIntegrationTest(
             )
             assertEquals(
                 StreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
@@ -548,7 +552,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         )
                     ),
                     StreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar1"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium()
@@ -739,6 +744,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("stream_name_with_operator+1"),
                     makeStream("stream_name_with_numbers_123"),
                     makeStream("1stream_with_a_leading_number"),
+                    makeStream("c'est une belle histoire,./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-="),
                     makeStream(
                         "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
@@ -938,8 +944,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             ),
             StreamCheckpoint(
-                finalStream,
-                """{}""",
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -1108,8 +1115,9 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                stream2,
-                """{}""",
+                unmappedName = stream2.unmappedName,
+                unmappedNamespace = stream2.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -1240,8 +1248,9 @@ abstract class BasicFunctionalityIntegrationTest(
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                stream,
-                """{}""",
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -1404,8 +1413,9 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                stream2,
-                """{}""",
+                unmappedName = stream2.unmappedName,
+                unmappedNamespace = stream2.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
@@ -3531,9 +3541,9 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         namespaceValidator(
             stream.unmappedNamespace,
-            stream.descriptor.namespace,
+            stream.mappedDescriptor.namespace,
             stream.unmappedName,
-            stream.descriptor.name,
+            stream.mappedDescriptor.name,
         )
         runSync(
             updatedConfig,
