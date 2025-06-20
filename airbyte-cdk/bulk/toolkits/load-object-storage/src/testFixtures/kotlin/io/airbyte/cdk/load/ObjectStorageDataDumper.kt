@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.parquet.toParquetReader
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
+import io.airbyte.cdk.load.test.util.ExtractedAtType
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
@@ -115,7 +116,7 @@ class ObjectStorageDataDumper(
                             .deserializeToNode()
                             .toAirbyteValue()
                             .maybeUnflatten(wasFlattened)
-                            .toOutputRecord()
+                            .toOutputRecord(ExtractedAtType.INTEGER)
                     }
                     .toList()
             }
@@ -125,7 +126,7 @@ class ObjectStorageDataDumper(
                         record
                             .toAirbyteValue(stream.schema.withAirbyteMeta(wasFlattened))
                             .maybeUnflatten(wasFlattened)
-                            .toOutputRecord()
+                            .toOutputRecord(ExtractedAtType.INTEGER)
                     }
                 }
             }
@@ -133,7 +134,11 @@ class ObjectStorageDataDumper(
                 inputStream.toAvroReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
-                        .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
+                        .map {
+                            it.toAirbyteValue()
+                                .maybeUnflatten(wasFlattened)
+                                .toOutputRecord(ExtractedAtType.TIMESTAMP_WITH_TIMEZONE)
+                        }
                         .toList()
                 }
             }
@@ -141,7 +146,11 @@ class ObjectStorageDataDumper(
                 inputStream.toParquetReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
-                        .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
+                        .map {
+                            it.toAirbyteValue()
+                                .maybeUnflatten(wasFlattened)
+                                .toOutputRecord(ExtractedAtType.TIMESTAMP_WITH_TIMEZONE)
+                        }
                         .toList()
                 }
             }
