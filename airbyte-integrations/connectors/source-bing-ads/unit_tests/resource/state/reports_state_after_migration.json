@@ -1,0 +1,14 @@
+{
+  "lookback_window": 6,
+  "parent_state": {},
+  "state": { "TimePeriod": "2023-12-17" },
+  "states": [
+    {
+      "cursor": { "TimePeriod": "2023-12-17" },
+      "partition": {
+        "account_id": "180535609"
+      }
+    }
+  ],
+  "use_global_cursor": false
+} 
