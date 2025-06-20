@@ -2,14 +2,13 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse_v2.write.direct
+package io.airbyte.integrations.destination.clickhouse_v2.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.integrations.destination.clickhouse_v2.write.RecordMunger
-import io.airbyte.integrations.destination.clickhouse_v2.write.SizedWindow
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.RecordMunger
 
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
