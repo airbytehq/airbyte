@@ -22,11 +22,11 @@ class Factory<T: DestinationConfiguration> (
 ) {
     private val interpolator: StringInterpolator = StringInterpolator()
 
-    fun createDestinationChecker() : DestinationChecker<T> {
+    fun createDestinationChecker() : HttpRequestChecker<T> {
         val mapper = ObjectMapper(YAMLFactory())
-        val manifestContent = ResourceUtils.readResource("manifest_example.yaml")
+        val manifestContent = ResourceUtils.readResource("manifest.yaml")
         val manifest: DeclarativeComponentsSchema = mapper.readValue(manifestContent, DeclarativeComponentsSchema::class.java)
-        return HttpRequestChecker<T>(createHttpRequester(manifest.checker.requester))
+        return HttpRequestChecker(createHttpRequester(manifest.checker.requester))
     }
 
     private fun createHttpRequester(model: HttpRequesterModel): HttpRequester {
