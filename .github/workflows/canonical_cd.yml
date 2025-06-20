@@ -44,13 +44,12 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Airbyte CI
         id: install-airbyte-ci
         uses: ./.github/actions/install-airbyte-ci
         with:
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
           is_fork: ${{ inputs.is_fork }}
 
       - name: Build and push Docker images for connector ${{ matrix.dir }}
