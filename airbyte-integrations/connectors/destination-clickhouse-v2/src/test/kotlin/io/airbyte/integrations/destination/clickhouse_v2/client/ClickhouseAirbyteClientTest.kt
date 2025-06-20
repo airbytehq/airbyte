@@ -9,12 +9,13 @@ import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
-import io.airbyte.integrations.destination.clickhouse_v2.model.isEmpty
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -33,6 +34,7 @@ class ClickhouseAirbyteClientTest {
     private val clickhouseSqlGenerator: ClickhouseSqlGenerator = mockk(relaxed = true)
     private val clickhouseFinalTableNameGenerator: ClickhouseFinalTableNameGenerator =
         mockk(relaxed = true)
+    private val tempTableNameGenerator: TempTableNameGenerator = mockk(relaxed = true)
 
     // Client
     private val clickhouseAirbyteClient =
@@ -40,7 +42,8 @@ class ClickhouseAirbyteClientTest {
             ClickhouseAirbyteClient(
                 client,
                 clickhouseSqlGenerator,
-                clickhouseFinalTableNameGenerator
+                clickhouseFinalTableNameGenerator,
+                tempTableNameGenerator
             )
         )
 
@@ -87,8 +90,19 @@ class ClickhouseAirbyteClientTest {
             )
         val catalogColumns = mapOf(COL1 to STRING_TYPE, COL2 to INT_TYPE)
         val expected =
-            AlterationSummary(added = emptyMap(), modified = emptyMap(), deleted = emptySet())
-        val actual = clickhouseAirbyteClient.getChangedColumns(tableColumns, catalogColumns)
+            AlterationSummary(
+                added = emptyMap(),
+                modified = emptyMap(),
+                deleted = emptySet(),
+                hasDedupChange = false
+            )
+        val actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected, actual)
     }
 
@@ -101,9 +115,16 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary(
                 added = mapOf(COL2 to INT_TYPE, COL3 to FLOAT_TYPE),
                 modified = emptyMap(), // No modified columns
-                deleted = emptySet()
+                deleted = emptySet(),
+                hasDedupChange = false,
             )
-        val actual = clickhouseAirbyteClient.getChangedColumns(tableColumns, catalogColumns)
+        val actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected, actual)
     }
 
@@ -119,9 +140,16 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary(
                 added = emptyMap(), // No added columns
                 modified = mapOf(COL2 to STRING_TYPE),
-                deleted = emptySet()
+                deleted = emptySet(),
+                hasDedupChange = false,
             )
-        val actual = clickhouseAirbyteClient.getChangedColumns(tableColumns, catalogColumns)
+        val actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected, actual)
     }
 
@@ -131,8 +159,19 @@ class ClickhouseAirbyteClientTest {
             listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String))
         val catalogColumns = mapOf(COL1 to STRING_TYPE)
         val expected =
-            AlterationSummary(added = emptyMap(), modified = emptyMap(), deleted = emptySet())
-        val actual = clickhouseAirbyteClient.getChangedColumns(tableColumns, catalogColumns)
+            AlterationSummary(
+                added = emptyMap(),
+                modified = emptyMap(),
+                deleted = emptySet(),
+                hasDedupChange = false,
+            )
+        val actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected, actual)
 
         val tableColumns2 =
@@ -142,10 +181,54 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary(
                 added = mapOf(COL2 to STRING_TYPE, COL3 to INT_TYPE),
                 modified = emptyMap(), // No modified columns
-                deleted = setOf(COL1)
+                deleted = setOf(COL1),
+                hasDedupChange = false,
             )
-        val actual2 = clickhouseAirbyteClient.getChangedColumns(tableColumns2, catalogColumns2)
+        val actual2 =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns2,
+                catalogColumns2,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected2, actual2)
+    }
+
+    @Test
+    fun `test dedup change columns`() {
+        val tableColumns: List<ClickHouseColumn> = listOf()
+        val catalogColumns: Map<String, String> = mapOf()
+        val expected =
+            AlterationSummary(
+                added = emptyMap(), // No added columns
+                modified = mapOf(),
+                deleted = emptySet(),
+                hasDedupChange = true,
+            )
+        var actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf("col1"),
+                listOf()
+            )
+        Assertions.assertEquals(expected, actual)
+        actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf(),
+                listOf("col2")
+            )
+        Assertions.assertEquals(expected, actual)
+        actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf("col1"),
+                listOf("col2")
+            )
+        Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -161,9 +244,16 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary( // Added col2 and col4, modified col3
                 added = mapOf(COL2 to STRING_TYPE, COL4 to FLOAT_TYPE),
                 modified = mapOf(COL3 to STRING_TYPE),
-                deleted = emptySet()
+                deleted = emptySet(),
+                hasDedupChange = false,
             )
-        val actual = clickhouseAirbyteClient.getChangedColumns(tableColumns, catalogColumns)
+        val actual =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns,
+                catalogColumns,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected, actual)
 
         val tableColumns2 =
@@ -176,9 +266,16 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary( // Modified col3
                 added = emptyMap(),
                 modified = mapOf(COL3 to STRING_TYPE),
-                deleted = emptySet()
+                deleted = emptySet(),
+                hasDedupChange = false,
             )
-        val actual2 = clickhouseAirbyteClient.getChangedColumns(tableColumns2, catalogColumns2)
+        val actual2 =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns2,
+                catalogColumns2,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected2, actual2)
 
         val tableColumns3 =
@@ -191,9 +288,16 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary( // Added col2
                 added = mapOf(COL2 to STRING_TYPE),
                 modified = emptyMap(),
-                deleted = emptySet()
+                deleted = emptySet(),
+                hasDedupChange = false,
             )
-        val actual3 = clickhouseAirbyteClient.getChangedColumns(tableColumns3, catalogColumns3)
+        val actual3 =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns3,
+                catalogColumns3,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected3, actual3)
 
         val tableColumns4 =
@@ -213,23 +317,35 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary( // Added col2
                 added = mapOf(COL2 to STRING_TYPE),
                 modified = emptyMap(),
-                deleted = emptySet()
+                deleted = emptySet(),
+                hasDedupChange = false,
             )
-        val actual4 = clickhouseAirbyteClient.getChangedColumns(tableColumns4, catalogColumns4)
+        val actual4 =
+            clickhouseAirbyteClient.getChangedColumns(
+                tableColumns4,
+                catalogColumns4,
+                listOf(),
+                listOf()
+            )
         Assertions.assertEquals(expected4, actual4)
     }
 
     @Test
     fun `test ensure schema matches`() = runTest {
-        val mockAlterationSummary =
-            mockk<AlterationSummary>(relaxed = true) { every { isEmpty() } returns false }
+        val alterationSummary =
+            AlterationSummary(
+                added = mapOf("new_col" to "String"),
+                modified = emptyMap(),
+                deleted = emptySet(),
+                hasDedupChange = false
+            )
 
         val mockTableName = mockk<TableName>(relaxed = true)
         val alterTableStatement = "ALTER TABLE my_table ADD COLUMN new_col String"
 
-        coEvery { clickhouseAirbyteClient.getChangedColumns(any(), any()) } returns
-            mockAlterationSummary
-        coEvery { clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName) } returns
+        coEvery { clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any()) } returns
+            alterationSummary
+        coEvery { clickhouseSqlGenerator.alterTable(alterationSummary, mockTableName) } returns
             alterTableStatement
         coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns
             mockk(relaxed = true)
@@ -248,14 +364,62 @@ class ClickhouseAirbyteClientTest {
                         every { isObject } returns true
                         every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
                     }
+                every { importType } returns Append
             }
         clickhouseAirbyteClient.ensureSchemaMatches(stream, mockTableName, columnMapping)
 
-        coVerify {
-            clickhouseAirbyteClient.getChangedColumns(any(), any())
-            clickhouseSqlGenerator.alterTable(mockAlterationSummary, mockTableName)
+        coVerifyOrder {
+            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any())
+            clickhouseSqlGenerator.alterTable(alterationSummary, mockTableName)
             clickhouseAirbyteClient.execute(alterTableStatement)
         }
+    }
+
+    @Test
+    fun `test ensure schema matches with dedup changes`() = runTest {
+        val alterationSummary =
+            AlterationSummary(
+                added = emptyMap(),
+                modified = emptyMap(),
+                deleted = emptySet(),
+                hasDedupChange = true
+            )
+
+        val finalTableName = TableName("fin", "al")
+        val tempTableName = TableName("temp", "orary")
+
+        coEvery { clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any()) } returns
+            alterationSummary
+        coEvery { clickhouseAirbyteClient.execute(any()) } returns mockk(relaxed = true)
+        every { tempTableNameGenerator.generate(any()) } returns tempTableName
+        every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns finalTableName
+
+        val columnMapping = ColumnNameMapping(mapOf())
+        val stream =
+            mockk<DestinationStream>() {
+                every { mappedDescriptor } returns
+                    mockk(relaxed = true) {
+                        every { name } returns "my_table"
+                        every { namespace } returns "my_namespace"
+                    }
+                every { schema } returns
+                    mockk(relaxed = true) {
+                        every { isObject } returns true
+                        every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
+                    }
+                every { importType } returns Append
+            }
+        clickhouseAirbyteClient.ensureSchemaMatches(stream, finalTableName, columnMapping)
+
+        coVerifyOrder {
+            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any())
+            clickhouseSqlGenerator.createNamespace(tempTableName.namespace)
+            clickhouseSqlGenerator.createTable(stream, tempTableName, columnMapping, true)
+            clickhouseSqlGenerator.copyTable(columnMapping, finalTableName, tempTableName)
+            clickhouseSqlGenerator.exchangeTable(tempTableName, finalTableName)
+            clickhouseSqlGenerator.dropTable(tempTableName)
+        }
+        coVerify(exactly = 5) { clickhouseAirbyteClient.execute(any()) }
     }
 
     @Test
