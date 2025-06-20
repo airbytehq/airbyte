@@ -59,8 +59,7 @@ class S3ObjectStorageSpec :
     override val storageType = ObjectStorageType.S3
 
     @get:JsonSchemaInject(
-        json =
-            """{"examples":["A012345678910EXAMPLE"],$SECRET,$ALWAYS_SHOW,"order":1}"""
+        json = """{"examples":["A012345678910EXAMPLE"],$SECRET,$ALWAYS_SHOW,"order":1}"""
     )
     override val accessKeyId: String? = null
 
@@ -95,12 +94,15 @@ class S3ObjectStorageSpec :
     @get:JsonPropertyDescription(
         "Format of the data output.",
     )
-    @get:JsonSchemaInject(json = """{
+    @get:JsonSchemaInject(
+        json =
+            """{
         "examples":["CSV","JSONL"],
         "default":"CSV",
         $HIDDEN,
         "order":8
-        }""")
+        }"""
+    )
     @get:JsonProperty("format")
     override val format: ObjectStorageFormatSpecification = CSVFormatSpecification()
 
