@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.time.ZonedDateTime
 
 sealed interface AirbyteValue {
     companion object {
@@ -35,6 +36,7 @@ sealed interface AirbyteValue {
                 is BigDecimal -> NumberValue(value)
                 is LocalDate -> DateValue(value)
                 is OffsetDateTime -> TimestampWithTimezoneValue(value)
+                is ZonedDateTime -> TimestampWithTimezoneValue(value.toOffsetDateTime())
                 is LocalDateTime -> TimestampWithoutTimezoneValue(value)
                 is OffsetTime -> TimeWithTimezoneValue(value)
                 is LocalTime -> TimeWithoutTimezoneValue(value)
