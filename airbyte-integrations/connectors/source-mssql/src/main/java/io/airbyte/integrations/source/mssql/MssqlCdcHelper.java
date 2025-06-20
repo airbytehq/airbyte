@@ -161,14 +161,4 @@ public class MssqlCdcHelper {
         .collect(Collectors.joining(";"));
   }
 
-  /*
-   * private static String getMessageKeyColumnValue(final ConfiguredAirbyteCatalog catalog) { // For
-   * each stream whose primary key is not empty, we create a string with schema, table_name and //
-   * primary key column names separated by commas. return catalog.getStreams().stream() .filter(s ->
-   * s.getSyncMode() == SyncMode.INCREMENTAL) .filter(s -> !s.getPrimaryKey().isEmpty()) .map(s ->
-   * s.getStream().getNamespace() + "." + s.getStream().getName() + ":" +
-   * StringUtils.join(s.getPrimaryKey().get(0).toArray(new String[0]), ","))
-   * .collect(Collectors.joining(";")); }
-   */
-
 }
