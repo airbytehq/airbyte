@@ -109,6 +109,7 @@ abstract class BigqueryDirectLoadWriteTest(
             nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
             numberCanBeLarge = false,
+            numberIsFixedPointPrecision38Scale9 = true,
             timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
     )
