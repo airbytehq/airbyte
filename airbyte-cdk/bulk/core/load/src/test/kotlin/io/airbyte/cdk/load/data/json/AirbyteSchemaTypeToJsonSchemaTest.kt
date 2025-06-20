@@ -204,11 +204,20 @@ class AirbyteSchemaTypeToJsonSchemaTest {
     @Test
     internal fun `test given nullable when serialize then set type as nullable`() {
         val airbyteType =
-            ObjectType(properties = linkedMapOf<String, FieldType>("aField" to FieldType(StringType, true)))
+            ObjectType(
+                properties = linkedMapOf<String, FieldType>("aField" to FieldType(StringType, true))
+            )
         val node = AirbyteTypeToJsonSchema().convert(airbyteType)
         Assertions.assertEquals(
             listOf<String>("null", "string"),
-            node.get("properties").asIterable().toList()[0].get("type").asIterable().map { it.asText() }.toList()
+            node
+                .get("properties")
+                .asIterable()
+                .toList()[0]
+                .get("type")
+                .asIterable()
+                .map { it.asText() }
+                .toList()
         )
     }
 }

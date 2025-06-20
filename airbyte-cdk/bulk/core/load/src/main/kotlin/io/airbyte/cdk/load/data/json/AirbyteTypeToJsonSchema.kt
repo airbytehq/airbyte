@@ -15,7 +15,7 @@ class AirbyteTypeToJsonSchema {
         if (nullable) {
             objectNode.putArray("type").add("null").add(typeName)
         } else {
-            objectNode.put("type",  typeName)
+            objectNode.put("type", typeName)
         }
         return objectNode
     }
