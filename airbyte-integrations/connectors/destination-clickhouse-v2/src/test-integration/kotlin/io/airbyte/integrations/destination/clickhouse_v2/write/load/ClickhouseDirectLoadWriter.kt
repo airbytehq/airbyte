@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse_v2.write.direct
+package io.airbyte.integrations.destination.clickhouse_v2.write.load
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.ClientFaultCause
@@ -12,11 +12,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -31,10 +27,11 @@ import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse_v2.Utils
+import io.airbyte.integrations.destination.clickhouse_v2.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
-import io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClientProvider.getClient
+import io.airbyte.integrations.destination.clickhouse_v2.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.time.ZonedDateTime
@@ -52,6 +49,7 @@ class ClickhouseDirectLoadWriter :
                     .makeWithOverrides(spec as ClickhouseSpecification, configOverrides)
             },
         destinationCleaner = ClickhouseDataCleaner,
+        recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = true,
@@ -150,64 +148,6 @@ class ClickhouseDirectLoadWriter :
 
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
     @Disabled override fun testDedupChangeCursor() {}
-
-    /**
-     * Failing because of com.clickhouse.client.api.ServerException: Code: 27. DB::Exception: Cannot
-     * parse input: expected ',' before:
-     * '.1,\"integer\":42,\"boolean\":true,\"timestamp_with_timezone\":\"2023-01-23T11:34:56-01:00\",\"timestamp_without_timezone\":\"2023-01-23T12:34:56\",\"time_with_timezone\":\"11':
-     * (at row 1) : While executing ParallelParsingBlockInputFormat.
-     * (CANNOT_PARSE_INPUT_ASSERTION_FAILED) (version 25.5.2.47 (official build))"} at
-     * com.clickhouse.client.api.internal.HttpAPIClientHelper.readError(HttpAPIClientHelper.java:371)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.internal.HttpAPIClientHelper.executeRequest(HttpAPIClientHelper.java:426)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.lambda$insert$8(Client.java:1600)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.runAsyncOperation(Client.java:2156)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.insert(Client.java:1643) ~[client-v2-0.8.6.jar:client-v2
-     * 0.8.6 (revision: 2d305b7)] at com.clickhouse.client.api.Client.insert(Client.java:1503)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.insert(Client.java:1446) ~[client-v2-0.8.6.jar:client-v2
-     * 0.8.6 (revision: 2d305b7)] at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.flush(ClickhouseDirectLoader.kt:75)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.finish(ClickhouseDirectLoader.kt:88)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:46)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:24)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.finishKeys(LoadPipelineStepTask.kt:278)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask.access$finishKeys(LoadPipelineStepTask.kt:59)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:302)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-     * [kotlin-stdlib-2.1.10.jar:2.1.10-release-473] at
-     * kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     */
-    @Disabled override fun testBasicTypes() {}
 
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
     @Disabled override fun testDedupChangePk() {}
@@ -343,38 +283,20 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
-        val response =
-            client
-                .query(
-                    "SELECT * FROM ${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
-                )
-                .get()
+        val namespacedTableName =
+            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
 
-        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)
+        val response = client.query("SELECT * FROM $namespacedTableName").get()
+
+        val schema = client.getTableSchema(namespacedTableName)
+
+        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response, schema)
         while (reader.hasNext()) {
             val record = reader.next()
             val dataMap = linkedMapOf<String, AirbyteValue>()
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
-                .map { entry ->
-                    val airbyteValue =
-                        when (entry.value) {
-                            is Long -> IntegerValue(entry.value as Long)
-                            is String ->
-                                if (entry.value == "") NullValue
-                                else StringValue(entry.value as String)
-                            is ZonedDateTime ->
-                                TimestampWithTimezoneValue(
-                                    (entry.value as ZonedDateTime).toOffsetDateTime()
-                                )
-                            null -> NullValue
-                            else ->
-                                throw UnsupportedOperationException(
-                                    "Clickhouse data dumper doesn't know how to dump type ${entry.value::class.java} with value ${entry.value}"
-                                )
-                        }
-                    dataMap.put(entry.key, airbyteValue)
-                }
+                .forEach { entry -> dataMap[entry.key] = AirbyteValue.from(entry.value) }
             val outputRecord =
                 OutputRecord(
                     rawId = record[Meta.COLUMN_NAME_AB_RAW_ID] as String,
