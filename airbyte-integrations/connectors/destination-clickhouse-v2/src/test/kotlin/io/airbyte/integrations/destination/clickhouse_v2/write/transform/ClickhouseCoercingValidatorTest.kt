@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL64_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MIN
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MAX
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MIN
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidatorTest.Fixtures.toAirbyteIntegerValue
@@ -92,8 +92,8 @@ class ClickhouseCoercingValidatorTest {
                 Arguments.of("42"),
                 Arguments.of("-10000000000000000.33"),
                 Arguments.of("100000000000000000.3"),
-                Arguments.of(DECIMAL64_MIN.add(BigDecimal.valueOf(1)).toString()),
-                Arguments.of(DECIMAL64_MAX.subtract(BigDecimal.valueOf(1)).toString()),
+                Arguments.of(DECIMAL128_MIN.add(BigDecimal.valueOf(1)).toString()),
+                Arguments.of(DECIMAL128_MAX.subtract(BigDecimal.valueOf(1)).toString()),
                 Arguments.of("1"),
                 Arguments.of("80327031.865312"),
                 Arguments.of("-80327031.8954"),
@@ -102,13 +102,13 @@ class ClickhouseCoercingValidatorTest {
         @JvmStatic
         fun invalidFloats() =
             listOf(
-                Arguments.of(DECIMAL64_MIN.toString()),
-                Arguments.of(DECIMAL64_MAX.toString()),
-                Arguments.of(DECIMAL64_MIN.subtract(BigDecimal.valueOf(124)).toString()),
-                Arguments.of(DECIMAL64_MAX.add(BigDecimal.valueOf(81)).toString()),
-                Arguments.of("10000000000000000000"),
-                Arguments.of("999999999999999999999999"),
-                Arguments.of("-999999999999999999999999.12"),
+                Arguments.of(DECIMAL128_MIN.toString()),
+                Arguments.of(DECIMAL128_MAX.toString()),
+                Arguments.of(DECIMAL128_MIN.subtract(BigDecimal.valueOf(124)).toString()),
+                Arguments.of(DECIMAL128_MAX.add(BigDecimal.valueOf(81)).toString()),
+                Arguments.of("100000000000000000000000000000000000001"),
+                Arguments.of("999999999999999999999999999999999999999.9"),
+                Arguments.of("-999999999999999999999999999999999999999.12"),
             )
 
         @JvmStatic

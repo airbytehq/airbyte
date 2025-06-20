@@ -4,17 +4,30 @@
 
 package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL64_MIN
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATETIME64_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATETIME64_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MIN
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MAX
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MIN
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 
 @Singleton
 class ClickhouseCoercingValidator {
@@ -24,7 +37,7 @@ class ClickhouseCoercingValidator {
     fun validateAndCoerce(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         when (val abValue = value.abValue) {
             is NumberValue ->
-                if (abValue.value <= DECIMAL64_MIN || abValue.value >= DECIMAL64_MAX) {
+                if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
@@ -35,6 +48,30 @@ class ClickhouseCoercingValidator {
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
+            is DateValue -> {
+                val days = abValue.value.toEpochDay()
+                if (days < DATE32_MIN || days > DATE32_MAX) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
+            }
+            is TimestampWithTimezoneValue -> {
+                val seconds = abValue.value.toEpochSecond()
+                if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
+            }
+            is TimestampWithoutTimezoneValue -> {
+                val seconds = abValue.value.toEpochSecond(ZoneOffset.UTC)
+                if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
+            }
             else -> {}
         }
 
@@ -45,9 +82,20 @@ class ClickhouseCoercingValidator {
         // CH will overflow ints without erroring
         val INT64_MAX = BigInteger(Long.MAX_VALUE.toString())
         val INT64_MIN = BigInteger(Long.MIN_VALUE.toString())
-        // copied from "deprecated" but still actively used
+
+        // below are copied from "deprecated" but still actively used
         // com.clickhouse.data.format.BinaryStreamUtils.DECIMAL64_MAX
-        val DECIMAL64_MAX = BigDecimal("1000000000000000000")
-        val DECIMAL64_MIN = BigDecimal("-1000000000000000000")
+        // we can't directly use them because the deprecated status causes a
+        // compiler warning which we don't tolerate in CI :smithers:
+        val DECIMAL128_MAX = BigDecimal("100000000000000000000000000000000000000")
+        val DECIMAL128_MIN = BigDecimal("-100000000000000000000000000000000000000")
+
+        val DATE32_MAX = LocalDate.of(2299, 12, 31).toEpochDay()
+        val DATE32_MIN = LocalDate.of(1900, 1, 1).toEpochDay()
+
+        val DATETIME64_MAX = LocalDateTime.of(LocalDate.of(2299, 12, 31), LocalTime.MAX)
+            .toEpochSecond(ZoneOffset.UTC)
+        val DATETIME64_MIN = LocalDateTime.of(LocalDate.of(1900, 1, 1), LocalTime.MIN)
+            .toEpochSecond(ZoneOffset.UTC)
     }
 }
