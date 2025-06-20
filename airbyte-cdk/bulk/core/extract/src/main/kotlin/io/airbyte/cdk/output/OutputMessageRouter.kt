@@ -8,10 +8,11 @@ import io.airbyte.cdk.read.FeedBootstrap
 import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.SocketResource
-import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.micronaut.context.annotation.Prototype
+import jakarta.inject.Inject
 import java.time.Clock
 
 /**
@@ -20,17 +21,22 @@ import java.time.Clock
  * All other message like log or error messages go over std output.
  */
 class OutputMessageRouter(
-    private val recordsChannelType: OutputChannelType,
+    private val recordsDataChannelMedium: DataChannelMedium,
+    private val recordsDataChannelFormat: DataChannelFormat,
     private val simpleOutputConsumer: SimpleOutputConsumer,
     private val additionalProperties: Map<String, String>,
     private val feedBootstrap: FeedBootstrap<*>,
     private val acquiredResources: Map<ResourceType, Resource.Acquired>, )
     : AutoCloseable {
 
-    enum class OutputChannelType {
+    enum class DataChannelFormat {
         JSONL,
         PROTOBUF,
-        STDIO
+    }
+
+    enum class DataChannelMedium {
+        STDIO,
+        SOCKET,
     }
 
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
@@ -41,39 +47,50 @@ class OutputMessageRouter(
     lateinit var recordAcceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
 
     init {
+        when (recordsDataChannelMedium) {
+            DataChannelMedium.SOCKET -> {
+                when (recordsDataChannelFormat) {
+                    DataChannelFormat.JSONL -> {
+                        socketJsonOutputConsumer = SocketJsonOutputConsumer(
+                            (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
+                            Clock.systemUTC(),  // TEMP
+                            8192, // TEMP
+                            additionalProperties
+                        )
+                        efficientStreamRecordConsumers =
+                            feedBootstrap.streamRecordConsumers(socketJsonOutputConsumer)
+                        recordAcceptors = efficientStreamRecordConsumers.map {
+                            it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) }
+                        }
+                            .toMap()
+                    }
 
-        when (recordsChannelType) {
-            OutputChannelType.JSONL -> {
-                socketJsonOutputConsumer = SocketJsonOutputConsumer(
-                    (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
-                    Clock.systemUTC(),
-                    8192,
-                    additionalProperties
-                )
-                efficientStreamRecordConsumers = feedBootstrap.streamRecordConsumers(socketJsonOutputConsumer)
-                recordAcceptors = efficientStreamRecordConsumers.map {
-                    it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) } }
-                    .toMap()
-
+                    DataChannelFormat.PROTOBUF -> {
+                        protoOutputConsumer = SocketProtobufOutputConsumer(
+                            (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
+                            Clock.systemUTC(),
+                            8192
+                        )
+                        protoRecordOutputConsumers = feedBootstrap.streamProtoRecordConsumers(
+                            protoOutputConsumer,
+                            additionalProperties["partition_id"]
+                        )
+                        recordAcceptors = protoRecordOutputConsumers.map {
+                            it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) }
+                        }
+                            .toMap()
+                    }
+                }
             }
-            OutputChannelType.PROTOBUF -> {
-                protoOutputConsumer = SocketProtobufOutputConsumer(
-                    (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
-                    Clock.systemUTC(),
-                    8192
-                )
-                protoRecordOutputConsumers = feedBootstrap.streamProtoRecordConsumers(protoOutputConsumer, additionalProperties["partition_id"])
-                recordAcceptors = protoRecordOutputConsumers.map {
-                    it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) } }
-                    .toMap()
-            }
-            OutputChannelType.STDIO -> {
+            DataChannelMedium.STDIO -> {
                 simpleEfficientStreamConsumers = feedBootstrap.streamRecordConsumers()
-
-                // TODO: add acceptors?
-            }
+                recordAcceptors = simpleEfficientStreamConsumers.map {
+                    it.key to { record: InternalRow -> it.value.accept(record, emptyMap()) }
+                }
+                    .toMap()
             }
         }
+    }
 
     override fun close() {
         if (::simpleEfficientStreamConsumers.isInitialized) {
@@ -87,36 +104,40 @@ class OutputMessageRouter(
         }
     }
 
-    fun acceptRecord(record: InternalRow, streamIdentifier: StreamIdentifier) {
-        when (recordsChannelType) {
-            OutputChannelType.JSONL -> efficientStreamRecordConsumers[streamIdentifier]?.accept(record, emptyMap()) // TEMP
-            OutputChannelType.PROTOBUF -> protoRecordOutputConsumers[streamIdentifier]?.accept(record, emptyMap())
-            OutputChannelType.STDIO -> simpleEfficientStreamConsumers[streamIdentifier]?.accept(record, emptyMap())
-        }
-
-    }
-
     fun acceptNonRecord(airbyteMessage: AirbyteStateMessage, needAlsoSimpleOutout: Boolean) {
-        when (recordsChannelType) {
-            OutputChannelType.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
-            OutputChannelType.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
-            OutputChannelType.STDIO -> simpleOutputConsumer.accept(airbyteMessage)
+        when (recordsDataChannelMedium) {
+            DataChannelMedium.SOCKET -> {
+                when (recordsDataChannelFormat) {
+                    DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
+                    DataChannelFormat.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
+                    /*        if (needAlsoSimpleOutout && recordsDataChannelFormat != DataChannelFormat.STDIO) {
+                                simpleOutputConsumer.accept(airbyteMessage)
+                            }*/
+
+                }
+            }
+            DataChannelMedium.STDIO -> {
+                simpleOutputConsumer.accept(airbyteMessage)
+            }
         }
 
-        if (needAlsoSimpleOutout && recordsChannelType != OutputChannelType.STDIO) {
-            simpleOutputConsumer.accept(airbyteMessage)
-        }
     }
 
     fun acceptNonRecord(airbyteMessage: AirbyteStreamStatusTraceMessage, needAlsoSimpleOutout: Boolean) {
-        when (recordsChannelType) {
-            OutputChannelType.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
-            OutputChannelType.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
-            OutputChannelType.STDIO -> simpleOutputConsumer.accept(airbyteMessage)
-        }
+        when (recordsDataChannelMedium) {
+            DataChannelMedium.SOCKET -> {
+                when (recordsDataChannelFormat) {
+                    DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
+                    DataChannelFormat.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
+                    /*        if (needAlsoSimpleOutout && recordsDataChannelFormat != DataChannelFormat.STDIO) {
+                                simpleOutputConsumer.accept(airbyteMessage)
+                            }*/
 
-        if (needAlsoSimpleOutout && recordsChannelType != OutputChannelType.STDIO) {
-            simpleOutputConsumer.accept(airbyteMessage)
+                }
+            }
+            DataChannelMedium.STDIO -> {
+                simpleOutputConsumer.accept(airbyteMessage)
+            }
         }
     }
 

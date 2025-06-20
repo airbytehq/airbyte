@@ -7,9 +7,10 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.JSONL
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.PROTOBUF
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.PROTOBUF
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
@@ -92,9 +93,8 @@ class CdcPartitionReader<T : Comparable<T>>(
         }
 
         val resourceType: List<ResourceType> =
-            when (feedBootstrap.outputChannelType) {
-                JSONL,
-                PROTOBUF -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
+            when (feedBootstrap.dataChannelMedium) {
+                SOCKET -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
         }
         val resources: Map<ResourceType, AcquiredResource> =
@@ -105,7 +105,8 @@ class CdcPartitionReader<T : Comparable<T>>(
         this.stateFilesAccessor = DebeziumStateFilesAccessor()
 
         outputMessageRouter = OutputMessageRouter(
-            feedBootstrap.outputChannelType,
+            feedBootstrap.dataChannelMedium,
+            feedBootstrap.dataChannelFormat,
             feedBootstrap.outputConsumer,
             mapOf("partition_id" to partitionId), // TEMP
             feedBootstrap,

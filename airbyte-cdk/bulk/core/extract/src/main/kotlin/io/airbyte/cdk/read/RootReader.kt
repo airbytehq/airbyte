@@ -3,9 +3,9 @@ package io.airbyte.cdk.read
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.*
 import io.airbyte.cdk.output.SimpleOutputConsumer
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -37,8 +37,13 @@ class RootReader(
     val metaFieldDecorator: MetaFieldDecorator,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
-    val outputChannelType: OutputChannelType,
+    val dataChannelFormat: DataChannelFormat,
+    val dataChannelMedium: DataChannelMedium
 ) {
+    init {
+        ensureDataChannelMediumFormat()
+    }
+
     private val log = KotlinLogging.logger {}
 
     /** [Mutex] ensuring that resource acquisition always happens serially. */
@@ -49,6 +54,14 @@ class RootReader(
     /** Notify a potential change in resource availability. */
     fun notifyResourceAvailability() {
         resourceReleaseFlow.update { it + 1 }
+    }
+
+    private fun ensureDataChannelMediumFormat() {
+        if (dataChannelMedium == DataChannelMedium.STDIO) {
+            if (dataChannelFormat != DataChannelFormat.JSONL) {
+                throw IllegalArgumentException("Data channel format must be JSONL when medium is STDIO.")
+            }
+        }
     }
 
     /** Wait until an availability notification arrives or a timeout is reached. */
@@ -78,7 +91,7 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, outputChannelType).read() }
+                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, dataChannelFormat, dataChannelMedium).read() }
                 }
             // Call listener hook.
             listener(feedJobs)

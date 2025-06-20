@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType.STDIO
+import io.airbyte.cdk.output.OutputMessageRouter.*
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.*
 import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
@@ -49,9 +50,9 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val resourceTypes = when (streamState.streamFeedBootstrap.outputChannelType) {
+        val resourceTypes = when (streamState.streamFeedBootstrap.dataChannelMedium) {
             STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
-            else -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
+            SOCKET -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
 
         }
         val resources: Map<ResourceType, AcquiredResource> =
@@ -60,7 +61,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         acquiredResources.set(resources)
 
         outputMessageRouter = OutputMessageRouter(
-            streamState.streamFeedBootstrap.outputChannelType,
+            streamState.streamFeedBootstrap.dataChannelMedium,
+            streamState.streamFeedBootstrap.dataChannelFormat,
             streamState.streamFeedBootstrap.outputConsumer,
             mapOf("partition_id" to partitionId),
              streamState.streamFeedBootstrap,

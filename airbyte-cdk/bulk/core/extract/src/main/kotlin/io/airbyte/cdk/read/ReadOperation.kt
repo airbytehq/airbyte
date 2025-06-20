@@ -9,10 +9,8 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.SimpleOutputConsumer
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -43,7 +41,10 @@ class ReadOperation(
     val partitionsCreatorFactoriesSupplier:
         List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}")
-    val outputFormat: String
+    val dataChannelFormat: String,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}")
+    val dataChannelMedium: String,
+
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -59,7 +60,8 @@ class ReadOperation(
                 metaFieldDecorator,
                 resourceAcquirer,
                 partitionsCreatorFactoriesSupplier.map { it -> it.get() },
-                OutputMessageRouter.OutputChannelType.valueOf(outputFormat)
+                OutputMessageRouter.DataChannelFormat.valueOf(dataChannelFormat),
+                OutputMessageRouter.DataChannelMedium.valueOf(dataChannelMedium),
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->

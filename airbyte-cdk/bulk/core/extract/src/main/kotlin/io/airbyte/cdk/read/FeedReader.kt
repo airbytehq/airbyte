@@ -4,8 +4,8 @@ package io.airbyte.cdk.read
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.OutputChannelType
-import io.airbyte.cdk.output.sockets.BoostedOutputConsumerFactory
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
@@ -34,13 +34,14 @@ class FeedReader(
     val root: RootReader,
     val feed: Feed,
     val resourceAcquirer: ResourceAcquirer,
-    val outputChannelType: OutputChannelType,
+    val dataChannelFormat: DataChannelFormat,
+    val dataChannelMedium: DataChannelMedium
 ) {
     private val log = KotlinLogging.logger {}
 
     private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, outputChannelType)
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, dataChannelFormat, dataChannelMedium)
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -335,7 +336,8 @@ class FeedReader(
                 val r = (acqs.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
 
                 messageProcessor = OutputMessageRouter(
-                    feedBootstrap.outputChannelType,
+                    feedBootstrap.dataChannelMedium,
+                    feedBootstrap.dataChannelFormat,
                     feedBootstrap.outputConsumer,
                     emptyMap(),feedBootstrap,
                     mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r),
