@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import jakarta.inject.Singleton
 
@@ -362,6 +363,7 @@ class ClickhouseSqlGenerator {
 
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
+        const val DECIMAL_WITH_PRECISION_AND_SCALE = "DECIMAL128(9)"
     }
 }
 
@@ -370,7 +372,7 @@ fun AirbyteType.toDialectType(): String =
         BooleanType -> ClickHouseDataType.Bool.name
         DateType -> ClickHouseDataType.Date.name
         IntegerType -> ClickHouseDataType.Int64.name
-        NumberType -> ClickHouseDataType.Decimal.name
+        NumberType -> DECIMAL_WITH_PRECISION_AND_SCALE
         StringType -> ClickHouseDataType.String.name
         TimeTypeWithTimezone -> ClickHouseDataType.String.name
         TimeTypeWithoutTimezone -> ClickHouseDataType.String.name
