@@ -60,6 +60,7 @@ class ClickhouseDirectLoadWriter :
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
+        commitDataIncrementallyOnAppend = true,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
@@ -89,61 +90,6 @@ class ClickhouseDirectLoadWriter :
     override fun testBasicWriteFile() {
         // Clickhouse does not support file transfer, so this test is skipped.
     }
-
-    /**
-     * Failing (is stuck) because of com.clickhouse.client.api.ServerException: Code: 27.
-     * DB::Exception: Cannot parse input: expected '\"' before:
-     * 'Z\",\"name\":\"foo_1_200\",\"_airbyte_extracted_at\":200,\"_airbyte_generation_id\":0,\"_airbyte_raw_id\":\"bf7d3df8-8a91-4fd4-bd4c-89c293ba1d6b\",\"_airbyte_meta\":{\"changes\"':
-     * (while reading the value of key updated_at): (at row 1) : While executing
-     * ParallelParsingBlockInputFormat. (CANNOT_PARSE_INPUT_ASSERTION_FAILED) (version 25.5.2.47
-     * (official build))"} at
-     * com.clickhouse.client.api.internal.HttpAPIClientHelper.readError(HttpAPIClientHelper.java:371)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.internal.HttpAPIClientHelper.executeRequest(HttpAPIClientHelper.java:426)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.lambda$insert$8(Client.java:1600)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.runAsyncOperation(Client.java:2156)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.insert(Client.java:1643) ~[client-v2-0.8.6.jar:client-v2
-     * 0.8.6 (revision: 2d305b7)] at com.clickhouse.client.api.Client.insert(Client.java:1503)
-     * ~[client-v2-0.8.6.jar:client-v2 0.8.6 (revision: 2d305b7)] at
-     * com.clickhouse.client.api.Client.insert(Client.java:1446) ~[client-v2-0.8.6.jar:client-v2
-     * 0.8.6 (revision: 2d305b7)] at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.flush(ClickhouseDirectLoader.kt:74)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.finish(ClickhouseDirectLoader.kt:87)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:46)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.finish(DirectLoadRecordAccumulator.kt:24)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:253)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-     * [kotlin-stdlib-2.1.10.jar:2.1.10-release-473] at
-     * kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
-     * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     */
-    @Disabled() override fun testInterruptedTruncateWithoutPriorData() {}
 
     /**
      * failing because of
@@ -189,9 +135,6 @@ class ClickhouseDirectLoadWriter :
 
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
     @Disabled override fun testFunkyCharactersDedup() {}
-
-    /** Running well locally, not well in CI */
-    @Disabled override fun testMidSyncCheckpointingStreamState() {}
 }
 
 class ClickhouseDataDumper(
