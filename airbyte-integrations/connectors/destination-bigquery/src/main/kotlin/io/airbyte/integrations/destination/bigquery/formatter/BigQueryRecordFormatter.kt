@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -145,6 +146,10 @@ class BigQueryRecordFormatter(
         private val INT64_MIN_VALUE: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
         private val INT64_MAX_VALUE: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
         private const val NUMERIC_MAX_PRECISION = 38
+        private const val NUMERIC_MAX_SCALE = 9
+        private val NUMERIC_MAX_VALUE =
+            BigDecimalUtil.maxForRange(precision = NUMERIC_MAX_PRECISION, scale = NUMERIC_MAX_SCALE)
+        private val NUMERIC_MIN_VALUE = NUMERIC_MAX_VALUE.negate()
         private val DATE_MIN_VALUE = LocalDate.parse("0001-01-01")
         private val DATE_MAX_VALUE = LocalDate.parse("9999-12-31")
         private val TIMESTAMP_MIN_VALUE = OffsetDateTime.parse("0001-01-01T00:00:00Z")
@@ -248,8 +253,21 @@ class BigQueryRecordFormatter(
                 }
                 is NumberType -> {
                     (value.abValue as NumberValue).value.let {
-                        if (it.precision() > NUMERIC_MAX_PRECISION) {
+                        if (it < NUMERIC_MIN_VALUE || NUMERIC_MAX_VALUE < it) {
+                            // If we're too large/small, then we have to null out.
                             value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        } else if (it.scale() > NUMERIC_MAX_SCALE) {
+                            // But if we're within the min/max range, but have too many decimal
+                            // points, then we can round off the number.
+                            // experimentally, bigquery uses the half_up rounding strategy:
+                            // select cast(json_query('{"foo": -0.0000000005}', "$.foo") as numeric)
+                            // -> -0.000000001
+                            // select cast(json_query('{"foo":  0.0000000005}', "$.foo") as numeric)
+                            // ->  0.000000001
+                            value.truncate(
+                                NumberValue(it.setScale(NUMERIC_MAX_SCALE, RoundingMode.HALF_UP)),
+                                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
                         }
                     }
                 }
