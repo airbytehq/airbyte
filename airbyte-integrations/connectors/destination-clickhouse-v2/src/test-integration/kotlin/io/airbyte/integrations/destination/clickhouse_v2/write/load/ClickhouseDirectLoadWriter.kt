@@ -10,6 +10,7 @@ import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
@@ -51,7 +52,7 @@ class ClickhouseDirectLoadWriter :
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
-        dedupBehavior = DedupBehavior(),
+        dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
@@ -68,6 +69,7 @@ class ClickhouseDirectLoadWriter :
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
+        dedupChangeUsesDefault = true,
     ) {
     companion object {
         @JvmStatic
@@ -142,18 +144,6 @@ class ClickhouseDirectLoadWriter :
      * [kotlinx-coroutines-core-jvm-1.9.0.jar:?]
      */
     @Disabled() override fun testInterruptedTruncateWithoutPriorData() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupWithStringKey() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupChangeCursor() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupChangePk() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedup() {}
 
     /**
      * failing because of
@@ -261,9 +251,6 @@ class ClickhouseDirectLoadWriter :
     /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
     @Disabled override fun testFunkyCharactersDedup() {}
 
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testDedupNoCursor() {}
-
     /** Running well locally, not well in CI */
     @Disabled override fun testMidSyncCheckpointingStreamState() {}
 
@@ -281,12 +268,15 @@ class ClickhouseDataDumper(
         val config = configProvider(spec)
         val client = getClient(config)
 
+        val isDedup = stream.importType is Dedupe
+
         val output = mutableListOf<OutputRecord>()
 
         val namespacedTableName =
             "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
 
-        val response = client.query("SELECT * FROM $namespacedTableName").get()
+        val response =
+            client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
 
         val schema = client.getTableSchema(namespacedTableName)
 
