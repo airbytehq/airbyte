@@ -444,8 +444,7 @@ public class MssqlInitialReadUtil {
     final Map<String, List<String>> clusteredIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
     final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
-    if (primaryKey.isEmpty())
-    {
+    if (primaryKey.isEmpty()) {
       LOGGER.info("Stream does not have source defined primary key: " + stream.getStream().getName());
       LOGGER.info("Trying to use logical primary key.");
       primaryKey = stream.getPrimaryKey();
