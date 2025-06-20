@@ -300,6 +300,8 @@ abstract class BasicFunctionalityIntegrationTest(
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     // If it simply isn't possible to represent a mismatched type on the wire (ie, protobuf).
     val mismatchedTypesUnrepresentable: Boolean = false,
+    // When changing a column to a PK, some destination set the column to a default value.
+    // This flag is addressing this behavior.
     val dedupChangeUsesDefault: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
