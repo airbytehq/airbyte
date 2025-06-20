@@ -23,14 +23,14 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun clickhouseClient(config: ClickhouseConfiguration): Client {
-        // We are not setting the default database here because the client is expecting that the
-        // database exists.
-        // That means that the database should be created before using this client which will make
-        // the creation of the default to fail because it doesn't exist yet.
-        // In order to solve this chicken-and-egg problem, we avoid to set a default db in the
+        // We don't set the default database here because the client expects that database
+        // to already exist during instantiation. If we instantiate the client with a default
+        // database that does not exist, it will hard fail.
+
+        // In order to solve this chicken-and-egg problem, we avoid setting the default db on the
         // client.
-        // The default resolved database in ClickhouseConfiguration will be used as a namespace for
-        // the table creation if not namespace is specified.
+        // Instead, we resolve the default database in the ClickhouseConfiguration, which is used
+        // for table creation when the stream descriptor does not specificy a namespace directly.
         return Client.Builder()
             .addEndpoint(config.endpoint)
             .setUsername(config.username)
