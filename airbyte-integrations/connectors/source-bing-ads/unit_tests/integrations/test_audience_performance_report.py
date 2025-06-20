@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from test_non_hourly_reports import ReportsTestWithStateChangesAfterMigration
 from test_hourly_reports import HourlyReportsTestWithStateChangesAfterMigration
+from test_non_hourly_reports import ReportsTestWithStateChangesAfterMigration
 
 
 class TestAudiencePerformanceReportDailyStream(ReportsTestWithStateChangesAfterMigration):
@@ -133,7 +133,6 @@ class TestAudiencePerformanceReportMonthlyStream(ReportsTestWithStateChangesAfte
     report_file = "audience_performance_report_monthly"
     records_number = 6
     incremental_report_file = "audience_performance_report_monthly_incremental"
-
 
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
