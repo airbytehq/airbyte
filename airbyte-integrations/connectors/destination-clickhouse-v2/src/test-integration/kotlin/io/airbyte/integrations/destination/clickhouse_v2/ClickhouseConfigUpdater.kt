@@ -31,6 +31,8 @@ class ClickhouseConfigUpdater : ConfigurationUpdater {
     override fun setDefaultNamespace(
         config: String,
         defaultNamespace: String
-    ): DefaultNamespaceResult =
-        DefaultNamespaceResult(updatedConfig = config, actualDefaultNamespace = defaultNamespace)
+    ): DefaultNamespaceResult = DefaultNamespaceResult(
+            updatedConfig = config.replace("default", defaultNamespace),
+            actualDefaultNamespace = defaultNamespace
+        )
 }
