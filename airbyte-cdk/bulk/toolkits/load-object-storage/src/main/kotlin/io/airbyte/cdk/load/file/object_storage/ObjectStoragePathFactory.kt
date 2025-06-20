@@ -168,6 +168,9 @@ class ObjectStoragePathFactory(
 
     private fun getPathVariables(pathConfig: ObjectStoragePathConfiguration): List<PathVariable> {
         return listOf(
+            PathVariable("SYNC_ID") {
+                pathConfig.resolveNamesMethod(it.stream.syncId.toString())
+            },
             PathVariable("NAMESPACE") {
                 pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.namespace ?: "")
             },
