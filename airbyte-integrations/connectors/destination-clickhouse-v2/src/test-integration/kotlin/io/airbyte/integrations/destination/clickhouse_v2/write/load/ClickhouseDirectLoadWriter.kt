@@ -334,7 +334,8 @@ class ClickhouseDataDumper(
         val namespacedTableName =
             "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
 
-        val response = client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
+        val response =
+            client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
 
         val schema = client.getTableSchema(namespacedTableName)
 
