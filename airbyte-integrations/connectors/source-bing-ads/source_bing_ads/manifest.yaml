@@ -1468,6 +1468,7 @@ definitions:
       - DeviceOS
       - TopVsOther
       - BidMatchType
+    geographic_performance_report: None
 
   report_columns:
     age_gender_audience:
@@ -1849,6 +1850,144 @@ definitions:
       - BaseCampaignId
       - AccountNumber
       - DestinationUrl
+    geographic_performance_report_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - AccountNumber
+      - Country
+      - State
+      - MetroArea
+      - City
+      - ProximityTargetLocation
+      - Radius
+      - LocationType
+      - MostSpecificLocation
+      - AccountStatus
+      - CampaignStatus
+      - AdGroupStatus
+      - County
+      - PostalCode
+      - LocationId
+      - BaseCampaignId
+      - Goal
+      - GoalType
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - AllConversionsQualified
+      - Neighborhood
+      - ViewThroughRevenue
+      - CampaignType
+      - AssetGroupId
+      - AssetGroupName
+      - AssetGroupStatus
+      - CurrencyCode
+      - DeliveredMatchType
+      - AdDistribution
+      - DeviceType
+      - Language
+      - Network
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - AccountName
+      - CampaignName
+      - AdGroupName
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - Assists
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - ViewThroughConversions
+      - ViewThroughConversionsQualified
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+    geographic_performance_report:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - AccountNumber
+      - Country
+      - State
+      - MetroArea
+      - City
+      - ProximityTargetLocation
+      - Radius
+      - LocationType
+      - MostSpecificLocation
+      - AccountStatus
+      - CampaignStatus
+      - AdGroupStatus
+      - County
+      - PostalCode
+      - LocationId
+      - BaseCampaignId
+      - Goal
+      - GoalType
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - AllConversionsQualified
+      - Neighborhood
+      - ViewThroughRevenue
+      - CampaignType
+      - AssetGroupId
+      - AssetGroupName
+      - AssetGroupStatus
+      - CurrencyCode
+      - DeliveredMatchType
+      - AdDistribution
+      - DeviceType
+      - Language
+      - Network
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - AccountName
+      - CampaignName
+      - AdGroupName
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - Assists
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - ViewThroughConversions
+      - ViewThroughConversionsQualified
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
 
   # base bulk streams
   base_bulk_stream:
@@ -2489,6 +2628,37 @@ definitions:
         value: |
           {% set v = record.get('ConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+    geographic_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllConversionRate
+        value: |
+          {% set v = record.get('AllConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 dynamic_streams:
   # Report streams
   - type: DynamicDeclarativeStream
@@ -2746,6 +2916,83 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/keyword_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          ## Geographic Performance Reports
+          - name: geographic_performance_report_hourly
+            parameters:
+              report_aggregation: Hourly
+              report_name: GeographicPerformanceReport
+              report_type: GeographicPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/geographic_performance_report_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/geographic_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/geographic_performance_report_hourly"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/hourly_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+          - name: geographic_performance_report_daily
+            parameters:
+              report_aggregation: Daily
+              report_name: GeographicPerformanceReport
+              report_type: GeographicPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/geographic_performance_report"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/geographic_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/geographic_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/geographic_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          - name: geographic_performance_report_weekly
+            parameters:
+              report_aggregation: Weekly
+              report_name: GeographicPerformanceReport
+              report_type: GeographicPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/geographic_performance_report"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/geographic_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/geographic_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/geographic_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          - name: geographic_performance_report_monthly
+            parameters:
+              report_aggregation: Monthly
+              report_name: GeographicPerformanceReport
+              report_type: GeographicPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/geographic_performance_report"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/geographic_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/geographic_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/geographic_performance_report_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       components_mapping:
@@ -7314,6 +7561,700 @@ schemas:
         type:
           - "null"
           - string
+  
+  geographic_performance_report_hourly:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The unique identifier for the Bing Ads account.
+        type:
+          - "null"
+          - integer
+      CampaignId:
+        description: The unique identifier for the campaign.
+        type:
+          - "null"
+          - integer
+      AdGroupId:
+        description: The unique identifier for the ad group.
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period for the data, formatted as date-time.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      AccountNumber:
+        description: The account number associated with the Bing Ads account.
+        type:
+          - "null"
+          - string
+      Country:
+        description: The country where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      State:
+        description: The state where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      MetroArea:
+        description: The metropolitan area where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      City:
+        description: The city where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      ProximityTargetLocation:
+        description: The target location for proximity targeting.
+        type:
+          - "null"
+          - string
+      Radius:
+        description: The radius set for proximity targeting.
+        type:
+          - "null"
+          - string
+      LocationType:
+        description: The type of location where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      MostSpecificLocation:
+        description: The most specific location where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      AccountStatus:
+        description: The status of the Bing Ads account.
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      AdGroupStatus:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      County:
+        description: The county where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      PostalCode:
+        description: The postal code of the location where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      LocationId:
+        description: The unique identifier for the location.
+        type:
+          - "null"
+          - string
+      BaseCampaignId:
+        description: The base campaign identifier.
+        type:
+          - "null"
+          - string
+      Goal:
+        description: The goal set for the campaign.
+        type:
+          - "null"
+          - string
+      GoalType:
+        description: The type of goal set for the campaign.
+        type:
+          - "null"
+          - string
+      AbsoluteTopImpressionRatePercent:
+        description: The percentage of absolute top impressions in relation to total impressions.
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description: The percentage of top impressions in relation to total impressions.
+        type:
+          - "null"
+          - string
+      AllConversionsQualified:
+        description: The number of qualified conversions for all interactions.
+        type:
+          - "null"
+          - string
+      Neighborhood:
+        description: The neighborhood where the ad interactions occurred.
+        type:
+          - "null"
+          - string
+      ViewThroughRevenue:
+        description: The total revenue generated from view-through conversions.
+        type:
+          - "null"
+          - string
+      CampaignType:
+        description: The type of the campaign.
+        type:
+          - "null"
+          - string
+      AssetGroupId:
+        description: The unique identifier for the asset group.
+        type:
+          - "null"
+          - string
+      AssetGroupName:
+        description: The name of the asset group.
+        type:
+          - "null"
+          - string
+      AssetGroupStatus:
+        description: The status of the asset group.
+        type:
+          - "null"
+          - string
+      CurrencyCode:
+        description: The currency code used for reporting.
+        type:
+          - "null"
+          - string
+      DeliveredMatchType:
+        description: The match type of the delivered ad.
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description: The distribution network where the ad was displayed.
+        type:
+          - "null"
+          - string
+      DeviceType:
+        description: The type of device where the ad was interacted with.
+        type:
+          - "null"
+          - string
+      Language:
+        description: The language setting of the user interacting with the ad.
+        type:
+          - "null"
+          - string
+      Network:
+        description: The network used for ad distribution.
+        type:
+          - "null"
+          - string
+      DeviceOS:
+        description: The operating system on the device where the ad was interacted with.
+        type:
+          - "null"
+          - string
+      TopVsOther:
+        description: The comparison of top impressions versus other impression types.
+        type:
+          - "null"
+          - string
+      BidMatchType:
+        description: The match type used for bidding.
+        type:
+          - "null"
+          - string
+      AccountName:
+        description: The name of the Bing Ads account.
+        type:
+          - "null"
+          - string
+      CampaignName:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      AdGroupName:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of times the ad was shown.
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks.
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate.
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total amount spent on ad interactions.
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The cost incurred per conversion.
+        type:
+          - "null"
+          - number
+      Assists:
+        description: The number of assists in conversions.
+        type:
+          - "null"
+          - integer
+      ReturnOnAdSpend:
+        description: The return on ad spend for interactions.
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: The cost incurred per assist in a conversion.
+        type:
+          - "null"
+          - number
+      ViewThroughConversions:
+        description: The total number of view-through conversions.
+        type:
+          - "null"
+          - integer
+      ViewThroughConversionsQualified:
+        description: The number of qualified view-through conversions.
+        type:
+          - "null"
+          - number
+      AllCostPerConversion:
+        description: The cost incurred per all conversion.
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend for all interactions.
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of conversions.
+        type:
+          - "null"
+          - number
+      ConversionRate:
+        description: The rate of conversions in relation to total interactions.
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The number of qualified conversions.
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click.
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position of the ad when shown.
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: The average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      AllConversions:
+        description: The total number of all conversions.
+        type:
+          - "null"
+          - integer
+      AllConversionRate:
+        description: The rate of all conversions in relation to total interactions.
+        type:
+          - "null"
+          - number
+      AllRevenue:
+        description: The total revenue generated from all interactions.
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The revenue generated per all conversion.
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue generated from interactions.
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The revenue generated per conversion.
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: The revenue generated per assist in a conversion.
+        type:
+          - "null"
+          - number
+
+  geographic_performance_report:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountId:
+        description: The unique identifier of the account associated with the data.
+        type:
+          - "null"
+          - integer
+      CampaignId:
+        description: The unique identifier of the campaign.
+        type:
+          - "null"
+          - integer
+      AdGroupId:
+        description: The unique identifier of the ad group.
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period for the report data.
+        type:
+          - "null"
+          - string
+        format: date
+      AccountNumber:
+        description: The number of the account associated with the data.
+        type:
+          - "null"
+          - string
+      Country:
+        description: The country where the ad was shown.
+        type:
+          - "null"
+          - string
+      State:
+        description: The state where the ad was shown.
+        type:
+          - "null"
+          - string
+      MetroArea:
+        description: The metro area where the ad was shown.
+        type:
+          - "null"
+          - string
+      City:
+        description: The city where the ad was shown.
+        type:
+          - "null"
+          - string
+      ProximityTargetLocation:
+        description: The target location for proximity targeting.
+        type:
+          - "null"
+          - string
+      Radius:
+        description: The radius used for proximity targeting.
+        type:
+          - "null"
+          - string
+      LocationType:
+        description: The type of location where the ad was shown.
+        type:
+          - "null"
+          - string
+      MostSpecificLocation:
+        description: The most specific location where the ad was shown.
+        type:
+          - "null"
+          - string
+      AccountStatus:
+        description: The status of the account.
+        type:
+          - "null"
+          - string
+      CampaignStatus:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      AdGroupStatus:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      County:
+        description: The county where the ad was shown.
+        type:
+          - "null"
+          - string
+      PostalCode:
+        description: The postal code of the location where the ad was shown.
+        type:
+          - "null"
+          - string
+      LocationId:
+        description: The unique identifier of the location where the ad was shown.
+        type:
+          - "null"
+          - string
+      BaseCampaignId:
+        description: The base campaign's unique identifier.
+        type:
+          - "null"
+          - string
+      Goal:
+        description: The goal set for the campaign.
+        type:
+          - "null"
+          - string
+      GoalType:
+        description: The type of goal set for the campaign.
+        type:
+          - "null"
+          - string
+      AbsoluteTopImpressionRatePercent:
+        description: The percentage of absolute top impressions divided by the total number
+          of impressions.
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description: The percentage of top impressions divided by the total number of impressions.
+        type:
+          - "null"
+          - string
+      AllConversionsQualified:
+        description: The number of all conversions that are qualified.
+        type:
+          - "null"
+          - string
+      Neighborhood:
+        description: The neighborhood where the ad was shown.
+        type:
+          - "null"
+          - string
+      ViewThroughRevenue:
+        description: The revenue from view-through conversions.
+        type:
+          - "null"
+          - string
+      CampaignType:
+        description: The type of the campaign.
+        type:
+          - "null"
+          - string
+      AssetGroupId:
+        description: The unique identifier of the asset group.
+        type:
+          - "null"
+          - string
+      AssetGroupName:
+        description: The name of the asset group.
+        type:
+          - "null"
+          - string
+      AssetGroupStatus:
+        description: The status of the asset group.
+        type:
+          - "null"
+          - string
+      CurrencyCode:
+        description: The currency code used for financial data.
+        type:
+          - "null"
+          - string
+      DeliveredMatchType:
+        description: The type of matching used for the delivered ad.
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description: The distribution network where the ad was shown.
+        type:
+          - "null"
+          - string
+      DeviceType:
+        description: The type of device used to view the ad.
+        type:
+          - "null"
+          - string
+      Language:
+        description: The language targeted by the ad.
+        type:
+          - "null"
+          - string
+      Network:
+        description: The network where the ad was shown.
+        type:
+          - "null"
+          - string
+      DeviceOS:
+        description: The operating system of the device.
+        type:
+          - "null"
+          - string
+      TopVsOther:
+        description: The performance comparison of the top positions vs. other positions.
+        type:
+          - "null"
+          - string
+      BidMatchType:
+        description: The type of matching used for the bid.
+        type:
+          - "null"
+          - string
+      AccountName:
+        description: The name of the account associated with the data.
+        type:
+          - "null"
+          - string
+      CampaignName:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      AdGroupName:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of impressions.
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks.
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate.
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total spend.
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The cost per conversion.
+        type:
+          - "null"
+          - number
+      Assists:
+        description: The number of assists for conversions.
+        type:
+          - "null"
+          - integer
+      ReturnOnAdSpend:
+        description: The return on ad spend.
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: The cost per assist for conversions.
+        type:
+          - "null"
+          - number
+      ViewThroughConversions:
+        description: The number of view-through conversions.
+        type:
+          - "null"
+          - integer
+      ViewThroughConversionsQualified:
+        description: The number of view-through conversions that are qualified.
+        type:
+          - "null"
+          - number
+      AllCostPerConversion:
+        description: The cost per all conversion.
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend for all conversions.
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of conversions.
+        type:
+          - "null"
+          - number
+      ConversionRate:
+        description: The rate at which conversions occur.
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The number of conversions that are qualified.
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click.
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position of the ad.
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: The average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      AllConversions:
+        description: The total number of all conversions.
+        type:
+          - "null"
+          - integer
+      AllConversionRate:
+        description: The rate at which all conversions occur.
+        type:
+          - "null"
+          - number
+      AllRevenue:
+        description: The total revenue from all conversions.
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The revenue per conversion for all conversions.
+        type:
+          - "null"
+          - number
+      Revenue:
+        description: The total revenue.
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The revenue per conversion.
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: The revenue per assist for conversions.
+        type:
+          - "null"
+          - number
 
 
 concurrency_level:

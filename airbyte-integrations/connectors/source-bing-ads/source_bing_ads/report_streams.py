@@ -132,32 +132,6 @@ class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceRepo
     report_aggregation = "Monthly"
 
 
-class GeographicPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "GeographicPerformanceReport"
-    report_schema_name = "geographic_performance_report"
-
-    # Need to override the primary key here because the one inherited from the PerformanceReportsMixin
-    # is incorrect for the geographic performance reports
-    primary_key = None
-
-
-class GeographicPerformanceReportHourly(HourlyReportTransformerMixin, GeographicPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "geographic_performance_report_hourly"
-
-
-class GeographicPerformanceReportDaily(GeographicPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class GeographicPerformanceReportWeekly(GeographicPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class GeographicPerformanceReportMonthly(GeographicPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AccountPerformanceReport"
     report_schema_name = "account_performance_report"
