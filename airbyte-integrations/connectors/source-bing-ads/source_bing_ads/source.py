@@ -53,10 +53,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     GoalsAndFunnelsReportHourly,
     GoalsAndFunnelsReportMonthly,
     GoalsAndFunnelsReportWeekly,
-    KeywordPerformanceReportDaily,
-    KeywordPerformanceReportHourly,
-    KeywordPerformanceReportMonthly,
-    KeywordPerformanceReportWeekly,
     ProductDimensionPerformanceReportDaily,
     ProductDimensionPerformanceReportHourly,
     ProductDimensionPerformanceReportMonthly,
@@ -156,7 +152,6 @@ class SourceBingAds(YamlDeclarativeSource):
         reports = (
             "AccountImpressionPerformanceReport",
             "AudiencePerformanceReport",
-            "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
             "AdGroupImpressionPerformanceReport",
             "CampaignImpressionPerformanceReport",
