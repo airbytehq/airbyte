@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.3.7"
+version = "4.4.0"
 name = "source-gitlab"
 description = "Source implementation for GitLab."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,8 +17,9 @@ include = "source_gitlab"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^4"
+airbyte-cdk = "^6"
 vcrpy = "==4.1.1"
+google-api-core = ">=1.34.0,<2.0.0"
 
 [tool.poetry.scripts]
 source-gitlab = "source_gitlab.run:run"
