@@ -152,7 +152,7 @@ public class MssqlCdcHelper {
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(s -> !s.getPrimaryKey().isEmpty())
         .map(s -> {
-          final String tableId = quoteIfNeeded(s.getStream().getNamespace() + "." + s.getStream().getName());
+          final String tableId = quoteIfNeeded(s.getStream().getNamespace()) + "." + quoteIfNeeded(s.getStream().getName());
           final String keyCols = s.getPrimaryKey().get(0).stream()
               .map(col -> quoteIfNeeded(col))
               .collect(Collectors.joining(","));
