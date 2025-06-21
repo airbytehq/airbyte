@@ -230,7 +230,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             }
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
                         } else {
-                            log.info {
+                            log.debug {
                                 "$this saw end-of-stream for ${input.stream} after $inputCountEos inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
                             }
                         }
@@ -274,7 +274,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         reason: String
     ) {
         keys.forEach { key ->
-            log.info { "Finishing state for $key due to $reason" }
+            log.debug { "Finishing state for $key due to $reason" }
             stateStore.stateWithCounts.remove(key)?.let { stateWithCounts ->
                 val output = batchAccumulator.finish(stateWithCounts.accumulatorState).output
                 handleOutput(
