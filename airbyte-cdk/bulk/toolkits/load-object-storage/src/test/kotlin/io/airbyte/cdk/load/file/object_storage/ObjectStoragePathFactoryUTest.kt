@@ -33,6 +33,7 @@ class ObjectStoragePathFactoryUTest {
     @BeforeEach
     fun setup() {
         coEvery { stream.mappedDescriptor } returns DestinationStream.Descriptor("test", "stream")
+        coEvery { stream.syncId } returns 124
         coEvery { timeProvider.syncTimeMillis() } returns 0
         coEvery { timeProvider.currentTimeMillis() } returns 1
     }
@@ -93,6 +94,7 @@ class ObjectStoragePathFactoryUTest {
         val streamWithNullNamespace = mockk<DestinationStream>()
         coEvery { streamWithNullNamespace.mappedDescriptor } returns
             DestinationStream.Descriptor(null, "stream")
+        coEvery { streamWithNullNamespace.syncId } returns 235
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream/any_filename",
@@ -114,6 +116,7 @@ class ObjectStoragePathFactoryUTest {
         val streamWithLegalRegex = mockk<DestinationStream>()
         coEvery { streamWithLegalRegex.mappedDescriptor } returns
             DestinationStream.Descriptor("test", "stream+1")
+        coEvery { streamWithLegalRegex.syncId } returns 689
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream+1/any_filename",
@@ -142,6 +145,7 @@ class ObjectStoragePathFactoryUTest {
             )
         val stream = mockk<DestinationStream>()
         coEvery { stream.mappedDescriptor } returns DestinationStream.Descriptor(namespace, name)
+        coEvery { stream.syncId } returns 15
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
 
         val matcher = factory.getPathMatcher(stream, OPTIONAL_ORDINAL_SUFFIX_PATTERN)
