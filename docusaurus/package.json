@@ -80,6 +80,7 @@
     "@docsearch/react": "3.1.0",
     "@docusaurus/core": "^3.7.0",
     "@docusaurus/cssnano-preset": "^3.7.0",
+    "@docusaurus/faster": "^3.8.1",
     "@docusaurus/module-type-aliases": "^3.7.0",
     "@docusaurus/plugin-debug": "^3.7.0",
     "@docusaurus/plugin-sitemap": "^3.7.0",
