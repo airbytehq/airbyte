@@ -90,6 +90,7 @@ public class MssqlCdcHelper {
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+    props.setProperty("message.key.columns", getMessageKeyColumnValue(catalog));
 
     final Duration heartbeatInterval =
         (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
@@ -136,6 +137,28 @@ public class MssqlCdcHelper {
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
+  }
+
+  private static String quoteIfNeeded(String input) {
+    if (input.matches("^[a-zA-Z0-9_]+$")) {
+      return input; // No special characters, no quotes needed
+    } else {
+      return "\"" + input.replace("\"", "\\\"") + "\""; // Escape embedded quotes
+    }
+  }
+
+  private static String getMessageKeyColumnValue(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(s -> !s.getPrimaryKey().isEmpty())
+        .map(s -> {
+          final String tableId = quoteIfNeeded(s.getStream().getNamespace()) + "." + quoteIfNeeded(s.getStream().getName());
+          final String keyCols = s.getPrimaryKey().get(0).stream()
+              .map(col -> quoteIfNeeded(col))
+              .collect(Collectors.joining(","));
+          return tableId + ":" + keyCols;
+        })
+        .collect(Collectors.joining(";"));
   }
 
 }

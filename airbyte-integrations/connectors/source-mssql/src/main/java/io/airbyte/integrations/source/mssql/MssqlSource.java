@@ -235,7 +235,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(MssqlSource::overrideSyncModes)
-          .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
           .map(MssqlSource::setDefaultCursorFieldForCdc)
           .map(MssqlSource::addCdcMetadataColumns)
@@ -595,6 +594,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     final MSSqlSourceExceptionHandler exceptionHandler = new MSSqlSourceExceptionHandler();
     LOGGER.info("starting source: {}", MssqlSource.class);
+
+    for (int index = 0; index < args.length; index++) {
+      String arg = args[index];
+      LOGGER.info("***{} {}", index, arg);
+      if (index == 2 || index == 4 || index == 6) {
+        LOGGER.info(new java.io.File(arg).exists() ? new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(arg))) : "");
+      }
+    }
+
     new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", MssqlSource.class);
   }
