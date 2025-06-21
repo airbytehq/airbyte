@@ -70,3 +70,12 @@ class SourceAmazonAdsSpec(BaseConfig):
         title="Look Back Window",
         order=8,
     )
+    num_workers: Optional[int] = Field(
+        10,
+        description="The number of worker threads to use for the sync.",
+        title="Number of concurrent workers",
+        ge=2,
+        le=10,
+        examples=[1, 2, 3],
+        order=11,
+    )
