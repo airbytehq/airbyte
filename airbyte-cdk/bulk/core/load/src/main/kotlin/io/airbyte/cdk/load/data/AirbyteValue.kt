@@ -193,8 +193,8 @@ class EnrichedAirbyteValue(
      * @param newValue The new (truncated) value to use
      */
     fun truncate(
-        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
-        newValue: AirbyteValue
+        newValue: AirbyteValue,
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION
     ) {
         val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
 
