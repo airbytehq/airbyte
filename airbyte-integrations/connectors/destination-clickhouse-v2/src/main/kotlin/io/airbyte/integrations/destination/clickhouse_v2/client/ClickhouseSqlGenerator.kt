@@ -370,7 +370,7 @@ class ClickhouseSqlGenerator {
 fun AirbyteType.toDialectType(): String =
     when (this) {
         BooleanType -> ClickHouseDataType.Bool.name
-        DateType -> ClickHouseDataType.Date.name
+        DateType -> ClickHouseDataType.Date32.name
         IntegerType -> ClickHouseDataType.Int64.name
         NumberType -> DECIMAL_WITH_PRECISION_AND_SCALE
         StringType -> ClickHouseDataType.String.name
