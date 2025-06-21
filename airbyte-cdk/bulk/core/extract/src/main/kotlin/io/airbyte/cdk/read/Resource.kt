@@ -5,7 +5,7 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.output.sockets.SocketDataChannelHolder
+import io.airbyte.cdk.output.sockets.SocketDataChannelResourceHolder
 import io.airbyte.cdk.output.sockets.SocketDataChannel
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -76,7 +76,7 @@ class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.Ac
 }
 
 @Singleton
-class SocketResource(val socketDataChannelHolder: SocketDataChannelHolder?) : Resource<SocketResource.AcquiredSocket> {
+class SocketResource(val socketDataChannelResourceHolder: SocketDataChannelResourceHolder?) : Resource<SocketResource.AcquiredSocket> {
 
     class AcquiredSocket(val socketWrapper: SocketDataChannel): Resource.Acquired {
         override fun close() {
@@ -85,7 +85,7 @@ class SocketResource(val socketDataChannelHolder: SocketDataChannelHolder?) : Re
     }
 
     override fun tryAcquire(): AcquiredSocket? {
-        val maybeSocket = socketDataChannelHolder?.bindFreeSocket()
+        val maybeSocket = socketDataChannelResourceHolder?.bindFreeSocket()
         return maybeSocket?.let { AcquiredSocket(it) }
 
     }

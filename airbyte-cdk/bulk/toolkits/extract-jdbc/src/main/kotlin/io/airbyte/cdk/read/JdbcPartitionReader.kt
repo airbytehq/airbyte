@@ -104,6 +104,10 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     protected fun outputPendingMessages() {
+        if (streamState.streamFeedBootstrap.dataChannelMedium == STDIO) {
+            return
+        }
+
         var s = PartitionReader.pendingStates.poll()
 
         while (s != null) {

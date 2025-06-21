@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
             Property(name = SPEED_MODE_PROPERTY, value = "boosted"),
         ]
 )
-class SocketManagerTest(private val socketDataChannelHolder: SocketDataChannelHolder) {
+class SocketManagerTest(private val socketDataChannelResourceHolder: SocketDataChannelResourceHolder) {
 //    @Inject lateinit var socketManager: SocketManager
     @Inject lateinit var socketFactory: SocketDataChannelFactory
     class MockSocketWrapper(
@@ -55,15 +55,15 @@ class SocketManagerTest(private val socketDataChannelHolder: SocketDataChannelHo
 
     @Test
     fun test() {
-        val socketDataChannelHolder: SocketDataChannelHolder = SocketDataChannelHolder(List<String>(10) {""}, socketFactory)
-        assertNull(socketDataChannelHolder.bindFreeSocket())
-        val m = socketDataChannelHolder.sockets[0] as MockSocketWrapper
+        val socketDataChannelResourceHolder: SocketDataChannelResourceHolder = SocketDataChannelResourceHolder(List<String>(10) {""}, socketFactory)
+        assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+        val m = socketDataChannelResourceHolder.sockets[0] as MockSocketWrapper
         m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
-        assertNotNull(socketDataChannelHolder.bindFreeSocket())
+        assertNotNull(socketDataChannelResourceHolder.bindFreeSocket())
         m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
-        assertNull(socketDataChannelHolder.bindFreeSocket())
+        assertNull(socketDataChannelResourceHolder.bindFreeSocket())
         m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
         m.innerBound = true
-        assertNull(socketDataChannelHolder.bindFreeSocket())
+        assertNull(socketDataChannelResourceHolder.bindFreeSocket())
     }
 }

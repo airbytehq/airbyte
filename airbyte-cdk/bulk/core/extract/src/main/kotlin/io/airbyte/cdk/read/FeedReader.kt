@@ -317,33 +317,44 @@ class FeedReader(
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
-    var acquiredSocket: SocketResource.AcquiredSocket? = null
+    lateinit var acquiredSocket: SocketResource.AcquiredSocket
+
+    private inner class SocketResourceHolder {
+        fun getSocketDataChannel(): SocketResource.AcquiredSocket? {
+            val acqs: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
+            return acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
+        }
+    }
 
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
+        if (dataChannelMedium == DataChannelMedium.STDIO) {
+            val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
+            if (stateMessages.isEmpty()) {
+                return
+            }
+            log.info { "checkpoint of ${stateMessages.size} state message(s)" }
+            for (stateMessage in stateMessages) {
+                root.outputConsumer.accept(stateMessage)
+            }
+            return
+        }
         var messageProcessor: OutputMessageRouter? = null
         try {
             val stateMessages: MutableList<AirbyteStateMessage> = root.stateManager.checkpoint().toMutableList()
             val messagesQueue = ArrayDeque<AirbyteStateMessage>(stateMessages)
-//            var boostedOutputConsumer: BoostedOutputConsumer? = null
 
             var pendingMessageQueue = ArrayDeque<Any>()
             if (finalCheckpoint) {
-                val acqs: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
-                acquiredSocket =
-                    acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
-                        ?: return // No output socket available, skip checkpoint.
-
-                val r = (acqs.get(ResourceType.RESOURCE_OUTPUT_SOCKET)!! as SocketResource.AcquiredSocket)
+                acquiredSocket = SocketResourceHolder().getSocketDataChannel() ?:
+                    throw IllegalStateException("No output socket available for checkpoint.")
 
                 messageProcessor = OutputMessageRouter(
                     feedBootstrap.dataChannelMedium,
                     feedBootstrap.dataChannelFormat,
                     feedBootstrap.outputConsumer,
                     emptyMap(),feedBootstrap,
-                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to r),
+                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
                 )
-//                boostedOutputConsumer =
-//                    boostedOutputConsumerFactory?.boostedOutputConsumer(acquiredSocket!!.socketWrapper, emptyMap())
 
                 var s = PartitionReader.pendingStates.poll()
                 while (s != null) {
@@ -351,11 +362,6 @@ class FeedReader(
                     pendingMessageQueue.add(s)
                     s = PartitionReader.pendingStates.poll()
                 }
-            }
-
-            if (finalCheckpoint && messageProcessor == null) {
-                log.warn { "No boosted output consumer available for final checkpoint." }
-                return
             }
 
             if (messagesQueue.isEmpty() && pendingMessageQueue.isEmpty()) {
@@ -369,7 +375,6 @@ class FeedReader(
                 when (finalCheckpoint) {
                     true -> {
                         messageProcessor?.acceptNonRecord(stateMessage, false)
-//                        boostedOutputConsumer?.accept(stateMessage)
                     }
                     false -> {
                         PartitionReader.pendingStates.add(stateMessage)
@@ -384,10 +389,6 @@ class FeedReader(
                     is AirbyteStateMessage -> {
                         when (finalCheckpoint) {
                             true -> {
-//                                val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
-//                                    Clock.systemUTC(), 256)
-//                                o.accept(message)
-//                                boostedOutputConsumer?.accept(message)
                                 messageProcessor?.acceptNonRecord(message, false)
                             }
                             false -> PartitionReader.pendingStates.add(message)
@@ -396,12 +397,6 @@ class FeedReader(
                     is AirbyteStreamStatusTraceMessage -> {
                         when (finalCheckpoint) {
                             true -> {
-/*
-                                val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
-                                    Clock.systemUTC(), 256)
-                                o.accept(message)
-*/
-//                                boostedOutputConsumer?.accept(message)
                                 messageProcessor?.acceptNonRecord(message, false)
                             }
                             false -> PartitionReader.pendingStates.add(message)
@@ -416,7 +411,9 @@ class FeedReader(
 
         } finally {
             messageProcessor?.close()
-            acquiredSocket?.close()
+            if (::acquiredSocket.isInitialized) {
+                acquiredSocket.close()
+            }
         }
 
     }
