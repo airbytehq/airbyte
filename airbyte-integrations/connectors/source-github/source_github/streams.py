@@ -100,6 +100,10 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        if response.status_code == 409:
+            response_data = response.json()
+            if response_data.get("message") == "Git Repository is empty.":
+                return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
