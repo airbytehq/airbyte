@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MAX
@@ -97,9 +95,9 @@ class ClickhouseCoercingValidator {
         val DATE32_MAX = DATE32_MAX_RAW.toEpochDay()
         val DATE32_MIN = DATE32_MIN_RAW.toEpochDay()
 
-        val DATETIME64_MAX = LocalDateTime.of(DATE32_MAX_RAW, LocalTime.MAX)
-            .toEpochSecond(ZoneOffset.UTC)
-        val DATETIME64_MIN = LocalDateTime.of(DATE32_MIN_RAW, LocalTime.MIN)
-            .toEpochSecond(ZoneOffset.UTC)
+        val DATETIME64_MAX =
+            LocalDateTime.of(DATE32_MAX_RAW, LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+        val DATETIME64_MIN =
+            LocalDateTime.of(DATE32_MIN_RAW, LocalTime.MIN).toEpochSecond(ZoneOffset.UTC)
     }
 }

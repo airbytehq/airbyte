@@ -26,15 +26,15 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.junit5.MockKExtension
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
 
 @ExtendWith(MockKExtension::class)
 class ClickhouseCoercingValidatorTest {
@@ -123,9 +123,11 @@ class ClickhouseCoercingValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validDates")
-    fun `validate and coerces timestamps with timezones - valid values are left unchanged`(value: Long) {
-        val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
-            .atOffset(ZoneOffset.UTC)
+    fun `validate and coerces timestamps with timezones - valid values are left unchanged`(
+        value: Long
+    ) {
+        val timestamp =
+            LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX).atOffset(ZoneOffset.UTC)
         val input = Fixtures.mockCoercedValue(TimestampWithTimezoneValue(timestamp))
 
         val result = validator.validateAndCoerce(input)
@@ -138,8 +140,8 @@ class ClickhouseCoercingValidatorTest {
     @ParameterizedTest
     @MethodSource("invalidDates")
     fun `validate and coerces timestamps with timezones - invalid values are nulled`(value: Long) {
-        val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
-            .atOffset(ZoneOffset.UTC)
+        val timestamp =
+            LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX).atOffset(ZoneOffset.UTC)
         val input = Fixtures.mockCoercedValue(TimestampWithTimezoneValue(timestamp))
 
         val result = validator.validateAndCoerce(input)
@@ -153,7 +155,9 @@ class ClickhouseCoercingValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validDates")
-    fun `validate and coerces timestamps without timezones - valid values are left unchanged`(value: Long) {
+    fun `validate and coerces timestamps without timezones - valid values are left unchanged`(
+        value: Long
+    ) {
         val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
         val input = Fixtures.mockCoercedValue(TimestampWithoutTimezoneValue(timestamp))
 
@@ -166,7 +170,9 @@ class ClickhouseCoercingValidatorTest {
 
     @ParameterizedTest
     @MethodSource("invalidDates")
-    fun `validate and coerces timestamps without timezones - invalid values are nulled`(value: Long) {
+    fun `validate and coerces timestamps without timezones - invalid values are nulled`(
+        value: Long
+    ) {
         val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
         val input = Fixtures.mockCoercedValue(TimestampWithoutTimezoneValue(timestamp))
 
