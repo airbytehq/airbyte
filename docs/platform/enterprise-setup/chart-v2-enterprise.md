@@ -123,7 +123,7 @@ You can implement single sign on (SSO) with OIDC or new generic OIDC. For more h
 ```yaml title="values.yaml"
 global:
   auth:
-    enabled: true # Set to false if you're not ready to turn this on yet
+    enabled: false # Set to false if you're using SSO
   
     # -- Admin user configuration
     instanceAdmin:
@@ -132,19 +132,19 @@ global:
       emailSecretKey: "" # The key within `emailSecretName` where the initial user's email is stored
       passwordSecretKey: "" # The key within `passwordSecretName` where the initial user's password is stored
 
-        # -- SSO Identify Provider configuration; (requires Enterprise)
-        identityProvider:
-            secretName: "" # Secret name where the OIDC configuration is stored
-            type: "oidc"
-            oidc:
-              # -- OIDC application domain
-              domain: ""
-              # -- OIDC application name
-              appName: ""
-              # -- The key within `clientIdSecretName` where the OIDC client id is stored
-              clientIdSecretKey: ""
-              # -- The key within `clientSecretSecretName` where the OIDC client secret is stored
-              clientSecretSecretKey: ""
+    # -- SSO Identify Provider configuration; (requires Enterprise)
+    identityProvider:
+        secretName: "" # Secret name where the OIDC configuration is stored
+        type: "oidc"
+        oidc:
+          # -- OIDC application domain
+          domain: ""
+          # -- OIDC application name
+          appName: ""
+          # -- The key within `clientIdSecretName` where the OIDC client id is stored
+          clientIdSecretKey: ""
+          # -- The key within `clientSecretSecretName` where the OIDC client secret is stored
+          clientSecretSecretKey: ""
 ```
 
 </TabItem>
@@ -162,22 +162,22 @@ global:
       emailSecretKey: "" # The key within `emailSecretName` where the initial user's email is stored
       passwordSecretKey: "" # The key within `passwordSecretName` where the initial user's password is stored
 
-        # -- SSO Identify Provider configuration; (requires Enterprise)
-        identityProvider:
-            secretName: "" # Secret name where the OIDC configuration is stored
-            type: "generic-oidc"
-            genericOidc:
-              clientId: ""
-              audience: ""
-              issuer: ""
-              endpoints:
-                authorizationServerEndpoint: ""
-                jwksEndpoint: ""
-              fields:
-                subject: sub
-                email: email
-                name: name
-                issuer: iss
+    # -- SSO Identify Provider configuration; (requires Enterprise)
+    identityProvider:
+        secretName: "" # Secret name where the OIDC configuration is stored
+        type: "generic-oidc"
+        genericOidc:
+          clientId: ""
+          audience: ""
+          issuer: ""
+          endpoints:
+            authorizationServerEndpoint: ""
+            jwksEndpoint: ""
+          fields:
+            subject: sub
+            email: email
+            name: name
+            issuer: iss
 ```
 
 </TabItem>
