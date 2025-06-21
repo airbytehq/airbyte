@@ -3,7 +3,7 @@
 import calendar
 from typing import Optional
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -32,7 +32,7 @@ class PostsRequestBuilder(ZendeskSupportBaseRequestBuilder):
         return params
 
     def with_start_time(self, start_time: str) -> "PostsRequestBuilder":
-        self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
+        self._start_time: int = calendar.timegm(ab_datetime_parse(start_time).utctimetuple())
         return self
 
     def with_page_size(self, page_size: int) -> "PostsRequestBuilder":

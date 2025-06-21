@@ -1,14 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import timedelta
 from unittest import TestCase
 
 import freezegun
-import pendulum
 
 from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .utils import datetime_to_string, read_stream
@@ -19,8 +19,8 @@ from .zs_responses import PostsResponseBuilder
 from .zs_responses.records import PostsRecordBuilder
 
 
-_NOW = datetime.now(timezone.utc)
-_START_DATE = pendulum.now(tz="UTC").subtract(years=2)
+_NOW = ab_datetime_now()
+_START_DATE = ab_datetime_now().subtract(timedelta(weeks=104))
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -30,7 +30,7 @@ class TestPostsStream(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(ab_datetime_now().subtract(timedelta(weeks=104)))
         )
 
     def _get_authenticator(self, config):
@@ -80,7 +80,7 @@ class TestPostsStream(TestCase):
     def test_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        most_recent_cursor_value = _START_DATE.add(days=2)
+        most_recent_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
             PostsRequestBuilder.posts_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(_START_DATE))
@@ -88,19 +88,19 @@ class TestPostsStream(TestCase):
             .build(),
             PostsResponseBuilder.posts_response()
             .with_record(PostsRecordBuilder.posts_record().with_cursor(datetime_to_string(most_recent_cursor_value)))
-            .with_record(PostsRecordBuilder.posts_record().with_cursor(datetime_to_string(_START_DATE.add(days=1))))
+            .with_record(PostsRecordBuilder.posts_record().with_cursor(datetime_to_string(_START_DATE.add(timedelta(days=1)))))
             .build(),
         )
 
         output = read_stream("posts", SyncMode.full_refresh, config)
 
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": str(most_recent_cursor_value.int_timestamp)})
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": str(int(most_recent_cursor_value.timestamp()))})
 
     @HttpMocker()
     def test_given_input_state_as_old_format_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        state_cursor_value = datetime_to_string(_START_DATE.add(days=2))
+        state_cursor_value = datetime_to_string(_START_DATE.add(timedelta(days=2)))
         http_mocker.get(
             PostsRequestBuilder.posts_endpoint(api_token_authenticator).with_start_time(state_cursor_value).with_page_size(100).build(),
             PostsResponseBuilder.posts_response().with_record(PostsRecordBuilder.posts_record()).build(),
@@ -116,7 +116,7 @@ class TestPostsStream(TestCase):
     def test_given_input_state_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        state_cursor_value = _START_DATE.add(days=2)
+        state_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
             PostsRequestBuilder.posts_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(state_cursor_value))
@@ -129,7 +129,7 @@ class TestPostsStream(TestCase):
             "posts",
             SyncMode.full_refresh,
             config,
-            StateBuilder().with_stream_state("posts", {"updated_at": str(state_cursor_value.int_timestamp)}).build(),
+            StateBuilder().with_stream_state("posts", {"updated_at": str(int(state_cursor_value.timestamp()))}).build(),
         )
 
         assert len(output.records) == 1

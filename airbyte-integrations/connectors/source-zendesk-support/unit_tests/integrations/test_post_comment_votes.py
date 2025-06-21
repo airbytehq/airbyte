@@ -1,17 +1,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-import pendulum
 
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStreamStatus, SyncMode
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 from .config import ConfigBuilder
 from .helpers import given_post_comments, given_posts, given_ticket_forms
@@ -33,7 +33,7 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(ab_datetime_now().subtract(timedelta(weeks=104)))
             .build()
         )
 
@@ -46,7 +46,8 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         A normal full refresh sync without pagination
         """
         api_token_authenticator = self.get_authenticator(self._config)
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+        # todo: Add this back once the CDK supports conditional streams on an endpoint
+        # _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
         post = posts_record_builder.build()
@@ -75,7 +76,8 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         Get a 403 error and then skip the stream
         """
         api_token_authenticator = self.get_authenticator(self._config)
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+        # todo: Add this back once the CDK supports conditional streams on an endpoint
+        # _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
         post = posts_record_builder.build()
@@ -109,7 +111,8 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         Get a 404 error and then skip the stream
         """
         api_token_authenticator = self.get_authenticator(self._config)
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+        # todo: Add this back once the CDK supports conditional streams on an endpoint
+        # _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
         post = posts_record_builder.build()
@@ -143,7 +146,8 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         Get a 500 error and then stop syncing
         """
         api_token_authenticator = self.get_authenticator(self._config)
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+        # todo: Add this back once the CDK supports conditional streams on an endpoint
+        # _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
         post = posts_record_builder.build()
@@ -178,7 +182,7 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(ab_datetime_now().subtract(timedelta(weeks=104)))
             .build()
         )
 
@@ -191,15 +195,16 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         A normal incremental sync without pagination
         """
         api_token_authenticator = self._get_authenticator(self._config)
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+        # todo: Add this back once the CDK supports conditional streams on an endpoint
+        # _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
-        post_updated_at = string_to_datetime(self._config["start_date"]).add(minutes=5)
+        post_updated_at = string_to_datetime(self._config["start_date"]).add(timedelta(minutes=5))
         posts_record_builder = given_posts(
             http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator, post_updated_at
         )
         post = posts_record_builder.build()
 
-        post_comments_updated_at = string_to_datetime(self._config["start_date"]).add(minutes=10)
+        post_comments_updated_at = string_to_datetime(self._config["start_date"]).add(timedelta(minutes=10))
         post_comments_record_builder = given_post_comments(
             http_mocker,
             string_to_datetime(self._config["start_date"]),
@@ -226,7 +231,7 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        post_comment_votes_state_value = str(string_to_datetime(post_comment_votes["updated_at"]).int_timestamp)
+        post_comment_votes_state_value = str(int(string_to_datetime(post_comment_votes["updated_at"]).timestamp()))
         assert output.most_recent_state.stream_state == AirbyteStateBlob(
             {
                 "use_global_cursor": False,
@@ -265,17 +270,17 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         """
         api_token_authenticator = self._get_authenticator(self._config)
 
-        state_start_date = pendulum.parse(self._config["start_date"]).add(years=1)
-        first_page_record_updated_at = state_start_date.add(months=1)
-        last_page_record_updated_at = first_page_record_updated_at.add(months=2)
+        state_start_date = ab_datetime_parse(self._config["start_date"]).add(timedelta(weeks=52))
+        first_page_record_updated_at = state_start_date.add(timedelta(weeks=4))
+        last_page_record_updated_at = first_page_record_updated_at.add(timedelta(weeks=8))
 
         state = {"updated_at": datetime_to_string(state_start_date)}
 
-        post_updated_at = state_start_date.add(minutes=5)
+        post_updated_at = state_start_date.add(timedelta(minutes=5))
         posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator, post_updated_at)
         post = posts_record_builder.build()
 
-        post_comments_updated_at = state_start_date.add(minutes=10)
+        post_comments_updated_at = state_start_date.add(timedelta(minutes=10))
         post_comments_record_builder = given_post_comments(
             http_mocker,
             state_start_date,
@@ -326,7 +331,9 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         assert len(output.records) == 2
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        post_comment_votes_state_value = str(string_to_datetime(post_comment_votes_last_record_builder.build()["updated_at"]).int_timestamp)
+        post_comment_votes_state_value = str(
+            int(string_to_datetime(post_comment_votes_last_record_builder.build()["updated_at"]).timestamp())
+        )
         assert output.most_recent_state.stream_state == AirbyteStateBlob(
             {
                 "use_global_cursor": False,
