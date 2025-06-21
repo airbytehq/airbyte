@@ -107,31 +107,16 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         if (streamState.streamFeedBootstrap.dataChannelMedium == STDIO) {
             return
         }
-
-        var s = PartitionReader.pendingStates.poll()
-
-        while (s != null) {
-            when (s) {
+        while (PartitionReader.pendingStates.isNotEmpty()) {
+            var pendingMessage = PartitionReader.pendingStates.poll() ?: break
+            when (pendingMessage) {
                 is AirbyteStateMessage -> {
-/*
-                    val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
-                        Clock.systemUTC(), 256)
-                    o.accept(s)
-*/
-//                    boostedOutputConsumer?.accept(s)
-                    outputMessageRouter.acceptNonRecord(s)
+                    outputMessageRouter.acceptNonRecord(pendingMessage)
                 }
                 is AirbyteStreamStatusTraceMessage -> {
-/*
-                    val o = ProtoRecordOutputConsumer(boostedOutputConsumer!!.socket,
-                        Clock.systemUTC(), 256)
-                    o.accept(s)
-*/
-//                    boostedOutputConsumer?.accept(s)
-                    outputMessageRouter.acceptNonRecord(s)
+                    outputMessageRouter.acceptNonRecord(pendingMessage)
                 }
             }
-            s = PartitionReader.pendingStates.poll()
         }
     }
 
