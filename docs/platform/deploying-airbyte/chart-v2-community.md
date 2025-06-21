@@ -1,0 +1,266 @@
+---
+products: oss-community
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Upgrade Self-Managed Community to Helm chart V2
+
+Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. In the future, at a date not yet announced, Helm chart V2 will become mandatory. However, you should upgrade your existing Airbyte deployment to use the new Helm chart before it's mandatory. If you're a new Airbyte customer, you can use Helm chart V2 from the start, and avoid the upgrade entirely.
+
+## What's a Helm chart?
+
+Airbyte runs on [Kubernetes](https://kubernetes.io/). [Helm](https://helm.sh/) is a package manager for Kubernetes. A [Helm chart](https://helm.sh/docs/topics/charts/) is a collection of files that describe a related set of Kubernetes resources. Think of Helm charts as the method Airbyte uses to define, install, and manage its Kubernetes application. When you install or upgrade Airbyte, you pull in a specific Helm chart representing that version.
+
+## Why you should upgrade
+
+Upgrading to the new Helm chart now has the following benefits.
+
+1. By upgrading in advance, you can schedule this upgrade for a convenient time. Avoid blocking yourself from upgrading Airbyte to a future version when the new chart is mandatory and you're busy.
+
+2. The new Helm chart is more aligned with Helm's best practices for chart design.
+
+3. The new Helm chart has broader and more detailed options to customize your deployment. In most cases, it's no longer necessary to specify environment variables in your `values.yaml` file because the chart offers a more detailed interface for customization. If you do need to use environment variables, you can use fewer of them.
+
+## Which versions can upgrade to Helm chart V2
+
+The following versions of Airbyte can use Helm chart V2:
+
+- Airbyte version 1.6.0 and later, if installed and managed with Helm
+
+The following versions of Airbyte can't use Helm chart V2:
+
+- Airbyte versions before 1.6.0
+
+- Airbyte versions installed and managed with abctl
+
+## How to upgrade
+
+In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you complete the following steps.
+
+1. Ensure you have configured Airbyte to use an external database, external bucket storage, and external secrets manager.
+
+2. Prepare to deploy a fresh installation of Airbyte.
+
+3. Create a new `values.yaml` file.
+
+4. Deploy a new version of Airbyte using your new `values.yaml` file and the new Helm chart version.
+
+### Configure external database, bucket storage, and secrets manager
+
+<!-- This might be a non-starter for community. Can we reasonably ask them to do this? -->
+
+<!-- Although Airbyte provides its own basic database, storage, and secrets management, most people opt to use their own. If you don't already do this, you must enable these before migrating.
+
+- [Configure an external database](integrations/database)
+- [Configure external storage](integrations/storage)
+- [Configure external secrets](integrations/secrets) -->
+
+<!-- Is a deployment necessary here to activate? Anything specific that needs to be done. 
+
+pg dump then pg import into the new database.
+minio to s3
+how to populate secrets manager considering everything is in clear text
+
+-->
+
+### Prepare a fresh deployment of Airbyte
+
+When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+
+### Add and index the Helm chart 2.0 repo
+
+Helm chart V2 uses a separate repo than V1 did. In your command line tool, add this repo and index it.
+
+```bash
+helm repo add airbyte-v2 https://airbytehq.github.io/charts
+helm repo update
+```
+
+You can browse all charts uploaded to your repository.
+
+```bash
+helm search repo airbyte-v2
+```
+
+### Update your values.yaml file
+
+In most cases, the adjustments to `values.yaml` are small and involve changing keys and moving sections. This section walks you through the main updates you need to make. If you already know what to do, see [Values.yaml reference](../deploying-airbyte/values) for the full V1 and V2 interfaces.
+
+Airbyte recommends approaching this project in this way:
+
+1. Note the customizations in your V1 `values.yaml` file to ensure you don't forget anything.
+
+2. Start with a basic V2 `values.yaml` to verify that it works. Map your V1 settings to V2, transferring one set of configurations at a time.
+
+3. Use Helm template validation and linting before applying changes. For example, `helm template airbyte-v2-test airbyte/airbyte-v2 -f values.yaml` and `helm lint ./my-chart -f values.yaml`.
+
+4. Don't test in production.
+
+Follow the steps below to start generating `values.yaml`.
+
+<details>
+<summary>
+Create a `values.yaml` file and a `global` configuration
+</summary>
+
+Create a new `values.yaml` file on your machine. In that file, create your basic global configuration.
+
+```yaml title="values.yaml"
+global:
+  edition: enterprise
+
+  airbyteUrl: "" # The URL where Airbyte will be reached; This should match your Ingress host
+```
+
+Optional: [deploy Airbyte](#deploy-airbyte) before you add additional configurations. If there are issues with your deployment, troubleshooting them is easier before you integrate additional services.
+
+</details>
+
+<details>
+<summary>
+Add your database
+</summary>
+
+Disable Airbyte's default Postgres database and add your own. The main difference in Helm chart V2 is the `global.database.database` key has changed to `global.database.name`.
+
+```yaml title="values.yaml"
+global: 
+  database:
+    # -- Secret name where database credentials are stored
+    secretName: "" # e.g. "airbyte-config-secrets"
+    # -- The database host
+    host: ""
+    # -- The database port
+    port:
+    # -- The database name - this key used to be "database" in Helm chart 1.0
+    name: ""
+
+    # Use EITHER user or userSecretKey, but not both
+    # -- The database user
+    user: ""
+    # -- The key within `secretName` where the user is stored
+    userSecretKey: "" # e.g. "database-user"
+
+    # Use EITHER password or passwordSecretKey, but not both
+    # -- The database password
+    password: ""
+    # -- The key within `secretName` where the password is stored
+    passwordSecretKey: "" # e.g."database-password"
+
+postgresql:
+  enabled: false
+```
+
+</details>
+
+<details>
+<summary>
+Add external logging
+</summary>
+
+```yaml
+global:
+  storage:
+    secretName: ""
+    type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
+
+    bucket:
+      log: airbyte-bucket
+      auditLogging: airbyte-bucket # Version 1.7 or later, only if you're using audit logging
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
+
+    # Set ONE OF the following storage types, according to your specification above
+
+    # S3
+    s3:
+      region: "" ## e.g. us-east-1
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      accessKeyId: ""
+      secretAccessKey: ""
+
+    # GCS
+    gcs:
+      projectId: <project-id>
+      credentialsJson:  <base64-encoded>
+      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+
+    # Azure
+    azure:
+      # one of the following: connectionString, connectionStringSecretKey
+      connectionString: <azure storage connection string>
+      connectionStringSecretKey: <secret coordinate containing an existing connection-string secret>
+```
+
+</details>
+
+<details>
+<summary>
+Add external connector secret management
+</summary>
+
+```yaml
+global:
+  secretsManager:
+    enabled: false
+    type: "" # one of: VAULT, GOOGLE_SECRET_MANAGER, AWS_SECRET_MANAGER, AZURE_KEY_VAULT, TESTING_CONFIG_DB_TABLE
+    secretName: "airbyte-config-secrets"
+
+    # Set ONE OF the following groups of configurations, based on your configuration in global.secretsManager.type.
+
+    awsSecretManager:
+      region: <aws-region>
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+      - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+      kms: ## Optional - ARN for KMS Decryption.
+
+    # OR
+
+    googleSecretManager:
+      projectId: <project-id>
+      credentialsSecretKey: gcp.json
+
+    # OR
+
+    azureKeyVault:
+      tenantId: ""
+      vaultUrl: ""
+      clientId: ""
+      clientIdSecretKey: ""
+      clientSecret: ""
+      clientSecretSecretKey: ""
+      tags: ""
+
+    # OR
+
+    vault:
+      address: ""
+      prefix: ""
+      authToken: ""
+      authTokenSecretKey: ""
+```
+
+</details>
+
+### Deploy Airbyte {#deploy-airbyte}
+
+Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+
+```bash
+helm upgrade -i \
+--namespace airbyte \
+--values ./values.yaml \
+airbyte \
+airbyte-v2/airbyte \
+--version 2.0.3 \
+--set global.image.tag=1.7.0
+```
+
+<!-- I am realizing the decoupling the chart from the platform may create weird scenarios where it's unclear which version/chart combination to use. -->

@@ -255,10 +255,10 @@ auth:
 airbyteUrl: # e.g. https://airbyte.company.example
 ```
 
-5. Verify the configuration of your `values.yml` so far. Ensure `license-key`, `instance-admin-email` and `instance-admin-password` are all available via Kubernetes Secrets (configured in [prerequisites](#creating-a-kubernetes-secret)). It should appear as follows:
+5. Verify the configuration of your `values.yaml` so far. Ensure `license-key`, `instance-admin-email` and `instance-admin-password` are all available via Kubernetes Secrets (configured in [prerequisites](#creating-a-kubernetes-secret)). It should appear as follows:
 
 <details>
-<summary>Sample initial values.yml file</summary>
+<summary>Sample initial values.yaml file</summary>
 
 ```yaml
 global:
