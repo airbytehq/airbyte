@@ -888,7 +888,7 @@ definitions:
         $ref: "#/definitions/after_url_paginator"
     $parameters:
       name: "tickets"
-      path: "incremental/tickets/cursor.json"
+      path: "tickets.json"
       cursor_field: "generated_timestamp"
       cursor_filter: "start_time"
       primary_key: "id"
