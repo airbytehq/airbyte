@@ -119,7 +119,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     o.accept(s)
 */
 //                    boostedOutputConsumer?.accept(s)
-                    outputMessageRouter.acceptNonRecord(s, needAlsoSimpleOutout = false)
+                    outputMessageRouter.acceptNonRecord(s)
                 }
                 is AirbyteStreamStatusTraceMessage -> {
 /*
@@ -128,7 +128,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     o.accept(s)
 */
 //                    boostedOutputConsumer?.accept(s)
-                    outputMessageRouter.acceptNonRecord(s, needAlsoSimpleOutout = false)
+                    outputMessageRouter.acceptNonRecord(s)
                 }
             }
             s = PartitionReader.pendingStates.poll()

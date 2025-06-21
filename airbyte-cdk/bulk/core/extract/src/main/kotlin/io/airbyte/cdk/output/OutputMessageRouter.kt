@@ -44,7 +44,7 @@ class OutputMessageRouter(
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
     private lateinit var protoRecordOutputConsumers: Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
-    lateinit var recordAcceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
+    var recordAcceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
 
     init {
         when (recordsDataChannelMedium) {
@@ -104,7 +104,7 @@ class OutputMessageRouter(
         }
     }
 
-    fun acceptNonRecord(airbyteMessage: AirbyteStateMessage, needAlsoSimpleOutout: Boolean) {
+    fun acceptNonRecord(airbyteMessage: AirbyteStateMessage) {
         when (recordsDataChannelMedium) {
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {
@@ -123,7 +123,7 @@ class OutputMessageRouter(
 
     }
 
-    fun acceptNonRecord(airbyteMessage: AirbyteStreamStatusTraceMessage, needAlsoSimpleOutout: Boolean) {
+    fun acceptNonRecord(airbyteMessage: AirbyteStreamStatusTraceMessage) {
         when (recordsDataChannelMedium) {
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {

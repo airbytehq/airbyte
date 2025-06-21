@@ -51,6 +51,12 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
         }
         return acquired
     }
+
+    // convenience method to acquire a single resource of a specific type
+    fun <T: Resource.Acquired> tryAcquireResource(requested: ResourceType): T? {
+        val acq = tryAcquire(listOf(requested))
+        return acq?.get(requested) as? T
+    }
 }
 
 /** A [Resource] used to manage concurrency. */

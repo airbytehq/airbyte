@@ -317,102 +317,73 @@ class FeedReader(
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
-    lateinit var acquiredSocket: SocketResource.AcquiredSocket
-
-    private inner class SocketResourceHolder {
-        fun getSocketDataChannel(): SocketResource.AcquiredSocket? {
-            val acqs: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_OUTPUT_SOCKET))
-            return acqs?.get(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
+    // Acquires resources for the OutputMessageRouter and executes the provided action with it
+    private fun doWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
+        val acquiredSocket: SocketResource.AcquiredSocket = resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET) ?:
+        throw IllegalStateException("No output socket available for checkpoint.")
+        acquiredSocket.use {
+            OutputMessageRouter(
+                feedBootstrap.dataChannelMedium,
+                feedBootstrap.dataChannelFormat,
+                feedBootstrap.outputConsumer,
+                emptyMap(), feedBootstrap,
+                mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
+            ).use {
+                doWithRouter(it)
+            }
         }
     }
 
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
+        val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
+        if (stateMessages.isEmpty() && PartitionReader.pendingStates.isEmpty()) {
+            return
+        }
+
+        // Old flow - checkpoint state messages to stdout
         if (dataChannelMedium == DataChannelMedium.STDIO) {
-            val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
-            if (stateMessages.isEmpty()) {
-                return
-            }
             log.info { "checkpoint of ${stateMessages.size} state message(s)" }
             for (stateMessage in stateMessages) {
                 root.outputConsumer.accept(stateMessage)
             }
             return
         }
-        var messageProcessor: OutputMessageRouter? = null
-        try {
-            val stateMessages: MutableList<AirbyteStateMessage> = root.stateManager.checkpoint().toMutableList()
-            val messagesQueue = ArrayDeque<AirbyteStateMessage>(stateMessages)
+        // New flow
 
-            var pendingMessageQueue = ArrayDeque<Any>()
-            if (finalCheckpoint) {
-                acquiredSocket = SocketResourceHolder().getSocketDataChannel() ?:
-                    throw IllegalStateException("No output socket available for checkpoint.")
-
-                messageProcessor = OutputMessageRouter(
-                    feedBootstrap.dataChannelMedium,
-                    feedBootstrap.dataChannelFormat,
-                    feedBootstrap.outputConsumer,
-                    emptyMap(),feedBootstrap,
-                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
-                )
-
-                var s = PartitionReader.pendingStates.poll()
-                while (s != null) {
-//                    messagesQueue.addFirst(s)
-                    pendingMessageQueue.add(s)
-                    s = PartitionReader.pendingStates.poll()
+        log.info { "checkpoint of ${stateMessages.size} state message(s)" }
+        for (stateMessage in stateMessages) {
+            // checkpoint state messages to stdout
+            root.outputConsumer.accept(stateMessage)
+            when (finalCheckpoint) {
+                false -> {
+                    // While there are still active PartitionReader instances we use them to emit state and status messages
+                    PartitionReader.pendingStates.add(stateMessage)
+                }
+                true -> {
+                    // If this is the final checkpoint, we initialize the OutputMessageRouter and emit pending message thourgh it
+                    doWithMessageRouter { it.acceptNonRecord(stateMessage) }
                 }
             }
+        }
 
-            if (messagesQueue.isEmpty() && pendingMessageQueue.isEmpty()) {
-                return
-            }
-
-            log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-
-            while (messagesQueue.isNotEmpty()) {
-                val stateMessage = messagesQueue.removeFirst()
-                when (finalCheckpoint) {
-                    true -> {
-                        messageProcessor?.acceptNonRecord(stateMessage, false)
-                    }
-                    false -> {
-                        PartitionReader.pendingStates.add(stateMessage)
-                    }
-                }
-                root.outputConsumer.accept(stateMessage)
-            }
-
-            while (pendingMessageQueue.isNotEmpty()) {
-                val message = pendingMessageQueue.removeFirst()
-                when (message) {
-                    is AirbyteStateMessage -> {
-                        when (finalCheckpoint) {
-                            true -> {
-                                messageProcessor?.acceptNonRecord(message, false)
-                            }
-                            false -> PartitionReader.pendingStates.add(message)
+        // If this is the final checkpoint, we initialzie the OutputMessageRouter and emit all pending messages through it
+        if (finalCheckpoint) {
+            doWithMessageRouter {
+                while (PartitionReader.pendingStates.isNotEmpty()) {
+                    val message: Any = PartitionReader.pendingStates.poll() ?: break
+                    when (message) {
+                        is AirbyteStateMessage -> {
+                            it.acceptNonRecord(message)
+                        }
+                        is AirbyteStreamStatusTraceMessage -> {
+                            it.acceptNonRecord(message)
+                        }
+                        else -> {
+                            log.warn { "Unknown message type in pending states queue: ${message::class}" }
+                            continue // Skip unknown messages.
                         }
                     }
-                    is AirbyteStreamStatusTraceMessage -> {
-                        when (finalCheckpoint) {
-                            true -> {
-                                messageProcessor?.acceptNonRecord(message, false)
-                            }
-                            false -> PartitionReader.pendingStates.add(message)
-                        }
-                    }
-                    else -> {
-                        log.warn { "Unknown state message type: ${message::class}" }
-                        continue // Skip unknown state messages.
-                    }
                 }
-            }
-
-        } finally {
-            messageProcessor?.close()
-            if (::acquiredSocket.isInitialized) {
-                acquiredSocket.close()
             }
         }
 
