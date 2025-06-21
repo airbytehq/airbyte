@@ -90,12 +90,16 @@ class ClickhouseCoercingValidator {
         val DECIMAL128_MAX = BigDecimal("100000000000000000000000000000000000000")
         val DECIMAL128_MIN = BigDecimal("-100000000000000000000000000000000000000")
 
-        val DATE32_MAX = LocalDate.of(2299, 12, 31).toEpochDay()
-        val DATE32_MIN = LocalDate.of(1900, 1, 1).toEpochDay()
+        // used by both date 32 and date time 64
+        val DATE32_MAX_RAW = LocalDate.of(2299, 12, 31)
+        val DATE32_MIN_RAW = LocalDate.of(1900, 1, 1)
 
-        val DATETIME64_MAX = LocalDateTime.of(LocalDate.of(2299, 12, 31), LocalTime.MAX)
+        val DATE32_MAX = DATE32_MAX_RAW.toEpochDay()
+        val DATE32_MIN = DATE32_MIN_RAW.toEpochDay()
+
+        val DATETIME64_MAX = LocalDateTime.of(DATE32_MAX_RAW, LocalTime.MAX)
             .toEpochSecond(ZoneOffset.UTC)
-        val DATETIME64_MIN = LocalDateTime.of(LocalDate.of(1900, 1, 1), LocalTime.MIN)
+        val DATETIME64_MIN = LocalDateTime.of(DATE32_MIN_RAW, LocalTime.MIN)
             .toEpochSecond(ZoneOffset.UTC)
     }
 }

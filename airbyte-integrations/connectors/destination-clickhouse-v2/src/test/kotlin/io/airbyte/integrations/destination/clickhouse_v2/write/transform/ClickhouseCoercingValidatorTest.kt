@@ -5,11 +5,16 @@
 package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MIN
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MAX
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MIN
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MAX
@@ -26,6 +31,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 
 @ExtendWith(MockKExtension::class)
 class ClickhouseCoercingValidatorTest {
@@ -74,6 +83,92 @@ class ClickhouseCoercingValidatorTest {
     @MethodSource("invalidIntegers")
     fun `validate and coerces big integers - invalid values are nulled`(value: String) {
         val input = Fixtures.mockCoercedValue(value.toAirbyteIntegerValue())
+
+        val result = validator.validateAndCoerce(input)
+
+        assertEquals(NullValue, result.abValue)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            result.changes[0].reason
+        )
+    }
+
+    @ParameterizedTest
+    @MethodSource("validDates")
+    fun `validate and coerces dates - valid values are left unchanged`(value: Long) {
+        val date = LocalDate.ofEpochDay(value)
+        val input = Fixtures.mockCoercedValue(DateValue(date))
+
+        val result = validator.validateAndCoerce(input)
+
+        assertEquals(input, result)
+        assertEquals(input.abValue, result.abValue)
+        assertEquals(mutableListOf(), result.changes)
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidDates")
+    fun `validate and coerces dates - invalid values are nulled`(value: Long) {
+        val date = LocalDate.ofEpochDay(value)
+        val input = Fixtures.mockCoercedValue(DateValue(date))
+
+        val result = validator.validateAndCoerce(input)
+
+        assertEquals(NullValue, result.abValue)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            result.changes[0].reason
+        )
+    }
+
+    @ParameterizedTest
+    @MethodSource("validDates")
+    fun `validate and coerces timestamps with timezones - valid values are left unchanged`(value: Long) {
+        val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
+            .atOffset(ZoneOffset.UTC)
+        val input = Fixtures.mockCoercedValue(TimestampWithTimezoneValue(timestamp))
+
+        val result = validator.validateAndCoerce(input)
+
+        assertEquals(input, result)
+        assertEquals(input.abValue, result.abValue)
+        assertEquals(mutableListOf(), result.changes)
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidDates")
+    fun `validate and coerces timestamps with timezones - invalid values are nulled`(value: Long) {
+        val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
+            .atOffset(ZoneOffset.UTC)
+        val input = Fixtures.mockCoercedValue(TimestampWithTimezoneValue(timestamp))
+
+        val result = validator.validateAndCoerce(input)
+
+        assertEquals(NullValue, result.abValue)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            result.changes[0].reason
+        )
+    }
+
+    @ParameterizedTest
+    @MethodSource("validDates")
+    fun `validate and coerces timestamps without timezones - valid values are left unchanged`(value: Long) {
+        val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
+        val input = Fixtures.mockCoercedValue(TimestampWithoutTimezoneValue(timestamp))
+
+        val result = validator.validateAndCoerce(input)
+
+        assertEquals(input, result)
+        assertEquals(input.abValue, result.abValue)
+        assertEquals(mutableListOf(), result.changes)
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidDates")
+    fun `validate and coerces timestamps without timezones - invalid values are nulled`(value: Long) {
+        val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
+        val input = Fixtures.mockCoercedValue(TimestampWithoutTimezoneValue(timestamp))
 
         val result = validator.validateAndCoerce(input)
 
@@ -137,6 +232,26 @@ class ClickhouseCoercingValidatorTest {
                 Arguments.of("1000000000000000000000000000"),
                 Arguments.of("12345678901234567890"),
                 Arguments.of("-12345678901234567890"),
+            )
+
+        @JvmStatic
+        fun validDates() =
+            listOf(
+                Arguments.of(DATE32_MAX),
+                Arguments.of(DATE32_MIN),
+                Arguments.of(DATE32_MAX - 1),
+                Arguments.of(DATE32_MIN + 1),
+                Arguments.of(250),
+                Arguments.of(-1000),
+            )
+
+        @JvmStatic
+        fun invalidDates() =
+            listOf(
+                Arguments.of(DATE32_MAX + 1),
+                Arguments.of(DATE32_MIN - 1),
+                Arguments.of(255670),
+                Arguments.of(-255670),
             )
     }
 
