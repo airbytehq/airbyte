@@ -1,12 +1,17 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.toProto
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -38,10 +43,20 @@ interface SelectQuerier {
     interface Result : Iterator<ResultRow>, AutoCloseable
 
     interface ResultRow {
-        val data: ObjectNode
+//        val data: ObjectNode
+        val data: InternalRow
         val changes: Map<Field, FieldValueChange>
     }
 }
+
+    /*AirbyteRecordMessage.AirbyteRecordMessageProtobuf.newBuilder()
+        .apply {
+            for ((columnId, value) in this@toProto) {
+                addData(AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setInteger(value.value as Long)) // Adjust based on actual type
+            }
+        }
+        .build()*/
+
 
 /** Default implementation of [SelectQuerier]. */
 @Singleton
@@ -54,7 +69,8 @@ class JdbcSelectQuerier(
     ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
 
     data class ResultRow(
-        override var data: ObjectNode = Jsons.objectNode(),
+//        override var data: ObjectNode = Jsons.objectNode(),
+        override val data: InternalRow = mutableMapOf(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 
@@ -130,13 +146,42 @@ class JdbcSelectQuerier(
             val resultRow: ResultRow = reusable ?: ResultRow()
             resultRow.changes.clear()
             var colIdx = 1
+
+//            val interMap: InternalRow = mutableMapOf()
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+
+/*
+                    interMap[column.id] = FieldValueEncoder(
+                        jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                        jdbcFieldType.jsonEncoder as JsonEncoder<Any>
+                    )
+*/
+                    @Suppress("UNCHECKED_CAST")
+                    resultRow.data[column.id] = FieldValueEncoder(
+                        jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                        jdbcFieldType.jsonEncoder as JsonEncoder<Any>
+                    )
+
+                    /*
+                                        when (interMap[column.id]) {
+                                            is Long -> {
+                                                val l: Long = interMap[column.id] as Long
+                                                val f = LongFieldType as JdbcFieldType<Long>
+                                                resultRow.data.set<JsonNode>(column.id, f.jsonEncoder.encode(l))
+                                            }
+                                        }
+                    */
+//                    resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                 } catch (e: Exception) {
-                    resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
+                    @Suppress("UNCHECKED_CAST")
+                    resultRow.data[column.id] = FieldValueEncoder(
+                        null,
+                        NullCodec as JsonEncoder<Any> // Use NullCodec for null values
+                    ) // Use NullCodec for null values
+//                    resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
                     if (!hasLoggedException) {
                         log.warn(e) { "Error deserializing value in column $column." }
                         hasLoggedException = true
@@ -147,10 +192,21 @@ class JdbcSelectQuerier(
                 }
                 colIdx++
             }
+
+//            interMap.toJson(resultRow.data)
+
+
             // Flag that the current row has been read before returning.
             isReady = false
+
+/*
+            val p: AirbyteRecordMessageProtobuf.Builder = resultRow.data.toProto(AirbyteRecordMessageProtobuf.newBuilder())
+            val b: AirbyteRecordMessageProtobuf? = p.build()
+            log.info { b }
+*/
             return resultRow
         }
+
 
         override fun close() {
             // close() is idempotent

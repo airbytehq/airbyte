@@ -124,6 +124,8 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 
+abstract class SimpleOutputConsumer(clock: Clock): OutputConsumer(clock)
+
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
@@ -154,7 +156,7 @@ private class StdoutOutputConsumer(
      */
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
-) : OutputConsumer(clock) {
+) : SimpleOutputConsumer(clock) {
     private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
@@ -268,16 +270,16 @@ private class StdoutOutputConsumer(
     }
 }
 
-private typealias StreamToTemplateMap = ConcurrentHashMap<String, RecordTemplate>
+typealias StreamToTemplateMap = ConcurrentHashMap<String, RecordTemplate>
 
-private class RecordTemplate(
+class RecordTemplate(
     /** [prefix] is '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":' */
     val prefix: ByteArray,
     /** [suffix] is ',"emitted_at":...}}' */
     val suffix: ByteArray,
 ) {
     companion object {
-        fun create(stream: String, namespace: String?, emittedAt: Instant): RecordTemplate {
+        fun create(stream: String, namespace: String?, emittedAt: Instant, additionalProperties: Map<String, String> = emptyMap(),): RecordTemplate {
             // Generate a dummy AirbyteRecordMessage instance for the given args
             // using an empty object (i.e. '{}') for the "data" field value.
             val recordMessage =
@@ -286,6 +288,10 @@ private class RecordTemplate(
                     .withNamespace(namespace)
                     .withEmittedAt(emittedAt.toEpochMilli())
                     .withData(Jsons.objectNode())
+
+            for (additionalProperty in additionalProperties) {
+                recordMessage.withAdditionalProperty(additionalProperty.key, additionalProperty.value)
+            }
             // Generate the corresponding dummy AirbyteMessage instance.
             val airbyteMessage =
                 AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(recordMessage)
@@ -312,3 +318,6 @@ private class PrintStreamFactory {
 
     @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
 }
+
+
+

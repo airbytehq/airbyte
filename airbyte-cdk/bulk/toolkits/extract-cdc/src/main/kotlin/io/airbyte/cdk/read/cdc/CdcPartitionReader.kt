@@ -6,10 +6,21 @@ package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.read.ConcurrencyResource
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.PROTOBUF
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.StreamRecordConsumer
+import io.airbyte.cdk.read.Resource
+import io.airbyte.cdk.read.ResourceAcquirer
+import io.airbyte.cdk.read.ResourceType
+import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
+import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.engine.ChangeEvent
@@ -31,20 +42,22 @@ import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
 class CdcPartitionReader<T : Comparable<T>>(
-    val concurrencyResource: ConcurrencyResource,
-    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
+    val resourceAcquirer: ResourceAcquirer,
+//    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val debeziumProperties: Map<String, String>,
     val startingOffset: DebeziumOffset,
     val startingSchemaHistory: DebeziumSchemaHistory?,
     val isInputStateSynthetic: Boolean,
+    val feedBootstrap: GlobalFeedBootstrap
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
-    private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
+    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
     private lateinit var decoratedProperties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
+    lateinit var outputMessageRouter: OutputMessageRouter
 
     internal val closeReasonReference = AtomicReference<CloseReason>()
     internal val numEvents = AtomicLong()
@@ -55,19 +68,60 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numEventsWithoutSourceRecord = AtomicLong()
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
+    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') // TEMP
+    private fun generatePartitionId(length: Int): String =
+        (1..length).map { charPool.random() }.joinToString("")
+
+    protected var partitionId: String = generatePartitionId(4)
+    private lateinit var acceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
+    interface AcquiredResource: AutoCloseable {
+        val resource: Resource.Acquired?
+    }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire()
+        fun tryAcquireResources(resourcesType: List<ResourceType>): Map<ResourceType, AcquiredResource>? {
+            val resources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesType)
+
+            return resources?.map {
+                it.key to object : AcquiredResource {
+                    override val resource: Resource.Acquired? = it.value
+                    override fun close() {
+                        resource?.close()
+                    }
+                }
+            }?.toMap()
+        }
+
+        val resourceType: List<ResourceType> =
+            when (feedBootstrap.dataChannelMedium) {
+                SOCKET -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
+                STDIO -> listOf(RESOURCE_DB_CONNECTION)
+        }
+        val resources: Map<ResourceType, AcquiredResource> =
+            tryAcquireResources(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
-        this.acquiredThread.set(acquiredThread)
+
+        acquiredResources.set(resources)
         this.stateFilesAccessor = DebeziumStateFilesAccessor()
+
+        outputMessageRouter = OutputMessageRouter(
+            feedBootstrap.dataChannelMedium,
+            feedBootstrap.dataChannelFormat,
+            feedBootstrap.outputConsumer,
+            mapOf("partition_id" to partitionId), // TEMP
+            feedBootstrap,
+            acquiredResources.get().filter { it.value.resource != null }.map { it.key to it.value.resource!! }.toMap()
+        )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override fun releaseResources() {
+        if (::outputMessageRouter.isInitialized) {
+            outputMessageRouter.close()
+        }
+
         stateFilesAccessor.close()
-        acquiredThread.getAndSet(null)?.close()
+        acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }
 
     override suspend fun run() {
@@ -131,7 +185,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 null
             }
         val serializedState: OpaqueStateValue = readerOps.serializeState(offset, schemaHistory)
-        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get())
+        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get(),partitionId) // TEMP
     }
 
     inner class EventConsumer(
@@ -175,28 +229,31 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // Sometimes, presumably due to bugs in Debezium, the value isn't valid JSON.
                 return EventType.VALUE_JSON_INVALID
             }
-            val streamRecordConsumer: StreamRecordConsumer =
+/*
+            val streamRecordConsumer:   =
                 findStreamRecordConsumer(event.key, event.value)
                 // Ignore events which can't be mapped to a stream.
                 ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+*/
+            val streamId = findStreamIfByRecord(event.key, event.value)
+            val stream: Stream = feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId } as? Stream
+                ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
-                readerOps.deserializeRecord(event.key, event.value, streamRecordConsumer.stream)
-                // Ignore events which can't be deserialized into records.
+                readerOps.deserializeRecord(event.key, event.value, stream)
                 ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
-            streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
+            outputMessageRouter.recordAcceptors[streamId]?.invoke(deserializedRecord.data)
             return EventType.RECORD_EMITTED
         }
 
-        private fun findStreamRecordConsumer(
+        private fun findStreamIfByRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue
-        ): StreamRecordConsumer? {
+        ): StreamIdentifier? {
             val name: String = readerOps.findStreamName(key, value) ?: return null
             val namespace: String? = readerOps.findStreamNamespace(key, value)
             val desc: StreamDescriptor = StreamDescriptor().withNamespace(namespace).withName(name)
-            val streamID: StreamIdentifier = StreamIdentifier.from(desc)
-            return streamRecordConsumers[streamID]
+            return StreamIdentifier.from(desc)
         }
 
         private fun updateCounters(event: DebeziumEvent, eventType: EventType) {

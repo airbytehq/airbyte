@@ -3,7 +3,9 @@ package io.airbyte.cdk.read
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.OutputMessageRouter.*
+import io.airbyte.cdk.output.SimpleOutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -31,10 +33,17 @@ class RootReader(
     val stateManager: StateManager,
     val resourceAcquisitionHeartbeat: Duration,
     val timeout: Duration,
-    val outputConsumer: OutputConsumer,
+    val outputConsumer: SimpleOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
+    val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val dataChannelFormat: DataChannelFormat,
+    val dataChannelMedium: DataChannelMedium
 ) {
+    init {
+        ensureDataChannelMediumFormat()
+    }
+
     private val log = KotlinLogging.logger {}
 
     /** [Mutex] ensuring that resource acquisition always happens serially. */
@@ -47,6 +56,14 @@ class RootReader(
         resourceReleaseFlow.update { it + 1 }
     }
 
+    private fun ensureDataChannelMediumFormat() {
+        if (dataChannelMedium == DataChannelMedium.STDIO) {
+            if (dataChannelFormat != DataChannelFormat.JSONL) {
+                throw IllegalArgumentException("Data channel format must be JSONL when medium is STDIO.")
+            }
+        }
+    }
+
     /** Wait until an availability notification arrives or a timeout is reached. */
     suspend fun waitForResourceAvailability() {
         withTimeoutOrNull(resourceAcquisitionHeartbeat.toKotlinDuration()) {
@@ -54,7 +71,7 @@ class RootReader(
         }
     }
 
-    val streamStatusManager = StreamStatusManager(stateManager.feeds, outputConsumer::accept)
+    val streamStatusManager = StreamStatusManager(stateManager.feeds, {outputConsumer.accept(it); PartitionReader.pendingStates.add(it)})
 
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
@@ -74,7 +91,7 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
+                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, dataChannelFormat, dataChannelMedium).read() }
                 }
             // Call listener hook.
             listener(feedJobs)
