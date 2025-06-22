@@ -526,7 +526,7 @@ definitions:
         $ref: "#/definitions/end_of_stream_paginator"
     $parameters:
       name: "organizations"
-      path: "incremental/organizations"
+      path: "organizations"
       cursor_field: "updated_at"
       cursor_filter: "start_time"
       primary_key: "id"
@@ -1020,10 +1020,10 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/after_url_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "users"
-      path: "incremental/users/cursor.json"
+      path: "users.json"
       cursor_field: "updated_at"
       cursor_filter: "start_time"
       primary_key: "id"
@@ -1034,7 +1034,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/after_url_paginator"
+        $ref: "#/definitions/links_next_paginator"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
@@ -1042,7 +1042,7 @@ definitions:
     $parameters:
       name: "user_identities"
       data_path: "identities"
-      path: "incremental/users/cursor.json"
+      path: "users.json"
       cursor_field: "updated_at"
       cursor_filter: "start_time"
       primary_key: "id"
