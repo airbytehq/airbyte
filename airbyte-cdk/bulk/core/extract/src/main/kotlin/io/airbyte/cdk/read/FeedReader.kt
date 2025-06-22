@@ -310,7 +310,7 @@ class FeedReader(
             } finally {
                 // Publish a checkpoint if applicable.
                 maybeCheckpoint(false)
-                maybeCheckpoint(false) // TEMP
+//                maybeCheckpoint(false) // TEMP
             }
         }
     }
