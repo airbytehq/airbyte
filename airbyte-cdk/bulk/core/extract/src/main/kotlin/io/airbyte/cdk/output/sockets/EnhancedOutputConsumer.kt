@@ -179,20 +179,10 @@ fun InternalRow.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Buil
         .apply {
             this@toProto.toSortedMap().onEachIndexed { index, entry ->
                 setData(index,
-                    entry.value.value?.let { entry.value.jsonEncoder.toProto().encode(valueVBuilder, entry.value.value!!)}
-                        ?: NullProtoEncoder.encode(valueVBuilder, null))
-                setData(index, NullProtoEncoder.encode(valueVBuilder, entry.value.value == null))
+                    entry.value.value?.let { entry.value.jsonEncoder.toProto().encode(valueVBuilder.clear(), entry.value.value!!)}
+                        ?: NullProtoEncoder.encode(valueVBuilder.clear(), null))
             }
-/*
-            for ((_, value) in this@toProto.toSortedMap()) {
-
-                addData(value.jsonEncoder.toProto().encode(
-                    valueVBuilder,
-                    value.value!!))
-            }
-*/
         }
-//        .build()
 }
 
 

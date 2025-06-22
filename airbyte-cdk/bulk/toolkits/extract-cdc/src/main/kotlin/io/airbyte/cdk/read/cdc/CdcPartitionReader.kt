@@ -242,7 +242,11 @@ class CdcPartitionReader<T : Comparable<T>>(
                 readerOps.deserializeRecord(event.key, event.value, stream)
                 ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
-            outputMessageRouter.recordAcceptors[streamId]?.invoke(deserializedRecord.data)
+            outputMessageRouter.recordAcceptors[streamId]?.invoke(deserializedRecord.data, deserializedRecord.changes)
+                ?: run {
+                    log.warn { "No record acceptor found for stream $streamId, skipping record emission." }
+                    return EventType.RECORD_DISCARDED_BY_STREAM_ID
+                }
             return EventType.RECORD_EMITTED
         }
 

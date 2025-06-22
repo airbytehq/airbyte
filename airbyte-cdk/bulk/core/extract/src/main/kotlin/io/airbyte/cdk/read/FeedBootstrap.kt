@@ -11,7 +11,6 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
-import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium
 import io.airbyte.cdk.output.SimpleOutputConsumer
@@ -28,6 +27,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.*
+import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
 import java.time.ZoneOffset
 
 /**
@@ -204,56 +204,44 @@ sealed class FeedBootstrap<T : Feed>(
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
         override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                /*var b = AirbyteRecordMessageProtobuf.newBuilder()
-                    .setStreamName(stream.name)
-                    .setStreamNamespace(stream.namespace)
-                    .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())*/
-                //                partitionId?.let { b.setPartitionId(it) }
-
-                var b = defaultRecordData
-                val p = recordData.toProto(b, valueVBuilder)
-
-                acceptWithoutChanges(/*recordData.toProto(reusedRecordMessageWithoutChanges)*//*firstData*/p)
-            } /*else {
-                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
-                        AirbyteRecordMessageMetaChange()
-                            .withField(field.id)
-                            .withChange(fieldValueChange.protocolChange())
-                            .withReason(fieldValueChange.protocolReason())
-                    }
-//                acceptWithChanges(recordData.toJson(), protocolChanges) // TEMP
-            }*/
+                acceptWithoutChanges(recordData.toProto(defaultRecordData, valueVBuilder))
+            } else {
+                val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
+                val c = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
+                changes.forEach { (field: Field, fieldValueChange: FieldValueChange) ->
+                    c.clear()
+                        .setField(field.id)
+                        .setChange(fieldValueChange.protobufChange())
+                        .setReason(fieldValueChange.protobufReason())
+                    rm.addChanges(c)
+                }
+                acceptWithChanges(recordData.toProto(defaultRecordData, valueVBuilder), rm)
+            }
         }
 
         private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
             synchronized(this) {
-/*
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
-                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
-                }
-*/
                 outputer.accept(
                     reusedMessageWithoutChanges
                         .setRecord(recordData)
-                        .build() /*firstMessage*/)
+                        .build())
             }
         }
 
-/*
+
         private fun acceptWithChanges(
             recordData: AirbyteRecordMessageProtobuf.Builder,
-            changes: List<AirbyteRecordMessageMetaChange>
+            changes: AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.Builder
         ) {
             synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
-                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
-                }
-                reusedRecordMeta.changes = changes
-                outputer.accept(reusedMessageWithChanges)
+                recordData.setMeta(changes)
+                outputer.accept(
+                    reusedMessageWithoutChanges
+                        .setRecord(recordData)
+                        .build())
+
             }
         }
-*/
 
         private val precedingGlobalFeed: Global? =
             stateManager.feeds
@@ -348,6 +336,48 @@ sealed class FeedBootstrap<T : Feed>(
     }
 
     companion object {
+
+        @JvmStatic
+        private fun FieldValueChange.protobufChange(): AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType =
+            when (this) {
+                FieldValueChange.RECORD_SIZE_LIMITATION_ERASURE ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                FieldValueChange.RECORD_SIZE_LIMITATION_TRUNCATION ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED
+                FieldValueChange.FIELD_SIZE_LIMITATION_ERASURE ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                FieldValueChange.FIELD_SIZE_LIMITATION_TRUNCATION ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED
+                FieldValueChange.DESERIALIZATION_FAILURE_TOTAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED
+                FieldValueChange.RETRIEVAL_FAILURE_TOTAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                FieldValueChange.RETRIEVAL_FAILURE_PARTIAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED
+            }
+
+        @JvmStatic
+        private fun FieldValueChange.protobufReason(): AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType =
+            when (this) {
+                FieldValueChange.RECORD_SIZE_LIMITATION_ERASURE ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                FieldValueChange.RECORD_SIZE_LIMITATION_TRUNCATION ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                FieldValueChange.FIELD_SIZE_LIMITATION_ERASURE ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                FieldValueChange.FIELD_SIZE_LIMITATION_TRUNCATION ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                FieldValueChange.DESERIALIZATION_FAILURE_TOTAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_SERIALIZATION_ERROR
+                FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_SERIALIZATION_ERROR
+                FieldValueChange.RETRIEVAL_FAILURE_TOTAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RETRIEVAL_ERROR
+                FieldValueChange.RETRIEVAL_FAILURE_PARTIAL ->
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RETRIEVAL_ERROR
+            }
 
         @JvmStatic
         private fun FieldValueChange.protocolChange(): AirbyteRecordMessageMetaChange.Change =
