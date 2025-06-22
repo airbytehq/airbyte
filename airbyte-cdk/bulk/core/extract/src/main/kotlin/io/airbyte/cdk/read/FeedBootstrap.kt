@@ -89,7 +89,7 @@ sealed class FeedBootstrap<T : Feed>(
             stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
         }
 
-    inner class JsonSocketEfficientStreamRecordConsumer(stream: Stream, outputer: OutputConsumer): EfficientStreamRecordConsumer(stream) {
+    inner class JsonSocketEfficientStreamRecordConsumer(stream: Stream, outputer: OutputConsumer): EfficientStreamRecordConsumer(stream, outputer) {
     }
     /**
      * Efficient implementation of [StreamRecordConsumer].
