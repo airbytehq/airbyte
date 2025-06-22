@@ -151,7 +151,7 @@ class StateManager(
             //
             // This means that there is nothing worth checkpointing for this particular feed.
             // In that case, exit early with the current state value.
-            pendingStateValues.ifEmpty { return listOf(Stale(currentStateValue, null, 0)) } // TODO: check here if id is always 0
+            pendingStateValues.ifEmpty { return listOf(Stale(currentStateValue)) }
             pendingStateValues.forEach {
                 val freshStateValue: OpaqueStateValue = it.pendingState
                 val currentPartitionId: String? = it.partitionId
@@ -201,11 +201,13 @@ class StateManager(
      */
     private data class Stale(
         override val opaqueStateValue: OpaqueStateValue?,
-        override val partitionId: String?,
-        override val id: Int,
     ) : StateForCheckpoint {
         override val numRecords: Long
             get() = 0L
+        override val id: Int
+            get() = 0
+        override val partitionId: String?
+            get() = ""
     }
 
     private class GlobalStateManager(
@@ -269,7 +271,7 @@ class StateManager(
     ) : BaseStateManager<Stream>(stream, initialState) {
         fun checkpoint(): List<AirbyteStateMessage>? {
             val streamStatesForCheckpoint: List<StateForCheckpoint> = takeForCheckpoint()
-            if (streamStatesForCheckpoint.size == 1 && streamStatesForCheckpoint.get(0) is Stale) {
+            if (streamStatesForCheckpoint.filter { it is Stale }.size == streamStatesForCheckpoint.size) {
                 return null
             }
             val stateMessages: MutableList<AirbyteStateMessage> = mutableListOf<AirbyteStateMessage>()

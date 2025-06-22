@@ -54,7 +54,8 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
 
     // convenience method to acquire a single resource of a specific type
     fun <T: Resource.Acquired> tryAcquireResource(requested: ResourceType): T? {
-        val acq = tryAcquire(listOf(requested))
+        val acq: Map<ResourceType, Resource.Acquired>? = tryAcquire(listOf(requested))
+        @Suppress("UNCHECKED_CAST")
         return acq?.get(requested) as? T
     }
 }
