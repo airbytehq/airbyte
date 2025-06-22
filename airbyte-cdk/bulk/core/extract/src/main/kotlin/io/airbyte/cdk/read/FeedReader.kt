@@ -334,6 +334,11 @@ class FeedReader(
         }
     }
 
+    // In STDIO mode (legacy) we emit state messages to standard output.
+    // In SOCKET mode we emil state messages to stadard output and also states and stream statuses are sent over sockets,
+    // According to the configured format (json or protobuf).
+    // This function emit to stdout and also uses running partition readers to emit pending states and stream statuses.
+    // Finally when all readers are done, it acquires socket resource and use it to emit the pending states and stream statuses.
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
         val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
         if (stateMessages.isEmpty() && PartitionReader.pendingStates.isEmpty()) {

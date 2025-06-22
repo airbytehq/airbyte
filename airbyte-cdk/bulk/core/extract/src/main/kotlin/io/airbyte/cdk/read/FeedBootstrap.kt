@@ -74,15 +74,23 @@ sealed class FeedBootstrap<T : Feed>(
     }
 
     /** A map of all [StreamRecordConsumer] for this [feed]. */
-    fun streamRecordConsumers(socketJsonOutputConsumer: SocketJsonOutputConsumer? = null): Map<StreamIdentifier, StreamRecordConsumer> =
+    fun streamRecordConsumers(): Map<StreamIdentifier, StreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to EfficientStreamRecordConsumer(stream, socketJsonOutputConsumer)
+            stream.id to EfficientStreamRecordConsumer(stream)
+        }
+
+    fun streamJsonSocketRecordConsumers(socketJsonOutputConsumer: SocketJsonOutputConsumer): Map<StreamIdentifier, JsonSocketEfficientStreamRecordConsumer> =
+        feed.streams.associate { stream: Stream ->
+            stream.id to JsonSocketEfficientStreamRecordConsumer(stream, socketJsonOutputConsumer)
         }
 
     fun streamProtoRecordConsumers(socketProtoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
             stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
         }
+
+    inner class JsonSocketEfficientStreamRecordConsumer(stream: Stream, outputer: OutputConsumer): EfficientStreamRecordConsumer(stream) {
+    }
     /**
      * Efficient implementation of [StreamRecordConsumer].
      *
@@ -90,9 +98,9 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    inner class EfficientStreamRecordConsumer(override val stream: Stream, socketJsonOutputConsumer: SocketJsonOutputConsumer?) :
+    open inner class EfficientStreamRecordConsumer(override val stream: Stream, val outputer: OutputConsumer = outputConsumer) :
         StreamRecordConsumer {
-        val outputer: OutputConsumer = socketJsonOutputConsumer ?: outputConsumer
+//        open val outputer: OutputConsumer = outputConsumer
 
         override fun close() {
             outputer.close()
@@ -494,7 +502,7 @@ class StreamFeedBootstrap(
 ) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, dataChannelFormat, dataChannelMedium) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun streamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer?): StreamRecordConsumer = EfficientStreamRecordConsumer(
+    fun jsonSocketStreamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer): StreamRecordConsumer = JsonSocketEfficientStreamRecordConsumer(
         feed.streams.filter { feed.id == it.id }.first(),
         socketJsonOutputConsumer)
     fun protoStreamRecordConsumer(protoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(

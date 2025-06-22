@@ -60,7 +60,7 @@ class OutputMessageRouter(
                             additionalProperties
                         )
                         efficientStreamRecordConsumers =
-                            feedBootstrap.streamRecordConsumers(socketJsonOutputConsumer)
+                            feedBootstrap.streamJsonSocketRecordConsumers(socketJsonOutputConsumer)
                         recordAcceptors = efficientStreamRecordConsumers.map {
                             it.key to { record: InternalRow, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
                         }
