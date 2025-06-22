@@ -317,7 +317,7 @@ streams:
   - "#/definitions/discounts_stream"
   - "#/definitions/metafields_stream"
   - "#/definitions/onetimes_stream"
-  - "#/definitions/products_stream"
+  - "#/definitions/plans_stream"
   - "#/definitions/shop_stream"
   - "#/definitions/subscriptions_stream"
   - "#/definitions/events_stream"
