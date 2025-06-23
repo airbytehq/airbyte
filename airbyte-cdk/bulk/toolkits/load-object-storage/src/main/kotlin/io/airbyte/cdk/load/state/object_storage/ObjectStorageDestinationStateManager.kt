@@ -16,6 +16,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.mapNotNull
@@ -61,17 +62,20 @@ class ObjectStorageDestinationState(
             .filter { matcher.match(it.key) != null }
             .toList() // Force the list call to complete before initiating metadata calls
             .mapNotNull { obj ->
-                val generationId =
-                    client
-                        .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
-                        ?.toLongOrNull()
-                        ?: 0L
-                if (generationId < stream.minimumGenerationId) {
-                    Pair(generationId, obj)
-                } else {
-                    null
+                async(Dispatchers.IO) {
+                    val generationId =
+                        client
+                            .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
+                            ?.toLongOrNull()
+                            ?: 0L
+                    if (generationId < stream.minimumGenerationId) {
+                        Pair(generationId, obj)
+                    } else {
+                        null
+                    }
                 }
             }
+            .awaitAll()
     }
 
     /**
