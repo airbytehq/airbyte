@@ -227,7 +227,7 @@ class GithubStream(GithubStreamABC):
     ) -> Iterable[Mapping]:
         if is_conflict_with_empty_repository(response):
             # I would expect that this should be handled (skipped) by the error handler, but it seems like
-            # ignore this error and continue processing records. This may be fixed in latest CDK versions.
+            # ignored this error but continue to processing records. This may be fixed in latest CDK versions.
             return
         yield from super().parse_response(
             response=response,
