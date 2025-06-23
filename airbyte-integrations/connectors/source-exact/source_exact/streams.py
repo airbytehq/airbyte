@@ -4,13 +4,14 @@ import re
 from abc import ABC
 from typing import Any, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs, urlparse
+
 import pendulum
-from pendulum.datetime import DateTime
 import requests
+from pendulum.datetime import DateTime
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-
 from source_exact.api import ExactAPI
 
 
@@ -196,8 +197,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         """
 
         # Get the first not null type -> i.e., the expected type of the property
-        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in
-                                self.get_json_schema()["properties"].items()}
+        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^/Date\((\d+)\)/$")
 
@@ -283,9 +283,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
         return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
 
-    def stream_slices(
-        self,
-        **kwargs):
+    def stream_slices(self, **kwargs):
         """Overridden to return a list of divisions to extract endpoints for."""
 
         return [{"division": x} for x in self._divisions]

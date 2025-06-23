@@ -1,11 +1,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 import logging
 from typing import Any
+
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
-
 from source_exact.api import ExactAPI
-from source_exact.streams import CRMAccountClassifications, ExactStream, CRMAccountClassificationNames
+from source_exact.streams import CRMAccountClassificationNames, CRMAccountClassifications, ExactStream
 
 
 class SourceExact(AbstractSource):

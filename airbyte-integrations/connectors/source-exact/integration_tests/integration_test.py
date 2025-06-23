@@ -2,15 +2,17 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import AirbyteCatalog, SyncMode, ConfiguredAirbyteCatalog
-from airbyte_cdk.test.entrypoint_wrapper import read
+import json
+from pathlib import Path
+
 from airbyte_protocol_dataclasses.models import ConfiguredAirbyteStream, DestinationSyncMode
 from pytest import fixture
-from pathlib import Path
-import json
-
-from source_exact.streams import CRMAccountClassifications,CRMAccountClassificationNames
 from source_exact import SourceExact
+from source_exact.streams import CRMAccountClassificationNames, CRMAccountClassifications
+
+from airbyte_cdk.models import AirbyteCatalog, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.test.entrypoint_wrapper import read
+
 
 HERE = Path(__file__).parent
 
@@ -25,9 +27,7 @@ def config():
 def configured_catalog(config):
     crmac_stream = CRMAccountClassificationNames(config).as_airbyte_stream()
     configured_stream = ConfiguredAirbyteStream(
-        stream=crmac_stream,
-        sync_mode=SyncMode.full_refresh,
-        destination_sync_mode=DestinationSyncMode.overwrite
+        stream=crmac_stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.overwrite
     )
 
     return ConfiguredAirbyteCatalog(streams=[configured_stream])
