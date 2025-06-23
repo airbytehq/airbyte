@@ -7,26 +7,31 @@ import TabItem from "@theme/TabItem";
 
 # Telemetry
 
-Airbyte collects telemetry data in the UI and the servers to help us understand users and their use-cases better to improve the product.
+Airbyte collects telemetry data from the UI and the servers to help improve the product. See Airbyte's [privacy policy](https://airbyte.com/privacy-policy) for more details.
 
-Also check our [privacy policy](https://airbyte.com/privacy-policy) for more details.
+If you'd like to turn off telemetry data collection, follow the directions below.
 
 <Tabs groupId="cloud-hosted">
-  <TabItem value="self-managed" label="Self Managed">
-      To disable telemetry for your instance, modify the `values.yaml` file and define the following environment variable:
+  <TabItem value="self-managed" label="Self-Managed">
 
-      ```
-      TRACKING_STRATEGY=logging
+      To turn off telemetry for your instance, modify your `values.yaml` file and define the following environment variable:
+
+      ```yaml title="values.yaml"
+      global:
+        tracking:
+          strategy: logging
       ```
 
   </TabItem>
   <TabItem value="cloud" label="Cloud">
-    When visiting the webapp or our homepage the first time, you'll be asked for your consent to
-    telemetry collection depending on the legal requirements of your location.
+    When opening Airbyte or Airbyte's homepage the first time, you're asked for your consent to telemetry collection depending on the legal requirements of your location.
 
-    To change this later go to **Settings** > **User Settings** > **Cookie Preferences** or **Cookie Preferences** in the footer of our [homepage](https://airbyte.com).
+    To change this later, do one of the following.
+    
+    - In Airbyte, go to **Settings** > **User Settings** > **Cookie Preferences**.
+    - On Airbyte's website, click **Cookie Preferences** in the footer of our [homepage](https://airbyte.com).
 
-    Server side telemetry collection can't be changed using Airbyte Cloud.
+    You can't change server-side telemetry collection in Airbyte Cloud.
 
   </TabItem>
   <TabItem value="pyairbyte" label="PyAirbyte">
