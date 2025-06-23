@@ -1627,6 +1627,161 @@ definitions:
       - HistoricalExpectedCtr
       - HistoricalAdRelevance
       - HistoricalLandingPageExperience
+    ad_group_performance_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - Language
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - AdGroupName
+      - AdGroupType
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - QualityScore
+      - ExpectedCtr
+      - AdRelevance
+      - LandingPageExperience
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Assists
+      - CostPerAssist
+      - CustomParameters
+      - FinalUrlSuffix
+      - ViewThroughConversions
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+    ad_group_performance_non_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Network
+      - DeliveredMatchType
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - Language
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - AdGroupName
+      - AdGroupType
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - QualityScore
+      - ExpectedCtr
+      - AdRelevance
+      - LandingPageExperience
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Assists
+      - CostPerAssist
+      - CustomParameters
+      - FinalUrlSuffix
+      - ViewThroughConversions
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - HistoricalQualityScore
+      - HistoricalExpectedCtr
+      - HistoricalAdRelevance
+      - HistoricalLandingPageExperience
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+    audience_performance:
+      - AccountName
+      - AccountNumber
+      - AccountId
+      - TimePeriod
+      - CampaignName
+      - CampaignId
+      - AdGroupName
+      - AdGroupId
+      - AudienceId
+      - AudienceName
+      - AssociationStatus
+      - BidAdjustment
+      - TargetingSetting
+      - Impressions
+      - Clicks
+      - Ctr
+      - AverageCpc
+      - Spend
+      - AveragePosition
+      - Conversions
+      - ConversionRate
+      - CostPerConversion
+      - Revenue
+      - ReturnOnAdSpend
+      - RevenuePerConversion
+      - AccountStatus
+      - CampaignStatus
+      - AdGroupStatus
+      - AudienceType
+      - BaseCampaignId
+      - AllConversions
+      - AllRevenue
+      - AllConversionRate
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllRevenuePerConversion
+      - AssociationId
+      - AssociationLevel
+      - ViewThroughConversions
+      - Goal
+      - GoalType
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - AverageCpm
+      - ConversionsQualified
+      - AllConversionsQualified
+      - ViewThroughConversionsQualified
+      - ViewThroughRevenue
 
   # base bulk streams
   base_bulk_stream:
@@ -7124,9 +7279,7 @@ schemas:
           - "null"
           - string
       AbsoluteTopImpressionRatePercent:
-        description:
-          The percentage of absolute top impressions out of the total eligible
-          impressions.
+        description: The percentage of absolute top impressions out of the total eligible impressions.
         type:
           - "null"
           - number
