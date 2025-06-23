@@ -84,7 +84,7 @@ class BaseTest(TestCase):
     def mock_user_query_api(self, response_template: str) -> None:
         http_mocker = self.http_mocker
         http_mocker.post(
-            RequestBuilder(resource="User/Query").with_body('{"UserId": null}').build(),
+            RequestBuilder(resource="User/Query", api="client_center").with_body('{"UserId": null}').build(),
             HttpResponse(json.dumps(find_template(response_template, __file__)), 200),
         )
 

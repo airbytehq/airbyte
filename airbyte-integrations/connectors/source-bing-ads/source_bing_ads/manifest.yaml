@@ -1728,16 +1728,13 @@ definitions:
       - RevenuePerConversion
       - RevenuePerAssist
 
-  # bulk streams
-  labels_stream:
+  # base bulk streams
+  base_bulk_stream:
     # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
     type: DeclarativeStream
-    name: labels
     primary_key: Id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/labels"
+    # $parameters:
+    #   DownloadEntities: to_be_set
     retriever:
       $ref: "#/definitions/basic_bulk_async_retriever"
       creation_requester:
@@ -1745,7 +1742,7 @@ definitions:
         request_body_json:
           AccountIds: "['{{ stream_partition['account_id'] }}']"
           DataScope: EntityData
-          DownloadEntities: ["Labels"]
+          DownloadEntities: '{{ parameters["DownloadEntities"] }}'
           DownloadFileType: Csv
           FormatVersion: "'6.0'"
           # Typically, you request a full download the first time you call the operation by setting this element to null.
@@ -1763,19 +1760,16 @@ definitions:
             path:
               - "Account Id"
             value: "{{ stream_partition['account_id'] }}"
-          - type: AddedFieldDefinition
-            path:
-              - Id
-            value: |
-              {{ record['Id'] | int if record.get('Id') else none }}
-      - type: CustomTransformation
-        class_name: source_bing_ads.components.BulkDatetimeToRFC3339
       - type: RemoveFields
         field_pointers:
           - ["Type"]
+      - type: CustomTransformation
+        class_name: source_bing_ads.components.BulkDatetimeToRFC3339
     incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
     state_migrations:
       - Type: LegacyToPerPartitionStateMigration
+
+  # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -1864,6 +1858,7 @@ definitions:
       record_filter:
         type: RecordFilter
         condition: "{{ record['Type'] not in ['Format Version', 'Account']}}"
+      schema_normalization: Default
     status_extractor:
       type: DpathExtractor
       field_path:
@@ -1905,6 +1900,8 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+
+  # substream partition routers
   account_substream_partition_router:
     type: CustomPartitionRouter
     class_name: source_bing_ads.components.LightSubstreamPartitionRouter
@@ -1918,6 +1915,7 @@ definitions:
         stream: "#/definitions/accounts_stream"
         extra_fields:
           - - ParentCustomerId
+
   # cursors section
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
@@ -1966,6 +1964,7 @@ definitions:
     cursor_field: "Modified Time"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%m/%d/%Y %H:%M:%S.%_ms"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_ms%z"
     lookback_window: P{{ config.get('lookback_window', 0) }}D
     start_datetime:
@@ -2670,6 +2669,56 @@ dynamic_streams:
           create_or_update: true
           field_path: ["incremental_sync"]
           value: "{{components_values['incremental_sync']}}"
+  # Bulk streams
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/base_bulk_stream"
+    components_resolver:
+      type: ParametrizedComponentsResolver
+      stream_parameters:
+        type: StreamParametersDefinition
+        list_of_parameters_for_stream:
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
+          - name: labels
+            DownloadEntities: ["Labels"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/labels"
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
+          - name: ad_group_labels
+            DownloadEntities: ["AdGroupLabels"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_group_labels"
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
+          - name: app_install_ad_labels
+            DownloadEntities: ["AppInstallAdLabels"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/app_install_ad_labels"
+          # https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
+          - name: app_install_ads
+            DownloadEntities: ["AppInstallAds"]
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/app_install_ads"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "DownloadEntities"]
+          value: "{{components_values['DownloadEntities']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["schema_loader"]
+          value: "{{components_values['schema_loader']}}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
@@ -2684,7 +2733,6 @@ streams:
   - $ref: "#/definitions/ad_performance_report_daily_stream"
   - $ref: "#/definitions/ad_performance_report_weekly_stream"
   - $ref: "#/definitions/ad_performance_report_monthly_stream"
-  - $ref: "#/definitions/labels_stream"
 
 schemas:
   accounts:
@@ -3149,6 +3197,7 @@ schemas:
         type:
           - "null"
           - boolean
+
   ad_groups:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3401,6 +3450,7 @@ schemas:
         type:
           - "null"
           - integer
+
   ads:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3933,6 +3983,7 @@ schemas:
         type:
           - "null"
           - string
+
   account_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -4128,6 +4179,7 @@ schemas:
         type:
           - "null"
           - number
+
   account_performance_report_hourly:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -4590,6 +4642,7 @@ schemas:
         type:
           - "null"
           - number
+
   ad_performance_report_hourly:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -4841,6 +4894,7 @@ schemas:
         type:
           - "null"
           - number
+
   labels:
     $schema: https://json-schema.org/draft-07/schema#
     type: object
@@ -4890,6 +4944,7 @@ schemas:
         type:
           - "null"
           - string
+
   age_gender_audience_report:
     $schema: https://json-schema.org/draft-07/schema#
     type: object
@@ -5067,6 +5122,7 @@ schemas:
         type:
           - "null"
           - number
+
   age_gender_audience_report_hourly:
     $schema: https://json-schema.org/draft-07/schema#
     type: object
@@ -5255,6 +5311,7 @@ schemas:
         type:
           - "null"
           - number
+
   campaign_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -6378,6 +6435,224 @@ schemas:
         type:
           - "null"
           - number
+
+  ad_group_labels:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      Account Id:
+        description: The unique identifier for the account to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      Campaign Id:
+        description: The unique identifier for the campaign to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      Campaign Type:
+        description: The type for the campaign to which the ad group belongs.
+        type:
+          - "null"
+          - string
+      Ad Group:
+        description: The name or identifier of the ad group.
+        type:
+          - "null"
+          - string
+      Campaign:
+        description: The campaign to which the ad group is associated.
+        type:
+          - "null"
+          - string
+      Client Id:
+        description: The client identifier associated with the ad group.
+        type:
+          - "null"
+          - string
+      Id:
+        description: The unique identifier of the ad group label.
+        type:
+          - "null"
+          - integer
+      Parent Id:
+        description: The identifier of the parent entity, if applicable.
+        type:
+          - "null"
+          - integer
+      Modified Time:
+        description: The date and time when the ad group label was last modified.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      Status:
+        description: The status of the ad group label.
+        type:
+          - "null"
+          - string
+
+  app_install_ad_labels:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      Account Id:
+        description:
+          The unique identifier for the account associated with the app install
+          ad.
+        type:
+          - "null"
+          - integer
+      Client Id:
+        description:
+          The unique identifier for the client associated with the app install
+          ad.
+        type:
+          - "null"
+          - string
+      Id:
+        description: The unique identifier for the app install ad.
+        type:
+          - "null"
+          - integer
+      Parent Id:
+        description:
+          The unique identifier for the parent resource that this app install
+          ad belongs to.
+        type:
+          - "null"
+          - integer
+      Modified Time:
+        description: The date and time when the app install ad was last modified.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      Status:
+        description: The current status of the app install ad.
+        type:
+          - "null"
+          - string
+
+  app_install_ads:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      Ad Group:
+        description: The name or ID of the ad group to which the app install ad belongs.
+        type:
+          - "null"
+          - string
+      App Id:
+        description: The unique identifier of the mobile app being promoted.
+        type:
+          - "null"
+          - integer
+      Campaign:
+        description:
+          The name or ID of the advertising campaign associated with the app
+          install ad.
+        type:
+          - "null"
+          - string
+      Client Id:
+        description: The unique identifier of the client or advertiser account.
+        type:
+          - "null"
+          - integer
+      Custom Parameter:
+        description: Optional custom parameters configured for tracking purposes.
+        type:
+          - "null"
+          - string
+      Device Preference:
+        description: Device preference targeting for the app install ad.
+        type:
+          - "null"
+          - string
+      Editorial Appeal Status:
+        description: The editorial appeal status of the ad.
+        type:
+          - "null"
+          - string
+      Editorial Location:
+        description: The editorial location where the ad is being reviewed.
+        type:
+          - "null"
+          - string
+      Editorial Reason Code:
+        description:
+          The editorial reason code indicating the reason for disapproval of
+          the ad.
+        type:
+          - "null"
+          - string
+      Editorial Status:
+        description: The editorial status of the ad (e.g., pending, approved, disapproved).
+        type:
+          - "null"
+          - string
+      Editorial Term:
+        description: The editorial term triggered in the review process.
+        type:
+          - "null"
+          - string
+      Final Url:
+        description:
+          The final URL users are directed to after clicking the app install
+          ad.
+        type:
+          - "null"
+          - string
+      Final Url Suffix:
+        description: Additional tracking information appended to the final URL.
+        type:
+          - "null"
+          - string
+      Id:
+        description: The unique identifier of the app install ad.
+        type:
+          - "null"
+          - integer
+      Modified Time:
+        description: The date and time when the app install ad was last modified.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      Parent Id:
+        description: The ID of the parent object to which the app install ad belongs.
+        type:
+          - "null"
+          - integer
+      Publisher Countries:
+        description: List of countries targeted for publishing the app install ad.
+        type:
+          - "null"
+          - string
+      Status:
+        description: The status of the app install ad (e.g., enabled, paused, deleted).
+        type:
+          - "null"
+          - string
+      Text:
+        description: The text content of the app install ad.
+        type:
+          - "null"
+          - string
+      Title:
+        description: The title of the app install ad.
+        type:
+          - "null"
+          - string
+      Tracking Template:
+        description: The tracking template URL for monitoring ad performance.
+        type:
+          - "null"
+          - string
 
 concurrency_level:
   type: ConcurrencyLevel
