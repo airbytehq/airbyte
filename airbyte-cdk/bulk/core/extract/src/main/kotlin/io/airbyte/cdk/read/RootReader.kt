@@ -71,8 +71,10 @@ class RootReader(
         }
     }
 
-    val streamStatusManager = StreamStatusManager(stateManager.feeds, {outputConsumer.accept(it); PartitionReader.pendingStates.add(it)})
-
+    val streamStatusManager = StreamStatusManager(stateManager.feeds, {
+        outputConsumer.accept(it)
+        if (dataChannelMedium == DataChannelMedium.SOCKET) PartitionReader.pendingStates.add(it)
+    })
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
         readFeeds<Global>(listener)

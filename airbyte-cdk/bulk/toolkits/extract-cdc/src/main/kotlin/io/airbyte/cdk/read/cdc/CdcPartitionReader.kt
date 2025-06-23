@@ -7,8 +7,6 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.PROTOBUF
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.InternalRow
@@ -27,7 +25,7 @@ import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.Properties
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
