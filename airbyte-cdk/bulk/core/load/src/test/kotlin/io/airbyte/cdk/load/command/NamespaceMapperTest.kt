@@ -38,7 +38,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("namespace", "name"),
-            stream.descriptor
+            stream.mappedDescriptor
         )
     }
 
@@ -53,7 +53,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("namespace", "prefix_name"),
-            stream.descriptor
+            stream.mappedDescriptor
         )
     }
 
@@ -72,7 +72,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("namespace", "name"),
-            stream.descriptor
+            stream.mappedDescriptor
         )
     }
 
@@ -91,7 +91,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("custom_format_namespace", "name"),
-            stream.descriptor
+            stream.mappedDescriptor
         )
     }
 
@@ -107,7 +107,7 @@ class NamespaceMapperTest {
                 unmappedName = "name",
                 namespaceMapper = mapper,
             )
-        Assertions.assertEquals(DestinationStream.Descriptor(null, "name"), stream.descriptor)
+        Assertions.assertEquals(DestinationStream.Descriptor(null, "name"), stream.mappedDescriptor)
     }
 
     @Test
@@ -125,7 +125,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor(null, "prefix_name"),
-            stream.descriptor
+            stream.mappedDescriptor
         )
     }
 }
