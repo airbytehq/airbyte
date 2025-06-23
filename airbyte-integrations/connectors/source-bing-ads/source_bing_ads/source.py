@@ -18,10 +18,6 @@ from source_bing_ads.bulk_streams import (
 )
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
-    AccountImpressionPerformanceReportDaily,
-    AccountImpressionPerformanceReportHourly,
-    AccountImpressionPerformanceReportMonthly,
-    AccountImpressionPerformanceReportWeekly,
     AdGroupImpressionPerformanceReportDaily,
     AdGroupImpressionPerformanceReportHourly,
     AdGroupImpressionPerformanceReportMonthly,
@@ -131,7 +127,6 @@ class SourceBingAds(YamlDeclarativeSource):
         ]
 
         reports = (
-            "AccountImpressionPerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupImpressionPerformanceReport",
             "CampaignImpressionPerformanceReport",

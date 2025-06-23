@@ -2703,6 +2703,11 @@ definitions:
         value: |
           {% set v = record.get('Ctr') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - RevenuePerInstall
+        value: |
+          {{ record['RevenuePerInstall'] | replace(',', '') | float if record.get('RevenuePerInstall') else 0.0 }}
     # Used only in non-hourly account impression performance report streams
     account_impression_performance_report_transformations_non_hourly:
       - type: AddedFieldDefinition
