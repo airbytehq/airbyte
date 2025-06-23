@@ -89,7 +89,8 @@ class JsonSchemaToAirbyteType(
                         isLegacyUnion = false,
                     )
                 } else {
-                    UnknownType(schema)
+                    // options is supposed to be a list, but fallback to sane behavior if it's not.
+                    convertInner(options)
                 }
             } else {
                 // Default to object if no type and not a union type

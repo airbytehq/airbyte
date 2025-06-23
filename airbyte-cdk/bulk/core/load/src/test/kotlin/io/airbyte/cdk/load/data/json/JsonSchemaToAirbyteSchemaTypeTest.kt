@@ -419,9 +419,10 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     @Test
     fun testInvalidUnion() {
         // Unions should have a list of options, not a single plain option.
-        val schemaNode = Jsons.readTree("""{"oneOf": "foo"}""")
+        // But if it's a single plain option, we can always try parsing it.
+        val schemaNode = Jsons.readTree("""{"oneOf": {"type": "string"}}""")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
-        assertEquals(UnknownType(schemaNode), airbyteType)
+        assertEquals(StringType, airbyteType)
     }
 
     @Test
