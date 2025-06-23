@@ -194,35 +194,6 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AccountImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    Report source: https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13
-    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
-    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
-    """
-
-    report_name: str = "AccountPerformanceReport"
-    report_schema_name = "account_impression_performance_report"
-    primary_key = None
-
-
-class AccountImpressionPerformanceReportHourly(HourlyReportTransformerMixin, AccountImpressionPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "account_impression_performance_report_hourly"
-
-
-class AccountImpressionPerformanceReportDaily(AccountImpressionPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AccountImpressionPerformanceReportWeekly(AccountImpressionPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AccountImpressionPerformanceReportMonthly(AccountImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class SearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "SearchQueryPerformanceReport"
     report_schema_name = "search_query_performance_report"

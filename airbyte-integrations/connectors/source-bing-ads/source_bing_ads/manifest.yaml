@@ -1480,6 +1480,7 @@ definitions:
       - DeviceType
       - DeviceOS
       - AdGroupId
+    account_impression_performance: None
 
   report_columns:
     age_gender_audience:
@@ -1817,6 +1818,155 @@ definitions:
       - AllConversionsQualified
       - ViewThroughConversionsQualified
       - ViewThroughRevenue
+    account_impression_performance_non_hourly:
+      - AccountName
+      - AccountNumber
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - Impressions
+      - Clicks
+      - Ctr
+      - AverageCpc
+      - Spend
+      - AveragePosition
+      - Conversions
+      - ConversionRate
+      - CostPerConversion
+      - LowQualityClicks
+      - LowQualityClicksPercent
+      - LowQualityImpressions
+      - LowQualityImpressionsPercent
+      - LowQualityConversions
+      - LowQualityConversionRate
+      - DeviceType
+      - ImpressionSharePercent
+      - ImpressionLostToBudgetPercent
+      - ImpressionLostToRankAggPercent
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Network
+      - Assists
+      - Revenue
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - RevenuePerConversion
+      - RevenuePerAssist
+      - AccountStatus
+      - LowQualityGeneralClicks
+      - LowQualitySophisticatedClicks
+      - ExactMatchImpressionSharePercent
+      - ClickSharePercent
+      - AbsoluteTopImpressionSharePercent
+      - TopImpressionShareLostToRankPercent
+      - TopImpressionShareLostToBudgetPercent
+      - AbsoluteTopImpressionShareLostToRankPercent
+      - AbsoluteTopImpressionShareLostToBudgetPercent
+      - TopImpressionSharePercent
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - AllConversions
+      - AllRevenue
+      - AllConversionRate
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllRevenuePerConversion
+      - ViewThroughConversions
+      - AudienceImpressionSharePercent
+      - AudienceImpressionLostToRankPercent
+      - AudienceImpressionLostToBudgetPercent
+      - AverageCpm
+      - ConversionsQualified
+      - LowQualityConversionsQualified
+      - AllConversionsQualified
+      - ViewThroughConversionsQualified
+      - ViewThroughRevenue
+      - VideoViews
+      - ViewThroughRate
+      - AverageCPV
+      - VideoViewsAt25Percent
+      - VideoViewsAt50Percent
+      - VideoViewsAt75Percent
+      - CompletedVideoViews
+      - VideoCompletionRate
+      - TotalWatchTimeInMS
+      - AverageWatchTimePerVideoView
+      - AverageWatchTimePerImpression
+      - Sales
+      - CostPerSale
+      - RevenuePerSale
+      - Installs
+      - CostPerInstall
+      - RevenuePerInstall
+    account_impression_performance_hourly:
+      - AccountName
+      - AccountNumber
+      - AccountId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - Impressions
+      - Clicks
+      - Ctr
+      - AverageCpc
+      - Spend
+      - AveragePosition
+      - Conversions
+      - ConversionRate
+      - CostPerConversion
+      - LowQualityClicks
+      - LowQualityClicksPercent
+      - LowQualityImpressions
+      - LowQualityImpressionsPercent
+      - LowQualityConversions
+      - LowQualityConversionRate
+      - DeviceType
+      - PhoneImpressions
+      - PhoneCalls
+      - Ptr
+      - Network
+      - Assists
+      - Revenue
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - RevenuePerConversion
+      - RevenuePerAssist
+      - AccountStatus
+      - LowQualityGeneralClicks
+      - LowQualitySophisticatedClicks
+      - TopImpressionRatePercent
+      - AllConversions
+      - AllRevenue
+      - AllConversionRate
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - AllRevenuePerConversion
+      - ViewThroughConversions
+      - AverageCpm
+      - ConversionsQualified
+      - LowQualityConversionsQualified
+      - AllConversionsQualified
+      - ViewThroughConversionsQualified
+      - ViewThroughRevenue
+      - VideoViews
+      - ViewThroughRate
+      - AverageCPV
+      - VideoViewsAt25Percent
+      - VideoViewsAt50Percent
+      - VideoViewsAt75Percent
+      - CompletedVideoViews
+      - VideoCompletionRate
+      - TotalWatchTimeInMS
+      - AverageWatchTimePerVideoView
+      - AverageWatchTimePerImpression
+      - Sales
+      - CostPerSale
+      - RevenuePerSale
+      - Installs
+      - CostPerInstall
+      - RevenuePerInstall
 
   # base bulk streams
   base_bulk_stream:
@@ -2504,6 +2654,129 @@ definitions:
         value: |
           {% set v = record.get('LowQualityConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+    # Used in all account impression performance report streams
+    account_impression_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AllRevenue
+        value: |
+          {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicksPercent
+        value: |
+          {% set v = record.get('LowQualityClicksPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityImpressionsPercent
+        value: |
+          {% set v = record.get('LowQualityImpressionsPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversionRate
+        value: |
+          {% set v = record.get('LowQualityConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllConversionRate
+        value: |
+          {% set v = record.get('AllConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+    # Used only in non-hourly account impression performance report streams
+    account_impression_performance_report_transformations_non_hourly:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionSharePercent
+        value: |
+          {% set v = record.get('TopImpressionSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ImpressionSharePercent
+        value: |
+          {% set v = record.get('ImpressionSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ImpressionLostToBudgetPercent
+        value: |
+          {% set v = record.get('ImpressionLostToBudgetPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ImpressionLostToRankAggPercent
+        value: |
+          {% set v = record.get('ImpressionLostToRankAggPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ExactMatchImpressionSharePercent
+        value: |
+          {% set v = record.get('ExactMatchImpressionSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ClickSharePercent
+        value: |
+          {% set v = record.get('ClickSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionSharePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionShareLostToRankPercent
+        value: |
+          {% set v = record.get('TopImpressionShareLostToRankPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionShareLostToBudgetPercent
+        value: |
+          {% set v = record.get('TopImpressionShareLostToBudgetPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionShareLostToRankPercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionShareLostToRankPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionShareLostToBudgetPercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionShareLostToBudgetPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
 dynamic_streams:
   # Report streams
@@ -2912,6 +3185,95 @@ dynamic_streams:
                 $ref: "#/schemas/goals_and_funnels_report"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          ## Account Impression Performance Reports
+          - name: account_impression_performance_report_hourly
+            parameters:
+              report_aggregation: Hourly
+              report_name: AccountPerformanceReport
+              report_type: AccountPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/account_impression_performance_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/account_impression_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/account_impression_performance_report_hourly"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+          - name: account_impression_performance_report_daily
+            parameters:
+              report_aggregation: Daily
+              report_name: AccountPerformanceReport
+              report_type: AccountPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/account_impression_performance_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/account_impression_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/account_impression_performance_report"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations_non_hourly"
+          - name: account_impression_performance_report_weekly
+            parameters:
+              report_aggregation: Weekly
+              report_name: AccountPerformanceReport
+              report_type: AccountPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/account_impression_performance_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/account_impression_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/account_impression_performance_report"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations_non_hourly"
+          - name: account_impression_performance_report_monthly
+            parameters:
+              report_aggregation: Monthly
+              report_name: AccountPerformanceReport
+              report_type: AccountPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/account_impression_performance_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/account_impression_performance"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/account_impression_performance_report"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/account_impression_performance_report_transformations_non_hourly"
       components_mapping:
         - type: ComponentMappingDefinition
           create_or_update: true
@@ -7685,6 +8047,760 @@ schemas:
           - number
       ViewThroughRevenue:
         description: Total revenue generated from view-through conversions.
+        type:
+          - "null"
+          - number
+  account_impression_performance_report:
+    $schema: "https://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      AccountName:
+        description: The name of the account
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number associated with the account
+        type:
+          - "null"
+          - string
+      AccountId:
+        description: The unique identifier of the account
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period for which the data is being reported
+        type:
+          - "null"
+          - string
+        format: date
+      CurrencyCode:
+        description: The currency used for the financial metrics
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description: >-
+          The distribution network where the ads were displayed (e.g., search,
+          display)
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of impressions on the ads
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks on the ads
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate of the ad
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total amount spent on advertisements
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position of the ad on the search results page
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of conversions tracked
+        type:
+          - "null"
+          - integer
+      ConversionRate:
+        description: The rate at which conversions occur
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The cost per conversion
+        type:
+          - "null"
+          - number
+      LowQualityClicks:
+        description: The number of clicks considered of low quality
+        type:
+          - "null"
+          - integer
+      LowQualityClicksPercent:
+        description: The percentage of clicks classified as low quality
+        type:
+          - "null"
+          - number
+      LowQualityImpressions:
+        description: The number of impressions classified as low quality
+        type:
+          - "null"
+          - integer
+      LowQualityImpressionsPercent:
+        description: The percentage of low-quality impressions
+        type:
+          - "null"
+          - number
+      LowQualityConversions:
+        description: The total number of conversions from low-quality clicks
+        type:
+          - "null"
+          - integer
+      LowQualityConversionRate:
+        description: The conversion rate attributed to low-quality clicks
+        type:
+          - "null"
+          - number
+      DeviceType:
+        description: "The type of device on which the ad was displayed (e.g., desktop, mobile)"
+        type:
+          - "null"
+          - string
+      ImpressionSharePercent:
+        description: The percentage of impressions captured out of total available impressions
+        type:
+          - "null"
+          - number
+      ImpressionLostToBudgetPercent:
+        description: The percentage of impressions lost due to budget limitations
+        type:
+          - "null"
+          - number
+      ImpressionLostToRankAggPercent:
+        description: The percentage of impressions lost to ranking aggregation
+        type:
+          - "null"
+          - number
+      PhoneImpressions:
+        description: The number of impressions on phone devices
+        type:
+          - "null"
+          - integer
+      PhoneCalls:
+        description: The total number of phone calls generated by the ads
+        type:
+          - "null"
+          - integer
+      Ptr:
+        description: The phone-through rate of the ad
+        type:
+          - "null"
+          - number
+      Network:
+        description: The advertising network where the ads were displayed
+        type:
+          - "null"
+          - string
+      Assists:
+        description: The number of assists in contributing to conversions
+        type:
+          - "null"
+          - integer
+      Revenue:
+        description: The total revenue generated
+        type:
+          - "null"
+          - number
+      ReturnOnAdSpend:
+        description: The return on investment from ad spend
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: The cost per assist in contributing to conversions
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The average revenue generated per conversion
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: The average revenue generated per assist in conversions
+        type:
+          - "null"
+          - number
+      AccountStatus:
+        description: "The status of the account (e.g., active, paused, etc.)"
+        type:
+          - "null"
+          - string
+      LowQualityGeneralClicks:
+        description: The number of general clicks considered of low quality
+        type:
+          - "null"
+          - integer
+      LowQualitySophisticatedClicks:
+        description: The number of sophisticated clicks considered of low quality
+        type:
+          - "null"
+          - integer
+      ExactMatchImpressionSharePercent:
+        description: The percentage of exact match impressions captured
+        type:
+          - "null"
+          - number
+      ClickSharePercent:
+        description: The share of clicks received out of the total available clicks
+        type:
+          - "null"
+          - number
+      AbsoluteTopImpressionSharePercent:
+        description: >-
+          The percentage of impressions received in the absolute top location on the
+          search results page
+        type:
+          - "null"
+          - number
+      TopImpressionShareLostToRankPercent:
+        description: The percentage of top impressions lost due to ad ranking
+        type:
+          - "null"
+          - number
+      TopImpressionShareLostToBudgetPercent:
+        description: The percentage of top impressions lost due to budget constraints
+        type:
+          - "null"
+          - number
+      AbsoluteTopImpressionShareLostToRankPercent:
+        description: The percentage of absolute top impressions lost due to ad ranking
+        type:
+          - "null"
+          - number
+      AbsoluteTopImpressionShareLostToBudgetPercent:
+        description: The percentage of absolute top impressions lost due to budget constraints
+        type:
+          - "null"
+          - number
+      TopImpressionSharePercent:
+        description: >-
+          The percentage of impressions received at the top position on the search
+          results page
+        type:
+          - "null"
+          - number
+      AbsoluteTopImpressionRatePercent:
+        description: >-
+          The percentage of impressions that are shown in the absolute top position
+          above the organic search results
+        type:
+          - "null"
+          - number
+      TopImpressionRatePercent:
+        description: The percentage of impressions that appear at the top of search results
+        type:
+          - "null"
+          - number
+      AllConversions:
+        description: The total number of all conversions counted
+        type:
+          - "null"
+          - integer
+      AllRevenue:
+        description: The total revenue generated from all conversions
+        type:
+          - "null"
+          - number
+      AllConversionRate:
+        description: The rate of all conversions that occurred
+        type:
+          - "null"
+          - number
+      AllCostPerConversion:
+        description: The cost per conversion for all conversions
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend generated by all conversions
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The average revenue generated per conversion from all conversions
+        type:
+          - "null"
+          - number
+      ViewThroughConversions:
+        description: The number of conversions attributed to view-through tracking
+        type:
+          - "null"
+          - integer
+      AudienceImpressionSharePercent:
+        description: The percentage of impressions captured for the targeted audience
+        type:
+          - "null"
+          - number
+      AudienceImpressionLostToRankPercent:
+        description: The percentage of audience impressions lost due to ad ranking
+        type:
+          - "null"
+          - number
+      AudienceImpressionLostToBudgetPercent:
+        description: The percentage of audience impressions lost due to budget restrictions
+        type:
+          - "null"
+          - number
+      AverageCpm:
+        description: The average cost per thousand impressions
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The number of qualified conversions
+        type:
+          - "null"
+          - number
+      LowQualityConversionsQualified:
+        description: The number of qualified conversions from low-quality clicks
+        type:
+          - "null"
+          - number
+      AllConversionsQualified:
+        description: The number of qualified conversions of all types
+        type:
+          - "null"
+          - number
+      ViewThroughConversionsQualified:
+        description: The number of qualified conversions linked to view-through tracking
+        type:
+          - "null"
+          - number
+      ViewThroughRevenue:
+        description: The revenue generated from view-through conversions
+        type:
+          - "null"
+          - number
+      VideoViews:
+        description: The total number of views of video ads
+        type:
+          - "null"
+          - integer
+      ViewThroughRate:
+        description: The rate at which view-through conversions occur
+        type:
+          - "null"
+          - number
+      AverageCPV:
+        description: The average cost per view of video ads
+        type:
+          - "null"
+          - number
+      VideoViewsAt25Percent:
+        description: The number of video views at 25% completion
+        type:
+          - "null"
+          - integer
+      VideoViewsAt50Percent:
+        description: The number of video views at 50% completion
+        type:
+          - "null"
+          - integer
+      VideoViewsAt75Percent:
+        description: The number of video views at 75% completion
+        type:
+          - "null"
+          - integer
+      CompletedVideoViews:
+        description: The number of completed views of video ads
+        type:
+          - "null"
+          - integer
+      VideoCompletionRate:
+        description: The rate of completed views of video ads
+        type:
+          - "null"
+          - number
+      TotalWatchTimeInMS:
+        description: The total watch time in milliseconds for video ads
+        type:
+          - "null"
+          - integer
+      AverageWatchTimePerVideoView:
+        description: The average watch time per video view
+        type:
+          - "null"
+          - number
+      AverageWatchTimePerImpression:
+        description: The average watch time per impression for video ads
+        type:
+          - "null"
+          - number
+      Sales:
+        description: The total number of sales attributed to the ads
+        type:
+          - "null"
+          - integer
+      CostPerSale:
+        description: The cost per sale
+        type:
+          - "null"
+          - number
+      RevenuePerSale:
+        description: The average revenue generated per sale
+        type:
+          - "null"
+          - number
+      Installs:
+        description: The total number of installations linked to the ads
+        type:
+          - "null"
+          - integer
+      CostPerInstall:
+        description: The cost per installation
+        type:
+          - "null"
+          - number
+      RevenuePerInstall:
+        description: The average revenue generated per installation
+        type:
+          - "null"
+          - number
+  account_impression_performance_report_hourly:
+    $schema: "https://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      AccountName:
+        description: The name of the Bing Ads account
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: The account number associated with the Bing Ads account
+        type:
+          - "null"
+          - string
+      AccountId:
+        description: The unique identifier for the Bing Ads account
+        type:
+          - "null"
+          - integer
+      TimePeriod:
+        description: The time period for the data
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      CurrencyCode:
+        description: The currency code used for the values
+        type:
+          - "null"
+          - string
+      AdDistribution:
+        description: The distribution channel where the ad was displayed
+        type:
+          - "null"
+          - string
+      Impressions:
+        description: The total number of impressions
+        type:
+          - "null"
+          - integer
+      Clicks:
+        description: The total number of clicks
+        type:
+          - "null"
+          - integer
+      Ctr:
+        description: The click-through rate
+        type:
+          - "null"
+          - number
+      AverageCpc:
+        description: The average cost per click
+        type:
+          - "null"
+          - number
+      Spend:
+        description: The total spend
+        type:
+          - "null"
+          - number
+      AveragePosition:
+        description: The average position where the ad was displayed
+        type:
+          - "null"
+          - number
+      Conversions:
+        description: The total number of conversions
+        type:
+          - "null"
+          - integer
+      ConversionRate:
+        description: The rate of conversions generated
+        type:
+          - "null"
+          - number
+      CostPerConversion:
+        description: The cost per conversion
+        type:
+          - "null"
+          - number
+      LowQualityClicks:
+        description: The total number of low-quality clicks
+        type:
+          - "null"
+          - integer
+      LowQualityClicksPercent:
+        description: The percentage of low-quality clicks
+        type:
+          - "null"
+          - number
+      LowQualityImpressions:
+        description: The total number of low-quality impressions
+        type:
+          - "null"
+          - integer
+      LowQualityImpressionsPercent:
+        description: The percentage of low-quality impressions
+        type:
+          - "null"
+          - number
+      LowQualityConversions:
+        description: The total number of low-quality conversions
+        type:
+          - "null"
+          - integer
+      LowQualityConversionRate:
+        description: The conversion rate for low-quality clicks
+        type:
+          - "null"
+          - number
+      DeviceType:
+        description: The type of device on which the ad was displayed
+        type:
+          - "null"
+          - string
+      PhoneImpressions:
+        description: The total number of phone impressions
+        type:
+          - "null"
+          - integer
+      PhoneCalls:
+        description: The total number of phone calls generated
+        type:
+          - "null"
+          - integer
+      Ptr:
+        description: The phone-through rate
+        type:
+          - "null"
+          - number
+      Network:
+        description: The network on which the ad was displayed
+        type:
+          - "null"
+          - string
+      Assists:
+        description: The total number of assists (click assist impressions)
+        type:
+          - "null"
+          - integer
+      Revenue:
+        description: The total revenue generated
+        type:
+          - "null"
+          - number
+      ReturnOnAdSpend:
+        description: The return on ad spend
+        type:
+          - "null"
+          - number
+      CostPerAssist:
+        description: The cost per assist
+        type:
+          - "null"
+          - number
+      RevenuePerConversion:
+        description: The revenue per conversion
+        type:
+          - "null"
+          - number
+      RevenuePerAssist:
+        description: The revenue per assist
+        type:
+          - "null"
+          - number
+      AccountStatus:
+        description: The status of the Bing Ads account
+        type:
+          - "null"
+          - string
+      LowQualityGeneralClicks:
+        description: The total number of low-quality general clicks
+        type:
+          - "null"
+          - integer
+      LowQualitySophisticatedClicks:
+        description: The total number of low-quality sophisticated clicks
+        type:
+          - "null"
+          - integer
+      TopImpressionRatePercent:
+        description: The top impression rate percentage
+        type:
+          - "null"
+          - number
+      AllConversions:
+        description: The total number of all conversions
+        type:
+          - "null"
+          - integer
+      AllRevenue:
+        description: The total revenue generated from all conversions
+        type:
+          - "null"
+          - number
+      AllConversionRate:
+        description: The rate of all conversions generated
+        type:
+          - "null"
+          - number
+      AllCostPerConversion:
+        description: The cost per each conversion
+        type:
+          - "null"
+          - number
+      AllReturnOnAdSpend:
+        description: The return on ad spend for all conversions
+        type:
+          - "null"
+          - number
+      AllRevenuePerConversion:
+        description: The average revenue per each conversion
+        type:
+          - "null"
+          - number
+      ViewThroughConversions:
+        description: The total number of view-through conversions
+        type:
+          - "null"
+          - integer
+      AverageCpm:
+        description: The average cost per thousand impressions
+        type:
+          - "null"
+          - number
+      ConversionsQualified:
+        description: The total number of qualified conversions
+        type:
+          - "null"
+          - number
+      LowQualityConversionsQualified:
+        description: The total number of qualified low-quality conversions
+        type:
+          - "null"
+          - number
+      AllConversionsQualified:
+        description: The total number of qualified all conversions
+        type:
+          - "null"
+          - number
+      ViewThroughConversionsQualified:
+        description: The total number of view-through conversions qualified
+        type:
+          - "null"
+          - number
+      ViewThroughRevenue:
+        description: The view-through revenue
+        type:
+          - "null"
+          - number
+      VideoViews:
+        description: The total number of video views
+        type:
+          - "null"
+          - integer
+      ViewThroughRate:
+        description: The view-through rate
+        type:
+          - "null"
+          - number
+      AverageCPV:
+        description: The average cost per video view
+        type:
+          - "null"
+          - number
+      VideoViewsAt25Percent:
+        description: The total number of video views at 25%
+        type:
+          - "null"
+          - integer
+      VideoViewsAt50Percent:
+        description: The total number of video views at 50%
+        type:
+          - "null"
+          - integer
+      VideoViewsAt75Percent:
+        description: The total number of video views at 75%
+        type:
+          - "null"
+          - integer
+      CompletedVideoViews:
+        description: The total number of completed video views
+        type:
+          - "null"
+          - integer
+      VideoCompletionRate:
+        description: The video completion rate
+        type:
+          - "null"
+          - number
+      TotalWatchTimeInMS:
+        description: The total watch time in milliseconds
+        type:
+          - "null"
+          - integer
+      AverageWatchTimePerVideoView:
+        description: The average watch time per video view
+        type:
+          - "null"
+          - number
+      AverageWatchTimePerImpression:
+        description: The average watch time per impression
+        type:
+          - "null"
+          - number
+      Sales:
+        description: The total number of sales
+        type:
+          - "null"
+          - integer
+      CostPerSale:
+        description: The cost per sale
+        type:
+          - "null"
+          - number
+      RevenuePerSale:
+        description: The revenue per sale
+        type:
+          - "null"
+          - number
+      Installs:
+        description: The total number of installs
+        type:
+          - "null"
+          - integer
+      CostPerInstall:
+        description: The cost per install
+        type:
+          - "null"
+          - number
+      RevenuePerInstall:
+        description: The revenue per install
         type:
           - "null"
           - number
