@@ -4,13 +4,13 @@ import re
 from abc import ABC
 from typing import Any, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs, urlparse
-
 import pendulum
+from pendulum.datetime import DateTime
 import requests
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+
 from source_exact.api import ExactAPI
 
 
@@ -34,7 +34,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
     it is expired.
     """
 
-    endpoint = None
+    endpoint: str
 
     def __init__(self, config):
         self._divisions = config["divisions"]
@@ -97,15 +97,11 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         self.logger.info(f"Syncing endpoint {self.endpoint}...")
         return self.endpoint
 
-    def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
-        """
-        Overridden to request JSON response (default for Exact is XML).
-        """
-
-        return {"Accept": "application/json"}
-
-    def request_params(
-        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    def request_params(  # type: ignore[override]
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Mapping[str, Any],
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         """
         The sync endpoints requires selection of fields to return. We use the configured catalog to make selection
@@ -134,6 +130,18 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         return params
 
+    def request_headers(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        """
+        Overridden to request JSON response (default for Exact is XML).
+        """
+
+        return {"Accept": "application/json"}
+
     def _get_param_filter(self, cursor_value: str):
         """Returns the $filter clause for the cursor field."""
 
@@ -149,10 +157,11 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         # The Exact API (OData format) doesn't accept timezone info. Instead, we parse the timestamp into
         # the API's local timezone (CET +1h in winter and +2h in summer) without timezone info.
         # More details about the API's timezone: see _parse_item.
-        utc_timestamp = pendulum.parse(cursor_value)
+        utc_timestamp: DateTime = pendulum.parse(cursor_value)  # type: ignore
         if utc_timestamp.timezone_name not in ["UTC", "+00:00"]:
             self.logger.warning(
-                f"The value of the cursor field 'Modified' is not detected as a UTC timestamp: {cursor_value}. This might lead to an incorrect $filter clause and unexpected records."
+                f"The value of the cursor field 'Modified' is not detected as a UTC timestamp: {cursor_value}. "
+                f"This might lead to an incorrect $filter clause and unexpected records."
             )
 
         tz_cet = pendulum.timezone("CET")
@@ -187,7 +196,8 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         """
 
         # Get the first not null type -> i.e., the expected type of the property
-        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
+        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in
+                                self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^/Date\((\d+)\)/$")
 
@@ -272,6 +282,13 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
         return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
+
+    def stream_slices(
+        self,
+        **kwargs):
+        """Overridden to return a list of divisions to extract endpoints for."""
+
+        return [{"division": x} for x in self._divisions]
 
 
 class ExactSyncStream(ExactStream):

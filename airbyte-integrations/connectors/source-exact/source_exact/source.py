@@ -1,11 +1,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 import logging
 from typing import Any
-
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
+
 from source_exact.api import ExactAPI
-from source_exact.streams import CRMAccountClassifications, ExactStream
+from source_exact.streams import CRMAccountClassifications, ExactStream, CRMAccountClassificationNames
 
 
 class SourceExact(AbstractSource):
@@ -28,9 +28,13 @@ class SourceExact(AbstractSource):
     def check(self, logger: logging.Logger, config) -> AirbyteConnectionStatus:
         return super().check(logger=logger, config=config)
 
-    def streams(self, config) -> list[ExactStream]:
+    def read(self, *args, **kwargs):
+        return super().read(*args, **kwargs)
+
+    def streams(self, config) -> list[ExactStream]:  # type: ignore[override]
         return [
             CRMAccountClassifications(config),
+            CRMAccountClassificationNames(config),
         ]
 
     def discover(self, logger: logging.Logger, config) -> AirbyteCatalog:

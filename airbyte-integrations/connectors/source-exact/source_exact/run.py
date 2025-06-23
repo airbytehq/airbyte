@@ -4,7 +4,7 @@ import sys
 import traceback
 from datetime import datetime
 
-from orjson import orjson
+import orjson
 
 from airbyte_cdk.entrypoint import launch, logger
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
