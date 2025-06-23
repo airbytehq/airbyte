@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse_v2.write
+package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -27,11 +27,13 @@ import org.junit.jupiter.api.extension.ExtendWith
 class RecordMungerTest {
     @MockK lateinit var catalogInfo: TableCatalog
 
+    @MockK lateinit var validator: ClickhouseCoercingValidator
+
     private lateinit var munger: RecordMunger
 
     @BeforeEach
     fun setup() {
-        munger = RecordMunger(catalogInfo)
+        munger = RecordMunger(catalogInfo, validator)
     }
 
     @Test
@@ -41,6 +43,8 @@ class RecordMungerTest {
             {
                 secondArg<String>() + "_munged"
             }
+
+        every { validator.validateAndCoerce(any()) } answers { firstArg() }
 
         // mock coercion output
         val userFields =
@@ -74,6 +78,7 @@ class RecordMungerTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
         }
+        coerced.declaredFields.forEach { verify { validator.validateAndCoerce(it.value) } }
 
         // munged keys map to unwrapped / coerced values
         val expected =
