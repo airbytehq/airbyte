@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,8 +11,8 @@ The Airbyte platform is a sophisticated data integration platform that enables y
 To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart) guide.
 If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful. 
 
-:::tip
-Enterprise Customers should follow the steps outlined in our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
+:::info Self-Managed Enterprise customers
+If you're a Self-Managed Enterprise customer, skip this guide. Instead, follow the steps outlined in [Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
 :::
 
 ## Understanding the Airbyte Deployment
@@ -87,7 +87,7 @@ The documentation has been created to "build up" a values.yaml, so there is no n
 
 Each [Integration](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file may look like the following: 
 
-```yaml
+```yaml title="values.yaml"
 global:
   airbyteUrl: https://airbyte.company.example
 ```
@@ -117,13 +117,34 @@ After your policies are set up, here's a list of customizations.
 After you have applied your Secret values to the Cluster and you have filled out a values.yaml file appropriately for your specific configuration, you can begin a Helm Install. To do this, make sure that you have the [Helm Client](https://helm.sh/docs/intro/install/) installed and on your path.
 Then you can run:
 
-```sh
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```bash
 helm install \
 airbyte \
 airbyte/airbyte \
 --namespace airbyte \
 --values ./values.yaml
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+helm install \
+--namespace airbyte \
+--values ./values.yaml \
+airbyte \
+airbyte-v2/airbyte \
+--version 2.0.3 \
+--set global.image.tag=1.7.0
+```
+
+</TabItem>
+</Tabs>
+
+
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
 
