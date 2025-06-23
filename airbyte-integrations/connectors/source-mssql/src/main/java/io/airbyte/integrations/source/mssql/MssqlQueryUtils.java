@@ -219,6 +219,7 @@ public class MssqlQueryUtils {
         cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
         if (!jsonNodes.isEmpty()) {
           final JsonNode result = jsonNodes.get(0);
+          LOGGER.info("Max cursor value for {}.{} is {}", namespace, fullTableName, result);
           cursorBasedStatus.setCursor(result.get(cursorField).asText());
           cursorBasedStatus.setCursorRecordCount(result.get(counterField).asLong());
         }
