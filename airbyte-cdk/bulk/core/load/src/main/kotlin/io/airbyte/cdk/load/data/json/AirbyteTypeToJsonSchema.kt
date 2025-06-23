@@ -26,7 +26,9 @@ class AirbyteTypeToJsonSchema {
             is BooleanType -> ofType("boolean", nullable)
             is IntegerType -> ofType("integer", nullable)
             is NumberType -> ofType("number", nullable)
-            is ArrayType -> ofType("array", nullable).set("items", convert(airbyteType.items.type, airbyteType.items.nullable))
+            is ArrayType ->
+                ofType("array", nullable)
+                    .set("items", convert(airbyteType.items.type, airbyteType.items.nullable))
             is ArrayTypeWithoutSchema -> ofType("array", nullable)
             is ObjectType -> {
                 val objNode = ofType("object", nullable)
