@@ -81,12 +81,16 @@ class JsonSchemaToAirbyteType(
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
             val options = schema.get("oneOf") ?: schema.get("anyOf") ?: schema.get("allOf")
             return if (options != null) {
-                // intentionally don't use the `unionOf()` utility method.
-                // We know this is a non-legacy union.
-                UnionType.of(
-                    options.mapNotNull { convertInner(it as ObjectNode) },
-                    isLegacyUnion = false,
-                )
+                if (options.isArray) {
+                    // intentionally don't use the `unionOf()` utility method.
+                    // We know this is a non-legacy union.
+                    UnionType.of(
+                        options.mapNotNull { convertInner(it) },
+                        isLegacyUnion = false,
+                    )
+                } else {
+                    UnknownType(schema)
+                }
             } else {
                 // Default to object if no type and not a union type
                 convertInner((schema as ObjectNode).put("type", "object"))
@@ -138,7 +142,7 @@ class JsonSchemaToAirbyteType(
             val itemType = unionOf(items.mapNotNull { convertInner(it) })
             return ArrayType(FieldType(itemType, true))
         }
-        return ArrayType(fieldFromSchema(items as ObjectNode))
+        return ArrayType(nodeToFieldType(items))
     }
 
     private fun fromObject(schema: ObjectNode): AirbyteType {
@@ -150,12 +154,7 @@ class JsonSchemaToAirbyteType(
             properties
                 .fields()
                 .asSequence()
-                .map { (name, node) ->
-                    when (node) {
-                        is ObjectNode -> name to fieldFromSchema(node)
-                        else -> name to FieldType(UnknownType(node), nullable = true)
-                    }
-                }
+                .map { (name, node) -> name to nodeToFieldType(node) }
                 .toMap(LinkedHashMap())
         val additionalProperties = schema.get("additionalProperties")?.asBoolean() ?: false
         val required: List<String> =
@@ -197,5 +196,11 @@ class JsonSchemaToAirbyteType(
         when (unionBehavior) {
             UnionBehavior.LEGACY -> UnionType.of(options, isLegacyUnion = true)
             UnionBehavior.DEFAULT -> UnionType.of(options, isLegacyUnion = false)
+        }
+
+    private fun nodeToFieldType(node: JsonNode): FieldType =
+        when (node) {
+            is ObjectNode -> fieldFromSchema(node)
+            else -> FieldType(UnknownType(node), nullable = true)
         }
 }
