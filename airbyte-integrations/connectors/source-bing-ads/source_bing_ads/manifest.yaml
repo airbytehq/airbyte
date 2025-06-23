@@ -2780,7 +2780,7 @@ dynamic_streams:
             schema_loader:
               type: InlineSchemaLoader
               schema:
-                $ref: "#/schemas/audience_performance_report"
+                $ref: "#/schemas/audience_performance_report_hourly"
             transformations:
               - type: AddFields
                 fields:
