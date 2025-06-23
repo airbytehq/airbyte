@@ -370,41 +370,6 @@ class ProductSearchQueryPerformanceReportMonthly(ProductSearchQueryPerformanceRe
     report_aggregation = "Monthly"
 
 
-class GoalsAndFunnelsReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13
-    """
-
-    report_name: str = "GoalsAndFunnelsReport"
-    report_schema_name = "goals_and_funnels_report"
-    primary_key = [
-        "GoalId",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "DeviceType",
-        "DeviceOS",
-        "AdGroupId",
-    ]
-
-
-class GoalsAndFunnelsReportHourly(HourlyReportTransformerMixin, GoalsAndFunnelsReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "goals_and_funnels_report_hourly"
-
-
-class GoalsAndFunnelsReportDaily(GoalsAndFunnelsReport):
-    report_aggregation = "Daily"
-
-
-class GoalsAndFunnelsReportWeekly(GoalsAndFunnelsReport):
-    report_aggregation = "Weekly"
-
-
-class GoalsAndFunnelsReportMonthly(GoalsAndFunnelsReport):
-    report_aggregation = "Monthly"
-
-
 class AudiencePerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/audienceperformancereportrequest?view=bingads-13
