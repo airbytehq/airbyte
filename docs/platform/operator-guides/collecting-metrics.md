@@ -30,7 +30,7 @@ Airbyte sends specific metrics to provide you with health insight in the followi
 
 ### Configure OpenTelemetry metrics
 
-1. Deploy an OpenTelemetry collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have an excellent guide to [set up a collector and exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
+1. Deploy an OpenTelemetry collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have a guide to [set up a collector and exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
 
 2. Update Airbyte's `values.yaml` file to enable OpenTelemetry.
 
