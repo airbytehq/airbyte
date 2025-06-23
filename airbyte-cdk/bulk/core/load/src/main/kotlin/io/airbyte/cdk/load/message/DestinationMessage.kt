@@ -120,6 +120,9 @@ data class Meta(
         const val CHECKPOINT_ID_NAME: String = "partition_id"
         const val CHECKPOINT_INDEX_NAME: String = "id"
 
+        const val AIRBYTE_META_SYNC_ID = "sync_id"
+        const val AIRBYTE_META_CHANGES = "changes"
+
         const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
         const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
         const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
@@ -289,8 +292,8 @@ data class EnrichedDestinationRecordAirbyteValue(
             EnrichedAirbyteValue(
                 ObjectValue(
                     linkedMapOf(
-                        "sync_id" to IntegerValue(stream.syncId),
-                        "changes" to
+                        Meta.AIRBYTE_META_SYNC_ID to IntegerValue(stream.syncId),
+                        Meta.AIRBYTE_META_CHANGES to
                             ArrayValue(
                                 (sourceMeta.changes.toAirbyteValues()) +
                                     declaredFields
@@ -473,15 +476,20 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream.Descriptor,
+        val unmappedNamespace: String?,
+        val unmappedName: String,
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
-                if (state != null) {
-                    it.streamState = state
+            AirbyteStreamState()
+                .withStreamDescriptor(
+                    StreamDescriptor().withNamespace(unmappedNamespace).withName(unmappedName)
+                )
+                .also {
+                    if (state != null) {
+                        it.streamState = state
+                    }
                 }
-            }
     }
 
     val checkpointKey: CheckpointKey?
@@ -533,8 +541,8 @@ data class StreamCheckpoint(
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        unmappedNamespace: String?,
+        unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -543,7 +551,8 @@ data class StreamCheckpoint(
         totalBytes: Long? = null
     ) : this(
         Checkpoint(
-            DestinationStream.Descriptor(streamNamespace, streamName),
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
