@@ -63,6 +63,8 @@ class GcsS3Client(
 
     override suspend fun delete(key: String) = s3Client.delete(key)
 
+    override suspend fun delete(keys: Set<String>) = s3Client.delete(keys)
+
     override suspend fun startStreamingUpload(
         key: String,
         metadata: Map<String, String>
@@ -152,6 +154,11 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
 
     override suspend fun delete(remoteObject: GcsBlob) {
         delete(remoteObject.key)
+    }
+
+    override suspend fun delete(keys: Set<String>) {
+        val blobIds = keys.map { key -> BlobId.of(config.gcsBucketName, key) }.toTypedArray()
+        storage.delete(*blobIds)
     }
 
     override suspend fun move(remoteObject: GcsBlob, toKey: String): GcsBlob {

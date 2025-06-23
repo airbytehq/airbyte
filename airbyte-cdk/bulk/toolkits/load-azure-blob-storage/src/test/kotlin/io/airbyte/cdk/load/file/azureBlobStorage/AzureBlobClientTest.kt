@@ -302,6 +302,18 @@ class AzureBlobClientTest {
     }
 
     @Test
+    fun `delete by keys - deletes blobs successfully`() = runBlocking {
+        val keys = setOf("deleteBlob1", "deleteBlob2")
+        val blobClient = mockk<BlobClient>()
+
+        every { containerClient.getBlobClient(any()) } returns blobClient
+        every { blobClient.delete() } just runs
+
+        azureBlobClient.delete(keys)
+        verify(exactly = 2) { blobClient.delete() }
+    }
+
+    @Test
     fun `delete by key - ignore 404 not found`() = runBlocking {
         val key = "deleteKey"
         val blobClient = mockk<BlobClient>()

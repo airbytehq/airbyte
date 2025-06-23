@@ -8,6 +8,7 @@ import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.ListBlobsOptions
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -29,6 +30,7 @@ data class AzureBlob(
     override val storageConfig: AzureBlobStorageClientConfiguration
 ) : RemoteObject<AzureBlobStorageClientConfiguration>
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class AzureBlobClient(
     private val serviceClient: BlobServiceClient,
     private val blobConfig: AzureBlobStorageClientConfiguration
@@ -125,6 +127,11 @@ class AzureBlobClient(
                 throw e
             }
         }
+    }
+
+    override suspend fun delete(keys: Set<String>) {
+        // TODO use actual bulk delete operation
+        keys.forEach { key -> delete(key = key) }
     }
 
     override suspend fun startStreamingUpload(
