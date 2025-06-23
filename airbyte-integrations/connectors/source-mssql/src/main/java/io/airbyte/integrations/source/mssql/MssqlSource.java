@@ -428,31 +428,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
 
         if (excludeTodaysData) {
-          LOGGER.info("Excluding Today's Date for incremental streams with temporal cursors");
-          final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = cursorBasedStateManager.getPairToCursorInfoMap();
-          pairToCursorInfoMap.forEach((pair, cursorInfo) -> {
-            final var tableInfo = tableNameToTable.get("%s.%s".formatted(pair.getNamespace(), pair.getName())); // TODO: no namespace
-            final var maybeField = tableInfo.getFields().stream().filter(f -> f.getName().equals(cursorInfo.getCursorField()))
-                .findFirst();
-            maybeField.ifPresent(f -> {
-              LOGGER.info("Setting cutoff time for stream {} with cursor field {} ({}) to exclude today's data", pair, f.getName(), f.getType());
-              switch (f.getType()) {
-                case JDBCType.DATE -> {
-                  final var instant = Instant.now().minus(1, ChronoUnit.DAYS).atOffset(ZoneOffset.UTC);
-                  cursorInfo.setCutoffTime(ISO_LOCAL_DATE.format(instant));
-                }
-                case JDBCType.TIMESTAMP -> {
-                  final var instant = Instant.now().atOffset(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
-                  cursorInfo.setCutoffTime(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(instant));
-                }
-                case JDBCType.TIMESTAMP_WITH_TIMEZONE -> {
-                  final var instant = Instant.now().atOffset(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
-                  cursorInfo.setCutoffTime(TIMESTAMPTZ_FORMATTER.format(instant));
-                }
-              }
-              LOGGER.info("Set cutoff time for stream {} with cursor field {} to {}", pair, f.getName(), cursorInfo.getCutoffTime());
-            });
-          });
+          setCutoffCursorTime(tableNameToTable, cursorBasedStateManager.getPairToCursorInfoMap());
         }
 
         final InitialLoadStreams initialLoadStreams =
@@ -490,6 +466,42 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     LOGGER.info("using CDC: {}", false);
     return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt, excludeTodaysData);
+  }
+
+  private static void setCutoffCursorTime(@NotNull Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                          @NotNull Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+    LOGGER.info("Excluding Today's Date for incremental streams with temporal cursors");
+    pairToCursorInfoMap.forEach((pair, cursorInfo) -> {
+      final TableInfo<CommonField<JDBCType>> tableInfo = tableNameToTable.get(pair.toString());
+      final Optional<CommonField<JDBCType>> maybeCursorField =
+          tableInfo.getFields().stream().filter(f -> f.getName().equals(cursorInfo.getCursorField()))
+              .findFirst();
+      maybeCursorField.ifPresent(f -> {
+        LOGGER.info("Setting cutoff time for stream {} with cursor field {} ({}) to exclude today's data", pair, f.getName(), f.getType());
+        setCursorCutoffInfoForValue(cursorInfo, f, Instant.now());
+        LOGGER.info("Set cutoff time for stream {} with cursor field {} to {}", pair, f.getName(), cursorInfo.getCutoffTime());
+      });
+    });
+  }
+
+  @VisibleForTesting
+  static void setCursorCutoffInfoForValue(CursorInfo cursorInfo, @NotNull CommonField<JDBCType> f, Instant nowInstant) {
+    switch (f.getType()) {
+      case JDBCType.DATE -> {
+        final var instant = nowInstant.minus(1, ChronoUnit.DAYS).atOffset(ZoneOffset.UTC);
+        cursorInfo.setCutoffTime(ISO_LOCAL_DATE.format(instant));
+      }
+      case JDBCType.TIMESTAMP -> {
+        final var instant = nowInstant.atOffset(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+        cursorInfo.setCutoffTime(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(instant));
+      }
+      case JDBCType.TIMESTAMP_WITH_TIMEZONE -> {
+        final var instant = nowInstant.atOffset(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+        cursorInfo.setCutoffTime(TIMESTAMPTZ_FORMATTER.format(instant));
+      }
+      default -> LOGGER.warn("Only temporal cursors can exclude today's data. Cursor {} of JDBC type {} cannot exclude today's data", f.getName(),
+          f.getType());
+    }
   }
 
   @Override
