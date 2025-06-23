@@ -6,7 +6,9 @@ package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobServiceClient
+import com.azure.storage.blob.batch.BlobBatchClientBuilder
 import com.azure.storage.blob.models.BlobStorageException
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.azure.storage.blob.models.ListBlobsOptions
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
@@ -130,8 +132,15 @@ class AzureBlobClient(
     }
 
     override suspend fun delete(keys: Set<String>) {
-        // TODO use actual bulk delete operation
-        keys.forEach { key -> delete(key = key) }
+        val batchClient = BlobBatchClientBuilder(serviceClient).buildClient()
+        val blobUrls =
+            keys.map { key ->
+                serviceClient
+                    .getBlobContainerClient(blobConfig.containerName)
+                    .getBlobClient(key)
+                    .blobUrl
+            }
+        batchClient.deleteBlobs(blobUrls, DeleteSnapshotsOptionType.INCLUDE)
     }
 
     override suspend fun startStreamingUpload(
