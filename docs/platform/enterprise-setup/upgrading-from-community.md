@@ -2,6 +2,9 @@
 products: oss-enterprise
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Existing Instance Upgrades
 
 This page supplements the [Self-Managed Enterprise implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte Self-Managed Community, our free open source offering, and are ready to upgrade to [Airbyte Self-Managed Enterprise](./README.md).
@@ -33,14 +36,33 @@ Update your `values.yaml` file as explained in the [Self-Managed Enterprise impl
 
 1. You can now run the following command to upgrade your instance to Self-Managed Enterprise. If you previously included additional `values` files on your existing deployment, be sure to add these here as well:
 
-```sh
-helm upgrade \
---namespace airbyte \
---values ./values.yaml \
---install [RELEASE_NAME] \
---version [RELEASE_VERSION] \
-airbyte/airbyte
-```
+    <Tabs groupId="helm-chart-version">
+    <TabItem value='helm-1' label='Helm chart V1' default>
+
+    ```bash
+    helm upgrade \
+    --namespace airbyte \
+    --values ./values.yaml \
+    --install [RELEASE_NAME] \
+    --version [RELEASE_VERSION] \
+    airbyte/airbyte
+    ```
+
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
+
+    ```bash
+    helm upgrade -i \
+    --namespace airbyte \
+    --values ./values.yaml \
+    airbyte \
+    airbyte-v2/airbyte \
+    --version 2.0.3 \
+    --set global.image.tag=1.7.0
+    ```
+
+    </TabItem>
+    </Tabs>
 
 2. Once this is complete, you will need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
 
