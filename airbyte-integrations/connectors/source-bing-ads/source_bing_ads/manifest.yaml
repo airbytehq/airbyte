@@ -3138,7 +3138,7 @@ dynamic_streams:
             schema_loader:
               type: InlineSchemaLoader
               schema:
-                $ref: "#/schemas/goals_and_funnels_report"
+                $ref: "#/schemas/goals_and_funnels_report_hourly"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
             transformations:
