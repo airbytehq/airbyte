@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -46,6 +47,7 @@ abstract class IcebergWriteTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
         micronautProperties = micronautProperties,
         isStreamSchemaRetroactive = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
         dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
@@ -84,12 +86,14 @@ abstract class IcebergWriteTest(
         Assumptions.assumeTrue(verifyDataWriting)
         fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Append,
                 ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
+                namespaceMapper = NamespaceMapper()
             )
         val firstStream =
             makeStream(
@@ -154,12 +158,14 @@ abstract class IcebergWriteTest(
     open fun testDedupNullPk() {
         val stream =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
                 ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 12,
+                namespaceMapper = NamespaceMapper()
             )
         val failure = expectFailure {
             runSync(

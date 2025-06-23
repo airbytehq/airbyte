@@ -1,0 +1,10 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-s3')
+
+    testFixturesApi("io.micronaut.test:micronaut-test-core:4.5.0")
+    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.5.0")
+    testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage")))
+}

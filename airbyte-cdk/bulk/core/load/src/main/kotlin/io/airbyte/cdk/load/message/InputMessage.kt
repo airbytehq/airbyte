@@ -96,10 +96,10 @@ data class InputRecord(
     override fun asProtobuf(): AirbyteMessageProtobuf {
         val recordBuilder =
             AirbyteRecordMessageProtobuf.newBuilder()
-                .setStreamName(stream.descriptor.name)
+                .setStreamName(stream.unmappedName)
                 .setEmittedAtMs(emittedAtMs)
         checkpointId?.let { recordBuilder.setPartitionId(it.value) }
-        stream.descriptor.namespace?.let { recordBuilder.setStreamNamespace(it) }
+        stream.unmappedNamespace?.let { recordBuilder.setStreamNamespace(it) }
         meta?.let { meta ->
             recordBuilder.setMeta(
                 AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
@@ -149,8 +149,8 @@ data class InputRecord(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withStream(stream.descriptor.name)
-                    .withNamespace(stream.descriptor.namespace)
+                    .withStream(stream.unmappedName)
+                    .withNamespace(stream.unmappedNamespace)
                     .withEmittedAt(emittedAtMs)
                     .withData(data.toJson())
                     .also {
@@ -188,8 +188,8 @@ sealed interface InputCheckpoint : InputMessage
 
 data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckpoint {
     constructor(
-        streamNamespace: String?,
-        streamName: String,
+        unmappedNamespace: String?,
+        unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -197,7 +197,8 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
     ) : this(
         StreamCheckpoint(
             Checkpoint(
-                DestinationStream.Descriptor(streamNamespace, streamName),
+                unmappedNamespace = unmappedNamespace,
+                unmappedName = unmappedName,
                 state = blob.deserializeToNode()
             ),
             Stats(sourceRecordCount),
@@ -212,7 +213,8 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
 
 data class InputGlobalCheckpoint(
     val sharedState: JsonNode?,
-    val checkpointKey: CheckpointKey? = null
+    val checkpointKey: CheckpointKey? = null,
+    val streamStates: List<Checkpoint> = emptyList(),
 ) : InputCheckpoint {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
@@ -220,7 +222,11 @@ data class InputGlobalCheckpoint(
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(AirbyteGlobalState().withSharedState(sharedState))
+                    .withGlobal(
+                        AirbyteGlobalState()
+                            .withSharedState(sharedState)
+                            .withStreamStates(streamStates.map { it.asProtocolObject() })
+                    )
                     .also {
                         if (checkpointKey != null) {
                             it.additionalProperties["partition_id"] =

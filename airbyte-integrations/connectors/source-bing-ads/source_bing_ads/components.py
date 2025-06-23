@@ -1,6 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
-
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -245,6 +245,26 @@ class BingAdsCampaignsRecordTransformer(RecordTransformation):
                 # If conversion fails, return original value
                 return value
         return value
+
+
+@dataclass
+class BulkDatetimeToRFC3339(RecordTransformation):
+    """
+    Bing Ads Bulk API provides datetime fields in custom format with milliseconds: "04/27/2023 18:00:14.970"
+    Return datetime in RFC3339 format: "2023-04-27T18:00:14.970+00:00"
+    """
+
+    def transform(
+        self,
+        record: MutableMapping[str, Any],
+        config: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        original_value = record["Modified Time"]
+        record["Modified Time"] = (
+            datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
+        )
 
 
 @dataclass

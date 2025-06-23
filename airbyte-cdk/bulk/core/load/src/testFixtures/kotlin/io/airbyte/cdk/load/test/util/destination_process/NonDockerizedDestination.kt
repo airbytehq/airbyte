@@ -12,10 +12,12 @@ import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.file.ServerSocketWriterOutputStream
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.NUM_SOCKETS
 import io.airbyte.cdk.load.test.util.rotate
+import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -24,8 +26,10 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import java.nio.file.Files
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.io.path.outputStream
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -46,6 +50,7 @@ class NonDockerizedDestination(
     injectInputStream: Boolean,
     override val dataChannelMedium: DataChannelMedium,
     val dataChannelFormat: DataChannelFormat,
+    val namespaceMappingConfig: NamespaceMappingConfig,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationDataChannels: Array<OutputStream>
@@ -55,10 +60,12 @@ class NonDockerizedDestination(
     // The destination has a runBlocking inside WriteOperation.
     // This means that normal coroutine cancellation doesn't work.
     // So we start our own thread pool, which we can forcibly kill if needed.
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = Executors.newFixedThreadPool(4)
     private val coroutineDispatcher = executor.asCoroutineDispatcher()
     private val file = File("/tmp/test_file")
     private val writeLock = Mutex()
+    private val namespaceMappingConfigPath =
+        Files.createTempFile("namespace_mapping_config", ".json")
 
     init {
         if (useFileTransfer) {
@@ -90,11 +97,16 @@ class NonDockerizedDestination(
                             ServerSocketWriterOutputStream(socketFile.path.toString())
                         }
                     destinationDataChannels = socketWriters.toTypedArray()
+                    namespaceMappingConfigPath.outputStream().use { outputStream ->
+                        outputStream.write(namespaceMappingConfig.serializeToJsonBytes())
+                    }
                     mapOf(
                         EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.SOCKET.toString(),
                         EnvVarConstants.DATA_CHANNEL_FORMAT to dataChannelFormat.toString(),
                         EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS to
-                            socketWriters.joinToString(",") { it.socketPath }
+                            socketWriters.joinToString(",") { it.socketPath },
+                        EnvVarConstants.NAMESPACE_MAPPER_CONFIG_PATH to
+                            namespaceMappingConfigPath.toString()
                     )
                 }
             }
@@ -130,8 +142,9 @@ class NonDockerizedDestination(
                             destination.results.traces(),
                             destination.results.states(),
                         )
+                    } finally {
+                        destinationComplete.complete(Unit)
                     }
-                    destinationComplete.complete(Unit)
                 }
             }
             .invokeOnCompletion { executor.shutdownNow() }
@@ -194,6 +207,7 @@ class NonDockerizedDestinationFactory(
         micronautProperties: Map<Property, String>,
         dataChannelMedium: DataChannelMedium,
         dataChannelFormat: DataChannelFormat,
+        namespaceMappingConfig: NamespaceMappingConfig,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
@@ -207,6 +221,7 @@ class NonDockerizedDestinationFactory(
             injectInputStream = injectInputStream,
             dataChannelMedium = dataChannelMedium,
             dataChannelFormat = dataChannelFormat,
+            namespaceMappingConfig = namespaceMappingConfig,
             *featureFlags
         )
     }

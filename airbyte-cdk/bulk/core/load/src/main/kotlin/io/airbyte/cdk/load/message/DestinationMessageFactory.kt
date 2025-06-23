@@ -4,12 +4,14 @@
 
 package io.airbyte.cdk.load.message
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.micronaut.context.annotation.Value
@@ -22,7 +24,9 @@ class DestinationMessageFactory(
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    private val namespaceMapper: NamespaceMapper,
+    private val uuidGenerator: UUIDGenerator,
 ) {
 
     fun fromAirbyteProtocolMessage(
@@ -46,11 +50,12 @@ class DestinationMessageFactory(
 
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
-                val stream =
-                    catalog.getStream(
+                val descriptor =
+                    namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream,
+                        name = message.record.stream
                     )
+                val stream = catalog.getStream(descriptor)
                 if (fileTransferEnabled) {
                     try {
                         @Suppress("UNCHECKED_CAST")
@@ -91,10 +96,11 @@ class DestinationMessageFactory(
                             null
                         }
                     DestinationRecord(
-                        stream,
-                        DestinationRecordJsonSource(message),
-                        serializedSizeBytes,
-                        checkpointId
+                        stream = stream,
+                        message = DestinationRecordJsonSource(message),
+                        serializedSizeBytes = serializedSizeBytes,
+                        checkpointId = checkpointId,
+                        airbyteRawId = uuidGenerator.v7(),
                     )
                 }
             }
@@ -104,11 +110,12 @@ class DestinationMessageFactory(
                     message.trace.type == null ||
                         message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
                 ) {
-                    val stream =
-                        catalog.getStream(
+                    val descriptor =
+                        namespaceMapper.map(
                             namespace = status.streamDescriptor.namespace,
                             name = status.streamDescriptor.name,
                         )
+                    val stream = catalog.getStream(descriptor)
                     when (status.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE ->
                             if (fileTransferEnabled) {
@@ -123,17 +130,9 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            }
+                            throw ConfigErrorException(
+                                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
+                            )
                         else -> Undefined
                     }
                 } else {
@@ -204,9 +203,23 @@ class DestinationMessageFactory(
     private fun fromAirbyteStreamState(
         streamState: AirbyteStreamState
     ): CheckpointMessage.Checkpoint {
-        val descriptor = streamState.streamDescriptor
+        val descriptor =
+            namespaceMapper.map(
+                namespace = streamState.streamDescriptor.namespace,
+                name = streamState.streamDescriptor.name,
+            )
+
+        val (unmappedNamespace: String?, unmappedName: String) =
+            try {
+                val stream = catalog.getStream(descriptor)
+                stream.unmappedNamespace to stream.unmappedName
+            } catch (e: Exception) {
+                streamState.streamDescriptor.namespace to streamState.streamDescriptor.name
+            }
+
         return CheckpointMessage.Checkpoint(
-            stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = runCatching { streamState.streamState }.getOrNull(),
         )
     }
@@ -221,20 +234,23 @@ class DestinationMessageFactory(
                 Jsons.readValue(message.airbyteProtocolMessage, AirbyteMessage::class.java)
             fromAirbyteProtocolMessage(airbyteMessage, serializedSizeBytes)
         } else if (message.hasRecord()) {
-            val stream =
-                catalog.getStream(
-                    message.record.streamName,
-                    if (message.record.hasStreamNamespace()) {
-                        message.record.streamNamespace // defaults to "", not null
-                    } else {
-                        null
-                    }
+            val descriptor =
+                namespaceMapper.map(
+                    namespace =
+                        if (message.record.hasStreamNamespace()) {
+                            message.record.streamNamespace // defaults to "", not null
+                        } else {
+                            null
+                        },
+                    name = message.record.streamName
                 )
+            val stream = catalog.getStream(descriptor)
             DestinationRecord(
-                stream,
-                DestinationRecordProtobufSource(message),
-                serializedSizeBytes,
-                CheckpointId(message.record.partitionId)
+                stream = stream,
+                message = DestinationRecordProtobufSource(message),
+                serializedSizeBytes = serializedSizeBytes,
+                checkpointId = CheckpointId(message.record.partitionId),
+                airbyteRawId = uuidGenerator.v7(),
             )
         } else if (message.hasProbe()) {
             ProbeMessage

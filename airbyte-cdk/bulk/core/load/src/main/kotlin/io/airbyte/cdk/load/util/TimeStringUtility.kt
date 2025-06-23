@@ -4,7 +4,8 @@
 
 package io.airbyte.cdk.load.util
 
-import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.AirbyteValueCoercer.DATE_TIME_FORMATTER
+import io.airbyte.cdk.load.data.AirbyteValueCoercer.TIME_FORMATTER
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -17,11 +18,11 @@ import java.time.ZonedDateTime
 object TimeStringUtility {
 
     fun toLocalDate(dateString: String): LocalDate {
-        return LocalDate.parse(dateString, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
+        return LocalDate.parse(dateString, DATE_TIME_FORMATTER)
     }
 
     fun toLocalDateTime(dateString: String): LocalDateTime {
-        return LocalDateTime.parse(dateString, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
+        return LocalDateTime.parse(dateString, DATE_TIME_FORMATTER)
     }
 
     fun toOffset(timeString: String): LocalTime {
@@ -33,12 +34,11 @@ object TimeStringUtility {
     }
 
     private fun toMicrosOfDayWithTimezone(timeString: String): LocalTime {
-        return OffsetTime.parse(timeString, AirbyteValueDeepCoercingMapper.TIME_FORMATTER)
-            .toLocalTime()
+        return OffsetTime.parse(timeString, TIME_FORMATTER).toLocalTime()
     }
 
     private fun toMicrosOfDayWithoutTimezone(timeString: String): LocalTime {
-        return LocalTime.parse(timeString, AirbyteValueDeepCoercingMapper.TIME_FORMATTER)
+        return LocalTime.parse(timeString, TIME_FORMATTER)
     }
 
     fun toOffsetDateTime(timestampString: String): OffsetDateTime {
@@ -50,18 +50,10 @@ object TimeStringUtility {
     }
 
     private fun toOffsetDateTimeWithTimezone(timestampString: String): OffsetDateTime {
-        return ZonedDateTime.parse(
-                timestampString,
-                AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER
-            )
-            .toOffsetDateTime()
+        return ZonedDateTime.parse(timestampString, DATE_TIME_FORMATTER).toOffsetDateTime()
     }
 
     private fun toOffsetDateTimeWithoutTimezone(timestampString: String): OffsetDateTime {
-        return LocalDateTime.parse(
-                timestampString,
-                AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER
-            )
-            .atOffset(ZoneOffset.UTC)
+        return LocalDateTime.parse(timestampString, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
     }
 }

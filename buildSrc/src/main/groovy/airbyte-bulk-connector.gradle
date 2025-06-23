@@ -52,7 +52,11 @@ class AirbyteBulkConnectorExtension {
                     project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
             ]
             for (toolkit in toolkits) {
-                fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+                if (toolkit.contains(':')) {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit"
+                } else {
+                    fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+                }
             }
         } else {
             fromJar = [
@@ -60,7 +64,11 @@ class AirbyteBulkConnectorExtension {
                     "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
             ]
             for (toolkit in toolkits) {
-                fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+                if (toolkit.contains(':')) {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit"
+                } else {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+                }
             }
         }
 

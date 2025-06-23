@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -65,12 +66,14 @@ class SingleStreamInsert(
             }
 
         DestinationStream(
-            descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+            unmappedNamespace = randomizedNamespace,
+            unmappedName = streamName,
             importType = importType,
             schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
             generationId = generationId,
             minimumGenerationId = minGenerationId,
             syncId = 1,
+            namespaceMapper = NamespaceMapper()
         )
     }
 
@@ -174,27 +177,30 @@ class SingleStreamFileTransfer(
 ) : PerformanceTestScenario {
     private val log = KotlinLogging.logger {}
 
-    private val descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName)
     private val stream =
         DestinationStream(
-            descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+            unmappedNamespace = randomizedNamespace,
+            unmappedName = streamName,
             importType = Append,
             schema = ObjectType(linkedMapOf()),
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
+            namespaceMapper = NamespaceMapper()
         )
 
     override val catalog: DestinationCatalog =
         DestinationCatalog(
             listOf(
                 DestinationStream(
-                    descriptor = descriptor,
+                    unmappedNamespace = randomizedNamespace,
+                    unmappedName = streamName,
                     importType = Append,
                     schema = ObjectTypeWithoutSchema,
                     generationId = 1,
                     minimumGenerationId = 1,
-                    syncId = 101
+                    syncId = 101,
+                    namespaceMapper = NamespaceMapper(),
                 )
             )
         )
@@ -252,29 +258,32 @@ class SingleStreamFileAndMetadataTransfer(
 ) : PerformanceTestScenario {
     private val log = KotlinLogging.logger {}
 
-    private val descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName)
     private val stream =
         DestinationStream(
-            descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+            unmappedNamespace = randomizedNamespace,
+            unmappedName = streamName,
             importType = Append,
             schema = ObjectType(linkedMapOf()),
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
             includeFiles = true,
+            namespaceMapper = NamespaceMapper()
         )
 
     override val catalog: DestinationCatalog =
         DestinationCatalog(
             listOf(
                 DestinationStream(
-                    descriptor = descriptor,
+                    unmappedNamespace = randomizedNamespace,
+                    unmappedName = streamName,
                     importType = Append,
                     schema = ObjectTypeWithoutSchema,
                     generationId = 1,
                     minimumGenerationId = 1,
                     syncId = 101,
                     includeFiles = true,
+                    namespaceMapper = NamespaceMapper()
                 )
             )
         )
@@ -372,13 +381,14 @@ class MultiStreamInsert(
 
         (0 until numStreams).map {
             DestinationStream(
-                descriptor =
-                    DestinationStream.Descriptor(randomizedNamespace, "${streamNamePrefix}__$it"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "${streamNamePrefix}__$it",
                 importType = importType,
                 schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
                 generationId = generationId,
                 minimumGenerationId = minGenerationId,
                 syncId = 1,
+                namespaceMapper = NamespaceMapper()
             )
         }
     }

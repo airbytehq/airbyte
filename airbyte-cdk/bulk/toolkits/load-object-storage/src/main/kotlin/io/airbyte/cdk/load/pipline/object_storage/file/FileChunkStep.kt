@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.factory.object_storage.IsFileTransferCondition
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -17,10 +18,12 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartParti
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
+@Requires(condition = IsFileTransferCondition::class)
 class FileChunkStep<T : RemoteObject<*>>(
     private val catalog: DestinationCatalog,
     private val fileLoader: ObjectLoader,
@@ -30,6 +33,7 @@ class FileChunkStep<T : RemoteObject<*>>(
     private val partQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     private val pathFactory: ObjectStoragePathFactory,
+    private val uploadIdGenerator: UploadIdGenerator,
 ) : LoadPipelineStep {
     override val numWorkers: Int = 1
 
@@ -39,7 +43,7 @@ class FileChunkStep<T : RemoteObject<*>>(
             catalog,
             pathFactory,
             FileHandleFactory(),
-            UploadIdGenerator(),
+            uploadIdGenerator,
             inputQueue,
             partQueue,
             ObjectLoaderFormattedPartPartitioner(),

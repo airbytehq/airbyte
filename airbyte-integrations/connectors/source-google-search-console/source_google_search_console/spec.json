@@ -157,6 +157,22 @@
         "examples": ["final", "all"],
         "default": "final",
         "order": 6
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 100,
+        "default": 40,
+        "examples": [30, 40, 50],
+        "description": "The number of worker threads to use for the sync. For more details on Google Search Console rate limits, refer to the <a href=\"https://developers.google.com/webmaster-tools/limits\">docs</a>."
+      },
+      "always_use_aggregation_type_auto": {
+        "type": "boolean",
+        "title": "Always Use Aggregation Type Auto",
+        "description": "Some search analytics streams fail with a 400 error if the specified `aggregationType` is not supported. This is customer implementation dependent and if this error is encountered, enable this setting which will override the existing `aggregationType` to use `auto` which should resolve the stream errors.",
+        "default": false,
+        "order": 7
       }
     }
   },
