@@ -7,8 +7,12 @@ package io.airbyte.integrations.destination.clickhouse_v2.model
 data class AlterationSummary(
     val added: Map<String, String>,
     val modified: Map<String, String>, // old type -> new type
-    val deleted: Set<String>
+    val deleted: Set<String>,
+    val hasDedupChange: Boolean,
 )
-
-fun AlterationSummary.isEmpty(): Boolean =
-    added.isEmpty() && modified.isEmpty() && deleted.isEmpty()
+/**
+ * This indicates if any changes were made to the table, excluding PK changes It indicates that we
+ * need to run an alter statement.
+ */
+fun AlterationSummary.hasApplicableAlterations(): Boolean =
+    !(added.isEmpty() && modified.isEmpty() && deleted.isEmpty())

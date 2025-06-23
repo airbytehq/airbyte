@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
@@ -207,10 +206,20 @@ class DestinationMessageFactory(
         val descriptor =
             namespaceMapper.map(
                 namespace = streamState.streamDescriptor.namespace,
-                name = streamState.streamDescriptor.name
+                name = streamState.streamDescriptor.name,
             )
+
+        val (unmappedNamespace: String?, unmappedName: String) =
+            try {
+                val stream = catalog.getStream(descriptor)
+                stream.unmappedNamespace to stream.unmappedName
+            } catch (e: Exception) {
+                streamState.streamDescriptor.namespace to streamState.streamDescriptor.name
+            }
+
         return CheckpointMessage.Checkpoint(
-            stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = runCatching { streamState.streamState }.getOrNull(),
         )
     }
