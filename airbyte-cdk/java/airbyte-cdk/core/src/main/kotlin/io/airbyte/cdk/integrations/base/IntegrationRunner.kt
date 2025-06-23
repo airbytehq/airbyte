@@ -72,6 +72,9 @@ internal constructor(
     ) : this(
         IntegrationCliParser(),
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
+            if (message.type == AirbyteMessage.Type.TRACE) {
+                LOGGER.info { "Emitting trace message: $message" }
+            }
             Destination.Companion.defaultOutputRecordCollector(message)
         },
         null,
