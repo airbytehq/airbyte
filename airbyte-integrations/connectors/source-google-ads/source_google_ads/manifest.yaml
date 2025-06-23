@@ -187,6 +187,7 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
+        schema_normalization: Default
       partition_router:
         type: GroupingPartitionRouter
         group_size: 1
@@ -240,6 +241,18 @@ definitions:
         key_transformation:
           type: KeyTransformation
           prefix: "campaign_budget."
+      - type: AddFields
+        fields:
+          - path: [ "metrics.interaction_event_types" ]
+            value: >-
+              {{ record['metrics.interaction_event_types']
+                 | map('replace','UNSPECIFIED','0')
+                 | map('replace','UNKNOWN','1')
+                 | map('replace','CLICK','2')
+                 | map('replace','ENGAGEMENT','3')
+                 | map('replace','VIDEO_VIEW','4')
+                 | map('replace','NONE','5')
+                 | list }}
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
@@ -253,6 +266,9 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('end_date', today_utc()) }}"
         datetime_format: "%Y-%m-%d"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
