@@ -96,10 +96,11 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
+                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
-                    error_message="Git Repository is empty.",
+                    error_message=log_message,
                 )
 
         return super().interpret_response(response_or_exception)
