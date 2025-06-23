@@ -472,7 +472,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                           @NotNull Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     LOGGER.info("Excluding Today's Date for incremental streams with temporal cursors");
     pairToCursorInfoMap.forEach((pair, cursorInfo) -> {
-      final TableInfo<CommonField<JDBCType>> tableInfo = tableNameToTable.get(pair.toString());
+      final TableInfo<CommonField<JDBCType>> tableInfo = tableNameToTable.get("%s.%s".formatted(pair.getNamespace(), pair.getName()));
       final Optional<CommonField<JDBCType>> maybeCursorField =
           tableInfo.getFields().stream().filter(f -> f.getName().equals(cursorInfo.getCursorField()))
               .findFirst();
@@ -724,7 +724,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
     }
-    return false;
+    return /*false*/ true;
   }
 
 }
