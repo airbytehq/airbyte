@@ -724,7 +724,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
     }
-    return /*false*/ true;
+    return false;
   }
 
 }
