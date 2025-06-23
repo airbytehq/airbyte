@@ -26,6 +26,7 @@ from . import constants
 from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
 from .errors_handlers import (
     GITHUB_DEFAULT_ERROR_MAPPING,
+    CommitsErrorHandler,
     ContributorActivityErrorHandler,
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
@@ -666,6 +667,11 @@ class Commits(IncrementalMixin, GithubStream):
         self.branches_to_pull = set(branches_to_pull)
         self.branches_stream = Branches(**kwargs)
         self.repositories_stream = RepositoryStats(**kwargs)
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return CommitsErrorHandler(
+            logger=self.logger, max_retries=self.max_retries, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING, stream=self
+        )
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)

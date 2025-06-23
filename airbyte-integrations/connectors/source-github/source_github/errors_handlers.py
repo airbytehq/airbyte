@@ -87,14 +87,6 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     failure_type=FailureType.transient_error,
                     error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
-            if response_or_exception.status_code == 409:
-                response_data = response_or_exception.json()
-                if response_data.get("message") == "Git Repository is empty.":
-                    return ErrorResolution(
-                        response_action=ResponseAction.IGNORE,
-                        failure_type=FailureType.config_error,
-                        error_message="Git Repository is empty.",
-                    )
 
         return super().interpret_response(response_or_exception)
 
@@ -141,5 +133,20 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                     failure_type=FailureType.transient_error,
                     error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
+
+        return super().interpret_response(response_or_exception)
+
+
+class CommitsErrorHandler(GithubStreamABCErrorHandler):
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response):
+            if response_or_exception.status_code == requests.codes.CONFLICT:
+                response_data = response_or_exception.json()
+                if response_data.get("message") == "Git Repository is empty.":
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=FailureType.config_error,
+                        error_message="Git Repository is empty.",
+                    )
 
         return super().interpret_response(response_or_exception)
