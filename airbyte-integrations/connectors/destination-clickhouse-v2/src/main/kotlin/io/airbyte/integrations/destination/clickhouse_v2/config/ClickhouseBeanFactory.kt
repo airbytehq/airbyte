@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.clickhouse_v2.config
 
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.write.db.DbConstants.DEFAULT_INTERNAL_NAMESPACE
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
@@ -21,11 +23,19 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun clickhouseClient(config: ClickhouseConfiguration): Client {
+        // We don't set the default database here because the client expects that database
+        // to already exist during instantiation. If we instantiate the client with a default
+        // database that does not exist, it will hard fail.
+
+        // In order to solve this chicken-and-egg problem, we avoid setting the default db on the
+        // client.
+        // Instead, we resolve the default database in the ClickhouseConfiguration, which is used
+        // for table creation when the stream descriptor does not specificy a namespace directly.
         return Client.Builder()
             .addEndpoint(config.endpoint)
             .setUsername(config.username)
             .setPassword(config.password)
-            .setDefaultDatabase(config.resolvedDatabase)
+            .compressClientRequest(true)
             .build()
     }
 
@@ -38,4 +48,9 @@ class ClickhouseBeanFactory {
 
         return configFactory.makeWithoutExceptionHandling(spec)
     }
+
+    @Singleton
+    fun tempTableNameGenerator(
+        @Named("internalNamespace") namespace: String,
+    ): TempTableNameGenerator = DefaultTempTableNameGenerator(namespace)
 }

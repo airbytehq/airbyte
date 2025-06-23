@@ -182,6 +182,9 @@ enum class UnionBehavior {
      * option, no validation is performed.
      */
     STRINGIFY,
+
+    /** Union fields are written as strings, no validation is performed */
+    STRICT_STRINGIFY,
 }
 
 enum class UnknownTypesBehavior {
@@ -285,6 +288,11 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     /**
+     * Some destination connectors commit data incrementally, but only when the stream is an append
+     * one. When the running a schema change, the behavior might be different than append.
+     */
+    val commitDataIncrementallyOnAppend: Boolean = commitDataIncrementally,
+    /**
      * The same concept as [commitDataIncrementally], but specifically describes how the connector
      * behaves when the destination contains no data at the start of the sync. Some destinations
      * commit incrementally during such an "initial" truncate refresh, then switch to committing
@@ -292,11 +300,15 @@ abstract class BasicFunctionalityIntegrationTest(
      *
      * (warehouse destinations with direct-load tables should set this to true).
      */
-    val commitDataIncrementallyToEmptyDestination: Boolean = commitDataIncrementally,
+    val commitDataIncrementallyToEmptyDestination: Boolean =
+        commitDataIncrementally || commitDataIncrementallyOnAppend,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     // If it simply isn't possible to represent a mismatched type on the wire (ie, protobuf).
     val mismatchedTypesUnrepresentable: Boolean = false,
+    // When changing a column to a PK, some destination set the column to a default value.
+    // This flag is addressing this behavior.
+    val dedupChangeUsesDefault: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     // Which medium to use as your input source for the test
@@ -355,7 +367,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -374,7 +387,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 val asProtocolMessage =
                     StreamCheckpoint(
-                            stream = stream,
+                            unmappedName = stream.unmappedName,
+                            unmappedNamespace = stream.unmappedNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             destinationRecordCount = 1,
@@ -478,7 +492,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     input,
                     InputStreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium(),
@@ -496,7 +511,8 @@ abstract class BasicFunctionalityIntegrationTest(
             )
             assertEquals(
                 StreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
@@ -533,7 +549,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespaceMapper = namespaceMapperForMedium()
                 )
             val stateMessage =
-                runSyncUntilStateAck(
+                runSyncUntilStateAckAndExpectFailure(
                     this@BasicFunctionalityIntegrationTest.updatedConfig,
                     stream,
                     listOf(
@@ -545,12 +561,13 @@ abstract class BasicFunctionalityIntegrationTest(
                         )
                     ),
                     StreamCheckpoint(
-                        stream = stream,
+                        unmappedName = stream.unmappedName,
+                        unmappedNamespace = stream.unmappedNamespace,
                         blob = """{"foo": "bar1"}""",
                         sourceRecordCount = 1,
                         checkpointKey = checkpointKeyForMedium()
                     ),
-                    allowGracefulShutdown = false,
+                    syncEndBehavior = UncleanSyncEndBehavior.KILL,
                 )
             runSync(this@BasicFunctionalityIntegrationTest.updatedConfig, stream, emptyList())
 
@@ -736,6 +753,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("stream_name_with_operator+1"),
                     makeStream("stream_name_with_numbers_123"),
                     makeStream("1stream_with_a_leading_number"),
+                    makeStream("c'est une belle histoire,./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-="),
                     makeStream(
                         "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
@@ -923,21 +941,26 @@ abstract class BasicFunctionalityIntegrationTest(
         val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
         // start a truncate refresh, but emit INCOMPLETE.
         // This should retain the existing data, and maybe insert the new record.
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                updatedConfig,
-                finalStream,
-                listOf(
-                    InputRecord(
-                        stream = stream,
-                        """{"id": 42, "name": "second_value"}""",
-                        emittedAtMs = 2345,
-                        checkpointId = checkpointKeyForMedium()?.checkpointId
-                    )
-                ),
-                streamStatus = null,
-            )
-        }
+        runSyncUntilStateAckAndExpectFailure(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    stream = stream,
+                    """{"id": 42, "name": "second_value"}""",
+                    emittedAtMs = 2345,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            ),
+            StreamCheckpoint(
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
+                blob = """{}""",
+                sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
+            ),
+            syncEndBehavior = UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS,
+        )
         dumpAndDiffRecords(
             parsedConfig,
             listOfNotNull(
@@ -1096,17 +1119,18 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         // Run a sync, but emit a status incomplete. This should not delete any existing data.
-        runSyncUntilStateAck(
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                stream2,
-                """{}""",
+                unmappedName = stream2.unmappedName,
+                unmappedNamespace = stream2.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
-            allowGracefulShutdown = false,
+            syncEndBehavior = UncleanSyncEndBehavior.KILL,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1228,17 +1252,18 @@ abstract class BasicFunctionalityIntegrationTest(
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
             )
         // Run a sync, but emit a stream status incomplete.
-        runSyncUntilStateAck(
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                stream,
-                """{}""",
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
-            allowGracefulShutdown = false,
+            syncEndBehavior = UncleanSyncEndBehavior.KILL,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1392,17 +1417,18 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a stream status incomplete. This should not delete any existing
         // data.
-        runSyncUntilStateAck(
+        runSyncUntilStateAckAndExpectFailure(
             updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
-                stream2,
-                """{}""",
+                unmappedName = stream2.unmappedName,
+                unmappedNamespace = stream2.unmappedNamespace,
+                blob = """{}""",
                 sourceRecordCount = 1,
                 checkpointKey = checkpointKeyForMedium(),
             ),
-            allowGracefulShutdown = false,
+            syncEndBehavior = UncleanSyncEndBehavior.KILL,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -2245,7 +2271,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id2" to 200,
                             "updated_at" to 1,
                             "name" to "foo_100",
-                        ),
+                        ) + if (dedupChangeUsesDefault) mapOf("id3" to 0) else emptyMap(),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
@@ -3222,6 +3248,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         StringValue(value.serializeToString())
                     }
+                UnionBehavior.STRICT_STRINGIFY -> StringValue(value.toString())
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
@@ -3523,9 +3550,9 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         namespaceValidator(
             stream.unmappedNamespace,
-            stream.descriptor.namespace,
+            stream.mappedDescriptor.namespace,
             stream.unmappedName,
-            stream.descriptor.name,
+            stream.mappedDescriptor.name,
         )
         runSync(
             updatedConfig,

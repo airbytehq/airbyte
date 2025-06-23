@@ -32,5 +32,8 @@ class ClickhouseConfigUpdater : ConfigurationUpdater {
         config: String,
         defaultNamespace: String
     ): DefaultNamespaceResult =
-        DefaultNamespaceResult(updatedConfig = config, actualDefaultNamespace = defaultNamespace)
+        DefaultNamespaceResult(
+            updatedConfig = config.replace("default", defaultNamespace),
+            actualDefaultNamespace = defaultNamespace
+        )
 }

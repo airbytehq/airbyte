@@ -9,16 +9,12 @@ from airbyte_cdk import TState, YamlDeclarativeSource
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
+from source_bing_ads.base_streams import Accounts
 from source_bing_ads.bulk_streams import (
-    AdGroupLabels,
-    AppInstallAdLabels,
-    AppInstallAds,
     Budget,
     CampaignLabels,
     KeywordLabels,
     Keywords,
-    Labels,
 )
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
@@ -38,10 +34,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     AdGroupPerformanceReportHourly,
     AdGroupPerformanceReportMonthly,
     AdGroupPerformanceReportWeekly,
-    AgeGenderAudienceReportDaily,
-    AgeGenderAudienceReportHourly,
-    AgeGenderAudienceReportMonthly,
-    AgeGenderAudienceReportWeekly,
     AudiencePerformanceReportDaily,
     AudiencePerformanceReportHourly,
     AudiencePerformanceReportMonthly,
@@ -52,10 +44,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     CampaignImpressionPerformanceReportHourly,
     CampaignImpressionPerformanceReportMonthly,
     CampaignImpressionPerformanceReportWeekly,
-    CampaignPerformanceReportDaily,
-    CampaignPerformanceReportHourly,
-    CampaignPerformanceReportMonthly,
-    CampaignPerformanceReportWeekly,
     CustomReport,
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
@@ -157,11 +145,6 @@ class SourceBingAds(YamlDeclarativeSource):
 
         client = Client(**config)
         streams = [
-            AdGroups(client, config),
-            AdGroupLabels(client, config),
-            AppInstallAds(client, config),
-            AppInstallAdLabels(client, config),
-            Ads(client, config),
             Budget(client, config),
             BudgetSummaryReport(client, config),
             # Labels(client, config),
@@ -171,14 +154,11 @@ class SourceBingAds(YamlDeclarativeSource):
         ]
 
         reports = (
-            "AgeGenderAudienceReport",
             "AccountImpressionPerformanceReport",
-            # "AccountPerformanceReport",
             "AudiencePerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
             "AdGroupImpressionPerformanceReport",
-            "CampaignPerformanceReport",
             "CampaignImpressionPerformanceReport",
             "GeographicPerformanceReport",
             "GoalsAndFunnelsReport",

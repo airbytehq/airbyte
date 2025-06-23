@@ -97,6 +97,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.0-rc.5 | 2025-06-11| [61506](https://github.com/airbytehq/airbyte/pull/61506) |  Add better error handling for companies stream, update SDM, & add advanced_auth |
 | 0.13.0-rc.4 | 2025-05-15| [60235](https://github.com/airbytehq/airbyte/pull/60235) |  Add required custom paginator for 'companies' stream & Fix 500s on `Tickets` stream. |
 | 0.13.0-rc.3 | 2025-05-09| [55829](https://github.com/airbytehq/airbyte/pull/55829) |  Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest|
 | 0.13.0-rc.2 | 2025-04-08 | [57524](https://github.com/airbytehq/airbyte/pull/57524) | Use global state and pass state to parent streams for conversation_parts and company_segments                                    |
