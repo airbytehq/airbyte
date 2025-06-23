@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.types import Config
 
+
 logger = logging.getLogger("airbyte")
 
 

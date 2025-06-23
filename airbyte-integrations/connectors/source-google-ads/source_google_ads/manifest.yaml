@@ -243,7 +243,7 @@ definitions:
           prefix: "campaign_budget."
       - type: AddFields
         fields:
-          - path: [ "metrics.interaction_event_types" ]
+          - path: ["metrics.interaction_event_types"]
             value: >-
               {{ record['metrics.interaction_event_types']
                  | map('replace','UNSPECIFIED','0')
