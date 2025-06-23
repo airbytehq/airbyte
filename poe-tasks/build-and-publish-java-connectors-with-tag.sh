@@ -44,6 +44,8 @@ is_in_whitelist() {
     destination-azure-blob-storage|\
     destination-bigquery|\
     destination-csv|\
+    destination-clickhouse|\
+    destination-clickhouse-strict-encrypt|\
     destination-databricks|\
     destination-dev-null|\
     destination-dynamodb|\
