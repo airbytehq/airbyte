@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.ByteArrayPool
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
@@ -104,9 +105,13 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
         loaderState: ObjectLoaderPartLoader.State<T>,
     ): Deferred<ObjectLoaderPartLoader.PartResult<T>> =
         CoroutineScope(uploadDispatcher).async {
-            when (val res = partLoader.acceptWithExperimentalCoroutinesApi(part, loaderState)) {
-                is IntermediateOutput -> res.output
-                else -> error("PartLoader should emit IntermediateOutput only")
+            try {
+                when (val res = partLoader.acceptWithExperimentalCoroutinesApi(part, loaderState)) {
+                    is IntermediateOutput -> res.output
+                    else -> error("PartLoader should emit IntermediateOutput only")
+                }
+            } finally {
+                part.part.bytes?.let { ByteArrayPool.recycle(it) }
             }
         }
 
