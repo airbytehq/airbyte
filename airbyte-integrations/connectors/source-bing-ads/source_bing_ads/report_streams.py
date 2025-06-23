@@ -34,38 +34,6 @@ class BudgetSummaryReport(BingAdsReportingServiceStream):
         return original_value
 
 
-class CampaignImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
-    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
-    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
-    """
-
-    report_name: str = "CampaignPerformanceReport"
-
-    report_schema_name = "campaign_impression_performance_report"
-
-    primary_key = None
-
-
-class CampaignImpressionPerformanceReportHourly(HourlyReportTransformerMixin, CampaignImpressionPerformanceReport):
-    report_aggregation = "Hourly"
-
-    report_schema_name = "campaign_impression_performance_report_hourly"
-
-
-class CampaignImpressionPerformanceReportDaily(CampaignImpressionPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class CampaignImpressionPerformanceReportWeekly(CampaignImpressionPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class AdGroupPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AdGroupPerformanceReport"
     report_schema_name = "ad_group_performance_report"
