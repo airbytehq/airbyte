@@ -2,3 +2,4 @@ airbyte-submodule
 airbyte-cdk
 airbyte-ci
 
+airbyte-integrations/connectors/destination-*/src/test-integration/resources/expected-spec*.json
