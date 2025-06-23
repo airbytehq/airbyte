@@ -26,10 +26,10 @@ from . import constants
 from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
 from .errors_handlers import (
     GITHUB_DEFAULT_ERROR_MAPPING,
-    CommitsErrorHandler,
     ContributorActivityErrorHandler,
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
+    is_conflict_with_empty_repository,
 )
 from .graphql import (
     CursorStorage,
@@ -101,10 +101,6 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if response.status_code == 409:
-            response_data = response.json()
-            if response_data.get("message") == "Git Repository is empty.":
-                return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -221,6 +217,22 @@ class GithubStream(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
         return record
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        if is_conflict_with_empty_repository(response):
+            return
+        yield from super().parse_response(
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
 
 class SemiIncrementalMixin(CheckpointMixin):
@@ -667,11 +679,6 @@ class Commits(IncrementalMixin, GithubStream):
         self.branches_to_pull = set(branches_to_pull)
         self.branches_stream = Branches(**kwargs)
         self.repositories_stream = RepositoryStats(**kwargs)
-
-    def get_error_handler(self) -> Optional[ErrorHandler]:
-        return CommitsErrorHandler(
-            logger=self.logger, max_retries=self.max_retries, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING, stream=self
-        )
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
