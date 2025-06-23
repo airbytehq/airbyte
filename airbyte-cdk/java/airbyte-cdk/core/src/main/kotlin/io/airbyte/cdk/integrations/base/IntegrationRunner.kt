@@ -74,6 +74,8 @@ internal constructor(
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
             if (message.type == AirbyteMessage.Type.TRACE) {
                 LOGGER.info { "Emitting trace message: $message" }
+                System.out.flush()
+                Thread.sleep(5000)
             }
             Destination.Companion.defaultOutputRecordCollector(message)
         },
