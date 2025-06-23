@@ -309,6 +309,11 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     /**
+     * Some destination connectors commit data incrementally, but only when the stream is an append
+     * one. When the running a schema change, the behavior might be different than append.
+     */
+    val commitDataIncrementallyOnAppend: Boolean = commitDataIncrementally,
+    /**
      * The same concept as [commitDataIncrementally], but specifically describes how the connector
      * behaves when the destination contains no data at the start of the sync. Some destinations
      * commit incrementally during such an "initial" truncate refresh, then switch to committing
@@ -316,11 +321,14 @@ abstract class BasicFunctionalityIntegrationTest(
      *
      * (warehouse destinations with direct-load tables should set this to true).
      */
-    val commitDataIncrementallyToEmptyDestination: Boolean = commitDataIncrementally,
+    val commitDataIncrementallyToEmptyDestination: Boolean =
+        commitDataIncrementally || commitDataIncrementallyOnAppend,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     // If it simply isn't possible to represent a mismatched type on the wire (ie, protobuf).
     val mismatchedTypesUnrepresentable: Boolean = false,
+    // When changing a column to a PK, some destination set the column to a default value.
+    // This flag is addressing this behavior.
     val dedupChangeUsesDefault: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,

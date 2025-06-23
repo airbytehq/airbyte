@@ -135,7 +135,7 @@ class ClickhouseAirbyteClient(
 
         val clickhousePks: List<String> =
             tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
-        val airbytePks: List<String> =
+        val currentPKs: List<String> =
             when (stream.importType) {
                 is Dedupe ->
                     sqlGenerator.extractPks(
@@ -150,7 +150,7 @@ class ClickhouseAirbyteClient(
                 tableSchemaWithoutAirbyteColumns,
                 airbyteSchemaWithClickhouseType,
                 clickhousePks,
-                airbytePks,
+                currentPKs,
             )
 
         if (columnChanges.hasApplicableAlterations()) {
