@@ -33,6 +33,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -92,7 +93,7 @@ class ForwardFileRecordTaskTest {
     fun `does nothing if the remote object is null (this is an artifact of End of Stream)`() =
         runTest {
             val stream = Fixtures.stream()
-            val key = StreamKey(stream.descriptor)
+            val key = StreamKey(stream.mappedDescriptor)
             val context =
                 PipelineContext(
                     mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
@@ -118,7 +119,7 @@ class ForwardFileRecordTaskTest {
     @Test
     fun `extracts record and checkpoints and forwards them when present`() = runTest {
         val stream = Fixtures.stream()
-        val key = StreamKey(stream.descriptor)
+        val key = StreamKey(stream.mappedDescriptor)
         val context =
             PipelineContext(
                 mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
@@ -181,7 +182,8 @@ class ForwardFileRecordTaskTest {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = DestinationRecordJsonSource(message),
-                serializedSizeBytes = 0L
+                serializedSizeBytes = 0L,
+                airbyteRawId = UUID.randomUUID(),
             )
     }
 }
