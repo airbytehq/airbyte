@@ -76,6 +76,6 @@ class SourceAmazonAdsSpec(BaseConfig):
         title="Number of concurrent workers",
         ge=2,
         le=10,
-        examples=[1, 2, 3],
+        examples=[2, 3],
         order=11,
     )
