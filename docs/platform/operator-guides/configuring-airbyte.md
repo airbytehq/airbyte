@@ -5,7 +5,7 @@ products: oss-*
 # Configuring Airbyte
 
 :::important
-You probably have no need to reference this file. This page documents Airbyte's internal configuration API. This is how Airbyte retrieves values. To configure Airbyte, modify the [values.yaml](../deploying-airbyte/values) file.  `values.yaml` has a rich interface and you can use it to configure almost everything, especially once you've upgraded to [Helm chart V2](../deploying-airbyte/chart-v2-community).
+You probably don't need to reference this file. This page documents Airbyte's internal configuration API. This is how Airbyte retrieves values. To configure Airbyte, modify the [values.yaml](../deploying-airbyte/values) file.  `values.yaml` has a rich interface and is suitable for all integrations and configurations, especially once you've upgraded to [Helm chart V2](../deploying-airbyte/chart-v2-community).
 :::
 
 Be careful using variables marked as `alpha`. They aren't meant for public consumption.
