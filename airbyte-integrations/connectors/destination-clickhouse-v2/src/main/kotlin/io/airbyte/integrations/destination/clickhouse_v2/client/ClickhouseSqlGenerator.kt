@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import jakarta.inject.Singleton
 
@@ -48,9 +49,21 @@ class ClickhouseSqlGenerator {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+        val pks: List<String> =
+            when (stream.importType) {
+                is Dedupe -> extractPks((stream.importType as Dedupe).primaryKey, columnNameMapping)
+                else -> listOf()
+            }
+
+        val columnDeclarations = columnsAndTypes(stream, columnNameMapping, pks)
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
+
+        val pksAsString =
+            pks.joinToString(",") {
+                // Escape the columns
+                "`$it`"
+            }
 
         val engine =
             when (stream.importType) {
@@ -67,8 +80,28 @@ class ClickhouseSqlGenerator {
               $columnDeclarations
             )
             ENGINE = ${engine}
-            ORDER BY ($COLUMN_NAME_AB_RAW_ID)
+            ORDER BY (${if (pks.isEmpty()) {
+                "$COLUMN_NAME_AB_RAW_ID"
+            } else {
+                pksAsString
+            }})
             """.trimIndent()
+    }
+
+    internal fun extractPks(
+        primaryKey: List<List<String>>,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
+        return primaryKey.map { fieldPath ->
+            if (fieldPath.size != 1) {
+                throw UnsupportedOperationException(
+                    "Only top-level primary keys are supported, got $fieldPath",
+                )
+            }
+            val fieldName = fieldPath.first()
+            val columnName = columnNameMapping[fieldName] ?: fieldName
+            columnName
+        }
     }
 
     fun dropTable(tableName: TableName): String =
@@ -86,7 +119,6 @@ class ClickhouseSqlGenerator {
         targetTableName: TableName,
     ): String {
         val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
-
         // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
         return """
             INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
@@ -279,16 +311,22 @@ class ClickhouseSqlGenerator {
 
     private fun columnsAndTypes(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): String =
-        stream.schema
+        columnNameMapping: ColumnNameMapping,
+        pks: List<String>,
+    ): String {
+        return stream.schema
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = type.type.toDialectType()
-                "`$columnName` Nullable($typeName)"
+                "`$columnName` ${if (pks.contains(columnName))
+                    "$typeName" 
+                else 
+                        "Nullable($typeName)"
+                }"
             }
             .joinToString(",\n")
+    }
 
     fun wrapInTransaction(vararg sqlStatements: String): String {
         val builder = StringBuilder()
@@ -317,6 +355,7 @@ class ClickhouseSqlGenerator {
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
         }
+
         return builder.dropLast(1).toString()
     }
 
@@ -324,6 +363,7 @@ class ClickhouseSqlGenerator {
 
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
+        const val DECIMAL_WITH_PRECISION_AND_SCALE = "DECIMAL128(9)"
     }
 }
 
@@ -332,7 +372,7 @@ fun AirbyteType.toDialectType(): String =
         BooleanType -> ClickHouseDataType.Bool.name
         DateType -> ClickHouseDataType.Date.name
         IntegerType -> ClickHouseDataType.Int64.name
-        NumberType -> ClickHouseDataType.Decimal.name
+        NumberType -> DECIMAL_WITH_PRECISION_AND_SCALE
         StringType -> ClickHouseDataType.String.name
         TimeTypeWithTimezone -> ClickHouseDataType.String.name
         TimeTypeWithoutTimezone -> ClickHouseDataType.String.name
