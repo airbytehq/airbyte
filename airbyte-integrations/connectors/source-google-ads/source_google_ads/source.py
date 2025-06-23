@@ -29,7 +29,6 @@ from .streams import (
     AdGroupLabel,
     AdListingGroupCriterion,
     Audience,
-    Campaign,
     CampaignBiddingStrategy,
     CampaignBudget,
     CampaignCriterion,
@@ -62,6 +61,9 @@ class SourceGoogleAds(YamlDeclarativeSource):
         if config.get("end_date") == "":
             config.pop("end_date")
         for query in config.get("custom_queries_array", []):
+            # In concurrent source this method can be executed multiple times
+            if isinstance(query["query"], GAQL):
+                break
             try:
                 query["query"] = GAQL.parse(query["query"])
             except ValueError:
@@ -226,8 +228,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        streams = super().streams(config=config)
-
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
 
@@ -239,6 +239,7 @@ class SourceGoogleAds(YamlDeclarativeSource):
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
 
+        streams = super().streams(config=config)
         streams += [
             AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
