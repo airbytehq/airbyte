@@ -13,6 +13,7 @@ import kotlin.NoSuchElementException
 
 class ProtobufDataChannelReader(
     private val factory: DestinationMessageFactory,
+    private val bufferSize: Int = 16 * 1024,
 ) : DataChannelReader {
 
     private val parser = AirbyteMessageProtobuf.parser()
@@ -22,13 +23,12 @@ class ProtobufDataChannelReader(
             override fun iterator(): Iterator<DestinationMessage> =
                 object : Iterator<DestinationMessage> {
 
-                    /** One buffered reader for the whole stream. */
                     private val cis: CodedInputStream =
-                        CodedInputStream.newInstance(inputStream, 16384).apply {
-                            enableAliasing(true) // zero-copy substrings
+                        CodedInputStream.newInstance(inputStream, bufferSize).apply {
+                            enableAliasing(false)
+                            setSizeLimit(Int.MAX_VALUE)
                         }
 
-                    /** Stash for look-ahead. */
                     private var nextMsg: DestinationMessage? = fetch()
 
                     override fun hasNext(): Boolean = nextMsg != null
@@ -39,20 +39,20 @@ class ProtobufDataChannelReader(
                         return out
                     }
 
-                    /** Reads one message or returns null if stream is exhausted. */
                     private fun fetch(): DestinationMessage? {
                         if (cis.isAtEnd) return null
 
-                        val bytesBefore = cis.totalBytesRead
-                        val msgSize = cis.readRawVarint32() // length-prefix
+                        val msgSize = cis.readRawVarint32()
+                        require(msgSize >= 0) { "Negative length prefix ($msgSize)" }
+
                         val oldLimit = cis.pushLimit(msgSize)
-
                         val proto = parser.parseFrom(cis)
-                        cis.checkLastTagWas(0) // message done
+                        cis.checkLastTagWas(0)
                         cis.popLimit(oldLimit)
+                        val wireSize = cis.totalBytesRead
+                        cis.resetSizeCounter()
 
-                        val serializedSize = cis.totalBytesRead - bytesBefore
-                        return factory.fromAirbyteProtobufMessage(proto, serializedSize.toLong())
+                        return factory.fromAirbyteProtobufMessage(proto, wireSize.toLong())
                     }
                 }
         }
