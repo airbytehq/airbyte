@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.util.BigDecimalUtil
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
@@ -148,7 +149,8 @@ class BigQueryRecordFormatter(
         private const val NUMERIC_MAX_PRECISION = 38
         private const val NUMERIC_MAX_SCALE = 9
         private val NUMERIC_MAX_VALUE =
-            BigDecimalUtil.maxForRange(precision = NUMERIC_MAX_PRECISION, scale = NUMERIC_MAX_SCALE)
+            BigDecimalUtil()
+                .maxForRange(precision = NUMERIC_MAX_PRECISION, scale = NUMERIC_MAX_SCALE)
         private val NUMERIC_MIN_VALUE = NUMERIC_MAX_VALUE.negate()
         private val DATE_MIN_VALUE = LocalDate.parse("0001-01-01")
         private val DATE_MAX_VALUE = LocalDate.parse("9999-12-31")
