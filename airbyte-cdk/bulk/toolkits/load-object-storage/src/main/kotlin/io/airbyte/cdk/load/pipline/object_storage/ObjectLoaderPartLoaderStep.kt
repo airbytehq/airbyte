@@ -23,12 +23,13 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
+    private val partitioner = ObjectLoaderLoadedPartPartitioner<ObjectKey, ObjectLoaderPartFormatter.FormattedPart, T>()
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.createIntermediateStep(
             partLoader,
             inputQueue.consume(partition),
-            outputPartitioner = ObjectLoaderLoadedPartPartitioner(),
+            outputPartitioner = partitioner,
             outputQueue,
             partition,
             numWorkers,

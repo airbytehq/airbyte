@@ -127,11 +127,19 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         input: ObjectLoaderPartFormatter.FormattedPart,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
-        log.info { "Uploading part $input" }
+        log.debug { "Uploading part $input" }
         if (!input.part.isFinal && input.part.bytes == null) {
             throw IllegalStateException("Empty non-final part received: this should not happen")
         }
-        input.part.bytes?.let { state.streamingUpload.await().uploadPart(it, input.part.partIndex) }
+
+        val upload =
+            if (state.streamingUpload.isCompleted) {
+                state.streamingUpload.getCompleted()
+            } else {
+                state.streamingUpload.await()
+            }
+
+        input.part.bytes?.let { bytes -> upload.uploadPart(bytes, input.part.partIndex) }
         val output =
             LoadedPart(
                 state.streamingUpload,
