@@ -20,6 +20,7 @@ class AccessibleAccountsExtractor(RecordExtractor):
     Custom extractor for the accessible accounts endpoint.
     The response is a list of strings instead of a list of objects.
     """
+
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         response_data = response.json().get("resourceNames", [])
         if response_data:
