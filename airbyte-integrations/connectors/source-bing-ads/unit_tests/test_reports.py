@@ -35,8 +35,6 @@ from source_bing_ads.report_streams import (
     KeywordPerformanceReportHourly,
     SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
-    UserLocationPerformanceReportDaily,
-    UserLocationPerformanceReportHourly,
 )
 from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, BingAdsReportingServiceStream
 from source_bing_ads.reports.ad_performance_report import (
@@ -158,7 +156,6 @@ def test_get_updated_state_state_new_account():
         CampaignImpressionPerformanceReportDaily,
         KeywordPerformanceReportDaily,
         SearchQueryPerformanceReportDaily,
-        UserLocationPerformanceReportDaily,
         GeographicPerformanceReportDaily,
     ),
 )
@@ -181,7 +178,6 @@ def test_get_report_record_timestamp_without_aggregation():
         CampaignImpressionPerformanceReportHourly,
         KeywordPerformanceReportHourly,
         SearchQueryPerformanceReportHourly,
-        UserLocationPerformanceReportHourly,
         GeographicPerformanceReportHourly,
     ),
 )
@@ -452,11 +448,6 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
             SearchQueryPerformanceReportHourly,
             "hourly_reports/search_query_performance.csv",
             "hourly_reports/search_query_performance_records.json",
-        ),
-        (
-            UserLocationPerformanceReportHourly,
-            "hourly_reports/user_location_performance.csv",
-            "hourly_reports/user_location_performance_records.json",
         ),
         (
             AdGroupImpressionPerformanceReportHourly,
