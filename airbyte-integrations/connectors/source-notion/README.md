@@ -66,17 +66,17 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 ### Running our CI test suite
 
-You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
-
-```bash
-airbyte-ci connectors --name=source-notion test
-```
-
-You can also run only the tests thanks to [Poe the Poet](Poe the Poet) (see [Airbyte documentation](https://docs.airbyte.com/platform/connector-development/local-connector-development))
+You can run our full test suite locally using [Poe the Poet](Poe the Poet) (see [Airbyte documentation](https://docs.airbyte.com/platform/connector-development/local-connector-development)):
 
 In connector directory, run:
-```bash
+```zsh
 poe test-all
+```
+
+You can also run the tests using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md): (DEPRECATED)
+
+```zsh
+airbyte-ci connectors --name=source-notion test
 ```
 
 ### Customizing acceptance Tests
