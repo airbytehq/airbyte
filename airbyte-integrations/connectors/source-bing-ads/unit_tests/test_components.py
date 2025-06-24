@@ -794,58 +794,29 @@ class TestBingAdsCampaignsRecordTransformer:
 @pytest.mark.parametrize(
     "stream_state,expected_state",
     (
-            (
-                    {
-                        "1111111": {
-                            "Modified Time": "2025-01-01T01:01:55.111+00:00"
-                        },
-                        "Id": "1111111",
-                        "Match Type": None,
-                        "Modified Time": None,
-                    },
-                    {
-                        "1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"},
-                        "Id": "1111111",
-                        "Match Type": None
-                    }
-            ),
-            (
-                    {
-                        "1111111": {
-                            "Modified Time": "2025-01-01T01:01:55.111+00:00"
-                        }
-                    },
-                    {
-                        "1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}
-                    }
-            ),
-            (
-                    {
-                        "states": [
-                            {
-                                "partition": {
-                                    "account_id": "account_id"
-                                },
-                                "cursor": {
-                                    "Modified Time": "2025-01-01T01:01:55.111+00:00"
-                                }
-                            },
-                        ],
-                        "state": {
-                            "Modified Time": "2025-06-06T05:13:54.447+00:00"
-                        }
-                    },
-                    {
-                        "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
-                        "states": [
-                            {
-                                "cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"},
-                                "partition": {"account_id": "account_id"}
-                            }
-                        ]
-                    }
-            ),
-    )
+        (
+            {
+                "1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"},
+                "Id": "1111111",
+                "Match Type": None,
+                "Modified Time": None,
+            },
+            {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}, "Id": "1111111", "Match Type": None},
+        ),
+        ({"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}, {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}),
+        (
+            {
+                "states": [
+                    {"partition": {"account_id": "account_id"}, "cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}},
+                ],
+                "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
+            },
+            {
+                "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
+                "states": [{"cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}, "partition": {"account_id": "account_id"}}],
+            },
+        ),
+    ),
 )
 def test_bulk_stream_state_migration(stream_state, expected_state):
     migrator = BulkStreamsStateMigration()

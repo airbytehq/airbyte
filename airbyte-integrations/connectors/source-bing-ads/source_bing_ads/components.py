@@ -5,10 +5,10 @@ from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -303,6 +303,7 @@ class LightSubstreamPartitionRouter(SubstreamPartitionRouter):
                 extra_fields=stream_slice.extra_fields,
             )
 
+
 class BulkStreamsStateMigration(StateMigration):
     """
     Due to a bug in python implementation legacy state may look like this:
@@ -319,6 +320,7 @@ class BulkStreamsStateMigration(StateMigration):
     It happens when received record doesn't have a cursor field and state updating logic stores it in state.
     To avoid parsing null cursor fields that lead to value error, this state migration deletes top level cursor field if it's null.
     """
+
     cursor_field = "Modified Time"
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
