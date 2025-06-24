@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.integrations.destination.clickhouse_v2.config.toClickHouseCompatibleName
 import java.time.LocalTime
 import java.time.ZoneOffset
 
@@ -37,7 +38,7 @@ object ClickhouseExpectedRecordMapper : ExpectedRecordMapper {
                             )
                         else -> value
                     }
-                }
+                }.mapKeysTo(linkedMapOf()) { it.key.toClickHouseCompatibleName() }
             )
         return expectedRecord.copy(data = mappedData)
     }

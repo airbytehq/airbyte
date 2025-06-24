@@ -28,6 +28,7 @@ import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse_v2.Utils
+import io.airbyte.integrations.destination.clickhouse_v2.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse_v2.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
@@ -106,8 +107,13 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
-        val namespacedTableName =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
+        val cleanedNamespace = "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}"
+            .toClickHouseCompatibleName()
+        val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
+
+        val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
+
+        println("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}")
 
         val response =
             client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()

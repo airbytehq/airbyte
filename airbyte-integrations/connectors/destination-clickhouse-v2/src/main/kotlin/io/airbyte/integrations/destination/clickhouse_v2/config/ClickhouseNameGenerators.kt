@@ -37,26 +37,21 @@ class ClickhouseColumnNameGenerator : ColumnNameGenerator {
 /**
  * Transforms a string to be compatible with ClickHouse table and column names.
  *
- * ClickHouse identifiers:
- * - Must start with a letter or underscore.
- * - Can contain letters, numbers, and underscores.
- * - Are case-sensitive (this function converts to lowercase for consistency).
- *
  * @return The transformed string suitable for ClickHouse identifiers.
  */
 fun String.toClickHouseCompatibleName(): String {
-    // 2. Replace any character that is not a lowercase letter (a-z),
+    // 1. Replace any character that is not a letter,
     //    a digit (0-9), or an underscore (_) with a single underscore.
     var transformed = toAlphanumericAndUnderscore(this)
 
 
-    // 4. Ensure the identifier does not start with a digit.
+    // 2. Ensure the identifier does not start with a digit.
     //    If it starts with a digit, prepend an underscore.
     if (transformed.isNotEmpty() && transformed[0].isDigit()) {
         transformed = "_$transformed"
     }
 
-    // 6. If, after all transformations, the string becomes empty (e.g., from an input like "!!!"),
+    // 3. If, after all transformations, the string becomes empty (e.g., from an input like "!!!"),
     //    return a default, valid identifier.
     if (transformed.isEmpty()) {
         return "default_name_${UUID.randomUUID()}" // A fallback name if the input results in an empty string
