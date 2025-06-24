@@ -3056,6 +3056,44 @@
     "b2b_customer_type": {
       "description": "Type of B2B customer that placed the order",
       "type": ["null", "string"]
+    },
+    "poNumber": {
+      "description": "The PO number associated with the order",
+      "type": ["null", "string"]
+    },
+    "paymentTerms": {
+      "description": "The payment terms associated with the order",
+      "type": ["null", "string"]
+    },
+    "purchasingEntity": {
+      "description": "The purchasing entity for this order",
+      "type": ["null", "object"],
+      "properties": {
+        "company": {
+          "description": "The company that made the purchase",
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "description": "The unique identifier of the company",
+              "type": ["null", "string"]
+            },
+            "name": {
+              "description": "The name of the company",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "location": {
+          "description": "The company location that made the purchase",
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "description": "The unique identifier of the company location",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }

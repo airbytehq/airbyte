@@ -122,14 +122,17 @@ The connector automatically enriches customer and order data with B2B-specific f
 
 ### B2B Detection Logic
 
-The connector automatically identifies B2B customers and orders based on various signals:
+The connector uses Shopify's direct B2B relationships for accurate identification:
 
-- **Customer Tags**: Presence of tags like "b2b", "wholesale", "business", "company", "trade"
-- **Company Information**: Company name in addresses
-- **High Volume**: Customers with >50 orders or >$10,000 total spent
-- **Tax Exemption**: Tax-exempt customers and orders
-- **Bulk Orders**: Orders with >50 total items or >$5,000 value
-- **Purchase Orders**: Detection of PO numbers in order notes
+#### Customer B2B Detection
+- **Direct Relationship**: Uses `companyContactProfiles` field to identify B2B customers
+- **Company Association**: Extracts company ID, name, and location from contact profiles
+- **Main Contact**: Identifies if customer is the primary contact for their company
+
+#### Order B2B Detection  
+- **PO Numbers**: Uses direct `poNumber` field from Shopify's B2B API
+- **Payment Terms**: Uses direct `paymentTerms` field for B2B payment arrangements
+- **Purchasing Entity**: Extracts company and location info from `purchasingEntity` field
 
 ### Requirements
 

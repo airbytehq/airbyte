@@ -331,6 +331,56 @@
     "b2b_tax_id": {
       "description": "Tax ID for B2B customers",
       "type": ["null", "string"]
+    },
+    "is_main_contact": {
+      "description": "Indicates if this customer is the main contact for their company",
+      "type": ["null", "boolean"]
+    },
+    "companyContactProfiles": {
+      "description": "List of company contact profiles for this customer",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "isMainContact": {
+            "description": "Indicates if this is the main contact for the company",
+            "type": ["null", "boolean"]
+          },
+          "company": {
+            "description": "The company this contact belongs to",
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "description": "The unique identifier of the company",
+                "type": ["null", "string"]
+              },
+              "name": {
+                "description": "The name of the company",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "roleAssignments": {
+            "description": "Role assignments for this contact",
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "location": {
+                  "description": "The company location for this role",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "description": "The unique identifier of the company location",
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
