@@ -190,7 +190,7 @@ data object FloatCodec : JsonCodec<Float> {
         val two = encoded.doubleValue()
         val c = one.compareTo(two)
         if (encode(decoded).doubleValue().compareTo(encoded.doubleValue()) != 0) {
-            throw IllegalArgumentException("invalid IEEE-754 32-bit floating point value $encoded $c")
+            throw IllegalArgumentException("invalid IEEE-754 32-bit floating point value $encoded")
         }
         return decoded
     }
