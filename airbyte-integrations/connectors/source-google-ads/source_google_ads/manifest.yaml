@@ -4,7 +4,8 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # We need to use Contacts stream once it is migrated
+  # Placeholder: currently unused but required in the manifest.
+  # The check using the customer stream and custom queries stream should be implemented once the full migration to low-code is complete.
   stream_names:
     - campaign
 
@@ -63,26 +64,12 @@ definitions:
     decoder:
       type: JsonDecoder
 
-  retriever_without_pagination:
-    type: SimpleRetriever
-    requester:
-      $ref: "#/definitions/base_requester"
-    record_selector:
-      $ref: "#/definitions/base_selector"
-    decoder:
-      type: JsonDecoder
-
   stream_base:
     type: DeclarativeStream
     primary_key:
       - id
     retriever:
       $ref: "#/definitions/base_retriever"
-
-  stream_without_pagination:
-    $ref: "#/definitions/stream_base"
-    retriever:
-      $ref: "#/definitions/retriever_without_pagination"
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -257,7 +244,9 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: segments.date
       datetime_format: "%Y-%m-%d"
-      lookback_window: P{{ config['conversion_window_days'] }}D
+      lookback_window: P{{ config.get('conversion_window_days', 14) }}D
+      cursor_granularity: P1D
+      step: P14D
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
@@ -279,7 +268,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 40
 
 schemas:
