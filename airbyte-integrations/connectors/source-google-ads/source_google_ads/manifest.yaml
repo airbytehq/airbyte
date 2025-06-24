@@ -99,9 +99,16 @@ definitions:
         request_body:
           type: RequestBodyJsonObject
           value:
-            query: SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client
-      paginator:
-        type: NoPagination
+            query: >
+              SELECT 
+                customer_client.client_customer,
+                customer_client.level,
+                customer_client.id,
+                customer_client.manager,
+                customer_client.time_zone,
+                customer_client.status
+              FROM 
+                customer_client
       record_selector:
         extractor:
           type: DpathExtractor
@@ -126,9 +133,18 @@ definitions:
         request_body:
           type: RequestBodyJsonObject
           value:
-            query: SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client WHERE customer_client.manager = FALSE
-      paginator:
-        type: NoPagination
+            query: >
+              SELECT 
+                customer_client.client_customer,
+                customer_client.level,
+                customer_client.id,
+                customer_client.manager,
+                customer_client.time_zone,
+                customer_client.status
+              FROM 
+                customer_client
+              WHERE 
+                customer_client.manager = FALSE
       record_selector:
         extractor:
           type: DpathExtractor
@@ -166,9 +182,112 @@ definitions:
         request_body:
           type: RequestBodyJsonObject
           value:
-            query: SELECT campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status, campaign.advertising_channel_sub_type, campaign.advertising_channel_type, campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store, campaign.app_campaign_setting.bidding_strategy_goal_type, campaign.base_campaign, campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.campaign_budget, campaign_budget.amount_micros, campaign.commission.commission_rate_micros, campaign.dynamic_search_ads_setting.domain_name, campaign.dynamic_search_ads_setting.feeds, campaign.dynamic_search_ads_setting.language_code, campaign.dynamic_search_ads_setting.use_supplied_urls_only, campaign.end_date, campaign.excluded_parent_asset_field_types, campaign.experiment_type, campaign.final_url_suffix, campaign.frequency_caps, campaign.geo_target_type_setting.negative_geo_target_type, campaign.geo_target_type_setting.positive_geo_target_type, campaign.hotel_setting.hotel_center_id, campaign.id, campaign.labels, campaign.local_campaign_setting.location_source_type, campaign.manual_cpc.enhanced_cpc_enabled, campaign.manual_cpm, campaign.manual_cpv, campaign.maximize_conversion_value.target_roas, campaign.maximize_conversions.target_cpa_micros, campaign.name, campaign.network_settings.target_content_network, campaign.network_settings.target_google_search, campaign.network_settings.target_partner_search_network, campaign.network_settings.target_search_network, campaign.optimization_goal_setting.optimization_goal_types, campaign.optimization_score, campaign.payment_mode, campaign.percent_cpc.cpc_bid_ceiling_micros, campaign.percent_cpc.enhanced_cpc_enabled, campaign.real_time_bidding_setting.opt_in, campaign.resource_name, campaign.selective_optimization.conversion_actions, campaign.serving_status, campaign.shopping_setting.campaign_priority, campaign.shopping_setting.enable_local, campaign.shopping_setting.merchant_id, campaign.start_date, campaign.status, campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_cpa.cpc_bid_floor_micros, campaign.target_cpa.target_cpa_micros, campaign.target_cpm.target_frequency_goal.target_count, campaign.target_cpm.target_frequency_goal.time_unit, campaign.target_impression_share.cpc_bid_ceiling_micros, campaign.target_impression_share.location, campaign.target_impression_share.location_fraction_micros, campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_floor_micros, campaign.target_roas.target_roas, campaign.target_spend.cpc_bid_ceiling_micros, campaign.target_spend.target_spend_micros, campaign.targeting_setting.target_restrictions, campaign.tracking_setting.tracking_url, campaign.tracking_url_template, campaign.url_custom_parameters, campaign.vanity_pharma.vanity_pharma_display_url_mode, campaign.vanity_pharma.vanity_pharma_text, campaign.video_brand_safety_suitability, metrics.clicks, metrics.ctr, metrics.conversions, metrics.conversions_value, metrics.cost_micros, metrics.impressions, metrics.video_views, metrics.video_quartile_p100_rate, metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, metrics.active_view_measurable_impressions, metrics.active_view_viewability, metrics.average_cost, metrics.average_cpc, metrics.average_cpm, metrics.interactions, metrics.interaction_event_types, metrics.value_per_conversion, metrics.cost_per_conversion, segments.date, segments.hour, segments.ad_network_type FROM campaign WHERE segments.date >= '{{ stream_interval['start_time'] }}' AND segments.date <= '{{ stream_interval['end_time'] }}' ORDER BY segments.date ASC
-      paginator:
-        type: NoPagination
+            query: >
+              SELECT
+                campaign.accessible_bidding_strategy,
+                campaign.ad_serving_optimization_status,
+                campaign.advertising_channel_sub_type,
+                campaign.advertising_channel_type,
+                campaign.app_campaign_setting.app_id,
+                campaign.app_campaign_setting.app_store,
+                campaign.app_campaign_setting.bidding_strategy_goal_type,
+                campaign.base_campaign,
+                campaign.bidding_strategy,
+                campaign.bidding_strategy_type,
+                campaign.campaign_budget,
+                campaign_budget.amount_micros,
+                campaign.commission.commission_rate_micros,
+                campaign.dynamic_search_ads_setting.domain_name,
+                campaign.dynamic_search_ads_setting.feeds,
+                campaign.dynamic_search_ads_setting.language_code,
+                campaign.dynamic_search_ads_setting.use_supplied_urls_only,
+                campaign.end_date,
+                campaign.excluded_parent_asset_field_types,
+                campaign.experiment_type,
+                campaign.final_url_suffix,
+                campaign.frequency_caps,
+                campaign.geo_target_type_setting.negative_geo_target_type,
+                campaign.geo_target_type_setting.positive_geo_target_type,
+                campaign.hotel_setting.hotel_center_id,
+                campaign.id,
+                campaign.labels,
+                campaign.local_campaign_setting.location_source_type,
+                campaign.manual_cpc.enhanced_cpc_enabled,
+                campaign.manual_cpm,
+                campaign.manual_cpv,
+                campaign.maximize_conversion_value.target_roas,
+                campaign.maximize_conversions.target_cpa_micros,
+                campaign.name,
+                campaign.network_settings.target_content_network,
+                campaign.network_settings.target_google_search,
+                campaign.network_settings.target_partner_search_network,
+                campaign.network_settings.target_search_network,
+                campaign.optimization_goal_setting.optimization_goal_types,
+                campaign.optimization_score,
+                campaign.payment_mode,
+                campaign.percent_cpc.cpc_bid_ceiling_micros,
+                campaign.percent_cpc.enhanced_cpc_enabled,
+                campaign.real_time_bidding_setting.opt_in,
+                campaign.resource_name,
+                campaign.selective_optimization.conversion_actions,
+                campaign.serving_status,
+                campaign.shopping_setting.campaign_priority,
+                campaign.shopping_setting.enable_local,
+                campaign.shopping_setting.merchant_id,
+                campaign.start_date,
+                campaign.status,
+                campaign.target_cpa.cpc_bid_ceiling_micros,
+                campaign.target_cpa.cpc_bid_floor_micros,
+                campaign.target_cpa.target_cpa_micros,
+                campaign.target_cpm.target_frequency_goal.target_count,
+                campaign.target_cpm.target_frequency_goal.time_unit,
+                campaign.target_impression_share.cpc_bid_ceiling_micros,
+                campaign.target_impression_share.location,
+                campaign.target_impression_share.location_fraction_micros,
+                campaign.target_roas.cpc_bid_ceiling_micros,
+                campaign.target_roas.cpc_bid_floor_micros,
+                campaign.target_roas.target_roas,
+                campaign.target_spend.cpc_bid_ceiling_micros,
+                campaign.target_spend.target_spend_micros,
+                campaign.targeting_setting.target_restrictions,
+                campaign.tracking_setting.tracking_url,
+                campaign.tracking_url_template,
+                campaign.url_custom_parameters,
+                campaign.vanity_pharma.vanity_pharma_display_url_mode,
+                campaign.vanity_pharma.vanity_pharma_text,
+                campaign.video_brand_safety_suitability,
+                metrics.clicks,
+                metrics.ctr,
+                metrics.conversions,
+                metrics.conversions_value,
+                metrics.cost_micros,
+                metrics.impressions,
+                metrics.video_views,
+                metrics.video_quartile_p100_rate,
+                metrics.active_view_cpm,
+                metrics.active_view_ctr,
+                metrics.active_view_impressions,
+                metrics.active_view_measurability,
+                metrics.active_view_measurable_cost_micros,
+                metrics.active_view_measurable_impressions,
+                metrics.active_view_viewability,
+                metrics.average_cost,
+                metrics.average_cpc,
+                metrics.average_cpm,
+                metrics.interactions,
+                metrics.interaction_event_types,
+                metrics.value_per_conversion,
+                metrics.cost_per_conversion,
+                segments.date,
+                segments.hour,
+                segments.ad_network_type
+              FROM
+                campaign
+              WHERE
+                segments.date >= '{{ stream_interval['start_time'] }}'
+                AND segments.date <= '{{ stream_interval['end_time'] }}'
+              ORDER BY
+                segments.date ASC
       record_selector:
         extractor:
           type: DpathExtractor
