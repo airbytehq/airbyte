@@ -1633,7 +1633,11 @@ class ContributorActivity(GithubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
-        record.update(record.pop("author"))
+        try:
+            record.update(record.pop("author"))
+        except Exception as ex:
+            self.logger.info(f'Failed to extract author from repo {stream_slice["repository"]}. Error: {ex}')
+            raise ex
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
