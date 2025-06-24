@@ -3106,6 +3106,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/keyword_performance_report_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: keyword_performance_report_daily
@@ -3183,6 +3186,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/geographic_performance_report_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: geographic_performance_report_daily
