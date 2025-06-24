@@ -65,23 +65,21 @@ class ObjectStorageDestinationState(
             .list(prefix)
             .filter { matcher.match(it.key) != null }
             .toList() // Force the list call to complete before initiating metadata calls
-            .mapNotNull { obj ->
+            .map { obj ->
                 coroutineScope {
                     async(Dispatchers.IO) {
-                        val generationId =
+                        Pair(
                             client
                                 .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
                                 ?.toLongOrNull()
-                                ?: 0L
-                        if (generationId < stream.minimumGenerationId) {
-                            Pair(generationId, obj)
-                        } else {
-                            null
-                        }
+                                ?: 0L,
+                            obj
+                        )
                     }
                 }
             }
-            .awaitAll() as List<Pair<Long, RemoteObject<*>>>
+            .awaitAll()
+            .filter { pair -> pair.first < stream.minimumGenerationId }
     }
 
     /**
