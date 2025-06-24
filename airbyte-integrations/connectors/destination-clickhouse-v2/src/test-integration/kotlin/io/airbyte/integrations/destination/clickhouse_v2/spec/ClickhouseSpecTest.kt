@@ -5,6 +5,5 @@
 package io.airbyte.integrations.destination.clickhouse_v2.spec
 
 import io.airbyte.cdk.load.spec.SpecTest
-import org.junit.jupiter.api.Disabled
 
 class ClickhouseSpecTest : SpecTest()
