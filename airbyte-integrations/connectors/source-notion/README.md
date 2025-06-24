@@ -72,6 +72,13 @@ You can run our full test suite locally using [`airbyte-ci`](https://github.com/
 airbyte-ci connectors --name=source-notion test
 ```
 
+You can also run only the tests thanks to [Poe the Poet](Poe the Poet) (see [Airbyte documentation](https://docs.airbyte.com/platform/connector-development/local-connector-development))
+
+In connector directory, run:
+```bash
+poe test-all
+```
+
 ### Customizing acceptance Tests
 
 Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
