@@ -4,7 +4,7 @@ A fresh implementation of ClickHouse leveraging our new CDK.
 
 ## Improvements over v1
 * All sync modes supported
-* Data will be typed and written to columns matching the defined schema
+* Data will be typed and written to columns matching the defined schema (Direct Load)
 * Performance improvements
 * Actively maintained and developed by Airbyte
 
@@ -19,7 +19,7 @@ All sync modes are supported.
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
 
-#### Output Schema
+### Output Schema
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
@@ -36,18 +36,18 @@ Airbyte types will be converted as follows:
     TimestampTypeWithoutTimezone -> DateTime64(3)
     Other Misc. -> String
 
-#### Requirements
+### Requirements
 
 To use the ClickHouse destination, you'll need:
 
 - A cloud ClickHouse instance
 - A ClickHouse server version 21.8.10.19 or above
 
-#### Configure Network Access
+### Configure Network Access
 
 Make sure your ClickHouse database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
 
-#### **Permissions**
+### **Permissions**
 
 You need a ClickHouse user with the following permissions:
 
