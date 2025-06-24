@@ -3009,6 +3009,43 @@ definitions:
         value: |
           {% set v = record.get('TopImpressionSharePercent') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+    ad_group_impression_performance_report_hourly_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllConversionRate
+        value: |
+          {% set v = record.get('AllConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - ConversionRate
+        value: |
+          {% set v = record.get('ConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionSharePercent
+        value: |
+          {% set v = record.get('TopImpressionSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
     campaign_impression_performance_report_transformations:
       - type: AddedFieldDefinition
         path:
@@ -3099,6 +3136,43 @@ definitions:
           - ClickSharePercent
         value: |
           {% set v = record.get('ClickSharePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityClicksPercent
+        value: |
+          {% set v = record.get('LowQualityClicksPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityConversionRate
+        value: |
+          {% set v = record.get('LowQualityConversionRate') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+    campaign_impression_performance_report_hourly_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AbsoluteTopImpressionRatePercent
+        value: |
+          {% set v = record.get('AbsoluteTopImpressionRatePercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - Ctr
+        value: |
+          {% set v = record.get('Ctr') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - LowQualityImpressionsPercent
+        value: |
+          {% set v = record.get('LowQualityImpressionsPercent') %}
+          {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - TopImpressionRatePercent
+        value: |
+          {% set v = record.get('TopImpressionRatePercent') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
       - type: AddedFieldDefinition
         path:
@@ -3410,6 +3484,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_group_impression_performance_report_hourly_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: ad_group_impression_performance_report_daily
@@ -3487,6 +3564,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/campaign_impression_performance_report_hourly_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: campaign_impression_performance_report_daily
@@ -3567,6 +3647,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/add_account_id_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/product_dimension_performance_report_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
           - name: product_dimension_performance_report_daily
