@@ -34,44 +34,6 @@ class BudgetSummaryReport(BingAdsReportingServiceStream):
         return original_value
 
 
-class AdGroupPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "AdGroupPerformanceReport"
-    report_schema_name = "ad_group_performance_report"
-
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "Language",
-    ]
-
-
-class AdGroupPerformanceReportHourly(HourlyReportTransformerMixin, AdGroupPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "ad_group_performance_report_hourly"
-
-
-class AdGroupPerformanceReportDaily(AdGroupPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AdGroupPerformanceReportWeekly(AdGroupPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class KeywordPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "KeywordPerformanceReport"
     report_schema_name = "keyword_performance_report"
