@@ -17,6 +17,7 @@ import com.amazonaws.retry.RetryMode
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest
+import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult
 import com.amazonaws.services.s3.model.ObjectMetadata
@@ -90,6 +91,11 @@ class S3LegacyJavaClient(val amazonS3: AmazonS3, val bucket: S3BucketConfigurati
 
     override suspend fun delete(key: String) {
         amazonS3.deleteObject(bucket.s3BucketName, key)
+    }
+
+    override suspend fun delete(keys: Set<String>) {
+        val request = DeleteObjectsRequest(bucket.s3BucketName).withKeys(*keys.toTypedArray())
+        amazonS3.deleteObjects(request)
     }
 
     override suspend fun startStreamingUpload(

@@ -10,10 +10,13 @@ import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.runtime.auth.credentials.StsAssumeRoleCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.CopyObjectRequest
 import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadRequest
+import aws.sdk.kotlin.services.s3.model.Delete
 import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
+import aws.sdk.kotlin.services.s3.model.DeleteObjectsRequest
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.sdk.kotlin.services.s3.model.HeadObjectRequest
 import aws.sdk.kotlin.services.s3.model.ListObjectsV2Request
+import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
@@ -37,6 +40,8 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.InputStream
 import kotlinx.coroutines.flow.flow
+
+private const val DELETE_BATCH_SIZE = 1000
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
@@ -132,6 +137,17 @@ class S3KotlinClient(
 
     override suspend fun delete(key: String) {
         delete(S3Object(key, bucketConfig))
+    }
+
+    override suspend fun delete(keys: Set<String>) {
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val deleteObjects = Delete { objects = chunk.map { ObjectIdentifier { key = it } } }
+            val request = DeleteObjectsRequest {
+                bucket = bucketConfig.s3BucketName
+                delete = deleteObjects
+            }
+            client.deleteObjects(request)
+        }
     }
 
     override suspend fun startStreamingUpload(
