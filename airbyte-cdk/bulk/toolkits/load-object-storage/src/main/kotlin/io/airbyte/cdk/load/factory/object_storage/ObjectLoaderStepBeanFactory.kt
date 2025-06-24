@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderOneShotUploader
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderOneShotUploaderStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
@@ -112,7 +114,10 @@ class ObjectLoaderStepBeanFactory {
         completedUploadQueue:
             PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
             null,
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<
+                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
         ObjectLoaderUploadCompleterStep<K, T>(
@@ -139,7 +144,10 @@ class ObjectLoaderStepBeanFactory {
             PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
             null,
         @Named("fileCompletedOutputPartitioner")
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<
+                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
         ObjectLoaderUploadCompleterStep(
@@ -185,5 +193,35 @@ class ObjectLoaderStepBeanFactory {
         loadStrategy: ObjectLoader
     ): FilePartAccumulatorFactory {
         return FilePartAccumulatorFactory(pathFactory, outputQueue, loadStrategy)
+    }
+
+    @Named("oneShotObjectLoaderStep")
+    @Singleton
+    fun <O : OutputStream, K : WithStream, T : RemoteObject<*>> oneShotObjectLoaderStep(
+        objectLoaderOneShotUploader: ObjectLoaderOneShotUploader<O, T>,
+        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("objectLoaderCompletedUploadQueue")
+        completedUploadQueue:
+            PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
+            null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<StreamKey, DestinationRecordRaw, K, T>? =
+            null,
+        taskFactory: LoadPipelineStepTaskFactory,
+    ) =
+        ObjectLoaderOneShotUploaderStep(
+            objectLoaderOneShotUploader,
+            completedUploadQueue,
+            completedUploadPartitioner,
+            taskFactory,
+            numInputPartitions,
+        )
+
+    @Named("uploadParallelismForSocket")
+    @Singleton
+    fun sharedUploadPermits(
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>
+    ): Int {
+        return dataChannelSocketPaths.size * 4
     }
 }

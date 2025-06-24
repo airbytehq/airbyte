@@ -36,7 +36,8 @@ class BigQueryRecordFormatter {
                     //   includes changes in-connector type coercion
                     //   and for raw tables, we only want changes that originated from the source
                     val protocolMeta = enrichedRecord.sourceMeta.asProtocolObject()
-                    protocolMeta.additionalProperties["sync_id"] = record.stream.syncId
+                    protocolMeta.additionalProperties[Meta.AIRBYTE_META_SYNC_ID] =
+                        record.stream.syncId
                     outputRecord[key] = protocolMeta.serializeToString()
                     // TODO we should do this for direct-load tables
                     // val serializedAirbyteMeta = (value.abValue as

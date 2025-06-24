@@ -34,43 +34,6 @@ class BudgetSummaryReport(BingAdsReportingServiceStream):
         return original_value
 
 
-class CampaignPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "CampaignPerformanceReport"
-
-    report_schema_name = "campaign_performance_report"
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-    ]
-
-
-class CampaignPerformanceReportHourly(HourlyReportTransformerMixin, CampaignPerformanceReport):
-    report_aggregation = "Hourly"
-
-    report_schema_name = "campaign_performance_report_hourly"
-
-
-class CampaignPerformanceReportDaily(CampaignPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class CampaignPerformanceReportWeekly(CampaignPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class CampaignImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
@@ -100,44 +63,6 @@ class CampaignImpressionPerformanceReportWeekly(CampaignImpressionPerformanceRep
 
 
 class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class AdGroupPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "AdGroupPerformanceReport"
-    report_schema_name = "ad_group_performance_report"
-
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "Language",
-    ]
-
-
-class AdGroupPerformanceReportHourly(HourlyReportTransformerMixin, AdGroupPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "ad_group_performance_report_hourly"
-
-
-class AdGroupPerformanceReportDaily(AdGroupPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AdGroupPerformanceReportWeekly(AdGroupPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
     report_aggregation = "Monthly"
 
 
@@ -295,30 +220,6 @@ class AccountImpressionPerformanceReportWeekly(AccountImpressionPerformanceRepor
 
 
 class AccountImpressionPerformanceReportMonthly(AccountImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class AgeGenderAudienceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "AgeGenderAudienceReport"
-
-    report_schema_name = "age_gender_audience_report"
-    primary_key = ["AgeGroup", "Gender", "TimePeriod", "AccountId", "CampaignId", "Language", "AdDistribution"]
-
-
-class AgeGenderAudienceReportHourly(HourlyReportTransformerMixin, AgeGenderAudienceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "age_gender_audience_report_hourly"
-
-
-class AgeGenderAudienceReportDaily(AgeGenderAudienceReport):
-    report_aggregation = "Daily"
-
-
-class AgeGenderAudienceReportWeekly(AgeGenderAudienceReport):
-    report_aggregation = "Weekly"
-
-
-class AgeGenderAudienceReportMonthly(AgeGenderAudienceReport):
     report_aggregation = "Monthly"
 
 
