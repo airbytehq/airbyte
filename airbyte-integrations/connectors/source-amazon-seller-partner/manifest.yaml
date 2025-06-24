@@ -9,11 +9,11 @@ check:
 
 spec:
   type: Spec
-  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
-  changelogUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
-  supportsNormalization: false
-  supportsDBT: false
-  connectionSpecification:
+  documentation_url: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  changelog_url: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  supports_normalization: false
+  supports_dbt: false
+  connection_specification:
     title: Amazon Seller Partner Spec
     type: object
     required:
@@ -251,6 +251,22 @@ spec:
         - '180'
         default: '180'
         order: 13
+      num_workers:
+        title: Number of Workers
+        description: The number of workers to use for the connector when syncing concurrently.
+        type: integer
+        default: 2
+        minimum: 2
+        maximum: 10
+        order: 14
+      max_async_job_count:
+        title: Maximum Concurrent Async Job Count
+        description: The maximum number of concurrent asynchronous job requests that can be active at a time.
+        type: integer
+        default: 2
+        minimum: 1
+        order: 15
+
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -302,81 +318,115 @@ spec:
             type: string
             path_in_connector_config:
             - lwa_client_secret
-  config_normalization_rules:
-    config_migrations:
-      - type: ConfigMigration
-        description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.\
-        transformations:
-          - type: AddFields
-            fields:
-              - type: AddedFieldDefinition
-                path: ["account_type"]
-                value: Seller
-            condition: "{{ not config.get('account_type', False) }}"
-      - type: ConfigMigration
-        description: tbd
-        transformations:
-          - type: AddFields
-            fields:
-              - type: AddedFieldDefinition
-                path: ["report_options_list"]
-                value: >-
-                  {% set report_options = [] %}
-                  {% set config_options = config.get('report_options', '[]') %}
-                  {% for stream_name, options in config_options.items() %}
-                      {% set options_list = [] %}
-                      {% for name, value in options.items() %}
-                          {% set _ = options_list.append({"option_name": name, "option_value": value}) %}
-                      {% endfor %}
-                      {% set _ = report_options.append({"report_name": stream_name, "stream_name": stream_name, "options_list": options_list}) %}
-                  {% endfor %}
-                  {{ report_options }}
-            condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path: ["endpoint"]
-            value: "{{ config['aws_environment'] }}"
-          - type: AddedFieldDefinition
-            path: ["marketplace_id"]
-            value: "{{ config['region'] }}"
-      - type: ConfigRemapField
-        field_path: ["endpoint"]
-        map:
-          PRODUCTION: https://sellingpartnerapi
-          SANDBOX:
-      - type: ConfigRemapField
-        field_path: ["endpoint"]
-        map:
-          AE: "{{ }}"
-          AU:
-          BE:
-          BR:
-          CA:
-          DE:
-          EG:
-          ES:
-          FR:
-          GB:
-          IN:
-          IT:
-          JP:
-          MX:
-          NL:
-          PL:
-          SA:
-          SE:
-          SG:
-          TR:
-          UK:
-          US:
-
+  # config_normalization_rules:
+  #   config_migrations:
+  #     - type: ConfigMigration
+  #       description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.
+  #       transformations:
+  #         - type: AddFields
+  #           fields:
+  #             - type: AddedFieldDefinition
+  #               path: ["account_type"]
+  #               value: Seller
+  #           condition: "{{ not config.get('account_type', False) }}"
+  #     - type: ConfigMigration
+  #       description: Starting from `4.3.0`, the `report_options_list` property holds a list of objects. This migration sets the `report_options_list` config property to a list of report option objects.
+  #       transformations:
+  #         - type: AddFields
+  #           fields:
+  #             - type: AddedFieldDefinition
+  #               path: ["report_options_list"]
+  #               value: >-
+  #                 {% set report_options = [] %}
+  #                 {% set config_options = config.get('report_options', []) %}
+  #                 {% for stream_name, options in config_options.items() %}
+  #                     {% set options_list = [] %}
+  #                     {% for name, value in options.items() %}
+  #                         {% set _ = options_list.append({"option_name": name, "option_value": value}) %}
+  #                     {% endfor %}
+  #                     {% set _ = report_options.append({"report_name": stream_name, "stream_name": stream_name, "options_list": options_list}) %}
+  #                 {% endfor %}
+  #                 {{ report_options }}
+  #           condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
+  #     - type: ConfigMigration
+  #       description: This migration sets the `report_name` property to the `stream_name` property if the option does not contain it.
+  #       transformations:
+  #         - type: AddFields
+  #           fields:
+  #             - type: AddedFieldDefinition
+  #               path: ["report_options_list"]
+  #               value: >-
+  #                 {% set report_options_list = config.get('report_options_list', []) %}
+  #                 {% for option in report_options_list %}
+  #                   {% if not option.get('report_name') %}
+  #                     {% set _ = option.update({'report_name': option.get('stream_name')}) %}
+  #                   {% endif %}
+  #                 {% endfor %}
+  #                 {{ report_options_list }}
+  #           condition: "{{ config.get('report_options_list', False) }}"
+  #   transformations:
+  #     - type: AddFields
+  #       fields:
+  #         - type: AddedFieldDefinition
+  #           path: ["endpoint"]
+  #           value: "{{ config['region'] }}"
+  #         - type: AddedFieldDefinition
+  #           path: ["marketplace_id"]
+  #           value: "{{ config['region'] }}"
+  #     - type: ConfigRemapField
+  #       field_path: ["endpoint"]
+  #       map:
+  #         AE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         AU: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+  #         BE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         BR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+  #         CA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+  #         DE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         EG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         ES: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         FR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         GB: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         IN: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         IT: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         JP: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+  #         MX: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+  #         NL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         PL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         SA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         SE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         SG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+  #         TR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         UK: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+  #         US: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+  #     - type: ConfigRemapField
+  #       field_path: ["marketplace_id"]
+  #       m ap:
+  #         AE: "A2VIGQ35RCS4UG"
+  #         DE: "A1PA6795UKMFR9"
+  #         PL: "A1C3SOZRARQ6R3"
+  #         EG: "ARBP9OOSHTCHU"
+  #         ES: "A1RKKUPIHCS9HS"
+  #         FR: "A13V1IB3VIYZZH"
+  #         IN: "A21TJRUUN4KGV"
+  #         IT: "APJ6JRA9NG5V4"
+  #         NL: "A1805IZSGTT6HS"
+  #         SA: "A17E79C6D8DWNP"
+  #         SE: "A2NODRKZP88ZB9"
+  #         TR: "A33AVAJ2PDY3EV"
+  #         UK: "A1F83G8C2ARO7P"
+  #         AU: "A39IBJ37TRP1C6"
+  #         JP: "A1VC38T7YXB528"
+  #         SG: "A19VAU5U5O7RUS"
+  #         US: "ATVPDKIKX0DER"
+  #         BR: "A2Q3Y263D00KWC"
+  #         CA: "A2EUQ1WTGCTBG2"
+  #         MX: "A1AM78C64UM0Y8"
+  #         BE: "AMEN7PMS3EDWL"
 
 definitions:
   authenticator:
     type: CustomAuthenticator
-    class_name: source_amazon_seller_partner.components.AmazonSPOauthAuthenticator
+    class_name: source_declarative_manifest.components.AmazonSPOauthAuthenticator
     client_id: "{{ config['lwa_app_id'] }}"
     client_secret: "{{ config['lwa_client_secret'] }}"
     refresh_token: "{{ config['refresh_token'] }}"
@@ -438,7 +488,7 @@ definitions:
                     http_codes:
                       - 403
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -513,7 +563,7 @@ definitions:
                     http_codes:
                       - 403
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 10
@@ -601,7 +651,7 @@ definitions:
                     http_codes:
                       - 403
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -679,7 +729,7 @@ definitions:
                     http_codes:
                       - 403
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -752,7 +802,7 @@ definitions:
                     http_codes:
                       - 403
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -827,7 +877,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -1167,7 +1217,7 @@ definitions:
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
         download_decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.GzipXmlDecoder
+          class_name: source_declarative_manifest.components.GzipXmlDecoder
       # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
       transformations:
         - type: AddFields
@@ -1214,7 +1264,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.LedgerDetailedViewReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.LedgerDetailedViewReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -1264,7 +1314,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.LedgerDetailedViewReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.LedgerDetailedViewReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -1396,12 +1446,12 @@ definitions:
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
         download_decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.SellerFeedbackReportsGzipCsvDecoder
+          class_name: source_declarative_manifest.components.SellerFeedbackReportsGzipCsvDecoder
         record_selector:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.SellerFeedbackReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.SellerFeedbackReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -1744,7 +1794,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.MerchantListingsFypReportTypeTransformer"
+            class_name: "source_declarative_manifest.components.MerchantListingsFypReportTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -1836,7 +1886,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -2178,7 +2228,7 @@ definitions:
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
         download_decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.GetXmlBrowseTreeDataDecoder
+          class_name: source_declarative_manifest.components.GetXmlBrowseTreeDataDecoder
       # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
       transformations:
         - type: AddFields
@@ -2222,7 +2272,7 @@ definitions:
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
         download_decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.GzipXmlDecoder
+          class_name: source_declarative_manifest.components.GzipXmlDecoder
       # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
       transformations:
         - type: AddFields
@@ -2270,7 +2320,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -2321,7 +2371,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -2371,7 +2421,7 @@ definitions:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -2426,12 +2476,12 @@ definitions:
             content-type: "application/json"
         decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.GzipCsvDecoder
+          class_name: source_declarative_manifest.components.GzipCsvDecoder
         record_selector:
           type: RecordSelector
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: "source_amazon_seller_partner.components.FlatFileSettlementV2ReportsTypeTransformer"
+            class_name: "source_declarative_manifest.components.FlatFileSettlementV2ReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -2461,7 +2511,7 @@ definitions:
               sellingProgram: "FRESH"
         download_decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.GzipJsonDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
         download_extractor:
           type: DpathExtractor
           field_path: ["forecastByAsin"]
@@ -2485,7 +2535,7 @@ definitions:
               sellingProgram: "RETAIL"
         download_decoder:
           type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.GzipJsonDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
         download_extractor:
           type: DpathExtractor
           field_path: ["forecastByAsin"]
@@ -2506,7 +2556,7 @@ definitions:
         - CANCELLED
       completed:
         - DONE
-    urls_extractor:
+    download_target_extractor:
       type: DpathExtractor
       field_path:
         - url
@@ -2536,7 +2586,7 @@ definitions:
 
     polling_requester:
       type: HttpRequester
-      path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
@@ -2545,7 +2595,7 @@ definitions:
 
     url_requester:
       type: HttpRequester
-      path: reports/2021-06-30/documents/{{stream_slice['polling_job_response'].json()['reportDocumentId']}}
+      path: reports/2021-06-30/documents/{{ polling_response['reportDocumentId'] }}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
@@ -2554,16 +2604,14 @@ definitions:
 
     download_requester:
       type: HttpRequester
-      path: "{{stream_slice.extra_fields['url'] }}"
+      path: "{{ download_target }}"
       url_base: "{{ config['endpoint'] }}"
       http_method: GET
       authenticator:
         type: NoAuth
-    #      request_headers:
-    #        content-type: "application/json"
     download_decoder:
       type: CustomDecoder
-      class_name: source_amazon_seller_partner.components.GzipCsvDecoder
+      class_name: source_declarative_manifest.components.GzipCsvDecoder
     download_extractor:
       type: DpathExtractor
       field_path: []
@@ -2632,10 +2680,6 @@ definitions:
         fields:
           - path: ["dataEndTime"]
             value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/flat_file_settlement_v2_helper"
 
 api_budget:
   type: HTTPAPIBudget
@@ -2710,8 +2754,9 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 2
-  max_concurrency: 2
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10
+max_concurrent_async_job_count: "{{ config.get('max_async_job_count', 2) }}"
 
 schemas:
   get_flat_file_all_orders_data_by_order_date_general:
