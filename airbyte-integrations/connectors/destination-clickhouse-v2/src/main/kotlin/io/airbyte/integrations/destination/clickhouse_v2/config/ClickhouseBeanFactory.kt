@@ -41,11 +41,9 @@ class ClickhouseBeanFactory {
             // database that does not exist, it will hard fail.
 
             // In order to solve this chicken-and-egg problem, we avoid setting the default db on
-            // the
-            // client.
+            // the client.
             // Instead, we resolve the default database in the ClickhouseConfiguration, which is
-            // used
-            // for table creation when the stream descriptor does not specificy a namespace
+            // used for table creation when the stream descriptor does not specificy a namespace
             // directly.
             Client.Builder()
                 .addEndpoint(config.endpoint)
