@@ -8,6 +8,7 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -301,3 +302,31 @@ class LightSubstreamPartitionRouter(SubstreamPartitionRouter):
                 cursor_slice=stream_slice.cursor_slice,
                 extra_fields=stream_slice.extra_fields,
             )
+
+class BulkStreamsStateMigration(StateMigration):
+    """
+    Due to a bug in python implementation legacy state may look like this:
+    "streamState": {
+      "account_id": {
+        "Modified Time": "valid modified time"
+      },
+      "Id": "Id",
+      [record data ...]
+      "Modified Time": null,
+      [record data ...]
+    }
+
+    It happens when received record doesn't have a cursor field and state updating logic stores it in state.
+    To avoid parsing null cursor fields that lead to value error, this state migration deletes top level cursor field if it's null.
+    """
+    cursor_field = "Modified Time"
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if self.cursor_field in stream_state.keys() and stream_state.get(self.cursor_field) is None:
+            return True
+        return False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if self.should_migrate(stream_state):
+            del stream_state[self.cursor_field]
+        return stream_state
