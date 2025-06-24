@@ -37,7 +37,7 @@ class ObjectStorageDestinationStateUTest {
 
     @BeforeEach
     fun setup() {
-        every { stream.descriptor } returns DestinationStream.Descriptor("test", "stream")
+        every { stream.mappedDescriptor } returns DestinationStream.Descriptor("test", "stream")
         every { pathFactory.getLongestStreamConstantPrefix(any()) } returns ""
     }
 
@@ -138,7 +138,7 @@ class ObjectStorageDestinationStateUTest {
                 val stream = firstArg<DestinationStream>()
                 val suffix = secondArg<String>()
                 PathMatcher(
-                    Regex("(${stream.descriptor.name})/([0-9]+)$suffix"),
+                    Regex("(${stream.mappedDescriptor.name})/([0-9]+)$suffix"),
                     mapOf("suffix" to 3)
                 )
             }
@@ -154,14 +154,14 @@ class ObjectStorageDestinationStateUTest {
         val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
 
         val dogStream = mockk<DestinationStream>(relaxed = true)
-        every { dogStream.descriptor } returns DestinationStream.Descriptor("test", "dog")
+        every { dogStream.mappedDescriptor } returns DestinationStream.Descriptor("test", "dog")
         every { dogStream.minimumGenerationId } returns 0L
         every { dogStream.shouldBeTruncatedAtEndOfSync() } returns true
         val dogState = persister.load(dogStream)
         assertEquals(0, dogState.getObjectsToDelete().size)
 
         val catStream = mockk<DestinationStream>(relaxed = true)
-        every { catStream.descriptor } returns DestinationStream.Descriptor("test", "cat")
+        every { catStream.mappedDescriptor } returns DestinationStream.Descriptor("test", "cat")
         every { catStream.minimumGenerationId } returns 3L
         every { catStream.shouldBeTruncatedAtEndOfSync() } returns true
         val catState = persister.load(catStream)
@@ -171,7 +171,8 @@ class ObjectStorageDestinationStateUTest {
         )
 
         val turtleStream = mockk<DestinationStream>(relaxed = true)
-        every { turtleStream.descriptor } returns DestinationStream.Descriptor("test", "turtle-1")
+        every { turtleStream.mappedDescriptor } returns
+            DestinationStream.Descriptor("test", "turtle-1")
         every { turtleStream.minimumGenerationId } returns 3L
         every { turtleStream.shouldBeTruncatedAtEndOfSync() } returns false
         val turtleState = persister.load(turtleStream)

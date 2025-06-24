@@ -40,8 +40,8 @@ class OpenStreamTask(
             result.getOrThrow()
             // in practice, if we're here, then `result` is by definition successful
             // (because otherwise, getOrThrow would have thrown)
-            syncManager.registerStartedStreamLoader(stream.descriptor, result)
-            streamsSeen.add(stream.descriptor)
+            syncManager.registerStartedStreamLoader(stream.mappedDescriptor, result)
+            streamsSeen.add(stream.mappedDescriptor)
             streamsSeen
         }
     }

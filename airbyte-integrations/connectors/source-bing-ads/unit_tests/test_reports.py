@@ -26,8 +26,6 @@ from source_bing_ads.report_streams import (
     AccountPerformanceReportMonthly,
     AdGroupImpressionPerformanceReportDaily,
     AdGroupImpressionPerformanceReportHourly,
-    AdGroupPerformanceReportDaily,
-    AdGroupPerformanceReportHourly,
     BudgetSummaryReport,
     CampaignImpressionPerformanceReportDaily,
     CampaignImpressionPerformanceReportHourly,
@@ -159,7 +157,6 @@ def test_get_updated_state_state_new_account():
         AccountImpressionPerformanceReportDaily,
         AccountPerformanceReportDaily,
         AdGroupImpressionPerformanceReportDaily,
-        AdGroupPerformanceReportDaily,
         AdPerformanceReportDaily,
         CampaignImpressionPerformanceReportDaily,
         KeywordPerformanceReportDaily,
@@ -184,7 +181,6 @@ def test_get_report_record_timestamp_without_aggregation():
         AccountImpressionPerformanceReportHourly,
         AccountPerformanceReportHourly,
         AdGroupImpressionPerformanceReportHourly,
-        AdGroupPerformanceReportHourly,
         AdPerformanceReportHourly,
         CampaignImpressionPerformanceReportHourly,
         KeywordPerformanceReportHourly,
@@ -444,7 +440,6 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
     "stream, response, records",
     [
         (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
-        (AdGroupPerformanceReportHourly, "hourly_reports/ad_group_performance.csv", "hourly_reports/ad_group_performance_records.json"),
         (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
         (
             CampaignImpressionPerformanceReportHourly,

@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import java.io.BufferedReader
 import java.io.InputStream
-import java.util.stream.Collectors.toMap
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
@@ -131,7 +130,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream.toAvroReader(stream.descriptor).use { reader ->
+                inputStream.toAvroReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
@@ -139,7 +138,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
-                inputStream.toParquetReader(stream.descriptor).use { reader ->
+                inputStream.toParquetReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }

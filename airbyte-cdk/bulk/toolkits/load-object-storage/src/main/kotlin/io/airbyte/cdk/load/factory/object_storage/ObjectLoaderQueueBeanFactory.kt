@@ -55,9 +55,13 @@ class ObjectLoaderQueueBeanFactory(
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>
     ): Long {
         if (dataChannelMedium == DataChannelMedium.SOCKET) {
-            return max(queue.clampedMessageSize, loader.partSizeBytes)
+            return max(
+                (dataChannelSocketPaths.size * 4L * 1024 * 1024),
+                max(queue.clampedMessageSize, loader.partSizeBytes),
+            )
         }
         return queue.clampedMessageSize
     }

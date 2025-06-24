@@ -37,14 +37,15 @@ class S3DataLakeWriter(
             > =
             mutableListOf()
         catalog.streams.forEach { incomingStream ->
-            val incomingTableId = tableIdGenerator.toTableIdentifier(incomingStream.descriptor)
+            val incomingTableId =
+                tableIdGenerator.toTableIdentifier(incomingStream.mappedDescriptor)
             if (processedTableIds.containsKey(incomingTableId)) {
                 val conflictingStream = processedTableIds[incomingTableId]!!
                 conflictingStreams.add(
-                    Triple(conflictingStream, incomingStream.descriptor, incomingTableId)
+                    Triple(conflictingStream, incomingStream.mappedDescriptor, incomingTableId)
                 )
             } else {
-                processedTableIds[incomingTableId] = incomingStream.descriptor
+                processedTableIds[incomingTableId] = incomingStream.mappedDescriptor
             }
         }
         if (conflictingStreams.isNotEmpty()) {

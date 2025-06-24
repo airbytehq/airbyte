@@ -119,6 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 3.0.10 | 2025-06-21 | [61902](https://github.com/airbytehq/airbyte/pull/61902) | Update dependencies |
 | 3.0.9 | 2025-06-14 | [61602](https://github.com/airbytehq/airbyte/pull/61602) | Update dependencies |
 | 3.0.8 | 2025-06-07 | [52290](https://github.com/airbytehq/airbyte/pull/52290) | Update dependencies |
 | 3.0.7 | 2025-01-11 | [43832](https://github.com/airbytehq/airbyte/pull/43832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

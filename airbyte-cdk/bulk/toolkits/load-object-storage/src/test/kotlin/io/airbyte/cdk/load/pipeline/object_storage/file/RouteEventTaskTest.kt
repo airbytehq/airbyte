@@ -80,7 +80,7 @@ class RouteEventTaskTest {
     fun `routes messages for streams with includes files to file queue and populates context`() =
         runTest {
             val stream = Fixtures.stream(includeFiles = true)
-            val key = StreamKey(stream.descriptor)
+            val key = StreamKey(stream.mappedDescriptor)
             val record = Fixtures.record()
             val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
             val releaseMemCallback: (suspend () -> Unit) = mockk(relaxed = true)
@@ -120,7 +120,7 @@ class RouteEventTaskTest {
         val stream = Fixtures.stream(includeFiles = true)
         val key = StreamKey(Fixtures.unmappedDescriptor)
 
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
+        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.mappedDescriptor)
         every { catalog.getStream(key.stream) } returns stream
 
         task.handleEvent(input)
@@ -131,7 +131,7 @@ class RouteEventTaskTest {
     @Test
     fun `routes messages for non-file streams to record queue`() = runTest {
         val stream = Fixtures.stream(includeFiles = false)
-        val key = StreamKey(stream.descriptor)
+        val key = StreamKey(stream.mappedDescriptor)
         val record = Fixtures.record()
         val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
 
@@ -153,7 +153,7 @@ class RouteEventTaskTest {
         val stream = Fixtures.stream(includeFiles = false)
         val key = StreamKey(Fixtures.unmappedDescriptor)
 
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
+        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.mappedDescriptor)
         every { catalog.getStream(key.stream) } returns stream
 
         task.handleEvent(input)

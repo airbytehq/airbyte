@@ -142,8 +142,8 @@ class MockBasicFunctionalityIntegrationTest :
                         // send a state message for a stream that isn't in the catalog.
                         // this should cause the sync to crash.
                         InputStreamCheckpoint(
-                            streamName = streamName,
-                            streamNamespace = streamNamespace,
+                            unmappedName = streamName,
+                            unmappedNamespace = streamNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
@@ -182,8 +182,9 @@ class MockBasicFunctionalityIntegrationTest :
                         checkpointKeyForMedium(),
                         listOf(
                             Checkpoint(
-                                DestinationStream.Descriptor("potato", "tomato"),
-                                Jsons.readTree("""{"foo": "bar"}""")
+                                unmappedNamespace = "potato",
+                                unmappedName = "tomato",
+                                state = Jsons.readTree("""{"foo": "bar"}""")
                             )
                         )
                     )

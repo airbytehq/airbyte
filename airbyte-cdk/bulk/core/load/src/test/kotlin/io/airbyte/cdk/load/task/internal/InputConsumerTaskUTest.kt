@@ -63,7 +63,7 @@ class InputConsumerTaskUTest {
     @BeforeEach
     fun setup() {
         dstream = mockk<DestinationStream>(relaxed = true)
-        every { dstream.descriptor } returns streamDescriptor
+        every { dstream.mappedDescriptor } returns streamDescriptor
         coEvery { catalog.streams } returns listOf(dstream)
         coEvery { fileTransferQueue.close() } returns Unit
         coEvery { recordQueueForPipeline.close() } returns Unit

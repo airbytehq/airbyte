@@ -39,7 +39,7 @@ class FilePartAccumulatorLegacyTest {
 
     @BeforeEach
     fun init() {
-        every { stream.descriptor } returns descriptor
+        every { stream.mappedDescriptor } returns descriptor
         every { loadStrategy.numUploadWorkers } returns 1
     }
 

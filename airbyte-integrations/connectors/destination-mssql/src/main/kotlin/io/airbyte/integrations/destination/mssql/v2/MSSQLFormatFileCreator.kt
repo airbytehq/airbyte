@@ -39,10 +39,10 @@ internal class MSSQLFormatFileCreator(
 
     fun createAndUploadFormatFile(defaultSchemaName: String): AzureBlob {
         // 1) Determine the target schema (namespace) to which this stream maps.
-        val targetSchema = stream.descriptor.namespace ?: defaultSchemaName
+        val targetSchema = stream.mappedDescriptor.namespace ?: defaultSchemaName
 
         // 2) Retrieve DB columns for the table (in ordinal order).
-        val dbColumns = fetchTableColumns(targetSchema, stream.descriptor.name)
+        val dbColumns = fetchTableColumns(targetSchema, stream.mappedDescriptor.name)
 
         // 3) Build a CSV-to-DB mapping so each CSV column lines up with the correct DB column.
         val csvColumnNames = stream.schema.withAirbyteMeta(true).toCsvHeader().toList()
@@ -227,6 +227,6 @@ internal class MSSQLFormatFileCreator(
      * "mySchema/myStreamName/format/1676999999999/formatFile.fmt"
      */
     private fun buildFormatFileBlobPath(outputSchema: String): String {
-        return "${outputSchema}/${stream.descriptor.name}/format/${System.currentTimeMillis()}/formatFile.fmt"
+        return "${outputSchema}/${stream.mappedDescriptor.name}/format/${System.currentTimeMillis()}/formatFile.fmt"
     }
 }

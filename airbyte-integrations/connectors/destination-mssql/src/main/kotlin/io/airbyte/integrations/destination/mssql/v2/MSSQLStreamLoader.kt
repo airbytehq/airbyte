@@ -18,7 +18,7 @@ class MSSQLStreamLoader(
     override suspend fun start() {
         super.start()
         streamStateStore.put(
-            stream.descriptor,
+            stream.mappedDescriptor,
             MSSQLDirectLoaderStreamState(dataSource, sqlBuilder)
         )
     }

@@ -117,23 +117,7 @@ def test_campaigns_stream_slices(mocked_client, config):
         ]
 
 
-def test_adgroups_stream_slices(mock_auth_token, requests_mock, config):
-    requests_mock.post(
-        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query",
-        status_code=200,
-        json={"User": {"Id": 1}},
-    )
-    requests_mock.post(
-        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
-        status_code=200,
-        json={
-            "Accounts": [
-                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
-                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
-                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
-            ]
-        },
-    )
+def test_adgroups_stream_slices(mock_auth_token, mock_user_query, mock_account_query, requests_mock, config):
     requests_mock.post(
         "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId",
         status_code=200,
@@ -168,23 +152,7 @@ def test_ads_request_body_data(mock_auth_token, config):
     }
 
 
-def test_ads_stream_slices(mock_auth_token, requests_mock, config):
-    requests_mock.post(
-        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query",
-        status_code=200,
-        json={"User": {"Id": 1}},
-    )
-    requests_mock.post(
-        "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
-        status_code=200,
-        json={
-            "Accounts": [
-                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
-                {"Id": 2, "LastModifiedTime": "2022-02-02T22:22:22"},
-                {"Id": 3, "LastModifiedTime": "2022-02-02T22:22:22"},
-            ]
-        },
-    )
+def test_ads_stream_slices(mock_auth_token, mock_user_query, mock_account_query, requests_mock, config):
     requests_mock.post(
         "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId",
         status_code=200,

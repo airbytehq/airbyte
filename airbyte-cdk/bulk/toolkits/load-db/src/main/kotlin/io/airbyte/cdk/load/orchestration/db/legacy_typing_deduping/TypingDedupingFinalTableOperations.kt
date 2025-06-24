@@ -27,7 +27,7 @@ class TypingDedupingFinalTableOperations(
         replace: Boolean
     ) {
         logger.info {
-            "Creating final table for stream ${stream.descriptor.toPrettyString()} with name ${finalTableName.toPrettyString()}"
+            "Creating final table for stream ${stream.mappedDescriptor.toPrettyString()} with name ${finalTableName.toPrettyString()}"
         }
         databaseHandler.execute(
             sqlGenerator.createFinalTable(
@@ -47,7 +47,7 @@ class TypingDedupingFinalTableOperations(
         columnNameMapping: ColumnNameMapping,
     ) {
         logger.info {
-            "Executing soft reset for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.toPrettyString()}"
+            "Executing soft reset for stream ${stream.mappedDescriptor.toPrettyString()} on tables ${tableNames.toPrettyString()}"
         }
         databaseHandler.execute(
             sqlGenerator.prepareTablesForSoftReset(stream, tableNames, columnNameMapping)
@@ -78,7 +78,7 @@ class TypingDedupingFinalTableOperations(
         finalTableSuffix: String,
     ) {
         logger.info {
-            "Overwriting final table for stream ${stream.descriptor.toPrettyString()} with name ${finalTableName.toPrettyString()} using temp table with suffix $finalTableSuffix"
+            "Overwriting final table for stream ${stream.mappedDescriptor.toPrettyString()} with name ${finalTableName.toPrettyString()} using temp table with suffix $finalTableSuffix"
         }
         databaseHandler.execute(
             sqlGenerator.overwriteFinalTable(
@@ -98,7 +98,7 @@ class TypingDedupingFinalTableOperations(
     ) {
         try {
             logger.info {
-                "Attempting typing and deduping for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.toPrettyString()} with suffix $finalTableSuffix"
+                "Attempting typing and deduping for stream ${stream.mappedDescriptor.toPrettyString()} on tables ${tableNames.toPrettyString()} with suffix $finalTableSuffix"
             }
             val unsafeSql =
                 sqlGenerator.updateFinalTable(
@@ -113,7 +113,7 @@ class TypingDedupingFinalTableOperations(
         } catch (e: Exception) {
             if (sqlGenerator.supportsExpensiveSaferCasting) {
                 logger.info(e) {
-                    "Encountered Exception on unsafe SQL for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.toPrettyString()} with suffix $finalTableSuffix, re-attempting with error handling"
+                    "Encountered Exception on unsafe SQL for stream ${stream.mappedDescriptor.toPrettyString()} on tables ${tableNames.toPrettyString()} with suffix $finalTableSuffix, re-attempting with error handling"
                 }
                 val saferSql =
                     sqlGenerator.updateFinalTable(
@@ -127,7 +127,7 @@ class TypingDedupingFinalTableOperations(
                 databaseHandler.execute(saferSql)
             } else {
                 logger.info(e) {
-                    "Encountered Exception on unsafe SQL for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.toPrettyString()} with suffix $finalTableSuffix, not retrying"
+                    "Encountered Exception on unsafe SQL for stream ${stream.mappedDescriptor.toPrettyString()} on tables ${tableNames.toPrettyString()} with suffix $finalTableSuffix, not retrying"
                 }
                 throw e
             }

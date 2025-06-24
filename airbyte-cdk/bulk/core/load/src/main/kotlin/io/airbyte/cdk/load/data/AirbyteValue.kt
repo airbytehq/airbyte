@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.time.ZonedDateTime
 
 sealed interface AirbyteValue {
     companion object {
@@ -35,6 +36,7 @@ sealed interface AirbyteValue {
                 is BigDecimal -> NumberValue(value)
                 is LocalDate -> DateValue(value)
                 is OffsetDateTime -> TimestampWithTimezoneValue(value)
+                is ZonedDateTime -> TimestampWithTimezoneValue(value.toOffsetDateTime())
                 is LocalDateTime -> TimestampWithoutTimezoneValue(value)
                 is OffsetTime -> TimeWithTimezoneValue(value)
                 is LocalTime -> TimeWithoutTimezoneValue(value)
@@ -191,8 +193,8 @@ class EnrichedAirbyteValue(
      * @param newValue The new (truncated) value to use
      */
     fun truncate(
-        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
-        newValue: AirbyteValue
+        newValue: AirbyteValue,
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION
     ) {
         val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
 

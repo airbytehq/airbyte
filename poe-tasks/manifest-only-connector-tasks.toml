@@ -45,6 +45,7 @@ fi
 '''
 test-integration-tests = "airbyte-cdk connector test ${POE_PWD}"
 format-check = "echo 'No format check step for this connector.'"
+lint-check = "echo 'No lint check step for this connector."
 
 lock.shell = '''
 set -eu # Ensure we return non-zero exit code upon failure

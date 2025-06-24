@@ -67,7 +67,7 @@ class StatsEmitterTest {
         val dstStream = mockk<DestinationStream>()
         every { dstStream.unmappedNamespace } returns "foo"
         every { dstStream.unmappedName } returns "bar"
-        every { dstStream.descriptor } returns testDescriptor
+        every { dstStream.mappedDescriptor } returns testDescriptor
         catalog = mockk { every { streams } returns listOf(dstStream) }
 
         recordingConsumer = RecordingOutputConsumer()

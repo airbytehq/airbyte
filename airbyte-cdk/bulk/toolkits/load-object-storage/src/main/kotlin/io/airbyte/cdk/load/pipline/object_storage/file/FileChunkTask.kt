@@ -95,7 +95,7 @@ class FileChunkTask<T>(
                 log.info { "Processing file ${file.stagingFileUrl} with $numParts parts" }
 
                 val uploadId = uploadIdGenerator.generate()
-                val objectKey = ObjectKey(stream.descriptor, filePath, uploadId)
+                val objectKey = ObjectKey(stream.mappedDescriptor, filePath, uploadId)
 
                 parts.forEach {
                     log.info { "Read ${it.bytes?.size ?: 0} bytes from ${file.stagingFileUrl}" }

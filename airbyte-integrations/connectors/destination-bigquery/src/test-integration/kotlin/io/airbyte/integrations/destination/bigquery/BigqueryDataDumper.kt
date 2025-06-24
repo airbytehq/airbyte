@@ -49,7 +49,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         val (_, rawTableName) =
-            BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
+            BigqueryRawTableNameGenerator(config).getTableName(stream.mappedDescriptor)
 
         return bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName))?.let { table ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
@@ -95,7 +95,7 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         val (datasetName, finalTableName) =
-            BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor)
+            BigqueryFinalTableNameGenerator(config).getTableName(stream.mappedDescriptor)
 
         return bigquery.getTable(TableId.of(datasetName, finalTableName))?.let { table ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!

@@ -4,15 +4,17 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
-import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.isCdc;
+import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.*;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.*;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,8 +33,8 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.*;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
@@ -66,8 +68,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.sql.*;
-import java.time.Duration;
-import java.time.Instant;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -107,6 +110,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private List<String> schemas;
   private int stateEmissionFrequency;
   private final FeatureFlags featureFlags;
+  public static final String REPLICATION_INCREMENTAL_EXCLUDE_TODAYS = "exclude_todays_data";
 
   public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -254,7 +258,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         LOGGER.info("Get columns for schema: {}", schema);
         try {
           return super.discoverInternal(database, schema).stream();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new ConfigErrorException(String.format("Error getting columns for schema: %s", schema), e);
         }
       }).collect(toList());
@@ -411,7 +415,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                                       final @NotNull ConfiguredAirbyteCatalog catalog,
                                                                                       final @NotNull Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                                       final StateManager stateManager,
-                                                                                      final @NotNull Instant emittedAt) {
+                                                                                      final @NotNull Instant emittedAt,
+                                                                                      final @NotNull boolean excludeTodaysData) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
@@ -421,6 +426,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       if (isAnyStreamIncrementalSyncMode(catalog)) {
         LOGGER.info("Syncing via Primary Key");
         final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+
+        if (excludeTodaysData) {
+          setCutoffCursorTime(tableNameToTable, cursorBasedStateManager.getPairToCursorInfoMap());
+        }
+
         final InitialLoadStreams initialLoadStreams =
             filterStreamInIncrementalMode(streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog));
         final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
@@ -447,7 +457,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                 new ConfiguredAirbyteCatalog().withStreams(
                     cursorBasedStreams.streamsForCursorBased()),
                 tableNameToTable,
-                cursorBasedStateManager, emittedAt));
+                cursorBasedStateManager, emittedAt, excludeTodaysData));
 
         return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
 
@@ -455,7 +465,43 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     LOGGER.info("using CDC: {}", false);
-    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt, excludeTodaysData);
+  }
+
+  private static void setCutoffCursorTime(@NotNull Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                          @NotNull Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
+    LOGGER.info("Excluding Today's Date for incremental streams with temporal cursors");
+    pairToCursorInfoMap.forEach((pair, cursorInfo) -> {
+      final TableInfo<CommonField<JDBCType>> tableInfo = tableNameToTable.get("%s.%s".formatted(pair.getNamespace(), pair.getName()));
+      final Optional<CommonField<JDBCType>> maybeCursorField =
+          tableInfo.getFields().stream().filter(f -> f.getName().equals(cursorInfo.getCursorField()))
+              .findFirst();
+      maybeCursorField.ifPresent(f -> {
+        LOGGER.info("Setting cutoff time for stream {} with cursor field {} ({}) to exclude today's data", pair, f.getName(), f.getType());
+        setCursorCutoffInfoForValue(cursorInfo, f, Instant.now());
+        LOGGER.info("Set cutoff time for stream {} with cursor field {} to {}", pair, f.getName(), cursorInfo.getCutoffTime());
+      });
+    });
+  }
+
+  @VisibleForTesting
+  static void setCursorCutoffInfoForValue(CursorInfo cursorInfo, @NotNull CommonField<JDBCType> f, Instant nowInstant) {
+    switch (f.getType()) {
+      case JDBCType.DATE -> {
+        final var instant = nowInstant.minus(1, ChronoUnit.DAYS).atOffset(ZoneOffset.UTC);
+        cursorInfo.setCutoffTime(ISO_LOCAL_DATE.format(instant));
+      }
+      case JDBCType.TIMESTAMP -> {
+        final var instant = nowInstant.atOffset(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+        cursorInfo.setCutoffTime(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(instant));
+      }
+      case JDBCType.TIMESTAMP_WITH_TIMEZONE -> {
+        final var instant = nowInstant.atOffset(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+        cursorInfo.setCutoffTime(TIMESTAMPTZ_FORMATTER.format(instant));
+      }
+      default -> LOGGER.warn("Only temporal cursors can exclude today's data. Cursor {} of JDBC type {} cannot exclude today's data", f.getName(),
+          f.getType());
+    }
   }
 
   @Override
@@ -469,7 +515,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  protected void checkUserHasPrivileges(JsonNode config, JdbcDatabase database) {}
+  protected void checkUserHasPrivileges(final JsonNode config, final JdbcDatabase database) {}
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
     return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
@@ -537,12 +583,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         additionalParameters.add("trustServerCertificate=false");
 
         if (config.has("certificate")) {
-          String certificate = config.get("certificate").asText();
-          String password = RandomStringUtils.secure().nextAlphanumeric(100);
+          final String certificate = config.get("certificate").asText();
+          final String password = RandomStringUtils.secure().nextAlphanumeric(100);
           final URI keyStoreUri;
           try {
             keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);
-          } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+          } catch (final IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             throw new RuntimeException(e);
           }
           additionalParameters
@@ -560,7 +606,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedType = getSupportedStateType(config);
     final StateManager stateManager = StateManagerFactory.createStateManager(supportedType,
@@ -613,7 +661,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (initialLoadStateManager != null) {
       return;
     }
-    var sourceConfig = database.getSourceConfig();
+    final var sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
       initialLoadStateManager = getMssqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString());
     } else {
@@ -630,7 +678,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                             final ConfiguredAirbyteStream airbyteStream,
                                                             final ConfiguredAirbyteCatalog catalog,
                                                             final StateManager stateManager) {
-    var sourceConfig = database.getSourceConfig();
+    final var sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
       return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(),
           getQuoteString())
@@ -644,12 +692,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
-    if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
-        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
-      return true;
-    }
-
-    return false;
+    return airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
+        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty();
   }
 
   @Override
@@ -668,6 +712,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final var completeStatus =
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
+  }
+
+  @Override
+  protected boolean isExcludeTodayDateForCursorIncremental(@NotNull JsonNode config) {
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
+      if (MssqlCdcHelper.ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.STANDARD) {
+        if (replicationConfig.hasNonNull(REPLICATION_INCREMENTAL_EXCLUDE_TODAYS)) {
+          return replicationConfig.get(REPLICATION_INCREMENTAL_EXCLUDE_TODAYS).asBoolean(false);
+        }
+      }
+    }
+    return false;
   }
 
 }

@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.file.object_storage
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
-import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
@@ -103,6 +103,11 @@ class ObjectStoragePathFactory(
             fileFormatExtension ?: compressionExtension
         }
 
+    private val pathVariablesConstant = getPathVariables(pathConfig)
+
+    private val pathVariablesStreamConstant =
+        pathVariablesConstant.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
+
     /**
      * Variable substitution is complex.
      *
@@ -161,6 +166,53 @@ class ObjectStoragePathFactory(
         override fun toMacro(): String = "{$variable}"
     }
 
+    private fun getPathVariables(pathConfig: ObjectStoragePathConfiguration): List<PathVariable> {
+        return listOf(
+            PathVariable("SYNC_ID") { pathConfig.resolveNamesMethod(it.stream.syncId.toString()) },
+            PathVariable("NAMESPACE") {
+                pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.namespace ?: "")
+            },
+            PathVariable("STREAM_NAME") {
+                pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.name)
+            },
+            PathVariable("YEAR", """\d{4}""") {
+                ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
+            },
+            PathVariable("MONTH", """\d{2}""") {
+                String.format(
+                    "%02d",
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue
+                )
+            },
+            PathVariable("DAY", """\d{2}""") {
+                String.format(
+                    "%02d",
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth
+                )
+            },
+            PathVariable("HOUR", """\d{2}""") {
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour)
+            },
+            PathVariable("MINUTE", """\d{2}""") {
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute)
+            },
+            PathVariable("SECOND", """\d{2}""") {
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second)
+            },
+            PathVariable("MILLISECOND", """\d{4}""") {
+                // Unclear why this is %04d, but that's what it was in the old code
+                String.format(
+                    "%04d",
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC"))
+                        .toLocalTime()
+                        .toNanoOfDay() / 1_000_000 % 1_000
+                )
+            },
+            PathVariable("EPOCH", """\d+""") { it.syncTime.toEpochMilli().toString() },
+            PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
+        )
+    }
+
     companion object {
         private val DATE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyy_MM_dd").withZone(ZoneId.systemDefault())
@@ -169,61 +221,7 @@ class ObjectStoragePathFactory(
         const val DEFAULT_PATH_FORMAT =
             "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_"
         const val DEFAULT_FILE_FORMAT = "{part_number}{format_extension}"
-        val PATH_VARIABLES =
-            listOf(
-                PathVariable("NAMESPACE") {
-                    Transformations.toS3SafeCharacters(it.stream.descriptor.namespace ?: "")
-                },
-                PathVariable("STREAM_NAME") {
-                    Transformations.toS3SafeCharacters(it.stream.descriptor.name)
-                },
-                PathVariable("YEAR", """\d{4}""") {
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
-                },
-                PathVariable("MONTH", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue
-                    )
-                },
-                PathVariable("DAY", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth
-                    )
-                },
-                PathVariable("HOUR", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour
-                    )
-                },
-                PathVariable("MINUTE", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute
-                    )
-                },
-                PathVariable("SECOND", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second
-                    )
-                },
-                PathVariable("MILLISECOND", """\d{4}""") {
-                    // Unclear why this is %04d, but that's what it was in the old code
-                    String.format(
-                        "%04d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC"))
-                            .toLocalTime()
-                            .toNanoOfDay() / 1_000_000 % 1_000
-                    )
-                },
-                PathVariable("EPOCH", """\d+""") { it.syncTime.toEpochMilli().toString() },
-                PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
-            )
-        val PATH_VARIABLES_STREAM_CONSTANT =
-            PATH_VARIABLES.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
+
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") {
@@ -280,8 +278,8 @@ class ObjectStoragePathFactory(
         val path =
             getFormattedPath(
                 stream,
-                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES,
+                if (substituteStreamAndNamespaceOnly) pathVariablesStreamConstant
+                else pathVariablesConstant,
             )
         return resolveRetainingTerminalSlash(path)
     }
@@ -311,7 +309,7 @@ class ObjectStoragePathFactory(
 
     private fun getFormattedPath(
         stream: DestinationStream,
-        variables: List<PathVariable> = PATH_VARIABLES,
+        variables: List<PathVariable> = pathVariablesConstant,
     ): String {
         val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
@@ -326,7 +324,7 @@ class ObjectStoragePathFactory(
     }
 
     private fun getPathVariableToPattern(stream: DestinationStream): Map<String, String> {
-        return PATH_VARIABLES.associate {
+        return pathVariablesConstant.associate {
             it.variable to
                 (
                 // Only escape the pattern if

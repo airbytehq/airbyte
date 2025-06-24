@@ -138,33 +138,6 @@ class BingAdsBulkStream(BingAdsBaseStream, CheckpointMixin, ABC):
         return actual_record
 
 
-class AppInstallAds(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
-    """
-
-    data_scope = ["EntityData"]
-    download_entities = ["AppInstallAds"]
-
-
-class AppInstallAdLabels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
-    """
-
-    data_scope = ["EntityData"]
-    download_entities = ["AppInstallAdLabels"]
-
-
-class Labels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
-    """
-
-    data_scope = ["EntityData"]
-    download_entities = ["Labels"]
-
-
 class KeywordLabels(BingAdsBulkStream):
     """
     https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
@@ -190,15 +163,6 @@ class CampaignLabels(BingAdsBulkStream):
 
     data_scope = ["EntityData"]
     download_entities = ["CampaignLabels"]
-
-
-class AdGroupLabels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
-    """
-
-    data_scope = ["EntityData"]
-    download_entities = ["AdGroupLabels"]
 
 
 class Budget(BingAdsBulkStream):
