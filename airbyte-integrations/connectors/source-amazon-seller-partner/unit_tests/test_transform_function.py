@@ -4,8 +4,9 @@
 
 
 import pytest
-from integration.utils import config, get_stream_by_name
-from source_amazon_seller_partner.components import (
+from .conftest import get_stream_by_name
+from .integration.utils import config
+from components import (
     FlatFileSettlementV2ReportsTypeTransformer,
     LedgerDetailedViewReportsTypeTransformer,
     MerchantListingsFypReportTypeTransformer,
