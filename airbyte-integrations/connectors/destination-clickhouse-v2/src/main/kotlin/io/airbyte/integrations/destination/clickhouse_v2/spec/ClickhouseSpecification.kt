@@ -25,7 +25,7 @@ class ClickhouseSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Port")
     @get:JsonPropertyDescription("HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443")
     @get:JsonProperty("port")
-    @get:JsonSchemaInject(json = """{"order": 1}""")
+    @get:JsonSchemaInject(json = """{"order": 1, "default": "8443"}""")
     val port: String = "8443"
 
     @get:JsonSchemaTitle("Protocol")
@@ -37,13 +37,13 @@ class ClickhouseSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Database")
     @get:JsonPropertyDescription("Name of the database.")
     @get:JsonProperty("database")
-    @get:JsonSchemaInject(json = """{"order": 3}""")
+    @get:JsonSchemaInject(json = """{"order": 3, "default": "default"}""")
     val database: String = "default"
 
     @get:JsonSchemaTitle("Username")
     @get:JsonPropertyDescription("Username to use to access the database.")
     @get:JsonProperty("username")
-    @get:JsonSchemaInject(json = """{"order": 4}""")
+    @get:JsonSchemaInject(json = """{"order": 4, "default": "default"}""")
     val username: String = "default"
 
     @get:JsonSchemaTitle("Password")

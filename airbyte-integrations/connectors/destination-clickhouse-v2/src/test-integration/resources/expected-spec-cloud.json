@@ -16,27 +16,30 @@
         "type" : "string",
         "description" : "HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443",
         "title" : "Port",
-        "order" : 1
+        "order" : 1,
+        "default" : "8443"
       },
       "protocol" : {
         "type" : "string",
         "enum" : [ "http", "https" ],
-        "description" : "HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443",
+        "description" : "Protocol for the database connection string.",
         "title" : "Protocol",
         "order" : 2,
-        "airbyte_hidden" : true
+        "default" : "https"
       },
       "database" : {
         "type" : "string",
         "description" : "Name of the database.",
         "title" : "Database",
-        "order" : 3
+        "order" : 3,
+        "default" : "default"
       },
       "username" : {
         "type" : "string",
         "description" : "Username to use to access the database.",
         "title" : "Username",
-        "order" : 4
+        "order" : 4,
+        "default" : "default"
       },
       "password" : {
         "type" : "string",
