@@ -56,7 +56,7 @@ class ClickhouseCheckerTest {
             )
         }
         verify {
-            client.insert(checker.tableName, any<InputStream>(), ClickHouseFormat.JSONEachRow)
+            client.insert("${Fixtures.config.database}.${checker.tableName}", any<InputStream>(), ClickHouseFormat.JSONEachRow)
         }
     }
 
