@@ -41,6 +41,8 @@ import jakarta.inject.Singleton
 import java.io.InputStream
 import kotlinx.coroutines.flow.flow
 
+private const val DELETE_BATCH_SIZE = 1000
+
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
     val keyWithBucketName
@@ -138,12 +140,14 @@ class S3KotlinClient(
     }
 
     override suspend fun delete(keys: Set<String>) {
-        val deleteObjects = Delete { objects = keys.map { ObjectIdentifier { key = it } } }
-        val request = DeleteObjectsRequest {
-            bucket = bucketConfig.s3BucketName
-            delete = deleteObjects
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val deleteObjects = Delete { objects = chunk.map { ObjectIdentifier { key = it } } }
+            val request = DeleteObjectsRequest {
+                bucket = bucketConfig.s3BucketName
+                delete = deleteObjects
+            }
+            client.deleteObjects(request)
         }
-        client.deleteObjects(request)
     }
 
     override suspend fun startStreamingUpload(

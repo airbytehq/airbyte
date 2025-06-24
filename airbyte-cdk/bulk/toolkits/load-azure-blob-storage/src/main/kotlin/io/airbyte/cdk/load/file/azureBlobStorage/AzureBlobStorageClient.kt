@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.flow
  */
 const val GENERATION_ID_METADATA_KEY_OVERRIDE = "ab_generation_id"
 
+private const val DELETE_BATCH_SIZE = 256
+
 /** Represents a single blob in Azure. */
 data class AzureBlob(
     override val key: String,
@@ -133,14 +135,16 @@ class AzureBlobClient(
 
     override suspend fun delete(keys: Set<String>) {
         val batchClient = BlobBatchClientBuilder(serviceClient).buildClient()
-        val blobUrls =
-            keys.map { key ->
-                serviceClient
-                    .getBlobContainerClient(blobConfig.containerName)
-                    .getBlobClient(key)
-                    .blobUrl
-            }
-        batchClient.deleteBlobs(blobUrls, DeleteSnapshotsOptionType.INCLUDE)
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val blobUrls =
+                chunk.map { key ->
+                    serviceClient
+                        .getBlobContainerClient(blobConfig.containerName)
+                        .getBlobClient(key)
+                        .blobUrl
+                }
+            batchClient.deleteBlobs(blobUrls, DeleteSnapshotsOptionType.INCLUDE)
+        }
     }
 
     override suspend fun startStreamingUpload(
