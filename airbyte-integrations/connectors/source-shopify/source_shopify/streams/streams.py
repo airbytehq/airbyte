@@ -7,6 +7,7 @@ import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     Company,

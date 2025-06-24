@@ -4,6 +4,8 @@
 
 from typing import Any, Dict, Mapping
 
+__all__ = ["B2BEnricher"]
+
 
 class B2BEnricher:
     """

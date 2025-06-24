@@ -3395,7 +3395,7 @@ class CompanyLocation(ShopifyBulkQuery):
     query_name = "companyLocations"
     sort_key = "UPDATED_AT"
 
-    address_fields: List[Field] = [
+    address_fields: List[str] = [
         "firstName",
         "lastName", 
         "company",
