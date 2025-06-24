@@ -354,7 +354,7 @@ spec:
                       {%- set _ = report_options.append({"report_name": stream_name, "stream_name": stream_name, "options_list": options_list}) -%}
                   {%- endfor -%}
                   {{- report_options -}}
-            condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
+            condition: "{{ not config.get('report_options_list', False) and config.get('report_options', False) }}"
       - type: ConfigMigration
         description: This migration sets the `report_name` property to the `stream_name` property if the option does not contain it.
         transformations:
@@ -384,28 +384,28 @@ spec:
       - type: ConfigRemapField
         field_path: ["endpoint"]
         map:
-          AE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          AU: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
-          BE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          BR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-          CA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-          DE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          EG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          ES: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          FR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          GB: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          IN: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          IT: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          JP: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
-          MX: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-          NL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          PL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          SA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          SE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          SG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
-          TR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          UK: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-          US: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          AE: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          AU: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+          BE: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          BR: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          CA: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          DE: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          EG: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          ES: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          FR: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          GB: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          IN: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          IT: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          JP: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+          MX: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          NL: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          PL: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          SA: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          SE: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          SG: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+          TR: "{{ 'https://sellingpartnerapi' if config.get['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          UK: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          US: "{{ 'https://sellingpartnerapi' if config['aws_environment'] == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
       - type: ConfigRemapField
         field_path: ["marketplace_id"]
         map:
