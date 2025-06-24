@@ -1,4 +1,5 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
@@ -318,7 +319,8 @@ class BulkStreamsStateMigration(StateMigration):
     }
 
     It happens when received record doesn't have a cursor field and state updating logic stores it in state.
-    To avoid parsing null cursor fields that lead to value error, this state migration deletes top level cursor field if it's null.
+    To avoid parsing null cursor fields that lead to value error, this state migration deletes the top level cursor field and records data
+    if the cursor is null.
     """
 
     cursor_field = "Modified Time"
@@ -330,5 +332,10 @@ class BulkStreamsStateMigration(StateMigration):
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if self.should_migrate(stream_state):
-            del stream_state[self.cursor_field]
+            state_copy = deepcopy(stream_state)
+
+            for key, value in state_copy.items():
+                if not isinstance(value, dict):
+                    del stream_state[key]
+
         return stream_state

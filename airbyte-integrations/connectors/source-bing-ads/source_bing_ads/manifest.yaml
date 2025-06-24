@@ -1764,9 +1764,9 @@ definitions:
         class_name: source_bing_ads.components.BulkDatetimeToRFC3339
     incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
     state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
       - type: CustomStateMigration
         class_name: source_bing_ads.components.BulkStreamsStateMigration
+      - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
   basic_async_retriever:

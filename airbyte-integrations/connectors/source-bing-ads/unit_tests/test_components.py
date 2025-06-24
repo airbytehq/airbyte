@@ -801,7 +801,7 @@ class TestBingAdsCampaignsRecordTransformer:
                 "Match Type": None,
                 "Modified Time": None,
             },
-            {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}, "Id": "1111111", "Match Type": None},
+            {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}},
         ),
         ({"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}, {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}),
         (
