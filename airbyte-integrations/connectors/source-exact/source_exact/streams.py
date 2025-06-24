@@ -52,13 +52,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         for division in self._divisions:
             self._state_per_division[str(division)] = {}
 
-        # self._single_refresh_token_authenticator = SingleUseRefreshTokenOauth2Authenticator(
-        #     connector_config=config,
-        #     token_refresh_endpoint=f"{self._base_url}/api/oauth2/token",
-        # )
-        # self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
-        #
-        # super().__init__(self._single_refresh_token_authenticator)
         super().__init__(authenticator=self.api.authenticator)
 
     @property
