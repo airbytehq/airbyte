@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery
 
+import com.google.api.gax.retrying.RetrySettings
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
@@ -34,6 +35,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import org.threeten.bp.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -108,6 +110,13 @@ class BigqueryBeansFactory {
             .setProjectId(config.projectId)
             .setCredentials(credentials)
             .setHeaderProvider(BigQueryUtils.headerProvider)
+            .setRetrySettings(
+                RetrySettings.newBuilder()
+                    .setMaxAttempts(15)
+                    .setRetryDelayMultiplier(1.5)
+                    .setTotalTimeout(Duration.ofMinutes(60))
+                    .build()
+            )
             .build()
             .service
     }
