@@ -54,8 +54,9 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 <details>
   <summary>Expand to review</summary>
 
-The connector is still incubating; this section exists to satisfy Airbyte's QA checks.
-
-- 0.1.0
+| Version | Date       | Pull Request                                           | Subject                                                                   |
+|:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.1.2 | 2025-06-12 | [170](https://github.com/airbytehq/airbyte-enterprise/pull/170) | Update dependencies |
+| 0.1.0 | 2025-04-10 | [85](https://github.com/airbytehq/airbyte-enterprise/pull/85) | New source |
 
 </details>
