@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.integrationTest.DLQ_INTEGRATION_TEST_ENV
+import io.airbyte.cdk.load.integrationTest.DLQ_SAMPLE_TEST
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
@@ -133,6 +135,7 @@ open class AbstractDlqWriteTest(
 class NoBucketDlqWriteTest :
     AbstractDlqWriteTest(
         configContent = """{"objectStorageConfig":{"storage_type":"None"}}""",
+        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
     ) {
     @Test
     override fun testBasicWrite() {
@@ -140,10 +143,21 @@ class NoBucketDlqWriteTest :
     }
 }
 
-class MockBucketDlqWriteTest :
+class MockBucketDlqFromRecordSampleTest :
     AbstractDlqWriteTest(
         configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
-        additionalMicronautEnvs = listOf("MockObjectStorage"),
+        additionalMicronautEnvs = listOf("MockObjectStorage", DLQ_INTEGRATION_TEST_ENV),
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class MockBucketDlqFromNewRecordsTest :
+    AbstractDlqWriteTest(
+        configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
+        additionalMicronautEnvs = listOf("MockObjectStorage", DLQ_INTEGRATION_TEST_ENV, DLQ_SAMPLE_TEST),
     ) {
     @Test
     override fun testBasicWrite() {
