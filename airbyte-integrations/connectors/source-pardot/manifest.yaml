@@ -4760,7 +4760,7 @@ schemas:
         type:
           - string
           - "null"
-      format: date-time
+        format: date-time
       id:
         type: integer
       isDeleted:
