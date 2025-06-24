@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.integrationTest.DlqStateFactory
@@ -17,15 +21,18 @@ class DlqStateWithNewRecords : DlqTestState {
 
     override fun isFull(): Boolean = records.size > 2
 
-    override fun flush(): List<DestinationRecordRaw>? = records
-        .filter { it.hasAnEvenId() }
-        .map {
-            it.toDlqRecord(mapOf(
-                "error" to UUID.randomUUID(),
-                "message" to "very custom error message",
-            ))
-        }
-        .ifEmpty { null }
+    override fun flush(): List<DestinationRecordRaw>? =
+        records
+            .filter { it.hasAnEvenId() }
+            .map {
+                it.toDlqRecord(
+                    mapOf(
+                        "error" to UUID.randomUUID(),
+                        "message" to "very custom error message",
+                    )
+                )
+            }
+            .ifEmpty { null }
 
     override fun close() {}
 

@@ -157,7 +157,8 @@ class MockBucketDlqFromRecordSampleTest :
 class MockBucketDlqFromNewRecordsTest :
     AbstractDlqWriteTest(
         configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
-        additionalMicronautEnvs = listOf("MockObjectStorage", DLQ_INTEGRATION_TEST_ENV, DLQ_SAMPLE_TEST),
+        additionalMicronautEnvs =
+            listOf("MockObjectStorage", DLQ_INTEGRATION_TEST_ENV, DLQ_SAMPLE_TEST),
     ) {
     @Test
     override fun testBasicWrite() {

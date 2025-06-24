@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.message.dlq
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -13,8 +17,8 @@ import java.util.UUID
  * A helper method to modify a existing DestinationRecordRaw for a dead letter queue.
  *
  * This method ensures we still track the correct metadata against the original record when it comes
- * to stats and checkpointing while allowing a different content to be persisted to the dead
- * letter queue.
+ * to stats and checkpointing while allowing a different content to be persisted to the dead letter
+ * queue.
  */
 fun DestinationRecordRaw.toDlqRecord(data: Map<String, Any>): DestinationRecordRaw =
     // We want to preserve everything from the original record and only override the content.
@@ -29,7 +33,7 @@ fun DestinationRecordRaw.toDlqRecord(data: Map<String, Any>): DestinationRecordR
  *
  * This method will generate the rawData from [data] and fill in reasonable defaults.
  */
-fun DestinationStream.newDlqRecord(data : Map<String, Any>): DestinationRecordRaw =
+fun DestinationStream.newDlqRecord(data: Map<String, Any>): DestinationRecordRaw =
     DestinationRecordRaw(
         stream = this,
         rawData = DestinationRecordJsonSource(data.toAirbyteRecordMessage()),
@@ -39,12 +43,11 @@ fun DestinationStream.newDlqRecord(data : Map<String, Any>): DestinationRecordRa
         airbyteRawId = UUID.randomUUID(),
     )
 
-private fun Map<String, Any>.toAirbyteRecordMessage() = AirbyteMessage()
-    .withRecord(
-        AirbyteRecordMessage()
-            .withData(
-                Jsons.convertValue(this, JsonNode::class.java)
-            )
-            .withEmittedAt(System.currentTimeMillis())
-    )
-    .withType(AirbyteMessage.Type.RECORD)
+private fun Map<String, Any>.toAirbyteRecordMessage() =
+    AirbyteMessage()
+        .withRecord(
+            AirbyteRecordMessage()
+                .withData(Jsons.convertValue(this, JsonNode::class.java))
+                .withEmittedAt(System.currentTimeMillis())
+        )
+        .withType(AirbyteMessage.Type.RECORD)

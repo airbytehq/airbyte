@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.message.dlq
 
 import io.airbyte.cdk.load.command.Append
@@ -21,13 +25,14 @@ import org.junit.jupiter.api.Test
 class DlqRecordBuilderTest {
     @Test
     fun `toDlqRecord should replace the data`() {
-        val initialRecord = DestinationRecordRaw(
-            stream = defaultStream,
-            rawData = DestinationRecordJsonSource(defaultRecordMessage),
-            serializedSizeBytes = 123L,
-            checkpointId = CheckpointId("myCheckPoint"),
-            airbyteRawId = UUID.randomUUID(),
-        )
+        val initialRecord =
+            DestinationRecordRaw(
+                stream = defaultStream,
+                rawData = DestinationRecordJsonSource(defaultRecordMessage),
+                serializedSizeBytes = 123L,
+                checkpointId = CheckpointId("myCheckPoint"),
+                airbyteRawId = UUID.randomUUID(),
+            )
         val record = initialRecord.toDlqRecord(mapOf("new" to "content"))
 
         val newFieldAccessor = AirbyteValueProxy.FieldAccessor(1, "new", StringType)
@@ -40,13 +45,14 @@ class DlqRecordBuilderTest {
 
     @Test
     fun `toDlqRecord should preserve the source record metadata`() {
-        val initialRecord = DestinationRecordRaw(
-            stream = defaultStream,
-            rawData = DestinationRecordJsonSource(defaultRecordMessage),
-            serializedSizeBytes = 123L,
-            checkpointId = CheckpointId("myCheckPoint"),
-            airbyteRawId = UUID.randomUUID(),
-        )
+        val initialRecord =
+            DestinationRecordRaw(
+                stream = defaultStream,
+                rawData = DestinationRecordJsonSource(defaultRecordMessage),
+                serializedSizeBytes = 123L,
+                checkpointId = CheckpointId("myCheckPoint"),
+                airbyteRawId = UUID.randomUUID(),
+            )
         val record = initialRecord.toDlqRecord(mapOf())
 
         assertEquals(initialRecord.stream, record.stream)
@@ -71,22 +77,24 @@ class DlqRecordBuilderTest {
         assertNotNull(record.airbyteRawId)
     }
 
-    private val defaultStream = DestinationStream(
-        unmappedName = "name",
-        unmappedNamespace = "namespace",
-        importType = Append,
-        schema = ObjectTypeWithoutSchema,
-        generationId = 2,
-        minimumGenerationId = 1,
-        syncId = 27,
-        namespaceMapper = NamespaceMapper(),
-    )
-
-    private val defaultRecordMessage = AirbyteMessage()
-        .withRecord(
-            AirbyteRecordMessage()
-                .withData(Jsons.deserialize("""{"test":"data"}""""))
-                .withEmittedAt(System.currentTimeMillis())
+    private val defaultStream =
+        DestinationStream(
+            unmappedName = "name",
+            unmappedNamespace = "namespace",
+            importType = Append,
+            schema = ObjectTypeWithoutSchema,
+            generationId = 2,
+            minimumGenerationId = 1,
+            syncId = 27,
+            namespaceMapper = NamespaceMapper(),
         )
-        .withType(AirbyteMessage.Type.RECORD)
+
+    private val defaultRecordMessage =
+        AirbyteMessage()
+            .withRecord(
+                AirbyteRecordMessage()
+                    .withData(Jsons.deserialize("""{"test":"data"}""""))
+                    .withEmittedAt(System.currentTimeMillis())
+            )
+            .withType(AirbyteMessage.Type.RECORD)
 }
