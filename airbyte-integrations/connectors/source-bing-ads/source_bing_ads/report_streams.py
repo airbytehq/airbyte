@@ -229,41 +229,6 @@ class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class UserLocationPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "UserLocationPerformanceReport"
-    report_schema_name = "user_location_performance_report"
-    primary_key = [
-        "AccountId",
-        "AdGroupId",
-        "CampaignId",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "DeviceType",
-        "Language",
-        "LocationId",
-        "QueryIntentLocationId",
-        "TimePeriod",
-        "TopVsOther",
-    ]
-
-
-class UserLocationPerformanceReportHourly(HourlyReportTransformerMixin, UserLocationPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "user_location_performance_report_hourly"
-
-
-class UserLocationPerformanceReportDaily(UserLocationPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class ProductDimensionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportrequest?view=bingads-13
