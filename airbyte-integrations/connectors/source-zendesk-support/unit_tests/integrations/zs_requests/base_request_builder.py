@@ -48,7 +48,6 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
     def headers(self) -> Dict[str, Any]:
         return (super().headers or {}) | {
             "Authorization": self._authenticator.client_access_token,
-            # "Authorization": self._client_access_token or "",
         }
 
     @property
