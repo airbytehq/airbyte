@@ -318,110 +318,110 @@ spec:
             type: string
             path_in_connector_config:
             - lwa_client_secret
-  # config_normalization_rules:
-  #   config_migrations:
-  #     - type: ConfigMigration
-  #       description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.
-  #       transformations:
-  #         - type: AddFields
-  #           fields:
-  #             - type: AddedFieldDefinition
-  #               path: ["account_type"]
-  #               value: Seller
-  #           condition: "{{ not config.get('account_type', False) }}"
-  #     - type: ConfigMigration
-  #       description: Starting from `4.3.0`, the `report_options_list` property holds a list of objects. This migration sets the `report_options_list` config property to a list of report option objects.
-  #       transformations:
-  #         - type: AddFields
-  #           fields:
-  #             - type: AddedFieldDefinition
-  #               path: ["report_options_list"]
-  #               value: >-
-  #                 {% set report_options = [] %}
-  #                 {% set config_options = config.get('report_options', []) %}
-  #                 {% for stream_name, options in config_options.items() %}
-  #                     {% set options_list = [] %}
-  #                     {% for name, value in options.items() %}
-  #                         {% set _ = options_list.append({"option_name": name, "option_value": value}) %}
-  #                     {% endfor %}
-  #                     {% set _ = report_options.append({"report_name": stream_name, "stream_name": stream_name, "options_list": options_list}) %}
-  #                 {% endfor %}
-  #                 {{ report_options }}
-  #           condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
-  #     - type: ConfigMigration
-  #       description: This migration sets the `report_name` property to the `stream_name` property if the option does not contain it.
-  #       transformations:
-  #         - type: AddFields
-  #           fields:
-  #             - type: AddedFieldDefinition
-  #               path: ["report_options_list"]
-  #               value: >-
-  #                 {% set report_options_list = config.get('report_options_list', []) %}
-  #                 {% for option in report_options_list %}
-  #                   {% if not option.get('report_name') %}
-  #                     {% set _ = option.update({'report_name': option.get('stream_name')}) %}
-  #                   {% endif %}
-  #                 {% endfor %}
-  #                 {{ report_options_list }}
-  #           condition: "{{ config.get('report_options_list', False) }}"
-  #   transformations:
-  #     - type: AddFields
-  #       fields:
-  #         - type: AddedFieldDefinition
-  #           path: ["endpoint"]
-  #           value: "{{ config['region'] }}"
-  #         - type: AddedFieldDefinition
-  #           path: ["marketplace_id"]
-  #           value: "{{ config['region'] }}"
-  #     - type: ConfigRemapField
-  #       field_path: ["endpoint"]
-  #       map:
-  #         AE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         AU: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
-  #         BE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         BR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-  #         CA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-  #         DE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         EG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         ES: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         FR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         GB: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         IN: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         IT: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         JP: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
-  #         MX: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-  #         NL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         PL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         SA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         SE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         SG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
-  #         TR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         UK: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
-  #         US: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
-  #     - type: ConfigRemapField
-  #       field_path: ["marketplace_id"]
-  #       m ap:
-  #         AE: "A2VIGQ35RCS4UG"
-  #         DE: "A1PA6795UKMFR9"
-  #         PL: "A1C3SOZRARQ6R3"
-  #         EG: "ARBP9OOSHTCHU"
-  #         ES: "A1RKKUPIHCS9HS"
-  #         FR: "A13V1IB3VIYZZH"
-  #         IN: "A21TJRUUN4KGV"
-  #         IT: "APJ6JRA9NG5V4"
-  #         NL: "A1805IZSGTT6HS"
-  #         SA: "A17E79C6D8DWNP"
-  #         SE: "A2NODRKZP88ZB9"
-  #         TR: "A33AVAJ2PDY3EV"
-  #         UK: "A1F83G8C2ARO7P"
-  #         AU: "A39IBJ37TRP1C6"
-  #         JP: "A1VC38T7YXB528"
-  #         SG: "A19VAU5U5O7RUS"
-  #         US: "ATVPDKIKX0DER"
-  #         BR: "A2Q3Y263D00KWC"
-  #         CA: "A2EUQ1WTGCTBG2"
-  #         MX: "A1AM78C64UM0Y8"
-  #         BE: "AMEN7PMS3EDWL"
+  config_normalization_rules:
+    config_migrations:
+      - type: ConfigMigration
+        description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.
+        transformations:
+          - type: AddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["account_type"]
+                value: Seller
+            condition: "{{ not config.get('account_type', False) }}"
+      - type: ConfigMigration
+        description: Starting from `4.3.0`, the `report_options_list` property holds a list of objects. This migration sets the `report_options_list` config property to a list of report option objects.
+        transformations:
+          - type: AddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["report_options_list"]
+                value: >-
+                  {% set report_options = [] %}
+                  {% set config_options = config.get('report_options', []) %}
+                  {% for stream_name, options in config_options.items() %}
+                      {% set options_list = [] %}
+                      {% for name, value in options.items() %}
+                          {% set _ = options_list.append({"option_name": name, "option_value": value}) %}
+                      {% endfor %}
+                      {% set _ = report_options.append({"report_name": stream_name, "stream_name": stream_name, "options_list": options_list}) %}
+                  {% endfor %}
+                  {{ report_options }}
+            condition: "{{ not config.get('report_options_list', False) and (config.get('report_options', False) or config.get('advanced_stream_options', False)) }}"
+      - type: ConfigMigration
+        description: This migration sets the `report_name` property to the `stream_name` property if the option does not contain it.
+        transformations:
+          - type: AddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["report_options_list"]
+                value: >-
+                  {% set report_options_list = config.get('report_options_list', []) %}
+                  {% for option in report_options_list %}
+                    {% if not option.get('report_name') %}
+                      {% set _ = option.update({'report_name': option.get('stream_name')}) %}
+                    {% endif %}
+                  {% endfor %}
+                  {{ report_options_list }}
+            condition: "{{ config.get('report_options_list', False) }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["endpoint"]
+            value: "{{ config['region'] }}"
+          - type: AddedFieldDefinition
+            path: ["marketplace_id"]
+            value: "{{ config['region'] }}"
+      - type: ConfigRemapField
+        field_path: ["endpoint"]
+        map:
+          AE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          AU: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+          BE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          BR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          CA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          DE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          EG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          ES: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          FR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          GB: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          IN: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          IT: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          JP: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+          MX: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+          NL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          PL: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          SA: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          SE: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          SG: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-fe.amazon.com"
+          TR: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          UK: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-eu.amazon.com"
+          US: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
+      - type: ConfigRemapField
+        field_path: ["marketplace_id"]
+        m ap:
+          AE: "A2VIGQ35RCS4UG"
+          DE: "A1PA6795UKMFR9"
+          PL: "A1C3SOZRARQ6R3"
+          EG: "ARBP9OOSHTCHU"
+          ES: "A1RKKUPIHCS9HS"
+          FR: "A13V1IB3VIYZZH"
+          IN: "A21TJRUUN4KGV"
+          IT: "APJ6JRA9NG5V4"
+          NL: "A1805IZSGTT6HS"
+          SA: "A17E79C6D8DWNP"
+          SE: "A2NODRKZP88ZB9"
+          TR: "A33AVAJ2PDY3EV"
+          UK: "A1F83G8C2ARO7P"
+          AU: "A39IBJ37TRP1C6"
+          JP: "A1VC38T7YXB528"
+          SG: "A19VAU5U5O7RUS"
+          US: "ATVPDKIKX0DER"
+          BR: "A2Q3Y263D00KWC"
+          CA: "A2EUQ1WTGCTBG2"
+          MX: "A1AM78C64UM0Y8"
+          BE: "AMEN7PMS3EDWL"
 
 definitions:
   authenticator:
