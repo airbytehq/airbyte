@@ -318,6 +318,3 @@ private class PrintStreamFactory {
 
     @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
 }
-
-
-
