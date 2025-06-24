@@ -2,7 +2,7 @@
   "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse",
   "connectionSpecification" : {
     "$schema" : "http://json-schema.org/draft-07/schema#",
-    "title" : "Clickhouse Specification",
+    "title" : "Clickhouse Specification Oss",
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
@@ -18,14 +18,6 @@
         "title" : "Port",
         "order" : 1,
         "default" : "8443"
-      },
-      "protocol" : {
-        "type" : "string",
-        "enum" : [ "http", "https" ],
-        "description" : "Protocol for the database connection string.",
-        "title" : "Protocol",
-        "order" : 2,
-        "default" : "https"
       },
       "database" : {
         "type" : "string",
@@ -47,9 +39,17 @@
         "title" : "Password",
         "order" : 5,
         "airbyte_secret" : true
+      },
+      "protocol" : {
+        "type" : "string",
+        "enum" : [ "http", "https" ],
+        "description" : "Protocol for the database connection string.",
+        "title" : "Protocol",
+        "order" : 2,
+        "default" : "https"
       }
     },
-    "required" : [ "hostname", "port", "protocol", "database", "username", "password" ],
+    "required" : [ "hostname", "port", "database", "username", "password", "protocol" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"

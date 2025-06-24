@@ -19,14 +19,6 @@
         "order" : 1,
         "default" : "8443"
       },
-      "protocol" : {
-        "type" : "string",
-        "enum" : [ "http", "https" ],
-        "description" : "Protocol for the database connection string.",
-        "title" : "Protocol",
-        "order" : 2,
-        "default" : "https"
-      },
       "database" : {
         "type" : "string",
         "description" : "Name of the database.",
@@ -49,7 +41,7 @@
         "airbyte_secret" : true
       }
     },
-    "required" : [ "hostname", "port", "protocol", "database", "username", "password" ],
+    "required" : [ "hostname", "port", "database", "username", "password" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
