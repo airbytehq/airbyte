@@ -24,17 +24,22 @@ class ClickhouseChecker(
 
     override fun check(config: ClickhouseConfiguration) {
         val client = clientFactory.make(config)
+        val resolvedTableName = "${config.database}.$tableName"
 
         // TODO: ideally we'd actually inject a higher level client in here and not write SQL
         client
             .execute(
-                "CREATE TABLE IF NOT EXISTS ${config.database}.$tableName (test UInt8) ENGINE = MergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS $resolvedTableName (test UInt8) ENGINE = MergeTree ORDER BY ()"
             )
             .get(10, TimeUnit.SECONDS)
 
         val insert =
             client
-                .insert(tableName, TEST_DATA.byteInputStream(), ClickHouseFormat.JSONEachRow)
+                .insert(
+                    resolvedTableName,
+                    TEST_DATA.byteInputStream(),
+                    ClickHouseFormat.JSONEachRow
+                )
                 .get(10, TimeUnit.SECONDS)
 
         assert(insert.writtenRows == 1L) {
