@@ -1,18 +1,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from test_hourly_reports import HourlyReportsTestWithStateChangesAfterMigration, get_state_after_migration
 from test_report_stream import TestSuiteReportStream
-from test_hourly_reports import get_state_after_migration, HourlyReportsTestWithStateChangesAfterMigration
 
 
 class TestBaseProductDimensionPerformanceReport(TestSuiteReportStream):
     state_file_after_migration = "non_hourly_reports_state_after_migration"
-    state_file_after_migration_with_cursor_further_config_start_date = "non_hourly_reports_state_after_migration_with_cursor_further_config_start_date"
-    first_read_state = get_state_after_migration(
-        time_period="2024-05-17", account_id=TestSuiteReportStream.account_id
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "non_hourly_reports_state_after_migration_with_cursor_further_config_start_date"
     )
-    second_read_state = get_state_after_migration(
-        time_period="2023-12-25", account_id=TestSuiteReportStream.account_id
-    )
+    first_read_state = get_state_after_migration(time_period="2024-05-17", account_id=TestSuiteReportStream.account_id)
+    second_read_state = get_state_after_migration(time_period="2023-12-25", account_id=TestSuiteReportStream.account_id)
     first_read_state_for_records_further_start_date = get_state_after_migration(
         time_period="2024-05-06", account_id=TestSuiteReportStream.account_id
     )
@@ -39,7 +37,9 @@ class TestProductDimensionPerformanceReportDailyStream(TestBaseProductDimensionP
     stream_name = "product_dimension_performance_report_daily"
     report_file = "product_dimension_performance_report_daily"
     incremental_report_file = "product_dimension_performance_report_daily_incremental"
-    incremental_report_file_with_records_further_cursor = "product_dimension_performance_report_daily_incremental_with_records_further_cursor"
+    incremental_report_file_with_records_further_cursor = (
+        "product_dimension_performance_report_daily_incremental_with_records_further_cursor"
+    )
     report_file_with_records_further_start_date = "product_dimension_performance_report_daily_with_records_further_start_date"
     records_number = 8
 
@@ -83,7 +83,9 @@ class TestProductDimensionPerformanceReportHourlyStream(HourlyReportsTestWithSta
     state_file_after_migration_with_cursor_further_config_start_date = (
         "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
     )
-    incremental_report_file_with_records_further_cursor = "product_dimension_performance_report_hourly_incremental_with_records_further_cursor"
+    incremental_report_file_with_records_further_cursor = (
+        "product_dimension_performance_report_hourly_incremental_with_records_further_cursor"
+    )
 
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
@@ -117,7 +119,9 @@ class TestProductDimensionPerformanceReportWeeklyStream(TestBaseProductDimension
     stream_name = "product_dimension_performance_report_weekly"
     report_file = "product_dimension_performance_report_weekly"
     incremental_report_file = "product_dimension_performance_report_weekly_incremental"
-    incremental_report_file_with_records_further_cursor = "product_dimension_performance_report_weekly_incremental_with_records_further_cursor"
+    incremental_report_file_with_records_further_cursor = (
+        "product_dimension_performance_report_weekly_incremental_with_records_further_cursor"
+    )
     report_file_with_records_further_start_date = "product_dimension_performance_report_weekly_with_records_further_start_date"
     records_number = 8
 
@@ -152,7 +156,9 @@ class TestProductDimensionPerformanceReportMonthlyStream(TestBaseProductDimensio
     stream_name = "product_dimension_performance_report_monthly"
     report_file = "product_dimension_performance_report_monthly"
     incremental_report_file = "product_dimension_performance_report_monthly_incremental"
-    incremental_report_file_with_records_further_cursor = "product_dimension_performance_report_monthly_incremental_with_records_further_cursor"
+    incremental_report_file_with_records_further_cursor = (
+        "product_dimension_performance_report_monthly_incremental_with_records_further_cursor"
+    )
     report_file_with_records_further_start_date = "product_dimension_performance_report_monthly_with_records_further_start_date"
     records_number = 8
 

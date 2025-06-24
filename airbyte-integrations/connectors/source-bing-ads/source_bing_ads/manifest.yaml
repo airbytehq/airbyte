@@ -7955,13 +7955,15 @@ schemas:
           - "null"
           - number
       AbsoluteTopImpressionRatePercent:
-        description: The percentage of times the ad is shown at the absolute top of the
+        description:
+          The percentage of times the ad is shown at the absolute top of the
           search results page.
         type:
           - "null"
           - number
       TopImpressionRatePercent:
-        description: The percentage of times the ad is shown at the top of the search results
+        description:
+          The percentage of times the ad is shown at the top of the search results
           page.
         type:
           - "null"
@@ -8238,7 +8240,8 @@ schemas:
           - "null"
           - string
       ImpressionSharePercent:
-        description: The percentage of impressions achieved by the ad compared to the total
+        description:
+          The percentage of impressions achieved by the ad compared to the total
           available impressions.
         type:
           - "null"
@@ -8374,13 +8377,15 @@ schemas:
           - "null"
           - number
       ClickSharePercent:
-        description: The percentage of eligible clicks the ad received out of the total
+        description:
+          The percentage of eligible clicks the ad received out of the total
           available clicks.
         type:
           - "null"
           - number
       AbsoluteTopImpressionSharePercent:
-        description: The percentage of absolute top impressions achieved by the ad compared
+        description:
+          The percentage of absolute top impressions achieved by the ad compared
           to the total available absolute top impressions.
         type:
           - "null"
@@ -8416,19 +8421,22 @@ schemas:
           - "null"
           - number
       TopImpressionSharePercent:
-        description: The percentage of top impressions achieved by the ad compared to the
+        description:
+          The percentage of top impressions achieved by the ad compared to the
           total available top impressions.
         type:
           - "null"
           - number
       AbsoluteTopImpressionRatePercent:
-        description: The percentage of absolute top impressions divided by the total impressions
+        description:
+          The percentage of absolute top impressions divided by the total impressions
           in the search result page.
         type:
           - "null"
           - number
       TopImpressionRatePercent:
-        description: The percentage of top impressions divided by the total impressions
+        description:
+          The percentage of top impressions divided by the total impressions
           in the search result page.
         type:
           - "null"
@@ -8474,7 +8482,8 @@ schemas:
           - "null"
           - integer
       AudienceImpressionSharePercent:
-        description: The percentage of audience impressions achieved by the ad compared
+        description:
+          The percentage of audience impressions achieved by the ad compared
           to the total available audience impressions.
         type:
           - "null"
@@ -9283,7 +9292,8 @@ schemas:
           - "null"
           - string
       ExactMatchImpressionSharePercent:
-        description: The percentage of exact match impressions divided by the total available
+        description:
+          The percentage of exact match impressions divided by the total available
           exact match impressions.
         type:
           - "null"
@@ -9294,7 +9304,8 @@ schemas:
           - "null"
           - number
       AbsoluteTopImpressionSharePercent:
-        description: The percentage of absolute top impressions divided by the total available
+        description:
+          The percentage of absolute top impressions divided by the total available
           absolute top impressions.
         type:
           - "null"
@@ -9330,19 +9341,22 @@ schemas:
           - "null"
           - number
       TopImpressionSharePercent:
-        description: The percentage of top impressions divided by the total available top
+        description:
+          The percentage of top impressions divided by the total available top
           impressions.
         type:
           - "null"
           - number
       AbsoluteTopImpressionRatePercent:
-        description: The percentage of absolute top impressions divided by the total available
+        description:
+          The percentage of absolute top impressions divided by the total available
           absolute top impressions.
         type:
           - "null"
           - number
       TopImpressionRatePercent:
-        description: The percentage of top impressions divided by the total available top
+        description:
+          The percentage of top impressions divided by the total available top
           impressions.
         type:
           - "null"
@@ -9388,7 +9402,8 @@ schemas:
           - "null"
           - integer
       AudienceImpressionSharePercent:
-        description: The percentage of audience impressions divided by the total available
+        description:
+          The percentage of audience impressions divided by the total available
           audience impressions.
         type:
           - "null"
@@ -10376,7 +10391,6 @@ schemas:
         type:
           - "null"
           - string
-
 
 concurrency_level:
   type: ConcurrencyLevel

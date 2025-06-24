@@ -161,7 +161,9 @@ class TestAdGroupImpressionPerformanceReportHourlyStream(HourlyReportsTestWithSt
     state_file_after_migration_with_cursor_further_config_start_date = (
         "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
     )
-    incremental_report_file_with_records_further_cursor = "ad_group_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    incremental_report_file_with_records_further_cursor = (
+        "ad_group_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    )
 
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
@@ -246,7 +248,9 @@ class TestCampaignImpressionPerformanceReportHourlyStream(HourlyReportsTestWithS
     state_file_after_migration_with_cursor_further_config_start_date = (
         "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
     )
-    incremental_report_file_with_records_further_cursor = "campaign_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    incremental_report_file_with_records_further_cursor = (
+        "campaign_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    )
 
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
