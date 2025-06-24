@@ -24,13 +24,14 @@ class ClickhouseBeanFactory {
     @Singleton
     fun clickhouseClient(config: ClickhouseConfiguration): Client {
 
-        val clientWithDb = Client.Builder()
-            .addEndpoint(config.endpoint)
-            .setUsername(config.username)
-            .setPassword(config.password)
-            .setDefaultDatabase(config.resolvedDatabase)
-            .compressClientRequest(true)
-            .build()
+        val clientWithDb =
+            Client.Builder()
+                .addEndpoint(config.endpoint)
+                .setUsername(config.username)
+                .setPassword(config.password)
+                .setDefaultDatabase(config.resolvedDatabase)
+                .compressClientRequest(true)
+                .build()
 
         return if (clientWithDb.ping()) {
             clientWithDb
@@ -39,10 +40,13 @@ class ClickhouseBeanFactory {
             // to already exist during instantiation. If we instantiate the client with a default
             // database that does not exist, it will hard fail.
 
-            // In order to solve this chicken-and-egg problem, we avoid setting the default db on the
+            // In order to solve this chicken-and-egg problem, we avoid setting the default db on
+            // the
             // client.
-            // Instead, we resolve the default database in the ClickhouseConfiguration, which is used
-            // for table creation when the stream descriptor does not specificy a namespace directly.
+            // Instead, we resolve the default database in the ClickhouseConfiguration, which is
+            // used
+            // for table creation when the stream descriptor does not specificy a namespace
+            // directly.
             Client.Builder()
                 .addEndpoint(config.endpoint)
                 .setUsername(config.username)
