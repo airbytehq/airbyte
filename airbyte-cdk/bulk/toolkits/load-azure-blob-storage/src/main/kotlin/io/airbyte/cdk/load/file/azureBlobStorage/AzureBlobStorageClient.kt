@@ -135,14 +135,9 @@ class AzureBlobClient(
 
     override suspend fun delete(keys: Set<String>) {
         val batchClient = BlobBatchClientBuilder(serviceClient).buildClient()
+        val blobContainerClient = serviceClient.getBlobContainerClient(blobConfig.containerName)
         keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
-            val blobUrls =
-                chunk.map { key ->
-                    serviceClient
-                        .getBlobContainerClient(blobConfig.containerName)
-                        .getBlobClient(key)
-                        .blobUrl
-                }
+            val blobUrls = chunk.map { key -> blobContainerClient.getBlobClient(key).blobUrl }
             batchClient.deleteBlobs(blobUrls, DeleteSnapshotsOptionType.INCLUDE)
         }
     }
