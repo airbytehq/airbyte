@@ -2,7 +2,7 @@
 
 import re
 from abc import ABC
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
@@ -59,7 +59,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         # self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
         #
         # super().__init__(self._single_refresh_token_authenticator)
-        super().__init__()
+        super().__init__(authenticator=self.api.authenticator)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -249,16 +249,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         try:
             self.read_records(sync_mode=SyncMode.full_refresh)
-            # (
-            # self._create_prepared_request(
-            # path=self.endpoint,
-            # headers=self._single_refresh_token_authenticator.get_auth_header(),
-            # # Just want to test if we can access the API, don't care about any results. With $top=0 we get no results.
-            # params={"$top": 0},
-            # ))
             return True
-            # response = self._send_request(prepared_request, {})
-
             # Forbidden, user does not have access to the API
         except requests.RequestException:
             return False
@@ -283,9 +274,17 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
         return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
 
-    def stream_slices(self, **kwargs):
-        """Overridden to return a list of divisions to extract endpoints for."""
-
+    def stream_slices(
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Override the default stream_slices method to include the division in each slice.
+        This is required because the request_params method expects a 'division' key in the stream slice.
+        """
         return [{"division": x} for x in self._divisions]
 
 
