@@ -113,8 +113,6 @@ class ClickhouseDataDumper(
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
 
-        println("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}")
-
         val response =
             client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
 

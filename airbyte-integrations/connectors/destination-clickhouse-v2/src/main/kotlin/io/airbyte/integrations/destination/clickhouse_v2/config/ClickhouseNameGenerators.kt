@@ -51,8 +51,7 @@ fun String.toClickHouseCompatibleName(): String {
         transformed = "_$transformed"
     }
 
-    // 3. If, after all transformations, the string becomes empty (e.g., from an input like "!!!"),
-    //    return a default, valid identifier.
+    // 3.Do not allow empty strings.
     if (transformed.isEmpty()) {
         return "default_name_${UUID.randomUUID()}" // A fallback name if the input results in an empty string
     }
