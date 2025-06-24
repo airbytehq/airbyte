@@ -323,7 +323,7 @@ spec:
       - type: ConfigMigration
         description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.
         transformations:
-          - type: AddFields
+          - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["account_type"]
@@ -332,7 +332,7 @@ spec:
       - type: ConfigMigration
         description: Starting from `4.3.0`, the `report_options_list` property holds a list of objects. This migration sets the `report_options_list` config property to a list of report option objects.
         transformations:
-          - type: AddFields
+          - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["report_options_list"]
@@ -351,7 +351,7 @@ spec:
       - type: ConfigMigration
         description: This migration sets the `report_name` property to the `stream_name` property if the option does not contain it.
         transformations:
-          - type: AddFields
+          - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["report_options_list"]
@@ -365,7 +365,7 @@ spec:
                   {{ report_options_list }}
             condition: "{{ config.get('report_options_list', False) }}"
     transformations:
-      - type: AddFields
+      - type: ConfigAddFields
         fields:
           - type: AddedFieldDefinition
             path: ["endpoint"]
@@ -400,7 +400,7 @@ spec:
           US: "{{ 'https://sellingpartnerapi' if config.get('aws_environment') == 'PRODUCTION' else 'https://sandbox.sellingpartnerapi' }}-na.amazon.com"
       - type: ConfigRemapField
         field_path: ["marketplace_id"]
-        m ap:
+        map:
           AE: "A2VIGQ35RCS4UG"
           DE: "A1PA6795UKMFR9"
           PL: "A1C3SOZRARQ6R3"
