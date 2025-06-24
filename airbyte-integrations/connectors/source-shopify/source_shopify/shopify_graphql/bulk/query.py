@@ -3236,6 +3236,231 @@ class DeliveryZoneList:
         return self.resolve(query)
 
 
+class Company(ShopifyBulkQuery):
+    """
+    B2B Company query for Shopify Plus stores.
+    {
+        companies(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    id
+                    name
+                    note
+                    externalId
+                    customerSince
+                    contactCount
+                    mainContact {
+                        id
+                        customer {
+                            id
+                            firstName
+                            lastName
+                            email
+                        }
+                    }
+                    totalSpent {
+                        amount
+                        currencyCode
+                    }
+                    ordersCount {
+                        count
+                    }
+                    createdAt
+                    updatedAt
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "companies"
+    sort_key = "UPDATED_AT"
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        "name",
+        "note",
+        "externalId",
+        "customerSince",
+        "contactCount",
+        Field(name="mainContact", fields=[
+            "id",
+            Field(name="customer", fields=[
+                "id",
+                "firstName",
+                "lastName",
+                "email"
+            ])
+        ]),
+        Field(name="totalSpent", fields=[
+            "amount",
+            "currencyCode"
+        ]),
+        Field(name="ordersCount", fields=[
+            Field(name="count", alias="orders_count")
+        ]),
+        "createdAt",
+        "updatedAt"
+    ]
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        # resolve the id from string
+        record["admin_graphql_api_id"] = record.get("id")
+        record["id"] = self.tools.resolve_str_id(record.get("id"))
+        
+        # process nested objects
+        if "mainContact" in record and record["mainContact"]:
+            main_contact = record["mainContact"]
+            if "customer" in main_contact and main_contact["customer"]:
+                customer = main_contact["customer"]
+                customer["id"] = self.tools.resolve_str_id(customer.get("id"))
+            main_contact["id"] = self.tools.resolve_str_id(main_contact.get("id"))
+        
+        # unnest orders_count to the root level
+        record["orders_count"] = record.get("ordersCount", {}).get("orders_count")
+        record.pop("ordersCount", None)
+        
+        # convert dates from ISO-8601 to RFC-3339
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        record["customerSince"] = self.tools.from_iso8601_to_rfc3339(record, "customerSince")
+        
+        # remove leftovers
+        record.pop(BULK_PARENT_KEY, None)
+        yield record
+
+
+class CompanyLocation(ShopifyBulkQuery):
+    """
+    B2B Company Location query for Shopify Plus stores.
+    {
+        companyLocations(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    id
+                    name
+                    externalId
+                    note
+                    company {
+                        id
+                        name
+                    }
+                    billingAddress {
+                        firstName
+                        lastName
+                        company
+                        address1
+                        address2
+                        city
+                        province
+                        country
+                        zip
+                        phone
+                    }
+                    shippingAddress {
+                        firstName
+                        lastName
+                        company
+                        address1
+                        address2
+                        city
+                        province
+                        country
+                        zip
+                        phone
+                    }
+                    currency
+                    market {
+                        id
+                        name
+                    }
+                    totalSpent {
+                        amount
+                        currencyCode
+                    }
+                    ordersCount {
+                        count
+                    }
+                    createdAt
+                    updatedAt
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "companyLocations"
+    sort_key = "UPDATED_AT"
+
+    address_fields: List[Field] = [
+        "firstName",
+        "lastName", 
+        "company",
+        "address1",
+        "address2",
+        "city",
+        "province",
+        "country",
+        "zip",
+        "phone"
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        "name",
+        "externalId",
+        "note",
+        Field(name="company", fields=[
+            "id",
+            "name"
+        ]),
+        Field(name="billingAddress", fields=address_fields),
+        Field(name="shippingAddress", fields=address_fields),
+        "currency",
+        Field(name="market", fields=[
+            "id",
+            "name"
+        ]),
+        Field(name="totalSpent", fields=[
+            "amount",
+            "currencyCode"
+        ]),
+        Field(name="ordersCount", fields=[
+            Field(name="count", alias="orders_count")
+        ]),
+        "createdAt",
+        "updatedAt"
+    ]
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        # resolve the id from string
+        record["admin_graphql_api_id"] = record.get("id")
+        record["id"] = self.tools.resolve_str_id(record.get("id"))
+        
+        # process nested objects
+        if "company" in record and record["company"]:
+            record["company"]["id"] = self.tools.resolve_str_id(record["company"].get("id"))
+        
+        if "market" in record and record["market"]:
+            record["market"]["id"] = self.tools.resolve_str_id(record["market"].get("id"))
+        
+        # unnest orders_count to the root level
+        record["orders_count"] = record.get("ordersCount", {}).get("orders_count")
+        record.pop("ordersCount", None)
+        
+        # convert dates from ISO-8601 to RFC-3339
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        
+        # remove leftovers
+        record.pop(BULK_PARENT_KEY, None)
+        yield record
+
+
 class ProfileLocationGroups(ShopifyBulkQuery):
     query_name = "deliveryProfiles"
     filter_field = None

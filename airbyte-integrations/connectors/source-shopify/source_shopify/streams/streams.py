@@ -9,6 +9,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
+    Company,
+    CompanyLocation,
     CustomerAddresses,
     CustomerJourney,
     DeliveryProfile,
@@ -349,6 +351,22 @@ class CustomerAddress(IncrementalShopifyGraphQlBulkStream):
 class ProfileLocationGroups(IncrementalShopifyGraphQlBulkStream):
     bulk_query: ProfileLocationGroups = ProfileLocationGroups
     filter_field = None
+
+
+class Companies(IncrementalShopifyGraphQlBulkStream):
+    """
+    B2B Company stream for Shopify Plus stores.
+    Retrieves companies and their associated data including contacts, spending, and order counts.
+    """
+    bulk_query: Company = Company
+
+
+class CompanyLocations(IncrementalShopifyGraphQlBulkStream):
+    """
+    B2B Company Location stream for Shopify Plus stores.
+    Retrieves company locations with billing/shipping addresses and spending data.
+    """
+    bulk_query: CompanyLocation = CompanyLocation
 
 
 class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):

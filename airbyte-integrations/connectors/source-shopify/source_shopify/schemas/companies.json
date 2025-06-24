@@ -1,0 +1,99 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the company",
+      "type": ["null", "integer"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier of the company in the GraphQL Admin API",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the company",
+      "type": ["null", "string"]
+    },
+    "note": {
+      "description": "Additional notes about the company",
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "description": "External identifier for the company",
+      "type": ["null", "string"]
+    },
+    "customer_since": {
+      "description": "The date and time when the company became a customer",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "contact_count": {
+      "description": "Total number of contacts associated with the company",
+      "type": ["null", "integer"]
+    },
+    "main_contact": {
+      "description": "Main contact information for the company",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "The unique identifier of the main contact",
+          "type": ["null", "integer"]
+        },
+        "customer": {
+          "description": "Customer details of the main contact",
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "description": "The unique identifier of the customer",
+              "type": ["null", "integer"]
+            },
+            "first_name": {
+              "description": "First name of the customer",
+              "type": ["null", "string"]
+            },
+            "last_name": {
+              "description": "Last name of the customer",
+              "type": ["null", "string"]
+            },
+            "email": {
+              "description": "Email address of the customer",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "total_spent": {
+      "description": "Total amount spent by the company",
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "description": "The monetary amount",
+          "type": ["null", "string"]
+        },
+        "currency_code": {
+          "description": "The currency code",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "orders_count": {
+      "description": "Total number of orders placed by the company",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the company was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the company was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shop_url": {
+      "description": "URL of the associated shop",
+      "type": ["null", "string"]
+    }
+  }
+}

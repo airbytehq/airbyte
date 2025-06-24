@@ -88,6 +88,56 @@ poetry add <package-name>
 
 Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
+## B2B Features
+
+This connector includes enhanced support for Shopify's B2B functionality:
+
+### New Streams
+
+- **Companies**: Retrieves B2B company data including contact information, spending, and order counts
+- **Company Locations**: Retrieves B2B company location data with billing/shipping addresses and market information
+
+### Enhanced Existing Streams
+
+The connector automatically enriches customer and order data with B2B-specific fields:
+
+#### Enhanced Customer Fields
+- `is_b2b_customer`: Boolean indicating if this is a B2B customer
+- `b2b_customer_type`: Type of B2B customer (business, high_volume, tax_exempt, etc.)
+- `company_id`: Associated company ID for B2B customers
+- `company_location_id`: Associated company location ID
+- `b2b_company_name`: Company name for B2B customers
+- `b2b_payment_terms`: Payment terms for B2B customers
+- `b2b_tax_id`: Tax ID for B2B customers
+
+#### Enhanced Order Fields
+- `is_b2b_order`: Boolean indicating if this is a B2B order
+- `b2b_company_id`: Company ID that placed the order
+- `b2b_company_location_id`: Company location ID that placed the order
+- `b2b_company_name`: Company name that placed the order
+- `b2b_payment_terms`: Payment terms used for the order
+- `b2b_purchase_order_number`: Purchase order number (extracted from order notes)
+- `b2b_price_list_id`: Price list ID used for the order
+- `b2b_customer_type`: Type of B2B customer that placed the order
+
+### B2B Detection Logic
+
+The connector automatically identifies B2B customers and orders based on various signals:
+
+- **Customer Tags**: Presence of tags like "b2b", "wholesale", "business", "company", "trade"
+- **Company Information**: Company name in addresses
+- **High Volume**: Customers with >50 orders or >$10,000 total spent
+- **Tax Exemption**: Tax-exempt customers and orders
+- **Bulk Orders**: Orders with >50 total items or >$5,000 value
+- **Purchase Orders**: Detection of PO numbers in order notes
+
+### Requirements
+
+B2B features require:
+- Shopify Plus store
+- `read_companies` scope for Company and CompanyLocation streams
+- Existing `read_customers` and `read_orders` scopes for enhanced customer/order data
+
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?

@@ -303,6 +303,34 @@
     "marketing_opt_in_level": {
       "description": "Level of opt-in for marketing activities.",
       "type": ["null", "string"]
+    },
+    "b2b_customer_type": {
+      "description": "Type of B2B customer (e.g., company, individual)",
+      "type": ["null", "string"]
+    },
+    "company_location_id": {
+      "description": "ID of the associated company location for B2B customers",
+      "type": ["null", "integer"]
+    },
+    "company_id": {
+      "description": "ID of the associated company for B2B customers",
+      "type": ["null", "integer"]
+    },
+    "is_b2b_customer": {
+      "description": "Indicates if this is a B2B customer",
+      "type": ["null", "boolean"]
+    },
+    "b2b_company_name": {
+      "description": "Company name for B2B customers",
+      "type": ["null", "string"]
+    },
+    "b2b_payment_terms": {
+      "description": "Payment terms for B2B customers",
+      "type": ["null", "string"]
+    },
+    "b2b_tax_id": {
+      "description": "Tax ID for B2B customers",
+      "type": ["null", "string"]
     }
   }
 }
