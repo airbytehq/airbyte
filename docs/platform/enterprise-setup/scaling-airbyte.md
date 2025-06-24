@@ -186,6 +186,10 @@ webapp:
   nodeSelector:
     type: static
 
+workloadLauncher:
+  nodeSelector:
+    type: static
+
 worker:
   nodeSelector:
     type: jobs
