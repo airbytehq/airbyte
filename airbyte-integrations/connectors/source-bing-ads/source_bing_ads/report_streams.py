@@ -194,41 +194,6 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class SearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "SearchQueryPerformanceReport"
-    report_schema_name = "search_query_performance_report"
-
-    primary_key = [
-        "SearchQuery",
-        "Keyword",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "DeliveredMatchType",
-        "DeviceType",
-        "DeviceOS",
-        "TopVsOther",
-    ]
-
-
-class SearchQueryPerformanceReportHourly(HourlyReportTransformerMixin, SearchQueryPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "search_query_performance_report_hourly"
-
-
-class SearchQueryPerformanceReportDaily(SearchQueryPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class SearchQueryPerformanceReportWeekly(SearchQueryPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class ProductDimensionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportrequest?view=bingads-13

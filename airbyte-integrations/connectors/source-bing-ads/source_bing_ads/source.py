@@ -44,11 +44,7 @@ from source_bing_ads.report_streams import (  # noqa: F401
     ProductSearchQueryPerformanceReportDaily,
     ProductSearchQueryPerformanceReportHourly,
     ProductSearchQueryPerformanceReportMonthly,
-    ProductSearchQueryPerformanceReportWeekly,
-    SearchQueryPerformanceReportDaily,
-    SearchQueryPerformanceReportHourly,
-    SearchQueryPerformanceReportMonthly,
-    SearchQueryPerformanceReportWeekly
+    ProductSearchQueryPerformanceReportWeekly
 )
 
 
@@ -128,8 +124,7 @@ class SourceBingAds(YamlDeclarativeSource):
             "CampaignImpressionPerformanceReport",
             "GeographicPerformanceReport",
             "ProductDimensionPerformanceReport",
-            "ProductSearchQueryPerformanceReport",
-            "SearchQueryPerformanceReport"
+            "ProductSearchQueryPerformanceReport"
         )
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
         streams.extend([eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)])
