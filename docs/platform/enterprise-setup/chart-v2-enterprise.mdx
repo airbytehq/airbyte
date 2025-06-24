@@ -4,10 +4,15 @@ products: oss-enterprise
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import EnvironmentVarConversion from '@site/static/_extraenv_to_helm_chart_v2.md';
 
-# Upgrade Self-Managed Enterprise to Helm chart V2
+# Upgrade to Helm chart V2 (Self-Managed Enterprise)
 
 Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. In the future, at a date not yet announced, Helm chart V2 will become mandatory. However, you should upgrade your existing Airbyte deployment to use the new Helm chart before it's mandatory. If you're a new Airbyte customer, you can use Helm chart V2 from the start, and avoid the upgrade entirely.
+
+:::important Open Source Users
+Follow the [Self-Managed Community guide](../deploying-airbyte/chart-v2-community) instead.
+:::
 
 ## What's a Helm chart?
 
@@ -82,9 +87,7 @@ Airbyte recommends approaching this project in this way:
 
 2. Start with a basic V2 `values.yaml` to verify that it works. Map your V1 settings to V2, transferring one set of configurations at a time.
 
-3. Use Helm template validation and linting before applying changes. For example, `helm template airbyte-v2-test airbyte/airbyte-v2 -f values.yaml` and `helm lint ./my-chart -f values.yaml`.
-
-4. Don't test in production.
+3. Don't test in production.
 
 Follow the steps below to start generating `values.yaml`.
 
@@ -153,7 +156,7 @@ global:
 ```yaml title="values.yaml"
 global:
   auth:
-    enabled: true # Set to false if you're not ready to turn this on yet
+    enabled: false # Set to false if you're using SSO
   
     # -- Admin user configuration
     instanceAdmin:
@@ -227,7 +230,7 @@ postgresql:
 Add external logging
 </summary>
 
-```yaml
+```yaml title="values.yaml"
 global:
   storage:
     secretName: ""
@@ -331,6 +334,60 @@ storage:
   bucket:
     auditLogging: your-audit-logging-bucket-name-here
 ```
+
+</details>
+
+<details>
+<summary>
+Convert hyphenated parameters to camel case
+</summary>
+
+If you have any further customizations, move those over to your new values.yaml file. 
+
+Check for hyphenated parameter names. These are camel case in Helm chart V2. For example, when copying over `workload-launcher`, change it to `workloadLauncher`.
+
+Some parameters have similar but slightly different names. For example, `orchestrator` is `containerOrchestrator` in Helm chart V2.
+
+</details>
+
+<details>
+<summary>
+Optional: convert environment variables to parameters
+</summary>
+
+In previous versions of your values.yaml file, you might have specified a number of environment variables. Many of these environment variables have a proper interface in Helm chart V2 and you can specify them without environment variables. For example, look at the following configuration, which uses environment variables to tell `workload-launcher` to run pods in the `jobs` node group.
+
+```yaml title="values.yaml using Helm chart V1"
+workload-launcher:
+  nodeSelector:
+    type: static
+  ## Pods spun up by the workload launcher will run in the 'jobs' node group.
+  extraEnv:
+    - name: JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+    - name: SPEC_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+    - name: CHECK_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+    - name: DISCOVER_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+```
+
+You can specify these values directly without using environment variables, achieving the same effect.
+
+```yaml title="values.yaml using Helm chart V2"
+global:
+  jobs:
+    kube:
+      nodeSelector:
+        type: jobs
+
+workloadLauncher:
+  nodeSelector:
+    type: static
+```
+
+<EnvironmentVarConversion/>
 
 </details>
 
