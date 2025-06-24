@@ -459,10 +459,6 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
             "hourly_reports/user_location_performance_records.json",
         ),
         (
-            "hourly_reports/account_impression_performance.csv",
-            "hourly_reports/account_impression_performance_records.json",
-        ),
-        (
             AdGroupImpressionPerformanceReportHourly,
             "hourly_reports/ad_group_impression_performance.csv",
             "hourly_reports/ad_group_impression_performance_records.json",
