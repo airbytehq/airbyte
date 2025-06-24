@@ -112,6 +112,8 @@ class BigqueryBeansFactory {
             .setHeaderProvider(BigQueryUtils.headerProvider)
             .setRetrySettings(
                 RetrySettings.newBuilder()
+                    // Most of the values are default. We need to override them all if we want to
+                    // set a different value for `setMaxAttempts`..............
                     .setInitialRetryDelayDuration(java.time.Duration.ofMillis(1000L))
                     .setMaxRetryDelayDuration(java.time.Duration.ofMillis(32_000L))
                     .setTotalTimeoutDuration(java.time.Duration.ofMillis(60_000L))
