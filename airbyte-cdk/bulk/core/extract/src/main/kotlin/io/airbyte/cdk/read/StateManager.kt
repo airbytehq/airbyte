@@ -74,7 +74,7 @@ class StateManager(
             state: OpaqueStateValue,
             numRecords: Long,
             partitionId: String?,
-            id: Int,
+            id: Int?,
         )
 
         /** Resets the current state value in the [StateManager] for this [feed] to zero. */
@@ -103,7 +103,7 @@ class StateManager(
         val pendingState: OpaqueStateValue,
         val partitionId: String?,
         val pendingNumRecords: Long,
-        var id: Int, // TEMP
+        var id: Int?,
 )
 
     }
@@ -120,7 +120,7 @@ class StateManager(
             state: OpaqueStateValue,
             numRecords: Long,
             partitionId: String?,
-            id: Int
+            id: Int?,
         ) {
             pendingStateValues.add(StateManager.StateForCheckpointWithPartitionId(state, partitionId, numRecords, id))
 
@@ -163,7 +163,7 @@ class StateManager(
                 // Keep a copy of the total number of records registered in all calls to set() since the
                 // last call to takeForCheckpoint(), this number will be returned.
                 val freshNumRecords: Long = it.pendingNumRecords
-                val currentId: Int = it.id
+                val currentId: Int? = it.id
                 freshStates.add(Fresh(freshStateValue, freshNumRecords, currentPartitionId, currentId))
             }
 
@@ -181,7 +181,7 @@ class StateManager(
         val opaqueStateValue: OpaqueStateValue?
         val numRecords: Long
         val partitionId: String?
-        val id: Int
+        val id: Int?
     }
 
     /**
@@ -192,7 +192,7 @@ class StateManager(
         override val opaqueStateValue: OpaqueStateValue,
         override val numRecords: Long,
         override val partitionId: String?,
-        override val id: Int,
+        override val id: Int?,
     ) : StateForCheckpoint
 
     /**
@@ -289,8 +289,8 @@ class StateManager(
                         AirbyteStateStats()
                             .withRecordCount(it.numRecords.toDouble())
                     )
-//                    .withAdditionalProperty("id", it.id)
-//                    .apply { it.partitionId?.let { withAdditionalProperty("partition_id", it) } } // TEMP
+                    .apply { it.id?.let { id -> withAdditionalProperty("id", id) } }
+                    .apply { it.partitionId?.let { partitionId -> withAdditionalProperty("partition_id", partitionId) } }
                 stateMessages.add(airbyteStateMessage)
             }
 

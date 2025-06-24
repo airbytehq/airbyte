@@ -300,7 +300,10 @@ class FeedReader(
                     }
                     val (opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?) =
                         pendingResult.getOrThrow()
-                    root.stateManager.scoped(feed).set(opaqueStateValue, numRecords, partitionId, stateId.getAndIncrement())
+                    root.stateManager.scoped(feed).set(opaqueStateValue, numRecords, partitionId, when (dataChannelMedium) {
+                      DataChannelMedium.SOCKET -> stateId.getAndIncrement()
+                      DataChannelMedium.STDIO -> null
+                    } )
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"
                     }

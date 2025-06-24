@@ -164,7 +164,10 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         if (!runComplete.get()) throw RuntimeException("cannot checkpoint non-resumable read")
         // The run method executed to completion without a LIMIT clause.
         // This implies that the partition boundary has been reached.
-        return PartitionReadCheckpoint(partition.completeState, numRecords.get(), partitionId)
+        return PartitionReadCheckpoint(partition.completeState, numRecords.get(), when (streamState.streamFeedBootstrap.dataChannelMedium) {
+            SOCKET -> partitionId
+            STDIO -> null
+        } )
     }
 }
 
@@ -216,7 +219,10 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     override fun checkpoint(): PartitionReadCheckpoint {
         if (runComplete.get() && numRecords.get() < streamState.limit) {
             // The run method executed to completion with a LIMIT clause which was not reached.
-            return PartitionReadCheckpoint(partition.completeState, numRecords.get(), partitionId)
+            return PartitionReadCheckpoint(partition.completeState, numRecords.get(), when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                SOCKET -> partitionId
+                STDIO -> null
+            })
         }
         // The run method ended because of either the LIMIT or the timeout.
         // Adjust the LIMIT value so that it grows or shrinks to try to fit the timeout.
@@ -233,6 +239,9 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             }
         }
         val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
-        return PartitionReadCheckpoint(checkpointState, numRecords.get(), partitionId)
+        return PartitionReadCheckpoint(checkpointState, numRecords.get(), when (streamState.streamFeedBootstrap.dataChannelMedium) {
+            SOCKET -> partitionId
+            STDIO -> null
+        })
     }
 }
