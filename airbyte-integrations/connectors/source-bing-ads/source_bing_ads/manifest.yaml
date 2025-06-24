@@ -2764,7 +2764,6 @@ definitions:
           {% set v = record.get('LowQualityConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
 
-
     keyword_performance_report_transformations:
       - type: AddedFieldDefinition
         path:
@@ -8132,7 +8131,8 @@ schemas:
           - "null"
           - number
       ExpectedCtr:
-        description: The expected click-through rate for the keyword based on historical
+        description:
+          The expected click-through rate for the keyword based on historical
           data.
         type:
           - "null"
@@ -8153,7 +8153,8 @@ schemas:
           - "null"
           - number
       Assists:
-        description: The number of assists (interactions before a conversion) that the keyword
+        description:
+          The number of assists (interactions before a conversion) that the keyword
           contributed to.
         type:
           - "null"
@@ -8811,7 +8812,8 @@ schemas:
           - "null"
           - string
       AbsoluteTopImpressionRatePercent:
-        description: The percentage of absolute top impressions divided by the total number
+        description:
+          The percentage of absolute top impressions divided by the total number
           of impressions.
         type:
           - "null"
@@ -9041,7 +9043,6 @@ schemas:
         type:
           - "null"
           - number
-
 
 concurrency_level:
   type: ConcurrencyLevel
