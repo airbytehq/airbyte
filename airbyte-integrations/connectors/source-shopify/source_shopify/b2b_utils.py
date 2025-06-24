@@ -80,7 +80,8 @@ class B2BEnricher:
         purchasing_entity = order.get("purchasingEntity")
 
         # If order has B2B-specific fields, it's a B2B order
-        if po_number or payment_terms or purchasing_entity:
+        # Note: purchasingEntity presence (even if empty) indicates B2B context
+        if po_number or payment_terms or purchasing_entity is not None:
             b2b_data["is_b2b_order"] = True
             b2b_data["b2b_purchase_order_number"] = po_number
             b2b_data["b2b_payment_terms"] = payment_terms
