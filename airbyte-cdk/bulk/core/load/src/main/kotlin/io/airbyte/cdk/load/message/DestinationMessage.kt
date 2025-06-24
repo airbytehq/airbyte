@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.AirbyteValueCoercer.DATE_TIME_FORMATTER
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -120,6 +120,9 @@ data class Meta(
         const val CHECKPOINT_ID_NAME: String = "partition_id"
         const val CHECKPOINT_INDEX_NAME: String = "id"
 
+        const val AIRBYTE_META_SYNC_ID = "sync_id"
+        const val AIRBYTE_META_CHANGES = "changes"
+
         const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
         const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
         const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
@@ -161,7 +164,7 @@ data class Meta(
                         TimestampWithTimezoneValue(
                             OffsetDateTime.parse(
                                 value,
-                                AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER,
+                                DATE_TIME_FORMATTER,
                             ),
                         )
                     }
@@ -289,8 +292,8 @@ data class EnrichedDestinationRecordAirbyteValue(
             EnrichedAirbyteValue(
                 ObjectValue(
                     linkedMapOf(
-                        "sync_id" to IntegerValue(stream.syncId),
-                        "changes" to
+                        Meta.AIRBYTE_META_SYNC_ID to IntegerValue(stream.syncId),
+                        Meta.AIRBYTE_META_CHANGES to
                             ArrayValue(
                                 (sourceMeta.changes.toAirbyteValues()) +
                                     declaredFields
@@ -473,15 +476,14 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream,
+        val unmappedNamespace: String?,
+        val unmappedName: String,
         val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
             AirbyteStreamState()
                 .withStreamDescriptor(
-                    StreamDescriptor()
-                        .withNamespace(stream.unmappedNamespace)
-                        .withName(stream.unmappedName)
+                    StreamDescriptor().withNamespace(unmappedNamespace).withName(unmappedName)
                 )
                 .also {
                     if (state != null) {
@@ -539,7 +541,8 @@ data class StreamCheckpoint(
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
-        stream: DestinationStream,
+        unmappedNamespace: String?,
+        unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
@@ -548,7 +551,8 @@ data class StreamCheckpoint(
         totalBytes: Long? = null
     ) : this(
         Checkpoint(
-            stream,
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
