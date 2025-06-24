@@ -35,7 +35,11 @@ class ClickhouseChecker(
 
         val insert =
             client
-                .insert(resolvedTableName, TEST_DATA.byteInputStream(), ClickHouseFormat.JSONEachRow)
+                .insert(
+                    resolvedTableName,
+                    TEST_DATA.byteInputStream(),
+                    ClickHouseFormat.JSONEachRow
+                )
                 .get(10, TimeUnit.SECONDS)
 
         assert(insert.writtenRows == 1L) {
