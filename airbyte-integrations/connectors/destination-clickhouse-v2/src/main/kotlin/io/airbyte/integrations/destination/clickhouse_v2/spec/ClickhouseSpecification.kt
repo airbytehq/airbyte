@@ -27,7 +27,7 @@ sealed class ClickhouseSpecification: ConfigurationSpecification() {
 }
 
 @Singleton
-@Requires(notEnv = ["cloud"])
+@Requires(notEnv = [AIRBYTE_CLOUD_ENV])
 class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @get:JsonSchemaTitle("Hostname")
     @get:JsonPropertyDescription("Hostname of the database.")
@@ -67,7 +67,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 }
 
 @Singleton
-@Requires(env = ["cloud"])
+@Requires(env = [AIRBYTE_CLOUD_ENV])
 open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @get:JsonSchemaTitle("Hostname")
     @get:JsonPropertyDescription("Hostname of the database.")
