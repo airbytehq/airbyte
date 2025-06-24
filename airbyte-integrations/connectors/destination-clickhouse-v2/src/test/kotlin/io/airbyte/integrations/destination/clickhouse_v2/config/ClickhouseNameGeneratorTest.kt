@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse_v2.config
 
 import java.util.UUID
@@ -9,7 +13,10 @@ class ClickhouseNameGeneratorTest {
     fun `toClickHouseCompatibleName replaces special characters with underscores`() {
         Assertions.assertEquals("hello_world", "hello world".toClickHouseCompatibleName())
         Assertions.assertEquals("user_123", "user-123".toClickHouseCompatibleName())
-        Assertions.assertEquals("________________________________", ",./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-=".toClickHouseCompatibleName())
+        Assertions.assertEquals(
+            "________________________________",
+            ",./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-=".toClickHouseCompatibleName()
+        )
         Assertions.assertEquals("a_b_c", "a.b.c".toClickHouseCompatibleName())
     }
 

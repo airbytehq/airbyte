@@ -19,7 +19,9 @@ class ClickhouseFinalTableNameGenerator(private val config: ClickhouseConfigurat
     FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
-            namespace = (streamDescriptor.namespace ?: config.resolvedDatabase).toClickHouseCompatibleName(),
+            namespace =
+                (streamDescriptor.namespace ?: config.resolvedDatabase)
+                    .toClickHouseCompatibleName(),
             name = streamDescriptor.name.toClickHouseCompatibleName(),
         )
 }
@@ -44,7 +46,6 @@ fun String.toClickHouseCompatibleName(): String {
     //    a digit (0-9), or an underscore (_) with a single underscore.
     var transformed = toAlphanumericAndUnderscore(this)
 
-
     // 2. Ensure the identifier does not start with a digit.
     //    If it starts with a digit, prepend an underscore.
     if (transformed.isNotEmpty() && transformed[0].isDigit()) {
@@ -53,7 +54,8 @@ fun String.toClickHouseCompatibleName(): String {
 
     // 3.Do not allow empty strings.
     if (transformed.isEmpty()) {
-        return "default_name_${UUID.randomUUID()}" // A fallback name if the input results in an empty string
+        return "default_name_${UUID.randomUUID()}" // A fallback name if the input results in an
+        // empty string
     }
 
     return transformed

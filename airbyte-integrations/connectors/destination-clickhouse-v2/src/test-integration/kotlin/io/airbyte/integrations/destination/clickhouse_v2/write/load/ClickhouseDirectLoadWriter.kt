@@ -107,8 +107,8 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
-        val cleanedNamespace = "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}"
-            .toClickHouseCompatibleName()
+        val cleanedNamespace =
+            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
         val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
