@@ -289,8 +289,8 @@ class StateManager(
                         AirbyteStateStats()
                             .withRecordCount(it.numRecords.toDouble())
                     )
-                    .withAdditionalProperty("id", it.id)
-                    .apply { it.partitionId?.let { withAdditionalProperty("partition_id", it) } }
+//                    .withAdditionalProperty("id", it.id)
+//                    .apply { it.partitionId?.let { withAdditionalProperty("partition_id", it) } } // TEMP
                 stateMessages.add(airbyteStateMessage)
             }
 
