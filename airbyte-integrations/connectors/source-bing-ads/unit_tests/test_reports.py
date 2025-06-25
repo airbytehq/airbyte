@@ -26,21 +26,9 @@ from source_bing_ads.report_streams import (
     AccountPerformanceReportMonthly,
     AdGroupImpressionPerformanceReportDaily,
     AdGroupImpressionPerformanceReportHourly,
-    AdGroupPerformanceReportDaily,
-    AdGroupPerformanceReportHourly,
-    AgeGenderAudienceReportDaily,
-    AgeGenderAudienceReportHourly,
     BudgetSummaryReport,
     CampaignImpressionPerformanceReportDaily,
     CampaignImpressionPerformanceReportHourly,
-    CampaignPerformanceReportDaily,
-    CampaignPerformanceReportHourly,
-    GeographicPerformanceReportDaily,
-    GeographicPerformanceReportHourly,
-    GeographicPerformanceReportMonthly,
-    GeographicPerformanceReportWeekly,
-    KeywordPerformanceReportDaily,
-    KeywordPerformanceReportHourly,
     SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
     UserLocationPerformanceReportDaily,
@@ -85,30 +73,6 @@ class TestPerformanceReport(BingAdsReportingServicePerformanceStream, SourceBing
 
     def __init__(self) -> None:
         self.client = TestClient()
-
-
-def test_get_column_value():
-    config = {
-        "developer_token": "developer_token",
-        "client_id": "client_id",
-        "refresh_token": "refresh_token",
-        "reports_start_date": "2020-01-01T00:00:00Z",
-    }
-    test_report = GeographicPerformanceReportDaily(client=Mock(), config=config)
-
-    row_values = _RowValues(
-        {"AccountId": 1, "AverageCpc": 3, "AdGroupId": 2, "AccountName": 5, "Spend": 4, "AllRevenue": 6, "Assists": 7},
-        {3: "11.5", 1: "33", 2: "--", 5: "123456789", 4: "120.3%", 6: "123,456,789.23", 7: "123,456,789"},
-    )
-    record = _RowReportRecord(row_values)
-
-    assert test_report.get_column_value(record, "AccountId") == "33"
-    assert test_report.get_column_value(record, "AverageCpc") == "11.5"
-    assert test_report.get_column_value(record, "AdGroupId") is None
-    assert test_report.get_column_value(record, "AccountName") == "123456789"
-    assert test_report.get_column_value(record, "Spend") == "120.3"
-    assert test_report.get_column_value(record, "AllRevenue") == "123456789.23"
-    assert test_report.get_column_value(record, "Assists") == "123456789"
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -163,15 +127,10 @@ def test_get_updated_state_state_new_account():
         AccountImpressionPerformanceReportDaily,
         AccountPerformanceReportDaily,
         AdGroupImpressionPerformanceReportDaily,
-        AdGroupPerformanceReportDaily,
-        AgeGenderAudienceReportDaily,
         AdPerformanceReportDaily,
         CampaignImpressionPerformanceReportDaily,
-        CampaignPerformanceReportDaily,
-        KeywordPerformanceReportDaily,
         SearchQueryPerformanceReportDaily,
         UserLocationPerformanceReportDaily,
-        GeographicPerformanceReportDaily,
     ),
 )
 def test_get_report_record_timestamp_daily(stream_report_daily_cls):
@@ -190,72 +149,15 @@ def test_get_report_record_timestamp_without_aggregation():
         AccountImpressionPerformanceReportHourly,
         AccountPerformanceReportHourly,
         AdGroupImpressionPerformanceReportHourly,
-        AdGroupPerformanceReportHourly,
-        AgeGenderAudienceReportHourly,
         AdPerformanceReportHourly,
         CampaignImpressionPerformanceReportHourly,
-        CampaignPerformanceReportHourly,
-        KeywordPerformanceReportHourly,
         SearchQueryPerformanceReportHourly,
         UserLocationPerformanceReportHourly,
-        GeographicPerformanceReportHourly,
     ),
 )
 def test_get_report_record_timestamp_hourly(stream_report_hourly_cls):
     stream_report = stream_report_hourly_cls(client=Mock(), config=TEST_CONFIG)
     assert "2020-01-01T15:00:00+00:00" == stream_report.get_report_record_timestamp("2020-01-01|15")
-
-
-def test_report_get_start_date_wo_stream_state():
-    expected_start_date = "2020-01-01"
-    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
-    test_report.client.reports_start_date = "2020-01-01"
-    stream_state = {}
-    account_id = "123"
-    assert expected_start_date == test_report.get_start_date(stream_state, account_id)
-
-
-def test_report_get_start_date_with_stream_state():
-    expected_start_date = pendulum.parse("2023-04-17T21:29:57")
-    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
-    test_report.client.reports_start_date = "2020-01-01"
-    stream_state = {"123": {"TimePeriod": "2023-04-17T21:29:57+00:00"}}
-    account_id = "123"
-    assert expected_start_date == test_report.get_start_date(stream_state, account_id)
-
-
-def test_report_get_start_date_performance_report_with_stream_state():
-    expected_start_date = pendulum.parse("2023-04-07T21:29:57")
-    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
-    test_report.config = {"lookback_window": 10}
-    stream_state = {"123": {"TimePeriod": "2023-04-17T21:29:57+00:00"}}
-    account_id = "123"
-    assert expected_start_date == test_report.get_start_date(stream_state, account_id)
-
-
-def test_report_get_start_date_performance_report_wo_stream_state():
-    days_to_subtract = 10
-    reports_start_date = pendulum.parse("2021-04-07T00:00:00")
-    test_report = GeographicPerformanceReportDaily(client=Mock(), config=TEST_CONFIG)
-    test_report.client.reports_start_date = reports_start_date
-    test_report.config = {"lookback_window": days_to_subtract}
-    stream_state = {}
-    account_id = "123"
-    assert reports_start_date.subtract(days=days_to_subtract) == test_report.get_start_date(stream_state, account_id)
-
-
-@pytest.mark.parametrize(
-    "performance_report_cls",
-    (
-        GeographicPerformanceReportDaily,
-        GeographicPerformanceReportHourly,
-        GeographicPerformanceReportMonthly,
-        GeographicPerformanceReportWeekly,
-    ),
-)
-def test_geographic_performance_report_pk(performance_report_cls):
-    stream = performance_report_cls(client=Mock(), config=TEST_CONFIG)
-    assert stream.primary_key is None
 
 
 def test_report_parse_response_csv_error(caplog):
@@ -451,22 +353,13 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
 @pytest.mark.parametrize(
     "stream, response, records",
     [
-        (CampaignPerformanceReportHourly, "hourly_reports/campaign_performance.csv", "hourly_reports/campaign_performance_records.json"),
         (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
-        (AdGroupPerformanceReportHourly, "hourly_reports/ad_group_performance.csv", "hourly_reports/ad_group_performance_records.json"),
         (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
         (
             CampaignImpressionPerformanceReportHourly,
             "hourly_reports/campaign_impression_performance.csv",
             "hourly_reports/campaign_impression_performance_records.json",
         ),
-        (KeywordPerformanceReportHourly, "hourly_reports/keyword_performance.csv", "hourly_reports/keyword_performance_records.json"),
-        (
-            GeographicPerformanceReportHourly,
-            "hourly_reports/geographic_performance.csv",
-            "hourly_reports/geographic_performance_records.json",
-        ),
-        (AgeGenderAudienceReportHourly, "hourly_reports/age_gender_audience.csv", "hourly_reports/age_gender_audience_records.json"),
         (
             SearchQueryPerformanceReportHourly,
             "hourly_reports/search_query_performance.csv",

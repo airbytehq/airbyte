@@ -36,7 +36,7 @@ class MSSQLBulkLoadStreamLoader(
         super.start() // calls ensureTableExists()
         formatFilePath = mssqlFormatFileCreator.createAndUploadFormatFile(defaultSchema).key
         val state = MSSQLBulkLoaderStreamState(dataSource, formatFilePath)
-        streamStateStore.put(stream.descriptor, state)
+        streamStateStore.put(stream.mappedDescriptor, state)
     }
 
     /**

@@ -9,39 +9,17 @@ from airbyte_cdk import TState, YamlDeclarativeSource
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
-from source_bing_ads.bulk_streams import (
-    AdGroupLabels,
-    AppInstallAdLabels,
-    AppInstallAds,
-    Budget,
-    CampaignLabels,
-    KeywordLabels,
-    Keywords,
-    Labels,
-)
+from source_bing_ads.base_streams import Accounts
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     AccountImpressionPerformanceReportDaily,
     AccountImpressionPerformanceReportHourly,
     AccountImpressionPerformanceReportMonthly,
     AccountImpressionPerformanceReportWeekly,
-    AccountPerformanceReportDaily,
-    AccountPerformanceReportHourly,
-    AccountPerformanceReportMonthly,
-    AccountPerformanceReportWeekly,
     AdGroupImpressionPerformanceReportDaily,
     AdGroupImpressionPerformanceReportHourly,
     AdGroupImpressionPerformanceReportMonthly,
     AdGroupImpressionPerformanceReportWeekly,
-    AdGroupPerformanceReportDaily,
-    AdGroupPerformanceReportHourly,
-    AdGroupPerformanceReportMonthly,
-    AdGroupPerformanceReportWeekly,
-    AgeGenderAudienceReportDaily,
-    AgeGenderAudienceReportHourly,
-    AgeGenderAudienceReportMonthly,
-    AgeGenderAudienceReportWeekly,
     AudiencePerformanceReportDaily,
     AudiencePerformanceReportHourly,
     AudiencePerformanceReportMonthly,
@@ -52,23 +30,11 @@ from source_bing_ads.report_streams import (  # noqa: F401
     CampaignImpressionPerformanceReportHourly,
     CampaignImpressionPerformanceReportMonthly,
     CampaignImpressionPerformanceReportWeekly,
-    CampaignPerformanceReportDaily,
-    CampaignPerformanceReportHourly,
-    CampaignPerformanceReportMonthly,
-    CampaignPerformanceReportWeekly,
     CustomReport,
-    GeographicPerformanceReportDaily,
-    GeographicPerformanceReportHourly,
-    GeographicPerformanceReportMonthly,
-    GeographicPerformanceReportWeekly,
     GoalsAndFunnelsReportDaily,
     GoalsAndFunnelsReportHourly,
     GoalsAndFunnelsReportMonthly,
     GoalsAndFunnelsReportWeekly,
-    KeywordPerformanceReportDaily,
-    KeywordPerformanceReportHourly,
-    KeywordPerformanceReportMonthly,
-    KeywordPerformanceReportWeekly,
     ProductDimensionPerformanceReportDaily,
     ProductDimensionPerformanceReportHourly,
     ProductDimensionPerformanceReportMonthly,
@@ -85,12 +51,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     UserLocationPerformanceReportHourly,
     UserLocationPerformanceReportMonthly,
     UserLocationPerformanceReportWeekly,
-)
-from source_bing_ads.reports.ad_performance_report import (  # noqa: F401
-    AdPerformanceReportDaily,
-    AdPerformanceReportHourly,
-    AdPerformanceReportMonthly,
-    AdPerformanceReportWeekly,
 )
 
 
@@ -157,30 +117,14 @@ class SourceBingAds(YamlDeclarativeSource):
 
         client = Client(**config)
         streams = [
-            AdGroups(client, config),
-            AdGroupLabels(client, config),
-            AppInstallAds(client, config),
-            AppInstallAdLabels(client, config),
-            Ads(client, config),
-            Budget(client, config),
             BudgetSummaryReport(client, config),
-            # Labels(client, config),
-            KeywordLabels(client, config),
-            Keywords(client, config),
-            CampaignLabels(client, config),
         ]
 
         reports = (
-            "AgeGenderAudienceReport",
             "AccountImpressionPerformanceReport",
-            # "AccountPerformanceReport",
             "AudiencePerformanceReport",
-            "KeywordPerformanceReport",
-            "AdGroupPerformanceReport",
             "AdGroupImpressionPerformanceReport",
-            "CampaignPerformanceReport",
             "CampaignImpressionPerformanceReport",
-            "GeographicPerformanceReport",
             "GoalsAndFunnelsReport",
             "ProductDimensionPerformanceReport",
             "ProductSearchQueryPerformanceReport",
