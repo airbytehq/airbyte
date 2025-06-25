@@ -79,7 +79,6 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     override fun releaseResources() {
-//        streamRecordConsumer.close() // TEMP: swith to .use {}
         if (::outputMessageRouter.isInitialized) {
             outputMessageRouter.close()
         }
