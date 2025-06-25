@@ -25,13 +25,9 @@ RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
         ./extra_prereqs_script; \
     fi
 
-# Install uv, and use it to install Poetry (faster).
-# Then use Poetry to install the connector dependencies.
 # Until PEP 751 is adopted, we have to install with Poetry in order
 # to respect the `poetry.lock` file.
-RUN pip install --no-cache-dir uv && \
-    python -m uv pip install --no-cache-dir poetry && \
-    poetry config virtualenvs.create false && \
+RUN poetry config virtualenvs.create false && \
     poetry install --no-interaction --no-ansi --without=dev
 
 # Now build the final stage
