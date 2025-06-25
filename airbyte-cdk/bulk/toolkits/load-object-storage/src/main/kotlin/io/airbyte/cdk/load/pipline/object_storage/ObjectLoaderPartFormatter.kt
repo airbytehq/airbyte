@@ -127,7 +127,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         return newState(stream)
     }
 
-    suspend fun startLockFree(key: StreamKey, part: Int): State<T> {
+    suspend fun startLockFree(key: StreamKey): State<T> {
         val stream = catalog.getStream(key.stream)
         return getNewStateWithoutLock(stream)
     }
