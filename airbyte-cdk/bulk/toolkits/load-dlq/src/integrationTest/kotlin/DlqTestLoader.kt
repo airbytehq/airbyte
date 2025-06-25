@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.integrationTest
 
+import DlqStateWithRecordSample
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -15,8 +16,6 @@ import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 import io.airbyte.cdk.load.command.dlq.ObjectStorageSpec
 import io.airbyte.cdk.load.command.dlq.toObjectStorageConfig
-import io.airbyte.cdk.load.data.AirbyteValueProxy
-import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
@@ -30,8 +29,11 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.math.BigInteger
+
+const val DLQ_INTEGRATION_TEST_ENV = "dlq-integration-test"
+const val DLQ_SAMPLE_TEST = "dlq-sample-test"
 
 class DlqTestSpec : ConfigurationSpecification() {
     val objectStorageConfig: ObjectStorageSpec = DisabledObjectStorageSpec()
@@ -42,30 +44,20 @@ class DlqTestConfig(override val objectStorageConfig: ObjectStorageConfig) :
 
 class DlqTestStreamLoader(override val stream: DestinationStream) : StreamLoader
 
-class DlqTestState : AutoCloseable {
-    private val records: MutableList<DestinationRecordRaw> = mutableListOf()
+interface DlqTestState : AutoCloseable {
+    fun accumulate(record: DestinationRecordRaw)
 
-    fun accumulate(record: DestinationRecordRaw) = records.add(record)
+    fun isFull(): Boolean
 
-    fun isFull(): Boolean = records.size > 2
-
-    fun flush(): List<DestinationRecordRaw>? = records.filter { it.hasAnEvenId() }.ifEmpty { null }
-
-    override fun close() {}
-
-    // Just so that we do not write everything to the dead letter queue
-    // we only write even ids that are less than 10
-    private fun DestinationRecordRaw.hasAnEvenId(): Boolean {
-        val id =
-            this.rawData
-                .asAirbyteValueProxy()
-                .getInteger(AirbyteValueProxy.FieldAccessor(0, "id", IntegerType))
-        return id?.let { it < BigInteger.TEN && it.mod(BigInteger.TWO) == BigInteger.ZERO } ?: true
-    }
+    fun flush(): List<DestinationRecordRaw>?
 }
 
-class DlqTestLoader : DlqLoader<DlqTestState> {
-    override fun start(key: StreamKey, part: Int): DlqTestState = DlqTestState()
+interface DlqStateFactory {
+    fun create(key: StreamKey, part: Int): DlqTestState
+}
+
+class DlqTestLoader(private val stateFactory: DlqStateFactory) : DlqLoader<DlqTestState> {
+    override fun start(key: StreamKey, part: Int): DlqTestState = stateFactory.create(key, part)
 
     override fun close() {}
 
@@ -81,6 +73,7 @@ class DlqTestLoader : DlqLoader<DlqTestState> {
 }
 
 @Factory
+@Requires(env = [DLQ_INTEGRATION_TEST_ENV])
 class DlqTestFactory {
     @Singleton fun spec() = DlqTestSpec()
 
@@ -119,7 +112,16 @@ class DlqTestFactory {
     fun loadPipeline(
         catalog: DestinationCatalog,
         dlqPipelineFactory: DlqPipelineFactory,
-    ): LoadPipeline = dlqPipelineFactory.createPipeline(DlqTestLoader())
+        dlqStateFactory: DlqStateFactory,
+    ): LoadPipeline = dlqPipelineFactory.createPipeline(DlqTestLoader(dlqStateFactory))
+
+    @Singleton
+    @Secondary
+    fun dlqStateFromRecordSampleFactory(): DlqStateFactory = DlqStateWithRecordSample.Factory()
+
+    @Singleton
+    @Requires(env = [DLQ_SAMPLE_TEST])
+    fun dlqStateFromNewRecordFactory(): DlqStateFactory = DlqStateWithNewRecords.Factory()
 
     @Singleton
     @Requires(env = ["MockObjectStorage"])
