@@ -66,44 +66,6 @@ class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceRe
     report_aggregation = "Monthly"
 
 
-class AdGroupPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "AdGroupPerformanceReport"
-    report_schema_name = "ad_group_performance_report"
-
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "Language",
-    ]
-
-
-class AdGroupPerformanceReportHourly(HourlyReportTransformerMixin, AdGroupPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "ad_group_performance_report_hourly"
-
-
-class AdGroupPerformanceReportDaily(AdGroupPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AdGroupPerformanceReportWeekly(AdGroupPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class AdGroupImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
@@ -129,72 +91,6 @@ class AdGroupImpressionPerformanceReportWeekly(AdGroupImpressionPerformanceRepor
 
 
 class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class KeywordPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "KeywordPerformanceReport"
-    report_schema_name = "keyword_performance_report"
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "KeywordId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "DeliveredMatchType",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-    ]
-
-
-class KeywordPerformanceReportHourly(HourlyReportTransformerMixin, KeywordPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "keyword_performance_report_hourly"
-
-
-class KeywordPerformanceReportDaily(KeywordPerformanceReport):
-    report_aggregation = "Daily"
-    report_schema_name = "keyword_performance_report_daily"
-
-
-class KeywordPerformanceReportWeekly(KeywordPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class GeographicPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "GeographicPerformanceReport"
-    report_schema_name = "geographic_performance_report"
-
-    # Need to override the primary key here because the one inherited from the PerformanceReportsMixin
-    # is incorrect for the geographic performance reports
-    primary_key = None
-
-
-class GeographicPerformanceReportHourly(HourlyReportTransformerMixin, GeographicPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "geographic_performance_report_hourly"
-
-
-class GeographicPerformanceReportDaily(GeographicPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class GeographicPerformanceReportWeekly(GeographicPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class GeographicPerformanceReportMonthly(GeographicPerformanceReport):
     report_aggregation = "Monthly"
 
 
