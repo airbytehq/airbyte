@@ -4,6 +4,7 @@
 
 import re
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -1633,11 +1634,10 @@ class ContributorActivity(GithubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
-        try:
-            record.update(record.pop("author"))
-        except Exception as ex:
-            self.logger.info(f'Failed to extract author from repo {stream_slice["repository"]}. Error: {ex}')
-            raise ex
+        author = record.pop("author", None)
+        # It's been found that the author field can be None, so we check for it
+        if author:
+            record.update(author)
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
