@@ -25,7 +25,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     AudiencePerformanceReportMonthly,
     AudiencePerformanceReportWeekly,
     BingAdsReportingServiceStream,
-    BudgetSummaryReport,
     CampaignImpressionPerformanceReportDaily,
     CampaignImpressionPerformanceReportHourly,
     CampaignImpressionPerformanceReportMonthly,
@@ -116,9 +115,7 @@ class SourceBingAds(YamlDeclarativeSource):
         declarative_streams = super().streams(config)
 
         client = Client(**config)
-        streams = [
-            BudgetSummaryReport(client, config),
-        ]
+        streams = []
 
         reports = (
             "AccountImpressionPerformanceReport",

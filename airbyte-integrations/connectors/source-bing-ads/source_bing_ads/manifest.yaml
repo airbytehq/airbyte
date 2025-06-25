@@ -1483,6 +1483,8 @@ definitions:
       - TopVsOther
       - BidMatchType
     geographic_performance_report: None
+    budget_summary:
+      - Date
 
   report_columns:
     age_gender_audience:
@@ -2108,6 +2110,16 @@ definitions:
       - Revenue
       - RevenuePerConversion
       - RevenuePerAssist
+    budget_summary:
+      - AccountName
+      - AccountNumber
+      - AccountId
+      - CampaignId
+      - CampaignName
+      - Date
+      - MonthlyBudget
+      - DailySpend
+      - MonthToDateSpend
 
   # base bulk streams
   base_bulk_stream:
@@ -2302,6 +2314,28 @@ definitions:
     cursor_field: TimePeriod
     cursor_datetime_formats:
       - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: |
+        {%- set last_year = now_utc() - duration('P1Y') -%}
+        {%- set default_date = last_year.strftime('%Y-01-01') -%}
+        {%- set start_date = config.get('reports_start_date', default_date) -%}
+        {{ start_date }}
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      # we need the end time to include the time part as well to distinguish from the start time
+      # if we are syncing in same day, then we can evaluate boundaries effectively like lower >= upper
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+  incremental_sync_budget_summary_report_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: Date
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+      - "%m/%d/%Y"
     datetime_format: "%Y-%m-%d"
     lookback_window: P{{ config.get('lookback_window', 0) }}D
     start_datetime:
@@ -2825,6 +2859,12 @@ definitions:
         value: |
           {% set v = record.get('ConversionRate') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+    budget_summary_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - Date
+        value: "{{ format_datetime(record.get('Date'), '%Y-%m-%d', '%m/%d/%Y') }}"
+
 dynamic_streams:
   # Report streams
   - type: DynamicDeclarativeStream
@@ -3246,6 +3286,26 @@ dynamic_streams:
                   $ref: "#/definitions/transformations/geographic_performance_report_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          ## Budget Summary Report
+          - name: budget_summary_report
+            parameters:
+              report_aggregation: None
+              report_name: BudgetSummaryReport
+              report_type: BudgetSummaryReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/budget_summary"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/budget_summary"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/budget_summary_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/budget_summary_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_budget_summary_report_datetime_cursor"
       components_mapping:
         - type: ComponentMappingDefinition
           create_or_update: true
@@ -9412,6 +9472,58 @@ schemas:
         type:
           - "null"
           - string
+  
+  budget_summary_report:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccountName:
+        description: Name of the account
+        type:
+          - "null"
+          - string
+      AccountNumber:
+        description: Account number associated with the account
+        type:
+          - "null"
+          - string
+      AccountId:
+        description: Unique identifier for the account
+        type:
+          - "null"
+          - integer
+      CampaignId:
+        description: Unique identifier for the campaign
+        type:
+          - "null"
+          - integer
+      CampaignName:
+        description: Name of the campaign
+        type:
+          - "null"
+          - string
+      Date:
+        description: Date of the data record
+        type:
+          - "null"
+          - string
+        format: date
+      MonthlyBudget:
+        description: Budget amount set for the campaign for the entire month
+        type:
+          - "null"
+          - number
+      DailySpend:
+        description: Amount spent on the campaign on a daily basis
+        type:
+          - "null"
+          - number
+      MonthToDateSpend:
+        description: Total amount spent on the campaign from the beginning of the month
+        type:
+          - "null"
+          - number
+
 
 concurrency_level:
   type: ConcurrencyLevel
