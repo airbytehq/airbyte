@@ -60,7 +60,7 @@ class NonDockerizedDestination(
     // The destination has a runBlocking inside WriteOperation.
     // This means that normal coroutine cancellation doesn't work.
     // So we start our own thread pool, which we can forcibly kill if needed.
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = Executors.newFixedThreadPool(4)
     private val coroutineDispatcher = executor.asCoroutineDispatcher()
     private val file = File("/tmp/test_file")
     private val writeLock = Mutex()
@@ -142,8 +142,9 @@ class NonDockerizedDestination(
                             destination.results.traces(),
                             destination.results.states(),
                         )
+                    } finally {
+                        destinationComplete.complete(Unit)
                     }
-                    destinationComplete.complete(Unit)
                 }
             }
             .invokeOnCompletion { executor.shutdownNow() }

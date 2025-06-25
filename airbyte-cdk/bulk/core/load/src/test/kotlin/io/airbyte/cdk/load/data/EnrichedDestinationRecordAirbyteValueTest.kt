@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -29,6 +30,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
         )
 
     private val emittedAtMs = 1234567890L
+    private val airbyteRawId = UUID.randomUUID()
 
     @Test
     fun `test airbyteMetaFields property`() {
@@ -38,7 +40,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 declaredFields = linkedMapOf(),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                sourceMeta = Meta()
+                sourceMeta = Meta(),
+                airbyteRawId = airbyteRawId,
             )
 
         val metaFields = record.airbyteMetaFields
@@ -105,7 +108,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 declaredFields = declaredFields,
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                sourceMeta = Meta()
+                sourceMeta = Meta(),
+                airbyteRawId = airbyteRawId,
             )
 
         val allFields = record.allTypedFields
@@ -136,7 +140,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 "field1",
                 airbyteMetaField = null
             )
-        field1.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, StringValue("val"))
+        field1.truncate(StringValue("val"), Reason.DESTINATION_RECORD_SIZE_LIMITATION)
 
         val field2 =
             EnrichedAirbyteValue(
@@ -168,7 +172,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 declaredFields = declaredFields,
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                sourceMeta = meta
+                sourceMeta = meta,
+                airbyteRawId = airbyteRawId,
             )
 
         // Get the changes array from the meta field
@@ -221,7 +226,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 declaredFields = linkedMapOf(),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                sourceMeta = Meta()
+                sourceMeta = Meta(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val record2 =
@@ -230,7 +236,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 declaredFields = linkedMapOf(),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                sourceMeta = Meta()
+                sourceMeta = Meta(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val rawId1 =

@@ -89,6 +89,7 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
                     outputFileFactory = outputFileFactory,
                     format = format
                 )
+            else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
     }
 

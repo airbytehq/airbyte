@@ -6,6 +6,24 @@ package io.airbyte.cdk.util
 
 import java.util.Optional
 
+fun Collection<String>.containsIgnoreCase(target: String) =
+    this.any { target.equals(it, ignoreCase = true) }
+
+fun <T : Any> Map<String, T>.findIgnoreCase(target: String): T? {
+    val matchingEntries =
+        this.filter { (actualName, _) -> target.equals(actualName, ignoreCase = true) }
+    if (matchingEntries.isEmpty()) {
+        return null
+    }
+    if (matchingEntries.size > 1) {
+        // this should be impossible - bigquery column names are case-insensitive
+        throw IllegalStateException(
+            "Found multiple matching entries for $target in $this: $matchingEntries"
+        )
+    }
+    return matchingEntries.firstNotNullOf { it }.value
+}
+
 object CollectionUtils {
     /**
      * Pass in a collection and search term to determine whether any of the values match ignoring
