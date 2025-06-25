@@ -5,7 +5,17 @@ from typing import Any
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from source_exact.api import ExactAPI
-from source_exact.streams import CRMAccountClassificationNames, CRMAccountClassifications, ExactStream
+from source_exact.streams import (
+    CRMAccountClassificationNames,
+    CRMAccountClassifications,
+    ExactStream,
+    SyncCRMAccounts,
+    SyncFinancialGLAccounts,
+    SyncFinancialGLClassifications,
+    SyncFinancialTransactionLines,
+    SyncHRMSchedules,
+    SyncProjectTimeCostTransactions,
+)
 
 
 class SourceExact(AbstractSource):
@@ -28,13 +38,19 @@ class SourceExact(AbstractSource):
     def check(self, logger: logging.Logger, config) -> AirbyteConnectionStatus:
         return super().check(logger=logger, config=config)
 
-    def read(self, *args, **kwargs):
-        return super().read(*args, **kwargs)
+    # def read(self, *args, **kwargs):
+    #     return super().read(*args, **kwargs)
 
     def streams(self, config) -> list[ExactStream]:  # type: ignore[override]
         return [
             CRMAccountClassifications(config),
             CRMAccountClassificationNames(config),
+            SyncCRMAccounts(config),
+            SyncFinancialGLAccounts(config),
+            SyncFinancialGLClassifications(config),
+            SyncProjectTimeCostTransactions(config),
+            SyncHRMSchedules(config),
+            SyncFinancialTransactionLines(config),
         ]
 
     def discover(self, logger: logging.Logger, config) -> AirbyteCatalog:

@@ -26,11 +26,11 @@ def config():
 @fixture
 def configured_catalog(config):
     crmac_stream = CRMAccountClassificationNames(config).as_airbyte_stream()
-    configured_stream = ConfiguredAirbyteStream(
+    crmac_configured = ConfiguredAirbyteStream(
         stream=crmac_stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.overwrite
     )
 
-    return ConfiguredAirbyteCatalog(streams=[configured_stream])
+    return ConfiguredAirbyteCatalog(streams=[crmac_configured])
 
 
 def test_read_crm_account_classification_names(config, configured_catalog):
