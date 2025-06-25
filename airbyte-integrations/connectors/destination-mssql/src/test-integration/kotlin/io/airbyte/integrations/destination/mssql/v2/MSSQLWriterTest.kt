@@ -87,9 +87,7 @@ abstract class MSSQLWriterTest(
     }
 
     @Test
-    @Disabled(
-        "there's a bug in the connector"
-    )
+    @Disabled("there's a bug in the connector")
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
     }
