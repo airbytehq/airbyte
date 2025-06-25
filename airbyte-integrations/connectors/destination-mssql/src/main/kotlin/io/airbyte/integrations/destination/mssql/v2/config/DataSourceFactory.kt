@@ -44,10 +44,6 @@ fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
     val hostAndPort: HostAndPort =
         if (ssh != null) {
             when (ssh) {
-                is SshNoTunnelMethod -> {
-                    // TODO: fall back to regular
-                    throw UnsupportedOperationException("SSH tunneling is not supported for MSSQL.")
-                }
                 is SshKeyAuthTunnelMethod,
                 is SshPasswordAuthTunnelMethod -> {
                     val remote = SshdSocketAddress(host.trim(), port)
