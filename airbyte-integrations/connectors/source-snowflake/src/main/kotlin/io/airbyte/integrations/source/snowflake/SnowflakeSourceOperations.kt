@@ -108,10 +108,13 @@ class SnowflakeSourceOperations() :
             "DATE", -> LocalDateFieldType
             "TIME", -> LocalTimeFieldType
             "TIMESTAMP_LTZ",
-            "TIMESTAMP_TZ", -> OffsetDateTimeFieldType
+            "TIMESTAMP_TZ",
+            "TIMESTAMPLTZ",
+            "TIMESTAMPTZ", -> OffsetDateTimeFieldType
             "DATETIME",
             "TIMESTAMP",
-            "TIMESTAMP_NTZ", -> LocalDateTimeFieldType
+            "TIMESTAMP_NTZ",
+            "TIMESTAMPNTZ", -> LocalDateTimeFieldType
             "BINARY",
             "VARBINARY", -> BytesFieldType
             "VARIANT",
