@@ -30,7 +30,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.LongAdder
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
@@ -54,7 +54,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
-    private val streamStateCache = ConcurrentHashMap<String, LongAdder>()
+    private val streamStateCache = ConcurrentHashMap<String, AtomicLong>()
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -82,11 +82,6 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         val partFactory = PartFactory(fileName, fileNo)
         log.info { "Starting part generation for $fileName (${stream.mappedDescriptor})" }
         return State(stream, writerFactory.create(stream), partFactory)
-    }
-
-    private fun LongAdder.incrementAndGet(): Long {
-        increment()
-        return sum()
     }
 
     private suspend fun getNewStateWithoutLock(stream: DestinationStream): State<T> {

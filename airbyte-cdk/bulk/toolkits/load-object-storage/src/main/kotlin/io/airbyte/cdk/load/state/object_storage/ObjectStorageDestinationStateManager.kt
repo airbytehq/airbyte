@@ -16,7 +16,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.LongAdder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -40,17 +39,14 @@ class ObjectStorageDestinationState(
     private val fileNumbersByPath: ConcurrentHashMap<String, AtomicLong> = ConcurrentHashMap()
     private val matcher =
         pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
-    private val counters = ConcurrentHashMap<String, LongAdder>()
+    private val counters = ConcurrentHashMap<String, AtomicLong>()
 
     companion object {
         const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
     }
 
-    fun getPartCounter(path: String): LongAdder =
-        counters.computeIfAbsent(path) {
-            val initial = runBlocking(Dispatchers.IO) { getPartIdCounter(path).get() }
-            LongAdder().apply { if (initial >= 0) add(initial) }
-        }
+    fun getPartCounter(path: String): AtomicLong =
+        counters.computeIfAbsent(path) { runBlocking(Dispatchers.IO) { getPartIdCounter(path) } }
 
     /**
      * Returns (generationId, object) for all objects that should be cleaned up.
