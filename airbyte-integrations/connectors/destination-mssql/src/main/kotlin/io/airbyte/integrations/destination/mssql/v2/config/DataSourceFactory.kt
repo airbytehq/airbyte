@@ -8,7 +8,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerDataSource
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
-import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.createTunnelSession
 import io.micronaut.context.ApplicationContext
