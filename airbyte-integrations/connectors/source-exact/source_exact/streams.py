@@ -11,6 +11,7 @@ from pendulum.datetime import DateTime
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_exact.api import ExactAPI
 
@@ -55,6 +56,12 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         super().__init__(authenticator=self.api.authenticator)
 
     @property
+    def url_base(self) -> str:
+        """URL base depends on the current division being synced."""
+
+        return f"{self._base_url}/api/v1/{self._active_division}/"
+
+    @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state_per_division
 
@@ -64,12 +71,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
             return
 
         self._state_per_division = value
-
-    @property
-    def url_base(self) -> str:
-        """URL base depends on the current division being synced."""
-
-        return f"{self._base_url}/api/v1/{self._active_division}/"
 
     def path(
         self,
@@ -183,6 +184,37 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         return [self._parse_item(x) for x in results]
 
+    def read_records(self, sync_mode: SyncMode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[StreamData]:
+        """Implements the actual syncing of a division of the current stream."""
+        # This function is called per division (each division as returned by `stream_slices`), from `read_full_refresh`
+        # or `read_incremental` (at the base `Stream`).
+        #
+        # It is overridden to update the current division, as this needs to be updated in the `url_base` property.
+        # It also keeps track of the cursor value for the current division.
+
+        division = str(stream_slice["division"])
+        self._active_division = division
+
+        self.logger.info(f"Syncing division {division}...")
+
+        # Reset state if full refresh
+        if sync_mode == SyncMode.full_refresh:
+            self._state_per_division[division] = {}
+
+        # Perform the actual sync, and update the latest cursor value
+        division_state = self._state_per_division[division]
+        for record in super().read_records(sync_mode=sync_mode, stream_slice=stream_slice, **kwargs):
+            if self.cursor_field and sync_mode == SyncMode.incremental:
+                current_value = division_state.get(self.cursor_field)
+                updated_value = record[self.cursor_field]
+
+                if current_value is None:
+                    division_state[self.cursor_field] = updated_value
+                else:
+                    division_state[self.cursor_field] = max(current_value, updated_value)
+
+            yield record
+
     def _parse_item(self, obj: dict):
         """
         Parses response from Exact. It converts the OData date format (e.g., `/Date(1672531200000)/`) to an ISO formatted
@@ -192,7 +224,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         # Get the first not null type -> i.e., the expected type of the property
         property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
 
-        regex_timestamp = re.compile(r"^/Date\((\d+)\)/$")
+        regex_timestamp = re.compile(r"^\/Date\((\d+)\)\/$")
 
         # Recursively parse the value
         def parse_value(key, value):
@@ -250,22 +282,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
     @staticmethod
     def must_deduplicate_query_params() -> bool:
         return False
-
-    @staticmethod
-    def deduplicate_query_params(url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-        """
-        Remove query parameters from params mapping if they are already encoded in the URL.
-        :param url: URL with
-        :param params:
-        :return:
-        """
-        if params is None:
-            params = {}
-        query_string = urlparse(url).query
-        query_dict = {k: v[0] for k, v in parse_qs(query_string).items()}
-
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
 
     def stream_slices(
         self,
