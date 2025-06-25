@@ -50,11 +50,25 @@ access to the database.
 
 ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
+7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
+
+:::info
+
+Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
+This allows you to sync multiple collections across different databases using a single source.
+
+The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
+:::
+
+
+![Read Database Privileges](../../../../../Screenshot%202025-06-25%20at%205.05.08%E2%80%AFPM.png)
+
+
+8. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
 ![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
-8. Click on "Add User" at the bottom to save the user.
+9. Click on "Add User" at the bottom to save the user.
 
 ![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
