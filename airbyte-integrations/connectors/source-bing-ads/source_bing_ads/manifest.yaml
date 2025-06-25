@@ -491,7 +491,19 @@ definitions:
               - Videos
             value: "{{ none if record.get('Videos', {}).get('AssetLink') == none or record.get('Videos', {}).get('AssetLink') == [] else record.get('Videos') }}"
 
-  # base report stream
+  # Base Report Stream
+  ## This stream is used as a stream template in a dynamic_streams section to create report streams dynamically.
+  ## To define new report stream, you need to add a new object of stream parameters to list_of_parameters_for_stream.
+  ## Required params to define a report stream:
+  ## - name
+  ## - parameters
+  ## - primary_key
+  ## - schema_loader
+  ## - transformations
+  ## - incremental_sync
+  ## Then components resolving login in dynamic streams will set provided in list_of_parameters_for_stream object parameters
+  ## to base report stream template and add this stream to a catalog.
+
   report_base_stream:
     type: DeclarativeStream
     #    set report_aggregation in parameters, for example,
@@ -1432,7 +1444,16 @@ definitions:
       - RevenuePerConversion
       - RevenuePerAssist
 
-  # base bulk streams
+  # Base bulk streams
+  ## This stream is used as a stream template in a dynamic_streams section to create bulk streams dynamically.
+  ## To define new bulk stream, you need to add a new object of stream parameters to list_of_parameters_for_stream.
+  ## Required params to define a bulk stream:
+  ## - name
+  ## - DownloadEntities
+  ## - schema_loader
+  ## - schema_loader
+  ## Then components resolving login in dynamic streams will set provided in list_of_parameters_for_stream object parameters
+  ## to base bulk stream template and add this stream to a catalog.
   base_bulk_stream:
     # https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
     type: DeclarativeStream
