@@ -16,6 +16,10 @@ definitions:
       refresh_token_error_status_codes: [400, 401]
       refresh_token_error_key: "error"
       refresh_token_error_values: ["invalid_grant"]
+    token_updater:
+      type: ConfigTokenUpdater
+      refresh_token_key: "refresh_token"
+      access_token_key: "access_token"
   authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
