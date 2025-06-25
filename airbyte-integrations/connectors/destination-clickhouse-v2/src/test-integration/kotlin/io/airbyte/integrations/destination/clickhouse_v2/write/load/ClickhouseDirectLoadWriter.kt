@@ -32,7 +32,7 @@ import io.airbyte.integrations.destination.clickhouse_v2.config.toClickHouseComp
 import io.airbyte.integrations.destination.clickhouse_v2.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
-import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecificationOss
 import io.airbyte.integrations.destination.clickhouse_v2.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
@@ -43,12 +43,12 @@ import org.junit.jupiter.api.Disabled
 class ClickhouseDirectLoadWriter :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
-        configSpecClass = ClickhouseSpecification::class.java,
+        configSpecClass = ClickhouseSpecificationOss::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->
                 val configOverrides = mutableMapOf<String, String>()
                 ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecification, configOverrides)
+                    .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
             },
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
@@ -154,7 +154,7 @@ class ClickhouseDataDumper(
 object ClickhouseDataCleaner : DestinationCleaner {
     private val clickhouseSpecification =
         ValidatedJsonUtils.parseOne(
-            ClickhouseSpecification::class.java,
+            ClickhouseSpecificationOss::class.java,
             Files.readString(Utils.getConfigPath("valid_connection.json"))
         )
 
