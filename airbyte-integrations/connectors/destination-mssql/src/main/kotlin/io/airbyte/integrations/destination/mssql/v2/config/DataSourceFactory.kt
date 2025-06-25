@@ -48,8 +48,8 @@ fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
                     val remote = SshdSocketAddress(host.trim(), port)
                     val sshConnectionOptions: SshConnectionOptions =
                         SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                    val tunnnel = createTunnelSession(remote, ssh, sshConnectionOptions)
-                    HostAndPort(tunnnel.address.hostName, tunnnel.address.port)
+                    val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
+                    HostAndPort(tunnel.address.hostName, tunnel.address.port)
                 }
                 else -> {
                     HostAndPort(host.trim(), port)
