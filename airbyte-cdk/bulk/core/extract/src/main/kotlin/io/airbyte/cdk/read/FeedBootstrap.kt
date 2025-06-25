@@ -503,9 +503,9 @@ class StreamFeedBootstrap(
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun jsonSocketStreamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer): StreamRecordConsumer = JsonSocketEfficientStreamRecordConsumer(
-        feed.streams.filter { feed.id == it.id }.first(),
+        feed.streams.first { feed.id == it.id },
         socketJsonOutputConsumer)
     fun protoStreamRecordConsumer(protoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(
-        feed.streams.filter { feed.id == it.id }.first(),
+        feed.streams.first { feed.id == it.id },
         protoOutputConsumer, partitionId)
 }
