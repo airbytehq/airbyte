@@ -53,7 +53,6 @@ access to the database.
 7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
 
 :::info
-
 Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
 This allows you to sync multiple collections across different databases using a single source.
 
@@ -61,7 +60,7 @@ The `readAnyDatabase` privilege is required for this expanded access. Without it
 :::
 
 
-![Read Database Privileges](../../../../../Screenshot%202025-06-25%20at%205.05.08%E2%80%AFPM.png)
+![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
 
 
 8. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
