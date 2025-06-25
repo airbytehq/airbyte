@@ -276,7 +276,10 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = provided_state[0].stream.stream_state.state[self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+        if "hourly" in self.stream_name:
+            assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+        else:
+            assert job_end_time == SECOND_READ_FREEZE_TIME
 
     @freeze_time(SECOND_READ_FREEZE_TIME)
     def test_incremental_read_with_legacy_state_returns_records_after_migration_with_records_further_state_cursor(self):
@@ -344,7 +347,10 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+        if "hourly" in self.stream_name:
+            assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
+        else:
+            assert job_end_time == SECOND_READ_FREEZE_TIME
 
     @freeze_time("2024-05-06")
     def test_no_config_start_date(self):
@@ -368,6 +374,9 @@ class TestSuiteReportStream(TestReportStream):
         first_read_state = deepcopy(self.first_read_state)
         # this corresponds to the last read record as we don't have started_date in the config
         # the self.first_read_state is set using the config start date so it is not correct for this test
-        first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
-        first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
-        assert output.most_recent_state.stream_state.__dict__ == first_read_state
+        if "hourly" in self.stream_name:
+            first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
+            first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
+            assert output.most_recent_state.stream_state.__dict__ == first_read_state
+        else:
+            assert output.most_recent_state.stream_state.__dict__ == first_read_state

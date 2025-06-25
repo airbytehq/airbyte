@@ -1,14 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import timedelta
 from unittest import TestCase
 
 import freezegun
-import pendulum
 
-from airbyte_cdk.models import AirbyteStateBlob, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .utils import datetime_to_string, read_stream
@@ -18,8 +18,8 @@ from .zs_responses.articles_response_builder import ArticlesResponseBuilder
 from .zs_responses.records.articles_records_builder import ArticlesRecordBuilder
 
 
-_NOW = datetime.now(timezone.utc)
-_START_DATE = pendulum.now(tz="UTC").subtract(years=2)
+_NOW = ab_datetime_now()
+_START_DATE = ab_datetime_now().subtract(timedelta(weeks=52))
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -29,7 +29,7 @@ class TestArticlesStream(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(ab_datetime_now().subtract(timedelta(hours=1)))
         )
 
     def _get_authenticator(self, config):
@@ -56,7 +56,7 @@ class TestArticlesStream(TestCase):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         next_page_http_request = (
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE.add(days=10)).build()
+            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE.add(timedelta(days=10))).build()
         )
         http_mocker.get(
             ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
@@ -79,7 +79,7 @@ class TestArticlesStream(TestCase):
     def test_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        most_recent_cursor_value = _START_DATE.add(days=2)
+        most_recent_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
             ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
             ArticlesResponseBuilder.response()
@@ -89,13 +89,13 @@ class TestArticlesStream(TestCase):
 
         output = read_stream("articles", SyncMode.full_refresh, config)
 
-        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(most_recent_cursor_value.int_timestamp)}
+        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(int(most_recent_cursor_value.timestamp()))}
 
     @HttpMocker()
     def test_given_input_state_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        state_cursor_value = _START_DATE.add(days=2)
+        state_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
             ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
             ArticlesResponseBuilder.response().with_record(ArticlesRecordBuilder.record()).build(),

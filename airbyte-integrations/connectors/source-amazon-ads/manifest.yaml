@@ -53,6 +53,10 @@ definitions:
       - predicate: "{{ 'Report date is too far in the past' in response.details }}"
         action: FAIL
         error_message: "{{ response.details }}"
+      - type: HttpResponseFilter
+        http_codes: [ 425 ]
+        action: FAIL
+        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
 
   report_polling_error_handler:
     type: DefaultErrorHandler
@@ -3475,6 +3479,17 @@ spec:
           - 10
         order: 8
         type: integer
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 2
+        maximum: 10
+        default: 10
+        examples:
+          - 2
+          - 3
+        description: The number of worker threads to use for the sync.
+        order: 9
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3520,7 +3535,7 @@ spec:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 10
 
 schemas:

@@ -10,60 +10,23 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.base_streams import Accounts
-from source_bing_ads.bulk_streams import (
-    AdGroupLabels,
-    AppInstallAdLabels,
-    AppInstallAds,
-    Budget,
-    CampaignLabels,
-    KeywordLabels,
-    Keywords,
-)
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     AccountImpressionPerformanceReportDaily,
     AccountImpressionPerformanceReportHourly,
     AccountImpressionPerformanceReportMonthly,
     AccountImpressionPerformanceReportWeekly,
-    AccountPerformanceReportDaily,
-    AccountPerformanceReportHourly,
-    AccountPerformanceReportMonthly,
-    AccountPerformanceReportWeekly,
-    AdGroupImpressionPerformanceReportDaily,
-    AdGroupImpressionPerformanceReportHourly,
-    AdGroupImpressionPerformanceReportMonthly,
-    AdGroupImpressionPerformanceReportWeekly,
-    AdGroupPerformanceReportDaily,
-    AdGroupPerformanceReportHourly,
-    AdGroupPerformanceReportMonthly,
-    AdGroupPerformanceReportWeekly,
     AudiencePerformanceReportDaily,
     AudiencePerformanceReportHourly,
     AudiencePerformanceReportMonthly,
     AudiencePerformanceReportWeekly,
     BingAdsReportingServiceStream,
     BudgetSummaryReport,
-    CampaignImpressionPerformanceReportDaily,
-    CampaignImpressionPerformanceReportHourly,
-    CampaignImpressionPerformanceReportMonthly,
-    CampaignImpressionPerformanceReportWeekly,
     CustomReport,
-    GeographicPerformanceReportDaily,
-    GeographicPerformanceReportHourly,
-    GeographicPerformanceReportMonthly,
-    GeographicPerformanceReportWeekly,
     GoalsAndFunnelsReportDaily,
     GoalsAndFunnelsReportHourly,
     GoalsAndFunnelsReportMonthly,
     GoalsAndFunnelsReportWeekly,
-    KeywordPerformanceReportDaily,
-    KeywordPerformanceReportHourly,
-    KeywordPerformanceReportMonthly,
-    KeywordPerformanceReportWeekly,
-    ProductDimensionPerformanceReportDaily,
-    ProductDimensionPerformanceReportHourly,
-    ProductDimensionPerformanceReportMonthly,
-    ProductDimensionPerformanceReportWeekly,
     ProductSearchQueryPerformanceReportDaily,
     ProductSearchQueryPerformanceReportHourly,
     ProductSearchQueryPerformanceReportMonthly,
@@ -76,12 +39,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     UserLocationPerformanceReportHourly,
     UserLocationPerformanceReportMonthly,
     UserLocationPerformanceReportWeekly,
-)
-from source_bing_ads.reports.ad_performance_report import (  # noqa: F401
-    AdPerformanceReportDaily,
-    AdPerformanceReportHourly,
-    AdPerformanceReportMonthly,
-    AdPerformanceReportWeekly,
 )
 
 
@@ -148,27 +105,13 @@ class SourceBingAds(YamlDeclarativeSource):
 
         client = Client(**config)
         streams = [
-            AdGroupLabels(client, config),
-            AppInstallAds(client, config),
-            AppInstallAdLabels(client, config),
-            Budget(client, config),
             BudgetSummaryReport(client, config),
-            # Labels(client, config),
-            KeywordLabels(client, config),
-            Keywords(client, config),
-            CampaignLabels(client, config),
         ]
 
         reports = (
             "AccountImpressionPerformanceReport",
             "AudiencePerformanceReport",
-            "KeywordPerformanceReport",
-            "AdGroupPerformanceReport",
-            "AdGroupImpressionPerformanceReport",
-            "CampaignImpressionPerformanceReport",
-            "GeographicPerformanceReport",
             "GoalsAndFunnelsReport",
-            "ProductDimensionPerformanceReport",
             "ProductSearchQueryPerformanceReport",
             "SearchQueryPerformanceReport",
             "UserLocationPerformanceReport",
