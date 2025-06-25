@@ -49,7 +49,7 @@ class SalesforceSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order": 3, "default": false}""")
     val isSandbox: Boolean = false
 
-    @get:JsonProperty("Auth Type")
+    @get:JsonProperty("auth_type")
     @get:JsonSchemaInject(json = """{"const": "Client"}""")
     val authType: String = "Client"
 
