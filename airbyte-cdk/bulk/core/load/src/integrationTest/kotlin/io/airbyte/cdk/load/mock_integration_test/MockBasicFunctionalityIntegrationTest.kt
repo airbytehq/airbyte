@@ -24,8 +24,8 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class MockBasicFunctionalityIntegrationTest :
@@ -120,6 +120,8 @@ class MockBasicFunctionalityIntegrationTest :
 
     @Test
     fun testCrashInInputLoop() {
+        val streamName = "tomato"
+        val streamNamespace = "potato"
         val stream =
             DestinationStream(
                 randomizedNamespace,
@@ -140,8 +142,8 @@ class MockBasicFunctionalityIntegrationTest :
                         // send a state message for a stream that isn't in the catalog.
                         // this should cause the sync to crash.
                         InputStreamCheckpoint(
-                            "potato",
-                            "tomato",
+                            unmappedName = streamName,
+                            unmappedNamespace = streamNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
@@ -150,7 +152,7 @@ class MockBasicFunctionalityIntegrationTest :
                 )
             }
         assertEquals(
-            listOf("Stream not found: Descriptor(namespace=potato, name=tomato)"),
+            listOf("Stream not found: Descriptor(namespace=$streamNamespace, name=$streamName)"),
             e.traceMessages.map { it.message },
         )
     }
@@ -180,8 +182,9 @@ class MockBasicFunctionalityIntegrationTest :
                         checkpointKeyForMedium(),
                         listOf(
                             Checkpoint(
-                                DestinationStream.Descriptor("potato", "tomato"),
-                                Jsons.readTree("""{"foo": "bar"}""")
+                                unmappedNamespace = "potato",
+                                unmappedName = "tomato",
+                                state = Jsons.readTree("""{"foo": "bar"}""")
                             )
                         )
                     )

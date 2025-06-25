@@ -30,10 +30,11 @@ class DlqLoaderPipelineStep<S : AutoCloseable>(
     private val taskFactory: LoadPipelineStepTaskFactory,
     private val dlqLoader: DlqLoader<S>,
     private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    private val deadLetterQueueEnabled: Boolean,
 ) : LoadPipelineStep {
     override fun taskForPartition(partition: Int): Task {
         return taskFactory.createFirstStep(
-            batchAccumulator = DlqLoaderAccumulator(dlqLoader),
+            batchAccumulator = DlqLoaderAccumulator(dlqLoader, deadLetterQueueEnabled),
             outputPartitioner = PassThroughPartitioner(),
             outputQueue = FlattenQueueAdapter(outputQueue),
             part = partition,
@@ -55,6 +56,7 @@ class DlqStepOutput(
 /** Wraps a [DlqLoader] into a [BatchAccumulator] so that it fits into a [LoadPipeline]. */
 class DlqLoaderAccumulator<S>(
     private val loader: DlqLoader<S>,
+    private val deadLetterQueueEnabled: Boolean,
 ) : BatchAccumulator<S, StreamKey, DestinationRecordRaw, DlqStepOutput> {
     /** Propagates the call to the [DlqLoader] in order to create a new state for a stream. */
     override suspend fun start(key: StreamKey, part: Int): S = loader.start(key, part)
@@ -88,8 +90,14 @@ class DlqLoaderAccumulator<S>(
     }
 
     private fun getOutput(rejectedRecords: List<DestinationRecordRaw>?) =
-        when (rejectedRecords) {
-            null -> DlqStepOutput(BatchState.COMPLETE, null)
-            else -> DlqStepOutput(BatchState.PERSISTED, rejectedRecords)
+        if (deadLetterQueueEnabled) {
+            when (rejectedRecords) {
+                null -> DlqStepOutput(BatchState.COMPLETE, null)
+                else -> DlqStepOutput(BatchState.PERSISTED, rejectedRecords)
+            }
+        } else {
+            // Because Dead Letter Queue is disable, we never return rejected records.
+            // TODO: count rejected records for stats reporting
+            DlqStepOutput(BatchState.COMPLETE, null)
         }
 }
