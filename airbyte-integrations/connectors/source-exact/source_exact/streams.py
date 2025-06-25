@@ -3,7 +3,6 @@
 import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
@@ -184,7 +183,13 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         return [self._parse_item(x) for x in results]
 
-    def read_records(self, sync_mode: SyncMode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[StreamData]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
         """Implements the actual syncing of a division of the current stream."""
         # This function is called per division (each division as returned by `stream_slices`), from `read_full_refresh`
         # or `read_incremental` (at the base `Stream`).
@@ -203,7 +208,11 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         # Perform the actual sync, and update the latest cursor value
         division_state = self._state_per_division[division]
-        for record in super().read_records(sync_mode=sync_mode, stream_slice=stream_slice, **kwargs):
+        for record in super().read_records(
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_slice=stream_slice,
+        ):
             if self.cursor_field and sync_mode == SyncMode.incremental:
                 current_value = division_state.get(self.cursor_field)
                 updated_value = record[self.cursor_field]
