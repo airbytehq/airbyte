@@ -34,66 +34,6 @@ class BudgetSummaryReport(BingAdsReportingServiceStream):
         return original_value
 
 
-class CampaignImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
-    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
-    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
-    """
-
-    report_name: str = "CampaignPerformanceReport"
-
-    report_schema_name = "campaign_impression_performance_report"
-
-    primary_key = None
-
-
-class CampaignImpressionPerformanceReportHourly(HourlyReportTransformerMixin, CampaignImpressionPerformanceReport):
-    report_aggregation = "Hourly"
-
-    report_schema_name = "campaign_impression_performance_report_hourly"
-
-
-class CampaignImpressionPerformanceReportDaily(CampaignImpressionPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class CampaignImpressionPerformanceReportWeekly(CampaignImpressionPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class AdGroupImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
-    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
-    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
-    """
-
-    report_name: str = "AdGroupPerformanceReport"
-    report_schema_name = "ad_group_impression_performance_report"
-
-
-class AdGroupImpressionPerformanceReportHourly(HourlyReportTransformerMixin, AdGroupImpressionPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "ad_group_impression_performance_report_hourly"
-
-
-class AdGroupImpressionPerformanceReportDaily(AdGroupImpressionPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AdGroupImpressionPerformanceReportWeekly(AdGroupImpressionPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AccountPerformanceReport"
     report_schema_name = "account_performance_report"
@@ -224,45 +164,6 @@ class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
 
 
 class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class ProductDimensionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportrequest?view=bingads-13
-    """
-
-    report_name: str = "ProductDimensionPerformanceReport"
-    report_schema_name = "product_dimension_performance_report"
-    primary_key = None
-
-    @property
-    def report_columns(self) -> Iterable[str]:
-        """AccountId is not in reporting columns for this report"""
-        properties = list(self.get_json_schema().get("properties", {}).keys())
-        properties.remove("AccountId")
-        return properties
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record = super().transform(record, stream_slice)
-        record["AccountId"] = stream_slice["account_id"]
-        return record
-
-
-class ProductDimensionPerformanceReportHourly(HourlyReportTransformerMixin, ProductDimensionPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "product_dimension_performance_report_hourly"
-
-
-class ProductDimensionPerformanceReportDaily(ProductDimensionPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class ProductDimensionPerformanceReportWeekly(ProductDimensionPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class ProductDimensionPerformanceReportMonthly(ProductDimensionPerformanceReport):
     report_aggregation = "Monthly"
 
 
