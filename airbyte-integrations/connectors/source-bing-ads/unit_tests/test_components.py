@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import pytest
-from source_bing_ads.components import BingAdsCampaignsRecordTransformer
+from source_bing_ads.components import BingAdsCampaignsRecordTransformer, BulkStreamsStateMigration
 
 
 class TestBingAdsCampaignsRecordTransformer:
@@ -789,3 +789,35 @@ class TestBingAdsCampaignsRecordTransformer:
         # Check BiddingScheme transformation
         expected_bidding_scheme = {"Type": "TargetCpa", "TargetCpa": 40.0, "MaxCpc": {"Amount": 9.0}}
         assert input_record["BiddingScheme"] == expected_bidding_scheme
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_state",
+    (
+        (
+            {
+                "1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"},
+                "Id": "1111111",
+                "Match Type": None,
+                "Modified Time": None,
+            },
+            {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}},
+        ),
+        ({"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}, {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}),
+        (
+            {
+                "states": [
+                    {"partition": {"account_id": "account_id"}, "cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}},
+                ],
+                "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
+            },
+            {
+                "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
+                "states": [{"cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}, "partition": {"account_id": "account_id"}}],
+            },
+        ),
+    ),
+)
+def test_bulk_stream_state_migration(stream_state, expected_state):
+    migrator = BulkStreamsStateMigration()
+    assert migrator.migrate(stream_state) == expected_state
