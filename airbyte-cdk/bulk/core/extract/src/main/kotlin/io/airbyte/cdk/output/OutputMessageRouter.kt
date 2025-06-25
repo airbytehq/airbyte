@@ -13,8 +13,6 @@ import io.airbyte.cdk.read.SocketResource
 import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.micronaut.context.annotation.Prototype
-import jakarta.inject.Inject
 import java.time.Clock
 
 /**
@@ -25,7 +23,7 @@ import java.time.Clock
 class OutputMessageRouter(
     private val recordsDataChannelMedium: DataChannelMedium,
     private val recordsDataChannelFormat: DataChannelFormat,
-    private val simpleOutputConsumer: SimpleOutputConsumer,
+    private val nonSocketOutputConsumer: NonSocketOutputConsumer,
     private val additionalProperties: Map<String, String>,
     private val feedBootstrap: FeedBootstrap<*>,
     private val acquiredResources: Map<ResourceType, Resource.Acquired>, )
@@ -119,7 +117,7 @@ class OutputMessageRouter(
                 }
             }
             DataChannelMedium.STDIO -> {
-                simpleOutputConsumer.accept(airbyteMessage)
+                nonSocketOutputConsumer.accept(airbyteMessage)
             }
         }
 
@@ -138,7 +136,7 @@ class OutputMessageRouter(
                 }
             }
             DataChannelMedium.STDIO -> {
-                simpleOutputConsumer.accept(airbyteMessage)
+                nonSocketOutputConsumer.accept(airbyteMessage)
             }
         }
     }
