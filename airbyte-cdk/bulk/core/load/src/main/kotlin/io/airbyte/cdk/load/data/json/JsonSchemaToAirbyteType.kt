@@ -182,11 +182,8 @@ class JsonSchemaToAirbyteType(
         fieldSchema: ObjectNode,
     ): FieldType {
         val airbyteType = convertInner(fieldSchema) ?: UnknownType(fieldSchema)
-        val type = fieldSchema.get("type")
-        return FieldType(
-            airbyteType,
-            nullable = type.isArray && type.asIterable().any({ it.asText() == "null" })
-        )
+        val nullable = fieldSchema.get("type")?.let { it.isArray && it.asIterable().any({ type -> type.asText() == "null" }) } ?: true
+        return FieldType(airbyteType, nullable = nullable)
     }
 
     private fun unionFromCombinedTypes(
