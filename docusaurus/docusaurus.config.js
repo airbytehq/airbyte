@@ -16,9 +16,6 @@ const addButtonToTitle = require("./src/remark/addButtonToTitle");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  future: {
-    experimental_faster: true, // Enable faster builds
-  },
   markdown: {
     mermaid: true,
   },
