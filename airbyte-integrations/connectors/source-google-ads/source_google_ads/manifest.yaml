@@ -178,7 +178,7 @@ definitions:
         request_headers:
           Content-Type: application/json
           developer-token: '{{ config["credentials"]["developer_token"] }}'
-          login-customer-id: "{{ stream_partition['parent_slice']['customer_id'] }}"
+          login-customer-id: "{{ stream_partition['parent_slice'][0]['customer_id'] }}"
         request_body:
           type: RequestBodyJsonObject
           value:
@@ -293,7 +293,9 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
-        schema_normalization: Default
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
         type: GroupingPartitionRouter
         group_size: 1
@@ -307,48 +309,14 @@ definitions:
               partition_field: "customer_id"
     transformations:
       - type: KeysToSnakeCase
-      - type: DpathFlattenFields
-        field_path: ["campaign"]
-        delete_origin_value: True
-        key_transformation:
-          type: KeyTransformation
-          prefix: "campaign."
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
-          - path: ["campaign.url_custom_parameters"]
-            value: "{{ record['campaign.url_custom_parameters'] | map('tojson') | list | tojson | safe }}"
-      - type: DpathFlattenFields
-        field_path: ["campaign.network_settings"]
-        delete_origin_value: True
-        key_transformation:
-          type: KeyTransformation
-          prefix: "campaign.network_settings."
-      - type: DpathFlattenFields
-        field_path: ["campaign.geo_target_type_setting"]
-        delete_origin_value: True
-        key_transformation:
-          type: KeyTransformation
-          prefix: "campaign.geo_target_type_setting."
-      - type: DpathFlattenFields
-        field_path: ["metrics"]
-        delete_origin_value: True
-        key_transformation:
-          type: KeyTransformation
-          prefix: "metrics."
-      - type: DpathFlattenFields
-        field_path: ["segments"]
-        delete_origin_value: True
-        key_transformation:
-          type: KeyTransformation
-          prefix: "segments."
-      - type: DpathFlattenFields
-        field_path: ["campaign_budget"]
-        delete_origin_value: True
-        key_transformation:
-          type: KeyTransformation
-          prefix: "campaign_budget."
-      - type: AddFields
-        fields:
+          # Renames video_quartile_p_100_rate to video_quartile_p100_rate
+          - path: ["metrics.video_quartile_p100_rate"]
+            value: "{{ record['metrics.video_quartile_p_100_rate'] or 0.0 }}"
+            value_type: number
           - path: ["metrics.interaction_event_types"]
             value: >-
               {{ record['metrics.interaction_event_types']
@@ -359,6 +327,8 @@ definitions:
                  | map('replace','VIDEO_VIEW','4')
                  | map('replace','NONE','5')
                  | list }}
+      - type: RemoveFields
+        field_pointers: [["metrics.video_quartile_p_100_rate"]]
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
