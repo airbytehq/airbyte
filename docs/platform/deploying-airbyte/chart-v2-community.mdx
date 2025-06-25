@@ -5,6 +5,7 @@ products: oss-community
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import EnvironmentVarConversion from '@site/static/_extraenv_to_helm_chart_v2.md';
+import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 
 # Upgrade to Helm chart V2 (Self-Managed Community)
 
@@ -32,13 +33,19 @@ Upgrading to the new Helm chart now has the following benefits.
 
 The following versions of Airbyte can use Helm chart V2:
 
-- Airbyte version 1.6.0 and later, if installed and managed with Helm
+- Airbyte version 1.6.0 and later, if installed and managed with Helm _and_ connected to an external database, storage, and secrets manager
 
-The following versions of Airbyte can't use Helm chart V2:
+The following versions of Airbyte _can't_ use Helm chart V2:
 
 - Airbyte versions before 1.6.0
 
 - Airbyte versions installed and managed with abctl
+
+- Airbyte versions that aren't connected to an external database, storage, and secrets manager
+
+:::important
+Airbyte is evaluating possible migration paths to Helm chart V2 for those that don't meet the criteria above.
+:::
 
 ## How to upgrade
 
@@ -254,23 +261,27 @@ global:
 
 <details>
 <summary>
-Convert hyphenated parameters to camel case
+Update syntax for other customizatons
 </summary>
 
-If you have any further customizations, move those over to your new values.yaml file. 
+If you have further customizations in your V1 values.yaml file, move those over to your new values.yaml file, and update key names where appropriate.
 
-Check for hyphenated parameter names. These are camel case in Helm chart V2. For example, when copying over `workload-launcher`, change it to `workloadLauncher`.
+- Change hyphenated V1 keys keys to camel case in V2. For example, when copying over `workload-launcher`, change it to `workloadLauncher`.
 
-Some parameters have similar but slightly different names. For example, `orchestrator` is `containerOrchestrator` in Helm chart V2.
+- Some keys have different names. For example, `orchestrator` is `containerOrchestrator` in V2.
+
+Here is the full list of changes.
+
+<HelmSyntaxConversion/>
 
 </details>
 
 <details>
 <summary>
-Optional: convert environment variables to parameters
+Convert `extraEnv` variables
 </summary>
 
-In previous versions of your values.yaml file, you might have specified a number of environment variables. Many of these environment variables have a proper interface in Helm chart V2 and you can specify them without environment variables. For example, look at the following configuration, which uses environment variables to tell `workload-launcher` to run pods in the `jobs` node group.
+In previous versions of your values.yaml file, you might have specified a number of environment variables through `extraEnv`. Many (but not all) of these variables have a dedicated interface in Helm chart V2. For example, look at the following configuration, which tells `workload-launcher` to run pods in the `jobs` node group.
 
 ```yaml title="values.yaml using Helm chart V1"
 workload-launcher:
