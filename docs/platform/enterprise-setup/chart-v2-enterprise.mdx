@@ -393,16 +393,20 @@ workloadLauncher:
 
 ### Deploy Airbyte {#deploy-airbyte}
 
-Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+Before you deploy, validate your values.yaml file.
 
 ```bash
-helm upgrade -i \
---namespace airbyte \
---values ./values.yaml \
-airbyte-enterprise \
-airbyte-v2/airbyte \
---version 2.0.3 \
---set global.image.tag=1.7.0
+helm template airbyte-enterprise airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
+```
+
+Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally, in V1, the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+
+```bash
+helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+  --namespace airbyte-v2 \       # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.0.3 \              # Helm chart version to use
+  --set global.image.tag=1.7.0   # Airbyte version to use
 ```
 
 <!-- I am realizing the decoupling the chart from the platform may create weird scenarios where it's unclear which version/chart combination to use. -->
