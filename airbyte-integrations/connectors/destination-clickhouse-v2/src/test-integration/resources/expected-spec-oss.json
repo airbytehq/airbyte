@@ -19,6 +19,14 @@
         "order" : 1,
         "default" : "8443"
       },
+      "protocol" : {
+        "type" : "string",
+        "enum" : [ "http", "https" ],
+        "description" : "Protocol for the database connection string.",
+        "title" : "Protocol",
+        "order" : 2,
+        "default" : "https"
+      },
       "database" : {
         "type" : "string",
         "description" : "Name of the database.",
@@ -39,17 +47,9 @@
         "title" : "Password",
         "order" : 5,
         "airbyte_secret" : true
-      },
-      "protocol" : {
-        "type" : "string",
-        "enum" : [ "http", "https" ],
-        "description" : "Protocol for the database connection string.",
-        "title" : "Protocol",
-        "order" : 2,
-        "default" : "https"
       }
     },
-    "required" : [ "hostname", "port", "database", "username", "password", "protocol" ],
+    "required" : [ "hostname", "port", "protocol", "database", "username", "password" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
