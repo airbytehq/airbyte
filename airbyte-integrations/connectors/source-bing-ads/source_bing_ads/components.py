@@ -1,10 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -262,9 +264,10 @@ class BulkDatetimeToRFC3339(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
         original_value = record["Modified Time"]
-        record["Modified Time"] = (
-            datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
-        )
+        if original_value is not None:
+            record["Modified Time"] = (
+                datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
+            )
 
 
 @dataclass
@@ -300,3 +303,39 @@ class LightSubstreamPartitionRouter(SubstreamPartitionRouter):
                 cursor_slice=stream_slice.cursor_slice,
                 extra_fields=stream_slice.extra_fields,
             )
+
+
+class BulkStreamsStateMigration(StateMigration):
+    """
+    Due to a bug in python implementation legacy state may look like this:
+    "streamState": {
+      "account_id": {
+        "Modified Time": "valid modified time"
+      },
+      "Id": "Id",
+      [record data ...]
+      "Modified Time": null,
+      [record data ...]
+    }
+
+    It happens when received record doesn't have a cursor field and state updating logic stores it in state.
+    To avoid parsing null cursor fields that lead to value error, this state migration deletes the top level cursor field and records data
+    if the cursor is null.
+    """
+
+    cursor_field = "Modified Time"
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if self.cursor_field in stream_state.keys() and stream_state.get(self.cursor_field) is None:
+            return True
+        return False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if self.should_migrate(stream_state):
+            state_copy = deepcopy(stream_state)
+
+            for key, value in state_copy.items():
+                if not isinstance(value, dict):
+                    del stream_state[key]
+
+        return stream_state
