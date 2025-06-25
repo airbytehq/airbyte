@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery
 
+import com.google.api.gax.retrying.RetrySettings
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
@@ -43,6 +44,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import org.threeten.bp.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -165,6 +167,20 @@ class BigqueryBeansFactory {
             .setProjectId(config.projectId)
             .setCredentials(credentials)
             .setHeaderProvider(BigQueryUtils.headerProvider)
+            .setRetrySettings(
+                RetrySettings.newBuilder()
+                    // Most of the values are default. We need to override them all if we want to
+                    // set a different value for `setMaxAttempts`..............
+                    .setInitialRetryDelayDuration(java.time.Duration.ofMillis(1000L))
+                    .setMaxRetryDelayDuration(java.time.Duration.ofMillis(32_000L))
+                    .setTotalTimeoutDuration(java.time.Duration.ofMillis(60_000L))
+                    .setInitialRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
+                    .setRpcTimeoutMultiplier(1.0)
+                    .setMaxRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
+                    .setMaxAttempts(15)
+                    .setRetryDelayMultiplier(1.5)
+                    .build()
+            )
             .build()
             .service
     }

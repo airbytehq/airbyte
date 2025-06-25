@@ -29,6 +29,8 @@ data:
       3.0.0:
         message: "If you never interact with the raw tables, you can upgrade without taking any action. Otherwise, make sure to read the migration guide for more details."
         upgradeDeadline: "2026-07-31"
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   resourceRequirements:
     jobSpecific:
       - jobType: sync
