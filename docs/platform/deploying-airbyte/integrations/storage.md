@@ -83,19 +83,44 @@ stringData:
 
 Ensure you've already created a Kubernetes secret containing both your S3 access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `s3-access-key-id` and `s3-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#secrets).
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 global:
   storage:
     type: "S3"
     secretName: airbyte-config-secrets # Name of your Kubernetes secret.
-    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+    bucket: # S3 bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     s3:
-      region: "" ## e.g. us-east-1
-      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      region: "" # e.g. us-east-1
+      authenticationType: credentials # Use "credentials" or "instanceProfile"
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+global:
+  storage:
+    type: "S3"
+    secretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: # S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    s3:
+      region: "" # e.g. us-east-1
+      authenticationType: credentials # Use "credentials" or "instanceProfile"
+      accessKeyId: "" # If using credentials
+      secretAccessKey: "" # If using credentials
+```
+
+</TabItem>
+</Tabs>
 
 Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from the appropriate buckets.
 
@@ -104,12 +129,15 @@ Set `authenticationType` to `instanceProfile` if the compute infrastructure runn
 
 Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under a `gcp.json` key. Steps to configure these are in the above [prerequisites](#secrets).
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 global:
   storage:
     type: "GCS"
     secretName: airbyte-config-secrets
-    bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
+    bucket: # GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
@@ -119,23 +147,66 @@ global:
 ```
 
 </TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+global:
+  storage:
+    type: "GCS"
+    secretName: airbyte-config-secrets
+    bucket: # GCS bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    gcs:
+      projectId: <project-id>
+      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+```
+
+</TabItem>
+</Tabs>
+
+</TabItem>
 
 <TabItem value="Azure Blob" label="Azure" default>
 
 Ensure you've already created a Kubernetes Secret containing the connection string to be used by the cluster. Steps to configure the secret are in the above [prerequisites](#secrets). In the Helm chart, set the secret name and the key of the connection string. Set the three destination containers within the storage account under the `bucket` map.
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 global:
   storage:
     type: "Azure"
     secretName: airbyte-config-secrets # Name of your Kubernetes secret.
-    bucket: ## Name Containers that you've created. We recommend storing the following all in one Container.
+    bucket: # Name Containers that you've created. We recommend storing the following all in one Container.
       log: airbyte-container
       state: airbyte-container
       workloadOutput: airbyte-container
     azure:
       connectionStringSecretKey: azure-blob-store-connection-string # key of your Kubernetes secret
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+global:
+  storage:
+    type: "Azure"
+    secretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: # Name Containers that you've created. We recommend storing the following all in one Container.
+      log: airbyte-container
+      state: airbyte-container
+      workloadOutput: airbyte-container
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string # key of your Kubernetes secret
+```
+
+</TabItem>
+</Tabs>
+
 </TabItem>
 
 </Tabs>

@@ -30,8 +30,8 @@ The process you follow depends on whether you're using Airbyte's default service
 If you've defined a service account in the `values.yaml` file you use to deploy Airbyte, you're using your own.
 
 ```yaml title="values.yaml"
-serviceAccount:
-  name:
+global:
+  serviceAccount:
 ```
 
 If you haven't, you're using Airbyte's default service account, `airbyte-sa`.
@@ -65,4 +65,4 @@ If you haven't, you're using Airbyte's default service account, `airbyte-sa`.
         verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
     ```
 
-2. Upgrade Airbyte as your normally would.
+2. Upgrade Airbyte as you normally would.

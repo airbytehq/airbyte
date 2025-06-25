@@ -53,6 +53,7 @@ OAuth
 DPath
 UUID
 URL
+SSO
 
 # Airbyte connectors
 
@@ -67,6 +68,8 @@ Glue
 npm
 HubSpot
 Zendesk
+Okta
+Entra
 
 # Acceptable non-words that shouldn't trigger spellcheck
 

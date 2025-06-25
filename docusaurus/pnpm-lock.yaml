@@ -255,6 +255,9 @@ importers:
       '@mdx-js/react':
         specifier: ^3.0.0
         version: 3.0.0(@types/react@18.2.46)(react@18.2.0)
+      '@saucelabs/theme-github-codeblock':
+        specifier: ^0.3.0
+        version: 0.3.0
       '@signalwire/docusaurus-plugin-llms-txt':
         specifier: ^1.0.1
         version: 1.0.1(@docusaurus/core@3.7.0(@docusaurus/faster@3.8.1(@docusaurus/types@3.7.0(@swc/core@1.12.1(@swc/helpers@0.5.13))(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@swc/helpers@0.5.13))(@mdx-js/react@3.0.0(@types/react@18.2.46)(react@18.2.0))(@rspack/core@1.3.15(@swc/helpers@0.5.13))(@swc/core@1.12.1(@swc/helpers@0.5.13))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.3.3))
@@ -2943,6 +2946,9 @@ packages:
   '@rspack/lite-tapable@1.0.1':
     resolution: {integrity: sha512-VynGOEsVw2s8TAlLf/uESfrgfrq2+rcXB1muPJYBWbsm1Oa6r5qVQhjA5ggM6z/coYPrsVMgovl3Ff7Q7OCp1w==}
     engines: {node: '>=16.0.0'}
+
+  '@saucelabs/theme-github-codeblock@0.3.0':
+    resolution: {integrity: sha512-+8xWxBfN+I8StJ0QXERMbGf+BHwRXHWV3mFl9uDayXERiZ/rR93d0nAS3s9s/rKjqh/YSm/4dThEkBNBLnGs4Q==}
 
   '@segment/snippet@4.16.2':
     resolution: {integrity: sha512-2fgsrt4U+vKv14ohOAsViCEzeZotaawF2Il7YUbmYVrhPn8Hq7xuGznHKRdZeoxScQ87X36xDX2Fzh5bAYRN7g==}
@@ -12011,6 +12017,8 @@ snapshots:
       '@swc/helpers': 0.5.13
 
   '@rspack/lite-tapable@1.0.1': {}
+
+  '@saucelabs/theme-github-codeblock@0.3.0': {}
 
   '@segment/snippet@4.16.2':
     dependencies:
