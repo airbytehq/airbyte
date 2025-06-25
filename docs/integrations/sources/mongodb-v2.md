@@ -59,9 +59,7 @@ This allows you to sync multiple collections across different databases using a 
 The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
 :::
 
-
-![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
-
+![Read Database Privileges](docusaurus/static/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
 
 8. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
