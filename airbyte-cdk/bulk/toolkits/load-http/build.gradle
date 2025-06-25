@@ -1,0 +1,24 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    api("org.apache.commons:commons-csv:1.11.0")
+
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'dev.failsafe:failsafe-okhttp:3.3.2'
+
+    testFixturesApi 'org.jetbrains.kotlin:kotlin-test'
+}
+
+project.tasks.matching {
+    it.name == 'spotbugsIntegrationTestLegacy' ||
+            it.name == 'spotbugsIntegrationTest' ||
+            it.name == 'spotbugsTest' ||
+            it.name == 'spotbugsMain'
+}.configureEach {
+    enabled = false
+}
+
+test {
+    systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
+}
