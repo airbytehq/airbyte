@@ -4,7 +4,6 @@
 
 import re
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
