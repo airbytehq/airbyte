@@ -8993,7 +8993,7 @@ schemas:
         type:
           - "null"
           - string
-  
+
   budget_summary_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -9044,7 +9044,6 @@ schemas:
         type:
           - "null"
           - number
-
 
 concurrency_level:
   type: ConcurrencyLevel
