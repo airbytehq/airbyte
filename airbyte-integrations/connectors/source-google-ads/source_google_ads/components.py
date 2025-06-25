@@ -2,12 +2,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+import json
 import logging
-from typing import Any, Dict, Iterable, Optional, Mapping
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
-import json
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
@@ -44,6 +44,7 @@ class FlattenNestedDictsTransformation(RecordTransformation):
     becomes:
       {"a.b": 1, "a.c.d": 2, "a.e": [ {"f": 3} ], "g": [{"h": 4}]}
     """
+
     delimiter: str = "."
 
     def transform(
@@ -79,6 +80,7 @@ class DoubleQuotedDictTypeTransformer(TypeTransformer):
       [{'key': 'campaign', 'value': 'gg_nam_dg_search_brand'}]
     → ['{"key": "campaign","value": "gg_nam_dg_search_brand"}']
     """
+
     def __init__(self, *args, **kwargs):
         # apply this transformer during schema normalization phase(s)
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
@@ -112,7 +114,7 @@ class DoubleQuotedDictTypeTransformer(TypeTransformer):
 
             # Transform only lists where every element is a dict
             if isinstance(original_value, list) and all(isinstance(el, dict) for el in original_value):
-                return [json.dumps(el, separators=(',', ': ')) for el in original_value]
+                return [json.dumps(el, separators=(",", ": ")) for el in original_value]
 
             return original_value
 
