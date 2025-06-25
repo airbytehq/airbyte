@@ -30,10 +30,11 @@ class ClickhouseConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: ClickhouseSpecification
     ): ClickhouseConfiguration {
-        val protocol = when (pojo) {
-            is ClickhouseSpecificationOss -> pojo.protocol.value
-            else -> ClickhouseConnectionProtocol.HTTPS.value
-        }
+        val protocol =
+            when (pojo) {
+                is ClickhouseSpecificationOss -> pojo.protocol.value
+                else -> ClickhouseConnectionProtocol.HTTPS.value
+            }
 
         return ClickhouseConfiguration(
             pojo.hostname,
@@ -46,13 +47,14 @@ class ClickhouseConfigurationFactory :
     }
 
     fun makeWithOverrides(
-      spec: ClickhouseSpecification,
-      overrides: Map<String, String> = emptyMap()
+        spec: ClickhouseSpecification,
+        overrides: Map<String, String> = emptyMap()
     ): ClickhouseConfiguration {
-        val protocol = when (spec) {
-            is ClickhouseSpecificationOss -> spec.protocol.value
-            else -> ClickhouseConnectionProtocol.HTTPS.value
-        }
+        val protocol =
+            when (spec) {
+                is ClickhouseSpecificationOss -> spec.protocol.value
+                else -> ClickhouseConnectionProtocol.HTTPS.value
+            }
 
         return ClickhouseConfiguration(
             hostname = overrides.getOrDefault("hostname", spec.hostname),

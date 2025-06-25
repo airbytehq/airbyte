@@ -16,8 +16,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-
-sealed class ClickhouseSpecification: ConfigurationSpecification() {
+sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val hostname: String
     abstract val port: String
     abstract val protocol: ClickhouseConnectionProtocol
