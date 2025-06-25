@@ -192,7 +192,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     transactions:
-      streamHash: 2105c27e45c4c88d2555e2645382a42dd887ba71
+      streamHash: 8d31eb71808aeb2b291e460cbc88cebe178119d9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -307,6 +307,221 @@ schemas:
       - campaign
   transactions:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      advertiserCost:
+        type:
+          - object
+          - "null"
+        properties: {}
+      advertiserCountry:
+        type:
+          - string
+          - "null"
+      advertiserId:
+        type:
+          - number
+          - "null"
+      amended:
+        type:
+          - boolean
+          - "null"
+      clickDate:
+        type:
+          - string
+          - "null"
+      clickDevice:
+        type:
+          - string
+          - "null"
+      clickRefs:
+        type:
+          - object
+          - "null"
+        properties:
+          clickRef:
+            type:
+              - string
+              - "null"
+      commissionAmount:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      commissionStatus:
+        type:
+          - string
+          - "null"
+      customParameters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      customerAcquisition:
+        type:
+          - string
+          - "null"
+      customerCountry:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      ipHash:
+        type:
+          - string
+          - "null"
+      lapseTime:
+        type:
+          - number
+          - "null"
+      networkFee:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      orderRef:
+        type:
+          - string
+          - "null"
+      paidToPublisher:
+        type:
+          - boolean
+          - "null"
+      paymentId:
+        type:
+          - number
+          - "null"
+      publisherId:
+        type:
+          - number
+          - "null"
+      publisherUrl:
+        type:
+          - string
+          - "null"
+      saleAmount:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      siteName:
+        type:
+          - string
+          - "null"
+      transactionDate:
+        type: string
+      transactionDevice:
+        type:
+          - string
+          - "null"
+      transactionParts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - number
+                - "null"
+            commissionAmount:
+              type:
+                - number
+                - "null"
+            commissionGroupCode:
+              type:
+                - string
+                - "null"
+            commissionGroupId:
+              type:
+                - number
+                - "null"
+            commissionGroupName:
+              type:
+                - string
+                - "null"
+            trackedParts:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - number
+                      - "null"
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  currency:
+                    type:
+                      - string
+                      - "null"
+      transactionQueryId:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      voucherCode:
+        type:
+          - string
+          - "null"
+      voucherCodeUsed:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - transactionDate
     additionalProperties: true
-    properties: {}
