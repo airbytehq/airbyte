@@ -490,497 +490,8 @@ definitions:
             path:
               - Videos
             value: "{{ none if record.get('Videos', {}).get('AssetLink') == none or record.get('Videos', {}).get('AssetLink') == [] else record.get('Videos') }}"
-  # Report Streams
-  ## Ad Performance Reports
-  ad_performance_report_hourly_stream:
-    type: DeclarativeStream
-    name: ad_performance_report_hourly
-    primary_key:
-      [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "DeliveredMatchType",
-      ]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_performance_report_hourly"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
-            ReportName: AdPerformanceReport
-            ReturnOnlyCompleteData: false
-            Type: AdPerformanceReportRequest
-            Aggregation: Hourly
-            Columns:
-              - AccountId
-              - CampaignId
-              - AdGroupId
-              - AdId
-              - TimePeriod
-              - AbsoluteTopImpressionRatePercent
-              - TopImpressionRatePercent
-              - CurrencyCode
-              - AdDistribution
-              - DeviceType
-              - Language
-              - Network
-              - DeviceOS
-              - TopVsOther
-              - BidMatchType
-              - DeliveredMatchType
-              - AccountName
-              - CampaignName
-              - CampaignType
-              - AdGroupName
-              - Impressions
-              - Clicks
-              - Ctr
-              - Spend
-              - CostPerConversion
-              - DestinationUrl
-              - Assists
-              - ReturnOnAdSpend
-              - CostPerAssist
-              - CustomParameters
-              - FinalAppUrl
-              - AdDescription
-              - AdDescription2
-              - ViewThroughConversions
-              - ViewThroughConversionsQualified
-              - AllCostPerConversion
-              - AllReturnOnAdSpend
-              - Conversions
-              - ConversionRate
-              - ConversionsQualified
-              - AverageCpc
-              - AveragePosition
-              - AverageCpm
-              - AllConversions
-              - AllConversionRate
-              - AllRevenue
-              - AllRevenuePerConversion
-              - Revenue
-              - RevenuePerConversion
-              - RevenuePerAssist
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-            Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
-    state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - TimePeriod
-            #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
-            #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
-            value: |
-              {%- set parts = record.TimePeriod.split('|') -%}
-              {%- set time_period = record.TimePeriod -%}
-              {%- set date_part = '' -%}
-              {%- set hour_part = 0 -%}
-              {%- if parts|length > 1 -%}
-                {%- set date_part = parts[0] -%}
-                {%- set hour_part = parts[1]|int -%}
-                {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
-              {%- endif -%}
-              {{ time_period }}
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
-      - type: RemoveFields
-        field_pointers:
-          - ["TopImpressionRatePercent"]
-          - ["AbsoluteTopImpressionRatePercent"]
-  ad_performance_report_daily_stream:
-    type: DeclarativeStream
-    name: ad_performance_report_daily
-    primary_key:
-      [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "DeliveredMatchType",
-      ]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_performance_report"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
-            ReportName: AdPerformanceReport
-            ReturnOnlyCompleteData: false
-            Type: AdPerformanceReportRequest
-            Aggregation: Daily
-            Columns:
-              - AccountId
-              - CampaignId
-              - AdGroupId
-              - AdId
-              - TimePeriod
-              - AbsoluteTopImpressionRatePercent
-              - TopImpressionRatePercent
-              - CurrencyCode
-              - AdDistribution
-              - DeviceType
-              - Language
-              - Network
-              - DeviceOS
-              - TopVsOther
-              - BidMatchType
-              - DeliveredMatchType
-              - AccountName
-              - CampaignName
-              - CampaignType
-              - AdGroupName
-              - Impressions
-              - Clicks
-              - Ctr
-              - Spend
-              - CostPerConversion
-              - DestinationUrl
-              - Assists
-              - ReturnOnAdSpend
-              - CostPerAssist
-              - CustomParameters
-              - FinalAppUrl
-              - AdDescription
-              - AdDescription2
-              - ViewThroughConversions
-              - ViewThroughConversionsQualified
-              - AllCostPerConversion
-              - AllReturnOnAdSpend
-              - Conversions
-              - ConversionRate
-              - ConversionsQualified
-              - AverageCpc
-              - AveragePosition
-              - AverageCpm
-              - AllConversions
-              - AllConversionRate
-              - AllRevenue
-              - AllRevenuePerConversion
-              - Revenue
-              - RevenuePerConversion
-              - RevenuePerAssist
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-            Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_transformations"
-  ad_performance_report_weekly_stream:
-    type: DeclarativeStream
-    name: ad_performance_report_weekly
-    primary_key:
-      [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "DeliveredMatchType",
-      ]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_performance_report"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
-            ReportName: AdPerformanceReport
-            ReturnOnlyCompleteData: false
-            Type: AdPerformanceReportRequest
-            Aggregation: Weekly
-            Columns:
-              - AccountId
-              - CampaignId
-              - AdGroupId
-              - AdId
-              - TimePeriod
-              - AbsoluteTopImpressionRatePercent
-              - TopImpressionRatePercent
-              - CurrencyCode
-              - AdDistribution
-              - DeviceType
-              - Language
-              - Network
-              - DeviceOS
-              - TopVsOther
-              - BidMatchType
-              - DeliveredMatchType
-              - AccountName
-              - CampaignName
-              - CampaignType
-              - AdGroupName
-              - Impressions
-              - Clicks
-              - Ctr
-              - Spend
-              - CostPerConversion
-              - DestinationUrl
-              - Assists
-              - ReturnOnAdSpend
-              - CostPerAssist
-              - CustomParameters
-              - FinalAppUrl
-              - AdDescription
-              - AdDescription2
-              - ViewThroughConversions
-              - ViewThroughConversionsQualified
-              - AllCostPerConversion
-              - AllReturnOnAdSpend
-              - Conversions
-              - ConversionRate
-              - ConversionsQualified
-              - AverageCpc
-              - AveragePosition
-              - AverageCpm
-              - AllConversions
-              - AllConversionRate
-              - AllRevenue
-              - AllRevenuePerConversion
-              - Revenue
-              - RevenuePerConversion
-              - RevenuePerAssist
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-            Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_transformations"
-  ad_performance_report_monthly_stream:
-    type: DeclarativeStream
-    name: ad_performance_report_monthly
-    primary_key:
-      [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "DeliveredMatchType",
-      ]
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ad_performance_report"
-    retriever:
-      $ref: "#/definitions/basic_async_retriever"
-      creation_requester:
-        $ref: "#/definitions/basic_async_retriever/creation_requester"
-        request_body_json:
-          ReportRequest:
-            ExcludeColumnHeaders: false
-            ExcludeReportFooter: true
-            ExcludeReportHeader: true
-            Format: Csv
-            FormatVersion: "'2.0'"
-            ReportName: AdPerformanceReport
-            ReturnOnlyCompleteData: false
-            Type: AdPerformanceReportRequest
-            Aggregation: Monthly
-            Columns:
-              - AccountId
-              - CampaignId
-              - AdGroupId
-              - AdId
-              - TimePeriod
-              - AbsoluteTopImpressionRatePercent
-              - TopImpressionRatePercent
-              - CurrencyCode
-              - AdDistribution
-              - DeviceType
-              - Language
-              - Network
-              - DeviceOS
-              - TopVsOther
-              - BidMatchType
-              - DeliveredMatchType
-              - AccountName
-              - CampaignName
-              - CampaignType
-              - AdGroupName
-              - Impressions
-              - Clicks
-              - Ctr
-              - Spend
-              - CostPerConversion
-              - DestinationUrl
-              - Assists
-              - ReturnOnAdSpend
-              - CostPerAssist
-              - CustomParameters
-              - FinalAppUrl
-              - AdDescription
-              - AdDescription2
-              - ViewThroughConversions
-              - ViewThroughConversionsQualified
-              - AllCostPerConversion
-              - AllReturnOnAdSpend
-              - Conversions
-              - ConversionRate
-              - ConversionsQualified
-              - AverageCpc
-              - AveragePosition
-              - AverageCpm
-              - AllConversions
-              - AllConversionRate
-              - AllRevenue
-              - AllRevenuePerConversion
-              - Revenue
-              - RevenuePerConversion
-              - RevenuePerAssist
-            Scope:
-              AccountIds:
-                - "{{ stream_partition['account_id'] }}"
-            Time:
-              CustomDateRangeStart:
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
-              CustomDateRangeEnd:
-                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
-                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
-                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
-              # "PredefinedTime": "ValueHere"
-              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    state_migrations:
-      - Type: LegacyToPerPartitionStateMigration
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/ad_performance_report_transformations"
 
-  # TODO: streams above potentially also can share base stream logic, to check and update if so.
+  # base report stream
   report_base_stream:
     type: DeclarativeStream
     #    set report_aggregation in parameters, for example,
@@ -1090,6 +601,21 @@ definitions:
       - DeviceOS
       - TopVsOther
       - BidMatchType
+    ad_performance_report:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - AdId
+      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Language
+      - Network
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - DeliveredMatchType
 
   report_columns:
     age_gender_audience:
@@ -1803,6 +1329,108 @@ definitions:
       - RevenuePerAssist
       - RevenuePerConversion
       - Ptr
+    ad_performance_report_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - AdId
+      - TimePeriod
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Language
+      - Network
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - DeliveredMatchType
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - AdGroupName
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - DestinationUrl
+      - Assists
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - CustomParameters
+      - FinalAppUrl
+      - AdDescription
+      - AdDescription2
+      - ViewThroughConversions
+      - ViewThroughConversionsQualified
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
+    ad_performance_report_non_hourly:
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - AdId
+      - TimePeriod
+      - AbsoluteTopImpressionRatePercent
+      - TopImpressionRatePercent
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - Language
+      - Network
+      - DeviceOS
+      - TopVsOther
+      - BidMatchType
+      - DeliveredMatchType
+      - AccountName
+      - CampaignName
+      - CampaignType
+      - AdGroupName
+      - Impressions
+      - Clicks
+      - Ctr
+      - Spend
+      - CostPerConversion
+      - DestinationUrl
+      - Assists
+      - ReturnOnAdSpend
+      - CostPerAssist
+      - CustomParameters
+      - FinalAppUrl
+      - AdDescription
+      - AdDescription2
+      - ViewThroughConversions
+      - ViewThroughConversionsQualified
+      - AllCostPerConversion
+      - AllReturnOnAdSpend
+      - Conversions
+      - ConversionRate
+      - ConversionsQualified
+      - AverageCpc
+      - AveragePosition
+      - AverageCpm
+      - AllConversions
+      - AllConversionRate
+      - AllRevenue
+      - AllRevenuePerConversion
+      - Revenue
+      - RevenuePerConversion
+      - RevenuePerAssist
 
   # base bulk streams
   base_bulk_stream:
@@ -3081,6 +2709,111 @@ dynamic_streams:
                   $ref: "#/definitions/transformations/account_performance_report_common_transformations"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          ## Ad Performance Reports
+          - name: ad_performance_report_hourly
+            parameters:
+              report_aggregation: Hourly
+              report_name: AdPerformanceReport
+              report_type: AdPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_performance_report_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_performance_report_hourly"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
+              - type: RemoveFields
+                field_pointers:
+                  - ["TopImpressionRatePercent"]
+                  - ["AbsoluteTopImpressionRatePercent"]
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+          - name: ad_performance_report_daily
+            parameters:
+              report_aggregation: Daily
+              report_name: AdPerformanceReport
+              report_type: AdPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_performance_report_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          - name: ad_performance_report_weekly
+            parameters:
+              report_aggregation: Weekly
+              report_name: AdPerformanceReport
+              report_type: AdPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_performance_report_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+          - name: ad_performance_report_monthly
+            parameters:
+              report_aggregation: Monthly
+              report_name: AdPerformanceReport
+              report_type: AdPerformanceReportRequest
+              report_columns:
+                $ref: "#/definitions/report_columns/ad_performance_report_non_hourly"
+            primary_key:
+              $ref: "#/definitions/report_primary_keys/ad_performance_report"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $ref: "#/schemas/ad_performance_report"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_common_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/ad_performance_report_transformations"
+            incremental_sync:
+              $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       components_mapping:
         - type: ComponentMappingDefinition
           create_or_update: true
@@ -3190,10 +2923,6 @@ streams:
   - $ref: "#/definitions/ad_groups_stream"
   - $ref: "#/definitions/ads_stream"
   - $ref: "#/definitions/campaigns_stream"
-  - $ref: "#/definitions/ad_performance_report_hourly_stream"
-  - $ref: "#/definitions/ad_performance_report_daily_stream"
-  - $ref: "#/definitions/ad_performance_report_weekly_stream"
-  - $ref: "#/definitions/ad_performance_report_monthly_stream"
 
 schemas:
   accounts:
