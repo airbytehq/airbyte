@@ -14,9 +14,10 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
-class AirbyteValueProxyTest {
+internal class AirbyteValueProxyTest {
     // One of each type of field x unset x nullable
     val testJsonPopulated =
         """
@@ -139,6 +140,36 @@ class AirbyteValueProxyTest {
 
             val proxy = AirbyteValueProtobufProxy(data)
             validate(objectTree, proxy)
+        }
+    }
+
+    @Test
+    fun `json to airbyte value`() {
+        val proxy = AirbyteValueJsonlProxy(testJsonPopulated.deserializeToNode() as ObjectNode)
+        stream.airbyteValueProxyFieldAccessors.forEach { field ->
+            val value = proxy.getAirbyteValue(field)
+            assertNotNull(value)
+        }
+    }
+
+    @Test
+    fun `protobuf to airbyte value`() {
+        val airbyteValues =
+            (testJsonPopulated.deserializeToNode() as ObjectNode).toAirbyteValue() as ObjectValue
+        val proxyFields = stream.airbyteValueProxyFieldAccessors
+        val data = mutableListOf<AirbyteValueProtobuf>()
+        proxyFields.forEach { field ->
+            val protoField =
+                AirbyteValueToProtobuf()
+                    .toProtobuf(airbyteValues.values[field.name] ?: NullValue, field.type)
+            data.add(protoField)
+        }
+
+        val proxy = AirbyteValueProtobufProxy(data)
+
+        stream.airbyteValueProxyFieldAccessors.forEach { field ->
+            val value = proxy.getAirbyteValue(field)
+            assertNotNull(value)
         }
     }
 }

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
+import com.google.protobuf.kotlin.toByteStringUtf8
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.*
@@ -18,7 +19,7 @@ import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class DestinationRecordRawTest {
+internal class DestinationRecordRawTest {
 
     // Create a schema with various field types for testing
     private val recordSchema =
@@ -166,7 +167,8 @@ class DestinationRecordRawTest {
             {
                 "string_field": "valid string",
                 "integer_field": "not a number",
-                "array_field": "not an array"
+                "array_field": "not an array",
+                "boolean_field": "not a boolean"
             }
         """.trimIndent()
 
@@ -210,6 +212,11 @@ class DestinationRecordRawTest {
         assertNotNull(arrayField)
         assertEquals(NullValue, arrayField?.abValue)
         assertTrue(arrayField?.changes?.isNotEmpty() ?: false)
+
+        // Check
+        val booleanField = enrichedRecord.declaredFields["boolean_field"]
+        assertNotNull(booleanField)
+        assertEquals(BooleanValue(false), booleanField?.abValue)
     }
 
     @Test
@@ -450,5 +457,61 @@ class DestinationRecordRawTest {
         // (This might be unexpected, but the current implementation doesn't add fields that aren't
         // in the raw data)
         assertFalse(enrichedRecord.declaredFields.containsKey("integer_field"))
+    }
+
+    @Test
+    fun `test generating from protobuf record`() {
+        val protoData =
+            listOf(
+                io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setString("test string")
+                    .build(),
+                io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setInteger(123)
+                    .build(),
+                io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setBoolean(true)
+                    .build(),
+                io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNumber(2.0)
+                    .build(),
+                io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("[\"foo\",\"bar\"]".toByteStringUtf8())
+                    .build(),
+                io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("{\"foo\":\"bar\"}".toByteStringUtf8())
+                    .build(),
+            )
+
+        val recordMessage =
+            io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
+                .newBuilder()
+                .setStreamName("test")
+                .setEmittedAtMs(System.currentTimeMillis())
+                .addAllData(protoData)
+                .build()
+
+        val airbyteMessage =
+            io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
+                .setRecord(recordMessage)
+                .build()
+
+        val rawRecord =
+            DestinationRecordRaw(
+                stream = stream,
+                rawData = DestinationRecordProtobufSource(airbyteMessage),
+                serializedSizeBytes = 0L,
+                airbyteRawId = UUID.randomUUID(),
+            )
+
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+
+        assertEquals(protoData.size, enrichedRecord.declaredFields.size)
+        assertTrue(enrichedRecord.declaredFields.containsKey("string_field"))
+        assertTrue(enrichedRecord.declaredFields.containsKey("integer_field"))
+        assertTrue(enrichedRecord.declaredFields.containsKey("boolean_field"))
+        assertTrue(enrichedRecord.declaredFields.containsKey("number_field"))
+        assertTrue(enrichedRecord.declaredFields.containsKey("array_field"))
+        assertTrue(enrichedRecord.declaredFields.containsKey("object_field"))
     }
 }
