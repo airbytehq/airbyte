@@ -37,14 +37,34 @@ This guide assumes that you already have a running kubernetes cluster. If you're
 
 The deployment will use a Helm chart which is a package for Kubernetes applications, acting like a blueprint or template that defines the resources needed to deploy an application on a Kubernetes cluster. Charts are stored in `helm-repo`.
 
-To add a remote helm repo:
-1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. In this example, `airbyte` is being used to represent the name of the repository that will be indexed locally.
+Add a remote helm repo:
 
-2. After adding the repo, perform the repo indexing process by running `helm repo update`.
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
 
-3. You can now browse all charts uploaded to repository by running `helm search repo airbyte`
+```bash
+helm repo add airbyte https://airbytehq.github.io/helm-charts
+helm repo update
+```
 
-An example of the chart output: 
+In this example, `airbyte` is the name of the repository that will be indexed locally.
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+helm repo add airbyte-v2 https://airbytehq.github.io/helm-charts
+helm repo update
+```
+
+In this example, `airbyte-v2` is the name of the repository that will be indexed locally.
+
+</TabItem>
+</Tabs>
+
+To browse all charts uploaded to the repository, run `helm search repo airbyte`.
+
+An example of the chart output:
 
 ```text
 NAME                               	CHART VERSION	APP VERSION	DESCRIPTION                                       
@@ -67,7 +87,6 @@ airbyte/workload-api               	0.50.3       	0.50.35    	Helm chart to depl
 airbyte/workload-api-server        	0.290.0      	0.63.6     	Helm chart to deploy the workload-api service     
 airbyte/workload-launcher          	0.290.0      	0.63.6     	Helm chart to deploy airbyte-workload-launcher    
 ```
-
 
 ### 2. Create a Namespace for Airbyte
 
@@ -121,30 +140,24 @@ Then you can run:
 <TabItem value='helm-1' label='Helm chart V1' default>
 
 ```bash
-helm install \
-airbyte \
-airbyte/airbyte \
---namespace airbyte \
---values ./values.yaml
+helm install airbyte airbyte/airbyte \
+  --namespace airbyte \   # Target Kubernetes namespace
+  --values ./values.yaml  # Custom configuration values
 ```
 
 </TabItem>
 <TabItem value='helm-2' label='Helm chart V2' default>
 
 ```bash
-helm install \
---namespace airbyte \
---values ./values.yaml \
-airbyte \
-airbyte-v2/airbyte \
---version 2.0.3 \
---set global.image.tag=1.7.0
+helm install airbyte airbyte-v2/airbyte \
+  --namespace airbyte-v2 \          # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.0.3 \              # Helm chart version to use
+  --set global.image.tag=1.7.0   # Airbyte version to use
 ```
 
 </TabItem>
 </Tabs>
-
-
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
 

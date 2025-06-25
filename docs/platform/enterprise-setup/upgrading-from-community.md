@@ -52,13 +52,11 @@ Update your `values.yaml` file as explained in the [Self-Managed Enterprise impl
     <TabItem value='helm-2' label='Helm chart V2' default>
 
     ```bash
-    helm upgrade -i \
-    --namespace airbyte \
-    --values ./values.yaml \
-    airbyte \
-    airbyte-v2/airbyte \
-    --version 2.0.3 \
-    --set global.image.tag=1.7.0
+    helm upgrade airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
     ```
 
     </TabItem>

@@ -221,14 +221,12 @@ You collect these values from Microsoft in the locations shown below.
 
 ### Redeploy Airbyte {#sme-deploy}
 
-In your command-line tool, deploy Airbyte using your updated values file. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
+In your command-line tool, deploy Airbyte using your updated values file.
 
-```bash title="Example using a namespace called 'airbyte'"
-helm upgrade -i \
---namespace airbyte \
---values ./values.yaml \
-airbyte \
-airbyte-v2/airbyte \
---version 2.0.3 \
---set global.image.tag=1.7.0
+```bash
+helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+  --namespace airbyte-v2 \       # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.0.3 \              # Helm chart version to use
+  --set global.image.tag=1.7.0   # Airbyte version to use
 ```

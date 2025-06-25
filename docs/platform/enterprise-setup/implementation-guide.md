@@ -875,30 +875,24 @@ Install Airbyte Self-Managed Enterprise on helm using the following command:
 <TabItem value='helm-1' label='Helm chart V1' default>
 
 ```bash
-helm install \
---namespace airbyte \
---values ./values.yaml \
-airbyte-enterprise \
-airbyte/airbyte
+helm install airbyte-enterprise airbyte/airbyte \
+  --namespace airbyte \   # Target Kubernetes namespace
+  --values ./values.yaml  # Custom configuration values
 ```
 
 </TabItem>
 <TabItem value='helm-2' label='Helm chart V2' default>
 
 ```bash
-helm install \
---namespace airbyte \
---values ./values.yaml \
-airbyte-enterprise \
-airbyte-v2/airbyte \
---version 2.0.3 \
---set global.image.tag=1.7.0
+helm install airbyte-enterprise airbyte-v2/airbyte \
+  --namespace airbyte-v2 \       # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.0.3 \              # Helm chart version to use
+  --set global.image.tag=1.7.0   # Airbyte version to use
 ```
 
 </TabItem>
 </Tabs>
-
-
 
 To uninstall Self-Managed Enterprise, run `helm uninstall airbyte-enterprise`.
 
@@ -913,24 +907,20 @@ Upgrade Airbyte Self-Managed Enterprise by:
     <TabItem value='helm-1' label='Helm chart V1' default>
 
     ```bash
-    helm upgrade \
-    --namespace airbyte \
-    --values ./values.yaml \
-    --install airbyte-enterprise \
-    airbyte/airbyte
+    helm upgrade airbyte-enterprise airbyte/airbyte \
+      --namespace airbyte \   # Target Kubernetes namespace
+      --values ./values.yaml  # Custom configuration values
     ```
 
     </TabItem>
     <TabItem value='helm-2' label='Helm chart V2' default>
 
     ```bash
-    helm upgrade -i \
-    --namespace airbyte \
-    --values ./values.yaml \
-    airbyte-enterprise \
-    airbyte-v2/airbyte \
-    --version 2.0.3 \
-    --set global.image.tag=1.7.0
+    helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
     ```
 
     </TabItem>
@@ -943,31 +933,27 @@ In order to customize your deployment, you need to create an additional `values.
 After specifying your own configuration, run the following command:
 
 <Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
+    <TabItem value='helm-1' label='Helm chart V1' default>
 
-```bash
-helm upgrade \
---namespace airbyte \
---values ./values.yaml \
---install airbyte-enterprise \
-airbyte/airbyte
-```
+    ```bash
+    helm upgrade airbyte-enterprise airbyte/airbyte \
+      --namespace airbyte \   # Target Kubernetes namespace
+      --values ./values.yaml  # Custom configuration values
+    ```
 
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
 
-```bash
-helm upgrade -i \
---namespace airbyte \
---values ./values.yaml \
-airbyte-enterprise \
-airbyte-v2/airbyte \
---version 2.0.3 \
---set global.image.tag=1.7.0
-```
+    ```bash
+    helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
+    ```
 
-</TabItem>
-</Tabs>
+    </TabItem>
+    </Tabs>
 
 ### Configure a custom image registry
 

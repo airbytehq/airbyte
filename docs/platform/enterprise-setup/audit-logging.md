@@ -76,7 +76,7 @@ Choose a new blob storage bucket with your chosen cloud provider (for example, A
 
     ```yaml title="values.yaml"
     server:
-      auditLogginEnabled: true
+      auditLoggingEnabled: true
 
     storage:
       bucket:
@@ -86,32 +86,26 @@ Choose a new blob storage bucket with your chosen cloud provider (for example, A
     </TabItem>
     </Tabs>
 
-    
-
 2. Redeploy Airbyte.
 
     <Tabs groupId="helm-chart-version">
     <TabItem value='helm-1' label='Helm chart V1' default>
 
     ```bash
-    helm upgrade \
-    --namespace airbyte \
-    --values ./values.yaml \
-    --install airbyte-enterprise \
-    airbyte/airbyte
+    helm upgrade airbyte airbyte/airbyte \
+      --namespace airbyte \   # Target Kubernetes namespace
+      --values ./values.yaml  # Custom configuration values
     ```
 
     </TabItem>
     <TabItem value='helm-2' label='Helm chart V2' default>
 
     ```bash
-    helm upgrade -i \
-    --namespace airbyte \
-    --values ./values.yaml \
-    airbyte \
-    airbyte-v2/airbyte \
-    --version 2.0.3 \
-    --set global.image.tag=1.7.0
+    helm upgrade airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
     ```
 
     </TabItem>
