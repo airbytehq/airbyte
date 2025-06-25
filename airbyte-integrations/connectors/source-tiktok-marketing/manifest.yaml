@@ -1852,7 +1852,7 @@ definitions:
           "paid_engagement_engaged_view",
           "engaged_view_15s",
           "paid_engaged_view_15s",
-          "paid_engagement_engaged_view_15s"
+          "paid_engagement_engaged_view_15s",
         ]
       dimensions: ["ad_id"]
     primary_key:
@@ -4353,8 +4353,8 @@ definitions:
               type:
                 - "null"
                 - number
-            engaged_view_15s:
-              description: Number of viewers engaging with the video for at least 15 seconds
+            engaged_view:
+              description: 6-second focused views Number of times your video was played for at least 6 seconds, played in full if it is less than 6 seconds, or received at least 1 engagement within the first 6 seconds
               type:
               - "null"
               - number
@@ -4370,11 +4370,6 @@ definitions:
               - number
             engaged_view_through_conversions:
               description: EVTA conversions Number of conversions attributed to engaged views
-              type:
-              - "null"
-              - number
-            engaged_view:
-              description: 6-second focused views Number of times your video was played for at least 6 seconds, played in full if it is less than 6 seconds, or received at least 1 engagement within the first 6 seconds
               type:
               - "null"
               - number
