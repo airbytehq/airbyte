@@ -303,9 +303,21 @@ module.exports = {
             id: "move-data/readme",
           },
           items: [
-            "using-airbyte/getting-started/add-a-source",
-            "using-airbyte/getting-started/add-a-destination",
+            {
+              type: "category",
+              label: "Sources, destinations, and connectors",
+              link: {
+                type: "doc",
+                id: "move-data/sources-destinations-connectors",
+              },
+              items: [
+                "using-airbyte/getting-started/add-a-source",
+                "using-airbyte/getting-started/add-a-destination",
+                "using-airbyte/oauth",
+              ],
+            },
             "using-airbyte/getting-started/set-up-a-connection",
+            "move-data/elt-data-activation"
           ],
         },
         sectionHeader("Airbyte Connectors"),
@@ -315,10 +327,6 @@ module.exports = {
           href: "/integrations/",
         },
         buildAConnector,
-        {
-          type: "doc",
-          id: "using-airbyte/oauth",
-        },
         sectionHeader("Using Airbyte"),
         connectionConfigurations,
         {

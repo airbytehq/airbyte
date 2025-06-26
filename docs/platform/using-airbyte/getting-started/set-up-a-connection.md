@@ -4,8 +4,33 @@ products: all
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import DocCardList from '@theme/DocCardList';
 
-# Connections and streams
+# Add and manage connections and streams
+
+When you combine a source connector and a destination connector, you get a **connection**. A connection is the automated data pipeline that replicates data from a source to a destination. Connections define things like:
+
+- What data Airbyte should replicate
+
+- How Airbyte should read and write data
+
+- When Airbyte should initiate a data sync
+
+- Where Airbyte should write replicated data
+
+- How Airbyte should handle schema drift
+
+A **stream** is a group of related records within a connection. Depending on the destination, a stream might be a table, file, or blob. Airbyte uses the term `stream` to generalize the flow of data to destinations of all types and formats. Examples of streams:
+
+- A table in a relational database
+
+- A resource or API endpoint for a REST API
+
+- The records from a directory containing many files in a filesystem
+
+
+<!-- Below the line: old content to be redone -->
+
 
 Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the setup by creating your very first connection!
 
