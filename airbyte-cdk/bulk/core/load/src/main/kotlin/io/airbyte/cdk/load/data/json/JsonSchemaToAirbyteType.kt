@@ -43,7 +43,7 @@ class JsonSchemaToAirbyteType(
             val schemaType = (schema as ObjectNode).get("type")
             return if (schemaType.isTextual) {
                 // {"type": <string>, ...}
-                when (schema.get("type").asText()) {
+                when (extractType(schema)) {
                     "string" -> fromString(schema)
                     "boolean" -> BooleanType
                     "int",
@@ -102,6 +102,20 @@ class JsonSchemaToAirbyteType(
             return convertInner(typeSchema)
         } else {
             return UnknownType(schema)
+        }
+    }
+
+    private fun extractType(schema: ObjectNode): String {
+        val type = schema.get("type")
+        if (type.isArray) {
+            val types =
+                schema.get("type").asIterable().map { it.asText() }.filter { it != "null" }.toList()
+            if (types.size > 1) {
+                throw IllegalArgumentException("Multiple types are not supported")
+            }
+            return types[0]
+        } else {
+            return type.asText()
         }
     }
 
@@ -168,7 +182,12 @@ class JsonSchemaToAirbyteType(
         fieldSchema: ObjectNode,
     ): FieldType {
         val airbyteType = convertInner(fieldSchema) ?: UnknownType(fieldSchema)
-        return FieldType(airbyteType, nullable = true)
+        val nullable =
+            fieldSchema.get("type")?.let {
+                it.isArray && it.asIterable().any({ type -> type.asText() == "null" })
+            }
+                ?: true
+        return FieldType(airbyteType, nullable = nullable)
     }
 
     private fun unionFromCombinedTypes(
