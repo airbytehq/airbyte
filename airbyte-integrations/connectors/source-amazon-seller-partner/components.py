@@ -3,13 +3,13 @@
 #
 
 import logging
-from dataclasses import dataclass, InitVar
-from typing import Any, Mapping, Optional, Union, Generator, List, MutableMapping, Dict
+from dataclasses import dataclass, InitVar, field
+from typing import Any, Mapping, Optional, Set, Union, Generator, List, MutableMapping, Dict
 
 import backoff
 import requests
-import pendulum
 from io import StringIO
+from datetime import datetime as dt
 
 from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import FailureType
@@ -21,15 +21,14 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 import xmltodict
 import csv
 import gzip
 import json
 
-import dateparser
-
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-
+from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 
 logger = logging.getLogger("airbyte")
 
@@ -52,7 +51,7 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
             "host": self._host.eval(self.config),
             "user-agent": "python-requests",
             "x-amz-access-token": self.get_access_token(),
-            "x-amz-date": pendulum.now("utc").strftime("%Y%m%dT%H%M%SZ"),
+            "x-amz-date": ab_datetime_now().strftime("%Y%m%dT%H%M%SZ"),
         }
 
     def get_refresh_access_token_headers(self) -> Mapping[str, Any]:
@@ -276,9 +275,9 @@ class LedgerDetailedViewReportsTypeTransformer(TypeTransformer):
     def get_transform_function():
         def transform_function(original_value: str, field_schema: Dict[str, Any]) -> str:
             if original_value and field_schema.get("format") == "date":
-                date_format = "MM/YYYY" if len(original_value) <= 7 else "MM/DD/YYYY"
+                date_format = "%m/%Y" if len(original_value) <= 7 else "%m/%d/%Y"
                 try:
-                    transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
+                    transformed_value = dt.strptime(original_value, date_format).strftime("%Y-%m-%d")
                     return transformed_value
                 except ValueError:
                     pass
@@ -298,7 +297,7 @@ class MerchantListingsFypReportTypeTransformer(TypeTransformer):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date":
                 try:
-                    transformed_value = pendulum.from_format(original_value, "MMM D[,] YYYY").to_date_string()
+                    transformed_value = ab_datetime_parse(original_value).strftime("%Y-%m-%d")
                     return transformed_value
                 except ValueError:
                     pass
@@ -318,7 +317,7 @@ class MerchantReportsTypeTransformer(TypeTransformer):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date-time":
                 # open-date field is returned in format "2022-07-11 01:34:18 PDT"
-                transformed_value = dateparser.parse(original_value).isoformat()
+                transformed_value = str(ab_datetime_parse(original_value))
                 return transformed_value
             return original_value
 
@@ -330,29 +329,29 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
 
     MARKETPLACE_DATE_FORMAT_MAP = dict(
         # eu
-        A2VIGQ35RCS4UG="D/M/YY",  # AE
-        A1PA6795UKMFR9="D.M.YY",  # DE
-        A1C3SOZRARQ6R3="D/M/YY",  # PL
-        ARBP9OOSHTCHU="D/M/YY",  # EG
-        A1RKKUPIHCS9HS="D/M/YY",  # ES
-        A13V1IB3VIYZZH="D/M/YY",  # FR
-        A21TJRUUN4KGV="D/M/YY",  # IN
-        APJ6JRA9NG5V4="D/M/YY",  # IT
-        A1805IZSGTT6HS="D/M/YY",  # NL
-        A17E79C6D8DWNP="D/M/YY",  # SA
-        A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
-        A33AVAJ2PDY3EV="D/M/YY",  # TR
-        A1F83G8C2ARO7P="D/M/YY",  # UK
-        AMEN7PMS3EDWL="D/M/YY",  # BE
+        A2VIGQ35RCS4UG="%d/%m/%y",  # AE
+        A1PA6795UKMFR9="%d.%m.%y",  # DE
+        A1C3SOZRARQ6R3="%d/%m/%y",  # PL
+        ARBP9OOSHTCHU="%d/%m/%y",  # EG
+        A1RKKUPIHCS9HS="%d/%m/%y",  # ES
+        A13V1IB3VIYZZH="%d/%m/%y",  # FR
+        A21TJRUUN4KGV="%d/%m/%y",  # IN
+        APJ6JRA9NG5V4="%d/%m/%y",  # IT
+        A1805IZSGTT6HS="%d/%m/%y",  # NL
+        A17E79C6D8DWNP="%d/%m/%y",  # SA
+        A2NODRKZP88ZB9="%Y-%m-%d",  # SE
+        A33AVAJ2PDY3EV="%d/%m/%y",  # TR
+        A1F83G8C2ARO7P="%d/%m/%y",  # UK
+        AMEN7PMS3EDWL="%d/%m/%y",  # BE
         # fe
-        A39IBJ37TRP1C6="D/M/YY",  # AU
-        A1VC38T7YXB528="YY/M/D",  # JP
-        A19VAU5U5O7RUS="D/M/YY",  # SG
+        A39IBJ37TRP1C6="%d/%m/%y",  # AU
+        A1VC38T7YXB528="%y/%m/%d",  # JP
+        A19VAU5U5O7RUS="%d/%m/%y",  # SG
         # na
-        ATVPDKIKX0DER="M/D/YY",  # US
-        A2Q3Y263D00KWC="D/M/YY",  # BR
-        A2EUQ1WTGCTBG2="D/M/YY",  # CA
-        A1AM78C64UM0Y8="D/M/YY",  # MX
+        ATVPDKIKX0DER="%m/%d/%y",  # US
+        A2Q3Y263D00KWC="%d/%m/%y",  # BR
+        A2EUQ1WTGCTBG2="%d/%m/%y",  # CA
+        A1AM78C64UM0Y8="%d/%m/%y",  # MX
     )
 
     def __init__(self, *args, config, **kwargs):
@@ -368,10 +367,10 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
                 if not date_format:
                     raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
                 try:
-                    transformed_value = pendulum.from_format(original_value, date_format).to_date_string()
+                    transformed_value = dt.strptime(original_value, date_format).strftime("%Y-%m-%d")
                     return transformed_value
                 except ValueError:
-                    pass
+                    raise
 
             return original_value
 
@@ -392,3 +391,33 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
             return original_value
 
         return transform_function
+
+
+@dataclass
+class ValidateReportOptionsListStreamNameUniqueness(ValidationStrategy):
+    """
+    Validate that the values in the field are unique.
+    """
+
+    def __post_init__(self):
+        self._values_set: Set[str] = set()
+
+    def validate(self, value: Any) -> None:
+        if value in self._values_set:
+            raise ValueError(f"Each value at specified path [report_options_list, *, stream_name] should be unique. Duplicate value: {value}")
+        self._values_set.add(value)
+
+@dataclass
+class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
+    """
+    Validate that the values in the  are unique.
+    """
+    def validate(self, value: Any) -> None:
+        report_options_list = value
+        if isinstance(report_options_list, list) and len(report_options_list) > 0 and isinstance(report_options_list[0], dict):
+            for report_options in report_options_list:
+                option_names = []
+                for option in report_options["options_list"]:
+                    if option["option_name"] in option_names:
+                        raise ValueError(f"Each value at specified path [report_options_list, *, options_list, *, option_name] should be unique. Duplicate value: {option['option_name']}")
+                    option_names.append(option["option_name"])

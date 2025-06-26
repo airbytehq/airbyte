@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+import pytest
+
 from .conftest import get_source
 
 
@@ -35,8 +37,45 @@ MIGRATED_CONFIG = {
     "region": "US",
     "report_options_list": [
         {"report_name": "TEST_REPORT_1", "stream_name": "GET_REPORT_1", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
-        {"report_name": "TEST_REPORT_2", "stream_name": "GET_REPORT_2", "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}]}
+        {"report_name": "TEST_REPORT_2", "stream_name": "GET_REPORT_2", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]}
     ],
+    "account_type": "Vendor"
+}
+
+INVALID_STREAM_NAMES_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "report_options_list": [
+        {"report_name": "report_name", "stream_name": "duplicate_stream_name", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
+        {"report_name": "report_name", "stream_name": "duplicate_stream_name", "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}]}
+    ],
+    "account_type": "Vendor"
+}
+
+INVALID_OPTION_NAMES_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "report_options_list": [
+        {"report_name": "report_name_1", "stream_name": "stream_1", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}, {"option_name": "reportPeriod", "option_value": "DAY"}]},
+    ],
+    "account_type": "Vendor"
+}
+
+CONFIG_WITHOUT_REPORT_OPTIONS_LIST = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
     "account_type": "Vendor"
 }
 
@@ -103,3 +142,17 @@ class TestTransformations:
         # SANDBOX, SA
         assert source_2._config["endpoint"] == "https://sandbox.sellingpartnerapi-eu.amazon.com"
         assert source_2._config["marketplace_id"] == "A17E79C6D8DWNP"
+
+
+class TestValidations:
+    @pytest.mark.parametrize("config", [INVALID_STREAM_NAMES_CONFIG, INVALID_OPTION_NAMES_CONFIG])
+    def test_given_invalid_config_then_it_should_raise_error(self, config):
+        source = get_source(config)
+        with pytest.raises(ValueError) as e:
+            source.streams(config)
+        assert "Each value at specified path" in str(e.value)
+
+    @pytest.mark.parametrize("config", [MIGRATED_CONFIG, CONFIG_WITHOUT_REPORT_OPTIONS_LIST])
+    def test_given_valid_config_then_it_should_not_raise_error(self, config):
+        source = get_source(config)
+        source.streams(config)

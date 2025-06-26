@@ -430,6 +430,18 @@ spec:
           CA: "A2EUQ1WTGCTBG2"
           MX: "A1AM78C64UM0Y8"
           BE: "AMEN7PMS3EDWL"
+    validations:
+      - type: DpathValidator
+        field_path: ["report_options_list", "*", "stream_name"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateReportOptionsListStreamNameUniqueness
+      - type: DpathValidator
+        field_path: ["report_options_list"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateReportOptionsListOptionNameUniqueness
+
 
 definitions:
   authenticator:
@@ -4575,7 +4587,7 @@ schemas:
         description: Numeric rating provided by the buyer (e.g., 1 to 5 stars).
         type:
         - 'null'
-        - number
+        - integer
       comments:
         description: Text comments provided by the buyer when leaving feedback.
         type:
