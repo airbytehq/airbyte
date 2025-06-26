@@ -847,12 +847,16 @@ schemas:
         type:
           - string
           - "null"
-      created_at:
+      createdAt:
         type:
           - string
           - "null"
         format: date-time
       rescheduled:
+        type:
+          - boolean
+          - "null"
+      absentHost:
         type:
           - boolean
           - "null"
