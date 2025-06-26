@@ -126,7 +126,7 @@ class S3DataLakeStreamLoader(
                 }
                 table
                     .manageSnapshots()
-                    .fastForwardBranch(mainBranchName, stagingBranchName)
+                    .replaceBranch(stagingBranchName, mainBranchName)
                     .commit()
             }
         }
