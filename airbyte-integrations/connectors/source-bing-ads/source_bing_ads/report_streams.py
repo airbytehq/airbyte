@@ -16,24 +16,6 @@ from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, Bi
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
 
 
-class BudgetSummaryReport(BingAdsReportingServiceStream):
-    report_name: str = "BudgetSummaryReport"
-    report_aggregation = None
-    cursor_field = "Date"
-    report_schema_name = "budget_summary_report"
-    primary_key = "Date"
-
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    @staticmethod
-    @transformer.registerCustomTransform
-    def custom_transform_date_rfc3339(original_value, field_schema):
-        if original_value and "format" in field_schema and field_schema["format"] == "date":
-            transformed_value = transform_date_format_to_rfc_3339(original_value)
-            return transformed_value
-        return original_value
-
-
 class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AccountPerformanceReport"
     report_schema_name = "account_performance_report"
