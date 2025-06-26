@@ -62,6 +62,7 @@ import jakarta.inject.Singleton
 abstract class DestinationConfiguration : Configuration {
     // If this many seconds have passed without finishing data in flight, the framework will force
     // the workers to finish.
+    // Random change.
     open val maxTimeWithoutFlushingDataSeconds: Long =
         DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS
     // How often to perform the above check.
