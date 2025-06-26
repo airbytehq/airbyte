@@ -3,6 +3,8 @@ const path = require("path");
 
 const REGISTRY_CACHE_PATH = path.join(
   __dirname,
+  "src",
+  "data",
   "connector_registry_slim.json",
 );
 
@@ -83,14 +85,14 @@ function loadConnectorRegistry() {
 
 function addSupportLevelToConnectors(connectors, registry) {
   return connectors.map((item) => {
-    if (item.type !== "doc" || !item.id) {
+    // Get the ID from either doc-type or category-type items
+    const id = item.type === "doc" ? item.id : item.link && item.link.id;
+
+    if (!id) {
       return item;
     }
 
-    const idParts = item.id.split("/");
-    const connectorName = idParts[idParts.length - 1];
-
-    const connectorInfo = registry.find((c) => c && c.id === connectorName);
+    let connectorInfo = registry.find((record) => record.docUrl.includes(id));
 
     if (connectorInfo) {
       return {
@@ -258,11 +260,11 @@ function getSourceConnectors(registry) {
       };
     });
   const sourcesWithSupportLevel = addSupportLevelToConnectors(
-    [...specialSources, ...sources, ...enterpriseSourcesWithSupportLevel],
+    [...specialSources, ...sources],
     registry,
   );
 
-  return sourcesWithSupportLevel;
+  return [...sourcesWithSupportLevel, ...enterpriseSourcesWithSupportLevel];
 }
 
 const destinationS3 = {
@@ -302,11 +304,33 @@ const destinationPostgres = {
   ],
 };
 
+// Mssql destination is on the connector registry as mssql-v2, so we need to manually create the sidebar item
+const destinationMsSql = {
+  type: "category",
+  label: "MS SQL Server (MSSQL)",
+  link: {
+    type: "doc",
+    id: "destinations/mssql",
+  },
+  customProps: {
+    supportLevel: "certified",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Migration Guide",
+      id: "destinations/mssql-migrations",
+    },
+  ],
+};
+
 function getDestinationConnectors(registry) {
   const specialDestinationConnectors = [destinationS3, destinationPostgres];
   const destinations = getFilenamesInDir("destinations/", destinationDocs, [
     "s3",
     "postgres",
+    "mssql",
+    "readme",
   ]);
   const destinationsWithSupportLevel = addSupportLevelToConnectors(
     [...specialDestinationConnectors, ...destinations],
@@ -332,8 +356,8 @@ function getDestinationConnectors(registry) {
 
   return [
     ...destinationsWithSupportLevel,
-    ...specialDestinationConnectors,
     ...enterpriseDestinationsWithSupportLevel,
+    destinationMsSql,
   ];
 }
 

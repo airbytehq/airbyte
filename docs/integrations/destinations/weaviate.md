@@ -90,6 +90,7 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 |:--------| :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.59 | 2025-05-17 | [57180](https://github.com/airbytehq/airbyte/pull/57180) | Update dependencies |
 | 0.2.58 | 2025-03-29 | [56089](https://github.com/airbytehq/airbyte/pull/56089) | Update dependencies |
 | 0.2.57 | 2025-03-08 | [55424](https://github.com/airbytehq/airbyte/pull/55424) | Update dependencies |
 | 0.2.56 | 2025-03-01 | [54880](https://github.com/airbytehq/airbyte/pull/54880) | Update dependencies |

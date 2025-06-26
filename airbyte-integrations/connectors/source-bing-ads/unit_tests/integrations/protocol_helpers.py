@@ -21,5 +21,6 @@ def read_helper(
     state: Optional[Dict[str, Any]] = None,
     expecting_exception: bool = False,
 ) -> EntrypointOutput:
-    source = _source(catalog=catalog, config=config, state={})
+    source_state = state if state else {}
+    source = _source(catalog=catalog, config=config, state=source_state)
     return read(source, config, catalog, state, expecting_exception)

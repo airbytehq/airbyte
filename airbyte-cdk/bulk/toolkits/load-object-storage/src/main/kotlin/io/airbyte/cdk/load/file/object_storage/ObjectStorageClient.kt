@@ -16,6 +16,7 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
     suspend fun put(key: String, bytes: ByteArray): T
     suspend fun delete(remoteObject: T)
     suspend fun delete(key: String)
+    suspend fun delete(keys: Set<String>)
 
     /** Experimental sane replacement interface */
     suspend fun startStreamingUpload(

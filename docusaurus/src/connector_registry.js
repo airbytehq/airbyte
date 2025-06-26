@@ -14,6 +14,7 @@ const fetchCatalog = async () => {
   console.log("Fetching connector registry...");
   const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
   console.log(`fetched ${json.length} connectors from registry`);
+
   return json;
 };
 

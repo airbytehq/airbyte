@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
 import io.airbyte.cdk.load.data.csv.toAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
@@ -29,7 +30,6 @@ import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import java.io.BufferedReader
 import java.io.InputStream
-import java.util.stream.Collectors.toMap
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
@@ -105,6 +105,12 @@ class ObjectStorageDataDumper(
 
     @Suppress("DEPRECATION")
     private fun readLines(inputStream: InputStream): List<OutputRecord> {
+        // Clean up the stream name to avoid invalid characters that may impact temp file creation
+        val modifiedDescriptor =
+            DestinationStream.Descriptor(
+                namespace = stream.mappedDescriptor.namespace,
+                name = Transformations.toAlphanumericAndUnderscore(stream.mappedDescriptor.name)
+            )
         val wasFlattened = formatConfig.rootLevelFlattening
         return when (formatConfig) {
             is JsonFormatConfiguration -> {
@@ -131,7 +137,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream.toAvroReader(stream.descriptor).use { reader ->
+                inputStream.toAvroReader(modifiedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
@@ -139,7 +145,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
-                inputStream.toParquetReader(stream.descriptor).use { reader ->
+                inputStream.toParquetReader(modifiedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }

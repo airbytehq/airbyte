@@ -7,7 +7,12 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 
-from .config_migrations import MigrateAccountIdToArray, MigrateIncludeDeletedToStatusFilters, MigrateSecretsPathInConnector
+from .config_migrations import (
+    MigrateAccountIdToArray,
+    MigrateIncludeDeletedToStatusFilters,
+    MigrateSecretsPathInConnector,
+    RemoveActionReportTimeMigration,
+)
 from .source import SourceFacebookMarketing
 
 
@@ -16,4 +21,5 @@ def run():
     MigrateAccountIdToArray.migrate(sys.argv[1:], source)
     MigrateIncludeDeletedToStatusFilters.migrate(sys.argv[1:], source)
     MigrateSecretsPathInConnector.migrate(sys.argv[1:], source)
+    RemoveActionReportTimeMigration.migrate(sys.argv[1:], source)
     launch(source, sys.argv[1:])
