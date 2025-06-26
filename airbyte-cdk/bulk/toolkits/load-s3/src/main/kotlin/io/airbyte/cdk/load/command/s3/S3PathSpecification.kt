@@ -74,5 +74,6 @@ interface S3PathSpecification {
             prefix = s3BucketPath,
             pathPattern = s3PathFormat,
             fileNamePattern = fileNamePattern,
+            resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) },            
         )
 }
