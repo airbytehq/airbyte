@@ -6,6 +6,18 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
+from connector_acceptance_test.config import (
+    BasicReadTestConfig,
+    Config,
+    DiscoveryTestConfig,
+    ExpectedRecordsConfig,
+    FileTypesConfig,
+    IgnoredFieldsConfiguration,
+    UnsupportedFileTypeConfig,
+)
+from connector_acceptance_test.tests import test_core
+from jsonschema.exceptions import SchemaError
+
 from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
@@ -28,19 +40,9 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from connector_acceptance_test.config import (
-    BasicReadTestConfig,
-    Config,
-    DiscoveryTestConfig,
-    ExpectedRecordsConfig,
-    FileTypesConfig,
-    IgnoredFieldsConfiguration,
-    UnsupportedFileTypeConfig,
-)
-from connector_acceptance_test.tests import test_core
-from jsonschema.exceptions import SchemaError
 
 from .conftest import does_not_raise
+
 
 pytestmark = pytest.mark.anyio
 
@@ -100,18 +102,11 @@ def test_discovery_uniquely_named_streams():
                 "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "properties": {
-                    "amount": {
-                        "type": ["null", "integer"]
-                    },
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": ["null", "integer"]
-                        }
-                    }
-                }
+                    "amount": {"type": ["null", "integer"]},
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": ["null", "integer"]}},
+                },
             },
-            True
+            True,
         ),
         (
             {
@@ -119,38 +114,22 @@ def test_discovery_uniquely_named_streams():
                 "type": ["null", "object"],
                 "properties": {
                     "amount": "integer",
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": {
-                                "type": ["null", "integer"]
-                            }
-                        }
-                    }
-                }
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": {"type": ["null", "integer"]}}},
+                },
             },
-            True
+            True,
         ),
         (
             {
                 "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "properties": {
-                    "amount": {
-                        "type": ["null", "integer"]
-                    },
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": {
-                                "type": ["null", "integer"]
-                            }
-                        }
-                    }
-                }
+                    "amount": {"type": ["null", "integer"]},
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": {"type": ["null", "integer"]}}},
+                },
             },
-            False
-        )
+            False,
+        ),
     ],
 )
 def test_streams_have_valid_json_schemas(schema, should_fail):
@@ -307,13 +286,32 @@ def test_supported_sync_modes_in_stream(mocker, discovered_catalog, expectation)
             },
             pytest.raises(AssertionError),
         ),
+        # This is a special test case where in the shape of the response emitted by the API contains a field inconveniently
+        # named `additionalProperties`. In this case we should not throw an error because this will actually contain a value
+        # and not just True/False. An example of this is the contact_lists stream in source-hubspot.
         (
             {
                 "test_stream_4": AirbyteStream.parse_obj(
-                    {"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}, "supported_sync_modes": ["full_refresh"]}
+                    {
+                        "name": "test_stream_4",
+                        "json_schema": {
+                            "additionalProperties": True,
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                },
+                                "additionalProperties": {
+                                    "type": ["null", "object"],
+                                    "additionalProperties": True,
+                                    "properties": {"additionalPropertyOne": {"type": ["null", "string"]}},
+                                },
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                    }
                 )
             },
-            pytest.raises(AssertionError),
+            does_not_raise(),
         ),
         (
             {
@@ -639,9 +637,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                     },
                 ),
             },
-            pytest.raises(
-                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
-            ),
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"),
         ),
         (
             {
@@ -658,9 +654,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                     },
                 ),
             },
-            pytest.raises(
-                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
-            ),
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"),
         ),
         (
             {
@@ -673,9 +667,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                     },
                 ),
             },
-            pytest.raises(
-                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
-            ),
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"),
         ),
         (
             {
@@ -688,9 +680,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                     },
                 ),
             },
-            pytest.raises(
-                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
-            ),
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"),
         ),
         (
             {
@@ -707,9 +697,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                     },
                 ),
             },
-            pytest.raises(
-                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
-            ),
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"),
         ),
         (
             {
@@ -722,9 +710,7 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
                     },
                 ),
             },
-            pytest.raises(
-                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
-            ),
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"),
         ),
         (
             {
@@ -883,7 +869,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             _DEFAULT_RECORD_CONFIG,
             [
                 {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
-                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             ],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
             None,
@@ -911,13 +897,13 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
         ),
         # Expected is in actual but not in order (for case when exact_order=True)
         (
-                {"type": "object"},
-                {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
-                ExpectedRecordsConfig(exact_order=True, path="foobar"),
-                [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
-                {"test_stream": [{"constant_field": "must equal"}]},
-                None,
-                does_not_raise(),
+            {"type": "object"},
+            {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+            ExpectedRecordsConfig(exact_order=True, path="foobar"),
+            [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
+            {"test_stream": [{"constant_field": "must equal"}]},
+            None,
+            does_not_raise(),
         ),
         # Match by primary key
         (
@@ -985,12 +971,14 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({
-                    "name": "test_stream",
-                    "json_schema": schema,
-                    "supported_sync_modes": ["full_refresh"],
-                    "source_defined_primary_key": primary_key
-                }),
+                stream=AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream",
+                        "json_schema": schema,
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": primary_key,
+                    }
+                ),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )
@@ -998,7 +986,10 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
     )
     docker_runner_mock = mocker.MagicMock(
         call_read=mocker.AsyncMock(
-            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111)) for record in records]
+            return_value=[
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
+                for record in records
+            ]
         )
     )
     t = test_core.TestBasicRead()
@@ -1954,8 +1945,8 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
         ]
     )
     stream = AirbyteStreamState(
-        stream_descriptor=StreamDescriptor(name='test_stream_0', namespace=None),
-        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        stream_descriptor=StreamDescriptor(name="test_stream_0", namespace=None),
+        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
     )
     async_stream_output = [
         AirbyteMessage(
@@ -1989,7 +1980,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
                     stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.COMPLETE
                 ),
             ),
-        )
+        ),
     ]
 
     if not state_message_params:

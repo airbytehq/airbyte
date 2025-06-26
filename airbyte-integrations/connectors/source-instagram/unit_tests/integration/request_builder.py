@@ -5,13 +5,17 @@ from __future__ import annotations
 
 from typing import List, Optional, Union
 
+from source_instagram.source import SourceInstagram
+
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.test.mock_http.request import HttpRequest
-from source_instagram.source import SourceInstagram
 
 from .config import ACCOUNTS_FIELDS
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+
+GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, state=None)).record.data["manifest"]["definitions"][
+    "base_requester"
+]["url_base"]
 
 
 def get_account_request() -> RequestBuilder:
@@ -94,4 +98,3 @@ class RequestBuilder:
     def _item_path(self) -> str:
         path_for_resource = "/" if self._item_id_is_sub_path else ""
         return f"{self._item_id}{path_for_resource}" if self._item_id else ""
-

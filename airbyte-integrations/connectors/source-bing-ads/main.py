@@ -4,5 +4,6 @@
 
 from source_bing_ads.run import run
 
+
 if __name__ == "__main__":
     run()

@@ -8,11 +8,12 @@ from typing import List, Optional, Sequence
 
 from click import UsageError
 from dagger import Container, Directory
+
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import PATH_TO_LOCAL_CDK
-from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
-from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
+from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base
+from pipelines.helpers.utils import check_path_in_workdir, get_file_contents, raise_if_not_user
 
 
 def with_python_package(
@@ -21,6 +22,7 @@ def with_python_package(
     package_source_code_path: str,
     exclude: Optional[List] = None,
     include: Optional[List] = None,
+    owner: str | None = None,
 ) -> Container:
     """Load a python package source code to a python environment container.
 
@@ -30,13 +32,16 @@ def with_python_package(
         package_source_code_path (str): The local path to the package source code.
         additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
         exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
-
+        include (Optional[List]): A list of file or directory to include from the python package source code.
+        owner (str, optional): The owner of the mounted directory. Defaults to None.
     Returns:
         Container: A python environment container with the python package source code.
     """
     package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude, include=include)
     work_dir_path = f"/{package_source_code_path}"
-    container = python_environment.with_mounted_directory(work_dir_path, package_source_code_directory).with_workdir(work_dir_path)
+    container = python_environment.with_mounted_directory(work_dir_path, package_source_code_directory, owner=owner).with_workdir(
+        work_dir_path
+    )
     return container
 
 
@@ -109,7 +114,6 @@ async def find_local_python_dependencies(
         package_source_code_path (str): The local path to the python package source code.
         search_dependencies_in_setup_py (bool, optional): Whether to search for local dependencies in the setup.py file. Defaults to True.
         search_dependencies_in_requirements_txt (bool, optional): Whether to search for local dependencies in the requirements.txt file. Defaults to True.
-
     Returns:
         List[str]: Paths to the local dependencies relative to the airbyte repo.
     """
@@ -205,7 +209,7 @@ async def with_installed_python_package(
         Container: A python environment container with the python package installed.
     """
 
-    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude, include=include)
+    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude, include=include, owner=user)
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 
     for dependency_directory in local_dependencies:
@@ -215,8 +219,11 @@ async def with_installed_python_package(
     has_requirements_txt = await check_path_in_workdir(container, "requirements.txt")
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
+    container = container.with_user("root")
+    # All of these will require root access to install dependencies
+    # Dependencies are installed at the system level, if the user is not root it is not allowed to install system level dependencies
     if has_pyproject_toml:
-        container = with_poetry_cache(container, context.dagger_client)
+        container = with_poetry_cache(container, context.dagger_client, owner=user)
         container = _install_python_dependencies_from_poetry(container, additional_dependency_groups, install_root_package)
     elif has_setup_py:
         container = with_pip_cache(container, context.dagger_client)
@@ -225,21 +232,9 @@ async def with_installed_python_package(
         container = with_pip_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_requirements_txt(container)
 
+    container = container.with_user(user)
+
     return container
-
-
-def with_python_connector_source(context: ConnectorContext) -> Container:
-    """Load an airbyte connector source code in a testing environment.
-
-    Args:
-        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
-    Returns:
-        Container: A python environment container (with the connector source code).
-    """
-    connector_source_path = str(context.connector.code_directory)
-    testing_environment: Container = with_testing_dependencies(context)
-
-    return with_python_package(context, testing_environment, connector_source_path)
 
 
 def apply_python_development_overrides(context: ConnectorContext, connector_container: Container, current_user: str) -> Container:
@@ -279,6 +274,8 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
                 # TODO: Consider moving to Poetry-native installation:
                 # ["poetry", "add", cdk_mount_dir]
             )
+            # Switch back to the original user
+            .with_user(current_user)
         )
     elif context.use_cdk_ref:
         cdk_ref = context.use_cdk_ref
@@ -287,12 +284,24 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
 
         context.logger.info("Using CDK ref: '{cdk_ref}'")
         # Install the airbyte-cdk package from provided ref
-        connector_container = connector_container.with_exec(
-            [
-                "pip",
-                "install",
-                f"git+https://github.com/airbytehq/airbyte-python-cdk.git#{cdk_ref}",
-            ],
+        connector_container = (
+            connector_container.with_user("root")
+            .with_exec(
+                [
+                    "apt-get",
+                    "install",
+                    "-y",
+                    "git",
+                ]
+            )
+            .with_exec(
+                [
+                    "pip",
+                    "install",
+                    f"git+https://github.com/airbytehq/airbyte-python-cdk.git#{cdk_ref}",
+                ],
+            )
+            .with_user(current_user)
         )
     return connector_container
 
@@ -324,7 +333,7 @@ async def with_python_connector_installed(
     )
 
     container = await apply_python_development_overrides(context, container, user)
-
+    await raise_if_not_user(container, user)
     return container
 
 

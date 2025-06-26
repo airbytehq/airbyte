@@ -8,8 +8,9 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
 from source_convex.source import ConvexStream
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture

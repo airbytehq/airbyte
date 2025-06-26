@@ -75,17 +75,6 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updatedAt": "2027-07-11T13:07:45-07:00"
-      },
-      "stream_descriptor": {
-        "name": "products_graph_ql"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
         "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
@@ -591,17 +580,6 @@
       },
       "stream_descriptor": {
         "name": "disputes"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2027-07-11T13:07:45-07:00"
-      },
-      "stream_descriptor": {
-        "name": "customer_saved_search"
       }
     }
   },

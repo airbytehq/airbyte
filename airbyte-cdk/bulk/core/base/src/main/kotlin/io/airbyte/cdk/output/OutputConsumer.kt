@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.airbyte.protocol.models.v0.DestinationCatalog
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -33,11 +34,22 @@ import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 @DefaultImplementation(StdoutOutputConsumer::class)
-interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
-    val emittedAt: Instant
+abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
+    companion object {
+        const val IS_DUMMY_STATS_MESSAGE = "isDummyStatsMessage"
+    }
 
-    fun accept(record: AirbyteRecordMessage) {
-        record.emittedAt = emittedAt.toEpochMilli()
+    /**
+     * The constant emittedAt timestamp we use for record timestamps.
+     *
+     * TODO: use the correct emittedAt time for each record. Ryan: not changing this now as it could
+     * have performance implications for sources given the delicate serialization logic in place
+     * here.
+     */
+    val recordEmittedAt: Instant = Instant.ofEpochMilli(clock.millis())
+
+    open fun accept(record: AirbyteRecordMessage) {
+        record.emittedAt = recordEmittedAt.toEpochMilli()
         accept(AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(record))
     }
 
@@ -66,7 +78,9 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
     }
 
     fun accept(trace: AirbyteTraceMessage) {
-        trace.emittedAt = emittedAt.toEpochMilli().toDouble()
+        // Use the correct emittedAt timestamp for trace messages. This allows platform and other
+        // downstream consumers to take emission time into account for error classification.
+        trace.emittedAt = clock.millis().toDouble()
         accept(AirbyteMessage().withType(AirbyteMessage.Type.TRACE).withTrace(trace))
     }
 
@@ -97,6 +111,14 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
                 .withAnalytics(analytics),
         )
     }
+
+    fun accept(destinationCatalog: DestinationCatalog) {
+        accept(
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.DESTINATION_CATALOG)
+                .withDestinationCatalog(destinationCatalog)
+        )
+    }
 }
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
@@ -107,7 +129,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 @Secondary
 private class StdoutOutputConsumer(
     val stdout: PrintStream,
-    clock: Clock,
+    private val clock: Clock,
     /**
      * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
      * buffer's size (in bytes) grows past this value.
@@ -132,9 +154,7 @@ private class StdoutOutputConsumer(
      */
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
-) : OutputConsumer {
-    override val emittedAt: Instant = Instant.now(clock)
-
+) : OutputConsumer(clock) {
     private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
@@ -144,7 +164,10 @@ private class StdoutOutputConsumer(
         // Using println is not particularly efficient, however.
         // To improve performance, this method accumulates RECORD messages into a buffer
         // before writing them to standard output in a batch.
-        if (airbyteMessage.type == AirbyteMessage.Type.RECORD) {
+        if (
+            airbyteMessage.type == AirbyteMessage.Type.RECORD &&
+                airbyteMessage.record.additionalProperties[IS_DUMMY_STATS_MESSAGE] != true
+        ) {
             // RECORD messages undergo a different serialization scheme.
             accept(airbyteMessage.record)
         } else {
@@ -233,7 +256,7 @@ private class StdoutOutputConsumer(
                 namespacedTemplates.getOrPut(namespace) { StreamToTemplateMap() }
             }
         return streamToTemplateMap.getOrPut(stream) {
-            RecordTemplate.create(stream, namespace, emittedAt)
+            RecordTemplate.create(stream, namespace, recordEmittedAt)
         }
     }
 

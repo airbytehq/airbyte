@@ -11,6 +11,7 @@ from sgqlc.operation import Selector
 
 from . import github_schema
 
+
 _schema = github_schema
 _schema_root = _schema.github_schema
 
@@ -165,7 +166,6 @@ def get_query_issue_reactions(owner, name, first, after, number=None):
 
 
 class QueryReactions:
-
     # AVERAGE_REVIEWS - optimal number of reviews to fetch inside every pull request.
     # If we try to fetch too many (up to 100) we will spend too many scores of query cost.
     # https://docs.github.com/en/graphql/overview/resource-limitations#calculating-a-rate-limit-score-before-running-the-call

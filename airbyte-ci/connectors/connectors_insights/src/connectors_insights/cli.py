@@ -12,6 +12,7 @@ import asyncer
 import dagger
 from anyio import Semaphore
 from connector_ops.utils import Connector  # type: ignore
+
 from connectors_insights.insights import generate_insights_for_connector
 from connectors_insights.result_backends import GCSBucket, LocalDir
 from connectors_insights.utils import gcs_uri_to_bucket_key, get_all_connectors_in_directory, remove_strict_encrypt_suffix

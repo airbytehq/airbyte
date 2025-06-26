@@ -5,6 +5,8 @@
 import pathlib
 
 import click
+from pydantic import ValidationError
+
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import (
     MetadataDeleteInfo,
@@ -14,7 +16,6 @@ from metadata_service.gcs_upload import (
     upload_metadata_to_gcs,
 )
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
-from pydantic import ValidationError
 
 
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):

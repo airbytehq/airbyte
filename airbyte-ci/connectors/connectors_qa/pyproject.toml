@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.10.0"
+version = "1.10.2"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -11,7 +11,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 airbyte-connectors-base-images = { path = "../base_images", develop = false }
 connector-ops = { path = "../connector_ops", develop = false }
 metadata-service = { path = "../metadata_service/lib", develop = false }
@@ -40,10 +40,10 @@ type_check = "mypy src --disallow-untyped-defs"
 lint = "ruff check src"
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "test"]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 140

@@ -5,8 +5,9 @@ import tempfile
 from unittest.mock import Mock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from destination_motherduck.destination import CONFIG_DEFAULT_SCHEMA, DestinationMotherDuck, validated_sql_name
+
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
 
 def test_validated_sql_name() -> None:

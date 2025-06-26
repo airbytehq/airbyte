@@ -22,6 +22,7 @@ from typing import Optional
 import asyncclick as click
 import docker  # type: ignore
 from github import PullRequest
+
 from pipelines import main_logger
 from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
 from pipelines.cli.click_decorators import (
@@ -136,7 +137,6 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
         "poetry": "pipelines.airbyte_ci.poetry.commands.poetry",
-        "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
         "update": "pipelines.airbyte_ci.update.commands.update",

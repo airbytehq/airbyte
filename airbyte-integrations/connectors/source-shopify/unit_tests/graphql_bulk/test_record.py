@@ -58,7 +58,7 @@ def test_check_type(basic_config, record, types, expected) -> None:
                 "alias_to_id_field": "gid://shopify/Metafield/123",
                 "__parentId": "gid://shopify/Order/102030",
             },
-        )
+        ),
     ],
 )
 def test_record_resolver(basic_config, record, expected) -> None:

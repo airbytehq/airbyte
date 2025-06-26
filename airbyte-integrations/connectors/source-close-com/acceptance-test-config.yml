@@ -4,7 +4,7 @@ connector_image: airbyte/source-close-com:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_close_com/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -25,6 +25,18 @@ acceptance_tests:
             bypass_reason: "unable to populate"
           - name: incoming_sms_tasks
             bypass_reason: "unable to populate"
+          - name: email_followup_tasks
+            bypass_reason: "no data"
+          - name: task_completed_activities
+            bypass_reason: "no data"
+          - name: edit_bulk_actions
+            bypass_reason: "no data"
+          - name: delete_bulk_actions
+            bypass_reason: "no data"
+          - name: sequence_subscription_bulk_actions
+            bypass_reason: "no data"
+          - name: dialer
+            bypass_reason: "no data"
           - name: send_as
             bypass_reason: "unable to populate"
           - name: voicemail_tasks

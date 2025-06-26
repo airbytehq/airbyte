@@ -1,0 +1,105 @@
+name: Airbyte CI for Connector Contributions
+# This workflow is used to run connector tests for contributors.
+# It can be triggered manually via slash command or workflow dispatch.
+# It also will run on push events to forks, if the fork has "BYO Secrets" defined.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "The repository name"
+        required: false
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+  push:
+
+jobs:
+  post-start-comment:
+    name: "Post Start Comment"
+    runs-on: ubuntu-24.04
+    if: >
+      inputs.comment-id != '' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'push' &&
+          github.repository != 'airbytehq/airbyte' &&
+          vars.GCP_PROJECT_ID != ''
+        )
+      )
+    steps:
+      - name: Get job variables
+        id: job-vars
+        # Create the job run variables.
+        # We intentionally ignore `inputs.repo` because the check run will be run on the
+        # current repository, not the one with the commit being tested.
+        run: |
+          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append start comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: success()
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          reactions: "+1"
+          body: |
+            > **Connector CI Tests Started**
+            >
+            > These tests will leverage Airbyte's integration test credentials.
+            >
+            > [Check job output.](${{ steps.job-vars.outputs.run-url }})
+
+  call-connector-ci-tests:
+    # Run always for 'workflow_dispatch' events.
+    # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
+    name: "Call Connector CI Tests"
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'push' &&
+        github.repository != 'airbytehq/airbyte' &&
+        vars.GCP_PROJECT_ID != ''
+      )
+    uses: ./.github/workflows/connector-ci-checks.yml
+    with:
+      repo: "${{ inputs.repo || github.repository }}"
+      gitref: "${{ inputs.gitref || github.ref_name }}"
+      comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
+      pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
+    secrets: inherit
+
+  post-end-comment:
+    name: "Post Completion Comment"
+    needs: call-connector-ci-tests
+    runs-on: ubuntu-24.04
+    if: >
+      always() &&
+      inputs.comment-id &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'push' &&
+          github.repository != 'airbytehq/airbyte' &&
+          vars.GCP_PROJECT_ID != ''
+        )
+      )
+    steps:
+      - name: Append end comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > Connector CI Tests job completed. See logs for details.

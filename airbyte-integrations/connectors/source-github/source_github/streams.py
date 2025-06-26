@@ -9,6 +9,7 @@ from urllib import parse
 
 import pendulum
 import requests
+
 from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
@@ -28,6 +29,7 @@ from .errors_handlers import (
     ContributorActivityErrorHandler,
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
+    is_conflict_with_empty_repository,
 )
 from .graphql import (
     CursorStorage,
@@ -41,7 +43,6 @@ from .utils import GitHubAPILimitException, getter
 
 
 class GithubStreamABC(HttpStream, ABC):
-
     primary_key = "id"
 
     # Detect streams with high API load
@@ -80,7 +81,6 @@ class GithubStreamABC(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"per_page": self.page_size}
 
         if next_page_token:
@@ -217,6 +217,24 @@ class GithubStream(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
         return record
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        if is_conflict_with_empty_repository(response):
+            # I would expect that this should be handled (skipped) by the error handler, but it seems like
+            # ignored this error but continue to processing records. This may be fixed in latest CDK versions.
+            return
+        yield from super().parse_response(
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
 
 class SemiIncrementalMixin(CheckpointMixin):
@@ -756,7 +774,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class GitHubGraphQLStream(GithubStream, ABC):
-
     http_method = "POST"
 
     def path(
@@ -976,7 +993,6 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
 
 
 class ReactionStream(GithubStream, CheckpointMixin, ABC):
-
     parent_key = "id"
     copy_parent_key = "comment_id"
     cursor_field = "created_at"
@@ -1394,9 +1410,9 @@ class ProjectCards(GithubStream):
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[
-            self.cursor_field
-        ] = updated_state
+        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[self.cursor_field] = (
+            updated_state
+        )
         return current_stream_state
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -1617,11 +1633,13 @@ class ContributorActivity(GithubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
-        record.update(record.pop("author"))
+        author = record.pop("author", None)
+        # It's been found that the author field can be None, so we check for it
+        if author:
+            record.update(author)
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-
         return ContributorActivityErrorHandler(logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:

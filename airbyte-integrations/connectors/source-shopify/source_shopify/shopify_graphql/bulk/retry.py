@@ -8,6 +8,7 @@ from source_shopify.utils import LOGGER
 
 from .exceptions import ShopifyBulkExceptions
 
+
 BULK_RETRY_ERRORS: Final[Tuple] = (
     ShopifyBulkExceptions.BulkJobBadResponse,
     ShopifyBulkExceptions.BulkJobError,

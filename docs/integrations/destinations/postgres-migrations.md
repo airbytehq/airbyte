@@ -12,4 +12,4 @@ Worthy of specific mention, this version includes:
 - Removal of SCD tables
 - Preserving [upper case column names](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#destinations-v2-implementation-differences)
 
-Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).
+Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).

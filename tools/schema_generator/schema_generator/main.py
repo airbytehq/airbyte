@@ -10,7 +10,6 @@ from .infer_schemas import infer_schemas
 
 
 def main():
-
     parser = argparse.ArgumentParser(description="Airbyte Schema Generator")
 
     if len(sys.argv) == 1:

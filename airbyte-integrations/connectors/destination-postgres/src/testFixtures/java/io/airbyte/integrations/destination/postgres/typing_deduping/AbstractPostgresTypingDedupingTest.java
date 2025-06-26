@@ -55,7 +55,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected SqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), false);
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), false, false);
   }
 
   @Override

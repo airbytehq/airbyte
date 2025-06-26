@@ -30,7 +30,7 @@ dependencies {
     api 'org.slf4j:slf4j-api:2.0.16'
     api 'io.github.oshai:kotlin-logging-jvm:7.0.0'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1'
-
+    api 'net.minidev:json-smart:2.5.2'
 
     implementation 'com.jayway.jsonpath:json-path:2.9.0'
     implementation 'com.networknt:json-schema-validator:1.5.1'

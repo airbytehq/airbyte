@@ -95,8 +95,9 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
-            }}/items/{{ stream_partition.item }}
+            /sites/{{ config['site_id'] }}/lists/{{
+            stream_partition.item_info.list_id }}/items/{{
+            stream_partition.item_info.item_id }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -119,15 +120,8 @@ definitions:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
-                parent_key: id
-                partition_field: list
-                stream:
-                  $ref: "#/definitions/streams/lists"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: item
+                parent_key: item_info
+                partition_field: item_info
                 stream:
                   $ref: "#/definitions/streams/items"
       schema_loader:
@@ -175,6 +169,15 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/items"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - item_info
+              value: >-
+                {{ { "list_id": stream_partition.list, "item_id": record.id }
+                }}
     columnvalues:
       type: DeclarativeStream
       name: columnvalues
@@ -185,8 +188,9 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
-            }}/items/{{ stream_partition.item}}
+            /sites/{{ config['site_id'] }}/lists/{{
+            stream_partition.item_info.list_id }}/items/{{
+            stream_partition.item_info.item_id }}
           http_method: GET
           request_parameters:
             expand: fields
@@ -211,15 +215,8 @@ definitions:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
-                parent_key: id
-                partition_field: list
-                stream:
-                  $ref: "#/definitions/streams/lists"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: item
+                parent_key: item_info
+                partition_field: item_info
                 stream:
                   $ref: "#/definitions/streams/items"
       schema_loader:

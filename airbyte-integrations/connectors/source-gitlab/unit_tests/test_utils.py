@@ -11,7 +11,7 @@ from source_gitlab.utils import parse_url
         ("http://example", (True, "http", "example")),
         ("test://example.com", (False, "", "")),
         ("https://example.com/test/test2", (False, "", "")),
-    )
+    ),
 )
 def test_parse_url(url, expected):
     assert parse_url(url) == expected

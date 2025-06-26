@@ -2,10 +2,11 @@
 import os
 
 import pytest
+from source_gcs import Config, SourceGCS, SourceGCSStreamReader
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import read
-from source_gcs import Config, SourceGCS, SourceGCSStreamReader
 
 from .utils import load_config
 

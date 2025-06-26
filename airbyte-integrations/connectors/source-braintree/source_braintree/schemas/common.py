@@ -6,9 +6,10 @@ from decimal import Decimal
 from typing import Any, Dict, Optional, Type
 
 import pydantic
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel
 from pydantic.typing import resolve_annotations
+
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 
 
 class AllOptional(pydantic.main.ModelMetaclass):

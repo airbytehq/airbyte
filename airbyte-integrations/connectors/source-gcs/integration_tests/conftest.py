@@ -14,6 +14,7 @@ from google.cloud import storage
 
 from .utils import get_docker_ip
 
+
 LOCAL_GCP_PORT = 4443
 
 from urllib.parse import urlparse, urlunparse
@@ -77,4 +78,3 @@ def connector_setup_fixture(docker_client) -> None:
 
     container.kill()
     container.remove()
-

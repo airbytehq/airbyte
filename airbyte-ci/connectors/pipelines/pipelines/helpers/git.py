@@ -7,6 +7,7 @@ from typing import Set
 
 import git
 from dagger import Connection, SessionError
+
 from pipelines.consts import CIContext
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL

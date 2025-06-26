@@ -2334,7 +2334,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "payroll"
+    - "profiles"
 spec:
   type: Spec
   connection_specification:

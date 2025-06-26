@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
+
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -54,6 +55,7 @@ from source_facebook_marketing.streams import (
 )
 
 from .utils import validate_end_date, validate_start_date
+
 
 logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
@@ -309,7 +311,6 @@ class SourceFacebookMarketing(AbstractSource):
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
-                action_report_time=insight.action_report_time,
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
                 end_date=insight.end_date or config.end_date,

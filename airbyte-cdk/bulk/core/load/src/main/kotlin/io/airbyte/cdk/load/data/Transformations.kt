@@ -42,6 +42,13 @@ class Transformations {
                 .joinToString(separator = ".")
         }
 
-        fun toAvroSafeName(name: String) = toAlphanumericAndUnderscore(name)
+        fun toAvroSafeName(name: String): String {
+            val stripped = toAlphanumericAndUnderscore(name)
+            return if (stripped.substring(0, 1).matches("[A-Za-z_]".toRegex())) {
+                stripped
+            } else {
+                "_$stripped"
+            }
+        }
     }
 }

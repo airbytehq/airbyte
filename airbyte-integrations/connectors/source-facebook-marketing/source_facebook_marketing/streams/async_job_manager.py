@@ -10,6 +10,7 @@ from source_facebook_marketing.streams.common import JobException
 
 from .async_job import AsyncJob, ParentAsyncJob, update_in_batch
 
+
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 

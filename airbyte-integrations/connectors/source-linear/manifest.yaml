@@ -1,0 +1,2825 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  Linear is a project management and issue tracking tool designed specifically
+  for product and engineering teams. It focuses on streamlining issues, sprints,
+  and product roadmaps with a user-friendly experience and strong support.
+  Unlike traditional project management software that tries to do everything,
+  Linear emphasizes speed, simplicity, and clarity.
+
+check:
+  type: CheckStream
+  stream_names:
+    - issues
+
+definitions:
+  streams:
+    issues:
+      type: DeclarativeStream
+      name: issues
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Issues($after: String) { issues(after: $after, first: 25) {
+              nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
+              archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
+              canceledAt completedAt createdAt creator { id }
+              customerTicketCount cycle { id } description descriptionState
+              dueDate estimate identifier integrationSourceType labelIds number
+              parent { id } previousIdentifiers priority priorityLabel
+              prioritySortOrder project { id } projectMilestone { id }
+              reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
+              state { id } startedTriageAt subIssueSortOrder team { id } title
+              trashed triagedAt updatedAt url attachments { nodes { id } }
+              sourceComment { id } labels { nodes { id } } slaType slaStartedAt
+              slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
+              } } subscribers { nodes { id } } } pageInfo { hasNextPage
+              endCursor } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - issues
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.issues.pageInfo.endCursor + '"}'
+              if response.data.issues.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - assigneeId
+              value: "{{ record.assignee.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - assignee
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - cycleId
+              value: "{{ record.cycle.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - cycle
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - stateId
+              value: "{{ record.state.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - state
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - teamId
+              value: "{{ record.team.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - team
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentId
+              value: "{{ record.parent.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parent
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - milestoneId
+              value: "{{ record.projectMilestone.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - projectMilestone
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - attachmentIds
+              value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attachments
+              - nodes
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - labelIds
+              value: "{{ record.labels.nodes | map(attribute='id') | list }}"
+        - type: RemoveFields
+          field_pointers:
+            - - labels
+              - nodes
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - subscriberIds
+              value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
+        - type: RemoveFields
+          field_pointers:
+            - - subscribers
+              - nodes
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - relationIds
+              value: "{{ record.relations.nodes | map(attribute='id') | list }}"
+        - type: RemoveFields
+          field_pointers:
+            - - relations
+              - nodes
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - sourceCommentId
+              value: "{{ record.sourceComment.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - sourceComment
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issues"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Customers($after: String) { customers(after: $after, first:
+              50) { nodes { approximateNeedCount archivedAt createdAt domains
+              externalIds id logoUrl name owner { id } revenue size
+              slackChannelId slugId status { id } tier { id } updatedAt }
+              pageInfo { endCursor hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - customers
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.customers.pageInfo.endCursor +
+              '"}' if response.data.customers.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - statusId
+              value: "{{ record['status']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - status
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - tierId
+              value: "{{ record['tier']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - tier
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Users($after: String) { users(after: $after, first: 50) {
+              nodes { active admin archivedAt avatarBackgroundColor avatarUrl
+              calendarHash createdAt createdIssueCount description disableReason
+              displayName email guest id initials inviteHash isMe lastSeen name
+              statusEmoji statusLabel statusUntilAt teams { nodes { id } }
+              timezone updatedAt url } pageInfo { hasNextPage endCursor } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - users
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.users.pageInfo.endCursor + '"}'
+              if response.data.users.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.users.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - teamIds
+              value: "{{ record.teams.nodes | map(attribute='id') | list }}"
+        - type: RemoveFields
+          field_pointers:
+            - - teams
+              - nodes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Comments($after: String) { comments(after: $after, first:
+              50) { nodes { archivedAt body bodyData createdAt editedAt id issue
+              { id } parent { id } quotedText resolvedAt resolvingComment { id }
+              resolvingUser { id } updatedAt url user { id } } pageInfo {
+              hasNextPage endCursor } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - comments
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.comments.pageInfo.endCursor +
+              '"}' if response.data.comments.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.comments.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - issueId
+              value: "{{ record.issue.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - issue
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentCommentId
+              value: "{{ record.parent.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parent
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - resolvingCommentId
+              value: "{{ record.resolvingComment.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - resolvingComment
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - resolvingUserId
+              value: "{{ record.resolvingUser.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - resolvingUser
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - userId
+              value: "{{ record.user.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - user
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+    cycles:
+      type: DeclarativeStream
+      name: cycles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Cycles($after: String) { cycles(after: $after, first: 50) {
+              pageInfo { endCursor hasNextPage } nodes { archivedAt
+              autoArchivedAt completedAt completedIssueCountHistory
+              completedScopeHistory createdAt description id endsAt
+              inProgressScopeHistory inheritedFrom { id } issueCountHistory name
+              number progress scopeHistory startsAt team { id }
+              uncompletedIssuesUponClose { nodes { id } } updatedAt } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - cycles
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.cycles.pageInfo.endCursor + '"}'
+              if response.data.cycles.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.cycles.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inheritedFromId
+              value: "{{ record.inheritedFrom.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - inheritedFrom
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uncompletedIssueIdsUponClose
+              value: >-
+                {{ record.uncompletedIssuesUponClose.nodes | map(attribute='id')
+                | list }}
+        - type: RemoveFields
+          field_pointers:
+            - - uncompletedIssuesUponClose
+              - nodes
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - teamId
+              value: "{{ record.team.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - team
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cycles"
+    customer_needs:
+      type: DeclarativeStream
+      name: customer_needs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query CustomerNeeds($after: String) { customerNeeds(after: $after,
+              first: 50) { nodes { archivedAt body bodyData comment { id }
+              createdAt creator { id } customer { id } id issue { id } priority
+              project { id } updatedAt attachment { id } } pageInfo {
+              hasNextPage endCursor } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - customerNeeds
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.customerNeeds.pageInfo.endCursor
+              + '"}' if response.data.customerNeeds.pageInfo.endCursor else ""
+              }}
+            stop_condition: "{{ response.data.customerNeeds.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - commentId
+              value: "{{ record.comment.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - comment
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - customerId
+              value: "{{ record.customer.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - customer
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - issueId
+              value: "{{ record.issue.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - issue
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - attachmentId
+              value: "{{ record.attachment.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attachment
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_needs"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Projects($after: String) { projects(after: $after, first:
+              25) { nodes { archivedAt autoArchivedAt canceledAt color
+              completedAt completedIssueCountHistory completedScopeHistory
+              content contentState convertedFromIssue { id } createdAt creator {
+              id } description health healthUpdatedAt icon id
+              inProgressScopeHistory issueCountHistory lead { id } name priority
+              prioritySortOrder progress projectUpdateRemindersPausedUntilAt
+              scope scopeHistory slugId sortOrder startDate startDateResolution
+              startedAt status { id } targetDate targetDateResolution teams {
+              nodes { id } } trashed updateReminderFrequency
+              updateReminderFrequencyInWeeks updateRemindersDay
+              updateRemindersHour updatedAt url } pageInfo { endCursor
+              hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - projects
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.projects.pageInfo.endCursor +
+              '"}' if response.data.projects.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.projects.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - convertedFromIssueId
+              value: "{{ record.convertedFromIssue.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - convertedFromIssue
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - leadId
+              value: "{{ record.lead.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - lead
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - statusId
+              value: "{{ record.status.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - status
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - teamIds
+              value: "{{ record.teams.nodes | map(attribute='id') | list }}"
+        - type: RemoveFields
+          field_pointers:
+            - - teams
+              - nodes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    project_milestones:
+      type: DeclarativeStream
+      name: project_milestones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query ProjectMilestones($after: String) { projectMilestones(after:
+              $after, first: 50) { nodes { archivedAt createdAt description
+              descriptionState id name progress project { id } sortOrder status
+              targetDate updatedAt } pageInfo { hasNextPage endCursor } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - projectMilestones
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' +
+              response.data.projectMilestones.pageInfo.endCursor + '"}' if
+              response.data.projectMilestones.pageInfo.endCursor else "" }}
+            stop_condition: >-
+              {{ response.data.projectMilestones.pageInfo.hasNextPage is false
+              }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_milestones"
+    project_statuses:
+      type: DeclarativeStream
+      name: project_statuses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query ProjectStatus($after: String) { projectStatuses(after:
+              $after, first: 50) { nodes { archivedAt color createdAt
+              description id indefinite name position type updatedAt } pageInfo
+              { endCursor hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - projectStatuses
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' +
+              response.data.projectStatuses.pageInfo.endCursor + '"}' if
+              response.data.projectStatuses.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.projectStatuses.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_statuses"
+    issue_labels:
+      type: DeclarativeStream
+      name: issue_labels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query IssueLabels($after: String) { issueLabels(after: $after,
+              first: 50) { nodes { archivedAt color createdAt creator { id }
+              description id inheritedFrom { id } isGroup name parent { id }
+              team { id } updatedAt } pageInfo { endCursor hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - issueLabels
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.issueLabels.pageInfo.endCursor +
+              '"}' if response.data.issueLabels.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.issueLabels.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inheritedFromId
+              value: "{{ record.inheritedFrom.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - inheritedFrom
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentLabelId
+              value: "{{ record.parent.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parent
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - teamId
+              value: "{{ record.team.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - team
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_labels"
+    workflow_states:
+      type: DeclarativeStream
+      name: workflow_states
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query WorkflowStates($after: String) { workflowStates(after:
+              $after, first: 50) { nodes { archivedAt color createdAt
+              description id inheritedFrom { id } name position team { id } type
+              updatedAt } pageInfo { hasNextPage endCursor } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - workflowStates
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.workflowStates.pageInfo.endCursor
+              + '"}' if response.data.workflowStates.pageInfo.endCursor else ""
+              }}
+            stop_condition: "{{ response.data.workflowStates.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inheritedFromId
+              value: "{{ record.inheritedFrom.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - inheritedFrom
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - teamId
+              value: "{{ record.team.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - team
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflow_states"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Teams($after: String) { teams(after: $after, first: 25) {
+              nodes { activeCycle { id } archivedAt autoArchivePeriod
+              autoCloseChildIssues autoCloseParentIssues autoClosePeriod
+              autoCloseStateId color createdAt cycleCalenderUrl
+              cycleCooldownTime cycleDuration cycleIssueAutoAssignCompleted
+              cycleIssueAutoAssignStarted cycleLockToActive cycleStartDay
+              cyclesEnabled defaultIssueEstimate defaultIssueState { id }
+              description groupIssueHistory icon id inviteHash issueCount
+              issueEstimationAllowZero issueEstimationExtended
+              issueEstimationType joinByDefault key
+              markedAsDuplicateWorkflowState { id } name parent { id } private
+              requirePriorityToLeaveTriage scimGroupName scimManaged
+              setIssueSortOrderOnStateChange timezone triageEnabled updatedAt
+              upcomingCycleCount triageIssueState { id } } pageInfo { endCursor
+              hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - teams
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.teams.pageInfo.endCursor + '"}'
+              if response.data.teams.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.teams.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - activeCycleId
+              value: "{{ record.activeCycle.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - activeCycle
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - defaultIssueStateId
+              value: "{{ record.defaultIssueState.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - defaultIssueState
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - markedAsDuplicateWorkflowStateId
+              value: "{{ record.markedAsDuplicateWorkflowState.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - markedAsDuplicateWorkflowState
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentTeamId
+              value: "{{ record.parent.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parent
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - triageIssueStateId
+              value: "{{ record.triageIssueState.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - triageIssueState
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Attachments($after: String) { attachments(after: $after,
+              first: 50) { nodes { archivedAt createdAt creator { id }
+              groupBySource id issue { id } sourceType subtitle title updatedAt
+              url } pageInfo { endCursor hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - attachments
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.attachments.pageInfo.endCursor +
+              '"}' if response.data.attachments.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.attachments.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - issueId
+              value: "{{ record.issue.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - issue
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
+    issue_relations:
+      type: DeclarativeStream
+      name: issue_relations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query IssueRelations($after: String) { issueRelations(after:
+              $after, first: 50) { nodes { archivedAt createdAt id issue { id }
+              relatedIssue { id } type updatedAt } pageInfo { endCursor
+              hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - issueRelations
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.issueRelations.pageInfo.endCursor
+              + '"}' if response.data.issueRelations.pageInfo.endCursor else ""
+              }}
+            stop_condition: "{{ response.data.issueRelations.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - issueId
+              value: "{{ record.issue.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - issue
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - relatedIssueId
+              value: "{{ record.relatedIssue.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - relatedIssue
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_relations"
+    customer_statuses:
+      type: DeclarativeStream
+      name: customer_statuses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query CustomerStatus($after: String) { customerStatuses(after:
+              $after, first: 50) { nodes { archivedAt color createdAt
+              description id name position type updatedAt } pageInfo { endCursor
+              hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - customerStatuses
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' +
+              response.data.customerStatuses.pageInfo.endCursor + '"}' if
+              response.data.customerStatuses.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.customerStatuses.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_statuses"
+    customer_tiers:
+      type: DeclarativeStream
+      name: customer_tiers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query CustomerTiers($after: String) { customerTiers(after: $after,
+              first: 50) { nodes { archivedAt color createdAt description
+              displayName id name position updatedAt } pageInfo { endCursor
+              hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - customerTiers
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.customerTiers.pageInfo.endCursor
+              + '"}' if response.data.customerTiers.pageInfo.endCursor else ""
+              }}
+            stop_condition: "{{ response.data.customerTiers.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_tiers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.linear.app/graphql
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/issues"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/cycles"
+  - $ref: "#/definitions/streams/customer_needs"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/project_milestones"
+  - $ref: "#/definitions/streams/project_statuses"
+  - $ref: "#/definitions/streams/issue_labels"
+  - $ref: "#/definitions/streams/workflow_states"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/issue_relations"
+  - $ref: "#/definitions/streams/customer_statuses"
+  - $ref: "#/definitions/streams/customer_tiers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    issues: true
+    customers: true
+    users: true
+    comments: true
+    cycles: true
+    customer_needs: true
+    projects: true
+    project_milestones: true
+    project_statuses: true
+    issue_labels: true
+    workflow_states: true
+    teams: true
+    attachments: true
+    issue_relations: true
+    customer_statuses: true
+    customer_tiers: true
+  testedStreams:
+    issues:
+      streamHash: 31da36c397cf9d42c652cf26817aa06d507c1f10
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: 45c69f2e84a0cf5a17ff995d6b65f952a568724c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 40573da4873d611d9e38e715a30f61465a475172
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    comments:
+      streamHash: e403a1e5bd2a61b444f7f41c066c6b50947ea29a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    cycles:
+      streamHash: 5199681dd9775c8ca38461e28a5cf51aa6d89f52
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_needs:
+      streamHash: 32453753c3728013293ba3a3c49ef7eceb9ff3a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: e3968849ba20ce36185afdd17035a2f236048f67
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project_milestones:
+      streamHash: ee6ba54ce103461535b1042e8a43b71a8f60a274
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project_statuses:
+      streamHash: 4a5d57d33f61aff9aa42e9942a4e5253210fc72f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    issue_labels:
+      streamHash: b32812d2f502857f57b83aba24b82747d24370af
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflow_states:
+      streamHash: 606a0a18622cc1abdf5cdc8a9da1c19539ce8ea9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: c82293934010eb84d018a5d96470fd1453bbeea7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attachments:
+      streamHash: 4b9aae11fb975daa00ced4ee5d381ded961eafa2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    issue_relations:
+      streamHash: dc008ae0eb13de1d2ce60933e336b5c78e507991
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_statuses:
+      streamHash: 21dc77462e1682d0092d175076f3f24adfd76feb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_tiers:
+      streamHash: d0ce4d9289e4ea1d2f09c8479168999be5446015
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  issues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      addedToCycleAt:
+        type:
+          - string
+          - "null"
+      addedToProjectAt:
+        type:
+          - string
+          - "null"
+      addedToTeamAt:
+        type:
+          - string
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+      assigneeId:
+        type:
+          - string
+          - "null"
+      attachmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      attachments:
+        type:
+          - object
+          - "null"
+      branchName:
+        type:
+          - string
+          - "null"
+      canceledAt:
+        type:
+          - string
+          - "null"
+      completedAt:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      customerTicketCount:
+        type:
+          - number
+          - "null"
+      cycle:
+        type:
+          - object
+          - "null"
+      cycleId:
+        type:
+          - string
+          - "null"
+      descriptionState:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      identifier:
+        type:
+          - string
+          - "null"
+      integrationSourceType:
+        type:
+          - string
+          - "null"
+      labelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      labels:
+        type:
+          - object
+          - "null"
+      milestoneId:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+      parentId:
+        type:
+          - string
+          - "null"
+      previousIdentifiers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      priorityLabel:
+        type:
+          - string
+          - "null"
+      prioritySortOrder:
+        type:
+          - number
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      projectMilestone:
+        type:
+          - object
+          - "null"
+      reactionData:
+        type:
+          - array
+          - "null"
+      relationIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      relations:
+        type:
+          - object
+          - "null"
+      slaType:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      sourceCommentId:
+        type:
+          - string
+          - "null"
+      startedAt:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - object
+          - "null"
+      stateId:
+        type:
+          - string
+          - "null"
+      subIssueSortOrder:
+        type:
+          - number
+          - "null"
+      subscriberIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      subscribers:
+        type:
+          - object
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+      teamId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approximateNeedCount:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      externalIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      logoUrl:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      slugId:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+      statusId:
+        type:
+          - string
+          - "null"
+      tier:
+        type:
+          - object
+          - "null"
+      tierId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      avatarBackgroundColor:
+        type:
+          - string
+          - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdIssueCount:
+        type:
+          - number
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      guest:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      inviteHash:
+        type:
+          - string
+          - "null"
+      isMe:
+        type:
+          - boolean
+          - "null"
+      lastSeen:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      teamIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      teams:
+        type:
+          - object
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      body:
+        type:
+          - string
+          - "null"
+      bodyData:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      editedAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      issue:
+        type:
+          - object
+          - "null"
+      issueId:
+        type:
+          - string
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+      parentCommentId:
+        type:
+          - string
+          - "null"
+      resolvingCommentId:
+        type:
+          - string
+          - "null"
+      resolvingUserId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  cycles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      completedAt:
+        type:
+          - string
+          - "null"
+      completedIssueCountHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      completedScopeHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      endsAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inProgressScopeHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      inheritedFromId:
+        type:
+          - string
+          - "null"
+      issueCountHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      progress:
+        type:
+          - number
+          - "null"
+      scopeHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      startsAt:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+      teamId:
+        type:
+          - string
+          - "null"
+      uncompletedIssueIdsUponClose:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uncompletedIssuesUponClose:
+        type:
+          - object
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  customer_needs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachment:
+        type:
+          - object
+          - "null"
+      attachmentId:
+        type:
+          - string
+          - "null"
+      commentId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+      customerId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      issue:
+        type:
+          - object
+          - "null"
+      issueId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      canceledAt:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      completedAt:
+        type:
+          - string
+          - "null"
+      completedIssueCountHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      completedScopeHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      content:
+        type:
+          - string
+          - "null"
+      contentState:
+        type:
+          - string
+          - "null"
+      convertedFromIssue:
+        type:
+          - object
+          - "null"
+      convertedFromIssueId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      health:
+        type:
+          - string
+          - "null"
+      healthUpdatedAt:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inProgressScopeHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      issueCountHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      lead:
+        type:
+          - object
+          - "null"
+      leadId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      prioritySortOrder:
+        type:
+          - number
+          - "null"
+      progress:
+        type:
+          - number
+          - "null"
+      scope:
+        type:
+          - number
+          - "null"
+      scopeHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      slugId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      startedAt:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+      statusId:
+        type:
+          - string
+          - "null"
+      targetDate:
+        type:
+          - string
+          - "null"
+      teamIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      teams:
+        type:
+          - object
+          - "null"
+      updateRemindersDay:
+        type:
+          - string
+          - "null"
+      updateRemindersHour:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  project_milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      descriptionState:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      progress:
+        type:
+          - number
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      targetDate:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  project_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      indefinite:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  issue_labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inheritedFromId:
+        type:
+          - string
+          - "null"
+      isGroup:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+      parentLabelId:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+      teamId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  workflow_states:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inheritedFromId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+      teamId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activeCycle:
+        type:
+          - object
+          - "null"
+      activeCycleId:
+        type:
+          - string
+          - "null"
+      autoArchivePeriod:
+        type:
+          - number
+          - "null"
+      autoClosePeriod:
+        type:
+          - number
+          - "null"
+      autoCloseStateId:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      cycleCalenderUrl:
+        type:
+          - string
+          - "null"
+      cycleCooldownTime:
+        type:
+          - number
+          - "null"
+      cycleDuration:
+        type:
+          - number
+          - "null"
+      cycleIssueAutoAssignCompleted:
+        type:
+          - boolean
+          - "null"
+      cycleIssueAutoAssignStarted:
+        type:
+          - boolean
+          - "null"
+      cycleLockToActive:
+        type:
+          - boolean
+          - "null"
+      cycleStartDay:
+        type:
+          - number
+          - "null"
+      cyclesEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultIssueEstimate:
+        type:
+          - number
+          - "null"
+      defaultIssueState:
+        type:
+          - object
+          - "null"
+      defaultIssueStateId:
+        type:
+          - string
+          - "null"
+      groupIssueHistory:
+        type:
+          - boolean
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inviteHash:
+        type:
+          - string
+          - "null"
+      issueCount:
+        type:
+          - number
+          - "null"
+      issueEstimationAllowZero:
+        type:
+          - boolean
+          - "null"
+      issueEstimationExtended:
+        type:
+          - boolean
+          - "null"
+      issueEstimationType:
+        type:
+          - string
+          - "null"
+      key:
+        type:
+          - string
+          - "null"
+      markedAsDuplicateWorkflowState:
+        type:
+          - object
+          - "null"
+      markedAsDuplicateWorkflowStateId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parentTeamId:
+        type:
+          - string
+          - "null"
+      private:
+        type:
+          - boolean
+          - "null"
+      requirePriorityToLeaveTriage:
+        type:
+          - boolean
+          - "null"
+      scimManaged:
+        type:
+          - boolean
+          - "null"
+      setIssueSortOrderOnStateChange:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      triageEnabled:
+        type:
+          - boolean
+          - "null"
+      triageIssueStateId:
+        type:
+          - string
+          - "null"
+      upcomingCycleCount:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  attachments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      groupBySource:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      issue:
+        type:
+          - object
+          - "null"
+      issueId:
+        type:
+          - string
+          - "null"
+      sourceType:
+        type:
+          - string
+          - "null"
+      subtitle:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  issue_relations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      issue:
+        type:
+          - object
+          - "null"
+      issueId:
+        type:
+          - string
+          - "null"
+      relatedIssue:
+        type:
+          - object
+          - "null"
+      relatedIssueId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  customer_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  customer_tiers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id

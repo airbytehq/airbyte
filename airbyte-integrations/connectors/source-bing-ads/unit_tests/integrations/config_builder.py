@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
+
 TENNANT_ID = "common"
 DEVELOPER_TOKEN = "test-token"
 REFRESH_TOKEN = "test-refresh-token"

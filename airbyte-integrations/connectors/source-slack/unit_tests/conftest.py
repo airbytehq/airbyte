@@ -8,6 +8,7 @@ from typing import MutableMapping
 
 import pytest
 
+
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
@@ -16,12 +17,9 @@ def conversations_list(requests_mock):
     return requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
-        json={
-            "channels": [
-                {"id": "airbyte-for-beginners", "is_member": True},
-                {"id": "good-reads", "is_member": True}]
-        },
+        json={"channels": [{"id": "airbyte-for-beginners", "is_member": True}, {"id": "good-reads", "is_member": True}]},
     )
+
 
 def base_config() -> MutableMapping:
     return copy.deepcopy(
@@ -98,11 +96,27 @@ parametrized_configs = pytest.mark.parametrize(
 
 @pytest.fixture
 def joined_channel():
-    return {"id": "C061EG9SL", "name": "general", "is_channel": True, "is_group": False, "is_im": False,
-            "created": 1449252889,
-            "creator": "U061F7AUR", "is_archived": False, "is_general": True, "unlinked": 0, "name_normalized": "general",
-            "is_shared": False,
-            "is_ext_shared": False, "is_org_shared": False, "pending_shared": [], "is_pending_ext_shared": False,
-            "is_member": True, "is_private": False, "is_mpim": False,
-            "topic": {"value": "Which widget do you worry about?", "creator": "", "last_set": 0},
-            "purpose": {"value": "For widget discussion", "creator": "", "last_set": 0}, "previous_names": []}
+    return {
+        "id": "C061EG9SL",
+        "name": "general",
+        "is_channel": True,
+        "is_group": False,
+        "is_im": False,
+        "created": 1449252889,
+        "creator": "U061F7AUR",
+        "is_archived": False,
+        "is_general": True,
+        "unlinked": 0,
+        "name_normalized": "general",
+        "is_shared": False,
+        "is_ext_shared": False,
+        "is_org_shared": False,
+        "pending_shared": [],
+        "is_pending_ext_shared": False,
+        "is_member": True,
+        "is_private": False,
+        "is_mpim": False,
+        "topic": {"value": "Which widget do you worry about?", "creator": "", "last_set": 0},
+        "purpose": {"value": "For widget discussion", "creator": "", "last_set": 0},
+        "previous_names": [],
+    }

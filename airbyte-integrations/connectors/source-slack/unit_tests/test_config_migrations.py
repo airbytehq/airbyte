@@ -7,6 +7,7 @@ from typing import Any, Mapping
 from source_slack import SourceSlack
 from source_slack.config_migrations import MigrateLegacyConfig
 
+
 CMD = "check"
 TEST_CONFIG_LEGACY_PATH = f"{os.path.dirname(__file__)}/configs/legacy_config.json"
 TEST_CONFIG_ACTUAL_PATH = f"{os.path.dirname(__file__)}/configs/actual_config.json"

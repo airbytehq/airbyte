@@ -5,61 +5,75 @@
 package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.StreamIncompleteResult
-import io.airbyte.cdk.load.state.StreamSucceeded
+import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.state.StreamProcessingSucceeded
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailStreamTask : ImplementorScope
-
-/**
- * FailStreamTask is a task that is executed when a stream fails. It is responsible for cleaning up
- * resources and reporting the failure.
- */
-class DefaultFailStreamTask(
+class FailStreamTask(
     private val taskLauncher: DestinationTaskLauncher,
     private val exception: Exception,
     private val syncManager: SyncManager,
     private val stream: DestinationStream.Descriptor,
-) : FailStreamTask {
+    private val shouldRunStreamLoaderClose: Boolean,
+) : Task {
     val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         val streamManager = syncManager.getStreamManager(stream)
-        streamManager.markFailed(exception)
+        syncManager.registerStartedStreamLoader(stream, Result.failure(exception))
+        streamManager.markProcessingFailed(exception)
         when (val streamResult = streamManager.awaitStreamResult()) {
-            is StreamSucceeded -> {
+            is StreamProcessingSucceeded -> {
                 log.info { "Cannot fail stream $stream, which is already complete, doing nothing." }
             }
-            is StreamIncompleteResult -> {
-                syncManager.getStreamLoaderOrNull(stream)?.close(streamResult)
-                    ?: log.warn { "StreamLoader not found for stream $stream, cannot call close." }
+            is StreamProcessingFailed -> {
+                if (shouldRunStreamLoaderClose) {
+                    try {
+                        syncManager
+                            .getStreamLoaderOrNull(stream)
+                            ?.close(
+                                hadNonzeroRecords = streamManager.hadNonzeroRecords(),
+                                streamResult,
+                            )
+                            ?: log.warn {
+                                "StreamLoader not found for stream $stream, cannot call close."
+                            }
+                    } catch (e: Exception) {
+                        log.warn(e) {
+                            "Exception while closing StreamLoader for $stream after another failure in the sync. Ignoring this exception and continuing with shutdown."
+                        }
+                    }
+                } else {
+                    log.info { "Skipping StreamLoader.close for stream $stream" }
+                }
             }
         }
-        taskLauncher.handleFailStreamComplete(stream, exception)
+        taskLauncher.handleFailStreamComplete(exception)
     }
 }
 
-interface FailStreamTaskFactory {
+@Singleton
+class FailStreamTaskFactory(private val syncManager: SyncManager) {
     fun make(
         taskLauncher: DestinationTaskLauncher,
         exception: Exception,
         stream: DestinationStream.Descriptor,
-    ): FailStreamTask
-}
-
-@Singleton
-@Secondary
-class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailStreamTaskFactory {
-    override fun make(
-        taskLauncher: DestinationTaskLauncher,
-        exception: Exception,
-        stream: DestinationStream.Descriptor,
+        shouldRunStreamLoaderClose: Boolean,
     ): FailStreamTask {
-        return DefaultFailStreamTask(taskLauncher, exception, syncManager, stream)
+        return FailStreamTask(
+            taskLauncher,
+            exception,
+            syncManager,
+            stream,
+            shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
+        )
     }
 }

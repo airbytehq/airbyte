@@ -1,0 +1,48 @@
+{
+  "data": {
+    "boards": [
+      {
+        "items_page": {
+          "cursor": "next_cursor_1",
+          "items": [
+            {
+              "id": "4635211945",
+              "name": "Test Item",
+              "assets": [],
+              "board": {
+                "id": "4635211873",
+                "name": "Test Board"
+              },
+              "column_values": [
+                {
+                  "id": "status",
+                  "text": "Working on it",
+                  "type": "status",
+                  "value": "{\"index\":0,\"post_id\":null,\"changed_at\":\"2023-03-01T17:24:57.321Z\"}"
+                }
+              ],
+              "created_at": "2023-06-13T13:58:24Z",
+              "creator_id": "36694549",
+              "group": {
+                "id": "topics"
+              },
+              "parent_item": null,
+              "state": "active",
+              "subscribers": [
+                {
+                  "id": "36694549"
+                }
+              ],
+              "updated_at": "2023-06-13T13:59:32Z",
+              "updates": [
+                {
+                  "id": "2223820299"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

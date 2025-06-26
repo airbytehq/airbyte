@@ -34,7 +34,8 @@ class ReadOperation(
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val partitionsCreatorFactoriesSupplier:
+        List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -48,14 +49,14 @@ class ReadOperation(
                 config.checkpointTargetInterval,
                 outputConsumer,
                 metaFieldDecorator,
-                partitionsCreatorFactories,
+                partitionsCreatorFactoriesSupplier.map { it -> it.get() }
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
-            rootReader.read { feedJobs: Map<Feed, Job> ->
+            rootReader.read { feedJobs: Collection<Job> ->
                 val rootJob = coroutineContext.job
                 launch(Job()) {
                     var previousJobTree = ""
-                    while (feedJobs.values.any { it.isActive }) {
+                    while (feedJobs.any { it.isActive }) {
                         val currentJobTree: String = renderTree(rootJob)
                         if (currentJobTree != previousJobTree) {
                             log.info { "coroutine state:\n$currentJobTree" }

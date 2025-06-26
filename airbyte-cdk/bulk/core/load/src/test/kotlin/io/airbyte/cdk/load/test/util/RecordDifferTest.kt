@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.test.util
 
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -107,14 +108,14 @@ class RecordDifferTest {
 
         Assertions.assertEquals(
             """
-            Missing record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampValue(value=1970-01-01T00:00Z)): OutputRecord(rawId=null, extractedAt=1970-01-01T00:00:01.234Z, loadedAt=null, generationId=42, data=ObjectValue(values={id1=IntegerValue(value=1), id2=IntegerValue(value=100), updated_at=TimestampValue(value=1970-01-01T00:00Z), name=StringValue(value=alice), phone=StringValue(value=1234)}), airbyteMeta=null)
-            Incorrect record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampValue(value=1970-01-01T00:00:02Z)):
+            Missing record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampWithTimezoneValue(value=1970-01-01T00:00Z)): OutputRecord(rawId=null, extractedAt=1970-01-01T00:00:01.234Z, loadedAt=null, generationId=42, data=ObjectValue(values={id1=IntegerValue(value=1), id2=IntegerValue(value=100), updated_at=TimestampWithTimezoneValue(value=1970-01-01T00:00Z), name=StringValue(value=alice), phone=StringValue(value=1234)}), airbyteMeta=null)
+            Incorrect record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampWithTimezoneValue(value=1970-01-01T00:00:02Z)):
               generationId: Expected 42, got 41
               airbyteMeta: Expected Meta(changes=[], syncId=42), got null
               phone: Expected StringValue(value=1234), but was StringValue(value=5678)
               email: Expected StringValue(value=charlie@example.com), but was <unset>
               address: Expected <unset>, but was StringValue(value=1234 charlie street)
-            Unexpected record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampValue(value=1970-01-01T00:00:03Z)): OutputRecord(rawId=null, extractedAt=1970-01-01T00:00:01.234Z, loadedAt=null, generationId=42, data=ObjectValue(values={id1=IntegerValue(value=1), id2=IntegerValue(value=100), updated_at=TimestampValue(value=1970-01-01T00:00:03Z), name=StringValue(value=dana)}), airbyteMeta=null)
+            Unexpected record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampWithTimezoneValue(value=1970-01-01T00:00:03Z)): OutputRecord(rawId=null, extractedAt=1970-01-01T00:00:01.234Z, loadedAt=null, generationId=42, data=ObjectValue(values={id1=IntegerValue(value=1), id2=IntegerValue(value=100), updated_at=TimestampWithTimezoneValue(value=1970-01-01T00:00:03Z), name=StringValue(value=dana)}), airbyteMeta=null)
             """.trimIndent(),
             diff
         )
@@ -155,7 +156,7 @@ class RecordDifferTest {
                         ),
                     )
                 )
-        assertEquals(null, diff)
+        assertNull(diff)
     }
 
     /** Verify that the differ can sort records which are identical other than the cursor */
@@ -193,7 +194,7 @@ class RecordDifferTest {
                         ),
                     ),
                 )
-        assertEquals(null, diff)
+        assertNull(diff)
     }
 
     /** Verify that the differ can sort records which are identical other than extractedAt */
@@ -231,6 +232,49 @@ class RecordDifferTest {
                         ),
                     )
                 )
-        assertEquals(null, diff)
+        assertNull(diff)
+    }
+
+    @Test
+    fun testNullEqualsUnset() {
+        val diff =
+            RecordDiffer(primaryKey = listOf(listOf("id")), cursor = null, nullEqualsUnset = true)
+                .diffRecords(
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1,
+                            generationId = 0,
+                            data =
+                                mapOf(
+                                    "id" to 1,
+                                    "sub_object" to
+                                        mapOf(
+                                            "foo" to "bar",
+                                            "sub_list" to listOf(mapOf<String, Any?>()),
+                                        )
+                                ),
+                            airbyteMeta = null,
+                        ),
+                    ),
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1,
+                            generationId = 0,
+                            data =
+                                mapOf(
+                                    "id" to 1,
+                                    "name" to null,
+                                    "sub_object" to
+                                        mapOf(
+                                            "foo" to "bar",
+                                            "bar" to null,
+                                            "sub_list" to listOf(mapOf("foo" to null)),
+                                        )
+                                ),
+                            airbyteMeta = null,
+                        ),
+                    ),
+                )
+        assertNull(diff)
     }
 }

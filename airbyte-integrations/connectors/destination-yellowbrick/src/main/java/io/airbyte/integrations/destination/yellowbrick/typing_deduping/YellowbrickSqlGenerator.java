@@ -7,16 +7,17 @@ package io.airbyte.integrations.destination.yellowbrick.typing_deduping;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.function;
 import static org.jooq.impl.DSL.list;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.val;
 
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
@@ -66,23 +67,23 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
    *
    * @return
    */
-  private DataType<?> getSuperType() {
-    return SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE);
+  private DataType<?> getJSONBType() {
+    return SQLDataType.JSONB;
   }
 
   @Override
   protected DataType<?> getStructType() {
-    return getSuperType();
+    return getJSONBType();
   }
 
   @Override
   protected DataType<?> getArrayType() {
-    return getSuperType();
+    return getJSONBType();
   }
 
   @Override
   protected DataType<?> getWidestType() {
-    return getSuperType();
+    return getJSONBType();
   }
 
   @Override
@@ -104,7 +105,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            extractColumnAsJson(column.getKey(), column.getValue()),
+            extractColumnAsJson(column.getKey()),
             column.getValue(),
             column.getKey().getName(),
             useExpensiveSaferCasting))
@@ -132,13 +133,6 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
     return cast(extractAsText, dialectType);
   }
 
-  // TODO this isn't actually used right now... can we refactor this out?
-  // (redshift is doing something interesting with this method, so leaving it for now)
-  @Override
-  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
-    return cast(field, toDialectType(type));
-  }
-
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
     // First, collect the fields to a List<Field<String>> to avoid unchecked conversion
@@ -156,18 +150,17 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
     Field<String> errorsArray = field(
         "json_array_str({0})",
         String.class,
-        list(dataFieldErrors) // This uses DSL.list to create a dynamic list of fields for json_array_str
-    );
+        list(dataFieldErrors));
 
     // Constructing the JSON object with the "errors" key
-    return field(
+    return cast(field(
         "json_object_str('errors', {0})",
         String.class,
-        errorsArray).as(COLUMN_NAME_AB_META);
+        errorsArray).as(COLUMN_NAME_AB_META), SQLDataType.JSONB);
   }
 
   private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
-    final Field<Object> extract = extractColumnAsJson(column, type);
+    final Field<?> extract = extractColumnAsJson(column);
     if (type instanceof Struct) {
       // If this field is a struct, verify that the raw data is an object or null.
       return case_()
@@ -204,7 +197,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(jsonTypeof(extractColumnAsJson(getCdcDeletedAtColumn(), null)).ne("null"));
+        .and(jsonTypeof(extractColumnAsJson(getCdcDeletedAtColumn())).ne("null"));
   }
 
   @Override
@@ -225,30 +218,15 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
         .orderBy(orderedFields).as(ROW_NUMBER_COLUMN_NAME);
   }
 
-  /**
-   * Extract a raw field, leaving it as json
-   */
-  private Field<Object> extractColumnAsJson(final ColumnId column, final AirbyteType type) {
-    if (type != null && type instanceof Struct) {
-      String objectPattern = String.format("({.*?})");
-      return field("SUBSTRING({0} FROM {1})", name(COLUMN_NAME_DATA), objectPattern);
-    } else if (type != null && type instanceof Array) {
-      String arrayPattern = String.format(":\\s*(\\[.*?\\])");
-      return field("SUBSTRING({0} FROM '\"' || {1} || '\"' || {2})", name(COLUMN_NAME_DATA), val(column.getOriginalName()), arrayPattern);
-    } else {
-      return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.getOriginalName()));
-    }
+  private Field<?> extractColumnAsJson(ColumnId column) {
+    String jsonKey = column.getOriginalName();
+    String dataCol = JavaBaseConstants.COLUMN_NAME_DATA;
+    String rawSql = String.format("\"%s\"::JSONB:$.%s NULL ON ERROR", dataCol, jsonKey);
+    return field(rawSql, SQLDataType.JSONB);
   }
 
   private Field<String> jsonTypeof(Field<?> jsonField) {
-    Field<String> field = cast(jsonField, SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE));
-    return case_()
-        .when(field.like("{%}"), val("object"))
-        .when(field.like("[%]"), val("array"))
-        .when(field.like("\"%\""), val("string"))
-        .when(field.likeRegex("-?[0-9]+(\\.[0-9]+)?"), val("number"))
-        .when(field.equalIgnoreCase("true").or(field.equalIgnoreCase("false")), val("boolean"))
-        .when(field.equal("null"), val("null"));
+    return function("JSON_TYPEOF", SQLDataType.VARCHAR, jsonField);
   }
 
 }

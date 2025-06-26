@@ -1,8 +1,10 @@
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0
   connectorSubtype: database
   connectorType: destination
   definitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/destination-kafka
   githubIssueLabel: destination-kafka
   icon: kafka.svg
@@ -20,6 +22,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+    requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests

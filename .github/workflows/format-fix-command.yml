@@ -29,8 +29,8 @@ concurrency:
 
 jobs:
   format-fix:
-    name: "Run airbyte-ci format fix all"
-    runs-on: ubuntu-latest
+    name: "Run pre-commit fix"
+    runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
         id: job-vars
@@ -67,16 +67,23 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
-      - name: Run airbyte-ci format fix all
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: true
+      # Compare the below to the `format_check.yml` workflow
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
-          context: "manual"
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "format fix all"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
+          distribution: "zulu"
+          java-version: "21"
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          check-latest: true
+          update-environment: true
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+        continue-on-error: true
+        id: format-fix
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
@@ -87,7 +94,7 @@ jobs:
       - name: Check for changes
         id: git-diff
         run: |
-          git diff --quiet && echo "No changes to commit" || echo "::set-output name=changes::true"
+          git diff --quiet && echo "No changes to commit" || echo "changes=true" >> $GITHUB_OUTPUT
         shell: bash
 
       # Commit changes (if any)

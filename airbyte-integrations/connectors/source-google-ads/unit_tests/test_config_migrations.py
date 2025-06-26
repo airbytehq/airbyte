@@ -6,17 +6,19 @@
 import json
 from typing import Any, Mapping
 
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
 from source_google_ads.config_migrations import MigrateCustomQuery
 from source_google_ads.source import SourceGoogleAds
+
+from airbyte_cdk.models import OrchestratorType, Type
+from airbyte_cdk.sources import Source
+
 
 # BASE ARGS
 CMD = "check"
 TEST_CONFIG_PATH = "unit_tests/test_migrations/custom_query/test_config.json"
 NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/custom_query/test_new_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
-SOURCE: Source = SourceGoogleAds()
+SOURCE: Source = SourceGoogleAds({}, None, None)
 
 
 # HELPERS

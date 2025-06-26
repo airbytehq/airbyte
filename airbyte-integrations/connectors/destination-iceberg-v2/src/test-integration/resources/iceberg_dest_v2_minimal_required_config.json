@@ -1,7 +1,0 @@
-{
-  "s3_bucket_name": "bucket",
-  "s3_bucket_region": "us-east-1",
-  "server_uri": "http://localhost:19120/api/v1",
-  "warehouse_location": "s3://demobucket/",
-  "main_branch_name": "main"
-}
