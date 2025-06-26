@@ -534,6 +534,11 @@ class S3V2WriteTestJsonUncompressedSockets :
     override fun testClear() {
         super.testClear()
     }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
 }
 
 class S3V2WriteTestJsonUncompressedSocketsProtobuf :
@@ -556,5 +561,10 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     @Disabled("Clear will never run in socket mode")
     override fun testClear() {
         super.testClear()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }

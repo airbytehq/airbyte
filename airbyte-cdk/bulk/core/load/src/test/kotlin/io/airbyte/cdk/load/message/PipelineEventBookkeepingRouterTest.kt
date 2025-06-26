@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.message
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -21,6 +23,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -35,6 +38,7 @@ class PipelineEventBookkeepingRouterTest {
     lateinit var checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>
     @MockK(relaxed = true) lateinit var openStreamQueue: QueueWriter<DestinationStream>
     @MockK(relaxed = true) lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
+    @MockK(relaxed = true) lateinit var batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>
 
     private val stream1 =
         DestinationStream(
@@ -55,14 +59,16 @@ class PipelineEventBookkeepingRouterTest {
             checkpointQueue,
             openStreamQueue,
             fileTransferQueue,
+            batchStateUpdateQueue,
             numDataChannels,
-            markEndOfStreamAtEnd
+            markEndOfStreamAtEnd,
+            NamespaceMapper(NamespaceDefinitionType.SOURCE)
         )
 
     @BeforeEach
     fun setup() {
         every { catalog.streams } returns listOf(stream1)
-        every { syncManager.getStreamManager(stream1.descriptor) } returns streamManager
+        every { syncManager.getStreamManager(stream1.mappedDescriptor) } returns streamManager
         every { streamManager.incrementReadCount() } returns 1L
     }
 
@@ -78,7 +84,13 @@ class PipelineEventBookkeepingRouterTest {
 
         val event =
             router.handleStreamMessage(
-                DestinationRecord(stream1, mockk(relaxed = true), 0L, null),
+                DestinationRecord(
+                    stream = stream1,
+                    message = mockk(relaxed = true),
+                    serializedSizeBytes = 0L,
+                    checkpointId = null,
+                    airbyteRawId = UUID.randomUUID()
+                ),
                 unopenedStreams = mutableSetOf(),
             ) as PipelineMessage
 
@@ -96,7 +108,13 @@ class PipelineEventBookkeepingRouterTest {
 
             val event =
                 router.handleStreamMessage(
-                    DestinationRecord(stream1, mockk(relaxed = true), 0L, CheckpointId("bar")),
+                    DestinationRecord(
+                        stream = stream1,
+                        message = mockk(relaxed = true),
+                        serializedSizeBytes = 0L,
+                        checkpointId = CheckpointId("bar"),
+                        airbyteRawId = UUID.randomUUID()
+                    ),
                     unopenedStreams = mutableSetOf(),
                 ) as PipelineMessage
 
@@ -113,7 +131,8 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.unmappedName } returns stream1.unmappedName
+        every { checkpointMessage.unmappedNamespace } returns stream1.unmappedNamespace
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -139,7 +158,8 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.unmappedName } returns stream1.unmappedName
+        every { checkpointMessage.unmappedNamespace } returns stream1.unmappedNamespace
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
