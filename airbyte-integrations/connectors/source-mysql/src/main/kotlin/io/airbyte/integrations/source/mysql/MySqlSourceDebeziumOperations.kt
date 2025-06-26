@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.DoubleNode
 import com.fasterxml.jackson.databind.node.FloatNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -118,7 +117,9 @@ class MySqlSourceDebeziumOperations(
                         data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
                     }
                 }
-                else -> { /* no-op */ }
+                else -> {
+                    /* no-op */
+                }
             }
             data[field.id] ?: continue
             when (data[field.id]) {
@@ -126,12 +127,15 @@ class MySqlSourceDebeziumOperations(
                     resultRow[field.id] = FieldValueEncoder(null, NullCodec as JsonEncoder<Any>)
                 }
                 else -> {
-                    val codec: JsonCodec<*> = when (field.type) {
-                        FloatFieldType -> if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
-                        BytesFieldType,
-                        BinaryStreamFieldType -> if (data[field.id].isBinary) BinaryCodec else TextCodec
-                        else -> field.type.jsonEncoder as JsonCodec<*>
-                    }
+                    val codec: JsonCodec<*> =
+                        when (field.type) {
+                            FloatFieldType ->
+                                if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
+                            BytesFieldType,
+                            BinaryStreamFieldType ->
+                                if (data[field.id].isBinary) BinaryCodec else TextCodec
+                            else -> field.type.jsonEncoder as JsonCodec<*>
+                        }
                     resultRow[field.id] =
                         FieldValueEncoder(
                             codec.decode(data[field.id]),
