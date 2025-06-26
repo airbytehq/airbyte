@@ -78,7 +78,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
+            freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -89,7 +89,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
+            freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -100,10 +100,40 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
+            freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
+        }
+    }
+
+    if (!isInCi()) {
+        // -Xdebug is dangerous to run in production (can cause memory leaks)
+        // so only add it if if we're not trying to build a docker image.
+        // This only matters if anyone is doing weird things
+        // (e.g. trying to build+publish locally), but we might as well
+        // protect ourselves from a footgun.
+        afterEvaluate {
+            gradle.taskGraph.whenReady { taskGraph ->
+                var willRunDockerBuild = taskGraph.allTasks.any { it.name == "dockerBuildx" }
+                if (!willRunDockerBuild) {
+                    tasks.named('compileKotlin') {
+                        compilerOptions {
+                            freeCompilerArgs.add("-Xdebug")
+                        }
+                    }
+                    tasks.named('compileTestKotlin') {
+                        compilerOptions {
+                            freeCompilerArgs.add("-Xdebug")
+                        }
+                    }
+                    tasks.named('compileTestFixturesKotlin') {
+                        compilerOptions {
+                            freeCompilerArgs.add("-Xdebug")
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -246,13 +276,5 @@ static def getJavaCompilerArgs() {
         return ["-Werror"]
     } else {
         return []
-    }
-}
-
-static def getKotlinCompilerArgs() {
-    if (isInCi()) {
-        return []
-    } else {
-        return ["-Xdebug"]
     }
 }
