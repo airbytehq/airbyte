@@ -46,6 +46,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 0
 
@@ -55,10 +56,10 @@ jobs:
         # to the step of determining which connectors are modified.
         if: >
           (inputs.repo != '' &&
-           inputs.repo != 'airbytehq/airbyte'
+           ! startswith(inputs.repo, 'airbytehq/')
           ) ||
           (github.event.pull_request.head.repo.full_name != '' &&
-           github.event.pull_request.head.repo.full_name != 'airbytehq/airbyte'
+           ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
           )
         run: |
           # only add upstream if it doesn't already exist
@@ -92,7 +93,7 @@ jobs:
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
 
-  jvm-connectors-test-matrix:
+  jvm-connectors-test:
     needs: [generate-matrix]
     runs-on: ${{ needs.generate-matrix.outputs.jvm-runner-type }} # Custom runner, defined in GitHub org settings
     env:
@@ -113,6 +114,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Java deps
@@ -181,15 +183,7 @@ jobs:
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
-  jvm-connectors-test-summary:
-    name: JVM Connector Test Summary Check
-    needs: [jvm-connectors-test-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "✅ All JVM connector tests completed successfully (or nothing to test)."
-
-  non-jvm-connectors-test-matrix:
+  non-jvm-connectors-test:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     env:
@@ -209,6 +203,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Python deps
@@ -275,6 +270,12 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Container Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
@@ -286,17 +287,9 @@ jobs:
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
-  non-jvm-connectors-test-summary:
-    name: Non-JVM Connector Test Summary Check
-    needs: [non-jvm-connectors-test-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "✅ All non-JVM connector tests completed successfully (or nothing to test)."
-
   # Lint and format checks
 
-  connectors-lint-matrix:
+  connectors-lint:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
@@ -311,6 +304,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Java deps
@@ -384,14 +378,6 @@ jobs:
         # Most connectors can't pass lint checks, so this is non-blocking for now
         continue-on-error: true
 
-  lint-summary:
-    name: Connector Lint Summary Check
-    needs: [connectors-lint-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Lint Summary
-        run: echo "✅ All connectors lint checks completed successfully (or nothing to check)."
-
   pre-release-checks:
     if: github.event.pull_request.draft == false
     needs: [generate-matrix]
@@ -408,6 +394,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
       - name: Install uv
         if: matrix.connector
@@ -423,11 +410,50 @@ jobs:
           connector_name=${{ matrix.connector }}
           connectors-qa run --name ${connector_name%-strict-encrypt}
 
-  pre-release-checks-summary:
-    name: Pre-Release Checks Summary
-    if: github.event.pull_request.draft == false
-    needs: [pre-release-checks]
+  connector-ci-checks-summary:
+    name: Connector CI Checks Summary
+    if: always()
+    needs:
+      - jvm-connectors-test
+      - non-jvm-connectors-test
+      - pre-release-checks
+      - connectors-lint
     runs-on: ubuntu-24.04
     steps:
-      - name: Report Summary
-        run: echo "✅ All Pre-Release Checks completed successfully (or nothing to check)."
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Raise if Upstream Failure
+        if: >
+          needs.jvm-connectors-test.result != 'success' ||
+          needs.non-jvm-connectors-test.result != 'success' ||
+          needs.connectors-lint.result != 'success'
+        run: |
+          echo "❌ Some Checks failed. Marking summary as failed"
+          exit 1
+
+      - name: Report Success
+        run: |
+          # If we get here, all checks passed.
+          echo "✅ All checks passed successfully."
+
+      # Post completion status to the PR.
+      # This is required because otherwise slash commands won't automatically
+      # update the PR checks status.
+      - name: Create Check Status
+        if: always() && github.event_name == 'workflow_call' && inputs.gitref != ''
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: ${{ job.name }}
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
+          sha: ${{ inputs.gitref }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}
