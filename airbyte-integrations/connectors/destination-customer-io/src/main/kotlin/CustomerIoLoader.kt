@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.customerio
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Request
 import io.airbyte.cdk.load.http.RequestMethod
@@ -18,20 +20,15 @@ import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.dlq.DlqLoader
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.BatchEntryAssembler
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.PersonEventBatchEntryAssembler
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.PersonIdentifyBatchEntryAssembler
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.lang.IllegalArgumentException
 
 private val logger = KotlinLogging.logger {}
 
-class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
-
-    companion object{
-        val EXPECTED_PROPERTIES: Set<String> = setOf<String>(
-            "person_email",
-            "event_name",
-            "event_id",
-            "timestamp",
-        )
-    }
+class CustomerIoState(private val httpClient: HttpClient, private val entryAssembler: BatchEntryAssembler) : AutoCloseable {
 
     val decoder: JsonDecoder = JsonDecoder()
     val requestBody: ObjectNode = Jsons.objectNode()
@@ -41,7 +38,7 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
 
     fun accumulate(record: DestinationRecordRaw) {
         orderedRecords.add(record)
-        batch.add(createBatchEntry(record))
+        batch.add(entryAssembler.assemble(record))
     }
 
     fun isFull(): Boolean = requestBody.serializeToString().toByteArray(Charsets.UTF_8).size > 500_000
@@ -78,37 +75,18 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
     /**
      * In theory, there is a limit of 32 kb per batch entry but it is not yet validated here and we will wait for this to affect customers to take action.
      */
-    private fun createBatchEntry(record: DestinationRecordRaw): ObjectNode {
-        val recordAsJson = record.asJsonRecord()
-        val personEmail = recordAsJson.get("person_email")?.asText() ?: throw IllegalArgumentException("person_email field cannot be empty")
-        val eventName = recordAsJson.get("event_name")?.asText() ?: throw IllegalArgumentException("event_name field cannot be empty")
-        val batchEntry = Jsons.objectNode()
-            .put("type", "person" )
-            .put("action", "event" )
-            .put("name", eventName)
 
-        batchEntry.putObject("identifiers").put("email", personEmail)
-
-        recordAsJson.get("event_id")?.let { batchEntry.put("id", it.asText()) }
-        recordAsJson.get("timestamp")?.let { batchEntry.put("timestamp", it.asText()) }
-
-        val attributes = batchEntry.putObject("attributes")
-        (recordAsJson as ObjectNode).fields().forEach { (key, value) -> 
-            if (key !in EXPECTED_PROPERTIES) {
-                attributes.put(key, value.asText())
-            }
-        }
-
-        return batchEntry
-    }
 
 }
 
-class CustomerIoLoader(private val httpClient: HttpClient) : DlqLoader<CustomerIoState> {
+class CustomerIoLoader(private val httpClient: HttpClient, private val catalog: DestinationCatalog) : DlqLoader<CustomerIoState> {
     override fun start(key: StreamKey, part: Int): CustomerIoState {
         logger.info { "CustomerIoLoader.start for ${key.serializeToString()} with part $part" }
-
-        return CustomerIoState(httpClient)
+        val stream = (catalog.streams.find { it.mappedDescriptor == key.stream }
+            ?: throw IllegalStateException(
+                "Could not find stream ${key.stream} as part of the catalog."
+            ))
+        return CustomerIoState(httpClient, selectBatchEntryAssembler(stream))
     }
 
     override fun accept(
@@ -128,4 +106,12 @@ class CustomerIoLoader(private val httpClient: HttpClient) : DlqLoader<CustomerI
         DlqLoader.Complete(state.flush())
 
     override fun close() {}
+
+    private fun selectBatchEntryAssembler(stream: DestinationStream) : BatchEntryAssembler {
+        return when (stream.destinationObjectName) {
+            "person_event" -> PersonEventBatchEntryAssembler()
+            "person_identify" -> PersonIdentifyBatchEntryAssembler()
+            else -> throw IllegalArgumentException("Unknown destination object name ${stream.destinationObjectName}")
+        }
+    }
 }

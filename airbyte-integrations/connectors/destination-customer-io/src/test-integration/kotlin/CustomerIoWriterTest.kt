@@ -4,10 +4,11 @@
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -71,8 +72,8 @@ class CustomerIoWriterTest() :
     private val personEventStream: DestinationStream =
         DestinationStream(
             randomizedNamespace,
-            "test_stream_account",
-            Update,
+            "test_person_event",
+            Append,
             ObjectType(
                 linkedMapOf(
                     "person_email" to FieldType(StringType, nullable = false),
@@ -89,11 +90,39 @@ class CustomerIoWriterTest() :
             namespaceMapper = NamespaceMapper()
         )
 
-    fun record(email: String) =
+    private val personIdentifyStream: DestinationStream =
+        DestinationStream(
+            randomizedNamespace,
+            "test_person_identify",
+            Dedupe(emptyList(), emptyList()),
+            ObjectType(
+                linkedMapOf(
+                    "person_email" to FieldType(StringType, nullable = false),
+                    "an_attribute" to FieldType(StringType, nullable = false)
+                ),
+                true,
+                required=listOf("person_email")
+            ),
+            generationId = 0,
+            minimumGenerationId = 0,
+            syncId = 42,
+            destinationObjectName = "person_identify",
+            namespaceMapper = NamespaceMapper()
+        )
+
+    fun personEventRecord(email: String) =
         InputRecord(
             stream = personEventStream,
             data =
                 """{"person_email": "$email", "event_name": "integration_test", "an_attribute": "any attribute"}""",
+            emittedAtMs = 1234,
+        )
+
+    fun personIdentifyRecord(email: String) =
+        InputRecord(
+            stream = personIdentifyStream,
+            data =
+                """{"person_email": "$email", "an_attribute": "any attribute"}""",
             emittedAtMs = 1234,
         )
 
@@ -102,12 +131,19 @@ class CustomerIoWriterTest() :
         val messages =
             runSync(
                 updatedConfig,
-                DestinationCatalog(listOf(personEventStream)),
+                DestinationCatalog(listOf(personEventStream, personIdentifyStream)),
                 listOf(
-                    record("integration-test@airbyte.io"),
+                    personEventRecord("integration-test@airbyte.io"),
+                    personIdentifyRecord("integration-test@airbyte.io"),
                     InputStreamCheckpoint(
                         unmappedNamespace = personEventStream.unmappedNamespace,
                         unmappedName = personEventStream.unmappedName,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = personIdentifyStream.unmappedNamespace,
+                        unmappedName = personIdentifyStream.unmappedName,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                     ),
@@ -118,9 +154,9 @@ class CustomerIoWriterTest() :
         assertAll(
             {
                 assertEquals(
-                    1,
+                    2,
                     stateMessages.size,
-                    "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
+                    "Expected to receive one state message per stream (with 2 streams), got ${stateMessages.size} ($stateMessages)"
                 )
             },
             {

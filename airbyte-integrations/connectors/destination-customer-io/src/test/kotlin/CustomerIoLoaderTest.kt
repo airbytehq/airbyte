@@ -5,6 +5,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.customerio.CustomerIoState
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.BatchEntryAssembler
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -23,7 +24,9 @@ class CustomerIoStateTest {
     @BeforeEach
     fun setUp() {
         httpClient = mockk()
-        state = CustomerIoState(httpClient)
+        val entryAssembler = mockk<BatchEntryAssembler>()
+        every { entryAssembler.assemble(any()) } returns Jsons.objectNode()
+        state = CustomerIoState(httpClient, entryAssembler)
     }
 
     @Test
@@ -46,7 +49,7 @@ class CustomerIoStateTest {
     @Test
     internal fun `test given no errors when flush then no rejected records`() {
         every { httpClient.send(any()) } returns aResponse(200)
-        state.accumulate(anyValidRecord())
+        state.accumulate(aRecord())
 
         val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected empty list")
 
@@ -60,7 +63,7 @@ class CustomerIoStateTest {
                 .put("event_name", "rejected_event_name")
         )
         every { httpClient.send(any()) } returns aResponse(207, """{"errors": [{"batch_index": 1}]}""".toByteArray().inputStream())
-        state.accumulate(anyValidRecord())
+        state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
 
         val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected empty list")
@@ -71,7 +74,7 @@ class CustomerIoStateTest {
     @Test
     internal fun `test given unsupported return status when flush then raise`() {
         every { httpClient.send(any()) } returns aResponse(500)
-        state.accumulate(anyValidRecord())
+        state.accumulate(aRecord())
 
         assertFailsWith<IllegalStateException> { state.flush() }
     }
@@ -84,7 +87,7 @@ class CustomerIoStateTest {
         return response
     }
 
-    fun aRecord(data: JsonNode) : DestinationRecordRaw {
+    fun aRecord(data: JsonNode = Jsons.objectNode()) : DestinationRecordRaw {
         val rawData = mockk<DestinationRecordSource>(relaxed = true)
         every { rawData.asJsonRecord(any()) } returns data
         return DestinationRecordRaw(
@@ -95,7 +98,4 @@ class CustomerIoStateTest {
         )
     }
 
-    private fun anyValidRecord(): DestinationRecordRaw = aRecord(
-        Jsons.objectNode().put("person_email", "a_person_email").put("event_name", "an_event_name"),
-    )
 }
