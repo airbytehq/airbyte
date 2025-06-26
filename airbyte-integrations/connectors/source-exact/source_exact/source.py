@@ -9,7 +9,9 @@ from source_exact.streams import (
     CRMAccountClassificationNames,
     CRMAccountClassifications,
     ExactStream,
+    FinancialReceivablesList,
     HRMDepartments,
+    OpeningbalanceCurrentYearAfterEntry,
     PayrollActiveEmployments,
     ProjectInvoiceTerms,
     SyncCRMAccounts,
@@ -24,7 +26,7 @@ from source_exact.streams import (
     SyncPayrollEmployments,
     SyncProjectProjects,
     SyncProjectTimeCostTransactions,
-    SyncSalesInvoiceSalesInvoices, OpeningbalanceCurrentYearAfterEntry,
+    SyncSalesInvoiceSalesInvoices,
 )
 
 
@@ -55,6 +57,7 @@ class SourceExact(AbstractSource):
         return [
             CRMAccountClassifications(config),
             CRMAccountClassificationNames(config),
+            FinancialReceivablesList(config),
             HRMDepartments(config),
             OpeningbalanceCurrentYearAfterEntry(config),
             PayrollActiveEmployments(config),
