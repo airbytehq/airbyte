@@ -209,9 +209,9 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         # Perform the actual sync, and update the latest cursor value
         division_state = self._state_per_division[division]
         for record in super().read_records(
-            sync_mode=sync_mode,
-            cursor_field=cursor_field,
-            stream_slice=stream_slice,
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=stream_slice,
         ):
             if self.cursor_field and sync_mode == SyncMode.incremental:
                 current_value = division_state.get(self.cursor_field)
@@ -231,7 +231,8 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         """
 
         # Get the first not null type -> i.e., the expected type of the property
-        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
+        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in
+                                self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^\/Date\((\d+)\)\/$")
 
@@ -329,6 +330,12 @@ class ExactOtherStream(ExactStream):
     state_checkpoint_interval = 60
     primary_key = "ID"
     cursor_field = "Modified"
+
+
+class HRMDepartments(ExactOtherStream):
+    """Stream to sync the endpoint `hrm/departments`"""
+
+    endpoint = "hrm/Departments"
 
 
 class SyncCashflowPaymentTerms(ExactSyncStream):
