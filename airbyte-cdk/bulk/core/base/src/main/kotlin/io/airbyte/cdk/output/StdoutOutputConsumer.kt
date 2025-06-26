@@ -31,7 +31,7 @@ abstract class StandardOutputConsumer(clock: Clock): OutputConsumer(clock)
 @Secondary
 class StdoutOutputConsumer(
     val stdout: PrintStream,
-    private val clock: Clock,
+    clock: Clock,
     /**
      * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
      * buffer's size (in bytes) grows past this value.

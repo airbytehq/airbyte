@@ -7,6 +7,7 @@ import io.airbyte.cdk.output.OutputMessageRouter.*
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Clock
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
@@ -37,7 +38,9 @@ class RootReader(
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
     val dataChannelFormat: DataChannelFormat,
-    val dataChannelMedium: DataChannelMedium
+    val dataChannelMedium: DataChannelMedium,
+    val bufferByteSizeThresholdForFlush: Int,
+    private val clock: Clock,
 ) {
     init {
         ensureDataChannelMediumFormat()
@@ -92,7 +95,7 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, dataChannelFormat, dataChannelMedium).read() }
+                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock).read() }
                 }
             // Call listener hook.
             listener(feedJobs)

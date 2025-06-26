@@ -28,6 +28,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.*
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
+import java.time.Clock
 import java.time.ZoneOffset
 
 /**
@@ -52,7 +53,9 @@ sealed class FeedBootstrap<T : Feed>(
     val feed: T,
     val dataChannelFormat: DataChannelFormat,
     val dataChannelMedium: DataChannelMedium,
-) {
+    val bufferByteSizeThresholdForFlush: Int,
+    val clock: Clock,
+    ) {
 
     /** Delegates to [StateManager.feeds]. */
     val feeds: List<Feed>
@@ -437,12 +440,14 @@ sealed class FeedBootstrap<T : Feed>(
             feed: Feed,
             dataChannelFormat: DataChannelFormat,
             dataChannelMedium: DataChannelMedium,
+            bufferByteSizeThresholdForFlush: Int,
+            clock: Clock,
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, dataChannelFormat, dataChannelMedium)
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, dataChannelFormat, dataChannelMedium)
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
             }
     }
 }
@@ -488,8 +493,10 @@ class GlobalFeedBootstrap(
     stateManager: StateManager,
     global: Global,
     dataChannelFormat: DataChannelFormat,
-    dataChannelMedium: DataChannelMedium
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, dataChannelFormat, dataChannelMedium)
+    dataChannelMedium: DataChannelMedium,
+    bufferByteSizeThresholdForFlush: Int,
+    clock: Clock,
+    ) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
@@ -498,8 +505,10 @@ class StreamFeedBootstrap(
     stateManager: StateManager,
     stream: Stream,
     dataChannelFormat: DataChannelFormat,
-    dataChannelMedium: DataChannelMedium
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, dataChannelFormat, dataChannelMedium) {
+    dataChannelMedium: DataChannelMedium,
+    bufferByteSizeThresholdForFlush: Int,
+    clock: Clock,
+    ) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun jsonSocketStreamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer): StreamRecordConsumer = JsonSocketEfficientStreamRecordConsumer(

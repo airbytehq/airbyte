@@ -53,8 +53,8 @@ class OutputMessageRouter(
                     DataChannelFormat.JSONL -> {
                         socketJsonOutputConsumer = SocketJsonOutputConsumer(
                             (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
-                            Clock.systemUTC(),  // TEMP
-                            8192, // TEMP
+                            feedBootstrap.clock,
+                            feedBootstrap.bufferByteSizeThresholdForFlush,
                             additionalProperties
                         )
                         efficientStreamRecordConsumers =
@@ -68,8 +68,8 @@ class OutputMessageRouter(
                     DataChannelFormat.PROTOBUF -> {
                         protoOutputConsumer = SocketProtobufOutputConsumer(
                             (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
-                            Clock.systemUTC(),
-                            8192
+                            feedBootstrap.clock,
+                            feedBootstrap.bufferByteSizeThresholdForFlush,
                         )
                         protoRecordOutputConsumers = feedBootstrap.streamProtoRecordConsumers(
                             protoOutputConsumer,
@@ -110,10 +110,6 @@ class OutputMessageRouter(
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
                     DataChannelFormat.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
-                    /*        if (needAlsoSimpleOutout && recordsDataChannelFormat != DataChannelFormat.STDIO) {
-                                simpleOutputConsumer.accept(airbyteMessage)
-                            }*/
-
                 }
             }
             DataChannelMedium.STDIO -> {
@@ -129,10 +125,6 @@ class OutputMessageRouter(
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
                     DataChannelFormat.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
-                    /*        if (needAlsoSimpleOutout && recordsDataChannelFormat != DataChannelFormat.STDIO) {
-                                simpleOutputConsumer.accept(airbyteMessage)
-                            }*/
-
                 }
             }
             DataChannelMedium.STDIO -> {

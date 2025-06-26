@@ -10,6 +10,7 @@ import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Clock
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -35,13 +36,15 @@ class FeedReader(
     val feed: Feed,
     val resourceAcquirer: ResourceAcquirer,
     val dataChannelFormat: DataChannelFormat,
-    val dataChannelMedium: DataChannelMedium
+    val dataChannelMedium: DataChannelMedium,
+    val bufferByteSizeThresholdForFlush: Int,
+    val clock: Clock,
 ) {
     private val log = KotlinLogging.logger {}
 
     private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, dataChannelFormat, dataChannelMedium)
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
 
     /** Reads records from this [feed]. */
     suspend fun read() {
