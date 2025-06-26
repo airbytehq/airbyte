@@ -44,28 +44,24 @@ class CheckVersionIncrement(Check):
         """Get the metadata from the master branch or None if unable to retrieve."""
         cwd = Path.cwd()
         repo_name = "airbyte-enterprise" if "airbyte-enterprise" in cwd.parts else "airbyte"
-        
+
         fetch_command = [
-            "gh", "api", 
+            "gh",
+            "api",
             f"repos/airbytehq/{repo_name}/contents/airbyte-integrations/connectors/{connector.technical_name}/{consts.METADATA_FILE_NAME}",
-            "-H", "Accept: application/vnd.github.v3.raw"
+            "-H",
+            "Accept: application/vnd.github.v3.raw",
         ]
-        
+
         try:
-            completed_process = subprocess.run(
-                fetch_command,
-                text=True,
-                check=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            
+            completed_process = subprocess.run(fetch_command, text=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
             # New connectors will not have a metadata file in master
             if completed_process.returncode != 0:
                 return None
-                
+
             return yaml.safe_load(completed_process.stdout)["data"]
-        except (subprocess.SubprocessError, yaml.YAMLError, KeyError) as e:
+        except (subprocess.SubprocessError, yaml.YAMLError, KeyError):
             return None
 
     def _parse_version_from_metadata(self, metadata: Dict[str, Any]) -> semver.Version:
