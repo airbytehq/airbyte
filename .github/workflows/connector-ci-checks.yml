@@ -474,3 +474,4 @@ jobs:
           status: completed
           conclusion: ${{ job.status }}
           token: ${{ steps.get-app-token.outputs.token }}
+          details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
