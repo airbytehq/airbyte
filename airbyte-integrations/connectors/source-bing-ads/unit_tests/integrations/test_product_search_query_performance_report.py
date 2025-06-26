@@ -71,32 +71,66 @@ class TestProductSearchQueryPerformanceReportDailyStream(TestBaseProductSearchQu
         )
 
 
-# class TestProductSearchQueryPerformanceReportHourlyStream(TestSuiteReportStream):
-#     stream_name = "product_search_query_performance_report_hourly"
-#     report_file = "product_search_query_performance_report_hourly"
-#     records_number = 24
-#     state_file = "product_search_query_performance_report_hourly_state"
-#     incremental_report_file = "product_search_query_performance_report_hourly_incremental"
-#     first_read_state = {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}
-#     second_read_state = {"180535609": {"TimePeriod": "2023-11-13T00:00:00+00:00"}}
+class TestProductSearchQueryPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
+    stream_name = "product_search_query_performance_report_hourly"
+    report_file = "product_search_query_performance_report_hourly"
+    records_number = 24
+    state_file = "hourly_reports_state"
+    incremental_report_file = "product_search_query_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "product_search_query_performance_report_hourly_with_records_further_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = (
+        "product_search_query_performance_report_hourly_incremental_with_records_further_cursor"
+    )
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
 
 
-# class TestProductSearchQueryPerformanceReportWeeklyStream(TestSuiteReportStream):
-#     stream_name = "product_search_query_performance_report_weekly"
-#     report_file = "product_search_query_performance_report_weekly"
-#     records_number = 3
-#     second_read_records_number = 5
-#     state_file = "product_dimension_performance_report_weekly_state"
-#     incremental_report_file = "product_search_query_performance_report_weekly_incremental"
-#     first_read_state = {"180535609": {"TimePeriod": "2023-12-25"}}
-#     second_read_state = {"180535609": {"TimePeriod": "2024-01-29"}}
+class TestProductSearchQueryPerformanceReportWeeklyStream(TestSuiteReportStream):
+    stream_name = "product_search_query_performance_report_weekly"
+    report_file = "product_search_query_performance_report_weekly"
+    records_number = 3
+    second_read_records_number = 5
+    state_file = "product_dimension_performance_report_weekly_state"
+    incremental_report_file = "product_search_query_performance_report_weekly_incremental"
+    first_read_state = {"180535609": {"TimePeriod": "2023-12-25"}}
+    second_read_state = {"180535609": {"TimePeriod": "2024-01-29"}}
 
 
-# class TestProductSearchQueryPerformanceReportMonthlyStream(TestSuiteReportStream):
-#     stream_name = "product_search_query_performance_report_monthly"
-#     report_file = "product_search_query_performance_report_monthly"
-#     records_number = 6
-#     state_file = "product_search_query_performance_report_monthly_state"
-#     incremental_report_file = "product_search_query_performance_report_monthly_incremental"
-#     first_read_state = {"180535609": {"TimePeriod": "2023-09-01"}}
-#     second_read_state = {"180535609": {"TimePeriod": "2024-03-01"}}
+class TestProductSearchQueryPerformanceReportMonthlyStream(TestSuiteReportStream):
+    stream_name = "product_search_query_performance_report_monthly"
+    report_file = "product_search_query_performance_report_monthly"
+    records_number = 6
+    state_file = "product_search_query_performance_report_monthly_state"
+    incremental_report_file = "product_search_query_performance_report_monthly_incremental"
+    first_read_state = {"180535609": {"TimePeriod": "2023-09-01"}}
+    second_read_state = {"180535609": {"TimePeriod": "2024-03-01"}}
