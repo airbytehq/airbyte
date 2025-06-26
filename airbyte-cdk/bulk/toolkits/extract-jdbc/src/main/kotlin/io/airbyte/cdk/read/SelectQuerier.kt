@@ -8,10 +8,7 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
-import io.airbyte.cdk.output.sockets.InternalRow
-import io.airbyte.cdk.output.sockets.toProto
-import io.airbyte.protocol.protobuf.AirbyteRecordMessage
-import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -43,7 +40,7 @@ interface SelectQuerier {
     interface Result : Iterator<ResultRow>, AutoCloseable
 
     interface ResultRow {
-        val data: InternalRow
+        val data: NativeRecordPayload
         val changes: Map<Field, FieldValueChange>
     }
 }
@@ -59,7 +56,7 @@ class JdbcSelectQuerier(
     ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
 
     data class ResultRow(
-        override val data: InternalRow = mutableMapOf(),
+        override val data: NativeRecordPayload = mutableMapOf(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 

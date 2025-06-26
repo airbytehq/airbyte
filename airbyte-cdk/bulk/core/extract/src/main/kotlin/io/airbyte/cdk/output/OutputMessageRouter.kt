@@ -3,7 +3,7 @@ package io.airbyte.cdk.output
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
-import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.read.FeedBootstrap
 import io.airbyte.cdk.read.FieldValueChange
@@ -13,7 +13,6 @@ import io.airbyte.cdk.read.SocketResource
 import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import java.time.Clock
 
 /**
  * OutputMessageRouter is responsible for building the appropriate routes for messages output.
@@ -44,7 +43,7 @@ class OutputMessageRouter(
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
     private lateinit var protoRecordOutputConsumers: Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
-    var recordAcceptors: Map<StreamIdentifier, (InternalRow, Map<Field, FieldValueChange>?) -> Unit>
+    var recordAcceptors: Map<StreamIdentifier, (NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit>
 
     init {
         when (recordsDataChannelMedium) {
@@ -60,7 +59,7 @@ class OutputMessageRouter(
                         efficientStreamRecordConsumers =
                             feedBootstrap.streamJsonSocketRecordConsumers(socketJsonOutputConsumer)
                         recordAcceptors = efficientStreamRecordConsumers.map {
-                            it.key to { record: InternalRow, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
+                            it.key to { record: NativeRecordPayload, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
                         }
                             .toMap()
                     }
@@ -76,7 +75,7 @@ class OutputMessageRouter(
                             additionalProperties["partition_id"]
                         )
                         recordAcceptors = protoRecordOutputConsumers.map {
-                            it.key to { record: InternalRow, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
+                            it.key to { record: NativeRecordPayload, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
                         }
                             .toMap()
                     }
@@ -85,7 +84,7 @@ class OutputMessageRouter(
             DataChannelMedium.STDIO -> {
                 simpleEfficientStreamConsumers = feedBootstrap.streamRecordConsumers()
                 recordAcceptors = simpleEfficientStreamConsumers.map {
-                    it.key to { record: InternalRow, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
+                    it.key to { record: NativeRecordPayload, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
                 }
                     .toMap()
             }

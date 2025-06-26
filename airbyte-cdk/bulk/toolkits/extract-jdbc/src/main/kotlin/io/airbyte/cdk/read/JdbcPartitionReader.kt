@@ -6,9 +6,8 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.*
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.*
-import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -29,7 +28,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 ) : PartitionReader {
 
     lateinit var outputMessageRouter: OutputMessageRouter
-    lateinit var outputRoute: ((InternalRow, Map<Field, FieldValueChange>?) -> Unit)
+    lateinit var outputRoute: ((NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit)
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun generatePartitionId(length: Int): String =

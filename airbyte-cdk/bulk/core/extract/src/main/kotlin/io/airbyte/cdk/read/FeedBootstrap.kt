@@ -15,7 +15,7 @@ import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
-import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.NullProtoEncoder
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
@@ -109,7 +109,7 @@ sealed class FeedBootstrap<T : Feed>(
             outputer.close()
         }
 
-        override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
+        override fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toJson())
             } else {
@@ -213,7 +213,7 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
-        override fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?) {
+        override fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toProto(defaultRecordData, valueVBuilder))
             } else {
@@ -467,7 +467,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: InternalRow, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?)
     fun close()
 }
 

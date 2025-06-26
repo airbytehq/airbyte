@@ -39,12 +39,15 @@ import java.time.OffsetTime
 import java.time.format.DateTimeFormatter
 
 
-data class FieldValueEncoder(val value: Any?, val jsonEncoder: JsonEncoder<Any>)
-typealias InternalRow = MutableMap<String, FieldValueEncoder>
+// A value of a field along with its encoder
+data class FieldValueEncoder(val fieldValue: Any?, val jsonEncoder: JsonEncoder<Any>)
 
-fun InternalRow.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
+// A natice jvm representation of a database row, which can be encoded to the desired output format (json or protobuf)
+typealias NativeRecordPayload = MutableMap<String, FieldValueEncoder>
+
+fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
     for ((columnId, value) in this) {
-        val encodedValue = value.value?.let {value.jsonEncoder.encode(value.value)} ?: NullCodec.encode(null)
+        val encodedValue = value.fieldValue?.let {value.jsonEncoder.encode(value.fieldValue)} ?: NullCodec.encode(null)
         parentNode.set<JsonNode>(columnId, encodedValue)
     }
     return parentNode
@@ -174,12 +177,12 @@ data object NullProtoEncoder : ProtoEncoder<Any?> {
 }
 
 typealias AnyProtoEncoder = TextProtoEncoder
-fun InternalRow.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Builder, valueVBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder): AirbyteRecordMessageProtobuf.Builder {
+fun NativeRecordPayload.toProto(recordMessageBuilder:  AirbyteRecordMessageProtobuf.Builder, valueVBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder
         .apply {
             this@toProto.toSortedMap().onEachIndexed { index, entry ->
                 setData(index,
-                    entry.value.value?.let { entry.value.jsonEncoder.toProto().encode(valueVBuilder.clear(), entry.value.value!!)}
+                    entry.value.fieldValue?.let { entry.value.jsonEncoder.toProto().encode(valueVBuilder.clear(), entry.value.fieldValue!!)}
                         ?: NullProtoEncoder.encode(valueVBuilder.clear(), null))
             }
         }

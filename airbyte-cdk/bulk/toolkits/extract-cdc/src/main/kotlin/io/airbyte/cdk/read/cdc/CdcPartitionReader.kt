@@ -9,7 +9,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
-import io.airbyte.cdk.output.sockets.InternalRow
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
@@ -71,7 +71,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         (1..length).map { charPool.random() }.joinToString("")
 
     protected var partitionId: String = generatePartitionId(4)
-    private lateinit var acceptors: Map<StreamIdentifier, (InternalRow) -> Unit>
+    private lateinit var acceptors: Map<StreamIdentifier, (NativeRecordPayload) -> Unit>
     interface AcquiredResource: AutoCloseable {
         val resource: Resource.Acquired?
     }
