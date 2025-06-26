@@ -499,6 +499,12 @@ class SyncManufacturingShopOrders(ExactSyncStream):
     endpoint = "sync/Manufacturing/ShopOrders"
 
 
+class SyncPayrollEmployments(ExactSyncStream):
+    """Stream to sync the endpoint `sync/Payroll/Employments`"""
+
+    endpoint = "/sync/Payroll/Employments"
+
+
 class SyncProjectProjectPlanning(ExactSyncStream):
     """Stream to sync the endpoint `sync/Project/ProjectPlanning`"""
 
