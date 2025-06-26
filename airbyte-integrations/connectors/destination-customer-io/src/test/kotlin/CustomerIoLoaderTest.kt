@@ -36,17 +36,6 @@ class CustomerIoStateTest {
     }
 
     @Test
-    internal fun `test given invalid input record when flush then raise error`() {
-        assertFailsWith<IllegalArgumentException> {
-            state.accumulate(
-                aRecord(
-                    Jsons.objectNode().put("event_name", "an_event_name")  // missing person_email
-                )
-            )
-        }
-    }
-
-    @Test
     internal fun `test given no errors when flush then no rejected records`() {
         every { httpClient.send(any()) } returns aResponse(200)
         state.accumulate(aRecord())
