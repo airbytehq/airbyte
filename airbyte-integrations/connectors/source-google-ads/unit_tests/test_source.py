@@ -117,7 +117,7 @@ def test_chunk_date_range():
 
 
 def test_streams_count(config, mock_get_customers):
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     streams = source.streams(config)
     expected_streams_number = 30
     print(f"{config=} \n{streams=}")
@@ -125,7 +125,7 @@ def test_streams_count(config, mock_get_customers):
 
 
 def test_read_missing_stream(config, mock_get_customers):
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
 
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -156,8 +156,8 @@ def test_read_missing_stream(config, mock_get_customers):
         ("SELECT segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign", False),
     ),
 )
-def test_metrics_in_custom_query(query, is_metrics_in_query):
-    source = SourceGoogleAds()
+def test_metrics_in_custom_query(config, query, is_metrics_in_query):
+    source = SourceGoogleAds(config, None, None)
     assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
 
 
@@ -379,9 +379,9 @@ def test_google_type_conversion(mock_fields_meta_data, customers):
         assert desired_mapping[prop] == value.get("type"), f"{prop} should be {value}"
 
 
-def test_check_connection_should_pass_when_config_valid(mocker):
+def test_check_connection_should_pass_when_config_valid(config, mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     check_successful, message = source.check_connection(
         logging.getLogger("airbyte"),
         {
@@ -420,8 +420,8 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     assert message is None
 
 
-def test_end_date_is_not_in_the_future(customers):
-    source = SourceGoogleAds()
+def test_end_date_is_not_in_the_future(config, customers):
+    source = SourceGoogleAds(config, None, None)
     config = source.get_incremental_stream_config(
         None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}, customers
     )
@@ -503,7 +503,7 @@ def mock_send_request(query: str, customer_id: str, login_customer_id: str = "de
         ),  # Non-empty filter, expect filtered customers
     ],
 )
-def test_get_customers(mocker, customer_status_filter, expected_ids, send_request_calls):
+def test_get_customers(config, mocker, customer_status_filter, expected_ids, send_request_calls):
     mock_google_api = Mock()
 
     mock_google_api.get_accessible_accounts.return_value = ["123", "789"]
@@ -512,7 +512,7 @@ def test_get_customers(mocker, customer_status_filter, expected_ids, send_reques
 
     mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
 
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
 
     customers = source.get_customers(mock_google_api, mock_config)
 
