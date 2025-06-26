@@ -3,7 +3,7 @@
 ## Upgrading to 3.0.0
 
 This is a breaking change for **Products** stream.
-This version introduces the `plans` stream for replacement of products stream accordinf to the official [notice](https://docs.getrecharge.com/docs/deprecation-notice-products-v2021-01) from recharge.
+This version introduces the `plans` stream for replacement of products stream according to the official [notice](https://docs.getrecharge.com/docs/deprecation-notice-products-v2021-01) from recharge.
 
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version.
 
