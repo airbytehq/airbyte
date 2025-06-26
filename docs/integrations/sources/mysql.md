@@ -230,6 +230,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.0       | 2025-06-26 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Boosted Mode
 | 3.11.21     | 2025-05-30 | [61014](https://github.com/airbytehq/airbyte/pull/61014)   | Fix merge error. Point to a published CDK
 | 3.11.20     | 2025-05-29 | [60218](https://github.com/airbytehq/airbyte/pull/60218)   | Testing concurrent read.
 | 3.11.19     | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.
