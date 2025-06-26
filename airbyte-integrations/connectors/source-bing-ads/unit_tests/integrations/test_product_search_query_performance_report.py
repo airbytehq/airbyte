@@ -115,22 +115,75 @@ class TestProductSearchQueryPerformanceReportHourlyStream(HourlyReportsTestWithS
         )
 
 
-class TestProductSearchQueryPerformanceReportWeeklyStream(TestSuiteReportStream):
+class TestProductSearchQueryPerformanceReportWeeklyStream(TestBaseProductSearchQueryPerformanceReport):
     stream_name = "product_search_query_performance_report_weekly"
     report_file = "product_search_query_performance_report_weekly"
-    records_number = 3
-    second_read_records_number = 5
-    state_file = "product_dimension_performance_report_weekly_state"
+    records_number = 5
     incremental_report_file = "product_search_query_performance_report_weekly_incremental"
-    first_read_state = {"180535609": {"TimePeriod": "2023-12-25"}}
-    second_read_state = {"180535609": {"TimePeriod": "2024-01-29"}}
+    incremental_report_file_with_records_further_cursor = (
+        "product_search_query_performance_report_weekly_incremental_with_records_further_cursor"
+    )
+    report_file_with_records_further_start_date = "product_search_query_performance_report_weekly_with_records_further_start_date"
+
+    state_file = "product_search_query_performance_report_state"
+    state_file_legacy = "product_search_query_performance_report_state"
+
+    def mock_report_apis(self):
+        super().mock_report_apis()
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Weekly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Weekly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Weekly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Weekly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
 
 
-class TestProductSearchQueryPerformanceReportMonthlyStream(TestSuiteReportStream):
+class TestProductSearchQueryPerformanceReportMonthlyStream(TestBaseProductSearchQueryPerformanceReport):
     stream_name = "product_search_query_performance_report_monthly"
     report_file = "product_search_query_performance_report_monthly"
     records_number = 6
-    state_file = "product_search_query_performance_report_monthly_state"
     incremental_report_file = "product_search_query_performance_report_monthly_incremental"
-    first_read_state = {"180535609": {"TimePeriod": "2023-09-01"}}
-    second_read_state = {"180535609": {"TimePeriod": "2024-03-01"}}
+    incremental_report_file_with_records_further_cursor = (
+        "product_search_query_performance_report_monthly_incremental_with_records_further_cursor"
+    )
+    report_file_with_records_further_start_date = "product_search_query_performance_report_monthly_with_records_further_start_date"
+
+    state_file = "product_search_query_performance_report_state"
+    state_file_legacy = "product_search_query_performance_report_state"
+
+    def mock_report_apis(self):
+        super().mock_report_apis()
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Monthly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Monthly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Monthly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "ProductSearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "ProductSearchQueryPerformanceReportRequest", "Aggregation": "Monthly", "Columns": ["TimePeriod", "AccountId", "AccountNumber", "AccountName", "AdId", "AdGroupId", "AdGroupName", "CampaignId", "CampaignName", "DestinationUrl", "DeviceType", "DeviceOS", "Language", "SearchQuery", "Network", "MerchantProductId", "Title", "ClickTypeId", "TotalClicksOnAdElements", "ClickType", "AdGroupCriterionId", "ProductGroup", "PartitionType", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "Conversions", "ConversionRate", "Assists", "CostPerAssist", "Revenue", "CostPerConversion", "RevenuePerConversion", "RevenuePerAssist", "CustomerId", "CustomerName", "AssistedImpressions", "AssistedClicks", "AssistedConversions", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AssistedConversionsQualified", "AllConversionsQualified", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
