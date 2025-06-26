@@ -242,12 +242,9 @@ class BigqueryDirectLoadNativeTableOperations(
         val originalTableId = "`$projectId`.`${tableName.namespace}`.`${tableName.name}`"
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
         val columnList =
-            (Meta.COLUMN_NAMES + columnsToRetain + columnsToChange.map { it.name }).joinToString(
-                ","
-            ) { "`$it`" }
+            (columnsToRetain + columnsToChange.map { it.name }).joinToString(",") { "`$it`" }
         val valueList =
-            (Meta.COLUMN_NAMES +
-                    columnsToRetain.map { "`$it`" } +
+            (columnsToRetain.map { "`$it`" } +
                     columnsToChange.map {
                         getColumnCastStatement(
                             columnName = it.name,
