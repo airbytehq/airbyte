@@ -34,6 +34,6 @@ data:
     sl: 100
     ql: 100
     isEnterprise: true
-  supportLevel: archived
+  supportLevel: certified
   supportsDataActivation: true
 metadataSpecVersion: "1.0"
