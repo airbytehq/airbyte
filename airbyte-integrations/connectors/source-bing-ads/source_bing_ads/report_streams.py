@@ -16,24 +16,6 @@ from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, Bi
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
 
 
-class BudgetSummaryReport(BingAdsReportingServiceStream):
-    report_name: str = "BudgetSummaryReport"
-    report_aggregation = None
-    cursor_field = "Date"
-    report_schema_name = "budget_summary_report"
-    primary_key = "Date"
-
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    @staticmethod
-    @transformer.registerCustomTransform
-    def custom_transform_date_rfc3339(original_value, field_schema):
-        if original_value and "format" in field_schema and field_schema["format"] == "date":
-            transformed_value = transform_date_format_to_rfc_3339(original_value)
-            return transformed_value
-        return original_value
-
-
 class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AccountPerformanceReport"
     report_schema_name = "account_performance_report"
@@ -65,35 +47,6 @@ class AccountPerformanceReportWeekly(AccountPerformanceReport):
 
 
 class AccountPerformanceReportMonthly(AccountPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class AccountImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    Report source: https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13
-    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
-    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
-    """
-
-    report_name: str = "AccountPerformanceReport"
-    report_schema_name = "account_impression_performance_report"
-    primary_key = None
-
-
-class AccountImpressionPerformanceReportHourly(HourlyReportTransformerMixin, AccountImpressionPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "account_impression_performance_report_hourly"
-
-
-class AccountImpressionPerformanceReportDaily(AccountImpressionPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AccountImpressionPerformanceReportWeekly(AccountImpressionPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AccountImpressionPerformanceReportMonthly(AccountImpressionPerformanceReport):
     report_aggregation = "Monthly"
 
 
@@ -132,41 +85,6 @@ class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class UserLocationPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "UserLocationPerformanceReport"
-    report_schema_name = "user_location_performance_report"
-    primary_key = [
-        "AccountId",
-        "AdGroupId",
-        "CampaignId",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "DeviceType",
-        "Language",
-        "LocationId",
-        "QueryIntentLocationId",
-        "TimePeriod",
-        "TopVsOther",
-    ]
-
-
-class UserLocationPerformanceReportHourly(HourlyReportTransformerMixin, UserLocationPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "user_location_performance_report_hourly"
-
-
-class UserLocationPerformanceReportDaily(UserLocationPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
-    report_aggregation = "Monthly"
-
-
 class ProductSearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     """
     https://learn.microsoft.com/en-us/advertising/reporting-service/productsearchqueryperformancereportrequest?view=bingads-13
@@ -202,74 +120,6 @@ class ProductSearchQueryPerformanceReportWeekly(ProductSearchQueryPerformanceRep
 
 
 class ProductSearchQueryPerformanceReportMonthly(ProductSearchQueryPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class GoalsAndFunnelsReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13
-    """
-
-    report_name: str = "GoalsAndFunnelsReport"
-    report_schema_name = "goals_and_funnels_report"
-    primary_key = [
-        "GoalId",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "DeviceType",
-        "DeviceOS",
-        "AdGroupId",
-    ]
-
-
-class GoalsAndFunnelsReportHourly(HourlyReportTransformerMixin, GoalsAndFunnelsReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "goals_and_funnels_report_hourly"
-
-
-class GoalsAndFunnelsReportDaily(GoalsAndFunnelsReport):
-    report_aggregation = "Daily"
-
-
-class GoalsAndFunnelsReportWeekly(GoalsAndFunnelsReport):
-    report_aggregation = "Weekly"
-
-
-class GoalsAndFunnelsReportMonthly(GoalsAndFunnelsReport):
-    report_aggregation = "Monthly"
-
-
-class AudiencePerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/audienceperformancereportrequest?view=bingads-13
-    """
-
-    report_name: str = "AudiencePerformanceReport"
-    report_schema_name = "audience_performance_report"
-    primary_key = [
-        "AudienceId",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-    ]
-
-
-class AudiencePerformanceReportHourly(HourlyReportTransformerMixin, AudiencePerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "audience_performance_report_hourly"
-
-
-class AudiencePerformanceReportDaily(AudiencePerformanceReport):
-    report_aggregation = "Daily"
-
-
-class AudiencePerformanceReportWeekly(AudiencePerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class AudiencePerformanceReportMonthly(AudiencePerformanceReport):
     report_aggregation = "Monthly"
 
 
