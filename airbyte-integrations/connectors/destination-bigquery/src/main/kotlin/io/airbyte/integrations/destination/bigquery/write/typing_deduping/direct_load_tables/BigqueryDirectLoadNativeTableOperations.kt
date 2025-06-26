@@ -95,7 +95,7 @@ class BigqueryDirectLoadNativeTableOperations(
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1",
+                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
                 ),
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
@@ -243,11 +243,11 @@ class BigqueryDirectLoadNativeTableOperations(
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
         val columnList =
             (Meta.COLUMN_NAMES + columnsToRetain + columnsToChange.map { it.name }).joinToString(
-                ",",
-            )
+                ","
+            ) { "`$it`" }
         val valueList =
             (Meta.COLUMN_NAMES +
-                    columnsToRetain +
+                    columnsToRetain.map { "`$it`" } +
                     columnsToChange.map {
                         getColumnCastStatement(
                             columnName = it.name,
@@ -323,11 +323,11 @@ class BigqueryDirectLoadNativeTableOperations(
             }
 
         val initialAlterations =
-            columnsToRemove.map { name -> """DROP COLUMN $name""" } +
-                columnsToAdd.map { (name, type) -> """ADD COLUMN $name $type""" } +
+            columnsToRemove.map { name -> """DROP COLUMN `$name`""" } +
+                columnsToAdd.map { (name, type) -> """ADD COLUMN `$name` $type""" } +
                 // in the initial statement, we just add the temporary column.
                 typeChangePlans.map { plan ->
-                    """ADD COLUMN ${plan.tempColumnName} ${plan.newType}"""
+                    """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
                 }
         databaseHandler.executeWithRetries(
             """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
@@ -342,7 +342,7 @@ class BigqueryDirectLoadNativeTableOperations(
             val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
             try {
                 databaseHandler.executeWithRetries(
-                    """UPDATE $tableId SET $tempColumnName = $castStatement WHERE 1=1"""
+                    """UPDATE $tableId SET `$tempColumnName` = $castStatement WHERE 1=1"""
                 )
             } catch (e: Exception) {
                 val message =
@@ -369,8 +369,8 @@ class BigqueryDirectLoadNativeTableOperations(
             databaseHandler.executeWithRetries(
                 """
                 ALTER TABLE $tableId
-                  RENAME COLUMN $realColumnName TO $backupColumnName,
-                  RENAME COLUMN $tempColumnName TO $realColumnName
+                  RENAME COLUMN `$realColumnName` TO $backupColumnName,
+                  RENAME COLUMN `$tempColumnName` TO $realColumnName
                 """.trimIndent(),
             )
             databaseHandler.executeWithRetries(
