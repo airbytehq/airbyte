@@ -124,10 +124,7 @@ class S3DataLakeStreamLoader(
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
-                table
-                    .manageSnapshots()
-                    .replaceBranch(stagingBranchName, mainBranchName)
-                    .commit()
+                table.manageSnapshots().replaceBranch(stagingBranchName, mainBranchName).commit()
             }
         }
     }
