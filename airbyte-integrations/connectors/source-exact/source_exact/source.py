@@ -10,11 +10,14 @@ from source_exact.streams import (
     CRMAccountClassifications,
     ExactStream,
     SyncCRMAccounts,
+    SyncDeleted,
     SyncFinancialGLAccounts,
     SyncFinancialGLClassifications,
     SyncFinancialTransactionLines,
     SyncHRMSchedules,
+    SyncProjectProjects,
     SyncProjectTimeCostTransactions,
+    SyncSalesInvoiceSalesInvoices, ProjectInvoiceTerms,
 )
 
 
@@ -45,12 +48,16 @@ class SourceExact(AbstractSource):
         return [
             CRMAccountClassifications(config),
             CRMAccountClassificationNames(config),
+            ProjectInvoiceTerms(config),
             SyncCRMAccounts(config),
+            SyncDeleted(config),
             SyncFinancialGLAccounts(config),
             SyncFinancialGLClassifications(config),
-            SyncProjectTimeCostTransactions(config),
-            SyncHRMSchedules(config),
             SyncFinancialTransactionLines(config),
+            SyncProjectProjects(config),
+            SyncProjectTimeCostTransactions(config),
+            SyncSalesInvoiceSalesInvoices(config),
+            SyncHRMSchedules(config),
         ]
 
     def discover(self, logger: logging.Logger, config) -> AirbyteCatalog:
