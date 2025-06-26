@@ -48,7 +48,8 @@ class CustomerIoBeanFactory {
 
     @Singleton
     fun loadPipeline(
+        catalog: DestinationCatalog,
         dlqPipelineFactory: DlqPipelineFactory,
         httpClient: HttpClient,
-    ): LoadPipeline = dlqPipelineFactory.createPipeline(CustomerIoLoader(httpClient))
+    ): LoadPipeline = dlqPipelineFactory.createPipeline(CustomerIoLoader(httpClient, catalog))
 }
