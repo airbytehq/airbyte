@@ -331,6 +331,14 @@ class ExactOtherStream(ExactStream):
     cursor_field = "Modified"
 
 
+class FinancialReceivablesList(ExactOtherStream):
+    """Stream to sync the endpoint `read/financial/ReceivablesList`"""
+
+    endpoint = "read/financial/ReceivablesList"
+    primary_key = "HID"
+    cursor_field = None
+
+
 class HRMDepartments(ExactOtherStream):
     """Stream to sync the endpoint `hrm/departments`"""
 
