@@ -337,6 +337,12 @@ class HRMDepartments(ExactOtherStream):
     endpoint = "hrm/Departments"
 
 
+class PayrollActiveEmployments(ExactOtherStream):
+    """Stream to sync the endpoint `payroll/ActiveEmployments`"""
+
+    endpoint = "payroll/ActiveEmployments"
+
+
 class SyncCashflowPaymentTerms(ExactSyncStream):
     """Stream to sync the endpoint `sync/Cashflow/PaymentTerms`"""
 
