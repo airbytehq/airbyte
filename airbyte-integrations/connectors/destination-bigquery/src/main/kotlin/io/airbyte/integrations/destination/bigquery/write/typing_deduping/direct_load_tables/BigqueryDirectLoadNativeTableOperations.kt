@@ -343,7 +343,7 @@ class BigqueryDirectLoadNativeTableOperations(
                 )
             } catch (e: Exception) {
                 val message =
-                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table. Details: ${e.message}"
+                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table, or refresh the stream and remove existing records. Details: ${e.message}"
                 logger.warn(e) { message }
                 // no rollback logic. On the next sync, we'll see the temp columns in columnsToDrop.
                 throw ConfigErrorException(message, e)
