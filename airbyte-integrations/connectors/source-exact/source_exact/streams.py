@@ -589,6 +589,12 @@ class CRMAccountClassificationNames(ExactOtherStream):
     endpoint = "crm/AccountClassificationNames"
 
 
+class ProjectInvoiceTerms(ExactOtherStream):
+    """Stream to sync the endpoint `project/ProjectInvoiceTerms`"""
+
+    endpoint = "project/InvoiceTerms"
+
+
 class RequestBodyException(Exception):
     """
     Raised when there are issues in configuring a request body
