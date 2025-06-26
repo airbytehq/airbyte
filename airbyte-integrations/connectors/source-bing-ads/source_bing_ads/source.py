@@ -87,14 +87,13 @@ class SourceBingAds(YamlDeclarativeSource):
         declarative_streams = super().streams(config)
 
         client = Client(**config)
-        streams = []
 
         reports = (
             "ProductSearchQueryPerformanceReport",
             "SearchQueryPerformanceReport",
         )
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
-        streams.extend([eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)])
+        streams= [eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)]
 
         custom_reports = self.get_custom_reports(config, client)
         streams.extend(custom_reports)
