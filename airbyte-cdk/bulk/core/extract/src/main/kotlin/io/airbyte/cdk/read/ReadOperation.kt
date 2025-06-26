@@ -10,7 +10,7 @@ import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.NonSocketOutputConsumer
+import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -35,7 +35,7 @@ class ReadOperation(
     val configuredCatalog: ConfiguredAirbyteCatalog,
     val inputState: InputState,
     val stateManagerFactory: StateManagerFactory,
-    val outputConsumer: NonSocketOutputConsumer,
+    val outputConsumer: StandardOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactoriesSupplier:

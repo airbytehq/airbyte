@@ -13,7 +13,7 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium
-import io.airbyte.cdk.output.NonSocketOutputConsumer
+import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.InternalRow
 import io.airbyte.cdk.output.sockets.NullProtoEncoder
@@ -41,7 +41,7 @@ import java.time.ZoneOffset
  */
 sealed class FeedBootstrap<T : Feed>(
     /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
-    val outputConsumer: NonSocketOutputConsumer,
+    val outputConsumer: StandardOutputConsumer,
     /**
      * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
      */
@@ -431,7 +431,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         /** [FeedBootstrap] factory method. */
         fun create(
-            outputConsumer: NonSocketOutputConsumer,
+            outputConsumer: StandardOutputConsumer,
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
@@ -483,7 +483,7 @@ enum class FieldValueChange {
 
 /** [FeedBootstrap] implementation for [Global] feeds. */
 class GlobalFeedBootstrap(
-    outputConsumer: NonSocketOutputConsumer,
+    outputConsumer: StandardOutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
@@ -493,7 +493,7 @@ class GlobalFeedBootstrap(
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
-    outputConsumer: NonSocketOutputConsumer,
+    outputConsumer: StandardOutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     stream: Stream,

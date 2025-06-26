@@ -23,7 +23,7 @@ import java.time.Clock
 class OutputMessageRouter(
     private val recordsDataChannelMedium: DataChannelMedium,
     private val recordsDataChannelFormat: DataChannelFormat,
-    private val nonSocketOutputConsumer: NonSocketOutputConsumer,
+    private val standardOutputConsumer: StandardOutputConsumer,
     private val additionalProperties: Map<String, String>,
     private val feedBootstrap: FeedBootstrap<*>,
     private val acquiredResources: Map<ResourceType, Resource.Acquired>, )
@@ -117,7 +117,7 @@ class OutputMessageRouter(
                 }
             }
             DataChannelMedium.STDIO -> {
-                nonSocketOutputConsumer.accept(airbyteMessage)
+                standardOutputConsumer.accept(airbyteMessage)
             }
         }
 
@@ -136,7 +136,7 @@ class OutputMessageRouter(
                 }
             }
             DataChannelMedium.STDIO -> {
-                nonSocketOutputConsumer.accept(airbyteMessage)
+                standardOutputConsumer.accept(airbyteMessage)
             }
         }
     }
