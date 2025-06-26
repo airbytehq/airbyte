@@ -1489,6 +1489,34 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
+def test_stream_contributor_activity_parse_empty_author(caplog):
+    repository_args = {
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ContributorActivity(**repository_args)
+    contributions_without_author = [
+        {
+            "author": None,
+            "total": 0,
+            "weeks": [{"w": 1713052800, "a": 0, "d": 0, "c": 0}, {"w": 1713657600, "a": 0, "d": 0, "c": 0}],
+            "repository": "airbytehq/airbyte",
+        }
+    ]
+    response_body = json.dumps(contributions_without_author)
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        body=response_body,
+        status=200,
+    )
+    records = list(read_full_refresh(stream))
+    # expected record should not contain author field as it is None
+    del contributions_without_author[0]["author"]
+    assert records == contributions_without_author
+
+
+@responses.activate
 def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response):
     responses.add(
         responses.GET,
