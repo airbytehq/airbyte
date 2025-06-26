@@ -457,7 +457,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: ${{ job.name }}
+          name: Connector CI Checks Summary
           repo: "airbytehq/airbyte" # Post to the main repo, not the fork
           sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
