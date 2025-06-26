@@ -12,7 +12,6 @@ from source_bing_ads.base_streams import Accounts
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     BingAdsReportingServiceStream,
-    BudgetSummaryReport,
     CustomReport,
 )
 
@@ -79,9 +78,7 @@ class SourceBingAds(YamlDeclarativeSource):
         declarative_streams = super().streams(config)
 
         client = Client(**config)
-        streams = [
-            BudgetSummaryReport(client, config),
-        ]
+        streams = []
 
         custom_reports = self.get_custom_reports(config, client)
         streams.extend(custom_reports)
