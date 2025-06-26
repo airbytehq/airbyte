@@ -78,6 +78,14 @@ definitions:
           http_method: GET
           request_parameters:
             "showBasketProducts\t": "True"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -185,19 +193,19 @@ metadata:
     transactions: true
   testedStreams:
     campaign_performance:
+      hasRecords: true
       streamHash: 5ce77ed7ebbff66c788adad09a8e642135d257a0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     transactions:
-      streamHash: 8d31eb71808aeb2b291e460cbc88cebe178119d9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: b9a699f30e9a1f5525289913689d4d12ca8e171c
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developer.awin.com/apidocs/for-advertisers
 
@@ -308,6 +316,7 @@ schemas:
   transactions:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -524,4 +533,3 @@ schemas:
     required:
       - id
       - transactionDate
-    additionalProperties: true
