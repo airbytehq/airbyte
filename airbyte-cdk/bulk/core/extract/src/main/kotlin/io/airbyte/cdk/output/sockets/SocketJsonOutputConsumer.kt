@@ -21,23 +21,9 @@ class SocketJsonOutputConsumer(
     private val additionalProperties: Map<String, String>,
 ) : OutputConsumer(clock) {
     private val log = KotlinLogging.logger {}
-    private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
+    private val buffer = ByteArrayOutputStream()
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(buffer)
-
-    /*
-        override fun accept(airbyteMessage: AirbyteMessage) {
-    //        socket.outputStream?.write("aaaa".toByteArray()) // TEMP
-            // This method effectively println's its JSON-serialized argument.
-            // Using println is not particularly efficient, however.
-            // To improve performance, this method accumulates RECORD messages into a buffer
-            // before writing them to standard output in a batch.
-            if (airbyteMessage.type == AirbyteMessage.Type.RECORD) {
-                // RECORD messages undergo a different serialization scheme.
-                accept(airbyteMessage.record)
-            }
-        }
-    */
 
     override fun accept(airbyteMessage: AirbyteMessage) {
         // This method effectively println's its JSON-serialized argument.
@@ -81,8 +67,6 @@ class SocketJsonOutputConsumer(
         if (buffer.size() > 0) {
             buffer.writeTo(dataChannel.outputStream)
             dataChannel.outputStream?.write(System.lineSeparator().toByteArray())
-//            stdout.println(buffer.toString(Charsets.UTF_8))
-//            stdout.flush()
             buffer.reset()
         }
     }
@@ -102,10 +86,8 @@ class SocketJsonOutputConsumer(
         synchronized(this) {
             // Write a newline character to the buffer if it's not empty.
             withLockMaybeWriteNewline()
-            // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
             buffer.write(template.prefix)
             // Serialize the record data ObjectNode to JSON, writing it to the buffer.
-
             Jsons.writeTree(jsonGenerator, record.data)
             jsonGenerator.flush()
             // If the record has a AirbyteRecordMessageMeta instance set,
@@ -116,7 +98,6 @@ class SocketJsonOutputConsumer(
                 sequenceWriter.write(meta)
                 sequenceWriter.flush()
             }
-            // Write ',"emitted_at":...}}'.
             buffer.write(template.suffix)
             // Flush the buffer to stdout only once it has reached a certain size.
             // Flushing to stdout incurs some overhead (mutex, syscall, etc.)

@@ -58,6 +58,7 @@ class RootReader(
         resourceReleaseFlow.update { it + 1 }
     }
 
+    // We currently only support STDIO with JSONL format.
     private fun ensureDataChannelMediumFormat() {
         if (dataChannelMedium == DataChannelMedium.STDIO) {
             if (dataChannelFormat != DataChannelFormat.JSONL) {

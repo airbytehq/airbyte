@@ -39,7 +39,7 @@ abstract class JdbcPartitionsCreator<
         override suspend fun run() {}
 
         override fun checkpoint(): PartitionReadCheckpoint =
-            PartitionReadCheckpoint(partition.completeState, 0, "") // TEMP
+            PartitionReadCheckpoint(partition.completeState, 0)
 
         override fun releaseResources() {}
     }

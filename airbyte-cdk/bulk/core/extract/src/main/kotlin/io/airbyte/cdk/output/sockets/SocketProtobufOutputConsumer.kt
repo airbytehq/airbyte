@@ -8,6 +8,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.time.Clock
 
+// Emits Airbyte protobuf messages to a socket data channel.
+// TODO: optimize record message serialization by creating the bytes surrounding a record data once
 class SocketProtobufOutputConsumer(
     private val dataChannel: SocketDataChannel,
     clock: Clock,
@@ -37,16 +39,6 @@ class SocketProtobufOutputConsumer(
                     .setAirbyteProtocolMessage(String(b.toByteArray()))
                     .build()
                 pm.writeDelimitedTo(buffer)
-
-//                // Write a newline character to the buffer if it's not empty.
-//                withLockMaybeWriteNewline()
-//                // Non-RECORD AirbyteMessage instances are serialized and written to the buffer
-//                // using standard jackson object mapping facilities.
-//                sequenceWriter.write(airbyteMessage)
-//                sequenceWriter.flush()
-//                // Such messages don't linger in the buffer, they are flushed to stdout immediately,
-//                // along with whatever might have already been lingering inside.
-//                // This prints a newline after the message.
                 log.info { "AirbyteMessage sent over SOCKET: ${String(b.toByteArray())}" }
                 withLockFlush()
             }
@@ -65,9 +57,6 @@ class SocketProtobufOutputConsumer(
     private fun withLockFlush() {
         if (buffer.size() > 0) {
             buffer.writeTo(dataChannel.outputStream)
-//            socket.outputStream?.write(System.lineSeparator().toByteArray())
-//            stdout.println(buffer.toString(Charsets.UTF_8))
-//            stdout.flush()
             buffer.reset()
         }
     }

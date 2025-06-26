@@ -22,6 +22,8 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
@@ -62,8 +64,6 @@ import kotlin.random.nextInt
 import org.apache.kafka.connect.json.JsonConverterConfig
 import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
-import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.FieldValueEncoder
 
 @Singleton
 class MySqlSourceDebeziumOperations(

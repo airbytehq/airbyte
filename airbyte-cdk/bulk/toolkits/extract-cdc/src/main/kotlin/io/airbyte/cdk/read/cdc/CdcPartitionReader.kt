@@ -41,7 +41,6 @@ import org.apache.kafka.connect.source.SourceRecord
 /** [PartitionReader] implementation for CDC with Debezium. */
 class CdcPartitionReader<T : Comparable<T>>(
     val resourceAcquirer: ResourceAcquirer,
-//    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val debeziumProperties: Map<String, String>,
@@ -106,7 +105,7 @@ class CdcPartitionReader<T : Comparable<T>>(
             feedBootstrap.dataChannelMedium,
             feedBootstrap.dataChannelFormat,
             feedBootstrap.outputConsumer,
-            mapOf("partition_id" to partitionId), // TEMP
+            mapOf("partition_id" to partitionId),
             feedBootstrap,
             acquiredResources.get().filter { it.value.resource != null }.map { it.key to it.value.resource!! }.toMap()
         )
@@ -230,12 +229,6 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // Sometimes, presumably due to bugs in Debezium, the value isn't valid JSON.
                 return EventType.VALUE_JSON_INVALID
             }
-/*
-            val streamRecordConsumer:   =
-                findStreamRecordConsumer(event.key, event.value)
-                // Ignore events which can't be mapped to a stream.
-                ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
-*/
             val streamId = findStreamIfByRecord(event.key, event.value)
             val stream: Stream = feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId } as? Stream
                 ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID

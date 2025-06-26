@@ -117,17 +117,10 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
-    private val log = KotlinLogging.logger {}
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
-    lateinit var dur: Instant
-
     override suspend fun run() {
-        synchronized(this) {
-            if (::dur.isInitialized.not()) { dur = Instant.now() }
-        }
-
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
         We check for elapsed duration before reading and not while because
@@ -147,14 +140,10 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-//                    numRecords.incrementAndGet()
-                    if (numRecords.incrementAndGet() % 500_000 == 0L) {
-                        log.info { "*** Read $numRecords records from partition $partitionId" }
-                    }
+                    numRecords.incrementAndGet()
                 }
             }
         runComplete.set(true)
-        log.info { "*** --------------- Partition time: ${Duration.between(dur, Instant.now()).toKotlinDuration()} ---------------" }
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {

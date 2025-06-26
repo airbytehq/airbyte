@@ -161,15 +161,20 @@ interface PartitionReader {
      */
     fun releaseResources()
 
+    // A thread safe auxilery queue shared by all parition reader that is used to emit over socket any
+    // pending state and stream status messages. This is done in order to better utilize sockets that are already
+    // Acquired for partitions readers.
     companion object {
         val pendingStates: ConcurrentLinkedQueue</*AirbyteStateMessage*/Any> = ConcurrentLinkedQueue()
     }
 }
 
+// Records in socket mode bear a unique partition if so that a destination can associate records to a state
+// That has the same partition id.
 data class PartitionReadCheckpoint(
     val opaqueStateValue: OpaqueStateValue,
     val numRecords: Long,
-    val partitionId: String?,
+    val partitionId: String? = null,
 )
 
 /** A [PartitionReader] with no time limit for its execution. */

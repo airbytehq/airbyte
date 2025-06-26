@@ -159,15 +159,10 @@ class JdbcSelectQuerier(
                 }
                 colIdx++
             }
-
-
-
             // Flag that the current row has been read before returning.
             isReady = false
-
             return resultRow
         }
-
 
         override fun close() {
             // close() is idempotent

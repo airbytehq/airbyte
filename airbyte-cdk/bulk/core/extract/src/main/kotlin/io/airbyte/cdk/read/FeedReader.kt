@@ -304,6 +304,7 @@ class FeedReader(
                     val (opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?) =
                         pendingResult.getOrThrow()
                     root.stateManager.scoped(feed).set(opaqueStateValue, numRecords, partitionId, when (dataChannelMedium) {
+                        // State messages in SOCKET mode have an incrementing integer ID.
                       DataChannelMedium.SOCKET -> stateId.getAndIncrement()
                       DataChannelMedium.STDIO -> null
                     } )

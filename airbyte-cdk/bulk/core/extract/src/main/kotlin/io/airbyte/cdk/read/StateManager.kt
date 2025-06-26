@@ -5,6 +5,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.StateForCheckpoint
+import io.airbyte.cdk.read.StateManager.StateManagerScopedToFeed
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -86,18 +87,11 @@ class StateManager(
      * Updates the internal state of the [StateManager] to ensure idempotency (no redundant messages
      * are emitted).
      */
-    fun checkpoint(): List<AirbyteStateMessage> {
-        val a: List<AirbyteStateMessage> = listOfNotNull(global?.checkpoint())
-        val b: List<AirbyteStateMessage> = nonGlobal
-            .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } }.flatten()// TEMP
-        return a + b
-/*
-        return listOfNotNull(global?.checkpoint()) +
+    fun checkpoint(): List<AirbyteStateMessage> =
+        listOfNotNull(global?.checkpoint()) +
             nonGlobal
-                .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } } // TEMP
-*/
+                .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } }.flatten()
 
-    }
 
     data class StateForCheckpointWithPartitionId(
         val pendingState: OpaqueStateValue,
@@ -110,8 +104,10 @@ class StateManager(
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
         initialState: OpaqueStateValue?,
-    ) : StateManager.StateManagerScopedToFeed {
+    ) : StateManagerScopedToFeed {
         private var currentStateValue: OpaqueStateValue? = initialState
+        // Rather than the highest pending state, we want to buffer and emit all pending states
+        // This is required by destinations in Socket mode
         private var pendingStateValues: MutableList<StateManager.StateForCheckpointWithPartitionId> = mutableListOf()
         @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
 
@@ -223,13 +219,14 @@ class StateManager(
         fun checkpoint(): AirbyteStateMessage? {
             var shouldCheckpoint = false
             var totalNumRecords = 0L
-            val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().get(0)
+            // CDC partitions emit a single checkpoint
+            val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().first()
             totalNumRecords += globalStateForCheckpoint.numRecords
             if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
             val streamStates = mutableListOf<AirbyteStreamState>()
             for ((_, streamStateManager) in streamStateManagers) {
                 val streamStateForCheckpoint: StateForCheckpoint =
-                    streamStateManager.takeForCheckpoint().get(0) // TODO: check here for CDC
+                    streamStateManager.takeForCheckpoint().first()
                 totalNumRecords += streamStateForCheckpoint.numRecords
                 if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
                 val streamID: StreamIdentifier = streamStateManager.feed.id
@@ -289,6 +286,7 @@ class StateManager(
                         AirbyteStateStats()
                             .withRecordCount(it.numRecords.toDouble())
                     )
+                    // Only add id and partition_id if they are not null (stdio mode compatibility).
                     .apply { it.id?.let { id -> withAdditionalProperty("id", id) } }
                     .apply { it.partitionId?.let { partitionId -> withAdditionalProperty("partition_id", partitionId) } }
                 stateMessages.add(airbyteStateMessage)

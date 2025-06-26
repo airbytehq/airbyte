@@ -10,7 +10,6 @@ import io.airbyte.cdk.read.FieldValueChange
 
 /** [DeserializedRecord]s are used to generate Airbyte RECORD messages. */
 data class DeserializedRecord(
-//    val data: ObjectNode,
     val data: NativeRecordPayload,
     val changes: Map<Field, FieldValueChange>,
 )

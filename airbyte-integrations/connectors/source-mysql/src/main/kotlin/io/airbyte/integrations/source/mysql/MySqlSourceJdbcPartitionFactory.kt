@@ -494,7 +494,7 @@ class MySqlSourceJdbcPartitionFactory(
                 streamState,
                 checkpointColumns,
                 listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
-                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) }, // TODO: check here
+                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
             )
         }
     }
