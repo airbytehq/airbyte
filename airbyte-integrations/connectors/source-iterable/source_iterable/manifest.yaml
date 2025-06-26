@@ -13,7 +13,7 @@ spec:
         type: "string"
         title: "API Key"
         description: >-
-          Iterable API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/iterable\">docs</a> 
+          Iterable API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/iterable\">docs</a>
           for more information on how to obtain this key.
         airbyte_secret: true
         order: 0
@@ -21,7 +21,7 @@ spec:
         type: "string"
         title: "Start Date"
         description: >-
-          The date from which you'd like to replicate data for Iterable, in the format YYYY-MM-DDT00:00:00Z. 
+          The date from which you'd like to replicate data for Iterable, in the format YYYY-MM-DDT00:00:00Z.
           All data generated after this date will be replicated.
         examples: ["2021-04-01T00:00:00Z"]
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -322,6 +322,9 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%d %H:%M:%S %z"
         - "%Y-%m-%dT%H:%M:%S%z"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: source_iterable.components.UsersSchemaLoader
   - name: events
     primary_key: []
     retriever:
