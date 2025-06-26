@@ -1,0 +1,20 @@
+---
+airbyte:
+  connector:
+    output:
+      buffer-byte-size-threshold-for-flush: 4096
+
+    extract:
+      jdbc:
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1000
+
+    check:
+      jdbc:
+        queries:
+          - >-
+            SELECT 1 FROM WHERE 1 = 0;
