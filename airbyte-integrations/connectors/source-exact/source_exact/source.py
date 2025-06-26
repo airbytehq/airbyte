@@ -9,6 +9,7 @@ from source_exact.streams import (
     CRMAccountClassificationNames,
     CRMAccountClassifications,
     ExactStream,
+    HRMDepartments,
     ProjectInvoiceTerms,
     SyncCRMAccounts,
     SyncDeleted,
@@ -20,7 +21,7 @@ from source_exact.streams import (
     SyncPayrollEmployments,
     SyncProjectProjects,
     SyncProjectTimeCostTransactions,
-    SyncSalesInvoiceSalesInvoices, HRMDepartments,
+    SyncSalesInvoiceSalesInvoices,
 )
 
 
