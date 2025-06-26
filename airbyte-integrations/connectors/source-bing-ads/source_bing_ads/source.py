@@ -95,7 +95,5 @@ class SourceBingAds(YamlDeclarativeSource):
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
         streams = [eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)]
 
-        custom_reports = self.get_custom_reports(config, client)
-        streams.extend(custom_reports)
         streams.extend(declarative_streams)
         return streams
