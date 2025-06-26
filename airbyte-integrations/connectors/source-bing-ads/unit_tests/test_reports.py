@@ -23,8 +23,6 @@ from source_bing_ads.report_streams import (
     AccountPerformanceReportDaily,
     AccountPerformanceReportHourly,
     AccountPerformanceReportMonthly,
-    SearchQueryPerformanceReportDaily,
-    SearchQueryPerformanceReportHourly,
 )
 from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, BingAdsReportingServiceStream
 from source_bing_ads.reports.ad_performance_report import (
@@ -118,7 +116,6 @@ def test_get_updated_state_state_new_account():
     (
         AccountPerformanceReportDaily,
         AdPerformanceReportDaily,
-        SearchQueryPerformanceReportDaily,
     ),
 )
 def test_get_report_record_timestamp_daily(stream_report_daily_cls):
@@ -141,7 +138,6 @@ def test_get_report_record_timestamp_without_aggregation(config, mock_user_query
     (
         AccountPerformanceReportHourly,
         AdPerformanceReportHourly,
-        SearchQueryPerformanceReportHourly,
     ),
 )
 def test_get_report_record_timestamp_hourly(stream_report_hourly_cls):
@@ -344,11 +340,6 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
     [
         (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
         (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
-        (
-            SearchQueryPerformanceReportHourly,
-            "hourly_reports/search_query_performance.csv",
-            "hourly_reports/search_query_performance_records.json",
-        ),
     ],
 )
 @patch.object(source_bing_ads.source, "Client")
