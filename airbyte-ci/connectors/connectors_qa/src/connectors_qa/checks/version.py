@@ -1,8 +1,9 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import subprocess
+from pathlib import Path
 from typing import Any, Dict
 
-import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from connector_ops.utils import Connector  # type: ignore
@@ -41,15 +42,31 @@ class CheckVersionIncrement(Check):
 
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
-        # TODO: test out if this works on the private airbyte-enterprise repo - consider using git-based approach
-        github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
-        master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{consts.METADATA_FILE_NAME}"
-        response = requests.get(master_metadata_url)
-
-        # New connectors will not have a metadata file in master
-        if not response.ok:
+        cwd = Path.cwd()
+        repo_name = "airbyte-enterprise" if "airbyte-enterprise" in cwd.parts else "airbyte"
+        
+        fetch_command = [
+            "gh", "api", 
+            f"repos/airbytehq/{repo_name}/contents/airbyte-integrations/connectors/{connector.technical_name}/{consts.METADATA_FILE_NAME}",
+            "-H", "Accept: application/vnd.github.v3.raw"
+        ]
+        
+        try:
+            completed_process = subprocess.run(
+                fetch_command,
+                text=True,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            
+            # New connectors will not have a metadata file in master
+            if completed_process.returncode != 0:
+                return None
+                
+            return yaml.safe_load(completed_process.stdout)["data"]
+        except (subprocess.SubprocessError, yaml.YAMLError, KeyError) as e:
             return None
-        return yaml.safe_load(response.text)["data"]
 
     def _parse_version_from_metadata(self, metadata: Dict[str, Any]) -> semver.Version:
         return semver.Version.parse(str(metadata["dockerImageTag"]))
@@ -110,7 +127,7 @@ class CheckVersionIncrement(Check):
                     )
 
             return self.pass_(connector, f"Version was properly incremented from {master_version} to {current_version}.")
-        except (requests.HTTPError, ValueError, TypeError) as e:
+        except (subprocess.SubprocessError, ValueError, TypeError) as e:
             return self.fail(connector, str(e))
 
 
