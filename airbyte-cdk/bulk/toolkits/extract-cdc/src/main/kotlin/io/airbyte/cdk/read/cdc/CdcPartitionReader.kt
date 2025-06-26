@@ -76,12 +76,11 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        fun tryAcquireResources(
+        fun _tryAcquireResources(
             resourcesType: List<ResourceType>
         ): Map<ResourceType, AcquiredResource>? {
             val resources: Map<ResourceType, Resource.Acquired>? =
                 resourceAcquirer.tryAcquire(resourcesType)
-
             return resources
                 ?.map {
                     it.key to
@@ -101,7 +100,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
             }
         val resources: Map<ResourceType, AcquiredResource> =
-            tryAcquireResources(resourceType)
+            _tryAcquireResources(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
 
         acquiredResources.set(resources)

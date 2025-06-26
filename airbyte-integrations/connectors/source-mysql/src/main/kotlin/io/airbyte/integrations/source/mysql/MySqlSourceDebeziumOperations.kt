@@ -6,10 +6,16 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.DoubleNode
+import com.fasterxml.jackson.databind.node.FloatNode
+import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.BinaryCodec
+import io.airbyte.cdk.data.DoubleCodec
+import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
@@ -19,6 +25,9 @@ import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.BinaryStreamFieldType
+import io.airbyte.cdk.jdbc.BytesFieldType
+import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -94,27 +103,41 @@ class MySqlSourceDebeziumOperations(
 
         val resultRow: NativeRecordPayload = mutableMapOf()
         for (field in stream.schema) {
-            val c: JsonCodec<*> = field.type.jsonEncoder as JsonCodec<*>
-            data[field.id] ?: continue
-            val a = c.decode(data[field.id])
-            resultRow[field.id] =
-                FieldValueEncoder(
-                    a,
-                    field.type.jsonEncoder as JsonCodec<Any>,
-                )
-
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
                 LeafAirbyteSchemaType.NUMBER -> {
-                    val textNode: TextNode = data[field.id] as? TextNode ?: continue
-                    val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
-                    data.put(field.id, bigDecimal)
+                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    if (textNode != null) {
+                        val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
+                        data.put(field.id, bigDecimal)
+                    }
                 }
                 LeafAirbyteSchemaType.JSONB -> {
-                    val textNode: TextNode = data[field.id] as? TextNode ?: continue
-                    data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    if (textNode != null) {
+                        data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                    }
                 }
-                else -> continue
+                else -> { /* no-op */ }
+            }
+            data[field.id] ?: continue
+            when (data[field.id]) {
+                is NullNode -> {
+                    resultRow[field.id] = FieldValueEncoder(null, NullCodec as JsonEncoder<Any>)
+                }
+                else -> {
+                    val codec: JsonCodec<*> = when (field.type) {
+                        FloatFieldType -> if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
+                        BytesFieldType,
+                        BinaryStreamFieldType -> if (data[field.id].isBinary) BinaryCodec else TextCodec
+                        else -> field.type.jsonEncoder as JsonCodec<*>
+                    }
+                    resultRow[field.id] =
+                        FieldValueEncoder(
+                            codec.decode(data[field.id]),
+                            codec as JsonCodec<Any>,
+                        )
+                }
             }
         }
         // Set _ab_cdc_updated_at and _ab_cdc_deleted_at meta-field values.
