@@ -18,7 +18,7 @@ class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
     override fun discover(config: CustomerIoConfiguration): DestinationDiscoverCatalog {
         return DestinationDiscoverCatalog(listOf(
             DestinationOperation(
-                "person_events",
+                "person_event",
                 Append,
                 ObjectType(
                     properties = linkedMapOf(
