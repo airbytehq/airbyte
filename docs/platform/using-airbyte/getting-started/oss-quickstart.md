@@ -170,6 +170,9 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 ## Part 3: Run Airbyte
 
+<Tabs>
+<TabItem value='local' label='Run locally' default>
+
 1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
 
 2. Install Airbyte. To do this, open a terminal and run the following command.
@@ -178,27 +181,48 @@ Use [Homebrew](https://brew.sh/) to install abctl.
     abctl local install
     ```
 
-    <!-- [[[This is good to know but I don't think it's within the scope of this guide.]]]
-    To make Airbyte accessible outside `localhost`, specify the `--host` flag to the local install command, and provide a fully qualified domain name for Airbyte's host.
+3. Enter your **Email** and **Organization name**, then click **Get Started**.
+
+</TabItem>
+<TabItem value='http' label='Run over HTTP' default>
+
+1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
+
+2. Install Airbyte. To make Airbyte accessible outside `localhost`, specify the `--host` flag and provide a fully qualified domain name for Airbyte's host.
 
     ```bash
-    abctl local install --host airbyte.example.com
-    ``` 
-    -->
+    abctl local install --host example.com
+    ```
 
-    To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command.
+    You can turn off the secure cookies requirement if you're running on an insecure/non-HTTPS connection.
+
+    ```bash
+    abctl local install --host example.com --insecure-cookies
+    ```
+
+3. Enter your **Email** and **Organization name**, then click **Get Started**.
+
+</TabItem>
+<TabItem value='low-resource' label='Run in low-resource mode' default>
+
+1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
+
+2. Install Airbyte. To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command. In low-resource mode, you are unable to access the Connector Builder.
 
     ```bash
     abctl local install --low-resource-mode
     ```
 
-    :::note
-    If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation can complete anyway. See [Suggested resources](#suggested-resources).
-    :::
-
-    Installation may take up to 30 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as Docker Desktop is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
-
 3. Enter your **Email** and **Organization name**, then click **Get Started**.
+
+</TabItem>
+</Tabs>
+
+:::note
+If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation can complete anyway. See [Suggested resources](#suggested-resources).
+:::
+
+Installation may take up to 30 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000), or the host you specified. As long as Docker Desktop is running in the background, use Airbyte by returning to that page. If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
 
 Airbyte asks you to log in with a password, but you don't have one yet. Proceed to Part 4 to get one.
 

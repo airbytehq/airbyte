@@ -5,27 +5,23 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.state.Reserved
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 
-sealed interface CheckpointMessageWrapped {
-    val sizeBytes: Long
-}
+sealed interface CheckpointMessageWrapped
 
 data class StreamCheckpointWrapped(
-    override val sizeBytes: Long,
     val stream: DestinationStream.Descriptor,
-    val checkpointId: CheckpointId,
+    val checkpointKey: CheckpointKey,
     val checkpoint: CheckpointMessage
 ) : CheckpointMessageWrapped
 
 data class GlobalCheckpointWrapped(
-    override val sizeBytes: Long,
-    val streamIndexes: List<Pair<DestinationStream.Descriptor, CheckpointId>>,
-    val checkpoint: CheckpointMessage
+    val checkpointKey: CheckpointKey,
+    val checkpoint: CheckpointMessage,
 ) : CheckpointMessageWrapped
 
 /**
