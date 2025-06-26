@@ -78,6 +78,21 @@ definitions:
           http_method: GET
           request_parameters:
             "showBasketProducts\t": "True"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    error_message: Rate limits hit
+                    http_codes:
+                      - 429
+                    action: RATE_LIMITED
+              - type: DefaultErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
@@ -185,14 +200,14 @@ metadata:
     transactions: true
   testedStreams:
     campaign_performance:
+      hasRecords: true
       streamHash: 5ce77ed7ebbff66c788adad09a8e642135d257a0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     transactions:
-      streamHash: 8d31eb71808aeb2b291e460cbc88cebe178119d9
+      streamHash: 6bc35d3e4bdc67457b45eea06a4d55d33aa9cade
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -308,6 +323,7 @@ schemas:
   transactions:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -524,4 +540,3 @@ schemas:
     required:
       - id
       - transactionDate
-    additionalProperties: true
