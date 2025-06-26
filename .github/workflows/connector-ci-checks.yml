@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Current Branch
+        id: checkout
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
@@ -92,6 +93,8 @@ jobs:
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      # The commit SHA of the current branch, used to report test results:
+      commit-sha: ${{ steps.checkout.outputs.commit }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -414,6 +417,7 @@ jobs:
     name: Connector CI Checks Summary
     if: always()
     needs:
+      - generate-matrix
       - jvm-connectors-test
       - non-jvm-connectors-test
       - pre-release-checks
@@ -444,16 +448,18 @@ jobs:
           # If we get here, all checks passed.
           echo "✅ All checks passed successfully."
 
-      # Post completion status to the PR.
-      # This is required because otherwise slash commands won't automatically
-      # update the PR checks status.
+      # Post check result to the PR.
+      # This is only required when we are responding to non-"pull_request" events,
+      # for example when running from slash commands.
+      # In slash commands, this may override the check status posted by
+      # the initial test result for this SHA (run without secrets).
       - name: Create Check Status
-        if: always() && github.event_name == 'workflow_call' && inputs.gitref != ''
+        if: always() && github.event_name != 'pull_request'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: ${{ job.name }}
+          name: Connector CI Checks Summary
           repo: "airbytehq/airbyte" # Post to the main repo, not the fork
-          sha: ${{ inputs.gitref }}
+          sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
           conclusion: ${{ job.status }}
           token: ${{ steps.get-app-token.outputs.token }}
