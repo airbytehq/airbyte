@@ -271,8 +271,8 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 ### Branch replacement
 
-At the end of stream sync, we replace the current master branch with the staging branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
-**Important Warning**: Any changes made to the master branch outside of Airbyte's operations after a sync begins will be lost during this process.
+At the end of stream sync, we replace the current `main` branch with the staging branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
+**Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
 ## Considerations and limitations
 
@@ -312,7 +312,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.30  | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from master instead of fast forwarding                                                                 |
+| 0.3.30  | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from main instead of fast forwarding                                                                   |
 | 0.3.29  | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
 | 0.3.28  | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                         |
 | 0.3.27  | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                                                                           |
