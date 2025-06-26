@@ -421,7 +421,7 @@ jobs:
           connectors-qa run --name ${connector_name%-strict-encrypt}
 
   connector-ci-checks-summary:
-    name: Connector CI Checks Summary
+    name: Post CI Check Summary
     if: always()
     needs:
       - generate-matrix
@@ -444,3 +444,34 @@ jobs:
         run: |
           # If we get here, all checks passed.
           echo "✅ All checks passed successfully."
+
+      # In slash commands and when not running within a fork, we want to upload
+      # a check status report to the PR.
+
+      # If we are not running from the airbytehq/airbyte repo, the secrets won't
+      # be available, so the following steps will be a no-op.
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: always() && !cancelled()
+        continue-on-error: true
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Check Status
+        if: >
+          always() && !cancelled() &&
+          steps.get-app-token.outcome == 'success'
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: "Connector CI Checks Summary" # << Name of the 'Required' check
+          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
+          sha: ${{ needs.generate-matrix.outputs.commit-sha }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}
+          details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
