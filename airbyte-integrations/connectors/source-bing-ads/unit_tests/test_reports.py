@@ -19,20 +19,12 @@ from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord,
 from helpers import source
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.report_streams import (
-    AccountImpressionPerformanceReportDaily,
-    AccountImpressionPerformanceReportHourly,
     AccountPerformanceReportDaily,
     AccountPerformanceReportHourly,
     AccountPerformanceReportMonthly,
-    AdGroupImpressionPerformanceReportDaily,
-    AdGroupImpressionPerformanceReportHourly,
     BudgetSummaryReport,
-    CampaignImpressionPerformanceReportDaily,
-    CampaignImpressionPerformanceReportHourly,
     SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
-    UserLocationPerformanceReportDaily,
-    UserLocationPerformanceReportHourly,
 )
 from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, BingAdsReportingServiceStream
 from source_bing_ads.reports.ad_performance_report import (
@@ -124,13 +116,9 @@ def test_get_updated_state_state_new_account():
 @pytest.mark.parametrize(
     "stream_report_daily_cls",
     (
-        AccountImpressionPerformanceReportDaily,
         AccountPerformanceReportDaily,
-        AdGroupImpressionPerformanceReportDaily,
         AdPerformanceReportDaily,
-        CampaignImpressionPerformanceReportDaily,
         SearchQueryPerformanceReportDaily,
-        UserLocationPerformanceReportDaily,
     ),
 )
 def test_get_report_record_timestamp_daily(stream_report_daily_cls):
@@ -146,13 +134,9 @@ def test_get_report_record_timestamp_without_aggregation():
 @pytest.mark.parametrize(
     "stream_report_hourly_cls",
     (
-        AccountImpressionPerformanceReportHourly,
         AccountPerformanceReportHourly,
-        AdGroupImpressionPerformanceReportHourly,
         AdPerformanceReportHourly,
-        CampaignImpressionPerformanceReportHourly,
         SearchQueryPerformanceReportHourly,
-        UserLocationPerformanceReportHourly,
     ),
 )
 def test_get_report_record_timestamp_hourly(stream_report_hourly_cls):
@@ -356,29 +340,9 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
         (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
         (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
         (
-            CampaignImpressionPerformanceReportHourly,
-            "hourly_reports/campaign_impression_performance.csv",
-            "hourly_reports/campaign_impression_performance_records.json",
-        ),
-        (
             SearchQueryPerformanceReportHourly,
             "hourly_reports/search_query_performance.csv",
             "hourly_reports/search_query_performance_records.json",
-        ),
-        (
-            UserLocationPerformanceReportHourly,
-            "hourly_reports/user_location_performance.csv",
-            "hourly_reports/user_location_performance_records.json",
-        ),
-        (
-            AccountImpressionPerformanceReportHourly,
-            "hourly_reports/account_impression_performance.csv",
-            "hourly_reports/account_impression_performance_records.json",
-        ),
-        (
-            AdGroupImpressionPerformanceReportHourly,
-            "hourly_reports/ad_group_impression_performance.csv",
-            "hourly_reports/ad_group_impression_performance_records.json",
         ),
     ],
 )
