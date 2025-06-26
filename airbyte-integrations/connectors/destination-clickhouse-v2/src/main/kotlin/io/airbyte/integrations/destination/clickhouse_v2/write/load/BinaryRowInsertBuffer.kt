@@ -16,6 +16,8 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
@@ -71,10 +73,14 @@ class BinaryRowInsertBuffer(
     }
 
     private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {
+        println("Writing $columnName: $abValue")
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
-            is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
+            is ObjectValue -> {
+                println(abValue.values.serializeToString())
+                writer.setValue(columnName, abValue.values.serializeToString())
+            }
             is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is BooleanValue -> writer.setValue(columnName, abValue.value)
             is IntegerValue -> writer.setValue(columnName, abValue.value)

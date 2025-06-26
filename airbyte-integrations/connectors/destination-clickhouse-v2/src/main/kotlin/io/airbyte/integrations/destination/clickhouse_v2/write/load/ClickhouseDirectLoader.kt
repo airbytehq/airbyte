@@ -29,12 +29,14 @@ class ClickhouseDirectLoader(
         recordCountWindow.increment(1)
         bytesWindow.increment(record.serializedSizeBytes)
 
-        if (bytesWindow.isComplete() || recordCountWindow.isComplete()) {
-            buffer.flush()
-            return DirectLoader.Complete
-        }
+        buffer.flush()
+        // if (bytesWindow.isComplete() || recordCountWindow.isComplete()) {
+        //     buffer.flush()
+        //     return DirectLoader.Complete
+        // }
 
-        return DirectLoader.Incomplete
+        return DirectLoader.Complete
+        // return DirectLoader.Incomplete
     }
 
     override suspend fun finish() = buffer.flush()
