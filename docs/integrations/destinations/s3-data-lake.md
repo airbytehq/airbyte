@@ -269,6 +269,11 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and fast-forwards the `main` branch at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
 
+### Branch replacement
+
+At the end of stream sync, we replace the current master branch with the staging branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
+**Important Warning**: Any changes made to the master branch outside of Airbyte's operations after a sync begins will be lost during this process.
+
 ## Considerations and limitations
 
 This section documents known considerations and limitations about how this Iceberg destination interacts with other products.
@@ -307,6 +312,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.30  | 2025-06-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)       | ReplaceBranch to staging from master instead of fast forwarding                                                                 |
 | 0.3.29  | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
 | 0.3.28  | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                         |
 | 0.3.27  | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                                                                           |
