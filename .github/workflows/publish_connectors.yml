@@ -34,7 +34,7 @@ on:
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: ubuntu-24.04-4core
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
