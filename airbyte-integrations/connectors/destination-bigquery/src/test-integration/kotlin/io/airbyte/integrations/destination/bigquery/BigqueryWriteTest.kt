@@ -96,10 +96,8 @@ abstract class BigqueryDirectLoadWriteTest(
                         // so we should have separate enums.
                         // otherwise the new enum values would show up in the spec, which we don't
                         // want.
-                        CdcDeletionMode.HARD_DELETE ->
-                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.HARD_DELETE
-                        CdcDeletionMode.SOFT_DELETE ->
-                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.SOFT_DELETE
+                        CdcDeletionMode.HARD_DELETE -> DedupBehavior.CdcDeletionMode.HARD_DELETE
+                        CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
                     }
             ),
         nullEqualsUnset = true,
