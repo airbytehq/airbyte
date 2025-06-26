@@ -12,33 +12,8 @@ from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
-    AccountImpressionPerformanceReportDaily,
-    AccountImpressionPerformanceReportHourly,
-    AccountImpressionPerformanceReportMonthly,
-    AccountImpressionPerformanceReportWeekly,
-    AdGroupImpressionPerformanceReportDaily,
-    AdGroupImpressionPerformanceReportHourly,
-    AdGroupImpressionPerformanceReportMonthly,
-    AdGroupImpressionPerformanceReportWeekly,
-    AudiencePerformanceReportDaily,
-    AudiencePerformanceReportHourly,
-    AudiencePerformanceReportMonthly,
-    AudiencePerformanceReportWeekly,
     BingAdsReportingServiceStream,
-    BudgetSummaryReport,
-    CampaignImpressionPerformanceReportDaily,
-    CampaignImpressionPerformanceReportHourly,
-    CampaignImpressionPerformanceReportMonthly,
-    CampaignImpressionPerformanceReportWeekly,
     CustomReport,
-    GoalsAndFunnelsReportDaily,
-    GoalsAndFunnelsReportHourly,
-    GoalsAndFunnelsReportMonthly,
-    GoalsAndFunnelsReportWeekly,
-    ProductDimensionPerformanceReportDaily,
-    ProductDimensionPerformanceReportHourly,
-    ProductDimensionPerformanceReportMonthly,
-    ProductDimensionPerformanceReportWeekly,
     ProductSearchQueryPerformanceReportDaily,
     ProductSearchQueryPerformanceReportHourly,
     ProductSearchQueryPerformanceReportMonthly,
@@ -47,10 +22,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     SearchQueryPerformanceReportHourly,
     SearchQueryPerformanceReportMonthly,
     SearchQueryPerformanceReportWeekly,
-    UserLocationPerformanceReportDaily,
-    UserLocationPerformanceReportHourly,
-    UserLocationPerformanceReportMonthly,
-    UserLocationPerformanceReportWeekly,
 )
 
 
@@ -116,23 +87,13 @@ class SourceBingAds(YamlDeclarativeSource):
         declarative_streams = super().streams(config)
 
         client = Client(**config)
-        streams = [
-            BudgetSummaryReport(client, config),
-        ]
 
         reports = (
-            "AccountImpressionPerformanceReport",
-            "AudiencePerformanceReport",
-            "AdGroupImpressionPerformanceReport",
-            "CampaignImpressionPerformanceReport",
-            "GoalsAndFunnelsReport",
-            "ProductDimensionPerformanceReport",
             "ProductSearchQueryPerformanceReport",
             "SearchQueryPerformanceReport",
-            "UserLocationPerformanceReport",
         )
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
-        streams.extend([eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)])
+        streams = [eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)]
 
         custom_reports = self.get_custom_reports(config, client)
         streams.extend(custom_reports)

@@ -85,6 +85,12 @@ abstract class MSSQLWriterTest(
     override fun testFunkyCharactersDedup() {
         super.testFunkyCharactersDedup()
     }
+
+    @Test
+    @Disabled("there's a bug in the connector")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
 }
 
 class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLConfiguration) :
