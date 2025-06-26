@@ -76,6 +76,13 @@
               "examples" : [ "http://localhost:9000" ],
               "order" : 6
             },
+            "bucket_path" : {
+              "type" : "string",
+              "description" : "All files in the bucket will be prefixed by this.",
+              "title" : "Prefix Path in the Bucket",
+              "examples" : [ "prefix/" ],
+              "order" : 7
+            },
             "format" : {
               "oneOf" : [ {
                 "title" : "CSV: Comma-Separated Values",
@@ -117,7 +124,9 @@
               "description" : "Format of the data output.",
               "title" : "Output Format",
               "examples" : [ "CSV", "JSONL" ],
-              "order" : 7,
+              "default" : "CSV",
+              "airbyte_hidden" : true,
+              "order" : 8,
               "type" : "object"
             },
             "compression" : {
@@ -148,26 +157,26 @@
               } ],
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
+              "airbyte_hidden" : true,
               "type" : "object"
-            },
-            "bucket_path" : {
-              "type" : "string",
-              "examples" : [ "prefix/" ],
-              "order" : 8
             },
             "path_format" : {
               "type" : "string",
               "examples" : [ "{namespace}/{stream_name}/{year}_{month}_{day}_{epoch}" ],
-              "order" : 9
+              "default" : "{sync_id}/{namespace}/{stream_name}/",
+              "airbyte_hidden" : true,
+              "order" : 10
             },
             "file_name_format" : {
               "type" : "string",
               "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ],
-              "order" : 10
+              "default" : "{date}_{timestamp}_{part_number}{format_extension}",
+              "airbyte_hidden" : true,
+              "order" : 11
             }
           },
           "title" : "S3",
-          "required" : [ "storage_type", "s3_bucket_name", "s3_bucket_region", "format", "bucket_path" ]
+          "required" : [ "storage_type", "s3_bucket_name", "s3_bucket_region", "bucket_path", "format" ]
         } ],
         "type" : "object"
       },
