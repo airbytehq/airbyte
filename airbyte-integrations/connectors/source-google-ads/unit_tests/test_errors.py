@@ -61,7 +61,7 @@ def test_expected_errors(mocker, config, exception, error_message):
         "source_google_ads.google_ads.GoogleAds.get_accessible_accounts",
         Mock(return_value=["123", "12345"]),
     )
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     with pytest.raises(AirbyteTracedException) as exception:
         status_ok, error = source.check_connection(logging.getLogger("airbyte"), config)
     assert exception.value.message == error_message
@@ -145,7 +145,7 @@ def test_check_custom_queries(mocker, config, custom_query, is_manager_account, 
         Mock(return_value=[CustomerModel(is_manager_account=is_manager_account, time_zone="Europe/Berlin", id="8765")]),
     )
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     logger_mock = Mock()
 
     # Use nullcontext or pytest.raises based on error_message
