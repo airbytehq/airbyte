@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output
 
 import com.fasterxml.jackson.core.JsonGenerator
@@ -21,10 +25,8 @@ import java.util.concurrent.ConcurrentHashMap
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 
-/**
- * A simple [OutputConsumer] such as standard output or buffering test output consumer.
- */
-abstract class StandardOutputConsumer(clock: Clock): OutputConsumer(clock)
+/** A simple [OutputConsumer] such as standard output or buffering test output consumer. */
+abstract class StandardOutputConsumer(clock: Clock) : OutputConsumer(clock)
 
 /** Default implementation of [OutputConsumer]. */
 @Singleton
@@ -68,7 +70,7 @@ class StdoutOutputConsumer(
         // before writing them to standard output in a batch.
         if (
             airbyteMessage.type == AirbyteMessage.Type.RECORD &&
-            airbyteMessage.record.additionalProperties[IS_DUMMY_STATS_MESSAGE] != true
+                airbyteMessage.record.additionalProperties[IS_DUMMY_STATS_MESSAGE] != true
         ) {
             // RECORD messages undergo a different serialization scheme.
             accept(airbyteMessage.record)
@@ -179,7 +181,12 @@ class RecordTemplate(
     val suffix: ByteArray,
 ) {
     companion object {
-        fun create(stream: String, namespace: String?, emittedAt: Instant, additionalProperties: Map<String, String> = emptyMap(),): RecordTemplate {
+        fun create(
+            stream: String,
+            namespace: String?,
+            emittedAt: Instant,
+            additionalProperties: Map<String, String> = emptyMap(),
+        ): RecordTemplate {
             // Generate a dummy AirbyteRecordMessage instance for the given args
             // using an empty object (i.e. '{}') for the "data" field value.
             val recordMessage =
@@ -190,7 +197,10 @@ class RecordTemplate(
                     .withData(Jsons.objectNode())
 
             for (additionalProperty in additionalProperties) {
-                recordMessage.withAdditionalProperty(additionalProperty.key, additionalProperty.value)
+                recordMessage.withAdditionalProperty(
+                    additionalProperty.key,
+                    additionalProperty.value
+                )
             }
             // Generate the corresponding dummy AirbyteMessage instance.
             val airbyteMessage =

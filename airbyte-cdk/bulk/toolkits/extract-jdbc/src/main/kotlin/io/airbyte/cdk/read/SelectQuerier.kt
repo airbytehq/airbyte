@@ -139,16 +139,18 @@ class JdbcSelectQuerier(
                 try {
 
                     @Suppress("UNCHECKED_CAST")
-                    resultRow.data[column.id] = FieldValueEncoder(
-                        jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
-                        jdbcFieldType.jsonEncoder as JsonEncoder<Any>
-                    )
+                    resultRow.data[column.id] =
+                        FieldValueEncoder(
+                            jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                            jdbcFieldType.jsonEncoder as JsonEncoder<Any>
+                        )
                 } catch (e: Exception) {
                     @Suppress("UNCHECKED_CAST")
-                    resultRow.data[column.id] = FieldValueEncoder(
-                        null,
-                        NullCodec as JsonEncoder<Any> // Use NullCodec for null values
-                    ) // Use NullCodec for null values
+                    resultRow.data[column.id] =
+                        FieldValueEncoder(
+                            null,
+                            NullCodec as JsonEncoder<Any> // Use NullCodec for null values
+                        ) // Use NullCodec for null values
                     if (!hasLoggedException) {
                         log.warn(e) { "Error deserializing value in column $column." }
                         hasLoggedException = true

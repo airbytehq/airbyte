@@ -137,7 +137,8 @@ class MySqlSourceOperations :
             MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED, -> if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
+            MysqlType.FLOAT_UNSIGNED, ->
+                if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
             MysqlType.DOUBLE,
             MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
             MysqlType.DECIMAL,

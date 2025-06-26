@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.databind.SequenceWriter
@@ -14,8 +18,7 @@ class SocketProtobufOutputConsumer(
     private val dataChannel: SocketDataChannel,
     clock: Clock,
     val bufferByteSizeThresholdForFlush: Int,
-): OutputConsumer(clock)
-{
+) : OutputConsumer(clock) {
     private val log = KotlinLogging.logger {}
     private val buffer = ByteArrayOutputStream()
 
@@ -26,8 +29,8 @@ class SocketProtobufOutputConsumer(
         // before writing them to standard output in a batch.
         if (airbyteMessage.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD) {
             // RECORD messages undergo a different serialization scheme.
-            //accept(airbyteMessage.record)
-            //no-op
+            // accept(airbyteMessage.record)
+            // no-op
         } else {
             synchronized(this) {
                 val b = ByteArrayOutputStream()
@@ -35,9 +38,10 @@ class SocketProtobufOutputConsumer(
                 sequenceWriter.write(airbyteMessage)
                 sequenceWriter.flush()
 
-                val pm = AirbyteMessageProtobuf.newBuilder()
-                    .setAirbyteProtocolMessage(String(b.toByteArray()))
-                    .build()
+                val pm =
+                    AirbyteMessageProtobuf.newBuilder()
+                        .setAirbyteProtocolMessage(String(b.toByteArray()))
+                        .build()
                 pm.writeDelimitedTo(buffer)
                 log.info { "AirbyteMessage sent over SOCKET: ${String(b.toByteArray())}" }
                 withLockFlush()
@@ -50,7 +54,6 @@ class SocketProtobufOutputConsumer(
             if (buffer.size() >= bufferByteSizeThresholdForFlush) {
                 withLockFlush()
             }
-
         }
     }
 

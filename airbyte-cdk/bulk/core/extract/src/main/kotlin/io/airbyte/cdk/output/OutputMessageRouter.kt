@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.read.FeedBootstrap
 import io.airbyte.cdk.read.FieldValueChange
@@ -16,8 +20,8 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 
 /**
  * OutputMessageRouter is responsible for building the appropriate routes for messages output.
- * Record message stream state and status traces may go over std output, or over sockets in JSONL or Protobuf format.
- * All other message like log or error messages go over std output.
+ * Record message stream state and status traces may go over std output, or over sockets in JSONL or
+ * Protobuf format. All other message like log or error messages go over std output.
  */
 class OutputMessageRouter(
     private val recordsDataChannelMedium: DataChannelMedium,
@@ -25,8 +29,8 @@ class OutputMessageRouter(
     private val standardOutputConsumer: StandardOutputConsumer,
     private val additionalProperties: Map<String, String>,
     private val feedBootstrap: FeedBootstrap<*>,
-    private val acquiredResources: Map<ResourceType, Resource.Acquired>, )
-    : AutoCloseable {
+    private val acquiredResources: Map<ResourceType, Resource.Acquired>,
+) : AutoCloseable {
 
     enum class DataChannelFormat {
         JSONL,
@@ -41,52 +45,81 @@ class OutputMessageRouter(
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
     private lateinit var efficientStreamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
-    private lateinit var protoRecordOutputConsumers: Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
+    private lateinit var protoRecordOutputConsumers:
+        Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
-    var recordAcceptors: Map<StreamIdentifier, (NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit>
+    var recordAcceptors:
+        Map<StreamIdentifier, (NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit>
 
     init {
         when (recordsDataChannelMedium) {
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> {
-                        socketJsonOutputConsumer = SocketJsonOutputConsumer(
-                            (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
-                            feedBootstrap.clock,
-                            feedBootstrap.bufferByteSizeThresholdForFlush,
-                            additionalProperties
-                        )
+                        socketJsonOutputConsumer =
+                            SocketJsonOutputConsumer(
+                                (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET]
+                                        as SocketResource.AcquiredSocket)
+                                    .socketWrapper,
+                                feedBootstrap.clock,
+                                feedBootstrap.bufferByteSizeThresholdForFlush,
+                                additionalProperties
+                            )
                         efficientStreamRecordConsumers =
                             feedBootstrap.streamJsonSocketRecordConsumers(socketJsonOutputConsumer)
-                        recordAcceptors = efficientStreamRecordConsumers.map {
-                            it.key to { record: NativeRecordPayload, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
-                        }
-                            .toMap()
+                        recordAcceptors =
+                            efficientStreamRecordConsumers
+                                .map {
+                                    it.key to
+                                        {
+                                            record: NativeRecordPayload,
+                                            changes: Map<Field, FieldValueChange>? ->
+                                            it.value.accept(record, changes)
+                                        }
+                                }
+                                .toMap()
                     }
-
                     DataChannelFormat.PROTOBUF -> {
-                        protoOutputConsumer = SocketProtobufOutputConsumer(
-                            (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET] as SocketResource.AcquiredSocket).socketWrapper,
-                            feedBootstrap.clock,
-                            feedBootstrap.bufferByteSizeThresholdForFlush,
-                        )
-                        protoRecordOutputConsumers = feedBootstrap.streamProtoRecordConsumers(
-                            protoOutputConsumer,
-                            additionalProperties["partition_id"]
-                        )
-                        recordAcceptors = protoRecordOutputConsumers.map {
-                            it.key to { record: NativeRecordPayload, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
-                        }
-                            .toMap()
+                        protoOutputConsumer =
+                            SocketProtobufOutputConsumer(
+                                (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET]
+                                        as SocketResource.AcquiredSocket)
+                                    .socketWrapper,
+                                feedBootstrap.clock,
+                                feedBootstrap.bufferByteSizeThresholdForFlush,
+                            )
+                        protoRecordOutputConsumers =
+                            feedBootstrap.streamProtoRecordConsumers(
+                                protoOutputConsumer,
+                                additionalProperties["partition_id"]
+                            )
+                        recordAcceptors =
+                            protoRecordOutputConsumers
+                                .map {
+                                    it.key to
+                                        {
+                                            record: NativeRecordPayload,
+                                            changes: Map<Field, FieldValueChange>? ->
+                                            it.value.accept(record, changes)
+                                        }
+                                }
+                                .toMap()
                     }
                 }
             }
             DataChannelMedium.STDIO -> {
                 simpleEfficientStreamConsumers = feedBootstrap.streamRecordConsumers()
-                recordAcceptors = simpleEfficientStreamConsumers.map {
-                    it.key to { record: NativeRecordPayload, changes: Map<Field, FieldValueChange>? -> it.value.accept(record, changes) }
-                }
-                    .toMap()
+                recordAcceptors =
+                    simpleEfficientStreamConsumers
+                        .map {
+                            it.key to
+                                {
+                                    record: NativeRecordPayload,
+                                    changes: Map<Field, FieldValueChange>? ->
+                                    it.value.accept(record, changes)
+                                }
+                        }
+                        .toMap()
             }
         }
     }
@@ -115,7 +148,6 @@ class OutputMessageRouter(
                 standardOutputConsumer.accept(airbyteMessage)
             }
         }
-
     }
 
     fun acceptNonRecord(airbyteMessage: AirbyteStreamStatusTraceMessage) {
@@ -131,5 +163,4 @@ class OutputMessageRouter(
             }
         }
     }
-
 }

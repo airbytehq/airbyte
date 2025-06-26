@@ -208,13 +208,12 @@ class MySqlSourceJdbcRfrSnapshotPartition(
         get() =
             when (upperBound) {
                 null -> MySqlSourceJdbcStreamStateValue.snapshotCompleted
-                else -> MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
-                    primaryKey = checkpointColumns,
-                    primaryKeyCheckpoint =
-                        checkpointColumns.map { upperBound.get(0) },
-                )
+                else ->
+                    MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
             }
-
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
@@ -248,7 +247,7 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
         )
 }
 
-//typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
+// typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
 class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,

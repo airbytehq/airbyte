@@ -5,8 +5,8 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.output.sockets.SocketDataChannelResourceHolder
 import io.airbyte.cdk.output.sockets.SocketDataChannel
+import io.airbyte.cdk.output.sockets.SocketDataChannelResourceHolder
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.sync.Semaphore
@@ -36,12 +36,12 @@ enum class ResourceType {
 class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
     fun tryAcquire(requested: List<ResourceType>): Map<ResourceType, Resource.Acquired>? {
         val acquired = mutableMapOf<ResourceType, Resource.Acquired>()
-        // We need a run {} to be able to break out of the forEach loop if any resource acquisition fails.
+        // We need a run {} to be able to break out of the forEach loop if any resource acquisition
+        // fails.
         run {
             requested.forEach { resourceType ->
                 val res = acqs.first { acq -> acq.type == resourceType }.tryAcquire()
-                res?.apply { acquired[resourceType] = this }
-                    ?: return@run
+                res?.apply { acquired[resourceType] = this } ?: return@run
             }
         }
 
@@ -53,10 +53,9 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
     }
 
     // convenience method to acquire a single resource of a specific type
-    fun <T: Resource.Acquired> tryAcquireResource(requested: ResourceType): T? {
+    fun <T : Resource.Acquired> tryAcquireResource(requested: ResourceType): T? {
         val acq: Map<ResourceType, Resource.Acquired>? = tryAcquire(listOf(requested))
-        @Suppress("UNCHECKED_CAST")
-        return acq?.get(requested) as? T
+        @Suppress("UNCHECKED_CAST") return acq?.get(requested) as? T
     }
 }
 
@@ -84,9 +83,10 @@ class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.Ac
 
 /** A [Resource] representing a socket data channel. */
 @Singleton
-class SocketResource(val socketDataChannelResourceHolder: SocketDataChannelResourceHolder?) : Resource<SocketResource.AcquiredSocket> {
+class SocketResource(val socketDataChannelResourceHolder: SocketDataChannelResourceHolder?) :
+    Resource<SocketResource.AcquiredSocket> {
 
-    class AcquiredSocket(val socketWrapper: SocketDataChannel): Resource.Acquired {
+    class AcquiredSocket(val socketWrapper: SocketDataChannel) : Resource.Acquired {
         // Release a socket resource unbinds it but does not close it.
         override fun close() {
             socketWrapper.unbindSocket()
@@ -96,7 +96,6 @@ class SocketResource(val socketDataChannelResourceHolder: SocketDataChannelResou
     override fun tryAcquire(): AcquiredSocket? {
         val maybeSocket = socketDataChannelResourceHolder?.bindFreeSocket()
         return maybeSocket?.let { AcquiredSocket(it) }
-
     }
 
     override val type: ResourceType

@@ -6,7 +6,6 @@ package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
-import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader

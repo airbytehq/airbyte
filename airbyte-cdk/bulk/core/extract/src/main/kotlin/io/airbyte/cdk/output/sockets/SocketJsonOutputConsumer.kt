@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.core.JsonGenerator
@@ -118,7 +122,12 @@ class SocketJsonOutputConsumer(
                 namespacedTemplates.getOrPut(namespace) { StreamToTemplateMap() }
             }
         return streamToTemplateMap.getOrPut(stream) {
-            RecordTemplate.create(stream, namespace, recordEmittedAt, additionalProperties,)
+            RecordTemplate.create(
+                stream,
+                namespace,
+                recordEmittedAt,
+                additionalProperties,
+            )
         }
     }
 
@@ -128,5 +137,4 @@ class SocketJsonOutputConsumer(
     companion object {
         const val META_PREFIX = ""","meta":"""
     }
-
 }

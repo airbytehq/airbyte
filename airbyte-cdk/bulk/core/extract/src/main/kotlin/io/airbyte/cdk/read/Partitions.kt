@@ -3,11 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamState
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ConcurrentMap
 import java.util.function.Supplier
 
 /**
@@ -161,15 +157,19 @@ interface PartitionReader {
      */
     fun releaseResources()
 
-    // A thread safe auxilery queue shared by all parition reader that is used to emit over socket any
-    // pending state and stream status messages. This is done in order to better utilize sockets that are already
+    // A thread safe auxilery queue shared by all parition reader that is used to emit over socket
+    // any
+    // pending state and stream status messages. This is done in order to better utilize sockets
+    // that are already
     // Acquired for partitions readers.
     companion object {
-        val pendingStates: ConcurrentLinkedQueue</*AirbyteStateMessage*/Any> = ConcurrentLinkedQueue()
+        val pendingStates: ConcurrentLinkedQueue</*AirbyteStateMessage*/ Any> =
+            ConcurrentLinkedQueue()
     }
 }
 
-// Records in socket mode bear a unique partition if so that a destination can associate records to a state
+// Records in socket mode bear a unique partition if so that a destination can associate records to
+// a state
 // That has the same partition id.
 data class PartitionReadCheckpoint(
     val opaqueStateValue: OpaqueStateValue,

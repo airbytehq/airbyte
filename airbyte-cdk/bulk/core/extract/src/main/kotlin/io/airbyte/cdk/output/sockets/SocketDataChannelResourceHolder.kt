@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output.sockets
 
 import io.micronaut.context.annotation.Requires
@@ -19,24 +23,19 @@ const val FORMAT_PROPERTY = "$DATA_CHANNEL_PROPERTY_PREFIX.format"
 @Requires(property = MEDIUM_PROPERTY, value = "SOCKET")
 class SocketDataChannelResourceHolder(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}") socketPaths: List<String>,
-    socketFactory: SocketDataChannelFactory,) {
+    socketFactory: SocketDataChannelFactory,
+) {
 
     val sockets: List<SocketDataChannel>
     init {
-        sockets = List(socketPaths.size) {
-            socketFactory.makeSocket(socketPaths[it])
-        }
-        runBlocking {
-            sockets.forEach { socket -> socket.initializeSocket() }
-        }
+        sockets = List(socketPaths.size) { socketFactory.makeSocket(socketPaths[it]) }
+        runBlocking { sockets.forEach { socket -> socket.initializeSocket() } }
     }
 
     @Synchronized
-     fun bindFreeSocket(): SocketDataChannel? =
-         sockets.firstOrNull { it.available }?.also { it.bindSocket() }
+    fun bindFreeSocket(): SocketDataChannel? =
+        sockets.firstOrNull { it.available }?.also { it.bindSocket() }
 }
-
-
 
 const val EXTRACT_PROPERTY_PREFIX = "airbyte.connector.extract"
 const val SPEED_MODE_PROPERTY = "${EXTRACT_PROPERTY_PREFIX}.speed-mode"

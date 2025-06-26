@@ -1,9 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.output
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SequenceWriter
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
@@ -12,24 +9,14 @@ import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.protocol.models.v0.DestinationCatalog
 import io.micronaut.context.annotation.DefaultImplementation
-import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Secondary
-import io.micronaut.context.annotation.Value
-import io.micronaut.context.env.Environment
-import jakarta.inject.Singleton
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
 import java.time.Clock
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */

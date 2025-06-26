@@ -71,29 +71,35 @@ class CdcPartitionReader<T : Comparable<T>>(
 
     protected var partitionId: String = generatePartitionId(4)
     private lateinit var acceptors: Map<StreamIdentifier, (NativeRecordPayload) -> Unit>
-    interface AcquiredResource: AutoCloseable {
+    interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        fun tryAcquireResources(resourcesType: List<ResourceType>): Map<ResourceType, AcquiredResource>? {
-            val resources: Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourcesType)
+        fun tryAcquireResources(
+            resourcesType: List<ResourceType>
+        ): Map<ResourceType, AcquiredResource>? {
+            val resources: Map<ResourceType, Resource.Acquired>? =
+                resourceAcquirer.tryAcquire(resourcesType)
 
-            return resources?.map {
-                it.key to object : AcquiredResource {
-                    override val resource: Resource.Acquired? = it.value
-                    override fun close() {
-                        resource?.close()
-                    }
+            return resources
+                ?.map {
+                    it.key to
+                        object : AcquiredResource {
+                            override val resource: Resource.Acquired? = it.value
+                            override fun close() {
+                                resource?.close()
+                            }
+                        }
                 }
-            }?.toMap()
+                ?.toMap()
         }
 
         val resourceType: List<ResourceType> =
             when (feedBootstrap.dataChannelMedium) {
                 SOCKET -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
-        }
+            }
         val resources: Map<ResourceType, AcquiredResource> =
             tryAcquireResources(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
@@ -101,14 +107,19 @@ class CdcPartitionReader<T : Comparable<T>>(
         acquiredResources.set(resources)
         this.stateFilesAccessor = DebeziumStateFilesAccessor()
 
-        outputMessageRouter = OutputMessageRouter(
-            feedBootstrap.dataChannelMedium,
-            feedBootstrap.dataChannelFormat,
-            feedBootstrap.outputConsumer,
-            mapOf("partition_id" to partitionId),
-            feedBootstrap,
-            acquiredResources.get().filter { it.value.resource != null }.map { it.key to it.value.resource!! }.toMap()
-        )
+        outputMessageRouter =
+            OutputMessageRouter(
+                feedBootstrap.dataChannelMedium,
+                feedBootstrap.dataChannelFormat,
+                feedBootstrap.outputConsumer,
+                mapOf("partition_id" to partitionId),
+                feedBootstrap,
+                acquiredResources
+                    .get()
+                    .filter { it.value.resource != null }
+                    .map { it.key to it.value.resource!! }
+                    .toMap()
+            )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
@@ -182,10 +193,14 @@ class CdcPartitionReader<T : Comparable<T>>(
                 null
             }
         val serializedState: OpaqueStateValue = readerOps.serializeState(offset, schemaHistory)
-        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get(),when (feedBootstrap.dataChannelMedium) {
-            SOCKET -> partitionId
-            STDIO -> null
-        })
+        return PartitionReadCheckpoint(
+            serializedState,
+            numEmittedRecords.get(),
+            when (feedBootstrap.dataChannelMedium) {
+                SOCKET -> partitionId
+                STDIO -> null
+            }
+        )
     }
 
     inner class EventConsumer(
@@ -230,15 +245,22 @@ class CdcPartitionReader<T : Comparable<T>>(
                 return EventType.VALUE_JSON_INVALID
             }
             val streamId = findStreamIfByRecord(event.key, event.value)
-            val stream: Stream = feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId } as? Stream
-                ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+            val stream: Stream =
+                feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId }
+                    as? Stream
+                    ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
                 readerOps.deserializeRecord(event.key, event.value, stream)
-                ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
+                    ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
-            outputMessageRouter.recordAcceptors[streamId]?.invoke(deserializedRecord.data, deserializedRecord.changes)
+            outputMessageRouter.recordAcceptors[streamId]?.invoke(
+                deserializedRecord.data,
+                deserializedRecord.changes
+            )
                 ?: run {
-                    log.warn { "No record acceptor found for stream $streamId, skipping record emission." }
+                    log.warn {
+                        "No record acceptor found for stream $streamId, skipping record emission."
+                    }
                     return EventType.RECORD_DISCARDED_BY_STREAM_ID
                 }
             return EventType.RECORD_EMITTED

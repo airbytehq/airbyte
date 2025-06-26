@@ -14,9 +14,9 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat
 import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium
 import io.airbyte.cdk.output.StandardOutputConsumer
-import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.NullProtoEncoder
+import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProto
@@ -55,7 +55,7 @@ sealed class FeedBootstrap<T : Feed>(
     val dataChannelMedium: DataChannelMedium,
     val bufferByteSizeThresholdForFlush: Int,
     val clock: Clock,
-    ) {
+) {
 
     /** Delegates to [StateManager.feeds]. */
     val feeds: List<Feed>
@@ -82,14 +82,20 @@ sealed class FeedBootstrap<T : Feed>(
             stream.id to EfficientStreamRecordConsumer(stream)
         }
 
-    fun streamJsonSocketRecordConsumers(socketJsonOutputConsumer: SocketJsonOutputConsumer): Map<StreamIdentifier, JsonSocketEfficientStreamRecordConsumer> =
+    fun streamJsonSocketRecordConsumers(
+        socketJsonOutputConsumer: SocketJsonOutputConsumer
+    ): Map<StreamIdentifier, JsonSocketEfficientStreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
             stream.id to JsonSocketEfficientStreamRecordConsumer(stream, socketJsonOutputConsumer)
         }
 
-    fun streamProtoRecordConsumers(socketProtoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
+    fun streamProtoRecordConsumers(
+        socketProtoOutputConsumer: SocketProtobufOutputConsumer,
+        partitionId: String?
+    ): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
+            stream.id to
+                ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
         }
 
     /**
@@ -99,14 +105,19 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    open inner class EfficientStreamRecordConsumer(override val stream: Stream, val outputDataChannel: OutputConsumer = outputConsumer) :
-        StreamRecordConsumer {
+    open inner class EfficientStreamRecordConsumer(
+        override val stream: Stream,
+        val outputDataChannel: OutputConsumer = outputConsumer
+    ) : StreamRecordConsumer {
 
         override fun close() {
             outputDataChannel.close()
         }
 
-        override fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?) {
+        override fun accept(
+            recordData: NativeRecordPayload,
+            changes: Map<Field, FieldValueChange>?
+        ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toJson())
             } else {
@@ -202,24 +213,34 @@ sealed class FeedBootstrap<T : Feed>(
                 )
     }
 
-    // JsonSocketEfficientStreamRecordConsumer is an EfficientStreamRecordConsumer created with a socket data channel resource
-    inner class JsonSocketEfficientStreamRecordConsumer(stream: Stream, outputer: OutputConsumer): EfficientStreamRecordConsumer(stream, outputer)
+    // JsonSocketEfficientStreamRecordConsumer is an EfficientStreamRecordConsumer created with a
+    // socket data channel resource
+    inner class JsonSocketEfficientStreamRecordConsumer(stream: Stream, outputer: OutputConsumer) :
+        EfficientStreamRecordConsumer(stream, outputer)
 
-    // ProtoEfficientStreamRecordConsumer is an optimizing record consumer emitting protobuf messages to the underlying output consumer
-    inner class ProtoEfficientStreamRecordConsumer(override val stream: Stream, boostedOutputConsumer: SocketProtobufOutputConsumer, val partitionId: String?) :
-        StreamRecordConsumer {
+    // ProtoEfficientStreamRecordConsumer is an optimizing record consumer emitting protobuf
+    // messages to the underlying output consumer
+    inner class ProtoEfficientStreamRecordConsumer(
+        override val stream: Stream,
+        boostedOutputConsumer: SocketProtobufOutputConsumer,
+        val partitionId: String?
+    ) : StreamRecordConsumer {
         val outputer: SocketProtobufOutputConsumer = boostedOutputConsumer
         override fun close() {
             outputer.close()
         }
 
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
-        override fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?) {
+        override fun accept(
+            recordData: NativeRecordPayload,
+            changes: Map<Field, FieldValueChange>?
+        ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toProto(defaultRecordData, valueVBuilder))
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
-                val c = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
+                val c =
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                 changes.forEach { (field: Field, fieldValueChange: FieldValueChange) ->
                     c.clear()
                         .setField(field.id)
@@ -231,15 +252,13 @@ sealed class FeedBootstrap<T : Feed>(
             }
         }
 
-        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder,) {
+        private fun acceptWithoutChanges(
+            recordData: AirbyteRecordMessageProtobuf.Builder,
+        ) {
             synchronized(this) {
-                outputer.accept(
-                    reusedMessageWithoutChanges
-                        .setRecord(recordData)
-                        .build())
+                outputer.accept(reusedMessageWithoutChanges.setRecord(recordData).build())
             }
         }
-
 
         private fun acceptWithChanges(
             recordData: AirbyteRecordMessageProtobuf.Builder,
@@ -247,11 +266,7 @@ sealed class FeedBootstrap<T : Feed>(
         ) {
             synchronized(this) {
                 recordData.setMeta(changes)
-                outputer.accept(
-                    reusedMessageWithoutChanges
-                        .setRecord(recordData)
-                        .build())
-
+                outputer.accept(reusedMessageWithoutChanges.setRecord(recordData).build())
             }
         }
 
@@ -277,11 +292,9 @@ sealed class FeedBootstrap<T : Feed>(
                 .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
                 .also { builder -> partitionId?.let { builder.setPartitionId(it) } }
                 .also { builder ->
-                    stream.schema.sortedBy { it.id }.forEach {
-                        builder.addData(
-                            NullProtoEncoder.encode(valueVBuilder, true)
-                        )
-                    }
+                    stream.schema
+                        .sortedBy { it.id }
+                        .forEach { builder.addData(NullProtoEncoder.encode(valueVBuilder, true)) }
                 }
 
         private val reusedRecordMessageWithoutChanges: AirbyteRecordMessageProtobuf.Builder =
@@ -295,7 +308,6 @@ sealed class FeedBootstrap<T : Feed>(
         val reusedMessageWithoutChanges: AirbyteMessageProtobuf.Builder =
             AirbyteMessageProtobuf.newBuilder()
 
-
         private val reusedRecordMessageWithChanges: AirbyteRecordMessageProtobuf.Builder =
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
@@ -306,7 +318,8 @@ sealed class FeedBootstrap<T : Feed>(
     companion object {
 
         @JvmStatic
-        private fun FieldValueChange.protobufChange(): AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType =
+        private fun FieldValueChange.protobufChange():
+            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType =
             when (this) {
                 FieldValueChange.RECORD_SIZE_LIMITATION_ERASURE ->
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
@@ -327,24 +340,33 @@ sealed class FeedBootstrap<T : Feed>(
             }
 
         @JvmStatic
-        private fun FieldValueChange.protobufReason(): AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType =
+        private fun FieldValueChange.protobufReason():
+            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType =
             when (this) {
                 FieldValueChange.RECORD_SIZE_LIMITATION_ERASURE ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_RECORD_SIZE_LIMITATION
                 FieldValueChange.RECORD_SIZE_LIMITATION_TRUNCATION ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_RECORD_SIZE_LIMITATION
                 FieldValueChange.FIELD_SIZE_LIMITATION_ERASURE ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_RECORD_SIZE_LIMITATION
                 FieldValueChange.FIELD_SIZE_LIMITATION_TRUNCATION ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RECORD_SIZE_LIMITATION
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_RECORD_SIZE_LIMITATION
                 FieldValueChange.DESERIALIZATION_FAILURE_TOTAL ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_SERIALIZATION_ERROR
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_SERIALIZATION_ERROR
                 FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_SERIALIZATION_ERROR
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_SERIALIZATION_ERROR
                 FieldValueChange.RETRIEVAL_FAILURE_TOTAL ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RETRIEVAL_ERROR
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_RETRIEVAL_ERROR
                 FieldValueChange.RETRIEVAL_FAILURE_PARTIAL ->
-                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType.SOURCE_RETRIEVAL_ERROR
+                    AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
+                        .SOURCE_RETRIEVAL_ERROR
             }
 
         @JvmStatic
@@ -402,9 +424,27 @@ sealed class FeedBootstrap<T : Feed>(
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
+                    GlobalFeedBootstrap(
+                        outputConsumer,
+                        metaFieldDecorator,
+                        stateManager,
+                        feed,
+                        dataChannelFormat,
+                        dataChannelMedium,
+                        bufferByteSizeThresholdForFlush,
+                        clock
+                    )
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
+                    StreamFeedBootstrap(
+                        outputConsumer,
+                        metaFieldDecorator,
+                        stateManager,
+                        feed,
+                        dataChannelFormat,
+                        dataChannelMedium,
+                        bufferByteSizeThresholdForFlush,
+                        clock
+                    )
             }
     }
 }
@@ -453,7 +493,17 @@ class GlobalFeedBootstrap(
     dataChannelMedium: DataChannelMedium,
     bufferByteSizeThresholdForFlush: Int,
     clock: Clock,
-    ) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
+) :
+    FeedBootstrap<Global>(
+        outputConsumer,
+        metaFieldDecorator,
+        stateManager,
+        global,
+        dataChannelFormat,
+        dataChannelMedium,
+        bufferByteSizeThresholdForFlush,
+        clock
+    )
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
@@ -465,13 +515,33 @@ class StreamFeedBootstrap(
     dataChannelMedium: DataChannelMedium,
     bufferByteSizeThresholdForFlush: Int,
     clock: Clock,
-    ) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock) {
+) :
+    FeedBootstrap<Stream>(
+        outputConsumer,
+        metaFieldDecorator,
+        stateManager,
+        stream,
+        dataChannelFormat,
+        dataChannelMedium,
+        bufferByteSizeThresholdForFlush,
+        clock
+    ) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun jsonSocketStreamRecordConsumer(socketJsonOutputConsumer: SocketJsonOutputConsumer): StreamRecordConsumer = JsonSocketEfficientStreamRecordConsumer(
-        feed.streams.first { feed.id == it.id },
-        socketJsonOutputConsumer)
-    fun protoStreamRecordConsumer(protoOutputConsumer: SocketProtobufOutputConsumer, partitionId: String?): ProtoEfficientStreamRecordConsumer = ProtoEfficientStreamRecordConsumer(
-        feed.streams.first { feed.id == it.id },
-        protoOutputConsumer, partitionId)
+    fun jsonSocketStreamRecordConsumer(
+        socketJsonOutputConsumer: SocketJsonOutputConsumer
+    ): StreamRecordConsumer =
+        JsonSocketEfficientStreamRecordConsumer(
+            feed.streams.first { feed.id == it.id },
+            socketJsonOutputConsumer
+        )
+    fun protoStreamRecordConsumer(
+        protoOutputConsumer: SocketProtobufOutputConsumer,
+        partitionId: String?
+    ): ProtoEfficientStreamRecordConsumer =
+        ProtoEfficientStreamRecordConsumer(
+            feed.streams.first { feed.id == it.id },
+            protoOutputConsumer,
+            partitionId
+        )
 }

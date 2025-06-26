@@ -41,11 +41,9 @@ class ReadOperation(
     val metaFieldDecorator: MetaFieldDecorator,
     val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactoriesSupplier:
-    List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
-    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}")
-    val dataChannelFormat: String,
-    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}")
-    val dataChannelMedium: String,
+        List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}") val dataChannelFormat: String,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String,
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
     // Injected by [ClockFactory]

@@ -62,7 +62,9 @@ class RootReader(
     private fun ensureDataChannelMediumFormat() {
         if (dataChannelMedium == DataChannelMedium.STDIO) {
             if (dataChannelFormat != DataChannelFormat.JSONL) {
-                throw IllegalArgumentException("Data channel format must be JSONL when medium is STDIO.")
+                throw IllegalArgumentException(
+                    "Data channel format must be JSONL when medium is STDIO."
+                )
             }
         }
     }
@@ -74,10 +76,15 @@ class RootReader(
         }
     }
 
-    val streamStatusManager = StreamStatusManager(stateManager.feeds, {
-        outputConsumer.accept(it)
-        if (dataChannelMedium == DataChannelMedium.SOCKET) PartitionReader.pendingStates.add(it)
-    })
+    val streamStatusManager =
+        StreamStatusManager(
+            stateManager.feeds,
+            {
+                outputConsumer.accept(it)
+                if (dataChannelMedium == DataChannelMedium.SOCKET)
+                    PartitionReader.pendingStates.add(it)
+            }
+        )
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
         readFeeds<Global>(listener)
@@ -96,7 +103,18 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed, resourceAcquirer, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock).read() }
+                    launch(coroutineName + handler) {
+                        FeedReader(
+                                this@RootReader,
+                                feed,
+                                resourceAcquirer,
+                                dataChannelFormat,
+                                dataChannelMedium,
+                                bufferByteSizeThresholdForFlush,
+                                clock
+                            )
+                            .read()
+                    }
                 }
             // Call listener hook.
             listener(feedJobs)

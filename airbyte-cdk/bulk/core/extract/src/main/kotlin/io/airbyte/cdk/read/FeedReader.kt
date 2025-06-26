@@ -44,7 +44,16 @@ class FeedReader(
 
     private val stateId: AtomicInteger = AtomicInteger(1)
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed, dataChannelFormat, dataChannelMedium, bufferByteSizeThresholdForFlush, clock)
+        FeedBootstrap.create(
+            root.outputConsumer,
+            root.metaFieldDecorator,
+            root.stateManager,
+            feed,
+            dataChannelFormat,
+            dataChannelMedium,
+            bufferByteSizeThresholdForFlush,
+            clock
+        )
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -301,13 +310,22 @@ class FeedReader(
                         "processing result (success = ${pendingResult.isSuccess}) from reading " +
                             label(pendingPartitionReaderID)
                     }
-                    val (opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?) =
+                    val (
+                        opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?
+                    ) =
                         pendingResult.getOrThrow()
-                    root.stateManager.scoped(feed).set(opaqueStateValue, numRecords, partitionId, when (dataChannelMedium) {
-                        // State messages in SOCKET mode have an incrementing integer ID.
-                      DataChannelMedium.SOCKET -> stateId.getAndIncrement()
-                      DataChannelMedium.STDIO -> null
-                    } )
+                    root.stateManager
+                        .scoped(feed)
+                        .set(
+                            opaqueStateValue,
+                            numRecords,
+                            partitionId,
+                            when (dataChannelMedium) {
+                                // State messages in SOCKET mode have an incrementing integer ID.
+                                DataChannelMedium.SOCKET -> stateId.getAndIncrement()
+                                DataChannelMedium.STDIO -> null
+                            }
+                        )
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"
                     }
@@ -326,26 +344,30 @@ class FeedReader(
 
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
     private fun doWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
-        val acquiredSocket: SocketResource.AcquiredSocket = resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET) ?:
-        throw IllegalStateException("No output socket available for checkpoint.")
+        val acquiredSocket: SocketResource.AcquiredSocket =
+            resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
+                ?: throw IllegalStateException("No output socket available for checkpoint.")
         acquiredSocket.use {
             OutputMessageRouter(
-                feedBootstrap.dataChannelMedium,
-                feedBootstrap.dataChannelFormat,
-                feedBootstrap.outputConsumer,
-                emptyMap(), feedBootstrap,
-                mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
-            ).use {
-                doWithRouter(it)
-            }
+                    feedBootstrap.dataChannelMedium,
+                    feedBootstrap.dataChannelFormat,
+                    feedBootstrap.outputConsumer,
+                    emptyMap(),
+                    feedBootstrap,
+                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
+                )
+                .use { doWithRouter(it) }
         }
     }
 
     // In STDIO mode (legacy) we emit state messages to standard output.
-    // In SOCKET mode we emil state messages to stadard output and also states and stream statuses are sent over sockets,
+    // In SOCKET mode we emil state messages to stadard output and also states and stream statuses
+    // are sent over sockets,
     // According to the configured format (json or protobuf).
-    // This function emit to stdout and also uses running partition readers to emit pending states and stream statuses.
-    // Finally when all readers are done, it acquires socket resource and use it to emit the pending states and stream statuses.
+    // This function emit to stdout and also uses running partition readers to emit pending states
+    // and stream statuses.
+    // Finally when all readers are done, it acquires socket resource and use it to emit the pending
+    // states and stream statuses.
     private fun maybeCheckpoint(finalCheckpoint: Boolean) {
         val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
         if (stateMessages.isEmpty() && PartitionReader.pendingStates.isEmpty()) {
@@ -368,17 +390,20 @@ class FeedReader(
             root.outputConsumer.accept(stateMessage)
             when (finalCheckpoint) {
                 false -> {
-                    // While there are still active PartitionReader instances we use them to emit state and status messages
+                    // While there are still active PartitionReader instances we use them to emit
+                    // state and status messages
                     PartitionReader.pendingStates.add(stateMessage)
                 }
                 true -> {
-                    // If this is the final checkpoint, we initialize the OutputMessageRouter and emit pending message thourgh it
+                    // If this is the final checkpoint, we initialize the OutputMessageRouter and
+                    // emit pending message thourgh it
                     doWithMessageRouter { it.acceptNonRecord(stateMessage) }
                 }
             }
         }
 
-        // If this is the final checkpoint, we initialzie the OutputMessageRouter and emit all pending messages through it
+        // If this is the final checkpoint, we initialzie the OutputMessageRouter and emit all
+        // pending messages through it
         if (finalCheckpoint) {
             doWithMessageRouter {
                 while (PartitionReader.pendingStates.isNotEmpty()) {
@@ -391,13 +416,14 @@ class FeedReader(
                             it.acceptNonRecord(message)
                         }
                         else -> {
-                            log.warn { "Unknown message type in pending states queue: ${message::class}" }
+                            log.warn {
+                                "Unknown message type in pending states queue: ${message::class}"
+                            }
                             continue // Skip unknown messages.
                         }
                     }
                 }
             }
         }
-
     }
 }

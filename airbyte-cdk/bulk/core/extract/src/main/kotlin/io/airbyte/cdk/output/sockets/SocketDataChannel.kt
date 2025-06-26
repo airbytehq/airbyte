@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output.sockets
 
 import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.*
@@ -21,7 +25,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-
 private val logger = KotlinLogging.logger {}
 
 interface SocketDataChannel {
@@ -44,19 +47,24 @@ interface SocketDataChannel {
     val available: Boolean
 }
 
-class UnixDomainSocketDataChannel(private val socketFilePath: String, private val probePacket: ProbePacket): SocketDataChannel {
+class UnixDomainSocketDataChannel(
+    private val socketFilePath: String,
+    private val probePacket: ProbePacket
+) : SocketDataChannel {
 
     private var socketStatus = AtomicReference<SocketDataChannel.SocketStatus>(SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
 
     override var outputStream: OutputStream? = null
     override val status: SocketDataChannel.SocketStatus
-        @Synchronized get() {
+        @Synchronized
+        get() {
             if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
         }
     override val available: Boolean
-        @Synchronized get() {
+        @Synchronized
+        get() {
             return socketStatus.get() == SOCKET_READY && socketBound.get().not()
         }
     /** Ensure the socket is still open and writable. */
@@ -81,7 +89,8 @@ class UnixDomainSocketDataChannel(private val socketFilePath: String, private va
         if (socketFile.exists()) {
             socketFile.delete()
         }
-        val socketAddress: UnixDomainSocketAddress? = UnixDomainSocketAddress.of(socketFile.toPath())
+        val socketAddress: UnixDomainSocketAddress? =
+            UnixDomainSocketAddress.of(socketFile.toPath())
 
         val serverSocketChannel: ServerSocketChannel =
             ServerSocketChannel.open(StandardProtocolFamily.UNIX)
@@ -126,7 +135,8 @@ interface SocketDataChannelFactory {
 }
 
 @Singleton
-class DefaultSocketDataChannelFactory(private val probePacket: ProbePacket): SocketDataChannelFactory {
+class DefaultSocketDataChannelFactory(private val probePacket: ProbePacket) :
+    SocketDataChannelFactory {
     override fun makeSocket(socketFilePath: String): SocketDataChannel =
         UnixDomainSocketDataChannel(socketFilePath, probePacket)
 }
@@ -134,15 +144,14 @@ class DefaultSocketDataChannelFactory(private val probePacket: ProbePacket): Soc
 private typealias ProbePacket = ByteArray
 
 /**
- * Factory to create a probe packet based on the configured format.
- * JSON format is a single newline character, while Protobuf format is a serialized AirbyteProbeMessageProtobuf.
+ * Factory to create a probe packet based on the configured format. JSON format is a single newline
+ * character, while Protobuf format is a serialized AirbyteProbeMessageProtobuf.
  */
 @Factory
 private class ProbePacketFactory() {
     @Singleton
     @Requires(property = FORMAT_PROPERTY, value = "JSONL")
-    fun simpleProbePacket(): ProbePacket =
-        byteArrayOf('\n'.code.toByte())
+    fun simpleProbePacket(): ProbePacket = byteArrayOf('\n'.code.toByte())
 
     @Singleton
     @Requires(property = FORMAT_PROPERTY, value = "PROTOBUF")
@@ -153,9 +162,9 @@ private class ProbePacketFactory() {
     }
 
     companion object {
-        val protoProbePacket: AirbyteMessage.AirbyteMessageProtobuf = AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
-            .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
-            .build()
+        val protoProbePacket: AirbyteMessage.AirbyteMessageProtobuf =
+            AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
+                .setProbe(AirbyteMessage.AirbyteProbeMessageProtobuf.newBuilder().build())
+                .build()
     }
-
 }

@@ -31,7 +31,9 @@ interface JdbcPartition<S : JdbcStreamState<*>> {
         streamState.sharedState.tryAcquireResourcesForCreator()
 
     /** Tries to acquire resources for [JdbcPartitionReader]. */
-    fun tryAcquireResourcesForReader(resourceTypes: List<ResourceType>): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? =
+    fun tryAcquireResourcesForReader(
+        resourceTypes: List<ResourceType>
+    ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? =
         // Acquire global resources by default.
         streamState.sharedState.tryAcquireResourcesForReader(resourceTypes)
 }

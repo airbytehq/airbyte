@@ -97,8 +97,11 @@ class MySqlSourceDebeziumOperations(
             val c: JsonCodec<*> = field.type.jsonEncoder as JsonCodec<*>
             data[field.id] ?: continue
             val a = c.decode(data[field.id])
-            resultRow[field.id] = FieldValueEncoder(
-                a, field.type.jsonEncoder as JsonCodec<Any>,)
+            resultRow[field.id] =
+                FieldValueEncoder(
+                    a,
+                    field.type.jsonEncoder as JsonCodec<Any>,
+                )
 
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
@@ -124,17 +127,18 @@ class MySqlSourceDebeziumOperations(
             CommonMetaField.CDC_UPDATED_AT.id,
             transactionTimestampJsonNode,
         )
-        resultRow[CommonMetaField.CDC_UPDATED_AT.id] = FieldValueEncoder(
-            transactionOffsetDateTime,
-            OffsetDateTimeCodec as JsonEncoder<Any>)
+        resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
+            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec as JsonEncoder<Any>)
 
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
-        resultRow[CommonMetaField.CDC_DELETED_AT.id] = FieldValueEncoder(
-            if (isDelete) transactionOffsetDateTime else null,
-            (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>)
+        resultRow[CommonMetaField.CDC_DELETED_AT.id] =
+            FieldValueEncoder(
+                if (isDelete) transactionOffsetDateTime else null,
+                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>
+            )
 
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
@@ -142,29 +146,26 @@ class MySqlSourceDebeziumOperations(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
             TextCodec.encode(position.fileName)
         )
-        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] = FieldValueEncoder(
-            position.fileName,
-            TextCodec as JsonEncoder<Any>)
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
+            FieldValueEncoder(position.fileName, TextCodec as JsonEncoder<Any>)
 
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             LongCodec.encode(position.position)
         )
-        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] = FieldValueEncoder(
-            position.position,
-            LongCodec as JsonEncoder<Any>)
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
+            FieldValueEncoder(position.position, LongCodec as JsonEncoder<Any>)
 
         // Set the _ab_cdc_cursor meta-field value.
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_CURSOR.id,
             LongCodec.encode(position.cursorValue)
         )
-        resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] = FieldValueEncoder(
-            position.cursorValue,
-            LongCodec as JsonEncoder<Any>)
+        resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
+            FieldValueEncoder(position.cursorValue, LongCodec as JsonEncoder<Any>)
 
         // Return a DeserializedRecord instance.
-//        return DeserializedRecord(data, changes = emptyMap())
+        //        return DeserializedRecord(data, changes = emptyMap())
         return DeserializedRecord(resultRow, emptyMap()) // TEMP
     }
 

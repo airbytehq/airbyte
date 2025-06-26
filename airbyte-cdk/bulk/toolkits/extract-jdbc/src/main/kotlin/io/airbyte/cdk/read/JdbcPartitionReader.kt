@@ -12,14 +12,12 @@ import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
-import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -41,33 +39,38 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val selectQuerier: SelectQuerier = sharedState.selectQuerier
 
     /** The [AcquiredResource] acquired for this [JdbcPartitionReader]. */
-
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
-    interface AcquiredResource: AutoCloseable {
+    interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val resourceTypes = when (streamState.streamFeedBootstrap.dataChannelMedium) {
-            STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
-            SOCKET -> listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
-
-        }
+        val resourceTypes =
+            when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+                SOCKET ->
+                    listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
+            }
         val resources: Map<ResourceType, AcquiredResource> =
             partition.tryAcquireResourcesForReader(resourceTypes)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         acquiredResources.set(resources)
 
-        outputMessageRouter = OutputMessageRouter(
-            streamState.streamFeedBootstrap.dataChannelMedium,
-            streamState.streamFeedBootstrap.dataChannelFormat,
-            streamState.streamFeedBootstrap.outputConsumer,
-            mapOf("partition_id" to partitionId),
-             streamState.streamFeedBootstrap,
-            acquiredResources.get().filter { it.value.resource != null }.map{ it.key to it.value.resource!! }.toMap()
-        )
+        outputMessageRouter =
+            OutputMessageRouter(
+                streamState.streamFeedBootstrap.dataChannelMedium,
+                streamState.streamFeedBootstrap.dataChannelFormat,
+                streamState.streamFeedBootstrap.outputConsumer,
+                mapOf("partition_id" to partitionId),
+                streamState.streamFeedBootstrap,
+                acquiredResources
+                    .get()
+                    .filter { it.value.resource != null }
+                    .map { it.key to it.value.resource!! }
+                    .toMap()
+            )
         outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
 
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
@@ -110,7 +113,6 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             }
         }
     }
-
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
@@ -151,10 +153,14 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         if (!runComplete.get()) throw RuntimeException("cannot checkpoint non-resumable read")
         // The run method executed to completion without a LIMIT clause.
         // This implies that the partition boundary has been reached.
-        return PartitionReadCheckpoint(partition.completeState, numRecords.get(), when (streamState.streamFeedBootstrap.dataChannelMedium) {
-            SOCKET -> partitionId
-            STDIO -> null
-        } )
+        return PartitionReadCheckpoint(
+            partition.completeState,
+            numRecords.get(),
+            when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                SOCKET -> partitionId
+                STDIO -> null
+            }
+        )
     }
 }
 
@@ -206,10 +212,14 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     override fun checkpoint(): PartitionReadCheckpoint {
         if (runComplete.get() && numRecords.get() < streamState.limit) {
             // The run method executed to completion with a LIMIT clause which was not reached.
-            return PartitionReadCheckpoint(partition.completeState, numRecords.get(), when (streamState.streamFeedBootstrap.dataChannelMedium) {
-                SOCKET -> partitionId
-                STDIO -> null
-            })
+            return PartitionReadCheckpoint(
+                partition.completeState,
+                numRecords.get(),
+                when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                    SOCKET -> partitionId
+                    STDIO -> null
+                }
+            )
         }
         // The run method ended because of either the LIMIT or the timeout.
         // Adjust the LIMIT value so that it grows or shrinks to try to fit the timeout.
@@ -226,9 +236,13 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             }
         }
         val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
-        return PartitionReadCheckpoint(checkpointState, numRecords.get(), when (streamState.streamFeedBootstrap.dataChannelMedium) {
-            SOCKET -> partitionId
-            STDIO -> null
-        })
+        return PartitionReadCheckpoint(
+            checkpointState,
+            numRecords.get(),
+            when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                SOCKET -> partitionId
+                STDIO -> null
+            }
+        )
     }
 }
