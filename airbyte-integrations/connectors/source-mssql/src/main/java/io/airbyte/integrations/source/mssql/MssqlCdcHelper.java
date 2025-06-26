@@ -90,7 +90,13 @@ public class MssqlCdcHelper {
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
-    props.setProperty("message.key.columns", getMessageKeyColumnValue(catalog));
+
+    final String msgKeyColumns = getMessageKeyColumnValue(catalog);
+    System.out.println("msgKeyColumns: " + msgKeyColumns);
+    if (isCdc(config) && !msgKeyColumns.isEmpty()) {
+      // If the replication method is CDC, we need to set the message key columns
+      props.setProperty("message.key.columns", msgKeyColumns);
+    }
 
     final Duration heartbeatInterval =
         (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())

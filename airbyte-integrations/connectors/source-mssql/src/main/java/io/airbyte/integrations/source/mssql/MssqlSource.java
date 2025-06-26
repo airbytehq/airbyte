@@ -521,15 +521,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   // Note: in place mutation.
-  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
-    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
-    }
-
-    return stream;
-  }
-
-  // Note: in place mutation.
   private static AirbyteStream setIncrementalToSourceDefined(final AirbyteStream stream) {
     if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
       stream.setSourceDefinedCursor(true);
