@@ -20,7 +20,7 @@ from source_exact.streams import (
     SyncPayrollEmployments,
     SyncProjectProjects,
     SyncProjectTimeCostTransactions,
-    SyncSalesInvoiceSalesInvoices,
+    SyncSalesInvoiceSalesInvoices, HRMDepartments,
 )
 
 
@@ -51,6 +51,7 @@ class SourceExact(AbstractSource):
         return [
             CRMAccountClassifications(config),
             CRMAccountClassificationNames(config),
+            HRMDepartments(config),
             ProjectInvoiceTerms(config),
             SyncCRMAccounts(config),
             SyncDeleted(config),

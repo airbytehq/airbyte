@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "title": "SyncProjectProjects",
+  "title": "ProjectInvoiceTerms",
   "additionalProperties": true,
   "properties": {
     "ID": {
