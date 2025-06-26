@@ -3728,6 +3728,11 @@ definitions:
         value: |
           {% set v = record.get('Ctr') %}
           {{ v | replace('%', '') | float if v is not none and v != "" else None }}
+      - type: AddedFieldDefinition
+        path:
+          - AllRevenue
+        value: |
+          {{ record['AllRevenue'] | replace(',', '') | float if record.get('AllRevenue') else 0.0 }}
 
 dynamic_streams:
   # Report streams
@@ -5032,6 +5037,9 @@ dynamic_streams:
               - type: AddFields
                 fields:
                   $ref: "#/definitions/transformations/hourly_report_transformations"
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_report_transformations"
           - name: product_search_query_performance_report_daily
             parameters:
               report_aggregation: Daily
@@ -5047,6 +5055,10 @@ dynamic_streams:
                 $ref: "#/schemas/product_search_query_performance_report"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_report_transformations"
           - name: product_search_query_performance_report_weekly
             parameters:
               report_aggregation: Weekly
@@ -5062,6 +5074,10 @@ dynamic_streams:
                 $ref: "#/schemas/product_search_query_performance_report"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_report_transformations"
           - name: product_search_query_performance_report_monthly
             parameters:
               report_aggregation: Monthly
@@ -5077,6 +5093,10 @@ dynamic_streams:
                 $ref: "#/schemas/product_search_query_performance_report"
             incremental_sync:
               $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+            transformations:
+              - type: AddFields
+                fields:
+                  $ref: "#/definitions/transformations/search_query_performance_report_transformations"
       components_mapping:
         - type: ComponentMappingDefinition
           create_or_update: true
