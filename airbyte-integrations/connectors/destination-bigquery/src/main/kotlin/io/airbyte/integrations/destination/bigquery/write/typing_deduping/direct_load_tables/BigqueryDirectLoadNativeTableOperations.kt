@@ -333,12 +333,19 @@ class BigqueryDirectLoadNativeTableOperations(
             typeChangePlans.map { plan ->
                 """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
             }
-        databaseHandler.executeWithRetries(
-            """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
-        )
-        databaseHandler.executeWithRetries(
-            """ALTER TABLE $tableId ${addTempColumns.joinToString(",")}"""
-        )
+        // Need to add explicit checks on both branches.
+        // If we have no added/dropped columns, we will skip the first alter table.
+        // If we have no changed columns, we will skip the second alter.
+        if (initialAlterations.isNotEmpty()) {
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
+            )
+        }
+        if (addTempColumns.isNotEmpty()) {
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId ${addTempColumns.joinToString(",")}"""
+            )
+        }
 
         // now we execute the rest of the table alterations.
         // these happen on a per-column basis, so that a failed UPDATE statement in one column
