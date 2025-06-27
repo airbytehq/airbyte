@@ -35,6 +35,18 @@ class NamespaceMapper(
     private data class Key(val ns: String?, val name: String) {
         private val hc: Int = 31 * (ns?.hashCode() ?: 0) + name.hashCode()
         override fun hashCode() = hc
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Key
+
+            if (hc != other.hc) return false
+            if (ns != other.ns) return false
+            if (name != other.name) return false
+
+            return true
+        }
     }
 
     private val cache = ConcurrentHashMap<Key, DestinationStream.Descriptor>(128)
