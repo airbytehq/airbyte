@@ -53,7 +53,7 @@ private fun merge(raw: DestinationRecordSource, data: Map<String, Any>): Destina
         }
         is DestinationRecordProtobufSource -> {
             data.forEach {
-                (k, v) ->
+                (_, v) ->
                     val airbyteVal = AirbyteValue.from(v)
                     raw.source.record.dataList.add(
                         AirbyteValueToProtobuf().toProtobuf(airbyteVal, airbyteVal.airbyteType)
