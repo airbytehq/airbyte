@@ -14,7 +14,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 class AirbyteValueJsonlProxy(private val data: ObjectNode) : AirbyteValueProxy {
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
     private fun <T> coerce(value: JsonNode?, type: AirbyteType): T? =
         when (type) {
             is ArrayType,
