@@ -15,6 +15,7 @@ import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
 import io.airbyte.integrations.sourceTesting.tests.FullRefreshTest
 import java.io.File
 
+@Suppress("UNCHECKED_CAST")
 class SnowflakeSourceFullRefreshTest :
     FullRefreshTest(
         testDbExecutor = createTestDbExecutor(),
