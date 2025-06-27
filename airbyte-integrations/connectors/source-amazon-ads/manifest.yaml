@@ -3533,6 +3533,13 @@ spec:
             path_in_connector_config:
               - client_secret
 
+# Amazon does not publicly document their rate limits and interestingly can vary by region and 
+# even by an arbitrary utilization period for reports which can have higher or lower rate limits
+# depending on the time.
+# https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
+#
+# We've set the default to 10 so we can leverage some concurrency, but this can be tuned as we
+# continue to observe.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
