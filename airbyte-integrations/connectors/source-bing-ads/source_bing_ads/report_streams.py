@@ -5,7 +5,7 @@
 import re
 import xml.etree.ElementTree as ET
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, List, Mapping, Tuple, Union
 from urllib.parse import urlparse
 
 from bingads.v13.internal.reporting.row_report import _RowReport
@@ -47,79 +47,6 @@ class AccountPerformanceReportWeekly(AccountPerformanceReport):
 
 
 class AccountPerformanceReportMonthly(AccountPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class SearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    report_name: str = "SearchQueryPerformanceReport"
-    report_schema_name = "search_query_performance_report"
-
-    primary_key = [
-        "SearchQuery",
-        "Keyword",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "DeliveredMatchType",
-        "DeviceType",
-        "DeviceOS",
-        "TopVsOther",
-    ]
-
-
-class SearchQueryPerformanceReportHourly(HourlyReportTransformerMixin, SearchQueryPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "search_query_performance_report_hourly"
-
-
-class SearchQueryPerformanceReportDaily(SearchQueryPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class SearchQueryPerformanceReportWeekly(SearchQueryPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
-    report_aggregation = "Monthly"
-
-
-class ProductSearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/productsearchqueryperformancereportrequest?view=bingads-13
-    """
-
-    report_name: str = "ProductSearchQueryPerformanceReport"
-    report_schema_name = "product_search_query_performance_report"
-    primary_key = [
-        "AccountId",
-        "TimePeriod",
-        "CampaignId",
-        "AdId",
-        "AdGroupId",
-        "SearchQuery",
-        "DeviceType",
-        "DeviceOS",
-        "Language",
-        "Network",
-    ]
-
-
-class ProductSearchQueryPerformanceReportHourly(HourlyReportTransformerMixin, ProductSearchQueryPerformanceReport):
-    report_aggregation = "Hourly"
-    report_schema_name = "product_search_query_performance_report_hourly"
-
-
-class ProductSearchQueryPerformanceReportDaily(ProductSearchQueryPerformanceReport):
-    report_aggregation = "Daily"
-
-
-class ProductSearchQueryPerformanceReportWeekly(ProductSearchQueryPerformanceReport):
-    report_aggregation = "Weekly"
-
-
-class ProductSearchQueryPerformanceReportMonthly(ProductSearchQueryPerformanceReport):
     report_aggregation = "Monthly"
 
 
