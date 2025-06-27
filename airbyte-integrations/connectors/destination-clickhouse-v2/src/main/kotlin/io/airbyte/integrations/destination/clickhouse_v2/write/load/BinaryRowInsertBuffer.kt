@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.load
 
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
+import com.clickhouse.client.api.insert.InsertSettings
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
@@ -16,8 +17,6 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
@@ -26,6 +25,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -39,7 +39,7 @@ private val log = KotlinLogging.logger {}
  */
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
-    justification = "suspend and fb's non-null analysis don't play well"
+    justification = "suspend and fb's non-null analysis don't play well",
 )
 class BinaryRowInsertBuffer(
     val tableName: TableName,
@@ -65,7 +65,7 @@ class BinaryRowInsertBuffer(
                 .insert(
                     "`${tableName.namespace}`.`${tableName.name}`",
                     inner.toInputStream(),
-                    ClickHouseFormat.RowBinary
+                    ClickHouseFormat.RowBinary,
                 )
                 .await()
 
@@ -73,14 +73,11 @@ class BinaryRowInsertBuffer(
     }
 
     private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {
-        println("Writing $columnName: $abValue")
+        println("In the column $columnName pushing value: $abValue with type: ${abValue.javaClass}")
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
-            is ObjectValue -> {
-                println(abValue.values.serializeToString())
-                writer.setValue(columnName, abValue.values.serializeToString())
-            }
+            is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is BooleanValue -> writer.setValue(columnName, abValue.value)
             is IntegerValue -> writer.setValue(columnName, abValue.value)

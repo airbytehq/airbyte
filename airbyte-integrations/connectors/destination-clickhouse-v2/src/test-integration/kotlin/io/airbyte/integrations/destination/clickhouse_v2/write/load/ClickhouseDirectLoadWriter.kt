@@ -55,9 +55,10 @@ class ClickhouseDirectLoadWriter :
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
         stringifySchemalessObjects = true,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRICT_STRINGIFY,
+        stringifyUnionObjects = true,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
@@ -124,7 +125,8 @@ class ClickhouseDataDumper(
             val dataMap = linkedMapOf<String, AirbyteValue>()
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
-                .forEach { entry -> dataMap[entry.key] = AirbyteValue.from(entry.value) }
+                .forEach { entry ->
+                    dataMap[entry.key] = AirbyteValue.from(entry.value) }
             val outputRecord =
                 OutputRecord(
                     rawId = record[Meta.COLUMN_NAME_AB_RAW_ID] as String,

@@ -88,7 +88,7 @@ class ClickhouseSqlGenerator(
         } else {
             pksAsString
         }})
-            """)
+            """.trimIndent())
 
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
