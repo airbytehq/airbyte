@@ -22,7 +22,7 @@ class SocketProtobufOutputConsumer(
 ) : OutputConsumer(clock) {
     private val log = KotlinLogging.logger {}
     private val buffer = ByteArrayOutputStream()
-    private val c = CodedOutputStream.newInstance(buffer)
+    private val cos = CodedOutputStream.newInstance(buffer)
 
     override fun accept(airbyteMessage: io.airbyte.protocol.models.v0.AirbyteMessage) {
         // This method effectively println's its JSON-serialized argument.
@@ -52,10 +52,10 @@ class SocketProtobufOutputConsumer(
     }
     fun accept(airbyteProtoMessage: AirbyteMessageProtobuf) {
         synchronized(this) {
-//            airbyteProtoMessage.writeDelimitedTo(buffer)
-            c.writeUInt32NoTag(airbyteProtoMessage.serializedSize)
-            airbyteProtoMessage.writeTo(c)
-//            c.flush()
+            // This is the equivalent of writeDelimitedTo,
+            // Writing the size of the message first.
+            cos.writeUInt32NoTag(airbyteProtoMessage.serializedSize)
+            airbyteProtoMessage.writeTo(cos)
             if (buffer.size() >= bufferByteSizeThresholdForFlush) {
                 withLockFlush()
             }
@@ -63,6 +63,7 @@ class SocketProtobufOutputConsumer(
     }
 
     private fun withLockFlush() {
+        cos.flush()
         if (buffer.size() > 0) {
             buffer.writeTo(dataChannel.outputStream)
             buffer.reset()
@@ -71,7 +72,6 @@ class SocketProtobufOutputConsumer(
 
     override fun close() {
         synchronized(this) {
-            c.flush()
             // Flush any remaining buffer contents to stdout before closing.
             withLockFlush()
         }
