@@ -22,6 +22,9 @@ import java.time.OffsetTime
 import java.time.ZonedDateTime
 
 sealed interface AirbyteValue {
+    val airbyteType: AirbyteType
+        get() = airbyteTypeOf(this)
+
     companion object {
         fun from(value: Any?): AirbyteValue =
             when (value) {
@@ -48,6 +51,23 @@ sealed interface AirbyteValue {
                         "Unrecognized value (${value.javaClass.name}: $value"
                     )
             }
+
+        fun airbyteTypeOf(value: AirbyteValue): AirbyteType = when (value) {
+            // ArrayType requires the type of the object which we do not convey
+            is ArrayValue -> TODO()
+            is BooleanValue -> BooleanType
+            is DateValue -> DateType
+            is IntegerValue -> IntegerType
+            // Null is awkward because the value doesn't track the actual type information
+            is NullValue -> TODO()
+            is NumberValue -> NumberType
+            is ObjectValue -> ObjectTypeWithoutSchema
+            is StringValue -> StringType
+            is TimeWithTimezoneValue -> TimeTypeWithTimezone
+            is TimeWithoutTimezoneValue -> TimeTypeWithoutTimezone
+            is TimestampWithTimezoneValue -> TimestampTypeWithTimezone
+            is TimestampWithoutTimezoneValue -> TimestampTypeWithoutTimezone
+        }
     }
 }
 
