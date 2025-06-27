@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from datetime import timedelta
 from typing import Any, List, Mapping
 
 import pendulum
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.call_rate import APIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_slack.streams import Threads
@@ -40,8 +41,17 @@ class SourceSlack(YamlDeclarativeSource):
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
         channel_filter = config.get("channel_filter", [])
         include_private_channels = config.get("include_private_channels", False)
+        api_budget = APIBudget(
+            policies=[
+                MovingWindowCallRatePolicy(
+                    rates=[Rate(limit=1, interval=timedelta(seconds=60.0))],
+                    matchers=[HttpRequestMatcher(method="GET", url="^/conversations.replies($|/)")],
+                )
+            ]
+        )
         threads = Threads(
             authenticator=authenticator,
+            api_budget=api_budget,
             default_start_date=default_start_date,
             end_date=end_date,
             lookback_window=threads_lookback_window,

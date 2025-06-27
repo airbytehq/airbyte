@@ -3,7 +3,7 @@
 import logging
 from typing import Any, List, Mapping
 
-from airbyte_cdk import AirbyteEntrypoint
+from airbyte_cdk import AirbyteEntrypoint, emit_configuration_as_airbyte_control_message
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from source_slack import SourceSlack
@@ -69,6 +69,4 @@ class MigrateLegacyConfig:
             config = source.read_config(config_path)
             # migration check
             if cls._should_migrate(config):
-                cls._emit_control_message(
-                    cls._modify_and_save(config_path, source, config),
-                )
+                emit_configuration_as_airbyte_control_message(cls._modify_and_save(config_path, source, config))
