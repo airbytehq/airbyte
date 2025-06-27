@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.load
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
+import com.clickhouse.client.api.internal.ServerSettings
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
@@ -54,7 +55,7 @@ class ClickhouseDirectLoadWriter :
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRICT_STRINGIFY,
@@ -118,6 +119,8 @@ class ClickhouseDataDumper(
             client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
 
         val schema = client.getTableSchema(namespacedTableName)
+        println("Schema:")
+        println(schema.columns)
 
         val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response, schema)
         while (reader.hasNext()) {
@@ -126,6 +129,8 @@ class ClickhouseDataDumper(
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .forEach { entry ->
+                    if (entry.value != null)
+                        println("${entry.key} -> ${entry.value} with value type: ${entry.value.javaClass}")
                     dataMap[entry.key] = AirbyteValue.from(entry.value) }
             val outputRecord =
                 OutputRecord(
@@ -228,6 +233,11 @@ object ClientProvider {
             .addEndpoint(config.endpoint)
             .setDefaultDatabase(config.resolvedDatabase)
             .retryOnFailures(ClientFaultCause.None)
+            // // allow experimental JSON type
+            // .serverSetting("allow_experimental_json_type", "1")
+            // // allow JSON transcoding as a string
+            // .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
+            // .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
             .build()
     }
 }

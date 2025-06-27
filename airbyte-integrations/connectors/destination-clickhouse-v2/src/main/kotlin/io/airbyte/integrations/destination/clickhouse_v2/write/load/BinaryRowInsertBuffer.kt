@@ -73,11 +73,14 @@ class BinaryRowInsertBuffer(
     }
 
     private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {
-        println("In the column $columnName pushing value: $abValue with type: ${abValue.javaClass}")
+        // println("In the column $columnName pushing value: $abValue with type: ${abValue.javaClass}")
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
-            is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
+            is ObjectValue -> {
+                println(abValue.values.serializeToString())
+                writer.setValue(columnName, abValue.values.serializeToString())
+            }
             is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is BooleanValue -> writer.setValue(columnName, abValue.value)
             is IntegerValue -> writer.setValue(columnName, abValue.value)
