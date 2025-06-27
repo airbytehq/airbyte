@@ -130,7 +130,7 @@ class BinaryRowInsertBuffer(
             is IntegerValue -> write(columnName, abValue.value, dataType, IntegerType)
             is NumberValue -> write(columnName, abValue.value, dataType, NumberType)
             is StringValue -> write(columnName, abValue.value, dataType, StringType)
-            is DateValue -> writer.setValue(columnName, abValue.value)
+            is DateValue -> write(columnName, abValue.value, dataType, DateType)
             is TimeWithTimezoneValue ->
                 write(columnName, abValue.value, dataType, TimeTypeWithTimezone)
             is TimeWithoutTimezoneValue ->

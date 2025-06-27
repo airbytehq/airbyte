@@ -40,9 +40,13 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 
-class ClickhouseDirectLoadWriter :
+class ClickhouseDirectLoadWriterWithJson: ClickhouseDirectLoadWriter("valid_connection.json")
+
+class ClickhouseDirectLoadWriterWithoutJson: ClickhouseDirectLoadWriter("valid_connection_no_json.json")
+
+abstract class ClickhouseDirectLoadWriter(specFile: String) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
+        configContents = Files.readString(Utils.getConfigPath(specFile)),
         configSpecClass = ClickhouseSpecificationOss::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->
