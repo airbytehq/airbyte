@@ -219,6 +219,20 @@ const deployAirbyte = {
       type: "doc",
       id: "deploying-airbyte/abctl-ec2",
     },
+    {
+      type: "category",
+      label: "abctl",
+      link: {
+        type: "doc",
+        id: "deploying-airbyte/abctl/index",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "deploying-airbyte/troubleshoot-deploy",
+        },
+      ],
+    },
   ],
 };
 
