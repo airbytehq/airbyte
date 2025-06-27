@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -22,6 +23,7 @@ data class MSSQLConfiguration(
     val password: String?,
     val jdbcUrlParams: String?,
     val sslMethod: EncryptionMethod,
+    val ssh: SshTunnelMethodConfiguration?,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
     override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
@@ -69,6 +71,7 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
             mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
+            ssh = spec.tunnelMethodJson
         )
     }
 }

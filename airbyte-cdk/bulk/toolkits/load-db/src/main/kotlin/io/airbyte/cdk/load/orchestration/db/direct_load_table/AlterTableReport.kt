@@ -8,6 +8,10 @@ data class AlterTableReport<Type>(
     val columnsToAdd: List<ColumnAdd<Type>>,
     val columnsToRemove: List<String>,
     val columnsToChangeType: List<ColumnChange<Type>>,
+    /**
+     * A list of all columns that do not need to be changed/dropped. Includes the `_airbyte_meta`
+     * columns.
+     */
     val columnsToRetain: List<String>,
 ) {
     /**

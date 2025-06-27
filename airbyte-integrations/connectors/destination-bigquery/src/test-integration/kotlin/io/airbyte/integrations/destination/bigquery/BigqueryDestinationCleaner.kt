@@ -15,16 +15,21 @@ import kotlinx.coroutines.runBlocking
 
 private val logger = KotlinLogging.logger {}
 
+// set a more aggressive retention policy.
+// bigquery is _really_ slow at listing datasets/tables.
+const val RETENTION_DAYS = 7L
+
 object BigqueryDestinationCleaner : DestinationCleaner {
     private val actualCleaner =
-        BigqueryDestinationCleanerInstance(
+        BigqueryInternalTableDatasetCleaner(
                 BigQueryDestinationTestUtils.standardInsertRawOverrideConfig
             )
             .compose(
-                BigqueryDestinationCleanerInstance(
+                BigqueryInternalTableDatasetCleaner(
                     BigQueryDestinationTestUtils.standardInsertConfig
                 )
             )
+            .compose(BigqueryDatasetCleaner(BigQueryDestinationTestUtils.standardInsertConfig))
 
     override fun cleanup() {
         // only run the cleaner sometimes - our nightlies will do this enough of the time
@@ -38,15 +43,13 @@ object BigqueryDestinationCleaner : DestinationCleaner {
     }
 }
 
-class BigqueryDestinationCleanerInstance(private val configString: String) : DestinationCleaner {
+class BigqueryInternalTableDatasetCleaner(private val configString: String) : DestinationCleaner {
     override fun cleanup() {
         val config = BigQueryDestinationTestUtils.parseConfig(configString)
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
-
         runBlocking(Dispatchers.IO) {
-            logger.info { "Cleaning up old raw tables in ${config.rawTableDataset}" }
-
-            var rawTables = bigquery.listTables(config.rawTableDataset)
+            logger.info { "Cleaning up old raw tables in ${config.internalTableDataset}" }
+            var rawTables = bigquery.listTables(config.internalTableDataset)
             // Page.iterateAll is _really_ slow, even if the interior function is `launch`-ed.
             // Manually page through, and launch all the deletion work, so that we're always
             // fetching new pages.
@@ -81,7 +84,15 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
                     break
                 }
             }
+        }
+    }
+}
 
+class BigqueryDatasetCleaner(private val configString: String) : DestinationCleaner {
+    override fun cleanup() {
+        val config = BigQueryDestinationTestUtils.parseConfig(configString)
+        val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
+        runBlocking(Dispatchers.IO) {
             logger.info { "Cleaning up old datasets in ${config.projectId}" }
             var datasets = bigquery.listDatasets(config.projectId)
             while (true) {
@@ -116,11 +127,5 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
                 }
             }
         }
-    }
-
-    companion object {
-        // set a more aggressive retention policy.
-        // bigquery is _really_ slow at listing datasets/tables.
-        const val RETENTION_DAYS = 7L
     }
 }

@@ -1,5 +1,5 @@
 ---
-dockerRepository: airbyte/destination-cobra
+dockerRepository: airbyte/destination-salesforce
 ---
 # Salesforce Destination
 

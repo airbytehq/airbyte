@@ -90,7 +90,9 @@ internal class DataSourceFactoryTest {
                 password = "super secure o//",
                 jdbcUrlParams = null,
                 sslMethod = Unencrypted(),
-                MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration())
+                ssh = null,
+                mssqlLoadTypeConfiguration =
+                    MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration()),
             )
     }
 }
