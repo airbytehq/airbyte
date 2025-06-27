@@ -42,19 +42,25 @@ class CheckVersionIncrement(Check):
 
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
-        cwd = Path.cwd()
+        cwd = Path.cwd().absolute()
         repo_name = "airbyte-enterprise" if "airbyte-enterprise" in cwd.parts else "airbyte"
 
         fetch_command = [
             "gh",
             "api",
-            f"repos/airbytehq/{repo_name}/contents/airbyte-integrations/connectors/{connector.technical_name}/{consts.METADATA_FILE_NAME}",
+            f"repos/airbytehq/{repo_name}/contents/airbyte-integrations/connectors/{connector.technical_name}/{consts.METADATA_FILE_NAME}?ref=master",
             "-H",
             "Accept: application/vnd.github.v3.raw",
         ]
 
         try:
-            completed_process = subprocess.run(fetch_command, text=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            completed_process = subprocess.run(
+                fetch_command,
+                text=True,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
 
             # New connectors will not have a metadata file in master
             if completed_process.returncode != 0:
