@@ -36,10 +36,10 @@ fun DestinationRecordRaw.toDlqRecord(data: Map<String, Any>): DestinationRecordR
 fun DestinationStream.newDlqRecord(data: Map<String, Any>): DestinationRecordRaw =
     DestinationRecordRaw(
         stream = this,
-          rawData = DestinationRecordJsonSource(data.toAirbyteRecordMessage()),
+        rawData = DestinationRecordJsonSource(data.toAirbyteRecordMessage()),
         // We should be reporting the original record so in this flow, do not fill in anything.
-            serializedSizeBytes = 0,
-          checkpointId = null,
+        serializedSizeBytes = 0,
+        checkpointId = null,
         airbyteRawId = UUID.randomUUID(),
     )
 
