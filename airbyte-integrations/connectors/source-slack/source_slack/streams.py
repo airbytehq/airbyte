@@ -4,13 +4,16 @@
 
 
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
 from pendulum import DateTime
 
+from airbyte_cdk import MovingWindowCallRatePolicy
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.call_rate import APIBudget, HttpRequestMatcher, Rate
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
@@ -277,6 +280,14 @@ class Threads(IncrementalMessageStream):
 
         messages_stream = ChannelMessages(
             parent=channels_stream,
+            api_budget=APIBudget(
+                policies=[
+                    MovingWindowCallRatePolicy(
+                        rates=[Rate(limit=1, interval=timedelta(seconds=60.0))],
+                        matchers=[HttpRequestMatcher(method="GET", url="^/conversations.history($|/)")],
+                    )
+                ]
+            ),
             authenticator=self._http_client._session.auth,
             default_start_date=messages_start_date,
             end_date=self._end_ts and pendulum.from_timestamp(self._end_ts),

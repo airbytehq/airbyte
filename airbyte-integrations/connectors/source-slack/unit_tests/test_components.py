@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+import json
 from unittest.mock import MagicMock
 
 import pendulum
@@ -23,8 +23,11 @@ def get_stream_by_name(stream_name, config):
 
 
 def test_channel_members_extractor(token_config):
+    json_response = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
     response_mock = MagicMock()
-    response_mock.json.return_value = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
+    response_mock.json.return_value = json_response
+    response_mock.content = json.dumps(json_response).encode("utf-8")
+    response_mock.text = json.dumps(json_response)
     records = ChannelMembersExtractor(config=token_config, parameters={}, field_path=["members"]).extract_records(response=response_mock)
     assert records == [{"member_id": "U023BECGF"}, {"member_id": "U061F7AUR"}, {"member_id": "W012A3CDE"}]
 

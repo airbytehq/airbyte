@@ -24,6 +24,18 @@ definitions:
         {{ not response.get("response_metadata", {}).get("next_cursor", {})
         }}
 
+  # This is temporarily needed to reduce the number of records per request to abide by
+  # Slack's new Terms of Service for non-Marketplace apps. I'm not 100% sure this is
+  # needed, but until they release the changes, we don't know what type of errors we'll
+  # receive back.
+  reduced_rate_limit_pagination_strategy:
+    type: CursorPagination
+    page_size: 15
+    cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+    stop_condition: >-
+      {{ not response.get("response_metadata", {}).get("next_cursor", {})
+      }}
+
   api_token_auth:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['api_token'] }}"
@@ -63,7 +75,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - "{{ parameters['field_path'] }}"
+        - "{{ parameters['extract_field_path'] }}"
 
   retriever:
     type: SimpleRetriever
@@ -113,14 +125,14 @@ definitions:
     $parameters:
       name: users
       path: users.list
-      field_path: members
+      extract_field_path: members
 
   channels_stream:
     primary_key: "id"
     $parameters:
       name: channels
       path: conversations.list
-      field_path: channels
+      extract_field_path: channels
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -159,7 +171,7 @@ definitions:
     $parameters:
       name: channel_members
       path: conversations.members
-      field_path: members
+      extract_field_path: members
     primary_key:
       - member_id
       - channel_id
@@ -184,7 +196,7 @@ definitions:
     $parameters:
       name: channel_messages
       path: conversations.history
-      field_path: messages
+      extract_field_path: messages
     primary_key:
       - channel_id
       - ts
@@ -198,6 +210,8 @@ definitions:
         $ref: "#/definitions/selector"
       paginator:
         $ref: "#/definitions/default_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/reduced_rate_limit_pagination_strategy"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -207,7 +221,7 @@ definitions:
               $parameters:
                 name: channels
                 path: conversations.list
-                field_path: channels
+                extract_field_path: channels
             parent_key: id
             partition_field: channel
             request_option:
@@ -258,3 +272,21 @@ check:
   type: CheckStream
   stream_names:
     - users
+
+# Slack is changing the Terms of Service of their API to significantly reduce the rate limits
+# of their API for non-marketplace OAuth applications. If we are subject to the new rate limits
+# while we're getting our new Marketplace application approved, we need this new budget temporarily
+# so that we can still sync data, albeit at a extremely slow rate. 1 request per minute, 15 messages
+# per request
+#
+# For more info see: https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/conversations.history($|/)" # matches '/conversations.history'
