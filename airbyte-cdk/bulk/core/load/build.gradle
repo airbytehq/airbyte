@@ -16,6 +16,7 @@ dependencies {
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'org.apache.commons:commons-lang3:3.17.0'
+    implementation 'io.github.oshai:kotlin-logging:7.0.7'
 
     // For ranges and rangesets
     implementation("com.google.guava:guava:33.3.0-jre")

@@ -10,11 +10,14 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 internal class AirbyteValueProxyTest {
@@ -170,6 +173,47 @@ internal class AirbyteValueProxyTest {
         stream.airbyteValueProxyFieldAccessors.forEach { field ->
             val value = proxy.getAirbyteValue(field)
             assertNotNull(value)
+        }
+    }
+
+    @Test
+    fun `json to airbyte value with incompatible values`() {
+        val expectedNullFields =
+            listOf(
+                "numberField",
+                "integerField",
+                "booleanField",
+                "timestampWithTimezoneField",
+                "timestampWithoutTimezoneField",
+                "timeWithTimezoneField",
+                "timeWithoutTimezoneField",
+                "dateField"
+            )
+        val record =
+            """
+                        {
+                          "id": 5,
+                          "stringField": {},
+                          "numberField": "foo",
+                          "integerField": "foo",
+                          "booleanField": "foo",
+                          "timestampWithTimezoneField": "foo",
+                          "timestampWithoutTimezoneField": "foo",
+                          "timeWithTimezoneField": "foo",
+                          "timeWithoutTimezoneField": "foo",
+                          "dateField": "foo"
+                        }
+                    """.trimIndent()
+        val json = Jsons.readValue(record, JsonNode::class.java)
+        val proxy = AirbyteValueJsonlProxy(json as ObjectNode)
+        val proxyFields = stream.airbyteValueProxyFieldAccessors
+        proxyFields.forEach { field ->
+            val value = proxy.getAirbyteValue(field)
+            if (field.name in expectedNullFields) {
+                assertNull(value)
+            } else {
+                assertNotNull(value)
+            }
         }
     }
 }

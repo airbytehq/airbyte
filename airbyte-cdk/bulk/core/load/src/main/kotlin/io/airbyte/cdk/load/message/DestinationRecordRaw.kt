@@ -80,17 +80,16 @@ data class DestinationRecordRaw(
             val fieldValue = proxy.getAirbyteValue(fieldAccessor)
             val enrichedValue =
                 EnrichedAirbyteValue(
-                    abValue = fieldValue,
+                    abValue = NullValue,
                     type = fieldAccessor.type,
                     name = fieldAccessor.name,
                     airbyteMetaField = null,
                 )
-            
-            if (fieldValue is NullValue) {
-                enrichedValue.nullify(
+
+            fieldValue?.let { enrichedValue.abValue = fieldValue }
+                ?: enrichedValue.nullify(
                     AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
-            }
 
             declaredFields[fieldAccessor.name] = enrichedValue
         }
