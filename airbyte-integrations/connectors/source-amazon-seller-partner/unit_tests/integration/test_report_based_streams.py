@@ -31,30 +31,30 @@ _REPORT_DOCUMENT_ID = "report_document_id"
 
 DEFAULT_EXPECTED_NUMBER_OF_RECORDS = 2  # every test file in resource/http/response contains 2 records
 STREAMS = (
-    # ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
-    # ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
-    # ("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "csv"),
-    # ("GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA", "csv"),
-    # ("GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA", "csv"),
+    ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
+    ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
+    ("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "csv"),
+    ("GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA", "csv"),
+    ("GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA", "csv"),
     ("GET_SELLER_FEEDBACK_DATA", "csv"),
-    # ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA", "csv"),
-    # ("GET_LEDGER_DETAIL_VIEW_DATA", "csv"),
-    # ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
-    # ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
-    # ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
-    # ("GET_FBA_SNS_FORECAST_DATA", "csv"),
-    # ("GET_AFN_INVENTORY_DATA", "csv"),
-    # ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
-    # ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
-    # ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
-    # ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
-    # ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
-    # ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
-    # ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
-    # ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
-    # ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
-    # ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
-    # ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
+    ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA", "csv"),
+    ("GET_LEDGER_DETAIL_VIEW_DATA", "csv"),
+    ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
+    ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
+    ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
+    ("GET_FBA_SNS_FORECAST_DATA", "csv"),
+    ("GET_AFN_INVENTORY_DATA", "csv"),
+    ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
+    ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
+    ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
+    ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
+    ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
+    ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
+    ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
+    ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
+    ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
+    ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
+    ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
 )
 
 
@@ -146,13 +146,6 @@ def _get_document_download_url_response(
 
 def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
     response_body = find_template(stream_name, __file__, data_format)
-    if compressed:
-        response_body = gzip.compress(response_body.encode("iso-8859-1"))
-    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
-
-
-def _download_document_error_response(compressed: Optional[bool] = False) -> HttpResponse:
-    response_body = '{"errorDetails":"Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again."}'
     if compressed:
         response_body = gzip.compress(response_body.encode("iso-8859-1"))
     return HttpResponse(body=response_body, status_code=HTTPStatus.OK)

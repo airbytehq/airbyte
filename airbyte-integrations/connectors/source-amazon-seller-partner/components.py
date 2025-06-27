@@ -2,33 +2,33 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import csv
+import gzip
+import json
 import logging
-from dataclasses import dataclass, InitVar, field
-from typing import Any, Mapping, Optional, Set, Union, Generator, List, MutableMapping, Dict
+from dataclasses import InitVar, dataclass, field
+from datetime import datetime as dt
+from io import StringIO
+from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Set, Union
 
 import backoff
 import requests
-from io import StringIO
-from datetime import datetime as dt
+import xmltodict
 
 from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
-import xmltodict
-import csv
-import gzip
-import json
-
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
+
 
 logger = logging.getLogger("airbyte")
 
@@ -98,6 +98,7 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+
 
 @dataclass
 class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
@@ -263,8 +264,6 @@ class GetXmlBrowseTreeDataDecoder(Decoder):
         yield from parsed.get("Result", {}).get("Node", [])
 
 
-
-
 class LedgerDetailedViewReportsTypeTransformer(TypeTransformer):
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
@@ -364,12 +363,20 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date":
                 date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
+                # Checks if the date is already in the target format -- this will be the case for dataEndTime field
+                try:
+                    dt.strptime(original_value, "%Y-%m-%d")
+                    return original_value
+                except ValueError:
+                    pass
                 if not date_format:
                     raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
                 try:
-                    transformed_value = dt.strptime(original_value, date_format).strftime("%Y-%m-%d")
+                    return dt.strptime(original_value, date_format).strftime("%Y-%m-%d")
                 except ValueError as e:
-                    raise ValueError(f"Error parsing date: {original_value} is expected to be in format {date_format} for marketplace_id: {self.marketplace_id}") from e
+                    raise ValueError(
+                        f"Error parsing date: {original_value} is expected to be in format {date_format} for marketplace_id: {self.marketplace_id}"
+                    ) from e
 
             return original_value
 
@@ -403,14 +410,18 @@ class ValidateReportOptionsListStreamNameUniqueness(ValidationStrategy):
 
     def validate(self, value: Any) -> None:
         if value in self._values_set:
-            raise ValueError(f"Each value at specified path [report_options_list, *, stream_name] should be unique. Duplicate value: {value}")
+            raise ValueError(
+                f"Each value at specified path [report_options_list, *, stream_name] should be unique. Duplicate value: {value}"
+            )
         self._values_set.add(value)
+
 
 @dataclass
 class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
     """
     Validate that the values in the  are unique.
     """
+
     def validate(self, value: Any) -> None:
         report_options_list = value
         if isinstance(report_options_list, list) and len(report_options_list) > 0 and isinstance(report_options_list[0], dict):
@@ -418,5 +429,7 @@ class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
                 option_names = []
                 for option in report_options["options_list"]:
                     if option["option_name"] in option_names:
-                        raise ValueError(f"Each value at specified path [report_options_list, *, options_list, *, option_name] should be unique. Duplicate value: {option['option_name']}")
+                        raise ValueError(
+                            f"Each value at specified path [report_options_list, *, options_list, *, option_name] should be unique. Duplicate value: {option['option_name']}"
+                        )
                     option_names.append(option["option_name"])
