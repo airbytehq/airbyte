@@ -45,6 +45,15 @@ class CheckVersionIncrement(Check):
         cwd = Path.cwd().absolute()
         repo_name = "airbyte-enterprise" if "airbyte-enterprise" in cwd.parts else "airbyte"
 
+        try:
+            subprocess.run(["gh", "--version"], check=True, capture_output=True)
+        except (subprocess.SubprocessError, FileNotFoundError):
+            raise RuntimeError(
+                "GitHub CLI (gh) is required for version checking but is not available. "
+                "Please install GitHub CLI or ensure it's in your PATH. "
+                "See: https://cli.github.com/manual/installation"
+            )
+
         fetch_command = [
             "gh",
             "api",
@@ -67,7 +76,7 @@ class CheckVersionIncrement(Check):
                 return None
 
             return yaml.safe_load(completed_process.stdout)["data"]
-        except (subprocess.SubprocessError, FileNotFoundError, yaml.YAMLError, KeyError):
+        except (subprocess.SubprocessError, yaml.YAMLError, KeyError):
             return None
 
     def _parse_version_from_metadata(self, metadata: Dict[str, Any]) -> semver.Version:
@@ -129,7 +138,7 @@ class CheckVersionIncrement(Check):
                     )
 
             return self.pass_(connector, f"Version was properly incremented from {master_version} to {current_version}.")
-        except (subprocess.SubprocessError, ValueError, TypeError) as e:
+        except (subprocess.SubprocessError, ValueError, TypeError, RuntimeError) as e:
             return self.fail(connector, str(e))
 
 
