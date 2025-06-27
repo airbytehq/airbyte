@@ -16,7 +16,6 @@ max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count',
 definitions:
   sponsored_product_ad_group_error_handler:
     type: DefaultErrorHandler
-    #    max_retries: 5
     response_filters:
       - http_codes: [400]
         action: IGNORE
