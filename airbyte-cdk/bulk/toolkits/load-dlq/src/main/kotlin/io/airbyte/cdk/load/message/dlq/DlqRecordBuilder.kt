@@ -37,33 +37,29 @@ fun DestinationRecordRaw.toDlqRecord(
     // original checkpoint.
     copy(
         rawData =
-            if (keepOriginalFields)
-                merge(this.rawData, data)
-            else
-                DestinationRecordJsonSource(data.toAirbyteRecordMessage()),
+            if (keepOriginalFields) merge(this.rawData, data)
+            else DestinationRecordJsonSource(data.toAirbyteRecordMessage()),
     )
 
 private fun merge(raw: DestinationRecordSource, data: Map<String, Any>): DestinationRecordSource {
     when (raw) {
         is DestinationRecordJsonSource -> {
             val objectNode = raw.source.record.data as ObjectNode
-            data.forEach {
-                (k, v) -> objectNode.set<JsonNode>(k, Jsons.convertValue(v, JsonNode::class.java))
+            data.forEach { (k, v) ->
+                objectNode.set<JsonNode>(k, Jsons.convertValue(v, JsonNode::class.java))
             }
         }
         is DestinationRecordProtobufSource -> {
-            data.forEach {
-                (_, v) ->
-                    val airbyteVal = AirbyteValue.from(v)
-                    raw.source.record.dataList.add(
-                        AirbyteValueToProtobuf().toProtobuf(airbyteVal, airbyteVal.airbyteType)
-                    )
+            data.forEach { (_, v) ->
+                val airbyteVal = AirbyteValue.from(v)
+                raw.source.record.dataList.add(
+                    AirbyteValueToProtobuf().toProtobuf(airbyteVal, airbyteVal.airbyteType)
+                )
             }
         }
     }
     return raw
 }
-
 
 /**
  * A helper method to generate a new DestinationRecordRaw for a dead letter queue.
