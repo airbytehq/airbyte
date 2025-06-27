@@ -25,7 +25,6 @@ import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
-import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -110,7 +109,7 @@ class SnowflakeSourceOperations() :
             "TIMESTAMP_LTZ",
             "TIMESTAMP_TZ",
             "TIMESTAMPLTZ",
-            "TIMESTAMPTZ", -> OffsetDateTimeFieldType
+            "TIMESTAMPTZ", -> SnowflakeOffsetDateTimeFieldType
             "DATETIME",
             "TIMESTAMP",
             "TIMESTAMP_NTZ",
