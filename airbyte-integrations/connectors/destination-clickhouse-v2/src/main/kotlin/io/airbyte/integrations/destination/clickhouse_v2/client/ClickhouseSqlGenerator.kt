@@ -400,10 +400,10 @@ fun AirbyteType.toDialectType(enableJson: Boolean): String =
         is ArrayType,
         ArrayTypeWithoutSchema,
         is UnionType,
-        is UnknownType -> ClickHouseDataType.String.name
-        is ObjectType,
         ObjectTypeWithEmptySchema,
-        ObjectTypeWithoutSchema -> {
+        ObjectTypeWithoutSchema,
+        is UnknownType -> ClickHouseDataType.String.name
+        is ObjectType -> {
             if (enableJson) {
                 ClickHouseDataType.JSON.name
             } else {

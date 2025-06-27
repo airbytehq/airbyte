@@ -24,7 +24,8 @@ class ClickhouseDirectLoader(
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val munged = munger.transformForDest(record)
-        buffer.accumulate(munged)
+        println(record.stream)
+        buffer.accumulate(munged, record.stream)
 
         recordCountWindow.increment(1)
         bytesWindow.increment(record.serializedSizeBytes)
