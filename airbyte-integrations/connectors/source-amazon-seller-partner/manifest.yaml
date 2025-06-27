@@ -2613,7 +2613,7 @@ definitions:
       request_headers:
         content-type: "application/json"
 
-    url_requester:
+    download_target_requester:
       type: HttpRequester
       path: reports/2021-06-30/documents/{{ polling_response['reportDocumentId'] }}
       url_base: "{{ config['endpoint'] }}"

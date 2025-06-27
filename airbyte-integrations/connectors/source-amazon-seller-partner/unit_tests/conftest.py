@@ -1,15 +1,15 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import pytest
 import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from pytest import fixture
+from pytest_mock import mocker
 
 from airbyte_cdk import NoAuth, Stream, YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
-import pytest
 
 
 
@@ -52,3 +52,12 @@ def init_kwargs() -> Mapping[str, Any]:
 @pytest.fixture
 def report_init_kwargs(init_kwargs) -> Mapping[str, Any]:
     return {"stream_name": "GET_TEST_REPORT", "authenticator": NoAuth({}), **init_kwargs}
+
+
+@pytest.fixture
+def http_mocker() -> None:
+    """This fixture is needed to pass http_mocker parameter from the @HttpMocker decorator to a test"""
+
+@pytest.fixture(autouse=True)
+def time_mocker(mocker) -> None:
+    mocker.patch("time.sleep", lambda x: None)

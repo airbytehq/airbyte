@@ -368,9 +368,8 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
                     raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
                 try:
                     transformed_value = dt.strptime(original_value, date_format).strftime("%Y-%m-%d")
-                    return transformed_value
-                except ValueError:
-                    raise
+                except ValueError as e:
+                    raise ValueError(f"Error parsing date: {original_value} is expected to be in format {date_format} for marketplace_id: {self.marketplace_id}") from e
 
             return original_value
 

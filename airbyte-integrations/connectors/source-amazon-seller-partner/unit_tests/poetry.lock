@@ -2,15 +2,15 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.56.4"
+version = "6.56.6"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "airbyte_cdk-6.56.4-py3-none-any.whl", hash = "sha256:4a66c1ea3462856c32012ff67bc5699784e9977a30360afc428864670fc2d71b"},
-    {file = "airbyte_cdk-6.56.4.tar.gz", hash = "sha256:54b1e6af849c19f2e1cd4a4fffd5480426213efa1786230504ba0395b2ac8100"},
+    {file = "airbyte_cdk-6.56.6-py3-none-any.whl", hash = "sha256:707b38f63fa093cebc7dcecace959bd47eed9d76ec31b5ee46eb8e8cbcd0d077"},
+    {file = "airbyte_cdk-6.56.6.tar.gz", hash = "sha256:c131bc377bb17866b3e185c4161e324099342616ad8c40176b8fa14f6eb46114"},
 ]
 
 [package.dependencies]
@@ -1903,27 +1903,28 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.4.1"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.4.1-py3-none-any.whl", hash = "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7"},
+    {file = "pytest-8.4.1.tar.gz", hash = "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c"},
 ]
 
 [package.dependencies]
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
-exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
-iniconfig = "*"
-packaging = "*"
+colorama = {version = ">=0.4", markers = "sys_platform == \"win32\""}
+exceptiongroup = {version = ">=1", markers = "python_version < \"3.11\""}
+iniconfig = ">=1"
+packaging = ">=20"
 pluggy = ">=1.5,<2"
+pygments = ">=2.7.2"
 tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
-dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-lazy-fixtures"
@@ -1940,6 +1941,25 @@ files = [
 
 [package.dependencies]
 pytest = ">=7"
+
+[[package]]
+name = "pytest-mock"
+version = "3.14.1"
+description = "Thin-wrapper around the mock package for easier use with pytest"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "pytest_mock-3.14.1-py3-none-any.whl", hash = "sha256:178aefcd11307d874b4cd3100344e7e2d888d9791a6a1d9bfe90fbc1b74fd1d0"},
+    {file = "pytest_mock-3.14.1.tar.gz", hash = "sha256:159e9edac4c451ce77a5cdb9fc5d1100708d2dd4ba3c3df572f14097351af80e"},
+]
+
+[package.dependencies]
+pytest = ">=6.2.5"
+
+[package.extras]
+dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
 name = "python-dateutil"
@@ -2790,4 +2810,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "85d76a5db5840636493a220200b6dbef4c786741bf5829a92d90fcd6021e4eb3"
+content-hash = "0c3f74f7fbd911e19f314227352b7c0f1f06184c4c82f6b16a6c879095ab04b3"
