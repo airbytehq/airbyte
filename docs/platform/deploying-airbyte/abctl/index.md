@@ -327,28 +327,79 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     <details>
     <summary>`deployments`</summary>
 
-    Display version information about the abctl tool.
+    Display kubernetes deployment information and allows for restarting a kubernetes deployment.
+
+    `deployments` has the following flags.
+
+    | Name      | Default | Description                       | Example |
+    | --------- | ------- | --------------------------------- | ------- |
+    | --restart | ""      | Restarts the provided deployment. | webapp  |
 
     </details>
 
     <details>
     <summary>`install`</summary>
 
-    Display version information about the abctl tool.
+    Installs a local Airbyte instance or updates an existing installation which was initially installed by `abctl`.
+
+    Depending on your internet speed, `abctl local install` may take in excess of 20 minutes.
+
+    `install` has the following flags.
+
+    | Name                | Default | Description                                                                                                                                                                                                                                            | Example                    |
+    | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
+    | --chart             | ""      | Path to chart.                                                                                                                                                                                                                                         | ./my-chart                 |
+    | --chart-version     | latest  | Which Airbyte helm-chart version to install.                                                                                                                                                                                                          | 0.422.2                    |
+    | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
+    | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
+    | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
+    | --docker-username   | ""      | Docker username to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_USERNAME`.                                                                                                 | myusername                 |
+    | --insecure-cookies  | -       | Disables secure cookie requirements. Only set if using `--host` with an insecure (non `https`) connection.                                                                                                                                           | -                          |
+    | --low-resource-mode | false   | Run Airbyte in low resource mode.                                                                                                                                                                                                                     | true                       |
+    | --host              | ""      | FQDN where the Airbyte installation will be accessed. Default is to allow for all incoming traffic on port `--port`. Set this if the Airbyte installation needs a more restricted host configuration.                                              | airbyte.example.com        |
+    | --migrate           | -       | Enables data-migration from an existing docker-compose backed Airbyte installation. Copies, leaving the original data unmodified, the data from a docker-compose backed Airbyte installation into this `abctl` managed Airbyte installation.      | -                          |
+    | --no-browser        | -       | Disables launching the browser when installation completes. Useful to set in situations where no browser is available.                                                                                                                               | -                          |
+    | --port              | 8000    | Port where the Airbyte installation will be accessed. Set this if port 8000 is already in use or if a different port is preferred.                                                                                                                   | 9000                       |
+    | --secret            | ""      | **Can be set multiple times**. Creates a kubernetes secret based on the contents of the file provided. Useful when used in conjunction with `--values` for customizing installation.                                                                | ./my-secret.yaml           |
+    | --values            | ""      | Helm values file to further customize the Airbyte installation.                                                                                                                                                                                       | ./values.yaml              |
+    | --volume            | ""      | **Can be set multiple times**. Mounts additional volumes in the kubernetes cluster. Must be in the format of `<HOST_PATH>:<GUEST_PATH>`.                                                                                                             | /host/path:/container/path |
 
     </details>
 
     <details>
     <summary>`status`</summary>
 
-    Display version information about the abctl tool.
+    If an Airbyte installation exists, returns information regarding that installation.
+
+    For example:
+    ```
+    $ abctl local status
+    Existing cluster 'airbyte-abctl' found
+    Found helm chart 'airbyte-abctl'
+      Status: deployed
+      Chart Version: 0.422.2
+      App Version: 0.63.15
+    Found helm chart 'ingress-nginx'
+      Status: deployed
+      Chart Version: 4.11.1
+      App Version: 1.11.1
+    Airbyte should be accessible via http://localhost:8000
+    ```
 
     </details>
 
     <details>
     <summary>`uninstall`</summary>
 
-    Display version information about the abctl tool.
+    Uninstalls a local Airbyte instance.
+
+    The data associated with the installed Airbyte instance will not be removed. This is done to allow Airbyte to be reinstalled at a later date with all the data preserved.
+
+    `uninstall` has the following flags.
+
+    | Name        | Default | Description                                                                    | Example |
+    | ----------- | ------- | ------------------------------------------------------------------------------ | ------- |
+    | --persisted | -       | Will remove all data for the Airbyte installation. This cannot be undone.     | -       |
 
     </details>
 
@@ -357,13 +408,34 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
 <details>
     <summary>`images`</summary>
 
-    Display a manifest of images used by Airbyte and abctl.
+    Manage images used by Airbyte and abctl.
+
+    <details>
+        <summary>`manifest`</summary>
+
+        Display a manifest of images used by Airbyte and abctl.
+
+        `manifest` has the following flags.
+
+        | Name            | Default | Description                                                      | Example       |
+        | --------------- | ------- | ---------------------------------------------------------------- | ------------- |
+        | --chart         | ""      | Path to chart.                                                   | ./my-chart    |
+        | --chart-version | latest  | Which Airbyte helm-chart version to install.                    | 0.422.2       |
+        | --values        | ""      | Helm values file to further customize the Airbyte installation. | ./values.yaml |
+
+    </details>
 
 </details>
 
 <details>
     <summary>`version`</summary>
 
-    Display version information about the abctl tool.
+    Displays version information about the `abctl` tool.
+
+    For example:
+    ```
+    $ abctl version
+    version: v0.19.0
+    ```
 
 </details>
