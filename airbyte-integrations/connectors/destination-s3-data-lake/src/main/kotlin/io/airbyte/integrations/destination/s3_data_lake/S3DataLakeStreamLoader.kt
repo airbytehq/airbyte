@@ -103,7 +103,7 @@ class S3DataLakeStreamLoader(
             // stale table metadata without this.
             table.refresh()
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
-            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
             if (stream.minimumGenerationId > 0) {
                 logger.info {
@@ -124,10 +124,7 @@ class S3DataLakeStreamLoader(
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
-                table
-                    .manageSnapshots()
-                    .fastForwardBranch(mainBranchName, stagingBranchName)
-                    .commit()
+                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
             }
         }
     }
