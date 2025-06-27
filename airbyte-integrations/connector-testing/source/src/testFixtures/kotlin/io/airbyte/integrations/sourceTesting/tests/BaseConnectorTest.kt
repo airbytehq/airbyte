@@ -35,7 +35,7 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseConnectorTest(
-    private val testDbExecutor: TestDbExecutor,
+    val testDbExecutor: TestDbExecutor,
     private val testAssetResourceNamer: TestAssetResourceNamer
 ) {
 
