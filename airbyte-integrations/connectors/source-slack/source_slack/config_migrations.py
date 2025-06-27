@@ -53,7 +53,8 @@ class MigrateLegacyConfig:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+            # todo: is there other way to print the message?
+            print(str(message))
 
     @classmethod
     def migrate(cls, args: List[str], source: SourceSlack) -> None:
