@@ -74,22 +74,6 @@ class ClickhouseSqlGenerator(
                 else -> "MergeTree()"
             }
 
-        println("""
-            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
-              $COLUMN_NAME_AB_RAW_ID String NOT NULL,
-              $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
-              $COLUMN_NAME_AB_META String NOT NULL,
-              $COLUMN_NAME_AB_GENERATION_ID UInt32 NOT NULL,
-              $columnDeclarations
-            )
-            ENGINE = ${engine}
-            ORDER BY (${if (pks.isEmpty()) {
-            "$COLUMN_NAME_AB_RAW_ID"
-        } else {
-            pksAsString
-        }})
-            """.trimIndent())
-
         return """
             CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
               $COLUMN_NAME_AB_RAW_ID String NOT NULL,

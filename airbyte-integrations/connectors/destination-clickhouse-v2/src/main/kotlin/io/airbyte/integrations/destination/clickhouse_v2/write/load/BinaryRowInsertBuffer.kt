@@ -7,42 +7,27 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.load
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
 import com.clickhouse.client.api.metadata.TableSchema
-import com.clickhouse.data.ClickHouseDataType
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
-import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
@@ -67,37 +52,43 @@ private val log = KotlinLogging.logger {}
 class BinaryRowInsertBuffer(
     val tableName: TableName,
     private val clickhouseClient: Client,
+    private val airbyteSchema: AirbyteType
 ) {
     // Initialize the inner buffer
-    private val schema: TableSchema = clickhouseClient.getTableSchema(tableName.name, tableName.namespace)
+    private val schema: TableSchema =
+        clickhouseClient.getTableSchema(tableName.name, tableName.namespace)
     @VisibleForTesting internal var inner = InputOutputBuffer()
     @VisibleForTesting
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
 
-    fun accumulate(recordFields: Map<String, AirbyteValue>, destinationStream: DestinationStream) {
-            recordFields.forEach {
-                println(it.key)
-                val airbyteType: AirbyteType = if (COLUMN_NAMES.contains(it.key)) {
+    internal val formattedSchema =
+        if (airbyteSchema is ObjectType) {
+            airbyteSchema.asColumns().mapKeys { (k, _) -> k.toClickHouseCompatibleName() }
+        } else {
+            emptyMap()
+        }
+
+    fun accumulate(recordFields: Map<String, AirbyteValue>) {
+        recordFields.forEach {
+            val airbyteType: AirbyteType =
+                if (COLUMN_NAMES.contains(it.key)) {
                     when (it.key) {
                         Meta.COLUMN_NAME_AB_RAW_ID -> StringType
                         Meta.COLUMN_NAME_AB_META -> StringType
                         Meta.COLUMN_NAME_AB_EXTRACTED_AT -> DateType
                         Meta.COLUMN_NAME_AB_GENERATION_ID -> IntegerType
                         else -> // Unreachable
-                            StringType
+                        StringType
                     }
                 } else {
-                    if (destinationStream.schema is  ObjectType) {
-                        (destinationStream.schema as ObjectType).asColumns()
-                            .mapKeys { (k, _) -> k.toClickHouseCompatibleName() }[it.key]!!.type
+                    if (airbyteSchema is ObjectType) {
+                        formattedSchema[it.key]!!.type
                     } else {
-                        destinationStream.schema
+                        airbyteSchema
                     }
                 }
-                println(airbyteType.javaClass)
-                writeAirbyteValue(it.key, it.value, airbyteType)
-            }
-
+            writeAirbyteValue(it.key, it.value, airbyteType)
+        }
 
         writer.commitRow()
     }
@@ -122,7 +113,8 @@ class BinaryRowInsertBuffer(
         abValue: AirbyteValue,
         dataType: AirbyteType,
     ) {
-        // println("In the column $columnName pushing value: $abValue with type: ${abValue.javaClass}")
+        // println("In the column $columnName pushing value: $abValue with type:
+        // ${abValue.javaClass}")
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
@@ -140,7 +132,6 @@ class BinaryRowInsertBuffer(
                     StringType -> writer.setValue(columnName, abValue.value)
                     else -> writer.setValue(columnName, abValue.value.serializeToString())
                 }
-
             is DateValue -> writer.setValue(columnName, abValue.value)
             is TimeWithTimezoneValue -> writer.setValue(columnName, abValue.value)
             is TimeWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)

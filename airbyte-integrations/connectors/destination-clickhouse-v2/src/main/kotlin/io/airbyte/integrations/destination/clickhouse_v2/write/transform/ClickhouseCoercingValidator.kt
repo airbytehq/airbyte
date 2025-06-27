@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MAX

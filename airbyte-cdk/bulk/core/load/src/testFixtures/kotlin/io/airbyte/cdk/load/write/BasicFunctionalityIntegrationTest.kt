@@ -3441,7 +3441,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     skipSerialize = stringifySchemalessObjects,
                                 ),
                             "union_of_objects_with_properties_identical" to
-                                    schematizedObject(linkedMapOf("id" to 10, "name" to "Joe")),
+                                schematizedObject(linkedMapOf("id" to 10, "name" to "Joe")),
                             "union_of_objects_with_properties_overlapping" to
                                 if (stringifyUnionObjects) {
                                     """{"id":20,"name":"Jane","flagged":true}"""
@@ -3454,7 +3454,8 @@ abstract class BasicFunctionalityIntegrationTest(
                                 if (stringifyUnionObjects) {
                                     """{"id":1,"name":"Jenny"}"""
                                 } else {
-                                    // can't just call schematizedObject(... unionValue) - there's some
+                                    // can't just call schematizedObject(... unionValue) - there's
+                                    // some
                                     // nontrivial interactions here
                                     when (schematizedObjectBehavior) {
                                         // these two cases are simple
@@ -3495,7 +3496,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id" to 2,
                             "combined_type" to unionValue("integer", 20),
                             "union_of_objects_with_properties_identical" to
-                                    schematizedObject(linkedMapOf()),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_nonoverlapping" to
                                 if (stringifyUnionObjects) {
                                     """{}"""

@@ -93,5 +93,4 @@ internal class DataSourceFactoryTest {
                 MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration())
             )
     }
-    .
 }

@@ -65,7 +65,8 @@ class ClickhouseConfigurationFactory :
             database = overrides.getOrDefault("database", spec.database),
             password = overrides.getOrDefault("password", spec.password),
             username = overrides.getOrDefault("username", spec.username),
-            enableJson = overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
+            enableJson =
+                overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
         )
     }
 }

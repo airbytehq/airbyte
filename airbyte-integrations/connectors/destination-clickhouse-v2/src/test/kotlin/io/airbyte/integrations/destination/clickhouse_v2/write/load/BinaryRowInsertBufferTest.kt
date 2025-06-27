@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
@@ -61,7 +62,7 @@ class BinaryRowInsertBufferTest {
         every {
             clickhouseClient.getTableSchema(Fixtures.TEST_NAME, Fixtures.TEST_NAMESPACE)
         } returns schema
-        buffer = BinaryRowInsertBuffer(tableName, clickhouseClient)
+        buffer = BinaryRowInsertBuffer(tableName, clickhouseClient, StringType)
     }
 
     @Test

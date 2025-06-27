@@ -66,7 +66,9 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     override val password: String = ""
 
     @get:JsonSchemaTitle("Enable JSON")
-    @get:JsonPropertyDescription("Use the JSON type when possible. If disabled, the JSON will be converted to a string.")
+    @get:JsonPropertyDescription(
+        "Use the JSON type when possible. If disabled, the JSON will be converted to a string."
+    )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 5, "default": false}""")
     override val enableJson: Boolean = false
@@ -112,7 +114,9 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     override val password: String = ""
 
     @get:JsonSchemaTitle("Enable JSON")
-    @get:JsonPropertyDescription("Use the JSON type when possible. If disabled, the JSON will be converted to a string.")
+    @get:JsonPropertyDescription(
+        "Use the JSON type when possible. If disabled, the JSON will be converted to a string."
+    )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 5, "default": false}""")
     override val enableJson: Boolean = false
