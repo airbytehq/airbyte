@@ -9,54 +9,67 @@ import com.fasterxml.jackson.databind.node.JsonNodeType
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.util.serializeToJsonBytes
+import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
 import java.math.BigInteger
 
 class AirbyteValueJsonlProxy(private val data: ObjectNode) : AirbyteValueProxy {
     @Suppress("UNCHECKED_CAST")
     private fun <T> coerce(value: JsonNode?, type: AirbyteType): T? =
-        try {
-            when (type) {
-                is ArrayType,
-                is ArrayTypeWithoutSchema -> {
-                    when (value?.nodeType) {
-                        JsonNodeType.ARRAY -> value
-                        else -> null
-                    }
+        when (type) {
+            is ArrayType,
+            is ArrayTypeWithoutSchema -> {
+                when (value?.nodeType) {
+                    JsonNodeType.ARRAY -> value
+                    else -> null
                 }
-                is BooleanType -> {
-                    when (value?.nodeType) {
-                        JsonNodeType.BOOLEAN -> value.asBoolean()
-                        JsonNodeType.NUMBER -> value.asBoolean()
-                        JsonNodeType.STRING -> value.asText().toBoolean()
-                        else -> null
-                    }
-                }
-                is IntegerType -> {
-                    when (value?.nodeType) {
-                        JsonNodeType.NUMBER -> value.bigIntegerValue()
-                        JsonNodeType.STRING -> BigInteger(value.asText())
-                        else -> null
-                    }
-                }
-                is NumberType -> {
-                    when (value?.nodeType) {
-                        JsonNodeType.NUMBER -> value.decimalValue()
-                        JsonNodeType.STRING -> BigDecimal(value.asText())
-                        else -> null
-                    }
-                }
-                is ObjectType,
-                is ObjectTypeWithEmptySchema,
-                is ObjectTypeWithoutSchema ->
-                    when (value?.nodeType) {
-                        JsonNodeType.OBJECT -> value
-                        else -> null
-                    }
-                else -> value
             }
-        } catch (_: Exception) {
-            null
+            is BooleanType -> {
+                when (value?.nodeType) {
+                    JsonNodeType.BOOLEAN -> value.asBoolean()
+                    JsonNodeType.NUMBER -> value.asBoolean()
+                    JsonNodeType.STRING -> value.asText().toBooleanStrict()
+                    else -> null
+                }
+            }
+            is IntegerType -> {
+                when (value?.nodeType) {
+                    JsonNodeType.NUMBER -> value.bigIntegerValue()
+                    JsonNodeType.STRING -> BigInteger(value.asText())
+                    else -> null
+                }
+            }
+            is NumberType -> {
+                when (value?.nodeType) {
+                    JsonNodeType.NUMBER -> value.decimalValue()
+                    JsonNodeType.STRING -> BigDecimal(value.asText())
+                    else -> null
+                }
+            }
+            is ObjectType,
+            is ObjectTypeWithEmptySchema,
+            is ObjectTypeWithoutSchema ->
+                when (value?.nodeType) {
+                    JsonNodeType.OBJECT -> value
+                    else -> null
+                }
+            is StringType -> {
+                when (value?.nodeType) {
+                    JsonNodeType.STRING -> value.asText()
+                    JsonNodeType.NUMBER -> {
+                        if (value.isIntegralNumber) {
+                            value.decimalValue()
+                        } else {
+                            value.bigIntegerValue()
+                        }
+                    }
+                    JsonNodeType.BOOLEAN -> value.asText().toBooleanStrict()
+                    JsonNodeType.ARRAY,
+                    JsonNodeType.OBJECT -> value.serializeToString()
+                    else -> null
+                }
+            }
+            else -> value
         }
             as T?
 
@@ -73,7 +86,7 @@ class AirbyteValueJsonlProxy(private val data: ObjectNode) : AirbyteValueProxy {
         getNullable(field) { coerce(value = data.get(it.name), type = field.type) }
 
     override fun getString(field: FieldAccessor): String? =
-        getNullable(field) { data.get(it.name).asText() }
+        getNullable(field) { coerce(value = data.get(it.name), type = field.type) }
 
     override fun getInteger(field: FieldAccessor): BigInteger? =
         getNullable(field) { coerce(value = data.get(it.name), type = field.type) }
