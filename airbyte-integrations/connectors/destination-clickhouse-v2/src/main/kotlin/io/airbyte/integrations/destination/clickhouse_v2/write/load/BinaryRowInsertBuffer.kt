@@ -131,14 +131,23 @@ class BinaryRowInsertBuffer(
             is NumberValue -> write(columnName, abValue.value, dataType, NumberType)
             is StringValue -> write(columnName, abValue.value, dataType, StringType)
             is DateValue -> writer.setValue(columnName, abValue.value)
-            is TimeWithTimezoneValue -> write(columnName, abValue.value, dataType, TimeTypeWithTimezone)
-            is TimeWithoutTimezoneValue -> write(columnName, abValue.value, dataType, TimeTypeWithoutTimezone)
-            is TimestampWithTimezoneValue -> write(columnName, abValue.value, dataType, TimestampTypeWithTimezone)
-            is TimestampWithoutTimezoneValue -> write(columnName, abValue.value, dataType, TimestampTypeWithoutTimezone)
+            is TimeWithTimezoneValue ->
+                write(columnName, abValue.value, dataType, TimeTypeWithTimezone)
+            is TimeWithoutTimezoneValue ->
+                write(columnName, abValue.value, dataType, TimeTypeWithoutTimezone)
+            is TimestampWithTimezoneValue ->
+                write(columnName, abValue.value, dataType, TimestampTypeWithTimezone)
+            is TimestampWithoutTimezoneValue ->
+                write(columnName, abValue.value, dataType, TimestampTypeWithoutTimezone)
         }
     }
 
-    internal inline fun <V, T : AirbyteType, reified E : AirbyteType>write(columnName: String, value: V, dataType: T, expectedDataType: E) {
+    internal inline fun <V, T : AirbyteType, reified E : AirbyteType> write(
+        columnName: String,
+        value: V,
+        dataType: T,
+        expectedDataType: E
+    ) {
         when (dataType) {
             is UnknownType,
             is E -> writer.setValue(columnName, value)

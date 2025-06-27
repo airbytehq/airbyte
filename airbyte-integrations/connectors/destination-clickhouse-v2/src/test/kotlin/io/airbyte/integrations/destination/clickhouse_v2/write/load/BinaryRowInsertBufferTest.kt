@@ -247,23 +247,14 @@ class BinaryRowInsertBufferTest {
             )
 
         @JvmStatic
-        fun writeMatrix() = listOf(
-            Arguments.of(
-                true, BooleanType
-            ),
-            Arguments.of(
-                42, IntegerType
-            ),
-            Arguments.of(
-                123.3, NumberType
-            ),
-            Arguments.of(
-                "str", StringType
-            ),
-            Arguments.of(
-                mockk<Date>(relaxed = true), DateType
-            ),
-        )
+        fun writeMatrix() =
+            listOf(
+                Arguments.of(true, BooleanType),
+                Arguments.of(42, IntegerType),
+                Arguments.of(123.3, NumberType),
+                Arguments.of("str", StringType),
+                Arguments.of(mockk<Date>(relaxed = true), DateType),
+            )
     }
 
     object Fixtures {
