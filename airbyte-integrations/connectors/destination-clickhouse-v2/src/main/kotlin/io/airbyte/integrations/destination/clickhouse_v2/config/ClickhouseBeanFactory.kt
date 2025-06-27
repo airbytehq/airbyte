@@ -37,7 +37,6 @@ class ClickhouseBeanFactory {
                 // allow JSON transcoding as a string
                 .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
                 .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
-                // input_format_binary_read_json_as_string
                 .build()
 
         return if (clientWithDb.ping()) {
@@ -57,6 +56,11 @@ class ClickhouseBeanFactory {
                 .setUsername(config.username)
                 .setPassword(config.password)
                 .compressClientRequest(true)
+                // allow experimental JSON type
+                .serverSetting("allow_experimental_json_type", "1")
+                // allow JSON transcoding as a string
+                .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
+                .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
                 .build()
         }
     }
