@@ -92,7 +92,7 @@ class ProtoToJsonWriter(
                     field,
                     proxy.getTimestampWithoutTimezone(field),
                 )
-            is UnknownType -> gen.writeNullField(field.name)
+            is UnknownType -> gen.writeTreeOrNull(field, proxy.getJsonNode(field))
         }
 
     private fun JsonGenerator.writeTreeOrNull(
