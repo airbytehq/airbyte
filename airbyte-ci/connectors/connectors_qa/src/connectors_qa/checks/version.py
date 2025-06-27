@@ -67,7 +67,7 @@ class CheckVersionIncrement(Check):
                 return None
 
             return yaml.safe_load(completed_process.stdout)["data"]
-        except (subprocess.SubprocessError, yaml.YAMLError, KeyError):
+        except (subprocess.SubprocessError, FileNotFoundError, yaml.YAMLError, KeyError):
             return None
 
     def _parse_version_from_metadata(self, metadata: Dict[str, Any]) -> semver.Version:
