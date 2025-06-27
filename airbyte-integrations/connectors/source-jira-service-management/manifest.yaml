@@ -1,0 +1,613 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for Jira Service Management (JSM), a separate application
+  from Jira Software. This connector enables data extraction from JSM-specific
+  entities such as assets.
+
+check:
+  type: CheckStream
+  stream_names:
+    - assets
+
+definitions:
+  streams:
+    assets:
+      type: DeclarativeStream
+      name: assets
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: startAt
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: assets/workspace/{{ config['workspace_id'] }}/v1/object/aql
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assets"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: updated > "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: qlQuery
+          inject_into: body_json
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.atlassian.com/jsm
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/assets"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - workspace_id
+      - start_date
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      workspace_id:
+        type: string
+        order: 2
+        title: Workspace ID
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    assets:
+      hasRecords: true
+      streamHash: 4a74010bc198229b89d295de542219512478586d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    assets: true
+
+schemas:
+  assets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          url16:
+            type:
+              - string
+              - "null"
+          url48:
+            type:
+              - string
+              - "null"
+          url72:
+            type:
+              - string
+              - "null"
+          url144:
+            type:
+              - string
+              - "null"
+          url288:
+            type:
+              - string
+              - "null"
+          objectId:
+            type:
+              - string
+              - "null"
+          workspaceId:
+            type:
+              - string
+              - "null"
+          mediaClientConfig:
+            type:
+              - object
+              - "null"
+            properties:
+              fileId:
+                type:
+                  - string
+                  - "null"
+              issuer:
+                type:
+                  - string
+                  - "null"
+              clientId:
+                type:
+                  - string
+                  - "null"
+              mediaBaseUrl:
+                type:
+                  - string
+                  - "null"
+              mediaJwtToken:
+                type:
+                  - string
+                  - "null"
+              tokenLifespanInMinutes:
+                type:
+                  - number
+                  - "null"
+      created:
+        type:
+          - string
+          - "null"
+      updated:
+        type: string
+      globalId:
+        type:
+          - string
+          - "null"
+      hasAvatar:
+        type:
+          - boolean
+          - "null"
+      objectKey:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            globalId:
+              type:
+                - string
+                - "null"
+            objectId:
+              type:
+                - string
+                - "null"
+            workspaceId:
+              type:
+                - string
+                - "null"
+            objectAttributeValues:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  value:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      category:
+                        type:
+                          - number
+                          - "null"
+                      globalId:
+                        type:
+                          - string
+                          - "null"
+                      workspaceId:
+                        type:
+                          - string
+                          - "null"
+                      objectSchemaId:
+                        type:
+                          - string
+                          - "null"
+                  searchValue:
+                    type:
+                      - string
+                      - "null"
+                  displayValue:
+                    type:
+                      - string
+                      - "null"
+                  referencedType:
+                    type:
+                      - boolean
+                      - "null"
+                  referencedObject:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      label:
+                        type:
+                          - string
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - string
+                              - "null"
+                      avatar:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          url16:
+                            type:
+                              - string
+                              - "null"
+                          url48:
+                            type:
+                              - string
+                              - "null"
+                          url72:
+                            type:
+                              - string
+                              - "null"
+                          url144:
+                            type:
+                              - string
+                              - "null"
+                          url288:
+                            type:
+                              - string
+                              - "null"
+                          objectId:
+                            type:
+                              - string
+                              - "null"
+                          workspaceId:
+                            type:
+                              - string
+                              - "null"
+                          mediaClientConfig:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              fileId:
+                                type:
+                                  - string
+                                  - "null"
+                              issuer:
+                                type:
+                                  - string
+                                  - "null"
+                              clientId:
+                                type:
+                                  - string
+                                  - "null"
+                              mediaBaseUrl:
+                                type:
+                                  - string
+                                  - "null"
+                              mediaJwtToken:
+                                type:
+                                  - string
+                                  - "null"
+                              tokenLifespanInMinutes:
+                                type:
+                                  - number
+                                  - "null"
+                      created:
+                        type:
+                          - string
+                          - "null"
+                      updated:
+                        type:
+                          - string
+                          - "null"
+                      globalId:
+                        type:
+                          - string
+                          - "null"
+                      hasAvatar:
+                        type:
+                          - boolean
+                          - "null"
+                      objectKey:
+                        type:
+                          - string
+                          - "null"
+                      timestamp:
+                        type:
+                          - number
+                          - "null"
+                      objectType:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - number
+                              - "null"
+                          description:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          icon:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              url16:
+                                type:
+                                  - string
+                                  - "null"
+                              url48:
+                                type:
+                                  - string
+                                  - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          created:
+                            type:
+                              - string
+                              - "null"
+                          updated:
+                            type:
+                              - string
+                              - "null"
+                          globalId:
+                            type:
+                              - string
+                              - "null"
+                          position:
+                            type:
+                              - number
+                              - "null"
+                          inherited:
+                            type:
+                              - boolean
+                              - "null"
+                          objectCount:
+                            type:
+                              - number
+                              - "null"
+                          workspaceId:
+                            type:
+                              - string
+                              - "null"
+                          objectSchemaId:
+                            type:
+                              - string
+                              - "null"
+                          abstractObjectType:
+                            type:
+                              - boolean
+                              - "null"
+                          parentObjectTypeId:
+                            type:
+                              - string
+                              - "null"
+                          parentObjectTypeInherited:
+                            type:
+                              - boolean
+                              - "null"
+                      workspaceId:
+                        type:
+                          - string
+                          - "null"
+            objectTypeAttributeId:
+              type:
+                - string
+                - "null"
+      objectType:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - number
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          icon:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              url16:
+                type:
+                  - string
+                  - "null"
+              url48:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          updated:
+            type:
+              - string
+              - "null"
+          globalId:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          inherited:
+            type:
+              - boolean
+              - "null"
+          objectCount:
+            type:
+              - number
+              - "null"
+          workspaceId:
+            type:
+              - string
+              - "null"
+          objectSchemaId:
+            type:
+              - string
+              - "null"
+          abstractObjectType:
+            type:
+              - boolean
+              - "null"
+          parentObjectTypeId:
+            type:
+              - string
+              - "null"
+          parentObjectTypeInherited:
+            type:
+              - boolean
+              - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
