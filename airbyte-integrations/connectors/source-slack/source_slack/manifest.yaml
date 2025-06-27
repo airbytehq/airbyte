@@ -113,7 +113,7 @@ definitions:
     $parameters:
       name: users
       path: users.list
-      extractor_field_path: ["members"]
+      extractor_field_path: members
 
   channels_stream:
     primary_key: "id"
@@ -159,7 +159,7 @@ definitions:
     $parameters:
       name: channel_members
       path: conversations.members
-      extractor_field_path: ["members"]
+      extractor_field_path: members
     primary_key:
       - member_id
       - channel_id
@@ -184,7 +184,7 @@ definitions:
     $parameters:
       name: channel_messages
       path: conversations.history
-      extractor_field_path: ["messages"]
+      extractor_field_path: messages
     primary_key:
       - channel_id
       - ts
