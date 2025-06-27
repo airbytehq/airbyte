@@ -216,7 +216,8 @@ internal class DestinationRecordRawTest {
         // Check
         val booleanField = enrichedRecord.declaredFields["boolean_field"]
         assertNotNull(booleanField)
-        assertEquals(BooleanValue(false), booleanField?.abValue)
+        assertEquals(NullValue, booleanField?.abValue)
+        assertTrue(booleanField?.changes?.isNotEmpty() ?: false)
     }
 
     @Test
