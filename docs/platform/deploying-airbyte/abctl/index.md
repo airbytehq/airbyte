@@ -13,15 +13,15 @@ abctl is Airbyte's open source command line tool to create and manage local inst
 
 ## Overview of abctl
 
-Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments like a local machine, a bare metal server, or a virtual machine. However, you might not be running Kubernetes and might not even know much about it. abctl makes it easy to run Airbyte anywhere Docker is running with just a few commands.
+Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments like a local computer, a bare metal server, or a virtual machine. However, you might not be running Kubernetes and might not even know much about it. abctl makes it easy to run Airbyte anywhere Docker is running.
 
 ### When to use abctl
 
-You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. This could be your local machine, a bare metal server, or a virtual machine. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
+You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
 
 ### What abctl does
 
-abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://kubernetes.io/) cluster inside a [Docker](https://www.docker.com/) container. Then, it uses [helm](https://helm.sh/) to install the latest Airbyte and [NGINX Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/) helm charts. It also helps you manage and understand that infrastructure.
+abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://kubernetes.io/) cluster inside a [Docker](https://www.docker.com/) container. Then, it uses [Helm](https://helm.sh/) to install the latest Airbyte and [NGINX Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/) Helm charts. It also helps you manage and understand that infrastructure.
 
 ![](abctl-diagram.png)
 
@@ -361,7 +361,6 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     | --insecure-cookies  | -       | Disables secure cookie requirements. Only set if using `--host` with an insecure (non `https`) connection.                                                                                                                                           | -                          |
     | --low-resource-mode | false   | Run Airbyte in low resource mode.                                                                                                                                                                                                                     | true                       |
     | --host              | ""      | FQDN where the Airbyte installation will be accessed. Default is to allow for all incoming traffic on port `--port`. Set this if the Airbyte installation needs a more restricted host configuration.                                              | airbyte.example.com        |
-    | --migrate           | -       | Enables data-migration from an existing docker-compose backed Airbyte installation. Copies, leaving the original data unmodified, the data from a docker-compose backed Airbyte installation into this `abctl` managed Airbyte installation.      | -                          |
     | --no-browser        | -       | Disables launching the browser when installation completes. Useful to set in situations where no browser is available.                                                                                                                               | -                          |
     | --port              | 8000    | Port where the Airbyte installation will be accessed. Set this if port 8000 is already in use or if a different port is preferred.                                                                                                                   | 9000                       |
     | --secret            | ""      | **Can be set multiple times**. Creates a kubernetes secret based on the contents of the file provided. Useful when used in conjunction with `--values` for customizing installation.                                                                | ./my-secret.yaml           |
@@ -424,7 +423,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
         | Name            | Default | Description                                                      | Example       |
         | --------------- | ------- | ---------------------------------------------------------------- | ------------- |
         | --chart         | ""      | Path to chart.                                                   | ./my-chart    |
-        | --chart-version | latest  | Which Airbyte helm-chart version to install.                    | 0.422.2       |
+        | --chart-version | latest  | Which Airbyte Helm chart version to install.                    | 0.422.2       |
         | --values        | ""      | Helm values file to further customize the Airbyte installation. | ./values.yaml |
 
     </details>
