@@ -218,7 +218,7 @@ definitions:
       cursor_field: float_ts
       cursor_datetime_formats:
         - "%s_as_float"
-      step: P100D
+      step: "P{{ config.get('incremental_time_step', 30) }}D"
       cursor_granularity: PT1S
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
       datetime_format: "%s_as_float"
@@ -258,3 +258,8 @@ check:
   type: CheckStream
   stream_names:
     - users
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
