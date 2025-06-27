@@ -5,4 +5,5 @@
 
 from .destination import DestinationMotherDuck
 
+
 __all__ = ["DestinationMotherDuck"]
