@@ -5,9 +5,11 @@
 package io.airbyte.cdk.load.data
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.JsonNodeType
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
@@ -20,7 +22,10 @@ class AirbyteValueJsonlProxy(private val data: ObjectNode) : AirbyteValueProxy {
             is ArrayType,
             is ArrayTypeWithoutSchema -> {
                 when (value?.nodeType) {
-                    JsonNodeType.ARRAY -> value
+                    JsonNodeType.ARRAY ->
+                        if (value.isArray) value
+                        else throw IllegalArgumentException("Invalid JSON array value")
+                    JsonNodeType.STRING -> Jsons.readValue(value.asText(), ArrayNode::class.java)
                     else -> null
                 }
             }
@@ -48,24 +53,24 @@ class AirbyteValueJsonlProxy(private val data: ObjectNode) : AirbyteValueProxy {
             }
             is ObjectType,
             is ObjectTypeWithEmptySchema,
-            is ObjectTypeWithoutSchema ->
+            is ObjectTypeWithoutSchema -> {
                 when (value?.nodeType) {
-                    JsonNodeType.OBJECT -> value
+                    JsonNodeType.OBJECT ->
+                        if (value.isObject) value
+                        else throw IllegalArgumentException("Invalid JSON array value")
+                    JsonNodeType.STRING -> Jsons.readValue(value.asText(), ObjectNode::class.java)
                     else -> null
                 }
+            }
             is StringType -> {
                 when (value?.nodeType) {
-                    JsonNodeType.STRING -> value.asText()
-                    JsonNodeType.NUMBER -> {
-                        if (value.isIntegralNumber) {
-                            value.decimalValue()
-                        } else {
-                            value.bigIntegerValue()
-                        }
-                    }
+                    JsonNodeType.STRING,
+                    JsonNodeType.NUMBER -> value.asText()
                     JsonNodeType.BOOLEAN -> value.asText().toBooleanStrict()
                     JsonNodeType.ARRAY,
-                    JsonNodeType.OBJECT -> value.serializeToString()
+                    JsonNodeType.OBJECT ->
+                        if (value.isArray || value.isObject) value.serializeToString()
+                        else throw IllegalArgumentException("Invalid JSON array value")
                     else -> null
                 }
             }
