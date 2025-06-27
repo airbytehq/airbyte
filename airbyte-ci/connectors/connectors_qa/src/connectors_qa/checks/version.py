@@ -62,22 +62,22 @@ class CheckVersionIncrement(Check):
             "Accept: application/vnd.github.v3.raw",
         ]
 
-        try:
-            completed_process = subprocess.run(
-                fetch_command,
-                text=True,
-                check=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
+        completed_process = subprocess.run(
+            fetch_command,
+            text=True,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
-            # New connectors will not have a metadata file in master
-            if completed_process.returncode != 0:
-                return None
-
-            return yaml.safe_load(completed_process.stdout)["data"]
-        except (subprocess.SubprocessError, yaml.YAMLError, KeyError):
+        # New connectors will not have a metadata file in master
+        if completed_process.returncode != 0:
             return None
+
+        try:
+            return yaml.safe_load(completed_process.stdout)["data"]
+        except (yaml.YAMLError, KeyError) as e:
+            raise RuntimeError(f"Failed to parse metadata from master branch: {e}")
 
     def _parse_version_from_metadata(self, metadata: Dict[str, Any]) -> semver.Version:
         return semver.Version.parse(str(metadata["dockerImageTag"]))
