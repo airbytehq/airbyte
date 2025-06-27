@@ -153,15 +153,15 @@ public class MssqlCdcHelper {
     }
   }
 
-    /**
-     * Returns a string representation of the message key columns for the streams in the catalog.
-     * The format is "tableId:keyCol1,keyCol2;tableId2:keyCol1,keyCol2".
-     * This is used to set the message key columns in the debezium properties.
-     * The method filters the streams to only include those with incremental sync mode and user-defined primary keys.
-     *
-     * @param catalog the configured airbyte catalog
-     * @return a string representation of the message key columns
-     */
+  /**
+   * Returns a string representation of the message key columns for the streams in the catalog. The
+   * format is "tableId:keyCol1,keyCol2;tableId2:keyCol1,keyCol2". This is used to set the message key
+   * columns in the debezium properties. The method filters the streams to only include those with
+   * incremental sync mode and user-defined primary keys.
+   *
+   * @param catalog the configured airbyte catalog
+   * @return a string representation of the message key columns
+   */
   private static String getMessageKeyColumnValue(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)

@@ -92,51 +92,43 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     final String MODELS_STREAM_NAME = "models";
 
     AirbyteCatalog expectedCatalog = new AirbyteCatalog()
-            .withStreams(
-                    java.util.List.of(
-                            CatalogHelpers.createAirbyteStream(
-                                            MODELS_STREAM_NAME,
-                                            modelsSchema(),
-                                            Field.of(COL_ID, JsonSchemaType.INTEGER),
-                                            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                                            Field.of(COL_MODEL, JsonSchemaType.STRING)
-                                    )
-                                    .withSupportedSyncModes(
-                                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-                                    )
-                                    .withSourceDefinedPrimaryKey(
-                                            java.util.List.of(java.util.List.of(COL_ID))
-                                    )
-                                    .withIsResumable(true)
-                    )
-            );
+        .withStreams(
+            java.util.List.of(
+                CatalogHelpers.createAirbyteStream(
+                    MODELS_STREAM_NAME,
+                    modelsSchema(),
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_MODEL, JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(
+                        java.util.List.of(java.util.List.of(COL_ID)))
+                    .withIsResumable(true)));
 
     Map<String, String> columns = ImmutableMap.of(
-            COL_ID, "INTEGER",
-            COL_MAKE_ID, "INTEGER",
-            COL_MODEL, "VARCHAR(200)"
-    );
+        COL_ID, "INTEGER",
+        COL_MAKE_ID, "INTEGER",
+        COL_MODEL, "VARCHAR(200)");
     testdb.with(
-            createTableSqlFmt(),
-            modelsSchema(),
-            MODELS_STREAM_NAME_2,
-            columnClause(columns, Optional.empty())
-    );
+        createTableSqlFmt(),
+        modelsSchema(),
+        MODELS_STREAM_NAME_2,
+        columnClause(columns, Optional.empty()));
 
     List<AirbyteStream> streams = new ArrayList<>(expectedCatalog.getStreams());
-// stream with PK
+    // stream with PK
     streams.get(0).setSourceDefinedCursor(true);
     streams.get(0).setIsResumable(true);
     addCdcMetadataColumns(streams.get(0));
     addCdcDefaultCursorField(streams.get(0));
 
     AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
-            MODELS_STREAM_NAME_2,
-            modelsSchema(),
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_MODEL, JsonSchemaType.STRING)
-    );
+        MODELS_STREAM_NAME_2,
+        modelsSchema(),
+        Field.of(COL_ID, JsonSchemaType.INTEGER),
+        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+        Field.of(COL_MODEL, JsonSchemaType.STRING));
     streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
     streamWithoutPK.setSupportedSyncModes(java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     streamWithoutPK.setSourceDefinedCursor(true);
@@ -145,18 +137,16 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     addIsResumableFlagForNonPkTable(streamWithoutPK);
 
     AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
-                    RANDOM_TABLE_NAME,
-                    randomSchema(),
-                    Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
-                    Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
-                    Field.of(COL_MODEL + "_random", JsonSchemaType.STRING)
-            )
-            .withSourceDefinedCursor(true)
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(
-                    java.util.List.of(java.util.List.of(COL_ID + "_random"))
-            )
-            .withIsResumable(true);
+        RANDOM_TABLE_NAME,
+        randomSchema(),
+        Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
+        Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
+        Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
+        .withSourceDefinedCursor(true)
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(
+            java.util.List.of(java.util.List.of(COL_ID + "_random")))
+        .withIsResumable(true);
 
     addCdcDefaultCursorField(randomStream);
     addCdcMetadataColumns(randomStream);
