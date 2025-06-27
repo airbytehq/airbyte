@@ -71,4 +71,17 @@ class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : 
 
     override fun getJsonNode(field: FieldAccessor): JsonNode? =
         getJsonBytes(field)?.let { Jsons.readTree(it) }
+
+    override fun getJsonNode(field: String): JsonNode? = null
+
+    override fun undeclaredFields(declaredFields: Array<FieldAccessor>): Set<String> = emptySet()
+
+    override fun hasField(field: FieldAccessor): Boolean =
+        if (data.size < field.index) {
+            false
+        } else if (data[field.index].isNull) {
+            false
+        } else {
+            true
+        }
 }
