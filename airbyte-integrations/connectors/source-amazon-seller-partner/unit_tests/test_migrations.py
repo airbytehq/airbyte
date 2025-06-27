@@ -18,6 +18,7 @@ def load_config(config_path: Path) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
 
+
 UNMIGRATED_CONFIG = {
     "refresh_token": "refresh_token",
     "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
@@ -25,7 +26,7 @@ UNMIGRATED_CONFIG = {
     "replication_start_date": "2022-09-01T00:00:00Z",
     "aws_environment": "PRODUCTION",
     "region": "US",
-    "report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}, \"GET_REPORT_2\": {\"reportPeriod_2\": \"DAY\"}}",
+    "report_options": '{"GET_REPORT": {"reportPeriod": "WEEK"}, "GET_REPORT_2": {"reportPeriod_2": "DAY"}}',
 }
 
 MIGRATED_CONFIG = {
@@ -36,10 +37,18 @@ MIGRATED_CONFIG = {
     "aws_environment": "PRODUCTION",
     "region": "US",
     "report_options_list": [
-        {"report_name": "TEST_REPORT_1", "stream_name": "GET_REPORT_1", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
-        {"report_name": "TEST_REPORT_2", "stream_name": "GET_REPORT_2", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]}
+        {
+            "report_name": "TEST_REPORT_1",
+            "stream_name": "GET_REPORT_1",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
+        {
+            "report_name": "TEST_REPORT_2",
+            "stream_name": "GET_REPORT_2",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
     ],
-    "account_type": "Vendor"
+    "account_type": "Vendor",
 }
 
 INVALID_STREAM_NAMES_CONFIG = {
@@ -50,10 +59,18 @@ INVALID_STREAM_NAMES_CONFIG = {
     "aws_environment": "PRODUCTION",
     "region": "US",
     "report_options_list": [
-        {"report_name": "report_name", "stream_name": "duplicate_stream_name", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
-        {"report_name": "report_name", "stream_name": "duplicate_stream_name", "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}]}
+        {
+            "report_name": "report_name",
+            "stream_name": "duplicate_stream_name",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
+        {
+            "report_name": "report_name",
+            "stream_name": "duplicate_stream_name",
+            "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}],
+        },
     ],
-    "account_type": "Vendor"
+    "account_type": "Vendor",
 }
 
 INVALID_OPTION_NAMES_CONFIG = {
@@ -64,9 +81,16 @@ INVALID_OPTION_NAMES_CONFIG = {
     "aws_environment": "PRODUCTION",
     "region": "US",
     "report_options_list": [
-        {"report_name": "report_name_1", "stream_name": "stream_1", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}, {"option_name": "reportPeriod", "option_value": "DAY"}]},
+        {
+            "report_name": "report_name_1",
+            "stream_name": "stream_1",
+            "options_list": [
+                {"option_name": "reportPeriod", "option_value": "WEEK"},
+                {"option_name": "reportPeriod", "option_value": "DAY"},
+            ],
+        },
     ],
-    "account_type": "Vendor"
+    "account_type": "Vendor",
 }
 
 CONFIG_WITHOUT_REPORT_OPTIONS_LIST = {
@@ -76,8 +100,9 @@ CONFIG_WITHOUT_REPORT_OPTIONS_LIST = {
     "replication_start_date": "2022-09-01T00:00:00Z",
     "aws_environment": "PRODUCTION",
     "region": "US",
-    "account_type": "Vendor"
+    "account_type": "Vendor",
 }
+
 
 class TestMigrations:
     test_unmigrated_config_path = MIGRATIONS_TEST_DIRECTORY / "unmigrated_config.json"
@@ -114,19 +139,30 @@ class TestMigrations:
             assert migrated_config["report_options_list"] == MIGRATED_CONFIG["report_options_list"]
             assert migrated_config["report_options_list"][0]["report_name"] == MIGRATED_CONFIG["report_options_list"][0]["report_name"]
             assert migrated_config["report_options_list"][0]["stream_name"] == MIGRATED_CONFIG["report_options_list"][0]["stream_name"]
-            assert migrated_config["report_options_list"][0]["options_list"][0]["option_name"] == MIGRATED_CONFIG["report_options_list"][0]["options_list"][0]["option_name"]
-            assert migrated_config["report_options_list"][0]["options_list"][0]["option_value"] == MIGRATED_CONFIG["report_options_list"][0]["options_list"][0]["option_value"]
+            assert (
+                migrated_config["report_options_list"][0]["options_list"][0]["option_name"]
+                == MIGRATED_CONFIG["report_options_list"][0]["options_list"][0]["option_name"]
+            )
+            assert (
+                migrated_config["report_options_list"][0]["options_list"][0]["option_value"]
+                == MIGRATED_CONFIG["report_options_list"][0]["options_list"][0]["option_value"]
+            )
             assert migrated_config["report_options_list"][1]["report_name"] == MIGRATED_CONFIG["report_options_list"][1]["report_name"]
             assert migrated_config["report_options_list"][1]["stream_name"] == MIGRATED_CONFIG["report_options_list"][1]["stream_name"]
-            assert migrated_config["report_options_list"][1]["options_list"][0]["option_name"] == MIGRATED_CONFIG["report_options_list"][1]["options_list"][0]["option_name"]
-            assert migrated_config["report_options_list"][1]["options_list"][0]["option_value"] == MIGRATED_CONFIG["report_options_list"][1]["options_list"][0]["option_value"]
+            assert (
+                migrated_config["report_options_list"][1]["options_list"][0]["option_name"]
+                == MIGRATED_CONFIG["report_options_list"][1]["options_list"][0]["option_name"]
+            )
+            assert (
+                migrated_config["report_options_list"][1]["options_list"][0]["option_value"]
+                == MIGRATED_CONFIG["report_options_list"][1]["options_list"][0]["option_value"]
+            )
         finally:
             with self.test_migrated_config_path.open("w") as f:
                 json.dump(config_copy, f)
 
 
 class TestTransformations:
-
     def test_transformation(self):
         config_1 = dict(MIGRATED_CONFIG)
         config_2 = dict(MIGRATED_CONFIG)

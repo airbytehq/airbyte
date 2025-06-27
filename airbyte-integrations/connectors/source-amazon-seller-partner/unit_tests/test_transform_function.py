@@ -4,8 +4,6 @@
 
 
 import pytest
-from .conftest import get_stream_by_name
-from .integration.utils import config
 from components import (
     FlatFileSettlementV2ReportsTypeTransformer,
     LedgerDetailedViewReportsTypeTransformer,
@@ -13,6 +11,9 @@ from components import (
     MerchantReportsTypeTransformer,
     SellerFeedbackReportsTypeTransformer,
 )
+
+from .conftest import get_stream_by_name
+from .integration.utils import config
 
 
 INPUT_DATES = {

@@ -8,10 +8,11 @@ from datetime import datetime, timedelta
 
 import pytest
 from freezegun import freeze_time
-from .conftest import get_source
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams import Stream
+
+from .conftest import get_source
 
 
 logger = logging.getLogger("airbyte")
