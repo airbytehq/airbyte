@@ -161,6 +161,16 @@ global:
     kube:
       nodeSelector:
         type: jobs
+      scheduling:
+        check:
+          nodeSelectors:
+            type: jobs
+        discover:
+          nodeSelectors:
+            type: jobs
+        spec:
+          nodeSelectors:
+            type: jobs
             
 airbyteBootloader:
   nodeSelector:
