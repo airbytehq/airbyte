@@ -72,6 +72,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.21 | 2025-06-27 | [62130](https://github.com/airbytehq/airbyte/pull/62130) | chore(destination-motherduck): Upgrade DuckDB to 1.2.0 for deprecation compliance |
 | 0.1.20 | 2025-06-27 | [48673](https://github.com/airbytehq/airbyte/pull/48673) | Update dependencies |
 | 0.1.19 | 2025-05-25 | [60905](https://github.com/airbytehq/airbyte/pull/60905) | Allow unicode characters in database/table names |
 | 0.1.18 | 2025-03-01 | [54737](https://github.com/airbytehq/airbyte/pull/54737) | Update airbyte-cdk to ^6.0.0 in destination-motherduck |
