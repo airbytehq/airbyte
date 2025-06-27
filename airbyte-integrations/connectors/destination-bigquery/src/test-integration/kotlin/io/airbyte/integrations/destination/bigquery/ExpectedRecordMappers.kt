@@ -10,8 +10,11 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import java.time.format.DateTimeFormatter
 
 /**
  * In nested JSON fields, bigquery converts integral numbers to integers. For example, if you try to
@@ -55,4 +58,24 @@ object IntegralNumberRecordMapper : ExpectedRecordMapper {
                 )
             else -> value
         }
+}
+
+/**
+ * Bigquery doesn't have a timetz data type, so we use a STRING column. Which means that we need to
+ * map the expected values to string.
+ */
+object TimeWithTimezoneMapper : ExpectedRecordMapper {
+    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
+        val mappedData =
+            ObjectValue(
+                expectedRecord.data.values.mapValuesTo(linkedMapOf()) { (_, value) ->
+                    when (value) {
+                        is TimeWithTimezoneValue ->
+                            StringValue(value.value.format((DateTimeFormatter.ISO_OFFSET_TIME)))
+                        else -> value
+                    }
+                }
+            )
+        return expectedRecord.copy(data = mappedData)
+    }
 }
