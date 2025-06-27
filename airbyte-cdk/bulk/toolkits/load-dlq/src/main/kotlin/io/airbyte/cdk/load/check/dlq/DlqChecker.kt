@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.check.dlq
 
 import io.airbyte.cdk.load.command.Append
@@ -23,22 +27,21 @@ import java.nio.file.Paths
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
-/**
- * DlqChecker helps actual connector perform a validation of the object storage configuration.
- */
+/** DlqChecker helps actual connector perform a validation of the object storage configuration. */
 @Singleton
 class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectStorageClient<*>>) {
     private val log = KotlinLogging.logger {}
-    private val mockStream = DestinationStream(
-        unmappedNamespace = "testing",
-        unmappedName = "test",
-        importType = Append,
-        schema = ObjectTypeWithoutSchema,
-        generationId = 1,
-        minimumGenerationId = 0,
-        syncId = 1,
-        namespaceMapper = NamespaceMapper()
-    )
+    private val mockStream =
+        DestinationStream(
+            unmappedNamespace = "testing",
+            unmappedName = "test",
+            importType = Append,
+            schema = ObjectTypeWithoutSchema,
+            generationId = 1,
+            minimumGenerationId = 0,
+            syncId = 1,
+            namespaceMapper = NamespaceMapper()
+        )
 
     fun check(objectStorageConfig: ObjectStorageConfig) {
         when (objectStorageConfig) {
@@ -48,12 +51,11 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
     }
 
     private fun <T> writeTestBlob(config: T) where
-        T : ObjectStorageConfig,
-        T : ObjectStoragePathConfigurationProvider,
-        T : ObjectStorageFormatConfigurationProvider,
-        T : ObjectStorageCompressionConfigurationProvider<*>
-    {
-        log.info { "Validating ${config.type} configuration for rejected records storage"}
+    T : ObjectStorageConfig,
+    T : ObjectStoragePathConfigurationProvider,
+    T : ObjectStorageFormatConfigurationProvider,
+    T : ObjectStorageCompressionConfigurationProvider<*> {
+        log.info { "Validating ${config.type} configuration for rejected records storage" }
 
         val path = ObjectStoragePathFactory.from(config).getFinalDirectory(mockStream)
         val key = Paths.get(path, "_check_test").toString()
@@ -76,7 +78,7 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
         path: String,
         key: String,
         compressor: StreamProcessor<*>,
-        ) {
+    ) {
         var remoteObject: T? = null
         try {
             val upload = client.startStreamingUpload(key)
@@ -89,10 +91,10 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
             if (results.isEmpty() || results.find { it.key == key } == null) {
                 throw IllegalStateException("Failed to write to the rejected record storage")
             }
-            log.info { "Successfully wrote test file: $results"}
+            log.info { "Successfully wrote test file: $results" }
         } finally {
             remoteObject?.let { client.delete(it) }
-            log.info { "Successfully deleted test file"}
+            log.info { "Successfully deleted test file" }
         }
     }
 }
