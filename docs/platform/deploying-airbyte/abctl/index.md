@@ -17,7 +17,7 @@ Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments 
 
 ### When to use abctl
 
-You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. This could be your local machine, a bare metal server, or a virtual machine. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure.
+You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. This could be your local machine, a bare metal server, or a virtual machine. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
 
 ### What abctl does
 
@@ -27,7 +27,11 @@ abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://ku
 
 ## Before you start
 
-Before you use abctl, install Docker Desktop on your machine: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/). If you're installing on a Linux headless virtual machine, you may have an easier time using [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See [the EC2 guide](../abctl-ec2) for an example.
+Before you use abctl, install Docker Desktop on your machine: 
+
+- [Mac](https://docs.docker.com/desktop/install/mac-install/).
+- [Windows](https://docs.docker.com/desktop/install/windows-install/).
+- [Linux](https://docs.docker.com/desktop/install/linux-install/). If you're installing on a Linux headless virtual machine, you may have an easier time using [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See [the EC2 guide](../abctl-ec2) for an example.
 
 ## Install abctl
 
