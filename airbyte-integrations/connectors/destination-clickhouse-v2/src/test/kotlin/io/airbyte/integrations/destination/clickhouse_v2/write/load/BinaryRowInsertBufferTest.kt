@@ -9,13 +9,19 @@ import com.clickhouse.client.api.data_formats.RowBinaryFormatWriter
 import com.clickhouse.client.api.insert.InsertResponse
 import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.data.ClickHouseFormat
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
@@ -23,6 +29,7 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.serializeToString
 import io.mockk.every
@@ -33,6 +40,7 @@ import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.math.BigDecimal
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -143,6 +151,22 @@ class BinaryRowInsertBufferTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("writeMatrix")
+    fun `test write`(value: Any, dataType: AirbyteType) {
+        val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
+        buffer.writer = writer
+
+        buffer.write("field", value, dataType, dataType)
+        verify { writer.setValue("field", value) }
+
+        buffer.write("field", value, dataType, UnknownType(mockk()))
+        verify { writer.setValue("field", value) }
+
+        buffer.write("field", value, dataType, ObjectTypeWithoutSchema)
+        verify { writer.setValue("field", value.serializeToString()) }
+    }
+
     companion object {
         // these values wrap a `value` field
         @JvmStatic
@@ -221,6 +245,25 @@ class BinaryRowInsertBufferTest {
                     )
                 ),
             )
+
+        @JvmStatic
+        fun writeMatrix() = listOf(
+            Arguments.of(
+                true, BooleanType
+            ),
+            Arguments.of(
+                42, IntegerType
+            ),
+            Arguments.of(
+                123.3, NumberType
+            ),
+            Arguments.of(
+                "str", StringType
+            ),
+            Arguments.of(
+                mockk<Date>(relaxed = true), DateType
+            ),
+        )
     }
 
     object Fixtures {

@@ -13,19 +13,25 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownType
@@ -108,7 +114,7 @@ class BinaryRowInsertBuffer(
         log.info { "Finished insert of ${insertResult.writtenRows} rows into ${tableName.name}" }
     }
 
-    private fun writeAirbyteValue(
+    internal fun writeAirbyteValue(
         columnName: String,
         abValue: AirbyteValue,
         dataType: AirbyteType,
@@ -118,25 +124,25 @@ class BinaryRowInsertBuffer(
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
-            is ObjectValue -> {
-                println(abValue.values.serializeToString())
-                writer.setValue(columnName, abValue.values.serializeToString())
-            }
+            is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
-            is BooleanValue -> writer.setValue(columnName, abValue.value)
-            is IntegerValue -> writer.setValue(columnName, abValue.value)
-            is NumberValue -> writer.setValue(columnName, abValue.value)
-            is StringValue ->
-                when (dataType) {
-                    is UnknownType,
-                    StringType -> writer.setValue(columnName, abValue.value)
-                    else -> writer.setValue(columnName, abValue.value.serializeToString())
-                }
+            is BooleanValue -> write(columnName, abValue.value, dataType, BooleanType)
+            is IntegerValue -> write(columnName, abValue.value, dataType, IntegerType)
+            is NumberValue -> write(columnName, abValue.value, dataType, NumberType)
+            is StringValue -> write(columnName, abValue.value, dataType, StringType)
             is DateValue -> writer.setValue(columnName, abValue.value)
-            is TimeWithTimezoneValue -> writer.setValue(columnName, abValue.value)
-            is TimeWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
-            is TimestampWithTimezoneValue -> writer.setValue(columnName, abValue.value)
-            is TimestampWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
+            is TimeWithTimezoneValue -> write(columnName, abValue.value, dataType, TimeTypeWithTimezone)
+            is TimeWithoutTimezoneValue -> write(columnName, abValue.value, dataType, TimeTypeWithoutTimezone)
+            is TimestampWithTimezoneValue -> write(columnName, abValue.value, dataType, TimestampTypeWithTimezone)
+            is TimestampWithoutTimezoneValue -> write(columnName, abValue.value, dataType, TimestampTypeWithoutTimezone)
+        }
+    }
+
+    internal inline fun <V, T : AirbyteType, reified E : AirbyteType>write(columnName: String, value: V, dataType: T, expectedDataType: E) {
+        when (dataType) {
+            is UnknownType,
+            is E -> writer.setValue(columnName, value)
+            else -> writer.setValue(columnName, value.serializeToString())
         }
     }
 
