@@ -119,39 +119,65 @@ class BinaryRowInsertBuffer(
         abValue: AirbyteValue,
         dataType: AirbyteType,
     ) {
-        // println("In the column $columnName pushing value: $abValue with type:
-        // ${abValue.javaClass}")
+        println(
+            "In the column $columnName pushing value: $abValue with type: ${dataType.javaClass}"
+        )
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
             is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
             is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
-            is BooleanValue -> write(columnName, abValue.value, dataType, BooleanType)
-            is IntegerValue -> write(columnName, abValue.value, dataType, IntegerType)
-            is NumberValue -> write(columnName, abValue.value, dataType, NumberType)
-            is StringValue -> write(columnName, abValue.value, dataType, StringType)
-            is DateValue -> write(columnName, abValue.value, dataType, DateType)
+            is BooleanValue ->
+                write(columnName, abValue.value, dataType is BooleanType || dataType is UnknownType)
+            is IntegerValue ->
+                write(columnName, abValue.value, dataType is IntegerType || dataType is UnknownType)
+            is NumberValue ->
+                write(columnName, abValue.value, dataType is NumberType || dataType is UnknownType)
+            is StringValue ->
+                write(columnName, abValue.value, dataType is StringType || dataType is UnknownType)
+            is DateValue ->
+                write(columnName, abValue.value, dataType is DateType || dataType is UnknownType)
             is TimeWithTimezoneValue ->
-                write(columnName, abValue.value, dataType, TimeTypeWithTimezone)
+                write(
+                    columnName,
+                    abValue.value,
+                    dataType is TimeTypeWithTimezone ||
+                        dataType is DateType ||
+                        dataType is UnknownType
+                )
             is TimeWithoutTimezoneValue ->
-                write(columnName, abValue.value, dataType, TimeTypeWithoutTimezone)
+                write(
+                    columnName,
+                    abValue.value,
+                    dataType is TimeTypeWithoutTimezone ||
+                        dataType is DateType ||
+                        dataType is UnknownType
+                )
             is TimestampWithTimezoneValue ->
-                write(columnName, abValue.value, dataType, TimestampTypeWithTimezone)
+                write(
+                    columnName,
+                    abValue.value,
+                    dataType is TimestampTypeWithTimezone ||
+                        dataType is DateType ||
+                        dataType is UnknownType
+                )
             is TimestampWithoutTimezoneValue ->
-                write(columnName, abValue.value, dataType, TimestampTypeWithoutTimezone)
+                write(
+                    columnName,
+                    abValue.value,
+                    dataType is TimestampTypeWithoutTimezone ||
+                        dataType is DateType ||
+                        dataType is UnknownType
+                )
         }
     }
 
-    internal inline fun <V, T : AirbyteType, reified E : AirbyteType> write(
-        columnName: String,
-        value: V,
-        dataType: T,
-        expectedDataType: E
-    ) {
-        when (dataType) {
-            is UnknownType,
-            is E -> writer.setValue(columnName, value)
-            else -> writer.setValue(columnName, value.serializeToString())
+    internal inline fun <V> write(columnName: String, value: V, matchType: Boolean) {
+        if (matchType) {
+            writer.setValue(columnName, value)
+        } else {
+            println("Type not matching: $value, ${value.serializeToString()}")
+            writer.setValue(columnName, value.serializeToString())
         }
     }
 

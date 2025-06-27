@@ -40,11 +40,22 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 
-class ClickhouseDirectLoadWriterWithJson: ClickhouseDirectLoadWriter("valid_connection.json")
+class ClickhouseDirectLoadWriterWithJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection.json",
+        SchematizedNestedValueBehavior.PASS_THROUGH
+    )
 
-class ClickhouseDirectLoadWriterWithoutJson: ClickhouseDirectLoadWriter("valid_connection_no_json.json")
+class ClickhouseDirectLoadWriterWithoutJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection_no_json.json",
+        SchematizedNestedValueBehavior.STRINGIFY
+    )
 
-abstract class ClickhouseDirectLoadWriter(specFile: String) :
+abstract class ClickhouseDirectLoadWriter(
+    specFile: String,
+    schematizedObjectBehavior: SchematizedNestedValueBehavior
+) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Utils.getConfigPath(specFile)),
         configSpecClass = ClickhouseSpecificationOss::class.java,
@@ -59,7 +70,7 @@ abstract class ClickhouseDirectLoadWriter(specFile: String) :
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
         stringifySchemalessObjects = true,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
@@ -122,8 +133,6 @@ class ClickhouseDataDumper(
             client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
 
         val schema = client.getTableSchema(namespacedTableName)
-        println("Schema:")
-        println(schema.columns)
 
         val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response, schema)
         while (reader.hasNext()) {

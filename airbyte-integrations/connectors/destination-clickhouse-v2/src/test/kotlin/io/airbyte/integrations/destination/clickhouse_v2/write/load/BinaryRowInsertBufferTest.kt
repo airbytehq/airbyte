@@ -157,13 +157,10 @@ class BinaryRowInsertBufferTest {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
 
-        buffer.write("field", value, dataType, dataType)
+        buffer.write("field", value, true)
         verify { writer.setValue("field", value) }
 
-        buffer.write("field", value, dataType, UnknownType(mockk()))
-        verify { writer.setValue("field", value) }
-
-        buffer.write("field", value, dataType, ObjectTypeWithoutSchema)
+        buffer.write("field", value, false)
         verify { writer.setValue("field", value.serializeToString()) }
     }
 
