@@ -145,19 +145,32 @@ public class MssqlCdcHelper {
         .collect(Collectors.joining(","));
   }
 
-  private static String quoteIfNeeded(String input) {
-    if (input.matches("^[a-zA-Z0-9_]+$")) {
-      return input; // No special characters, no quotes needed
-    } else {
-      return "\"" + input.replace("\"", "\\\"") + "\""; // Escape embedded quotes
+  /**
+   * Escapes the following special characters in the input string: comma (,), period (.), semicolon
+   * (;), and colon (:). Each special character is prefixed with a backslash.
+   *
+   * @param input the string to escape
+   * @return the escaped string
+   */
+  private static String escapeSpecialChars(String input) {
+    if (input == null) {
+      return null;
     }
+    StringBuilder sb = new StringBuilder();
+    for (char c : input.toCharArray()) {
+      if (c == ',' || c == '.' || c == ';' || c == ':') {
+        sb.append('\\');
+      }
+      sb.append(c);
+    }
+    return sb.toString();
   }
 
   /**
    * Returns a string representation of the message key columns for the streams in the catalog. The
-   * format is "tableId:keyCol1,keyCol2;tableId2:keyCol1,keyCol2". This is used to set the message key
-   * columns in the debezium properties. The method filters the streams to only include those with
-   * incremental sync mode and user-defined primary keys.
+   * format is "schema1.table1:keyCol1,keyCol2;schema2.table2:keyCol1,keyCol2". This is used to set
+   * the message key columns in the debezium properties. The method filters the streams to only
+   * include those with incremental sync mode and user-defined primary keys.
    *
    * @param catalog the configured airbyte catalog
    * @return a string representation of the message key columns
@@ -167,9 +180,9 @@ public class MssqlCdcHelper {
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(s -> !s.getPrimaryKey().isEmpty())
         .map(s -> {
-          final String tableId = quoteIfNeeded(s.getStream().getNamespace()) + "." + quoteIfNeeded(s.getStream().getName());
+          final String tableId = escapeSpecialChars(s.getStream().getNamespace()) + "." + escapeSpecialChars(s.getStream().getName());
           final String keyCols = s.getPrimaryKey().get(0).stream()
-              .map(col -> quoteIfNeeded(col))
+              .map(col -> escapeSpecialChars(col))
               .collect(Collectors.joining(","));
           return tableId + ":" + keyCols;
         })
