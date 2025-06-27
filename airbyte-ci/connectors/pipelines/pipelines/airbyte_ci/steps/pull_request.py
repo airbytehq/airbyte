@@ -24,10 +24,12 @@ class CreateOrUpdatePullRequest(Step):
         context: PipelineContext,
         skip_ci: bool,
         labels: Optional[Iterable[str]] = None,
+        github_auto_merge: bool = False,
     ) -> None:
         super().__init__(context)
         self.skip_ci = skip_ci
         self.labels = labels or []
+        self.github_auto_merge = github_auto_merge
 
     async def _run(
         self,
@@ -51,6 +53,7 @@ class CreateOrUpdatePullRequest(Step):
                 logger=self.logger,
                 skip_ci=self.skip_ci,
                 labels=self.labels,
+                github_auto_merge=self.github_auto_merge,
             )
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)

@@ -206,11 +206,20 @@ class DestinationMessageFactory(
         val descriptor =
             namespaceMapper.map(
                 namespace = streamState.streamDescriptor.namespace,
-                name = streamState.streamDescriptor.name
+                name = streamState.streamDescriptor.name,
             )
-        val stream = catalog.getStream(descriptor)
+
+        val (unmappedNamespace: String?, unmappedName: String) =
+            try {
+                val stream = catalog.getStream(descriptor)
+                stream.unmappedNamespace to stream.unmappedName
+            } catch (e: Exception) {
+                streamState.streamDescriptor.namespace to streamState.streamDescriptor.name
+            }
+
         return CheckpointMessage.Checkpoint(
-            stream = stream,
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = runCatching { streamState.streamState }.getOrNull(),
         )
     }
