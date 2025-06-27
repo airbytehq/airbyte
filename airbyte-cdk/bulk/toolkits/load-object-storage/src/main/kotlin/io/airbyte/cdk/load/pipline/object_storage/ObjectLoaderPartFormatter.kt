@@ -29,6 +29,8 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
@@ -52,6 +54,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
+    private val streamStateCache = ConcurrentHashMap<String, AtomicLong>()
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -77,8 +80,28 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
         // Initialize the part factory and writer.
         val partFactory = PartFactory(fileName, fileNo)
-        log.info { "Starting part generation for $fileName (${stream.descriptor})" }
+        log.info { "Starting part generation for $fileName (${stream.mappedDescriptor})" }
         return State(stream, writerFactory.create(stream), partFactory)
+    }
+
+    private suspend fun getNewStateWithoutLock(stream: DestinationStream): State<T> {
+        val pathOnly = pathFactory.getFinalDirectory(stream)
+        val state = stateManager.getState(stream)
+
+        val partCounter =
+            streamStateCache.computeIfAbsent(pathOnly) { state.getPartCounter(pathOnly) }
+
+        val fileNo = partCounter.incrementAndGet()
+
+        val fileName = state.ensureUnique(pathFactory.getPathToFile(stream, fileNo))
+
+        log.info { "Starting part generation for $fileName (${stream.mappedDescriptor})" }
+
+        return State(
+            stream = stream,
+            writer = writerFactory.create(stream),
+            partFactory = PartFactory(fileName, fileNo),
+        )
     }
 
     private fun makePart(state: State<T>, forceFinish: Boolean = false): FormattedPart {
@@ -102,6 +125,11 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     override suspend fun start(key: StreamKey, part: Int): State<T> {
         val stream = catalog.getStream(key.stream)
         return newState(stream)
+    }
+
+    suspend fun startLockFree(key: StreamKey): State<T> {
+        val stream = catalog.getStream(key.stream)
+        return getNewStateWithoutLock(stream)
     }
 
     override suspend fun accept(

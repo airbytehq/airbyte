@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.micronaut.context.annotation.Value
@@ -24,7 +25,8 @@ class DestinationMessageFactory(
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
     private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
+    private val uuidGenerator: UUIDGenerator,
 ) {
 
     fun fromAirbyteProtocolMessage(
@@ -94,10 +96,11 @@ class DestinationMessageFactory(
                             null
                         }
                     DestinationRecord(
-                        stream,
-                        DestinationRecordJsonSource(message),
-                        serializedSizeBytes,
-                        checkpointId
+                        stream = stream,
+                        message = DestinationRecordJsonSource(message),
+                        serializedSizeBytes = serializedSizeBytes,
+                        checkpointId = checkpointId,
+                        airbyteRawId = uuidGenerator.v7(),
                     )
                 }
             }
@@ -203,11 +206,20 @@ class DestinationMessageFactory(
         val descriptor =
             namespaceMapper.map(
                 namespace = streamState.streamDescriptor.namespace,
-                name = streamState.streamDescriptor.name
+                name = streamState.streamDescriptor.name,
             )
-        val stream = catalog.getStream(descriptor)
+
+        val (unmappedNamespace: String?, unmappedName: String) =
+            try {
+                val stream = catalog.getStream(descriptor)
+                stream.unmappedNamespace to stream.unmappedName
+            } catch (e: Exception) {
+                streamState.streamDescriptor.namespace to streamState.streamDescriptor.name
+            }
+
         return CheckpointMessage.Checkpoint(
-            stream = stream,
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = runCatching { streamState.streamState }.getOrNull(),
         )
     }
@@ -234,10 +246,11 @@ class DestinationMessageFactory(
                 )
             val stream = catalog.getStream(descriptor)
             DestinationRecord(
-                stream,
-                DestinationRecordProtobufSource(message),
-                serializedSizeBytes,
-                CheckpointId(message.record.partitionId)
+                stream = stream,
+                message = DestinationRecordProtobufSource(message),
+                serializedSizeBytes = serializedSizeBytes,
+                checkpointId = CheckpointId(message.record.partitionId),
+                airbyteRawId = uuidGenerator.v7(),
             )
         } else if (message.hasProbe()) {
             ProbeMessage

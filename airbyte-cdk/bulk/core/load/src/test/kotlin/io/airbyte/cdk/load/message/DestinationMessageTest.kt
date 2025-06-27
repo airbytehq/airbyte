@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
@@ -32,6 +33,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteProbeMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -51,6 +53,8 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
+    private val uuidGenerator = UUIDGenerator()
+
     private fun factory(
         isFileTransferEnabled: Boolean,
         requireCheckpointKey: Boolean = false,
@@ -74,6 +78,7 @@ class DestinationMessageTest {
             isFileTransferEnabled,
             requireCheckpointIdOnRecordAndKeyOnState = requireCheckpointKey,
             namespaceMapper,
+            uuidGenerator = uuidGenerator,
         )
 
     private fun convert(
@@ -521,9 +526,10 @@ class DestinationMessageTest {
 
         val internalRecord =
             DestinationRecordRaw(
-                mockk(relaxed = true),
-                DestinationRecordJsonSource(msg),
-                "serialized".length.toLong()
+                stream = mockk(relaxed = true),
+                rawData = DestinationRecordJsonSource(msg),
+                serializedSizeBytes = "serialized".length.toLong(),
+                airbyteRawId = uuidGenerator.v7(),
             )
 
         assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
@@ -539,9 +545,10 @@ class DestinationMessageTest {
                 .withRecord(AirbyteRecordMessage().withFileReference(null))
         val internalRecord =
             DestinationRecordRaw(
-                mockk(relaxed = true),
-                DestinationRecordJsonSource(msg),
-                "serialized".length.toLong()
+                stream = mockk(relaxed = true),
+                rawData = DestinationRecordJsonSource(msg),
+                serializedSizeBytes = "serialized".length.toLong(),
+                airbyteRawId = uuidGenerator.v7(),
             )
 
         assertNull(internalRecord.fileReference)
@@ -629,10 +636,11 @@ class DestinationMessageTest {
 
         val factory =
             DestinationMessageFactory(
-                catalog,
+                catalog = catalog,
                 fileTransferEnabled = false,
                 requireCheckpointIdOnRecordAndKeyOnState = true,
-                NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                uuidGenerator = uuidGenerator,
             )
         val inputMessage =
             AirbyteMessageProtobuf.newBuilder()
@@ -651,8 +659,8 @@ class DestinationMessageTest {
         val destinationRecord =
             factory.fromAirbyteProtobufMessage(inputMessage, 100L) as DestinationRecord
 
-        assertEquals("name", destinationRecord.stream.descriptor.name)
-        assertEquals("namespace", destinationRecord.stream.descriptor.namespace)
+        assertEquals("name", destinationRecord.stream.mappedDescriptor.name)
+        assertEquals("namespace", destinationRecord.stream.mappedDescriptor.namespace)
         assertEquals("checkpoint_id", destinationRecord.checkpointId?.value)
         assertEquals(100L, destinationRecord.serializedSizeBytes)
         assertEquals(
@@ -723,5 +731,46 @@ class DestinationMessageTest {
                 .build()
         val message = factory.fromAirbyteProtobufMessage(heartbeatMessage, 0L)
         Assertions.assertTrue(message is ProbeMessage)
+    }
+
+    @Test
+    fun `message factory does not throw on global state message with stream state belonging to unrecognized stream`() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(blob1)
+                                .withStreamStates(
+                                    listOf(
+                                        AirbyteStreamState()
+                                            .withStreamDescriptor(
+                                                StreamDescriptor()
+                                                    .withNamespace("potato")
+                                                    .withName("tomato")
+                                            )
+                                            .withStreamState(blob2),
+                                    ),
+                                ),
+                        )
+                        // Note: only source stats, no destination stats
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty("id", 1234)
+                )
+
+        val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
+
+        assertEquals(
+            inputMessage
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .serializeToString(),
+            parsedMessage
+                .withDestinationStats(CheckpointMessage.Stats(3))
+                .asProtocolMessage()
+                .serializeToString()
+        )
     }
 }
