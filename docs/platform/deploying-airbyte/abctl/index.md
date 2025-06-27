@@ -17,9 +17,7 @@ Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments 
 
 ### When to use abctl
 
-You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. This could be your local machine, a bare metal server, or a virtual machine. Generally, you don't use abctl to manage enterprise deployments, which typically use dedicated Kubernetes infrastructure.
-
-abctl is not relevant to Airbyte Cloud.
+You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. This could be your local machine, a bare metal server, or a virtual machine. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure.
 
 ### What abctl does
 
@@ -184,7 +182,7 @@ abctl local install --secret YOUR_SECRET --values values.yaml
 For a list of all flags, see the [full reference](#reference).
 
 :::note
-Depending on your internet speed, abctl local install may take in excess of 20 minutes.
+Depending on your internet speed, `abctl local install` may take up to 20 minutes.
 :::
 
 ### Get information about your Airbyte instance
@@ -282,8 +280,6 @@ To get a manifest of the images used by Airbyte and abctl, run:
 abctl images manifest
 ```
 
-<!-- I need more clarification about what these flags are doing -->
-
 ## Get abctl version information
 
 To display version information about the abctl tool, run `abctl version`.
@@ -302,19 +298,8 @@ All abctl commands and sub-commands support two flags:
 
 ## Disable telemetry
 
-You can disable telemetry tracking on the abctl tool by setting the environment variable `DO_NOT_TRACK` to any value.
+You can turn off telemetry tracking on the abctl tool by setting the environment variable `DO_NOT_TRACK` to any value.
 
-<!-- Need further elaboration. Is this like the env variable in values.yaml? I think this disables telemetry on Airbyte itself, but abctl is probably different.
-
-```yml title="values.yaml"
-global:
-    env_vars:
-        DO_NOT_TRACK: 1
-```
-
-I think in this case we mean an actual environment variable for the command line that runs abctl.
-
--->
 ## Full abctl reference {#reference}
 
 abctl has three commands: `local`, `images`, and `version`. Most commands have sub-commands and support various flags.
