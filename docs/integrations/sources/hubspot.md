@@ -333,6 +333,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.10 | 2025-06-28 | [62179](https://github.com/airbytehq/airbyte/pull/62179) | Update dependencies |
 | 5.8.9 | 2025-06-21 | [61842](https://github.com/airbytehq/airbyte/pull/61842) | Update dependencies |
 | 5.8.8 | 2025-06-14 | [60640](https://github.com/airbytehq/airbyte/pull/60640) | Update dependencies |
 | 5.8.7 | 2025-06-11 | [61543](https://github.com/airbytehq/airbyte/pull/61543) | Fix pagination for `contacts` and other CRM Search streams when paginating past 10,000 records streams |
