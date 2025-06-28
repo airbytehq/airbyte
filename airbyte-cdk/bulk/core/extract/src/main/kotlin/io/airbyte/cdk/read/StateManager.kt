@@ -223,14 +223,15 @@ private class GlobalStateManager(
         var shouldCheckpoint = false
         var totalNumRecords = 0L
         // CDC partitions emit a single checkpoint
-        val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().first()
+        val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().last()
         totalNumRecords += globalStateForCheckpoint.numRecords
         if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
         val streamStates = mutableListOf<AirbyteStreamState>()
         for ((_, streamStateManager) in streamStateManagers) {
+            val pendingStreamStates: List<StateForCheckpoint> = streamStateManager.takeForCheckpoint()
             val streamStateForCheckpoint: StateForCheckpoint =
-                streamStateManager.takeForCheckpoint().first()
-            totalNumRecords += streamStateForCheckpoint.numRecords
+                pendingStreamStates.last()
+            totalNumRecords +=  pendingStreamStates.sumOf { it.numRecords }
             if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
             val streamID: StreamIdentifier = streamStateManager.feed.id
             streamStates.add(
