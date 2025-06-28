@@ -42,6 +42,7 @@ Docs : https://site.financialmodelingprep.com/developer/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-06-28 | [62383](https://github.com/airbytehq/airbyte/pull/62383) | Update dependencies |
 | 0.0.24 | 2025-06-21 | [61937](https://github.com/airbytehq/airbyte/pull/61937) | Update dependencies |
 | 0.0.23 | 2025-06-14 | [61188](https://github.com/airbytehq/airbyte/pull/61188) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60367](https://github.com/airbytehq/airbyte/pull/60367) | Update dependencies |
