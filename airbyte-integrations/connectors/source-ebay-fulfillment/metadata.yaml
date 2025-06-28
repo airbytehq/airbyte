@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-ebay-fulfillment
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.1@sha256:579dece55029aa9552884a8eedc6aababb981625daa54ca01f3bacb398dd4973
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 38153e4d-34e4-4142-88d0-5d6d25795e7e
+  dockerImageTag: 0.0.3
+  dockerRepository: airbyte/source-ebay-fulfillment
+  githubIssueLabel: source-ebay-fulfillment
+  icon: icon.svg
+  license: MIT
+  name: Ebay Fulfillment
+  releaseDate: 2025-05-14
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ebay-fulfillment
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

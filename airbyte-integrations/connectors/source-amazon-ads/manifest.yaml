@@ -1687,6 +1687,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -1708,11 +1712,8 @@ definitions:
           request_headers:
             # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
             # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1955,6 +1956,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -1974,11 +1979,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2220,6 +2224,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -2239,11 +2247,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2489,6 +2496,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -2508,11 +2519,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2748,6 +2758,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -2769,11 +2783,10 @@ definitions:
             # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2977,6 +2990,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -2996,11 +3013,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3213,6 +3229,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -3232,11 +3252,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3446,6 +3465,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -3465,11 +3488,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3687,6 +3709,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -3706,11 +3732,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3928,6 +3953,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -3947,11 +3976,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4164,6 +4192,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -4183,11 +4215,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4389,6 +4420,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -4408,11 +4443,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4615,6 +4649,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -4634,11 +4672,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4834,6 +4871,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -4853,11 +4894,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -5099,6 +5139,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -5118,11 +5162,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -5363,6 +5406,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -5382,11 +5429,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -5631,6 +5677,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -5650,11 +5700,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -5891,6 +5940,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -5910,11 +5963,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -6117,6 +6169,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -6136,11 +6192,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -6354,6 +6409,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -6373,11 +6432,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -6588,6 +6646,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -6607,11 +6669,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -6830,6 +6891,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -6849,11 +6914,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -7072,6 +7136,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -7091,11 +7159,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -7309,6 +7376,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -7328,11 +7399,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -7535,6 +7605,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -7554,11 +7628,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -7762,6 +7835,10 @@ definitions:
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
                 error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                http_codes: [425]
+                action: FAIL
+                error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
         polling_requester:
           type: HttpRequester
           url_base: >-
@@ -7781,11 +7858,10 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: >-
-              {{
-              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
-              }}
-            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+            Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -8078,6 +8154,15 @@ spec:
         title: Report Record Types
         default: []
         uniqueItems: true
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 2
+        maximum: 10
+        default: 10
+        examples: [2, 3]
+        description: The number of worker threads to use for the sync.
+        order: 11
     additionalProperties: true
   supportsNormalization: false
   supportsDBT: false
@@ -14371,5 +14456,5 @@ schemas:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 10

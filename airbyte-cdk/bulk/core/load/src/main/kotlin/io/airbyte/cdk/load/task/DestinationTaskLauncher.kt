@@ -9,14 +9,7 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.PartitionedQueue
-import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.message.WithStream
-import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -27,6 +20,7 @@ import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.StatsEmitter
 import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
@@ -80,9 +74,10 @@ class DestinationTaskLauncher(
     private val syncManager: SyncManager,
 
     // Internal Tasks
-    private val inputConsumerTask: InputConsumerTask,
-    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
+    private val inputConsumerTask: InputConsumerTask? = null,
+    private val heartbeatTask: HeartbeatTask? = null,
     private val updateBatchTask: UpdateBatchStateTaskFactory,
+    private val statsEmitter: StatsEmitter? = null,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
@@ -100,10 +95,6 @@ class DestinationTaskLauncher(
 
     // Async queues
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-    @Named("pipelineInputQueue")
-    private val pipelineInputQueue:
-        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) {
     init {
@@ -162,9 +153,11 @@ class DestinationTaskLauncher(
     }
 
     suspend fun run() {
-        // Start the input consumer ASAP
-        log.info { "Starting input consumer task" }
-        launch(inputConsumerTask)
+        // Start the input consumer ASAP if/a
+        inputConsumerTask?.let {
+            log.info { "Starting input consumer task" }
+            launch(it)
+        }
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
@@ -179,8 +172,15 @@ class DestinationTaskLauncher(
         loadPipeline!!.start { launch(it) }
         log.info { "Launching update batch task" }
         launch(updateBatchTask.make(this))
-        log.info { "Launching heartbeat task" }
-        launch(heartbeatTask)
+        heartbeatTask?.let {
+            log.info { "Launching heartbeat task" }
+            launch(it)
+        }
+
+        statsEmitter?.let {
+            log.info { "Launching Stats emtiter task" }
+            launch(it)
+        }
 
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
@@ -188,8 +188,6 @@ class DestinationTaskLauncher(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        pipelineInputQueue.close()
-        batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()
         } else {
@@ -232,11 +230,11 @@ class DestinationTaskLauncher(
         catalog.streams
             .map {
                 val shouldRunStreamLoaderClose =
-                    syncManager.getStreamManager(it.descriptor).setClosed()
+                    syncManager.getStreamManager(it.mappedDescriptor).setClosed()
                 failStreamTaskFactory.make(
                     this,
                     e,
-                    it.descriptor,
+                    it.mappedDescriptor,
                     shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
                 )
             }

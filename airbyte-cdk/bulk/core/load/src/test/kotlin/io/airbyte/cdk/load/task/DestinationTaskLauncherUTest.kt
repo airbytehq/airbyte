@@ -9,11 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.PartitionedQueue
-import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.StreamManager
@@ -62,9 +58,6 @@ class DestinationTaskLauncherUTest {
 
     // Queues
     private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
-    private val recordQueueForPipeline:
-        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> =
-        mockk(relaxed = true)
     private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate> = mockk(relaxed = true)
 
     private val loadPipeline: LoadPipeline = mockk(relaxed = true)
@@ -78,6 +71,7 @@ class DestinationTaskLauncherUTest {
             inputConsumerTask,
             heartbeatTask = mockk(relaxed = true),
             updateBatchTask = mockk(relaxed = true),
+            statsEmitter = mockk(relaxed = true),
             setupTaskFactory,
             openStreamTask,
             closeStreamTaskFactory,
@@ -87,8 +81,6 @@ class DestinationTaskLauncherUTest {
             failStreamTaskFactory,
             failSyncTaskFactory,
             openStreamQueue,
-            recordQueueForPipeline,
-            batchUpdateQueue,
             hasThrown = AtomicBoolean(false),
         )
     }
@@ -103,7 +95,7 @@ class DestinationTaskLauncherUTest {
 
         val stream = mockk<DestinationStream>(relaxed = true)
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
-        every { stream.descriptor } returns streamDescriptor
+        every { stream.mappedDescriptor } returns streamDescriptor
         coEvery { catalog.streams } returns listOf(stream)
     }
 
@@ -127,7 +119,7 @@ class DestinationTaskLauncherUTest {
         val streamManager = StreamManager(stream1)
         val stream1 = catalog.streams[0]
         every { syncManager.getStreamManager(any()) } returns streamManager
-        destinationTaskLauncher.handleStreamComplete(stream1.descriptor)
+        destinationTaskLauncher.handleStreamComplete(stream1.mappedDescriptor)
         coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
     }
 

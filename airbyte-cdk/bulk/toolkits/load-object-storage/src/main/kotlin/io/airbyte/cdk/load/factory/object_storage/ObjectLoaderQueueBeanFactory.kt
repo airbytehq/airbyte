@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.factory.object_storage
 
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -17,13 +18,16 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.write.LoadStrategy
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
+import io.micronaut.inject.qualifiers.Qualifiers
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlin.math.max
 import kotlinx.coroutines.channels.Channel
 
 @Factory
@@ -50,7 +54,17 @@ class ObjectLoaderQueueBeanFactory(
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
-    ): Long = queue.clampedMessageSize
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>
+    ): Long {
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
+            return max(
+                (dataChannelSocketPaths.size * 4L * 1024 * 1024),
+                max(queue.clampedMessageSize, loader.partSizeBytes),
+            )
+        }
+        return queue.clampedMessageSize
+    }
 
     /**
      * Queue between step 1 (format parts) and step 2 (load them): it will hold the actual part
@@ -99,25 +113,22 @@ class ObjectLoaderQueueBeanFactory(
     @Singleton
     @Named("recordQueue")
     fun recordQueue(
-        loadStrategy: LoadStrategy? = null,
+        @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
         )
     }
 
     /** A queue for records with file references for file uploading. */
     @Singleton
     @Named("fileQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun fileQueue(
-        loadStrategy: LoadStrategy? = null,
+        @Named("numInputPartitions") numInputPartitions: Int,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
+            Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
         )
     }
 
@@ -127,6 +138,7 @@ class ObjectLoaderQueueBeanFactory(
      */
     @Singleton
     @Named("filePartQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun fileObjectLoaderPartQueue(
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
@@ -147,6 +159,7 @@ class ObjectLoaderQueueBeanFactory(
      */
     @Singleton
     @Named("fileLoadedPartQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T : RemoteObject<*>> fileLoadedPartQueue():
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>> {
         return StrictPartitionedQueue(
@@ -165,6 +178,7 @@ class ObjectLoaderQueueBeanFactory(
     /** Completed file uploads. */
     @Singleton
     @Named("fileCompletedQueue")
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T> completedUploadQueue() =
         StrictPartitionedQueue(
             (0 until loader.numUploadCompleters)
@@ -176,4 +190,13 @@ class ObjectLoaderQueueBeanFactory(
                 }
                 .toTypedArray()
         )
+}
+
+/**
+ * Custom Micronaut [Condition] that is used to conditionally create file transfer related beans.
+ */
+class IsFileTransferCondition : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        return context.beanContext.getBean(Boolean::class.java, Qualifiers.byName("isFileTransfer"))
+    }
 }

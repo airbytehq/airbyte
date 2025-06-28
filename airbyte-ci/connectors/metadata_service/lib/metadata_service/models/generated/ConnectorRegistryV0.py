@@ -137,6 +137,16 @@ class AirbyteInternal(BaseModel):
     )
 
 
+class ConnectorIPCDataChannel(BaseModel):
+    version: str = Field(..., description="Version of the data channel specification")
+    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
+    supportedTransport: List[Literal["STDIO", "SOCKET"]]
+
+
+class ConnectorIPCOptions(BaseModel):
+    dataChannel: ConnectorIPCDataChannel
+
+
 class GitInfo(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -404,6 +414,10 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     )
     supportsFileTransfer: Optional[bool] = False
     supportsDataActivation: Optional[bool] = False
+    connectorIPCOptions: Optional[ConnectorIPCOptions] = Field(
+            None,
+            description="Advanced options related to connector's inter-process communication"
+        )
 
 
 ConnectorRegistryV0.update_forward_refs()

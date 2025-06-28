@@ -1,5 +1,6 @@
-name: Check for formatting errors
-run-name: Check for formatting errors on ${{ github.ref }}
+name: Global Format Check
+# This workflow checks the formatting of the codebase using pre-commit hooks.
+
 on:
   workflow_dispatch:
 
@@ -10,7 +11,7 @@ on:
 
 jobs:
   format-check:
-    name: "Check for formatting errors"
+    name: "Format Check"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +27,7 @@ jobs:
           cache: "pip"
           check-latest: true
           update-environment: true
-      - name: Run pre-commit
+      - name: Run Pre-Commit
         uses: pre-commit/action@v3.0.1
         id: format-check
         with:

@@ -35,6 +35,18 @@
       "title": "Video Views",
       "description": "The number of times your video was viewed.",
       "id": "90014330517797123/insights/video_views/lifetime"
+    },
+    {
+      "name": "views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 10000
+        }
+      ],
+      "title": "Views",
+      "description": "The number of times your video was viewed.",
+      "id": "09894619573775123/insights/views/lifetime"
     }
   ]
 }

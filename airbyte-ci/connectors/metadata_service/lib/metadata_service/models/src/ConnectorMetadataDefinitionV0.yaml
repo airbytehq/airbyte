@@ -131,3 +131,5 @@ properties:
       supportsDataActivation:
         type: boolean
         default: false
+      connectorIPCOptions:
+        "$ref": ConnectorIPCOptions.yaml

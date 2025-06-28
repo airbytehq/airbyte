@@ -297,6 +297,11 @@
       "statusCode": 301
     },
     {
+      "source": "/using-airbyte/getting-started",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
       "source": "/project-overview/licenses/:path*",
       "destination": "/platform/developer-guides/licenses/:path*",
       "statusCode": 301
@@ -444,6 +449,16 @@
     {
       "source": "/connector-specification-reference",
       "destination": "/platform/connector-development/connector-specification-reference",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors",
+      "destination": "/integrations",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/next/embedded-setup",
+      "destination": "/embedded",
       "statusCode": 301
     }
   ]
