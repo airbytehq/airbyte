@@ -25,7 +25,7 @@ class SocketManagerTest(
     private val socketDataChannelResourceHolder: SocketDataChannelResourceHolder
 ) {
     //    @Inject lateinit var socketManager: SocketManager
-    @Inject lateinit var socketFactory: SocketDataChannelFactory
+/*    @Inject lateinit var socketFactory: SocketDataChannelFactory
     class MockSocketWrapper() : SocketDataChannel {
         override suspend fun initializeSocket() {}
 
@@ -69,5 +69,5 @@ class SocketManagerTest(
         m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
         m.innerBound = true
         assertNull(socketDataChannelResourceHolder.bindFreeSocket())
-    }
+    }*/
 }

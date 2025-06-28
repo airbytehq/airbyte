@@ -39,6 +39,7 @@ data object CliRunner {
         vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val out = CliRunnerOutputStream()
+        val acquirer = ResourceAcquirer
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
                 AirbyteSourceRunner(

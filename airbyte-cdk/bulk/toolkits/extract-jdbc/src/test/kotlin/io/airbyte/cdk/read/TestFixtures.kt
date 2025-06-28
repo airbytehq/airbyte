@@ -20,6 +20,9 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailure
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
@@ -88,11 +91,14 @@ object TestFixtures {
                 maxConcurrency,
                 maxSnapshotReadTime
             )
+
+        val concurrencyResource = ConcurrencyResource(configuration)
         return DefaultJdbcSharedState(
             configuration,
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
-            ConcurrencyResource(configuration),
+            concurrencyResource,
+            ResourceAcquirer(listOf(concurrencyResource as Resource<Resource.Acquired>))
         )
     }
 
@@ -157,11 +163,11 @@ object TestFixtures {
             Assertions.assertEquals(q.sql, mockedQuery!!.expectedQuerySpec.toString())
             Assertions.assertEquals(parameters, mockedQuery.expectedParameters, q.sql)
             return object : SelectQuerier.Result {
-                val wrapped: Iterator<ObjectNode> = mockedQuery.results.iterator()
+                val wrapped: Iterator<NativeRecordPayload> = mockedQuery.results.iterator()
                 override fun hasNext(): Boolean = wrapped.hasNext()
                 override fun next(): SelectQuerier.ResultRow =
                     object : SelectQuerier.ResultRow {
-                        override val data: ObjectNode = wrapped.next()
+                        override val data: NativeRecordPayload = wrapped.next()
                         override val changes: Map<Field, FieldValueChange> = emptyMap()
                     }
                 override fun close() {}
@@ -172,16 +178,16 @@ object TestFixtures {
     data class MockedQuery(
         val expectedQuerySpec: SelectQuerySpec,
         val expectedParameters: SelectQuerier.Parameters,
-        val results: List<ObjectNode>
+        val results: List<NativeRecordPayload>
     ) {
         constructor(
             expectedQuerySpec: SelectQuerySpec,
             expectedParameters: SelectQuerier.Parameters,
-            vararg rows: String,
+            vararg rows: NativeRecordPayload,
         ) : this(
             expectedQuerySpec,
             expectedParameters,
-            rows.map { Jsons.readTree(it) as ObjectNode },
+            rows.toList()
         )
     }
 
@@ -207,6 +213,10 @@ object TestFixtures {
             outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
             metaFieldDecorator = MockMetaFieldDecorator,
             stateManager = StateManager(initialStreamStates = mapOf(this to opaqueStateValue)),
-            stream = this
+            stream = this,
+            JSONL,
+            STDIO,
+            8192,
+            ClockFactory().fixed()
         )
 }
