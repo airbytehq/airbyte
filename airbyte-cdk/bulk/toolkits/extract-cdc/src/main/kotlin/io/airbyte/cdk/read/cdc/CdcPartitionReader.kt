@@ -243,7 +243,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // Sometimes, presumably due to bugs in Debezium, the value isn't valid JSON.
                 return EventType.VALUE_JSON_INVALID
             }
-            val streamId = findStreamIfByRecord(event.key, event.value)
+            val streamId = findStreamIdByRecord(event.key, event.value)
             val stream: Stream =
                 feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId }
                     as? Stream
@@ -265,7 +265,7 @@ class CdcPartitionReader<T : Comparable<T>>(
             return EventType.RECORD_EMITTED
         }
 
-        private fun findStreamIfByRecord(
+        private fun findStreamIdByRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue
         ): StreamIdentifier? {

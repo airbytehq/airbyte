@@ -17,7 +17,7 @@ dependencies {
     testImplementation 'io.debezium:debezium-connector-mongodb'
     testImplementation 'io.debezium:debezium-connector-sqlserver'
     testFixturesImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
-    testFixturesImplementation 'io.mockk:mockk:1.13.12'
+    testFixturesImplementation 'io.mockk:mockk:1.14.4'
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'
 }

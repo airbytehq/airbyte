@@ -11,16 +11,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
+import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.FieldValueChange
 import io.airbyte.cdk.read.Global
+import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.ResourceAcquirer
+import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.util.Jsons
@@ -29,12 +40,17 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
 import io.debezium.relational.history.HistoryRecord
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import java.time.Duration
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
 /**
  * This test class verifies that the [CdcPartitionReader] is able to correctly start and stop the
@@ -42,11 +58,17 @@ import org.junit.jupiter.api.Test
  * integration test and this class is subclassed for multiple Debezium implementations which connect
  * to a corresponding testcontainer data source.
  */
+@ExtendWith(MockKExtension::class)
 abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     namespace: String?,
     val heartbeat: Duration = Duration.ofMillis(100),
     val timeout: Duration = Duration.ofSeconds(10),
 ) {
+
+    @MockK lateinit var resourceAcquirer: ResourceAcquirer
+    @MockK lateinit var feedBootstrap: GlobalFeedBootstrap
+    lateinit var outputConsumer: BufferingOutputConsumer
+    lateinit var streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
 
     val stream =
         Stream(
@@ -71,6 +93,42 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val container: C by lazy { createContainer() }
     private val cdcPartitionsCreatorDbzOps by lazy { createCdcPartitionsCreatorDbzOps() }
     private val cdcPartitionReaderDbzOps by lazy { createCdcPartitionReaderDbzOps() }
+
+
+    @BeforeEach
+    fun setup() {
+        setOutputConsumers()
+        every {feedBootstrap.dataChannelMedium } returns STDIO
+        every {feedBootstrap.dataChannelFormat } returns JSONL
+        every {feedBootstrap.outputConsumer } returns outputConsumer
+        every {feedBootstrap.streamRecordConsumers() } returns streamRecordConsumers
+        every {feedBootstrap.feeds } returns listOf(global, stream)
+        every { resourceAcquirer.tryAcquire(any()) } returns mapOf(RESOURCE_DB_CONNECTION to ConcurrencyResource.AcquiredThread {})
+    }
+
+    private fun setOutputConsumers() {
+        outputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
+        streamRecordConsumers =
+            mapOf(
+                stream.id to
+                    object : StreamRecordConsumer {
+                        override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
+                        override fun accept(
+                            recordData: NativeRecordPayload,
+                            changes: Map<Field, FieldValueChange>?
+                        ) {
+                            outputConsumer.accept(
+                                AirbyteRecordMessage()
+                                    .withStream(stream.name)
+                                    .withNamespace(stream.namespace)
+                                    .withData(recordData.toJson())
+                            )
+                        }
+
+                        override fun close() {}
+                    }
+            )
+    }
 
     @Test
     /**
@@ -157,36 +215,17 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         input: ReadInput,
         upperBound: T,
     ): ReadResult {
-        val outputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
-        val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
-            mapOf(
-                stream.id to
-                    object : StreamRecordConsumer {
-                        override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
-
-                        override fun accept(
-                            recordData: ObjectNode,
-                            changes: Map<Field, FieldValueChange>?
-                        ) {
-                            outputConsumer.accept(
-                                AirbyteRecordMessage()
-                                    .withStream(stream.name)
-                                    .withNamespace(stream.namespace)
-                                    .withData(recordData)
-                            )
-                        }
-                    }
-            )
+        setOutputConsumers()
         val reader =
             CdcPartitionReader(
-                ConcurrencyResource(1),
-                streamRecordConsumers,
+                resourceAcquirer,
                 cdcPartitionReaderDbzOps,
                 upperBound,
                 input.properties,
                 input.offset,
                 input.schemaHistory,
                 input.isSynthetic,
+                feedBootstrap
             )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -297,8 +336,23 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 } else {
                     Update(id, after)
                 }
+
+            /*
+                                when (record) {
+                        is Insert -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
+                        is Update -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
+                        is Delete -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))},
+
+             */
             return DeserializedRecord(
-                data = Jsons.valueToTree(record) as ObjectNode,
+                data = mutableMapOf(
+                    "id" to FieldValueEncoder(record.id, IntCodec as JsonEncoder<Any>),
+                    "@c" to FieldValueEncoder(record::class.java.name, TextCodec as JsonEncoder<Any>)
+                ).also { when (record) {
+                    is Insert -> it["v"] = FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
+                    is Update -> it["v"] = FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
+                    is Delete -> {}
+                }},
                 changes = emptyMap(),
             )
         }
