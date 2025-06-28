@@ -1,5 +1,25 @@
 # Jira Migration Guide
 
+## Upgrading to 4.0.0
+
+This is a breaking change for users syncing the **Pull Requests** stream, which will no longer be supported moving forward. This version removes all code pertaining to this stream, as well as the `enable_experimental_streams` config option.
+
+Users who do not have this stream enabled will not be affected and can safely upgrade to version `4.0.0`. If you are syncing data from this stream, please:
+
+1. Select **Connections** in the main navbar, then select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+3. Disable the `pull_requests` stream
+4. In the main navbar, navigate to the **Sources** tab and select the affected Jira source. Set the `enable_experimental_streams` field to false and save your changes.
+
+:::note
+For **OSS users**, the **Pull Request** stream can still be synced by pinning this source to an earlier version:
+
+1. Select **Settings** in the main navbar.
+2. Select **Sources**, edit the entry for `source-jira` and set the **Default Version** to `3.5.4`
+
+This feature is not available in **Airbyte Cloud**
+:::
+
 ## Upgrading to 3.0.0
 
 This is a breaking change for **Workflows** stream, which used `Id` field as pk.
@@ -18,7 +38,7 @@ To gracefully handle these changes for your existing connections, we highly reco
 8. Check all your streams.
 9. Select **Sync now** to sync your data
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 
@@ -37,7 +57,7 @@ To gracefully handle these changes for your existing connections, we highly reco
 8. Check all your streams.
 9. Select **Sync now** to sync your data
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 1.0.0
 
@@ -63,4 +83,4 @@ This is a breaking change because Stream State for `Boards Issues` will be chang
  This will reset the data in your destination and initiate a fresh sync.
    :::
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).

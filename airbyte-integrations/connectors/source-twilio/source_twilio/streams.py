@@ -14,6 +14,7 @@ from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -135,7 +136,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self._slice_step = slice_step and pendulum.duration(days=slice_step)
         self._start_date = start_date if start_date is not None else "1970-01-01T00:00:00Z"
         self._lookback_window = lookback_window
-        self._cursor_value = None
+        self._state = {"states": []}
 
     @property
     def slice_step(self):
@@ -157,29 +158,26 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {
-                self.cursor_field: self._cursor_value,
-            }
-
-        return {}
+        return self._state
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        if self._lookback_window and value.get(self.cursor_field):
-            new_start_date = (
-                pendulum.parse(value[self.cursor_field]) - pendulum.duration(minutes=self._lookback_window)
-            ).to_iso8601_string()
-            if new_start_date > self._start_date:
-                value[self.cursor_field] = new_start_date
-        self._cursor_value = value.get(self.cursor_field)
+        if self._lookback_window:
+            lookback_duration = pendulum.duration(minutes=self._lookback_window)
+            for state in value.get("states", []):
+                cursor = state.get("cursor", {})
+                if self.cursor_field in cursor:
+                    new_start_date = (pendulum.parse(cursor[self.cursor_field]) - lookback_duration).to_iso8601_string()
+                if new_start_date > self._start_date:
+                    cursor[self.cursor_field] = new_start_date
+        self._state = value
 
-    def generate_date_ranges(self) -> Iterable[Optional[MutableMapping[str, Any]]]:
+    def generate_date_ranges(self, partition: MutableMapping[str, Any]) -> Iterable[Optional[MutableMapping[str, Any]]]:
         def align_to_dt_format(dt: DateTime) -> DateTime:
             return pendulum.parse(dt.format(self.time_filter_template))
 
         end_datetime = pendulum.now("utc")
-        start_datetime = min(end_datetime, pendulum.parse(self.state.get(self.cursor_field, self._start_date)))
+        start_datetime = min(end_datetime, self._min_datetime(partition))
         current_start = start_datetime
         current_end = start_datetime
         # Aligning to a datetime format is done to avoid the following scenario:
@@ -197,23 +195,21 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             current_start = current_end + self.slice_granularity
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: StreamSlice = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            for dt_range in self.generate_date_ranges():
-                slice_ = copy.deepcopy(super_slice) if super_slice else {}
-                slice_.update(dt_range)
-                yield slice_
+            for dt_range in self.generate_date_ranges(super_slice.partition if super_slice else {}):
+                yield StreamSlice(partition=super_slice.partition if super_slice else {}, cursor_slice=dt_range)
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: StreamSlice = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        lower_bound = stream_slice and stream_slice.get(self.lower_boundary_filter_field)
-        upper_bound = stream_slice and stream_slice.get(self.upper_boundary_filter_field)
+        lower_bound = stream_slice and stream_slice.cursor_slice.get(self.lower_boundary_filter_field)
+        upper_bound = stream_slice and stream_slice.cursor_slice.get(self.upper_boundary_filter_field)
         if lower_bound:
             params[self.lower_boundary_filter_field] = lower_bound
         if upper_bound:
@@ -224,18 +220,36 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: StreamSlice = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        unsorted_records = []
+        if stream_slice is None:
+            stream_slice = StreamSlice(partition={}, cursor_slice={})
+        max_cursor_value = self._get_partition_state(stream_slice.partition).get(self.cursor_field, self._start_date)
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).to_iso8601_string()
-            unsorted_records.append(record)
-        sorted_records = sorted(unsorted_records, key=lambda x: x[self.cursor_field])
-        for record in sorted_records:
-            if record[self.cursor_field] >= self.state.get(self.cursor_field, self._start_date):
-                self._cursor_value = record[self.cursor_field]
-                yield record
+            if record[self.cursor_field] >= max_cursor_value:
+                max_cursor_value = record[self.cursor_field]
+            yield record
+        self._state = self._update_partition_state(stream_slice.partition, {self.cursor_field: max_cursor_value})
+
+    def _update_partition_state(self, partition: Mapping[str, Any], cursor: Mapping[str, Any]) -> Mapping[str, Any]:
+        states = self._state.get("states", [])
+        for state in states:
+            if state.get("partition") == partition:
+                state.update({"cursor": cursor})
+                return self._state
+        states.append({"partition": partition, "cursor": cursor})
+        return {"states": states}
+
+    def _get_partition_state(self, partition: Mapping[str, Any]) -> Mapping[str, Any]:
+        for state in self._state.get("states", []):
+            if state.get("partition") == partition:
+                return state.get("cursor", {})
+        return {}
+
+    def _min_datetime(self, partition: Mapping[str, Any]) -> DateTime:
+        return pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date))
 
 
 class TwilioNestedStream(TwilioStream):
@@ -266,7 +280,7 @@ class TwilioNestedStream(TwilioStream):
         return self.parent_stream(authenticator=self._session.auth)
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}
+        return StreamSlice(partition={"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}, cursor_slice={})
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_instance = self.parent_stream_instance
@@ -310,7 +324,7 @@ class DependentPhoneNumbers(TwilioNestedStream):
         return f"Accounts/{stream_slice['account_sid']}/Addresses/{stream_slice['sid']}/DependentPhoneNumbers.json"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"sid": record["sid"], "account_sid": record["account_sid"]}
+        return StreamSlice(partition={"sid": record["sid"], "account_sid": record["account_sid"]}, cursor_slice={})
 
 
 class Applications(TwilioNestedStream):
@@ -431,7 +445,7 @@ class Executions(TwilioNestedStream):
         return f"Flows/{ stream_slice['flow_sid'] }/Executions"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"flow_sid": record["sid"]}
+        return StreamSlice(partition={"flow_sid": record["sid"]}, cursor_slice={})
 
 
 class Step(TwilioNestedStream):
@@ -448,7 +462,7 @@ class Step(TwilioNestedStream):
         return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
+        return StreamSlice(partition={"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}, cursor_slice={})
 
 
 class OutgoingCallerIds(TwilioNestedStream):
@@ -504,7 +518,7 @@ class Roles(TwilioNestedStream):
         return f"Services/{ stream_slice['service_sid'] }/Roles"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"service_sid": record["sid"]}
+        return StreamSlice(partition={"service_sid": record["sid"]}, cursor_slice={})
 
 
 class Transcriptions(TwilioNestedStream):
@@ -571,7 +585,7 @@ class UsageNestedStream(TwilioNestedStream):
         return f"Accounts/{stream_slice['account_sid']}/Usage/{self.path_name}.json"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"account_sid": record["sid"]}
+        return StreamSlice(partition={"account_sid": record["sid"], "date_created": record["date_created"]}, cursor_slice={})
 
 
 class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
@@ -583,9 +597,14 @@ class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
     cursor_field = "start_date"
     time_filter_template = "YYYY-MM-DD"
     slice_granularity = pendulum.duration(days=1)
-    path_name = "Records"
-    primary_key = [["account_sid"], ["category"]]
+    path_name = "Records/Daily"
+    primary_key = [["account_sid"], ["category"], ["start_date"], ["end_date"]]
     changeable_fields = ["as_of"]
+
+    def _min_datetime(self, partition: Mapping[str, Any]) -> DateTime:
+        cursor_value = pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date))
+
+        return max(cursor_value, pendulum.parse(partition.get("date_created", self._start_date), strict=False))
 
 
 class UsageTriggers(UsageNestedStream):
@@ -594,6 +613,11 @@ class UsageTriggers(UsageNestedStream):
     parent_stream = Accounts
     subresource_uri_key = "triggers"
     path_name = "Triggers"
+
+    def _min_datetime(self, partition: Mapping[str, Any]) -> DateTime:
+        cursor_value = pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date))
+
+        return max(cursor_value, pendulum.parse(partition.get("date_created", self._start_date), strict=False))
 
 
 class Alerts(IncrementalTwilioStream):
@@ -629,7 +653,7 @@ class ConversationParticipants(TwilioNestedStream):
         return f"Conversations/{stream_slice['conversation_sid']}/Participants"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"conversation_sid": record["sid"]}
+        return StreamSlice(partition={"conversation_sid": record["sid"]}, cursor_slice={})
 
 
 class ConversationMessages(TwilioNestedStream):
@@ -644,7 +668,7 @@ class ConversationMessages(TwilioNestedStream):
         return f"Conversations/{stream_slice['conversation_sid']}/Messages"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"conversation_sid": record["sid"]}
+        return StreamSlice(partition={"conversation_sid": record["sid"]}, cursor_slice={})
 
 
 class Users(TwilioStream):
@@ -669,4 +693,4 @@ class UserConversations(TwilioNestedStream):
         return f"Users/{stream_slice['user_sid']}/Conversations"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"user_sid": record["sid"]}
+        return StreamSlice(partition={"user_sid": record["sid"]}, cursor_slice={})

@@ -6,9 +6,12 @@ package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobServiceClient
+import com.azure.storage.blob.batch.BlobBatchClientBuilder
 import com.azure.storage.blob.models.BlobStorageException
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.azure.storage.blob.models.ListBlobsOptions
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -17,15 +20,24 @@ import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+/**
+ * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
+ * underscores.
+ */
+const val GENERATION_ID_METADATA_KEY_OVERRIDE = "ab_generation_id"
+
+private const val DELETE_BATCH_SIZE = 256
+
 /** Represents a single blob in Azure. */
 data class AzureBlob(
     override val key: String,
-    override val storageConfig: AzureBlobStorageConfiguration
-) : RemoteObject<AzureBlobStorageConfiguration>
+    override val storageConfig: AzureBlobStorageClientConfiguration
+) : RemoteObject<AzureBlobStorageClientConfiguration>
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class AzureBlobClient(
     private val serviceClient: BlobServiceClient,
-    private val blobConfig: AzureBlobStorageConfiguration
+    private val blobConfig: AzureBlobStorageClientConfiguration
 ) : ObjectStorageClient<AzureBlob> {
 
     /** List all blobs that start with [prefix]. We emit them as a Flow. */
@@ -82,7 +94,7 @@ class AzureBlobClient(
         return props?.metadata ?: emptyMap()
     }
 
-    suspend fun getProperties(key: String): OffsetDateTime? {
+    fun getProperties(key: String): OffsetDateTime? {
         val blobClient =
             serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
@@ -118,6 +130,15 @@ class AzureBlobClient(
             } else {
                 throw e
             }
+        }
+    }
+
+    override suspend fun delete(keys: Set<String>) {
+        val batchClient = BlobBatchClientBuilder(serviceClient).buildClient()
+        val blobContainerClient = serviceClient.getBlobContainerClient(blobConfig.containerName)
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val blobUrls = chunk.map { key -> blobContainerClient.getBlobClient(key).blobUrl }
+            batchClient.deleteBlobs(blobUrls, DeleteSnapshotsOptionType.INCLUDE)
         }
     }
 

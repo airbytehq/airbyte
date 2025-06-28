@@ -93,6 +93,14 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.15 | 2025-06-20 | [61736](https://github.com/airbytehq/airbyte/pull/61736) | Fix lifecycle_stages -  was erroneously top-level instead of a property of column  |
+| 1.0.14 | 2025-05-24 | [60515](https://github.com/airbytehq/airbyte/pull/60515) | Update dependencies |
+| 1.0.13 | 2025-05-10 | [60108](https://github.com/airbytehq/airbyte/pull/60108) | Update dependencies |
+| 1.0.12 | 2025-05-04 | [59521](https://github.com/airbytehq/airbyte/pull/59521) | Update dependencies |
+| 1.0.11 | 2025-04-27 | [59088](https://github.com/airbytehq/airbyte/pull/59088) | Update dependencies |
+| 1.0.10 | 2025-04-19 | [58468](https://github.com/airbytehq/airbyte/pull/58468) | Update dependencies |
+| 1.0.9 | 2025-04-12 | [57875](https://github.com/airbytehq/airbyte/pull/57875) | Update dependencies |
+| 1.0.8 | 2025-04-05 | [57321](https://github.com/airbytehq/airbyte/pull/57321) | Update dependencies |
 | 1.0.7 | 2025-03-29 | [56777](https://github.com/airbytehq/airbyte/pull/56777) | Update dependencies |
 | 1.0.6 | 2025-03-22 | [56190](https://github.com/airbytehq/airbyte/pull/56190) | Update dependencies |
 | 1.0.5 | 2025-03-08 | [55566](https://github.com/airbytehq/airbyte/pull/55566) | Update dependencies |

@@ -238,12 +238,12 @@ object MySqlSourceDatatypeTestOperations :
                     LeafAirbyteSchemaType.INTEGER,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "DECIMAL(10,2)",
+                    "DECIMAL(10,1)",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "DECIMAL(10,2) UNSIGNED",
+                    "DECIMAL(10,1) UNSIGNED",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),

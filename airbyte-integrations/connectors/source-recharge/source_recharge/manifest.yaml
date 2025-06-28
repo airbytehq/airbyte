@@ -66,8 +66,13 @@ definitions:
       $ref: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
-      description: >-
-        The default error handler
+      max_retries: 10
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 2
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version
@@ -145,6 +150,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%dT%H:%M:%S"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      lookback_window: P{{ config.get('lookback_window_days', 0) }}D
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -223,6 +229,13 @@ definitions:
             value: "{{ record.shop.get('id') or record.store.get('id') }}"
     $parameters:
       name: "shop"
+  payment_methods_stream:
+    description: >-
+      Payment Methods Stream: https://developer.rechargepayments.com/2021-11/payment_methods/payment_methods_list
+    $ref: "#/definitions/base_modern_api_stream"
+    $parameters:
+      name: "payment_methods"
+      data_path: "payment_methods"
 
   # INCREMENTAL STREAMS
   # ADDRESSES
@@ -288,6 +301,14 @@ definitions:
     $parameters:
       name: "bundle_selections"
       data_path: "bundle_selections"
+  # CREDIT ADJUSTMENTS
+  credit_adjustments_stream:
+    description: >-
+      Credit Adjustments Stream: https://developer.rechargepayments.com/2021-11/credits/credit_adjustment_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "credit_adjustments"
+      data_path: "credit_adjustments"
 
 streams:
   - "#/definitions/addresses_stream"
@@ -302,6 +323,8 @@ streams:
   - "#/definitions/subscriptions_stream"
   - "#/definitions/events_stream"
   - "#/definitions/bundle_selections_stream"
+  - "#/definitions/credit_adjustments_stream"
+  - "#/definitions/payment_methods_stream"
   # The `orders` stream remains implemented in `streams.py` due to:
   # 1. Inability to resolve `$ref` conditionally
   # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)

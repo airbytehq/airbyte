@@ -158,9 +158,17 @@
             },
             "shared_access_signature" : {
               "type" : "string",
-              "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview",
+              "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview.Mutually exclusive with an account key",
               "title" : "Shared Access Signature",
-              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "examples" : [ "sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D" ],
+              "airbyte_secret" : true,
+              "always_show" : true
+            },
+            "azure_blob_storage_account_key" : {
+              "type" : "string",
+              "description" : "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature",
+              "title" : "Azure Blob Storage account key",
+              "examples" : [ "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd==" ],
               "airbyte_secret" : true,
               "always_show" : true
             },
@@ -169,7 +177,7 @@
               "description" : "Specifies the external data source name configured in MSSQL, which references the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql",
               "title" : "BULK Load Data Source",
               "examples" : [ "MyAzureBlobStorage" ],
-              "order" : 4,
+              "order" : 5,
               "always_show" : true
             },
             "bulk_load_validate_values_pre_load" : {
@@ -178,16 +186,119 @@
               "title" : "Pre-Load Value Validation",
               "examples" : [ "false" ],
               "default" : false,
-              "order" : 5,
+              "order" : 6,
               "always_show" : false
             }
           },
-          "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "shared_access_signature", "bulk_load_data_source" ]
+          "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "bulk_load_data_source" ]
         } ],
         "description" : "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration.",
         "title" : "Load Type",
         "always_show" : true,
         "order" : 8,
+        "type" : "object"
+      },
+      "tunnel_method" : {
+        "oneOf" : [ {
+          "title" : "No Tunnel",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "No ssh tunnel needed to connect to database",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "NO_TUNNEL" ],
+              "default" : "NO_TUNNEL"
+            }
+          },
+          "required" : [ "tunnel_method" ]
+        }, {
+          "title" : "SSH Key Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect through a jump server tunnel host using username and ssh key",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "SSH_KEY_AUTH" ],
+              "default" : "SSH_KEY_AUTH"
+            },
+            "tunnel_host" : {
+              "type" : "string",
+              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+              "title" : "SSH Tunnel Jump Server Host",
+              "order" : 1
+            },
+            "tunnel_port" : {
+              "type" : "integer",
+              "default" : 22,
+              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+              "title" : "SSH Connection Port",
+              "order" : 2,
+              "minimum" : 0,
+              "maximum" : 65536
+            },
+            "tunnel_user" : {
+              "type" : "string",
+              "description" : "OS-level username for logging into the jump server host",
+              "title" : "SSH Login Username",
+              "order" : 3
+            },
+            "ssh_key" : {
+              "type" : "string",
+              "description" : "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+              "title" : "SSH Private Key",
+              "order" : 4,
+              "multiline" : true,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key" ]
+        }, {
+          "title" : "Password Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect through a jump server tunnel host using username and password authentication",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "SSH_PASSWORD_AUTH" ],
+              "default" : "SSH_PASSWORD_AUTH"
+            },
+            "tunnel_host" : {
+              "type" : "string",
+              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+              "title" : "SSH Tunnel Jump Server Host",
+              "order" : 1
+            },
+            "tunnel_port" : {
+              "type" : "integer",
+              "default" : 22,
+              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+              "title" : "SSH Connection Port",
+              "order" : 2,
+              "minimum" : 0,
+              "maximum" : 65536
+            },
+            "tunnel_user" : {
+              "type" : "string",
+              "description" : "OS-level username for logging into the jump server host",
+              "title" : "SSH Login Username",
+              "order" : 3
+            },
+            "tunnel_user_password" : {
+              "type" : "string",
+              "description" : "OS-level password for logging into the jump server host",
+              "title" : "Password",
+              "order" : 4,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password" ]
+        } ],
+        "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "title" : "SSH Tunnel Method",
+        "order" : 5,
         "type" : "object"
       }
     },

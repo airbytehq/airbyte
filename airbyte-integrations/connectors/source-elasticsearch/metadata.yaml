@@ -19,7 +19,7 @@ data:
   name: Elasticsearch
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha

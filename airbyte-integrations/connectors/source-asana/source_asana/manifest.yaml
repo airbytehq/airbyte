@@ -483,6 +483,42 @@ definitions:
               parent_key: "gid"
               partition_field: "parent_gid"
 
+  portfolio_items_stream:
+    $ref: "#/definitions/base_stream"
+    name: "portfolio_items"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/portfolio_items_schema"
+    $parameters:
+      path: "/portfolios/{{ stream_slice['portfolio_gid'] }}/items"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/portfolios_stream"
+            parent_key: "gid"
+            partition_field: "portfolio_gid"
+
+  portfolio_items_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+
   projects_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1126,6 +1162,11 @@ definitions:
         type:
           - "null"
           - integer
+      actual_time_minutes:
+        type:
+          - "null"
+          - integer
+        description: "The actual time spent on the task in minutes"
       resource_subtype:
         type:
           - "null"
@@ -2526,6 +2567,7 @@ streams:
   - "#/definitions/custom_fields_stream"
   - "#/definitions/organization_exports_stream"
   - "#/definitions/events_stream"
+  - "#/definitions/portfolio_items_stream"
 
 check:
   type: CheckStream
@@ -2665,6 +2707,7 @@ metadata:
     custom_fields: false
     organization_exports: false
     events: false
+    portfolio_items: false
 
 # Asana rate limiting has two tiers:
 # - Free: 2.5 req/s, 150 req/min

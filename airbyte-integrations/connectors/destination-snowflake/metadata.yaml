@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 3.15.5
+  dockerImageTag: 3.15.10
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -13,7 +13,7 @@ data:
   license: ELv2
   name: Snowflake
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+    baseImage: docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0
   registryOverrides:
     cloud:
       enabled: true

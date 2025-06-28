@@ -1,8 +1,10 @@
 data:
+  ab_internal:
+    requireVersionIncrementsInPullRequests: false
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.4.4
+  dockerImageTag: 2.4.5
   dockerRepository: airbyte/destination-postgres-strict-encrypt
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres

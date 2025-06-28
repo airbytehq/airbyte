@@ -6,10 +6,12 @@ package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -17,25 +19,29 @@ class EnrichedDestinationRecordAirbyteValueTest {
 
     private val destinationStream =
         DestinationStream(
-            descriptor = DestinationStream.Descriptor("test_namespace", "test_stream"),
+            unmappedNamespace = "test_namespace",
+            unmappedName = "test_stream",
             importType = Append,
             schema = ObjectTypeWithoutSchema,
             generationId = 42L,
             minimumGenerationId = 10L,
-            syncId = 100L
+            syncId = 100L,
+            namespaceMapper = NamespaceMapper()
         )
 
     private val emittedAtMs = 1234567890L
+    private val airbyteRawId = UUID.randomUUID()
 
     @Test
     fun `test airbyteMetaFields property`() {
         val record =
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
-                declaredFields = emptyMap(),
-                undeclaredFields = emptyMap(),
+                declaredFields = linkedMapOf(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                meta = null
+                sourceMeta = Meta(),
+                airbyteRawId = airbyteRawId,
             )
 
         val metaFields = record.airbyteMetaFields
@@ -79,7 +85,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
     @Test
     fun `test allTypedFields property`() {
         val declaredFields =
-            mapOf(
+            linkedMapOf(
                 "field1" to
                     EnrichedAirbyteValue(
                         StringValue("value1"),
@@ -100,9 +106,10 @@ class EnrichedDestinationRecordAirbyteValueTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
                 declaredFields = declaredFields,
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                meta = null
+                sourceMeta = Meta(),
+                airbyteRawId = airbyteRawId,
             )
 
         val allFields = record.allTypedFields
@@ -133,7 +140,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 "field1",
                 airbyteMetaField = null
             )
-        field1.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, StringValue("val"))
+        field1.truncate(StringValue("val"), Reason.DESTINATION_RECORD_SIZE_LIMITATION)
 
         val field2 =
             EnrichedAirbyteValue(
@@ -144,7 +151,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
             )
         field2.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
-        val declaredFields = mapOf("field1" to field1, "field2" to field2)
+        val declaredFields = linkedMapOf("field1" to field1, "field2" to field2)
 
         // Create meta with its own changes
         val meta =
@@ -163,9 +170,10 @@ class EnrichedDestinationRecordAirbyteValueTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
                 declaredFields = declaredFields,
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                meta = meta
+                sourceMeta = meta,
+                airbyteRawId = airbyteRawId,
             )
 
         // Get the changes array from the meta field
@@ -215,19 +223,21 @@ class EnrichedDestinationRecordAirbyteValueTest {
         val record1 =
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
-                declaredFields = emptyMap(),
-                undeclaredFields = emptyMap(),
+                declaredFields = linkedMapOf(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                meta = null
+                sourceMeta = Meta(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val record2 =
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
-                declaredFields = emptyMap(),
-                undeclaredFields = emptyMap(),
+                declaredFields = linkedMapOf(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
-                meta = null
+                sourceMeta = Meta(),
+                airbyteRawId = UUID.randomUUID(),
             )
 
         val rawId1 =

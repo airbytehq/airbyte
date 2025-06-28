@@ -12,23 +12,20 @@ import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-
-interface FailSyncTask : Task
 
 /**
  * FailSyncTask is a task that is executed only when the destination itself fails during a sync. If
  * the sync is failed by upstream (e.g. an incomplete stream message is received), we do not call
  * this task. It is responsible for cleaning up resources and reporting the failure.
  */
-class DefaultFailSyncTask(
+class FailSyncTask(
     private val taskLauncher: DestinationTaskLauncher,
     private val destinationWriter: DestinationWriter,
     private val exception: Exception,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*, *>,
-) : FailSyncTask {
+    private val checkpointManager: CheckpointManager<*>,
+) : Task {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -43,19 +40,14 @@ class DefaultFailSyncTask(
     }
 }
 
-interface FailSyncTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask
-}
-
 @Singleton
-@Secondary
-class DefaultFailSyncTaskFactory(
+class FailSyncTaskFactory(
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*, *>,
+    private val checkpointManager: CheckpointManager<*>,
     private val destinationWriter: DestinationWriter
-) : FailSyncTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask {
-        return DefaultFailSyncTask(
+) {
+    fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask {
+        return FailSyncTask(
             taskLauncher,
             destinationWriter,
             exception,

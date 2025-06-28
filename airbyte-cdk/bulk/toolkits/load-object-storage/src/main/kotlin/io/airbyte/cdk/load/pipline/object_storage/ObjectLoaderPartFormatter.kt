@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.file.object_storage.PathFactory
@@ -30,6 +29,8 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
@@ -37,7 +38,6 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val pathFactory: PathFactory,
     private val catalog: DestinationCatalog,
     private val writerFactory: BufferedFormattingWriterFactory<T>,
-    private val client: ObjectStorageClient<*>,
     private val loader: ObjectLoader,
     // TODO: This doesn't need to be "DestinationState", just a couple of utility classes
     private val stateManager: DestinationStateManager<ObjectStorageDestinationState>,
@@ -54,6 +54,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
+    private val streamStateCache = ConcurrentHashMap<String, AtomicLong>()
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -79,8 +80,28 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
         // Initialize the part factory and writer.
         val partFactory = PartFactory(fileName, fileNo)
-        log.info { "Starting part generation for $fileName (${stream.descriptor})" }
+        log.info { "Starting part generation for $fileName (${stream.mappedDescriptor})" }
         return State(stream, writerFactory.create(stream), partFactory)
+    }
+
+    private suspend fun getNewStateWithoutLock(stream: DestinationStream): State<T> {
+        val pathOnly = pathFactory.getFinalDirectory(stream)
+        val state = stateManager.getState(stream)
+
+        val partCounter =
+            streamStateCache.computeIfAbsent(pathOnly) { state.getPartCounter(pathOnly) }
+
+        val fileNo = partCounter.incrementAndGet()
+
+        val fileName = state.ensureUnique(pathFactory.getPathToFile(stream, fileNo))
+
+        log.info { "Starting part generation for $fileName (${stream.mappedDescriptor})" }
+
+        return State(
+            stream = stream,
+            writer = writerFactory.create(stream),
+            partFactory = PartFactory(fileName, fileNo),
+        )
     }
 
     private fun makePart(state: State<T>, forceFinish: Boolean = false): FormattedPart {
@@ -97,13 +118,18 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
                 state.writer.takeBytes()
             }
         val part = state.partFactory.nextPart(bytes, isFinal)
-        log.info { "Creating part $part" }
+        log.debug { "Creating part $part" }
         return FormattedPart(part)
     }
 
     override suspend fun start(key: StreamKey, part: Int): State<T> {
         val stream = catalog.getStream(key.stream)
         return newState(stream)
+    }
+
+    suspend fun startLockFree(key: StreamKey): State<T> {
+        val stream = catalog.getStream(key.stream)
+        return getNewStateWithoutLock(stream)
     }
 
     override suspend fun accept(

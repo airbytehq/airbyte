@@ -12,24 +12,21 @@ import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
-import io.micronaut.context.annotation.Requires
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 
-@Singleton
-@Requires(bean = ObjectLoader::class)
 class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
-    val objectLoader: ObjectLoader,
-    val uploadCompleter: ObjectLoaderUploadCompleter<T>,
-    @Named("objectLoaderLoadedPartQueue")
-    val inputQueue:
+    objectLoader: ObjectLoader,
+    private val uploadCompleter: ObjectLoaderUploadCompleter<T>,
+    private val inputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
-    @Named("objectLoaderCompletedUploadQueue")
-    val completedUploadQueue:
+    private val completedUploadQueue:
         PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
         null,
-    val completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
-    val taskFactory: LoadPipelineStepTaskFactory,
+    private val completedUploadPartitioner:
+        ObjectLoaderCompletedUploadPartitioner<
+            ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+        null,
+    private val taskFactory: LoadPipelineStepTaskFactory,
+    private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = objectLoader.numUploadCompleters
 
@@ -39,12 +36,12 @@ class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
         } else {
             taskFactory.createIntermediateStep(
                 uploadCompleter,
-                inputQueue,
-                completedUploadPartitioner!!,
+                inputQueue.consume(partition),
+                completedUploadPartitioner,
                 completedUploadQueue,
                 partition,
                 numWorkers,
-                3
+                stepId = stepId,
             )
         }
     }

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "5.2.3"
+version = "5.3.0"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -12,15 +12,16 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "~3.11"
 dagger-io = "==0.13.3"
 beartype = ">=0.18.2"
-asyncer = "^0"
+asyncer = "^0.0.8"
 exceptiongroup = ">=1.2.0"
 anyio = ">=4.2.0"  # Required by Python 3.11
 trio = ">=0.24.0"  # Required by anyio
 more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
-airbyte-protocol-models = "*"
-jinja2 = "^3.0.2"
+airbyte-protocol-models = "^0.16.0"
+jinja2 = "^3.1.6"
+MarkupSafe = "==2.1.5"  # pin transitive dependency to avoid issues with version resolution
 requests = "^2.31"
 airbyte-connectors-base-images = { path = "../base_images", develop = true }
 connector-ops = { path = "../connector_ops", develop = true }
@@ -42,6 +43,7 @@ pydash = "6.0.2"
 python-slugify = ">=8.0.4"
 deepdiff = "^7.0.1"
 auto-merge = { path = "../auto_merge", develop = true }
+setuptools = "^80.1.0"  # Needed due to pkg_resources refs
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"

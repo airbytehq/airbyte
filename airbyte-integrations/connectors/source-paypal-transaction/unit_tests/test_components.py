@@ -105,7 +105,7 @@ def test_get_headers(components_module, authenticator_parameters):
     PayPalOauth2Authenticator = components_module.PayPalOauth2Authenticator
     expected_basic_auth = "Basic dGVzdF9jbGllbnRfaWQ6dGVzdF9jbGllbnRfc2VjcmV0"
     authenticator = PayPalOauth2Authenticator(**authenticator_parameters)
-    headers = authenticator.get_headers()
+    headers = authenticator.get_refresh_request_headers()
     assert headers == {"Authorization": expected_basic_auth}
 
 

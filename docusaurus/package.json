@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
+    "prebuild": "pnpm run prepare-sidebar",
+    "prestart": "pnpm run prepare-sidebar",
     "docusaurus": "docusaurus",
     "start": "node src/scripts/fetchSchema.js && docusaurus start --port 3005",
     "build": "node src/scripts/fetchSchema.js && docusaurus build",
@@ -78,7 +81,6 @@
     "@docusaurus/core": "^3.7.0",
     "@docusaurus/cssnano-preset": "^3.7.0",
     "@docusaurus/module-type-aliases": "^3.7.0",
-    "@docusaurus/plugin-client-redirects": "^3.7.0",
     "@docusaurus/plugin-debug": "^3.7.0",
     "@docusaurus/plugin-sitemap": "^3.7.0",
     "@docusaurus/preset-classic": "^3.7.0",
@@ -92,7 +94,10 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@headlessui/react": "^2.1.9",
+    "@markprompt/css": "^0.34.0",
+    "@markprompt/react": "^0.62.1",
     "@mdx-js/react": "^3.0.0",
+    "@signalwire/docusaurus-plugin-llms-txt": "^1.0.1",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",
     "classnames": "^2.3.2",
@@ -139,7 +144,7 @@
     "yaml-loader": "^0.8.0"
   },
   "resolutions": {
-    "dompurify": "3.2.4",
+    "dompurify": "3.1.6",
     "jsonpath-plus": "10.3.0"
   },
   "browserslist": {
@@ -153,5 +158,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "prettier": "3.5.3"
   }
 }
