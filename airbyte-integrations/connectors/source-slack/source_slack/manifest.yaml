@@ -194,6 +194,11 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           inclusive: "True"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
