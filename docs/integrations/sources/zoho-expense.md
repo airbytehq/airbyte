@@ -31,6 +31,7 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2025-06-28 | [62263](https://github.com/airbytehq/airbyte/pull/62263) | Update dependencies |
 | 0.0.23 | 2025-06-21 | [61761](https://github.com/airbytehq/airbyte/pull/61761) | Update dependencies |
 | 0.0.22 | 2025-06-15 | [61161](https://github.com/airbytehq/airbyte/pull/61161) | Update dependencies |
 | 0.0.21 | 2025-05-24 | [60784](https://github.com/airbytehq/airbyte/pull/60784) | Update dependencies |
