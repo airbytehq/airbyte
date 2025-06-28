@@ -1602,6 +1602,9 @@ streams:
           archived:
             description: Indicates whether the page is archived or not.
             type: boolean
+          in_trash:
+            description: Indicates whether the page is in trash or not.
+            type: boolean
           icon:
             description: URL or reference to the page icon.
             anyOf:
