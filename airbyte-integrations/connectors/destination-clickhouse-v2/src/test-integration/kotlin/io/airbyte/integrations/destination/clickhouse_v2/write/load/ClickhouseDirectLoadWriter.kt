@@ -40,9 +40,24 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 
-class ClickhouseDirectLoadWriter :
+class ClickhouseDirectLoadWriterWithJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection.json",
+        SchematizedNestedValueBehavior.PASS_THROUGH
+    )
+
+class ClickhouseDirectLoadWriterWithoutJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection_no_json.json",
+        SchematizedNestedValueBehavior.STRINGIFY
+    )
+
+abstract class ClickhouseDirectLoadWriter(
+    specFile: String,
+    schematizedObjectBehavior: SchematizedNestedValueBehavior
+) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
+        configContents = Files.readString(Utils.getConfigPath(specFile)),
         configSpecClass = ClickhouseSpecificationOss::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->
@@ -55,9 +70,10 @@ class ClickhouseDirectLoadWriter :
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
         stringifySchemalessObjects = true,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        unionBehavior = UnionBehavior.STRICT_STRINGIFY,
+        unionBehavior = UnionBehavior.STRINGIFY,
+        stringifyUnionObjects = true,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
@@ -124,7 +140,13 @@ class ClickhouseDataDumper(
             val dataMap = linkedMapOf<String, AirbyteValue>()
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
-                .forEach { entry -> dataMap[entry.key] = AirbyteValue.from(entry.value) }
+                .forEach { entry ->
+                    if (entry.value != null)
+                        println(
+                            "${entry.key} -> ${entry.value} with value type: ${entry.value.javaClass}"
+                        )
+                    dataMap[entry.key] = AirbyteValue.from(entry.value)
+                }
             val outputRecord =
                 OutputRecord(
                     rawId = record[Meta.COLUMN_NAME_AB_RAW_ID] as String,
