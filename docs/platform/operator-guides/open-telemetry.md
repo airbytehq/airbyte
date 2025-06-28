@@ -4,7 +4,7 @@ products: oss-enterprise
 
 # OpenTelemetry metrics monitoring
 
-Airbyte Self-Managed Enterprise generates a number of crucial metrics about syncs and volumes of data moved. You can configure Airbyte to send telemetry data to an OpenTelemetry collector endpoint so you can consume these metrics in your downstream monitoring tool of choice. Airbyte does not send traces and logs.
+Airbyte Self-Managed Enterprise generates a number of crucial metrics about syncs and volumes of data moved. You can configure Airbyte to send telemetry data to an OpenTelemetry collector endpoint so you can consume these metrics in your downstream monitoring tool of choice. Airbyte doesn't send traces and logs.
 
 Airbyte sends specific metrics to provide you with health insight in the following areas.
 
@@ -13,6 +13,12 @@ Airbyte sends specific metrics to provide you with health insight in the followi
 - Sync performance: Track sync duration and data volume moved to understand performance
 
 - System health: Monitor sync status and completion rates to ensure system stability
+
+## Example dashboard
+
+Here's an example of a dashboard in Datadog using Airbyte's OTEL metrics.
+
+![Airbyte OTEL metrics in a dashboard in Datadog](assets/otel-datadog.png)
 
 ## Configure OpenTelemetry metrics
 
