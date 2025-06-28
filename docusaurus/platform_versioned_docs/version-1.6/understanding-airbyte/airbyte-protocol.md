@@ -363,6 +363,7 @@ This section will document the meaning of each field in an `AirbyteStream`
 - `supported_sync_modes` - The sync modes that the stream supports. By default, all sources support `FULL_REFRESH`. Even if this array is empty, it can be assumed that a source supports `FULL_REFRESH`. The allowed sync modes are `FULL_REFRESH` and `INCREMENTAL`.
 - `source_defined_cursor` - If a source supports the `INCREMENTAL` sync mode, and it sets this field to true, it is responsible for determining internally how it tracks which records in a source are new or updated since the last sync. When set to `true`, `default_cursor_field` should also be set.
 - `default_cursor_field` - If a source supports the `INCREMENTAL` sync mode, it may, optionally, set this field. If this field is set, and the user does not override it with the `cursor_field` attribute in the `ConfiguredAirbyteStream` \(described below\), this field will be used as the cursor. It is an array of keys to a field in the schema.
+- `source_defined_primary_key` - If a source defines primary key constraints for a stream, this field contains the paths to those fields. When set, this field takes precedence over any user-configured primary key and cannot be overridden. It is an array of arrays, where each inner array represents a path to a field in the schema.
 
 #### Data Types
 
@@ -395,7 +396,7 @@ ConfiguredAirbyteStream:
       "$ref": "#/definitions/DestinationSyncMode"
       default: append
     primary_key:
-      description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+      description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored. See "Logic for resolving Primary Key" section for precedence rules when source_defined_primary_key is also present.
       type: array
       items:
         type: array
@@ -441,6 +442,15 @@ This section lays out how a cursor field is determined in the case of a Stream t
 - If `cursor_field` in `ConfiguredAirbyteStream` is set, then the source uses that field as the cursor. If it is not set, continue...
 - If `default_cursor_field` in `AirbyteStream` is set, then the sources use that field as the cursor. If it is not set, continue...
 - Illegal - If `source_defined_cursor`, `cursor_field`, and `default_cursor_field` are all false-y, this is an invalid configuration.
+
+### Logic for resolving Primary Key
+
+This section lays out how a primary key is determined for streams that require primary key configuration (e.g., when using `append_dedup` destination sync mode).
+
+- If `source_defined_primary_key` in `AirbyteStream` is set, then the source determines the primary key based on data constraints (e.g., database primary key constraints, API entity identifiers). This cannot be overridden. If it is not set, continue...
+- If `primary_key` in `ConfiguredAirbyteStream` is set, then that configuration is used as the primary key. If it is not set, continue...
+- If both `source_defined_primary_key` and `primary_key` are set, they must match exactly. Mismatches may or may not result in an error, depending upon when and where the discrepancy is identified.
+- If neither `source_defined_primary_key` nor `primary_key` are set, and a primary key is required for the destination sync mode, this is an invalid configuration.
 
 ### Schema Mismatches
 
