@@ -95,6 +95,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.14.14 | 2025-06-28 | [62167](https://github.com/airbytehq/airbyte/pull/62167) | Update dependencies |
 | 2.14.13 | 2025-06-21 | [61858](https://github.com/airbytehq/airbyte/pull/61858) | Update dependencies |
 | 2.14.12 | 2025-06-14 | [60653](https://github.com/airbytehq/airbyte/pull/60653) | Update dependencies |
 | 2.14.11 | 2025-05-10 | [59260](https://github.com/airbytehq/airbyte/pull/59260) | Update dependencies |
