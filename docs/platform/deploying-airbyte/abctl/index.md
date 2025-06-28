@@ -186,7 +186,7 @@ abctl local install --secret YOUR_SECRET --values values.yaml
 For a list of all flags, see the [full reference](#reference).
 
 :::note
-Depending on your internet speed, `abctl local install` may take up to 20 minutes.
+Depending on your internet speed, `abctl local install` may take up to 30 minutes.
 :::
 
 ### Get information about your Airbyte instance
@@ -346,7 +346,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
 
     Installs a local Airbyte instance or updates an existing installation which was initially installed by `abctl`.
 
-    Depending on your internet speed, `abctl local install` may take in excess of 20 minutes.
+    Depending on your internet speed, `abctl local install` may take up to 30 minutes.
 
     `install` has the following flags.
 
