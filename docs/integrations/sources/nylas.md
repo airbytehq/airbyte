@@ -33,6 +33,7 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.28 | 2025-06-28 | [62373](https://github.com/airbytehq/airbyte/pull/62373) | Update dependencies |
 | 0.0.27 | 2025-06-21 | [61904](https://github.com/airbytehq/airbyte/pull/61904) | Update dependencies |
 | 0.0.26 | 2025-06-14 | [60497](https://github.com/airbytehq/airbyte/pull/60497) | Update dependencies |
 | 0.0.25 | 2025-05-10 | [60150](https://github.com/airbytehq/airbyte/pull/60150) | Update dependencies |
