@@ -104,6 +104,16 @@
             "order": 1
           }
         ]
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 10,
+        "default": 4,
+        "examples": [2, 3],
+        "description": "The number of worker threads to use for the sync.",
+        "order": 7
       }
     }
   },
