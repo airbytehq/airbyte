@@ -34,6 +34,9 @@ enum class ResourceType {
  */
 @Singleton
 class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
+
+    @Inject constructor(cr: ConcurrencyResource, sr: SocketResource): this(listOf(cr as Resource<Resource.Acquired>, sr as Resource<Resource.Acquired>))
+
     fun tryAcquire(requested: List<ResourceType>): Map<ResourceType, Resource.Acquired>? {
         val acquired = mutableMapOf<ResourceType, Resource.Acquired>()
         // We need a run {} to be able to break out of the forEach loop if any resource acquisition
