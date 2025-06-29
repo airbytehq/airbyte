@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.schema import SchemaLoader
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -339,3 +340,24 @@ class BulkStreamsStateMigration(StateMigration):
                     del stream_state[key]
 
         return stream_state
+
+
+@dataclass
+class CustomReportSchemaLoader(SchemaLoader):
+    """
+    Creates custom report schema based on provided reporting columns.
+    """
+
+    reporting_columns: List[str]
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        self.reporting_columns =  list(frozenset(self.reporting_columns))
+
+        columns_schema = {col: {"type": ["null", "string"]} for col in self.reporting_columns}
+        schema: Mapping[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": columns_schema,
+        }
+        return schema

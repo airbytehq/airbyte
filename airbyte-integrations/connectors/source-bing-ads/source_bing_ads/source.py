@@ -80,7 +80,5 @@ class SourceBingAds(YamlDeclarativeSource):
         client = Client(**config)
         streams = []
 
-        custom_reports = self.get_custom_reports(config, client)
-        streams.extend(custom_reports)
         streams.extend(declarative_streams)
         return streams
