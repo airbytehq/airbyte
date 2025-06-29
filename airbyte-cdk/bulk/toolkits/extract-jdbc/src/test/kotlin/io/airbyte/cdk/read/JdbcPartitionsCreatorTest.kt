@@ -25,6 +25,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
+@Suppress(
+    "UNCHECKED_CAST",
+)
 class JdbcPartitionsCreatorTest {
 
     private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
