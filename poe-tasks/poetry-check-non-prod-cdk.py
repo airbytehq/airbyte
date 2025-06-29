@@ -109,7 +109,7 @@ def main():
     if not resolved_dir.name.startswith(("source-", "destination-")):
         print(f"Error: Directory '{resolved_dir.name}' must start with 'source-' or 'destination-'")
         sys.exit(1)
-    
+
     connector_name = resolved_dir.name
 
     is_production_ready, dependency_info = check_cdk_dependency(pyproject_path)
