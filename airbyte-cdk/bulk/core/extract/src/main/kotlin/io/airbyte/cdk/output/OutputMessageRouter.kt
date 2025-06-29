@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.output
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
@@ -124,18 +125,6 @@ class OutputMessageRouter(
         }
     }
 
-    override fun close() {
-        if (::simpleEfficientStreamConsumers.isInitialized) {
-            simpleEfficientStreamConsumers.forEach { it.value.close() }
-        }
-        if (::protoRecordOutputConsumers.isInitialized) {
-            protoRecordOutputConsumers.forEach { it.value.close() }
-        }
-        if (::efficientStreamRecordConsumers.isInitialized) {
-            efficientStreamRecordConsumers.forEach { it.value.close() }
-        }
-    }
-
     fun acceptNonRecord(airbyteMessage: AirbyteStateMessage) {
         when (recordsDataChannelMedium) {
             DataChannelMedium.SOCKET -> {
@@ -161,6 +150,19 @@ class OutputMessageRouter(
             DataChannelMedium.STDIO -> {
                 standardOutputConsumer.accept(airbyteMessage)
             }
+        }
+    }
+
+    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"])
+    override fun close() {
+        if (::simpleEfficientStreamConsumers.isInitialized) {
+            simpleEfficientStreamConsumers.forEach { it.value.close() }
+        }
+        if (::protoRecordOutputConsumers.isInitialized) {
+            protoRecordOutputConsumers.forEach { it.value.close() }
+        }
+        if (::efficientStreamRecordConsumers.isInitialized) {
+            efficientStreamRecordConsumers.forEach { it.value.close() }
         }
     }
 }
