@@ -159,6 +159,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.0 | 2025-06-28 | [55814](https://github.com/airbytehq/airbyte/pull/55814) | Migrate to Manifest Only |
 | 7.2.3 | 2025-06-23 | [61652](https://github.com/airbytehq/airbyte/pull/61652) | Add Error Hanlding for 425 Errors With Report Streams & Configurable Concurrency Levels|
 | 7.2.2 | 2025-05-10 | [59332](https://github.com/airbytehq/airbyte/pull/59332) | Update dependencies |
 | 7.2.1 | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
