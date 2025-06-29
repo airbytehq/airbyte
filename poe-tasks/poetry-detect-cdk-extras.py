@@ -1,7 +1,10 @@
 #!/usr/bin/env -S uv run --script
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
+# /// script
+# requires-python = ">=3.10"
 # dependencies = ["tomli"]
+# ///
 
 """
 Detect currently installed CDK extras from pyproject.toml file.
