@@ -1,5 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+# dependencies = ["tomli"]
 
 """
 Check if connector is using non-production CDK references.
@@ -7,6 +9,13 @@ Check if connector is using non-production CDK references.
 This script checks if the airbyte-cdk dependency in pyproject.toml is pinned to
 a git reference, local reference, or other non-standard version that would prevent
 production release.
+
+The script uses uv's automatic virtual environment management to handle dependencies.
+For more information about uv script execution, see:
+https://docs.astral.sh/uv/guides/scripts/#using-a-shebang-to-create-an-executable-file
+
+For details about PEP 723 inline script metadata format, see:
+https://peps.python.org/pep-0723/#how-to-teach-this
 
 Usage:
     ./poetry-check-non-prod-cdk.py
@@ -22,12 +31,18 @@ Examples:
 
     airbyte-cdk = {git = "https://github.com/...", branch = "main"}
     airbyte-cdk = {path = "../local-cdk"}
+
+    ./poetry-check-non-prod-cdk.py
+    ✅ Production ready: Standard version: ^6.0.0 with extras ['sql']
+
+    ./poetry-check-non-prod-cdk.py /path/to/dev-connector
+    ❌ This connector is not ready for production release.
+       Issue: Git reference: https://github.com/airbytehq/airbyte-python-cdk.git#main
 """
 
 import re
 import sys
 from pathlib import Path
-
 
 try:
     import tomllib as tomli
