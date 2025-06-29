@@ -104,6 +104,7 @@ help = "Detect currently installed CDK extras from pyproject.toml file. Use with
 
 [tool.poe.tasks.use-cdk-latest]
 shell = '''
+set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
 poetry add "airbyte-cdk$EXTRAS@latest"
 '''
@@ -111,6 +112,7 @@ help = "Pin to the latest version of the CDK, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-version]
 shell = '''
+set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
 poetry add "airbyte-cdk$EXTRAS@${VERSION}"
 '''
@@ -121,6 +123,7 @@ help = "Pin to a specific version of the CDK, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-branch-active]
 shell = '''
+set -eu
 REPO_ROOT=$(git rev-parse --show-toplevel)
 ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
 echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
@@ -131,6 +134,7 @@ help = "Pin to the branch of the CDK that is currently checked out locally, pres
 
 [tool.poe.tasks.use-cdk-branch]
 shell = '''
+set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
 poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${BRANCH}"
 '''
