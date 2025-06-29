@@ -2,11 +2,18 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
+@file:Suppress("UNCHECKED_CAST")
+
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.TransientErrorException
+import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.TestFixtures.assertFailures
 import io.airbyte.cdk.read.TestFixtures.bootstrap
 import io.airbyte.cdk.read.TestFixtures.factory
@@ -31,6 +38,13 @@ class JdbcPartitionReaderTest {
     val cursorCheckpoint = LocalDate.parse("2024-08-02")
     val cursorUpperBound = LocalDate.parse("2024-08-05")
 
+    private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
+        mutableMapOf(
+            "id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
+            "msg" to FieldValueEncoder(string, TextCodec as JsonEncoder<Any>),
+        )
+
     @Test
     fun testNonResumable() {
         // Generate partition
@@ -51,11 +65,11 @@ class JdbcPartitionReaderTest {
                                 ),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
-                            """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
-                            """{"id":2,"ts":"2024-08-02","msg":"how"}""",
-                            """{"id":3,"ts":"2024-08-03","msg":"are"}""",
-                            """{"id":4,"ts":"2024-08-04","msg":"you"}""",
-                            """{"id":5,"ts":"2024-08-05","msg":"today"}""",
+                            idDateString(1, "2024-08-01", "hello"),
+                            idDateString(2, "2024-08-02", "how"),
+                            idDateString(3, "2024-08-03", "are"),
+                            idDateString(4, "2024-08-04", "you"),
+                            idDateString(5, "2024-08-05", "today"),
                         )
                     ),
                 maxSnapshotReadTime = java.time.Duration.ofMinutes(1),
@@ -94,8 +108,7 @@ class JdbcPartitionReaderTest {
             "hello how are you today",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
-                .map { it.data["msg"].asText() }
-                .joinToString(separator = " ")
+                .joinToString(separator = " ") { it.data["msg"].asText() }
         )
         // Release resources
         Assertions.assertEquals(
@@ -131,10 +144,10 @@ class JdbcPartitionReaderTest {
                                 Limit(4),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
-                            """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
-                            """{"id":2,"ts":"2024-08-02","msg":"how"}""",
-                            """{"id":3,"ts":"2024-08-03","msg":"are"}""",
-                            """{"id":4,"ts":"2024-08-04","msg":"you"}""",
+                            idDateString(1, "2024-08-01", "hello"),
+                            idDateString(2, "2024-08-02", "how"),
+                            idDateString(3, "2024-08-03", "are"),
+                            idDateString(4, "2024-08-04", "you"),
                         )
                     ),
                 maxSnapshotReadTime = java.time.Duration.ofMinutes(1),
@@ -183,8 +196,7 @@ class JdbcPartitionReaderTest {
             "hello how",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
-                .map { it.data["msg"].asText() }
-                .joinToString(separator = " ")
+                .joinToString(separator = " ") { it.data["msg"].asText() }
         )
         // Release resources
         Assertions.assertEquals(
@@ -220,10 +232,10 @@ class JdbcPartitionReaderTest {
                                 Limit(4),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
-                            """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
-                            """{"id":2,"ts":"2024-08-02","msg":"how"}""",
-                            """{"id":3,"ts":"2024-08-03","msg":"are"}""",
-                            """{"id":4,"ts":"2024-08-04","msg":"you"}""",
+                            idDateString(1, "2024-08-01", "hello"),
+                            idDateString(2, "2024-08-02", "how"),
+                            idDateString(3, "2024-08-03", "are"),
+                            idDateString(4, "2024-08-04", "you"),
                         )
                     ),
                 maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
@@ -280,11 +292,11 @@ class JdbcPartitionReaderTest {
                                 ),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
-                            """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
-                            """{"id":2,"ts":"2024-08-02","msg":"how"}""",
-                            """{"id":3,"ts":"2024-08-03","msg":"are"}""",
-                            """{"id":4,"ts":"2024-08-04","msg":"you"}""",
-                            """{"id":5,"ts":"2024-08-05","msg":"today"}""",
+                            idDateString(1, "2024-08-01", "hello"),
+                            idDateString(2, "2024-08-02", "how"),
+                            idDateString(3, "2024-08-03", "are"),
+                            idDateString(4, "2024-08-04", "you"),
+                            idDateString(5, "2024-08-05", "today"),
                         )
                     ),
                 maxSnapshotReadTime = java.time.Duration.ofSeconds(1),

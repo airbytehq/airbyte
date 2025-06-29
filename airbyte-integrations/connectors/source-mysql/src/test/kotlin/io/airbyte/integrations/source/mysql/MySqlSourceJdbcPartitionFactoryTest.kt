@@ -18,9 +18,11 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.StateManager
 import io.airbyte.cdk.read.Stream
@@ -130,6 +132,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
+                ResourceAcquirer(emptyList())
             )
         }
 
@@ -154,6 +157,10 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 stateManager =
                     StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
                 stream,
+                OutputMessageRouter.DataChannelFormat.JSONL,
+                OutputMessageRouter.DataChannelMedium.STDIO,
+                8192,
+                ClockFactory().fixed(),
             )
     }
 

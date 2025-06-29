@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
@@ -67,7 +68,7 @@ abstract class JdbcPartitionsCreator<
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
             selectQuerier.executeQuery(cursorUpperBoundQuery).use {
-                if (it.hasNext()) it.next().data else null
+                if (it.hasNext()) it.next().data.toJson(Jsons.objectNode()) else null
             }
         if (record == null) {
             streamState.cursorUpperBound = Jsons.nullNode()
@@ -104,7 +105,7 @@ abstract class JdbcPartitionsCreator<
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
             selectQuerier.executeQuery(samplingQuery).use {
                 for (row in it) {
-                    values.add(recordMapper(row.data))
+                    values.add(recordMapper(row.data.toJson(Jsons.objectNode())))
                 }
             }
             if (values.size < sharedState.maxSampleSize) {
