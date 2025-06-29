@@ -112,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.3.8 | 2025-06-28 | [61471](https://github.com/airbytehq/airbyte/pull/61471) | Update dependencies |
 | 4.3.7 | 2025-05-31 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
 | 4.3.6 | 2025-03-29 | [54945](https://github.com/airbytehq/airbyte/pull/54945) | Update dependencies |
 | 4.3.5 | 2025-02-22 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
