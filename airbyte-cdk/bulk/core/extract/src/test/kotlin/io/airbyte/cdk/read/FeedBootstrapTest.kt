@@ -2,6 +2,8 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
+@file:Suppress("UNCHECKED_CAST")
+
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.ClockFactory
