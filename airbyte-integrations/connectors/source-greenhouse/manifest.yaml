@@ -73,7 +73,7 @@ definitions:
       type: DeclarativeStream
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_greenhouse.components.GreenhouseStateMigration
+          class_name: source_declarative_manifest.components.GreenhouseStateMigration
       name: applications_demographics_answers
       primary_key:
         - id
@@ -145,7 +145,7 @@ definitions:
       type: DeclarativeStream
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_greenhouse.components.GreenhouseStateMigration
+          class_name: source_declarative_manifest.components.GreenhouseStateMigration
       name: applications_interviews
       primary_key:
         - id
@@ -1061,7 +1061,7 @@ definitions:
       type: DeclarativeStream
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_greenhouse.components.GreenhouseStateMigration
+          class_name: source_declarative_manifest.components.GreenhouseStateMigration
       name: jobs_stages
       primary_key:
         - id
