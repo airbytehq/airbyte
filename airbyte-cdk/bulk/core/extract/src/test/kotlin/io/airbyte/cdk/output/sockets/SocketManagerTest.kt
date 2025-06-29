@@ -4,15 +4,9 @@
 
 package io.airbyte.cdk.output.sockets
 
-import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.PropertySource
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Test
 
 @MicronautTest
 @PropertySource(
@@ -25,7 +19,7 @@ class SocketManagerTest(
     private val socketDataChannelResourceHolder: SocketDataChannelResourceHolder
 ) {
     //    @Inject lateinit var socketManager: SocketManager
-/*    @Inject lateinit var socketFactory: SocketDataChannelFactory
+    /*    @Inject lateinit var socketFactory: SocketDataChannelFactory
     class MockSocketWrapper() : SocketDataChannel {
         override suspend fun initializeSocket() {}
 

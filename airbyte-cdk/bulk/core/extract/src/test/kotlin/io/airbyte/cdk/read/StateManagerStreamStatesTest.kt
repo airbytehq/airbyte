@@ -111,7 +111,12 @@ class StateManagerStreamStatesTest {
         // update state manager with fake work result
         stateManager
             .scoped(stream)
-            .set(Jsons.readTree("{\"cursor_incremental\":\"initial_sync_ongoing\"}"), 123L, null, null)
+            .set(
+                Jsons.readTree("{\"cursor_incremental\":\"initial_sync_ongoing\"}"),
+                123L,
+                null,
+                null
+            )
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(

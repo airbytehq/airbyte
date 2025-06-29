@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test
 class JdbcPartitionsCreatorTest {
 
     private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
-        mutableMapOf("id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
-            "ts" to FieldValueEncoder(
-                LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
+        mutableMapOf(
+            "id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
             "msg" to FieldValueEncoder(string, TextCodec as JsonEncoder<Any>),
         )
 
@@ -56,8 +56,13 @@ class JdbcPartitionsCreatorTest {
                                     From(stream().name, stream().namespace),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            mutableMapOf("max" to FieldValueEncoder(cursorUpperBound,
-                                LocalDateCodec as JsonEncoder<Any>))
+                            mutableMapOf(
+                                "max" to
+                                    FieldValueEncoder(
+                                        cursorUpperBound,
+                                        LocalDateCodec as JsonEncoder<Any>
+                                    )
+                            )
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -315,9 +320,11 @@ class JdbcPartitionsCreatorTest {
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             mutableMapOf(
-                                "max" to FieldValueEncoder(
-                                    cursorUpperBound, LocalDateCodec as JsonEncoder<Any>
-                                )
+                                "max" to
+                                    FieldValueEncoder(
+                                        cursorUpperBound,
+                                        LocalDateCodec as JsonEncoder<Any>
+                                    )
                             )
                         ),
                     )

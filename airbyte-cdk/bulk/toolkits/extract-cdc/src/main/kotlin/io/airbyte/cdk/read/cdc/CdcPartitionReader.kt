@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.read.cdc
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputMessageRouter
@@ -39,6 +40,7 @@ import kotlinx.coroutines.withContext
 import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class CdcPartitionReader<T : Comparable<T>>(
     val resourceAcquirer: ResourceAcquirer,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,

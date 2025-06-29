@@ -185,11 +185,7 @@ object TestFixtures {
             expectedQuerySpec: SelectQuerySpec,
             expectedParameters: SelectQuerier.Parameters,
             vararg rows: NativeRecordPayload,
-        ) : this(
-            expectedQuerySpec,
-            expectedParameters,
-            rows.toList()
-        )
+        ) : this(expectedQuerySpec, expectedParameters, rows.toList())
     }
 
     object MockSelectQueryGenerator : SelectQueryGenerator {

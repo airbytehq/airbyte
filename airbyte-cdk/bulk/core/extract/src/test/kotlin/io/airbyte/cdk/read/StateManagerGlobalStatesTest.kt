@@ -64,8 +64,12 @@ class StateManagerGlobalStatesTest {
         Assertions.assertNull(stateManager.scoped(streams.events).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work results
-        stateManager.scoped(streams.global).set(Jsons.readTree("{\"cdc\":\"starting\"}"), 0L, null, null)
-        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L, null, null)
+        stateManager
+            .scoped(streams.global)
+            .set(Jsons.readTree("{\"cdc\":\"starting\"}"), 0L, null, null)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L, null, null)
         stateManager
             .scoped(streams.events)
             .set(Jsons.readTree("{\"full_refresh\":\"ongoing\"}"), 456L, null, null)
@@ -109,7 +113,9 @@ class StateManagerGlobalStatesTest {
         Assertions.assertNull(stateManager.scoped(streams.events).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work results for the kv stream
-        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L, null, null)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L, null, null)
         // test checkpoint messages
         val checkpointOngoing: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
@@ -131,7 +137,9 @@ class StateManagerGlobalStatesTest {
         )
         Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
         // update state manager with more fake work results for the kv stream
-        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 456L, null, null)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 456L, null, null)
         stateManager
             .scoped(streams.kv)
             .set(Jsons.readTree("{\"initial_sync\":\"completed\"}"), 789L, null, null)
@@ -236,7 +244,9 @@ class StateManagerGlobalStatesTest {
         Assertions.assertNull(stateManager.scoped(streams.events).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work results
-        stateManager.scoped(streams.global).set(Jsons.readTree("{\"cdc\":\"ongoing\"}"), 741L, null, null)
+        stateManager
+            .scoped(streams.global)
+            .set(Jsons.readTree("{\"cdc\":\"ongoing\"}"), 741L, null, null)
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(

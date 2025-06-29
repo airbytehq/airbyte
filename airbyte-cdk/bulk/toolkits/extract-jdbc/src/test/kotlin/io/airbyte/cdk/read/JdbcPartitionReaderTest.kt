@@ -37,12 +37,11 @@ class JdbcPartitionReaderTest {
     val cursorUpperBound = LocalDate.parse("2024-08-05")
 
     private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
-        mutableMapOf("id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
-            "ts" to FieldValueEncoder(
-                LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
+        mutableMapOf(
+            "id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
             "msg" to FieldValueEncoder(string, TextCodec as JsonEncoder<Any>),
         )
-
 
     @Test
     fun testNonResumable() {
@@ -106,7 +105,8 @@ class JdbcPartitionReaderTest {
         Assertions.assertEquals(
             "hello how are you today",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
-                .records().joinToString(separator = " ") { it.data["msg"].asText() }
+                .records()
+                .joinToString(separator = " ") { it.data["msg"].asText() }
         )
         // Release resources
         Assertions.assertEquals(
@@ -193,7 +193,8 @@ class JdbcPartitionReaderTest {
         Assertions.assertEquals(
             "hello how",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
-                .records().joinToString(separator = " ") { it.data["msg"].asText() }
+                .records()
+                .joinToString(separator = " ") { it.data["msg"].asText() }
         )
         // Release resources
         Assertions.assertEquals(

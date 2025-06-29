@@ -95,16 +95,16 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     private val cdcPartitionsCreatorDbzOps by lazy { createCdcPartitionsCreatorDbzOps() }
     private val cdcPartitionReaderDbzOps by lazy { createCdcPartitionReaderDbzOps() }
 
-
     @BeforeEach
     fun setup() {
         setOutputConsumers()
-        every {feedBootstrap.dataChannelMedium } returns STDIO
-        every {feedBootstrap.dataChannelFormat } returns JSONL
-        every {feedBootstrap.outputConsumer } returns outputConsumer
-        every {feedBootstrap.streamRecordConsumers() } returns streamRecordConsumers
-        every {feedBootstrap.feeds } returns listOf(global, stream)
-        every { resourceAcquirer.tryAcquire(any()) } returns mapOf(RESOURCE_DB_CONNECTION to ConcurrencyResource.AcquiredThread {})
+        every { feedBootstrap.dataChannelMedium } returns STDIO
+        every { feedBootstrap.dataChannelFormat } returns JSONL
+        every { feedBootstrap.outputConsumer } returns outputConsumer
+        every { feedBootstrap.streamRecordConsumers() } returns streamRecordConsumers
+        every { feedBootstrap.feeds } returns listOf(global, stream)
+        every { resourceAcquirer.tryAcquire(any()) } returns
+            mapOf(RESOURCE_DB_CONNECTION to ConcurrencyResource.AcquiredThread {})
     }
 
     private fun setOutputConsumers() {
@@ -339,21 +339,33 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 }
 
             /*
-                                when (record) {
-                        is Insert -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
-                        is Update -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
-                        is Delete -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))},
+                               when (record) {
+                       is Insert -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
+                       is Update -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
+                       is Delete -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))},
 
-             */
+            */
             return DeserializedRecord(
-                data = mutableMapOf(
-                    "id" to FieldValueEncoder(record.id, IntCodec as JsonEncoder<Any>),
-                    "@c" to FieldValueEncoder(record::class.java.name, TextCodec as JsonEncoder<Any>)
-                ).also { when (record) {
-                    is Insert -> it["v"] = FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
-                    is Update -> it["v"] = FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
-                    is Delete -> {}
-                }},
+                data =
+                    mutableMapOf(
+                            "id" to FieldValueEncoder(record.id, IntCodec as JsonEncoder<Any>),
+                            "@c" to
+                                FieldValueEncoder(
+                                    record::class.java.name,
+                                    TextCodec as JsonEncoder<Any>
+                                )
+                        )
+                        .also {
+                            when (record) {
+                                is Insert ->
+                                    it["v"] =
+                                        FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
+                                is Update ->
+                                    it["v"] =
+                                        FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
+                                is Delete -> {}
+                            }
+                        },
                 changes = emptyMap(),
             )
         }

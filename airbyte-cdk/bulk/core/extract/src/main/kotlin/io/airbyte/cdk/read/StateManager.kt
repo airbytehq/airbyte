@@ -228,10 +228,10 @@ private class GlobalStateManager(
         if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
         val streamStates = mutableListOf<AirbyteStreamState>()
         for ((_, streamStateManager) in streamStateManagers) {
-            val pendingStreamStates: List<StateForCheckpoint> = streamStateManager.takeForCheckpoint()
-            val streamStateForCheckpoint: StateForCheckpoint =
-                pendingStreamStates.last()
-            totalNumRecords +=  pendingStreamStates.sumOf { it.numRecords }
+            val pendingStreamStates: List<StateForCheckpoint> =
+                streamStateManager.takeForCheckpoint()
+            val streamStateForCheckpoint: StateForCheckpoint = pendingStreamStates.last()
+            totalNumRecords += pendingStreamStates.sumOf { it.numRecords }
             if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
             val streamID: StreamIdentifier = streamStateManager.feed.id
             streamStates.add(

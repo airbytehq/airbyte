@@ -2,7 +2,6 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
