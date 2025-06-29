@@ -2182,9 +2182,40 @@ class Product(ShopifyBulkQuery):
     query_name = "products"
     sort_key = "UPDATED_AT"
     # images property fields
-    images_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=["__typename", "id"])])]
+    images_fields: List[Field] = [
+        Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "url", "altText", "width", "height"])])
+    ]
     # variants property fields, we re-use the same field names as for the `images` property
-    variants_fields: List[Field] = images_fields
+    variants_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "id",
+                        "legacyResourceId",
+                        "title",
+                        "displayName",
+                        Field(name="selectedOptions", fields=["name", "value"]),
+                        "price",
+                        "compareAtPrice",
+                        "sku",
+                        "barcode",
+                        "taxable",
+                        "inventoryQuantity",
+                        "inventoryPolicy",
+                        "availableForSale",
+                        "createdAt",
+                        "updatedAt",
+                        Field(name="image", fields=["id", "url", "altText", "width", "height"]),
+                        Field(name="product", fields=["id", "title"]),
+                    ],
+                )
+            ],
+        )
+    ]
 
     amount_fields: List[Field] = [
         "amount",
