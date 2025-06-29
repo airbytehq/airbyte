@@ -34,6 +34,7 @@ Examples:
 import sys
 from pathlib import Path
 
+
 try:
     import tomli
 except ImportError:

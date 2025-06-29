@@ -44,6 +44,7 @@ import re
 import sys
 from pathlib import Path
 
+
 try:
     import tomllib as tomli
 except ImportError:
