@@ -58,6 +58,7 @@ import org.junit.jupiter.api.extension.ExtendWith
  * integration test and this class is subclassed for multiple Debezium implementations which connect
  * to a corresponding testcontainer data source.
  */
+@Suppress("UNCHECKED_CAST")
 @ExtendWith(MockKExtension::class)
 abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     namespace: String?,
