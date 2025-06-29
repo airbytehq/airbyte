@@ -102,6 +102,10 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 cmd = "${POE_GIT_DIR}/poe-tasks/poetry-detect-cdk-extras.py"
 help = "Detect currently installed CDK extras from pyproject.toml file. Use with -qq to quiet unrelated outputs."
 
+[tool.poe.tasks.check-non-prod-cdk]
+cmd = "${POE_GIT_DIR}/poe-tasks/poetry-check-non-prod-cdk.py"
+help = "Check if connector is using non-production CDK references (git/local refs). Returns 0 for production-ready, 1 for non-production."
+
 [tool.poe.tasks.use-cdk-latest]
 shell = '''
 set -eu
