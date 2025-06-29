@@ -98,32 +98,74 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 #  poe use-cdk-branch 'aj/my-branch-name'   # Pin to a specific branch
 #  poe use-cdk-branch-active                # Pin to the branch of the local CDK repo
 
+[tool.poe.tasks.get-cdk-extras]
+shell = '''
+if [ -f poetry.lock ]; then
+  # Extract currently installed CDK extras from poetry.lock
+  EXTRAS=$(awk '/^\[\[package\]\]/{p=0} /name = "airbyte-cdk"/{p=1} p && /markers = "extra == /{print}' poetry.lock | perl -ne 'print "$1," if /extra == "([^"]+)"/' | sed 's/,$//')
+  if [ -n "$EXTRAS" ]; then
+    echo "[$EXTRAS]"
+  fi
+fi
+'''
+help = "Detect currently installed CDK extras from poetry.lock file. Use with -qq to quiet unrelated outputs."
+
 [tool.poe.tasks.use-cdk-latest]
-cmd = 'poetry add airbyte-cdk@latest'
-help = "Pin to the latest version of the CDK."
+shell = '''
+EXTRAS=$(poe -qq get-cdk-extras)
+if [ -n "$EXTRAS" ]; then
+  echo "Preserving CDK extras: $EXTRAS"
+  poetry add "airbyte-cdk$EXTRAS@latest"
+else
+  poetry add airbyte-cdk@latest
+fi
+'''
+help = "Pin to the latest version of the CDK, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-version]
-cmd = 'poetry add "airbyte-cdk@${VERSION}"'
+shell = '''
+EXTRAS=$(poe -qq get-cdk-extras)
+if [ -n "$EXTRAS" ]; then
+  echo "Preserving CDK extras: $EXTRAS"
+  poetry add "airbyte-cdk$EXTRAS@${VERSION}"
+else
+  poetry add "airbyte-cdk@${VERSION}"
+fi
+'''
 args = [
   { name = "VERSION", positional = true, default = "latest" },
 ]
-help = "Pin to a specific version of the CDK."
+help = "Pin to a specific version of the CDK, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-branch-active]
 shell = '''
-    REPO_ROOT=$(git rev-parse --show-toplevel)
-    ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
-    echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
-    poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
+REPO_ROOT=$(git rev-parse --show-toplevel)
+ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
+echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
+EXTRAS=$(poe -qq get-cdk-extras)
+if [ -n "$EXTRAS" ]; then
+  echo "Preserving CDK extras: $EXTRAS"
+  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${ACTIVE_CDK_BRANCH}"
+else
+  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
+fi
 '''
-help = "Pin to the branch of the CDK that is currently checked out locally."
+help = "Pin to the branch of the CDK that is currently checked out locally, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-branch]
-cmd = 'poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"'
+shell = '''
+EXTRAS=$(poe -qq get-cdk-extras)
+if [ -n "$EXTRAS" ]; then
+  echo "Preserving CDK extras: $EXTRAS"
+  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${BRANCH}"
+else
+  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"
+fi
+'''
 args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
-help = "Pin to a specific branch of the CDK."
+help = "Pin to a specific branch of the CDK, preserving any existing extras."
 
 # Generic tasks (same across all connector types)
 
