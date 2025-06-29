@@ -104,6 +104,21 @@ def main():
         print(f"Error: pyproject.toml not found in {connector_dir}")
         sys.exit(1)
     
+    connector_name = "your-connector"
+    try:
+        resolved_dir = connector_dir.resolve()
+        if resolved_dir.name.startswith(('source-', 'destination-')):
+            connector_name = resolved_dir.name
+        elif 'connectors' in resolved_dir.parts:
+            parts = resolved_dir.parts
+            connectors_idx = parts.index('connectors')
+            if connectors_idx + 1 < len(parts):
+                potential_name = parts[connectors_idx + 1]
+                if potential_name.startswith(('source-', 'destination-')):
+                    connector_name = potential_name
+    except (ValueError, IndexError):
+        pass  # Use default if detection fails
+    
     is_production_ready, dependency_info = check_cdk_dependency(pyproject_path)
     
     if is_production_ready:
@@ -116,7 +131,7 @@ def main():
         print("   It is currently pinning its CDK version to a local or git-based ref.")
         print("   To resolve, use `poe use-cdk-latest` after your working dev version")
         print("   of the CDK has been published.")
-        print("   You can also use the slash command in your PR: `/poe connector <connector-name> use-cdk-latest`")
+        print(f"   You can also use the slash command in your PR: `/poe connector {connector_name} use-cdk-latest`")
         sys.exit(1)
 
 
