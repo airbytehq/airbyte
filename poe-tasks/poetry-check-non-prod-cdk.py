@@ -19,108 +19,101 @@ Returns:
 Examples:
     airbyte-cdk = "^6.0.0"
     airbyte-cdk = {version = "6.0.0", extras = ["sql"]}
-    
+
     airbyte-cdk = {git = "https://github.com/...", branch = "main"}
     airbyte-cdk = {path = "../local-cdk"}
 """
 
-import sys
 import re
+import sys
 from pathlib import Path
 
+
 try:
-    import tomli
-except ImportError:
     import tomllib as tomli
+except ImportError:
+    import tomli
 
 
 def is_standard_version(version_str):
     """Check if version string represents a standard published version."""
     if not version_str:
         return False
-    
-    version_pattern = r'^[~^>=<]*\d+\.\d+\.\d+([a-zA-Z0-9\-\.]*)?$'
+
+    version_pattern = r"^[~^>=<]*\d+\.\d+\.\d+([a-zA-Z0-9\-\.]*)?$"
     return bool(re.match(version_pattern, version_str.strip()))
 
 
 def check_cdk_dependency(pyproject_path):
     """
     Check CDK dependency and return (is_production_ready, dependency_info).
-    
+
     Returns:
         tuple: (bool, str) - (is_production_ready, dependency_description)
     """
     try:
-        with open(pyproject_path, 'rb') as f:
+        with open(pyproject_path, "rb") as f:
             data = tomli.load(f)
     except Exception as e:
         return False, f"Error reading pyproject.toml: {e}"
-    
-    dependencies = data.get('tool', {}).get('poetry', {}).get('dependencies', {})
-    cdk_dep = dependencies.get('airbyte-cdk')
-    
+
+    dependencies = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+    cdk_dep = dependencies.get("airbyte-cdk")
+
     if not cdk_dep:
         return False, "No airbyte-cdk dependency found"
-    
+
     if isinstance(cdk_dep, str):
         if is_standard_version(cdk_dep):
             return True, f"Standard version: {cdk_dep}"
         else:
             return False, f"Non-standard version string: {cdk_dep}"
-    
+
     elif isinstance(cdk_dep, dict):
-        if 'git' in cdk_dep:
-            git_url = cdk_dep['git']
-            branch = cdk_dep.get('branch', cdk_dep.get('rev', 'unknown'))
+        if "git" in cdk_dep:
+            git_url = cdk_dep["git"]
+            branch = cdk_dep.get("branch", cdk_dep.get("rev", "unknown"))
             return False, f"Git reference: {git_url}#{branch}"
-        
-        if 'path' in cdk_dep:
-            path = cdk_dep['path']
+
+        if "path" in cdk_dep:
+            path = cdk_dep["path"]
             return False, f"Local path reference: {path}"
-        
-        if 'url' in cdk_dep:
-            url = cdk_dep['url']
+
+        if "url" in cdk_dep:
+            url = cdk_dep["url"]
             return False, f"URL reference: {url}"
-        
-        version = cdk_dep.get('version')
+
+        version = cdk_dep.get("version")
         if version and is_standard_version(version):
-            extras = cdk_dep.get('extras', [])
+            extras = cdk_dep.get("extras", [])
             extras_str = f" with extras {extras}" if extras else ""
             return True, f"Standard version: {version}{extras_str}"
         elif version:
             return False, f"Non-standard version in dict: {version}"
         else:
             return False, f"Dict format without version: {cdk_dep}"
-    
+
     else:
         return False, f"Unexpected dependency format: {type(cdk_dep)}"
 
 
 def main():
-    connector_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('.')
-    pyproject_path = connector_dir / 'pyproject.toml'
-    
+    connector_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
+    pyproject_path = connector_dir / "pyproject.toml"
+
     if not pyproject_path.exists():
         print(f"Error: pyproject.toml not found in {connector_dir}")
         sys.exit(1)
+
+    resolved_dir = connector_dir.resolve()
+    if not resolved_dir.name.startswith(("source-", "destination-")):
+        print(f"Error: Directory '{resolved_dir.name}' must start with 'source-' or 'destination-'")
+        sys.exit(1)
     
-    connector_name = "your-connector"
-    try:
-        resolved_dir = connector_dir.resolve()
-        if resolved_dir.name.startswith(('source-', 'destination-')):
-            connector_name = resolved_dir.name
-        elif 'connectors' in resolved_dir.parts:
-            parts = resolved_dir.parts
-            connectors_idx = parts.index('connectors')
-            if connectors_idx + 1 < len(parts):
-                potential_name = parts[connectors_idx + 1]
-                if potential_name.startswith(('source-', 'destination-')):
-                    connector_name = potential_name
-    except (ValueError, IndexError):
-        pass  # Use default if detection fails
-    
+    connector_name = resolved_dir.name
+
     is_production_ready, dependency_info = check_cdk_dependency(pyproject_path)
-    
+
     if is_production_ready:
         print(f"✅ Production ready: {dependency_info}")
         sys.exit(0)
