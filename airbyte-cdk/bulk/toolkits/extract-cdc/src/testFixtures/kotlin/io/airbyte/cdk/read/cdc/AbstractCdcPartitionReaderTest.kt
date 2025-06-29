@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -58,14 +59,16 @@ import org.junit.jupiter.api.extension.ExtendWith
  * integration test and this class is subclassed for multiple Debezium implementations which connect
  * to a corresponding testcontainer data source.
  */
-@Suppress("UNCHECKED_CAST")
+@Suppress(
+    "UNCHECKED_CAST",
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 @ExtendWith(MockKExtension::class)
 abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     namespace: String?,
     val heartbeat: Duration = Duration.ofMillis(100),
     val timeout: Duration = Duration.ofSeconds(10),
 ) {
-
     @MockK lateinit var resourceAcquirer: ResourceAcquirer
     @MockK lateinit var feedBootstrap: GlobalFeedBootstrap
     lateinit var outputConsumer: BufferingOutputConsumer
