@@ -1,21 +1,21 @@
 # Vector db connectors
-/airbyte-integrations/connectors/destination-pinecone @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-weaviate @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-pinecone @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-weaviate @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-milvus @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-qdrant @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-chroma @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/dev-extensibility
 
 # CI/CD
-/.github/ @airbytehq/dev-tooling
-/airbyte-ci/ @airbytehq/dev-tooling
+/.github/ @airbytehq/dev-extensibility
+/airbyte-ci/ @airbytehq/dev-extensibility
 
 # Python CDK and Connector Acceptance Tests
-/airbyte-integrations/connector-templates/ @airbytehq/dev-marketplace-contributions
-/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-tooling
+/airbyte-integrations/connector-templates/ @airbytehq/dev-extensibility
+/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-extensibility
 
 # Build customization file change
-/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-tooling
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-extensibility
 
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
@@ -59,8 +59,14 @@
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/move-destinations
 
 # Python critical connectors
-/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-hubspot/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-salesforce/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-shopify/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-stripe/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/dev-extensibility
+
+# Breaking changes detection
+# This rule ensures that breaking changes to connectors (identified by a required
+# update in the connnector's migration file) are reviewed by the 
+# `breaking-changes-reviewers` team to manage and help message breaking changes.
+docs/integrations/**/*-migrations.md @airbytehq/breaking-change-reviewers

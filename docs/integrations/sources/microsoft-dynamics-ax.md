@@ -4,7 +4,7 @@
 
 ## Sync overview
 
-MS Dynamics AX runs on the MSSQL database. You can use the [MSSQL connector](mssql.md) to sync your MS Dynamics AX instance by connecting to the underlying database.
+MS Dynamics AX runs on the MSSQL database. You can use the [MSSQL connector](mssql) to sync your MS Dynamics AX instance by connecting to the underlying database.
 
 ### Output schema
 

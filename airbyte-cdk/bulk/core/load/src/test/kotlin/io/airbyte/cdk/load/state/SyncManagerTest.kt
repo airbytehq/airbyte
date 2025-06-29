@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.state
 
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
@@ -42,8 +43,8 @@ class SyncManagerTest {
 
     @Test
     fun testAwaitAllStreamsProcessedSuccessfully() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
         manager1.markEndOfStream(true)
@@ -62,8 +63,8 @@ class SyncManagerTest {
 
     @Test
     fun testAwaitAllStreamsProcessedSuccessfullyWithFailure() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
 
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
@@ -83,8 +84,8 @@ class SyncManagerTest {
 
     @Test
     fun testIsActive() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
 
         manager1.markEndOfStream(true)
         manager2.markEndOfStream(true)
@@ -100,8 +101,8 @@ class SyncManagerTest {
 
     @Test
     fun testAwaitSyncResult() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
 
         manager1.markEndOfStream(true)
         manager2.markEndOfStream(true)
@@ -130,13 +131,13 @@ class SyncManagerTest {
 
     @Test
     fun testCrashOnNoEndOfStream() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
         manager1.markEndOfStream(true)
         // This should fail, because stream2 was not marked with end of stream
-        val e = assertThrows<IllegalStateException> { syncManager.markInputConsumed() }
+        val e = assertThrows<TransientErrorException> { syncManager.markInputConsumed() }
         assertEquals(
             // stream1 is fine, so the message only includes stream2
-            "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
+            "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
             e.message
         )
     }

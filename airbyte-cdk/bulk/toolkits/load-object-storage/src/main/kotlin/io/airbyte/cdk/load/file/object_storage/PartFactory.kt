@@ -63,6 +63,10 @@ data class Part(
 ) {
     val isEmpty: Boolean
         get() = bytes == null
+
+    override fun toString(): String {
+        return "Part(key='$key', size=${bytes?.size}, index=$partIndex, isFinal=$isFinal)"
+    }
 }
 
 class PartBookkeeper {
@@ -87,7 +91,9 @@ class PartBookkeeper {
         // index even if it is empty.
         if (part.isFinal) {
             if (!finalIndex.compareAndSet(null, part.partIndex)) {
-                throw IllegalStateException("Final part already seen for ${part.key}")
+                throw IllegalStateException(
+                    "Final part ${finalIndex.get()} already seen for ${part.key}"
+                )
             }
         }
     }
@@ -99,5 +105,7 @@ class PartBookkeeper {
      * 3. the last index is the final index
      */
     val isComplete: Boolean
-        get() = finalIndex.get()?.let { it == partIndexes.size } ?: false
+        get() {
+            return finalIndex.get()?.let { it == partIndexes.size } ?: false
+        }
 }

@@ -7,11 +7,13 @@ import enum
 import logging
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, Final, List, Mapping, Optional
+from typing import Any, Callable, Dict, Final, List, Mapping, Optional, Union
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -44,11 +46,6 @@ class ShopifyNonRetryableErrors:
                 response_action=ResponseAction.IGNORE,
                 failure_type=FailureType.config_error,
                 error_message=f"Stream `{stream}`. Not available or missing.",
-            ),
-            500: ErrorResolution(
-                response_action=ResponseAction.IGNORE,
-                failure_type=FailureType.config_error,
-                error_message=f"Stream `{stream}`. Entity might not be available or missing.",
             ),
             # extend the mapping with more handable errors, if needed.
         }
@@ -328,3 +325,38 @@ class EagerlyCachedStreamState:
             return func(*args, **kwargs)
 
         return decorator
+
+
+class LimitReducingErrorHandler(HttpStatusErrorHandler):
+    """
+    Error handler that halves the page size (limit) on each 500 error, down to 1.
+    No stream instance required; operates directly on the request URL.
+    """
+
+    def __init__(self, max_retries: int, error_mapping: dict):
+        super().__init__(logger=None, max_retries=max_retries, error_mapping=error_mapping)
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response):
+            response = response_or_exception
+            if response.status_code == 500:
+                # Extract current limit from the URL, default to 250 if not present
+                parsed = urlparse(response.request.url)
+                query = parse_qs(parsed.query)
+                current_limit = int(query.get("limit", ["250"])[0])
+                if current_limit > 1:
+                    new_limit = max(1, current_limit // 2)
+                    query["limit"] = [str(new_limit)]
+                    new_query = urlencode(query, doseq=True)
+                    response.request.url = urlunparse(parsed._replace(query=new_query))
+                    return ErrorResolution(
+                        response_action=ResponseAction.RETRY,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Server error 500: Reduced limit to {new_limit} and updating request URL",
+                    )
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.transient_error,
+                    error_message="Persistent 500 error after reducing limit to 1",
+                )
+        return super().interpret_response(response_or_exception)

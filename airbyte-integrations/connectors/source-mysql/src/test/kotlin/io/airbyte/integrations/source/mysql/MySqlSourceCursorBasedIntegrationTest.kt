@@ -68,7 +68,7 @@ class MySqlSourceCursorBasedIntegrationTest {
             connection.createStatement().use { stmt: Statement ->
                 stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (3, 'baz-ignore')")
                 stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (13, 'baz-ignore')")
-                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (30, 'baz')")
+                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (712000, 'baz')")
             }
         }
 
@@ -76,7 +76,10 @@ class MySqlSourceCursorBasedIntegrationTest {
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), run2InputState).run()
         val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
-        assertEquals(recordMessageFromRun2.size, 1)
+        assertEquals(1, recordMessageFromRun2.size)
+        val lastStateMessageFromRun2 = run2.states().last()
+        val lastStreamStateFromRun2 = lastStateMessageFromRun2.stream.streamState
+        assertEquals("712000", lastStreamStateFromRun2.get("cursor").textValue())
     }
 
     @Test
@@ -85,7 +88,7 @@ class MySqlSourceCursorBasedIntegrationTest {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        assertEquals(recordMessageFromRun1.size, 1)
+        assertEquals(1, recordMessageFromRun1.size)
     }
 
     @Test
@@ -95,7 +98,7 @@ class MySqlSourceCursorBasedIntegrationTest {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        assertEquals(recordMessageFromRun1.size, 2)
+        assertEquals(2, recordMessageFromRun1.size)
     }
 
     @Test
@@ -105,14 +108,14 @@ class MySqlSourceCursorBasedIntegrationTest {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        assertEquals(recordMessageFromRun1.size, 2)
+        assertEquals(2, recordMessageFromRun1.size)
         val lastStateMessageFromRun1 = run1.states().last()
 
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog, listOf(lastStateMessageFromRun1))
                 .run()
         val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
-        assertEquals(recordMessageFromRun2.size, 0)
+        assertEquals(0, recordMessageFromRun2.size)
     }
 
     @Test
@@ -179,7 +182,7 @@ class MySqlSourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:8.0")
+        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:9.2.0")
 
         val config: MySqlSourceConfigurationSpecification =
             MySqlContainerFactory.config(dbContainer)
@@ -196,7 +199,12 @@ class MySqlSourceCursorBasedIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = MySqlSourceOperations().createGlobal(discoveredStream)
+            val stream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(config),
+                        discoveredStream,
+                    )
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
@@ -220,7 +228,9 @@ class MySqlSourceCursorBasedIntegrationTest {
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute("CREATE TABLE test.$tableName(k INT PRIMARY KEY, v VARCHAR(80))")
+                    stmt.execute(
+                        "CREATE TABLE test.$tableName(k bigint unsigned PRIMARY KEY, v VARCHAR(80))"
+                    )
                 }
             }
         }

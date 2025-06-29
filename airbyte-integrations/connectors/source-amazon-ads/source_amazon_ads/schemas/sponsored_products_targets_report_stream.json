@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "profileId": {
+      "type": ["null", "integer"]
+    },
+    "reportDate": {
+      "type": ["null", "string"]
+    },
+    "keywordId": {
+      "type": ["null", "integer"]
+    },
+
+    "campaignName": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "integer"]
+    },
+    "adGroupName": {
+      "type": ["null", "string"]
+    },
+    "adGroupId": {
+      "type": ["null", "integer"]
+    },
+    "keyword": {
+      "type": ["null", "string"]
+    },
+    "targeting": {
+      "type": ["null", "string"]
+    },
+    "keywordType": {
+      "type": ["null", "string"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "clicks": {
+      "type": ["null", "integer"]
+    },
+    "cost": {
+      "type": ["null", "number"]
+    },
+    "purchases1d": {
+      "type": ["null", "integer"]
+    },
+    "purchases7d": {
+      "type": ["null", "integer"]
+    },
+    "purchases14d": {
+      "type": ["null", "integer"]
+    },
+    "purchases30d": {
+      "type": ["null", "integer"]
+    },
+    "purchasesSameSku1d": {
+      "type": ["null", "integer"]
+    },
+    "purchasesSameSku7d": {
+      "type": ["null", "integer"]
+    },
+    "purchasesSameSku14d": {
+      "type": ["null", "integer"]
+    },
+    "purchasesSameSku30d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks1d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks7d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks14d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks30d": {
+      "type": ["null", "integer"]
+    },
+    "sales1d": {
+      "type": ["null", "number"]
+    },
+    "sales7d": {
+      "type": ["null", "number"]
+    },
+    "sales14d": {
+      "type": ["null", "number"]
+    },
+    "sales30d": {
+      "type": ["null", "number"]
+    },
+    "attributedSalesSameSku1d": {
+      "type": ["null", "number"]
+    },
+    "attributedSalesSameSku7d": {
+      "type": ["null", "number"]
+    },
+    "attributedSalesSameSku14d": {
+      "type": ["null", "number"]
+    },
+    "attributedSalesSameSku30d": {
+      "type": ["null", "number"]
+    },
+    "unitsSoldSameSku1d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldSameSku7d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldSameSku14d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldSameSku30d": {
+      "type": ["null", "integer"]
+    }
+  },
+  "title": "sponsored_products_targets_report_stream",
+  "type": ["null", "object"]
+}

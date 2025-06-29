@@ -131,7 +131,7 @@ protected constructor(driverClassName: String) :
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =
-            discoverWithoutSystemTables(database).associateBy {
+            discoverWithoutSystemTables(database, catalog).associateBy {
                 String.format("%s.%s", it.nameSpace, it.name)
             }
 
@@ -150,7 +150,8 @@ protected constructor(driverClassName: String) :
                 catalog,
                 fullyQualifiedTableNameToInfo,
                 stateManager,
-                emittedAt
+                emittedAt,
+                isExcludeTodayDateForCursorIncremental(config)
             )
         val fullRefreshIterators =
             getFullRefreshIterators(
@@ -291,6 +292,22 @@ protected constructor(driverClassName: String) :
 
     @Throws(Exception::class)
     protected fun discoverWithoutSystemTables(
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+    ): List<TableInfo<CommonField<DataType>>> {
+        var result = mutableListOf<TableInfo<CommonField<DataType>>>()
+        catalog.streams.forEach { airbyteStream: ConfiguredAirbyteStream ->
+            val stream = airbyteStream.stream
+            discoverTable(database, stream.namespace, stream.name)?.let {
+                LOGGER.info { "Discovered table: ${it.nameSpace}.${it.name}: $it" }
+                result.add(it)
+            }
+        }
+        return result
+    }
+
+    @Throws(Exception::class)
+    protected fun discoverWithoutSystemTables(
         database: Database
     ): List<TableInfo<CommonField<DataType>>> {
         val systemNameSpaces = excludedInternalNameSpaces
@@ -316,16 +333,19 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.FULL_REFRESH
+            SyncMode.FULL_REFRESH,
+            false
         )
     }
 
+    @JvmOverloads
     protected open fun getIncrementalIterators(
         database: Database,
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
+        excludeTodaysData: Boolean = false,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
             database,
@@ -333,7 +353,8 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.INCREMENTAL
+            SyncMode.INCREMENTAL,
+            excludeTodaysData
         )
     }
 
@@ -355,7 +376,8 @@ protected constructor(driverClassName: String) :
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant,
-        syncMode: SyncMode
+        syncMode: SyncMode,
+        excludeTodaysData: Boolean,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         val iteratorList: MutableList<AutoCloseableIterator<AirbyteMessage>> = ArrayList()
         for (airbyteStream in catalog!!.streams) {
@@ -378,7 +400,8 @@ protected constructor(driverClassName: String) :
                         catalog,
                         table,
                         stateManager,
-                        emittedAt
+                        emittedAt,
+                        excludeTodaysData,
                     )
                 iteratorList.add(tableReadIterator)
             }
@@ -397,13 +420,15 @@ protected constructor(driverClassName: String) :
      * @param emittedAt Time when data was emitted from the Source database
      * @return
      */
+    @JvmOverloads
     protected open fun createReadIterator(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
         catalog: ConfiguredAirbyteCatalog?,
         table: TableInfo<CommonField<DataType>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
+        excludeTodaysData: Boolean = false,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -431,7 +456,8 @@ protected constructor(driverClassName: String) :
                         selectedDatabaseFields,
                         table,
                         cursorInfo.get(),
-                        emittedAt
+                        emittedAt,
+                        excludeTodaysData
                     )
             } else {
                 // if no cursor is present then this is the first read for is the same as doing a
@@ -527,7 +553,8 @@ protected constructor(driverClassName: String) :
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
         cursorInfo: CursorInfo,
-        emittedAt: Instant
+        emittedAt: Instant,
+        excludeTodaysData: Boolean,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -550,7 +577,8 @@ protected constructor(driverClassName: String) :
                 table.nameSpace,
                 table.name,
                 cursorInfo,
-                cursorType
+                cursorType,
+                excludeTodaysData,
             )
 
         return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli())
@@ -723,6 +751,23 @@ protected constructor(driverClassName: String) :
         tableInfos: List<TableInfo<CommonField<DataType>>>
     ): Map<String, MutableList<String>>
 
+    /**
+     * Discovers a table in the source database.
+     *
+     * @param database
+     * - source database
+     * @param schema
+     * - source schema
+     * @param tableName
+     * - source table name
+     * @return table information
+     */
+    protected abstract fun discoverTable(
+        database: Database,
+        schema: String,
+        tableName: String
+    ): TableInfo<CommonField<DataType>>?
+
     protected abstract val quoteString: String?
 
     /**
@@ -758,7 +803,8 @@ protected constructor(driverClassName: String) :
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: DataType
+        cursorFieldType: DataType,
+        excludeTodaysData: Boolean = false,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     protected open val stateEmissionFrequency: Int
@@ -785,6 +831,9 @@ protected constructor(driverClassName: String) :
     ): AirbyteStateMessage.AirbyteStateType {
         return AirbyteStateMessage.AirbyteStateType.STREAM
     }
+
+    // Added to allow excluding today's data from incremental cursor reads.
+    open protected fun isExcludeTodayDateForCursorIncremental(config: JsonNode): Boolean = false
 
     companion object {
         const val CHECK_TRACE_OPERATION_NAME: String = "check-operation"

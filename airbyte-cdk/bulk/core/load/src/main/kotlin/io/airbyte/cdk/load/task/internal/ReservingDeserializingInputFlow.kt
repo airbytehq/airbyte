@@ -20,8 +20,9 @@ import kotlinx.coroutines.flow.FlowCollector
 class ReservingDeserializingInputFlow(
     val config: DestinationConfiguration,
     val deserializer: ProtocolMessageDeserializer,
-    @Named("memoryManager") val memoryManager: ReservationManager,
-    val inputStream: InputStream,
+    @Named("queueMemoryManager") val memoryManager: ReservationManager,
+    @Named("inputStream") val inputStream: InputStream,
+    @Named("logPerNRecords") val logPerNRecords: Long = 100_000L,
 ) : Flow<Pair<Long, Reserved<DestinationMessage>>> {
     val log = KotlinLogging.logger {}
 
@@ -29,12 +30,14 @@ class ReservingDeserializingInputFlow(
         collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
     ) {
         log.info {
-            "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing"
+            "Reserved ${memoryManager.totalCapacityBytes/1024/1024}mb memory for input processing"
         }
 
-        inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
+        var index = 0L
+        var bytes = 0L
+        inputStream.bufferedReader().lineSequence().forEach { line ->
             if (line.isEmpty()) {
-                return@forEachIndexed
+                return@forEach
             }
 
             val lineSize = line.length.toLong()
@@ -43,8 +46,9 @@ class ReservingDeserializingInputFlow(
             val message = deserializer.deserialize(line)
             collector.emit(Pair(lineSize, reserved.replace(message)))
 
-            if (index % 10_000 == 0) {
-                log.info { "Processed $index lines" }
+            bytes += lineSize
+            if (++index % logPerNRecords == 0L) {
+                log.info { "Processed $index lines (${bytes/1024/1024}Mb)" }
             }
         }
 

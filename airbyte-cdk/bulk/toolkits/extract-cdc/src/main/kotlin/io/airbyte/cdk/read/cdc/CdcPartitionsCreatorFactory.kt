@@ -9,6 +9,7 @@ import io.airbyte.cdk.read.FeedBootstrap
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
+import io.airbyte.cdk.read.PartitionsCreatorFactorySupplier
 import io.micronaut.core.annotation.Order
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicReference
@@ -18,7 +19,8 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val debeziumOps: DebeziumOperations<T>,
+    val cdcPartitionsCreatorDbzOps: CdcPartitionsCreatorDebeziumOperations<T>,
+    val cdcPartitionReaderDbzOps: CdcPartitionReaderDebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
 
     /**
@@ -34,6 +36,9 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
      */
     private val upperBoundReference = AtomicReference<T>()
 
+    /** [AtomicReference] used to trigger resetting a sync when not null. */
+    private val resetReason = AtomicReference<String?>(null)
+
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is GlobalFeedBootstrap) {
             // Fall through on non-Global streams.
@@ -42,10 +47,18 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
         return CdcPartitionsCreator(
             concurrencyResource,
             feedBootstrap,
-            debeziumOps,
-            debeziumOps,
+            cdcPartitionsCreatorDbzOps,
+            cdcPartitionReaderDbzOps,
             lowerBoundReference,
             upperBoundReference,
+            resetReason,
         )
     }
+}
+
+@Singleton
+class CdcPartitionsCreatorFactorySupplier<T : CdcPartitionsCreatorFactory<C>, C : Comparable<C>>(
+    val factory: T
+) : PartitionsCreatorFactorySupplier<T> {
+    override fun get(): T = factory
 }

@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -22,6 +22,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -48,17 +49,31 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: created_after
+        type: DatetimeBasedCursor
         cursor_field: applied_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/applications"
     applications_demographics_answers:
       type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_greenhouse.components.GreenhouseStateMigration
       name: applications_demographics_answers
       primary_key:
         - id
@@ -66,10 +81,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: applications/{{ stream_slice.parent_id }}/demographics/answers
+          path: applications/{{ stream_partition.application_id }}/demographics/answers
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -96,242 +112,40 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: application_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSubstreamSlicer
-        parent_stream:
-          type: DeclarativeStream
-          primary_key: id
-          retriever:
-            type: SimpleRetriever
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path: []
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: CursorPagination
-                cursor_value: "{{ headers['link']['next']['url'] }}"
-                stop_condition: "{{ 'next' not in headers['link'] }}"
-                page_size: 100
-              page_size_option:
-                type: RequestOption
-                field_name: per_page
-                inject_into: request_parameter
-              page_token_option:
-                type: RequestPath
-            requester:
-              type: HttpRequester
-              url_base: https://harvest.greenhouse.io/v1/
-              http_method: GET
-              error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                      - type: HttpResponseFilter
-                        http_codes:
-                          - 403
-                        action: IGNORE
-                  - type: DefaultErrorHandler
-              authenticator:
-                type: BasicHttpAuthenticator
-                username: "{{ config['api_key'] }}"
-              path: applications
-          incremental_sync:
-            type: CustomIncrementalSync
-            class_name: source_declarative_manifest.components.GreenHouseSlicer
-            request_cursor_field: created_after
-            cursor_field: applied_at
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              type: object
-              $schema: http://json-schema.org/draft-07/schema#
-              properties:
-                status:
-                  type: string
-                  description: Status of the application.
-                source:
-                  type: object
-                  description: Source of the application.
-                  properties:
-                    public_name:
-                      type: string
-                      description: Public name of the application source.
-                    id:
-                      type: integer
-                      description: ID of the application source.
-                rejection_reason:
-                  type:
-                    - "null"
-                    - object
-                  description: Reason for the application rejection.
-                  properties:
-                    type:
-                      type:
-                        - "null"
-                        - object
-                      description: Type of rejection reason.
-                      properties:
-                        id:
-                          type:
-                            - "null"
-                            - integer
-                          description: ID of the rejection reason type.
-                        name:
-                          type:
-                            - "null"
-                            - string
-                          description: Name of the rejection reason type.
-                    id:
-                      type:
-                        - "null"
-                        - integer
-                      description: ID of the rejection reason.
-                    name:
-                      type:
-                        - "null"
-                        - string
-                      description: Name of the rejection reason.
-                rejection_details:
-                  type:
-                    - "null"
-                    - object
-                  description: Details related to the application rejection.
-                  properties:
-                    custom_fields:
-                      type:
-                        - "null"
-                        - object
-                      description: Custom fields related to rejection.
-                    keyed_custom_fields:
-                      type:
-                        - "null"
-                        - object
-                      description: Keyed custom fields related to rejection.
-                rejected_at:
-                  type:
-                    - "null"
-                    - string
-                  description: Timestamp when the application was rejected.
-                prospective_office:
-                  type:
-                    - "null"
-                    - string
-                  description: Prospective office for the candidate.
-                prospective_department:
-                  type:
-                    - "null"
-                    - string
-                  description: Prospective department for the candidate.
-                prospect_detail:
-                  type: object
-                  description: Details related to the application prospect.
-                  properties:
-                    prospect_stage:
-                      type:
-                        - "null"
-                        - string
-                      description: Stage of the prospect.
-                    prospect_pool:
-                      type:
-                        - "null"
-                        - string
-                      description: Pool the prospect belongs to.
-                    prospect_owner:
-                      type:
-                        - "null"
-                        - object
-                      description: Information about the owner of the prospect.
-                      properties:
-                        name:
-                          type: string
-                          description: Name of the prospect owner.
-                        id:
-                          type: integer
-                          description: Unique identifier for the prospect owner.
-                prospect:
-                  type: boolean
-                  description: Status of the application prospect.
-                location:
-                  type:
-                    - "null"
-                    - string
-                  description: Location related to the application.
-                last_activity_at:
-                  type: string
-                  description: Timestamp of the last activity on the application.
-                jobs:
-                  type: array
-                  description: Jobs applied for by the candidate.
-                id:
-                  type: integer
-                  description: Unique identifier for the application.
-                current_stage:
-                  type:
-                    - "null"
-                    - object
-                  description: Current stage of the application process.
-                  properties:
-                    name:
-                      type: string
-                      description: Name of the current stage.
-                    id:
-                      type: integer
-                      description: ID of the current stage.
-                credited_to:
-                  type: object
-                  description: Information about the employee who credited the application.
-                  properties:
-                    name:
-                      type:
-                        - "null"
-                        - string
-                      description: Full name of the employee.
-                    last_name:
-                      type:
-                        - "null"
-                        - string
-                      description: Last name of the employee.
-                    id:
-                      type: integer
-                      description: ID of the employee.
-                    first_name:
-                      type:
-                        - "null"
-                        - string
-                      description: First name of the employee.
-                    employee_id:
-                      type:
-                        - "null"
-                        - string
-                      description: Unique identifier for the employee.
-                candidate_id:
-                  type: integer
-                  description: Unique identifier for the candidate.
-                attachments:
-                  type: array
-                  description: Attachments uploaded with the application.
-                applied_at:
-                  type: string
-                  description: Timestamp when the candidate applied.
-                answers:
-                  type: array
-                  description: Answers provided in the application.
-          name: applications
-        request_cursor_field: updated_after
-        stream_slice_field: parent_id
+        type: DatetimeBasedCursor
         cursor_field: updated_at
-        parent_key: id
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/applications_demographics_answers"
     applications_interviews:
       type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_greenhouse.components.GreenhouseStateMigration
       name: applications_interviews
       primary_key:
         - id
@@ -339,10 +153,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: applications/{{ stream_slice.parent_id }}/scheduled_interviews
+          path: applications/{{ stream_partition.application_id }}/scheduled_interviews
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -369,236 +184,31 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: application_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSubstreamSlicer
-        parent_stream:
-          type: DeclarativeStream
-          primary_key: id
-          retriever:
-            type: SimpleRetriever
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path: []
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: CursorPagination
-                cursor_value: "{{ headers['link']['next']['url'] }}"
-                stop_condition: "{{ 'next' not in headers['link'] }}"
-                page_size: 100
-              page_size_option:
-                type: RequestOption
-                field_name: per_page
-                inject_into: request_parameter
-              page_token_option:
-                type: RequestPath
-            requester:
-              type: HttpRequester
-              url_base: https://harvest.greenhouse.io/v1/
-              http_method: GET
-              error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                      - type: HttpResponseFilter
-                        http_codes:
-                          - 403
-                        action: IGNORE
-                  - type: DefaultErrorHandler
-              authenticator:
-                type: BasicHttpAuthenticator
-                username: "{{ config['api_key'] }}"
-              path: applications
-          incremental_sync:
-            type: CustomIncrementalSync
-            class_name: source_declarative_manifest.components.GreenHouseSlicer
-            request_cursor_field: created_after
-            cursor_field: applied_at
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              type: object
-              $schema: http://json-schema.org/draft-07/schema#
-              properties:
-                status:
-                  type: string
-                  description: Status of the application.
-                source:
-                  type: object
-                  description: Source of the application.
-                  properties:
-                    public_name:
-                      type: string
-                      description: Public name of the application source.
-                    id:
-                      type: integer
-                      description: ID of the application source.
-                rejection_reason:
-                  type:
-                    - "null"
-                    - object
-                  description: Reason for the application rejection.
-                  properties:
-                    type:
-                      type:
-                        - "null"
-                        - object
-                      description: Type of rejection reason.
-                      properties:
-                        id:
-                          type:
-                            - "null"
-                            - integer
-                          description: ID of the rejection reason type.
-                        name:
-                          type:
-                            - "null"
-                            - string
-                          description: Name of the rejection reason type.
-                    id:
-                      type:
-                        - "null"
-                        - integer
-                      description: ID of the rejection reason.
-                    name:
-                      type:
-                        - "null"
-                        - string
-                      description: Name of the rejection reason.
-                rejection_details:
-                  type:
-                    - "null"
-                    - object
-                  description: Details related to the application rejection.
-                  properties:
-                    custom_fields:
-                      type:
-                        - "null"
-                        - object
-                      description: Custom fields related to rejection.
-                    keyed_custom_fields:
-                      type:
-                        - "null"
-                        - object
-                      description: Keyed custom fields related to rejection.
-                rejected_at:
-                  type:
-                    - "null"
-                    - string
-                  description: Timestamp when the application was rejected.
-                prospective_office:
-                  type:
-                    - "null"
-                    - string
-                  description: Prospective office for the candidate.
-                prospective_department:
-                  type:
-                    - "null"
-                    - string
-                  description: Prospective department for the candidate.
-                prospect_detail:
-                  type: object
-                  description: Details related to the application prospect.
-                  properties:
-                    prospect_stage:
-                      type:
-                        - "null"
-                        - string
-                      description: Stage of the prospect.
-                    prospect_pool:
-                      type:
-                        - "null"
-                        - string
-                      description: Pool the prospect belongs to.
-                    prospect_owner:
-                      type:
-                        - "null"
-                        - object
-                      description: Information about the owner of the prospect.
-                      properties:
-                        name:
-                          type: string
-                          description: Name of the prospect owner.
-                        id:
-                          type: integer
-                          description: Unique identifier for the prospect owner.
-                prospect:
-                  type: boolean
-                  description: Status of the application prospect.
-                location:
-                  type:
-                    - "null"
-                    - string
-                  description: Location related to the application.
-                last_activity_at:
-                  type: string
-                  description: Timestamp of the last activity on the application.
-                jobs:
-                  type: array
-                  description: Jobs applied for by the candidate.
-                id:
-                  type: integer
-                  description: Unique identifier for the application.
-                current_stage:
-                  type:
-                    - "null"
-                    - object
-                  description: Current stage of the application process.
-                  properties:
-                    name:
-                      type: string
-                      description: Name of the current stage.
-                    id:
-                      type: integer
-                      description: ID of the current stage.
-                credited_to:
-                  type: object
-                  description: Information about the employee who credited the application.
-                  properties:
-                    name:
-                      type:
-                        - "null"
-                        - string
-                      description: Full name of the employee.
-                    last_name:
-                      type:
-                        - "null"
-                        - string
-                      description: Last name of the employee.
-                    id:
-                      type: integer
-                      description: ID of the employee.
-                    first_name:
-                      type:
-                        - "null"
-                        - string
-                      description: First name of the employee.
-                    employee_id:
-                      type:
-                        - "null"
-                        - string
-                      description: Unique identifier for the employee.
-                candidate_id:
-                  type: integer
-                  description: Unique identifier for the candidate.
-                attachments:
-                  type: array
-                  description: Attachments uploaded with the application.
-                applied_at:
-                  type: string
-                  description: Timestamp when the candidate applied.
-                answers:
-                  type: array
-                  description: Answers provided in the application.
-          name: applications
-        request_cursor_field: updated_after
-        stream_slice_field: parent_id
+        type: DatetimeBasedCursor
         cursor_field: updated_at
-        parent_key: id
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -616,6 +226,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -642,11 +253,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -664,6 +286,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -690,6 +313,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -707,6 +332,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -733,6 +359,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -750,6 +378,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -776,6 +405,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -793,6 +424,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -819,11 +451,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -841,6 +484,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -867,6 +511,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -884,6 +530,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -910,6 +557,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -923,10 +572,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/questions/{{ stream_slice.parent_id }}/answer_options
+          path: demographics/questions/{{ stream_partition.parent_id }}/answer_options
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -961,6 +611,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/demographics_questions"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -978,6 +630,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1004,6 +657,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1017,10 +672,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/question_sets/{{ stream_slice.parent_id }}/questions
+          path: demographics/question_sets/{{ stream_partition.parent_id }}/questions
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1055,6 +711,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/demographics_question_sets"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1072,6 +730,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1098,6 +757,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1115,6 +776,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1141,11 +803,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1159,10 +832,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs/{{ stream_slice.parent_id }}/openings
+          path: jobs/{{ stream_partition.parent_id }}/openings
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1197,6 +871,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/jobs"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1214,6 +890,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1240,11 +917,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1262,6 +950,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1288,11 +977,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1310,6 +1010,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1336,17 +1037,31 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/job_stages"
     jobs_stages:
       type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_greenhouse.components.GreenhouseStateMigration
       name: jobs_stages
       primary_key:
         - id
@@ -1354,10 +1069,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs/{{ stream_slice.parent_id }}/stages
+          path: jobs/{{ stream_partition.job_id }}/stages
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1384,265 +1100,31 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: job_id
+              stream:
+                $ref: "#/definitions/streams/jobs"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSubstreamSlicer
-        parent_stream:
-          type: DeclarativeStream
-          primary_key: id
-          retriever:
-            type: SimpleRetriever
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path: []
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: CursorPagination
-                cursor_value: "{{ headers['link']['next']['url'] }}"
-                stop_condition: "{{ 'next' not in headers['link'] }}"
-                page_size: 100
-              page_size_option:
-                type: RequestOption
-                field_name: per_page
-                inject_into: request_parameter
-              page_token_option:
-                type: RequestPath
-            requester:
-              type: HttpRequester
-              url_base: https://harvest.greenhouse.io/v1/
-              http_method: GET
-              error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                      - type: HttpResponseFilter
-                        http_codes:
-                          - 403
-                        action: IGNORE
-                  - type: DefaultErrorHandler
-              authenticator:
-                type: BasicHttpAuthenticator
-                username: "{{ config['api_key'] }}"
-              path: jobs
-          incremental_sync:
-            type: CustomIncrementalSync
-            class_name: source_declarative_manifest.components.GreenHouseSlicer
-            request_cursor_field: updated_after
-            cursor_field: updated_at
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              type: object
-              $schema: http://json-schema.org/draft-07/schema#
-              properties:
-                id:
-                  type: integer
-                  description: Unique ID of the job
-                name:
-                  type: string
-                  description: Name of the job
-                requisition_id:
-                  type: string
-                  description: ID associated with the job requisition
-                notes:
-                  type:
-                    - "null"
-                    - string
-                  description: Additional notes or comments about the job
-                confidential:
-                  type: boolean
-                  description: Indicates if the job details are confidential
-                is_template:
-                  type: boolean
-                  description: Indicates if the job is a template
-                copied_from_id:
-                  type:
-                    - "null"
-                    - integer
-                  description: The ID of the job from which this job was copied
-                status:
-                  type: string
-                  description: Current status of the job
-                created_at:
-                  type: string
-                  description: The date and time the job was created
-                opened_at:
-                  type: string
-                  description: The date and time the job was opened
-                closed_at:
-                  type:
-                    - "null"
-                    - string
-                  description: The date and time the job was closed
-                updated_at:
-                  type: string
-                  description: The date and time the job was last updated
-                departments:
-                  type: array
-                  description: Departments associated with the job
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        description: Unique ID of the department
-                      name:
-                        type: string
-                        description: Name of the department
-                      parent_id:
-                        type:
-                          - "null"
-                          - integer
-                        description: ID of the parent department
-                      parent_department_external_id:
-                        type:
-                          - "null"
-                          - string
-                        description: External ID of the parent department
-                      child_ids:
-                        type: array
-                        description: IDs of child departments
-                      child_department_external_ids:
-                        type: array
-                        description: External IDs of child departments
-                      external_id:
-                        type:
-                          - "null"
-                          - string
-                        description: External ID of the department
-                offices:
-                  type: array
-                  description: Offices associated with the job
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        description: Unique ID of the office
-                      name:
-                        type: string
-                        description: Name of the office
-                      location:
-                        type: object
-                        description: Location details of the office
-                        properties:
-                          name:
-                            type:
-                              - "null"
-                              - string
-                            description: Name of the office location
-                      primary_contact_user_id:
-                        type: integer
-                        description: ID of the primary contact user
-                      parent_id:
-                        type:
-                          - "null"
-                          - integer
-                        description: ID of the parent office
-                      parent_office_external_id:
-                        type:
-                          - "null"
-                          - string
-                        description: External ID of the parent office
-                      child_ids:
-                        type: array
-                        description: IDs of child offices
-                      child_office_external_ids:
-                        type: array
-                        description: External IDs of child offices
-                      external_id:
-                        type:
-                          - "null"
-                          - string
-                        description: External ID of the office
-                hiring_team:
-                  type: object
-                  description: Members of the hiring team for the job
-                  properties:
-                    hiring_managers:
-                      type: array
-                      description: Managers responsible for the hiring decisions
-                    recruiters:
-                      type: array
-                      description: Recruiters handling the job requirements
-                    coordinators:
-                      type: array
-                      description: Coordinators involved in the hiring process
-                    sourcers:
-                      type: array
-                      description: Sourcers responsible for finding suitable candidates
-                custom_fields:
-                  type:
-                    - "null"
-                    - object
-                  description: Custom fields related to the job
-                  properties:
-                    employment_type:
-                      type:
-                        - "null"
-                        - string
-                      description: Type of employment associated with the job
-                keyed_custom_fields:
-                  type: object
-                  description: Keyed custom fields related to the job
-                  properties:
-                    employment_type:
-                      type: object
-                      description: Type of employment associated with the job
-                      properties:
-                        type:
-                          type: string
-                          description: Data type of the employment type field
-                        name:
-                          type: string
-                          description: Name of the employment type field
-                        value:
-                          type:
-                            - "null"
-                            - string
-                          description: Value of the employment type field
-                openings:
-                  type: array
-                  description: Openings associated with the job
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        description: Unique ID of the opening
-                      opening_id:
-                        type: string
-                        description: ID of the opening
-                      status:
-                        type: string
-                        description: Status of the opening
-                      opened_at:
-                        type: string
-                        description: The date and time the opening was created
-                      closed_at:
-                        type:
-                          - "null"
-                          - string
-                        description: The date and time the opening was closed
-                      application_id:
-                        type:
-                          - "null"
-                          - integer
-                        description: ID of the job application
-                      close_reason:
-                        type:
-                          - "null"
-                          - string
-                        description: Reason for closing the opening
-          name: jobs
-        request_cursor_field: updated_after
-        stream_slice_field: parent_id
+        type: DatetimeBasedCursor
         cursor_field: updated_at
-        parent_key: id
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1660,6 +1142,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1686,11 +1169,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1708,6 +1202,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1734,6 +1229,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1751,6 +1248,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1777,11 +1275,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1799,6 +1308,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1825,6 +1335,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1842,6 +1354,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1868,11 +1381,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1885,10 +1409,11 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: candidates/{{ stream_slice.parent_id }}/activity_feed
+          path: candidates/{{ stream_partition.parent_id }}/activity_feed
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1910,6 +1435,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/candidates"
+        decoder:
+          type: JsonDecoder
       name: activity_feed
       schema_loader:
         type: InlineSchemaLoader
@@ -1923,10 +1450,11 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs/{{ stream_slice.parent_id }}/approval_flows
+          path: jobs/{{ stream_partition.parent_id }}/approval_flows
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1948,6 +1476,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/jobs"
+        decoder:
+          type: JsonDecoder
       name: approvals
       primary_key:
         - id
@@ -1967,6 +1497,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -1980,6 +1511,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       name: disciplines
       primary_key:
         - id
@@ -1999,6 +1532,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2012,6 +1546,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       name: schools
       primary_key:
         - id
@@ -2021,18 +1557,18 @@ definitions:
           $ref: "#/schemas/schools"
     eeoc:
       type: DeclarativeStream
+      name: eeoc
+      primary_key:
+        - application_id
       retriever:
         type: SimpleRetriever
-        stream_slicer:
-          request_cursor_field: submitted_after
-          cursor_field: submitted_at
-          class_name: source_declarative_manifest.components.GreenHouseSlicer
         requester:
           $ref: "#/definitions/base_requester"
           path: eeoc
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2059,14 +1595,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
-      name: eeoc
-      primary_key:
-        - application_id
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: submitted_after
+        type: DatetimeBasedCursor
         cursor_field: submitted_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: submitted_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2084,6 +1628,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2110,11 +1655,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.GreenHouseSlicer
-        request_cursor_field: updated_after
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00.000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2132,6 +1688,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2158,6 +1715,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2175,6 +1734,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2201,6 +1761,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2217,6 +1779,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2230,6 +1793,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       name: tags
       primary_key:
         - id
@@ -2250,6 +1815,7 @@ definitions:
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2276,6 +1842,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2288,10 +1856,11 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/{{ stream_slice.parent_id }}/permissions/jobs
+          path: users/{{ stream_partition.parent_id }}/permissions/jobs
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
+            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
@@ -2313,6 +1882,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/users"
+        decoder:
+          type: JsonDecoder
       name: user_permissions
       primary_key:
         - id
@@ -2422,41 +1993,79 @@ metadata:
     tags: false
     user_roles: false
     user_permissions: false
-  yamlComponents:
-    streams:
-      applications:
-        - incrementalSync
-      applications_demographics_answers:
-        - incrementalSync
-      applications_interviews:
-        - incrementalSync
-      candidates:
-        - incrementalSync
-      demographics_answers:
-        - incrementalSync
-      jobs:
-        - incrementalSync
-      interviews:
-        - incrementalSync
-      job_posts:
-        - incrementalSync
-      job_stages:
-        - incrementalSync
-      jobs_stages:
-        - incrementalSync
-      offers:
-        - incrementalSync
-      scorecards:
-        - incrementalSync
-      users:
-        - incrementalSync
-      eeoc:
-        - incrementalSync
-      email_templates:
-        - incrementalSync
-    global:
-      - authenticator
-  testedStreams: {}
+  testedStreams:
+    applications:
+      streamHash: 7bd14e087c4f48d31249a151798c9ab00889959c
+    applications_demographics_answers:
+      streamHash: 7e3404b5bc79dddeaff9e39b7dcfe18f56ce593a
+    applications_interviews:
+      streamHash: 03863458e5eae788ec0d31bac41f5bc4f8ac2e7c
+    candidates:
+      streamHash: 7423f20897fde7e77a9f82b9419f49ea3cb5d5ff
+    close_reasons:
+      streamHash: 63e485c7ce3af8952dd1b8a940a2e02191b95872
+    custom_fields:
+      streamHash: b067a3cab42883ef08c62bdb45d1bf7363473b22
+    degrees:
+      streamHash: c428a2b3056b3a889857a1bfd101065553a186fd
+    demographics_answers:
+      streamHash: f25db53db946444dfa3b5cf61aadd763a76914c1
+    demographics_answer_options:
+      streamHash: 7c1561f1f4a4adb7c4c077ac4f9653f886d4c95a
+    demographics_questions:
+      streamHash: 1aeec4dac19bad3d438ddb161dd3fcdd497969d4
+    demographics_answers_answer_options:
+      streamHash: 04aced9a64c6371a4a38286574415789150217d1
+    demographics_question_sets:
+      streamHash: e195a81dbcf2985f980463114b36268706a8a2b0
+    demographics_question_sets_questions:
+      streamHash: 794aa67ff222ea9328478231dbe94df312ed1ce7
+    departments:
+      streamHash: 9fbf30bdf09971096e7311f61702561e0c7bb8d7
+    jobs:
+      streamHash: d24b16a739a86b163206d750811983c15909028b
+    jobs_openings:
+      streamHash: b132d760e6aeaa2fdfee5e4e8c7dedb1aae917c6
+    interviews:
+      streamHash: 5aedad64562f6c8f70b6c3c2ba66705fa758d78e
+    job_posts:
+      streamHash: edffe9483bfcc307ead8a4a3bbf501ceb5b8f64c
+    job_stages:
+      streamHash: e1befca76321a391c1702a7e8bdc5926c91fe8f2
+    jobs_stages:
+      streamHash: 1625dc8fa964e19467694ef84831a2ab6e035927
+    offers:
+      streamHash: ded8043d87f68d9ab4ef0e81ed53492049616acc
+    rejection_reasons:
+      streamHash: 60dcc7cb5b2fceeb338db943166b3261f1ec7e29
+    scorecards:
+      streamHash: 9c5d6220ce6ee2ed8c4d37aa8d7bd11bff72c61b
+    sources:
+      streamHash: 3709e28ce6032626813439be72c025246de4620a
+    users:
+      streamHash: 1619dcb22d9fb2b9b2de39915362905b776a1c35
+    activity_feed:
+      streamHash: d59b904ec216cdeb098c64921bd35d4879bcef81
+    approvals:
+      streamHash: 06d83e4437877879f8115274030a4947321b46d3
+    disciplines:
+      streamHash: b3329b840047b833fea7c6053569c0917ef9225c
+    schools:
+      streamHash: 543110605b6ed17acf0bbf121b55dc046bd9d40d
+    eeoc:
+      streamHash: 3ecd11a597de11a93786e2c5bba5f6ac95275791
+    email_templates:
+      streamHash: 33a29c34126bf5ea7c600b95dcba27f205658ce7
+    offices:
+      streamHash: 9ae47305792bf238745a9a39ad681553e17e7780
+    prospect_pools:
+      streamHash: fae74131ea16dd0f89fef0a21d525988604922e0
+    tags:
+      streamHash: 9036ac8c96cdcea7ba16b4a57ca3a20c527a8788
+    user_roles:
+      streamHash: 21d0f81689b1357cecaf734eec2c44e2abdc2c49
+    user_permissions:
+      streamHash: d9724d070a57b59e7bdf947cd2751205a8437a2b
   assist: {}
 
 schemas:

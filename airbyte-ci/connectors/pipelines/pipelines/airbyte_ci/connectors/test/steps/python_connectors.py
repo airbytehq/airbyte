@@ -83,7 +83,7 @@ class PytestStep(Step, ABC):
         pytest_command = self.get_pytest_command(test_config_file_name)
 
         if self.bind_to_docker_host:
-            test_environment = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
+            test_environment = await pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
 
         test_execution = test_environment.with_exec(pytest_command)
 
@@ -168,7 +168,7 @@ class PytestStep(Step, ABC):
         )
         if self.common_test_dependencies:
             container_with_test_deps = container_with_test_deps.with_user("root").with_exec(
-                ["pip", "install", f'{" ".join(self.common_test_dependencies)}']
+                ["pip", "install"] + self.common_test_dependencies
             )
 
         container_with_test_deps = (

@@ -1,13 +1,13 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 import sys
 
-from source_zoho_crm import SourceZohoCrm
-
 from airbyte_cdk.entrypoint import launch
+
+from .source import SourceZohoCrm
 
 
 def run():

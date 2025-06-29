@@ -146,24 +146,6 @@ async def check_user_can_read_dir(container: dagger.Container, user: str, dir_pa
         raise errors.SanityCheckError(f"{dir_path} is not readable by {user}.")
 
 
-async def check_user_cant_write_dir(container: dagger.Container, user: str, dir_path: str):
-    """Check that the given user can't write files to a given directory.
-
-    Args:
-        container (dagger.Container): The container on which the sanity checks should run.
-        user (str): The user to impersonate.
-        dir_path (str): The directory path to check.
-
-    Raises:
-        errors.SanityCheckError: Raised if the user could write a file in the given directory.
-    """
-    try:
-        await container.with_user(user).with_exec(["touch", f"{dir_path}/foo.txt"])
-    except dagger.ExecError:
-        return
-    raise errors.SanityCheckError(f"{dir_path} is writable by {user}.")
-
-
 async def check_user_can_write_dir(container: dagger.Container, user: str, dir_path: str):
     """Check that the given user has write permissions on files in a given directory.
 

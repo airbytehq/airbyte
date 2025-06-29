@@ -29,14 +29,11 @@ class DefaultDestinationStateManager<T : DestinationState>(
     private val states: ConcurrentHashMap<DestinationStream.Descriptor, T> = ConcurrentHashMap()
 
     override suspend fun getState(stream: DestinationStream): T {
-        return states.getOrPut(stream.descriptor) { persister.load(stream) }
+        return states.getOrPut(stream.mappedDescriptor) { persister.load(stream) }
     }
 
     override suspend fun persistState(stream: DestinationStream) {
-        val state =
-            states[stream.descriptor]
-                ?: throw IllegalStateException("State not found for stream $stream")
-        persister.persist(stream, state)
+        states[stream.mappedDescriptor]?.let { persister.persist(stream, it) }
     }
 }
 

@@ -16,7 +16,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import Salesforce
+from source_salesforce.api import API_VERSION, Salesforce
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -27,6 +27,7 @@ from source_salesforce.streams import (
     RestSalesforceStream,
 )
 
+from airbyte_cdk import Record
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStream,
@@ -143,12 +144,19 @@ def _prepare_mock(m, stream):
 
 
 def _bulk_stream_path() -> str:
-    return f"/services/data/v57.0/jobs/query"
+    return f"/services/data/{API_VERSION}/jobs/query"
 
 
 def _get_result_id(stream):
     stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-    return int(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))[0]["ID"])
+    return int(
+        list(
+            filter(
+                lambda message: isinstance(message, Record) or message.type == Type.RECORD,
+                stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices),
+            )
+        )[0]["ID"]
+    )
 
 
 # maximum timeout is wait_timeout * max_retry_attempt
@@ -239,7 +247,7 @@ def test_check_connection_rate_limit(
     with requests_mock.Mocker() as m:
         m.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
         m.register_uri(
-            "GET", "https://instance_url/services/data/v57.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
+            "GET", f"https://instance_url/services/data/{API_VERSION}/sobjects", json=discovery_resp_json, status_code=discovery_status_code
         )
         with pytest.raises(AirbyteTracedException) as exception:
             source.check_connection(logger, stream_config)
@@ -258,7 +266,7 @@ def test_pagination_rest(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
     stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT = timedelta(seconds=6)
-    next_page_url = "/services/data/v57.0/query/012345"
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
     with requests_mock.Mocker() as m:
         resp_1 = {
             "done": False,
@@ -491,7 +499,7 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
     assert stream.too_many_properties
     assert stream.primary_key
     assert type(stream) == RestSalesforceStream
-    url = next_page_url = "https://fase-account.salesforce.com/services/data/v57.0/queryAll"
+    url = next_page_url = f"https://fase-account.salesforce.com/services/data/{API_VERSION}/queryAll"
     requests_mock.get(
         url,
         [
@@ -532,7 +540,7 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
     assert stream.too_many_properties
     assert stream.primary_key
     assert type(stream) == RestSalesforceStream
-    url = "https://fase-account.salesforce.com/services/data/v57.0/queryAll"
+    url = f"https://fase-account.salesforce.com/services/data/{API_VERSION}/queryAll"
     requests_mock.get(
         url,
         [
@@ -619,8 +627,13 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
     # as the execution is concurrent, we can only assert the last state message here
     last_actual_state = [item.state.stream.stream_state for item in result if item.type == Type.STATE][-1]
-    last_expected_state = {"slices": [{"start": "2023-01-01T00:00:00.000Z", "end": "2023-04-01T00:00:00.000Z"}], "state_type": "date-range"}
-    assert last_actual_state == AirbyteStateBlob(last_expected_state)
+    last_expected_state = {
+        "slices": [
+            {"start": "2023-01-01T00:00:00.000Z", "end": "2023-04-01T00:00:00.000Z", "most_recent_cursor_value": "2023-04-01T00:00:00.000Z"}
+        ],
+        "state_type": "date-range",
+    }
+    assert last_actual_state.__dict__ == last_expected_state
 
 
 def test_request_params_incremental(stream_config_date_format, stream_api):

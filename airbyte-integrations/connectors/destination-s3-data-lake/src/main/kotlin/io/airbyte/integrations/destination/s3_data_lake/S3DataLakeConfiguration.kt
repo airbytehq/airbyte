@@ -23,16 +23,22 @@ const val TEST_TABLE = "airbyte_test_table"
 data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
-    override val icebergCatalogConfiguration: IcebergCatalogConfiguration
+    override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
+    // Now that partitioning is enabled, we can run more than one worker.
+    // This will likely not show performance improvements in the cloud without additional
+    // resources. In the future, if enterprise or oss users need more flexibility, we can
+    // expose this in their configurations.
+    override val numProcessRecordsWorkers: Int = 2
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider
+    S3BucketConfigurationProvider {}
 
 @Singleton
 class S3DataLakeConfigurationFactory :
     DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
+
     override fun makeWithoutExceptionHandling(
         pojo: S3DataLakeSpecification
     ): S3DataLakeConfiguration {

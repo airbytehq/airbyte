@@ -1,0 +1,28 @@
+{
+  "next_cursor": null,
+  "previous_cursor": null,
+  "credit_adjustments": [
+    {
+      "id": 1,
+      "credit_account_id": 1,
+      "amount": "1.00",
+      "created_at": "2025-05-13T00:00:00+00:00",
+      "currency_code": "USD",
+      "ending_balance": "0.00",
+      "note": "Order 1234567890",
+      "type": "debit",
+      "updated_at": "2025-05-13T00:00:00+00:00"
+    },
+    {
+      "id": 2,
+      "credit_account_id": 2,
+      "amount": "2.00",
+      "created_at": "2025-05-13T00:00:00+00:00",
+      "currency_code": "USD",
+      "ending_balance": "2.00",
+      "note": "5% cashback",
+      "type": "credit",
+      "updated_at": "2025-05-13T00:00:00+00:00"
+    }
+  ]
+}

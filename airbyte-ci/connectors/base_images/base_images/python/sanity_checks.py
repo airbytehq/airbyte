@@ -70,14 +70,10 @@ async def check_python_image_has_expected_env_vars(python_image_container: dagge
     """
     expected_env_vars = {
         "PYTHON_VERSION",
-        "PYTHON_PIP_VERSION",
-        "PYTHON_GET_PIP_SHA256",
-        "PYTHON_GET_PIP_URL",
         "HOME",
         "PATH",
         "LANG",
         "GPG_KEY",
-        "PYTHON_SETUPTOOLS_VERSION",
     }
     # It's not suboptimal to call printenv multiple times because the printenv output is cached.
     for expected_env_var in expected_env_vars:

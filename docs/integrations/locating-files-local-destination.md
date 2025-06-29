@@ -1,7 +1,3 @@
----
-displayed_sidebar: docs
----
-
 # Windows - Browsing Local File Output
 
 ## Overview
@@ -18,7 +14,7 @@ While running Airbyte's Docker image on Windows with WSL2, you can access your t
 2. Type in `\\wsl$` in the address bar
 3. The folders below will be displayed
 
-   ![](../.gitbook/assets/windows-wsl2-docker-folders.png)
+   ![](/.gitbook/assets/windows-wsl2-docker-folders.png)
 
 4. You can start digging here, but it is recommended to start searching from here and just search for the folder name you used for your local files. The folder address should be similar to `\\wsl$\docker-desktop\tmp\docker-desktop-root\containers\services\docker\rootfs\tmp\airbyte_local`
 5. You should be able to locate your local destination CSV or JSON files in this folder.

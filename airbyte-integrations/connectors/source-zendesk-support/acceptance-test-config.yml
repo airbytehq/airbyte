@@ -5,7 +5,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_zendesk_support/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "not available in current subscription plan"
           - name: "post_comment_votes"
             bypass_reason: "not available in current subscription plan"
+          - name: "ticket_activities"
+            bypass_reason: "There is a retention period which requires too much maintenance"
           - name: "tags"
             bypass_reason: "API issue" # TODO: remove this after all changes being merged
   incremental:

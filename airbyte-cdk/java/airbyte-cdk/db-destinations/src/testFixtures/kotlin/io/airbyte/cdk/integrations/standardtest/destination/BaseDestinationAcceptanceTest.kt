@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.features.FeatureFlagsWrapper
@@ -247,10 +248,12 @@ abstract class BaseDestinationAcceptanceTest(
     @Throws(Exception::class)
     open fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
-        Files.createDirectories(testDir)
-        val workspaceRoot = Files.createTempDirectory(testDir, "test")
-        jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
-        localRoot = Files.createTempDirectory(testDir, "output")
+        // Allow ourselves and our connector access to our test dir
+        Files.createDirectories(testDir).grantAllPermissions()
+        val workspaceRoot = Files.createTempDirectory(testDir, "test").grantAllPermissions()
+        jobRoot =
+            Files.createDirectories(Path.of(workspaceRoot.toString(), "job")).grantAllPermissions()
+        localRoot = Files.createTempDirectory(testDir, "output").grantAllPermissions()
         LOGGER.info { "${"jobRoot: {}"} $jobRoot" }
         LOGGER.info { "${"localRoot: {}"} $localRoot" }
         testEnv = DestinationAcceptanceTest.TestDestinationEnv(localRoot)
@@ -258,7 +261,9 @@ abstract class BaseDestinationAcceptanceTest(
         testSchemas = HashSet()
         setup(testEnv, testSchemas)
         fileTransferMountSource =
-            if (supportsFileTransfer) Files.createTempDirectory(testDir, "file_transfer") else null
+            if (supportsFileTransfer)
+                Files.createTempDirectory(testDir, "file_transfer").grantAllPermissions()
+            else null
 
         processFactory =
             DockerProcessFactory(

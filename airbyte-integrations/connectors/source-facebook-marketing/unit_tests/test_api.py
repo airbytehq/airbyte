@@ -169,7 +169,7 @@ class TestMyFacebookAdsApi:
             fb_api._compute_pause_interval.assert_called_with(usage=usage, pause_interval=pause_interval)
             source_facebook_marketing.api.sleep.assert_called_with(fb_api._compute_pause_interval.return_value.total_seconds())
             source_facebook_marketing.api.logger.warning.assert_called_with(
-                f"Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
+                f"Facebook API Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
             )
 
     def test_find_account(self, api, account_id, requests_mock):

@@ -10,24 +10,12 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 
-/** A [StateQuerier] is like a read-only [StateManager]. */
-interface StateQuerier {
-    /** [feeds] is all the [Feed]s in the configured catalog passed via the CLI. */
-    val feeds: List<Feed>
-
-    /** Returns the current state value for the given [feed]. */
-    fun current(feed: Feed): OpaqueStateValue?
-
-    /** Rolls back each feed state. This is required when resyncing CDC from scratch */
-    fun resetFeedStates()
-}
-
 /** Singleton object which tracks the state of an ongoing READ operation. */
 class StateManager(
     global: Global? = null,
     initialGlobalState: OpaqueStateValue? = null,
     initialStreamStates: Map<Stream, OpaqueStateValue?> = mapOf(),
-) : StateQuerier {
+) {
     private val global: GlobalStateManager?
     private val nonGlobal: Map<StreamIdentifier, NonGlobalStreamStateManager>
 
@@ -52,16 +40,14 @@ class StateManager(
         }
     }
 
-    override val feeds: List<Feed> =
+    /** [feeds] is all the [Feed]s in the configured catalog passed via the CLI. */
+    val feeds: List<Feed> =
         listOfNotNull(this.global?.feed) +
             (this.global?.streamStateManagers?.values?.map { it.feed } ?: listOf()) +
             nonGlobal.values.map { it.feed }
 
-    override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
-
-    override fun resetFeedStates() {
-        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
-    }
+    /** Returns the current state value for the given [feed]. */
+    fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
 
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =
@@ -86,6 +72,9 @@ class StateManager(
             state: OpaqueStateValue,
             numRecords: Long,
         )
+
+        /** Resets the current state value in the [StateManager] for this [feed] to zero. */
+        fun reset()
     }
 
     /**
@@ -117,6 +106,13 @@ class StateManager(
         ) {
             pendingStateValue = state
             pendingNumRecords += numRecords
+        }
+
+        @Synchronized
+        override fun reset() {
+            currentStateValue = null
+            pendingStateValue = null
+            pendingNumRecords = 0L
         }
 
         /**

@@ -13,18 +13,6 @@
       "id": "3874523487643/insights/replies/lifetime"
     },
     {
-      "name": "impressions",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 105
-        }
-      ],
-      "title": "impressions title",
-      "description": "Impressions description.",
-      "id": "3874523487643/insights/impressions/lifetime"
-    },
-    {
       "name": "reach",
       "period": "lifetime",
       "values": [
@@ -83,6 +71,18 @@
       "title": "Total interactions title",
       "description": "Total interactions description.",
       "id": "3874523487643/insights/total_interactions/lifetime"
+    },
+    {
+      "name": "views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 2006
+        }
+      ],
+      "title": "Views",
+      "description": "The number of times your video was viewed.",
+      "id": "09894619573775123/insights/views/lifetime"
     }
   ]
 }

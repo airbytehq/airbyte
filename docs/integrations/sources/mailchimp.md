@@ -126,6 +126,18 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 2.0.37 | 2025-05-24 | [60659](https://github.com/airbytehq/airbyte/pull/60659) | Update dependencies |
+| 2.0.36 | 2025-05-10 | [59273](https://github.com/airbytehq/airbyte/pull/59273) | Update dependencies |
+| 2.0.35 | 2025-04-26 | [58815](https://github.com/airbytehq/airbyte/pull/58815) | Update dependencies |
+| 2.0.34 | 2025-04-12 | [57719](https://github.com/airbytehq/airbyte/pull/57719) | Update dependencies |
+| 2.0.33 | 2025-04-05 | [57043](https://github.com/airbytehq/airbyte/pull/57043) | Update dependencies |
+| 2.0.32 | 2025-03-29 | [56034](https://github.com/airbytehq/airbyte/pull/56034) | Update dependencies |
+| 2.0.31 | 2025-03-08 | [55471](https://github.com/airbytehq/airbyte/pull/55471) | Update dependencies |
+| 2.0.30 | 2025-03-01 | [54795](https://github.com/airbytehq/airbyte/pull/54795) | Update dependencies |
+| 2.0.29 | 2025-02-22 | [54366](https://github.com/airbytehq/airbyte/pull/54366) | Update dependencies |
+| 2.0.28 | 2025-02-15 | [53836](https://github.com/airbytehq/airbyte/pull/53836) | Update dependencies |
+| 2.0.27 | 2025-02-01 | [52730](https://github.com/airbytehq/airbyte/pull/52730) | Update dependencies |
+| 2.0.26 | 2025-01-25 | [52236](https://github.com/airbytehq/airbyte/pull/52236) | Update dependencies |
 | 2.0.25 | 2025-01-11 | [51215](https://github.com/airbytehq/airbyte/pull/51215) | Update dependencies |
 | 2.0.24 | 2025-01-04 | [50894](https://github.com/airbytehq/airbyte/pull/50894) | Update dependencies |
 | 2.0.23 | 2024-12-28 | [50633](https://github.com/airbytehq/airbyte/pull/50633) | Update dependencies |

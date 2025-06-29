@@ -7,6 +7,16 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Change
 
+/**
+ * @deprecated This class is deprecated and will be removed in a future release. We are
+ * transitioning to a new mapping pattern using EnrichedDestinationRecordAirbyteValue and
+ * EnrichedAirbyteValue for improved type safety and consistency.
+ *
+ * For examples on implementing the new pattern, please refer to:
+ * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
+ * - toRecord() method in the s3-data-lake destination
+ */
+@Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 class MapperPipeline(
     inputSchema: AirbyteType,
     schemaValueMapperPairs: List<Pair<AirbyteSchemaMapper, AirbyteValueMapper>>,
@@ -31,6 +41,16 @@ class MapperPipeline(
         }
 }
 
+/**
+ * @deprecated This class is deprecated and will be removed in a future release. We are
+ * transitioning to a new mapping pattern using EnrichedDestinationRecordAirbyteValue and
+ * EnrichedAirbyteValue for improved type safety and consistency.
+ *
+ * For examples on implementing the new pattern, please refer to:
+ * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
+ * - toRecord() method in the s3-data-lake destination
+ */
+@Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 interface MapperPipelineFactory {
-    fun create(stream: DestinationStream): MapperPipeline
+    @Suppress("DEPRECATION") fun create(stream: DestinationStream): MapperPipeline
 }

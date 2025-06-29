@@ -825,31 +825,6 @@ Table "products" {
     "feedback" object
 }
 
-Table "products_graph_ql" {
-    "createdAt" string
-    "description" string
-    "descriptionHtml" string
-    "handle" string
-    "id" string [pk]
-    "isGiftCard" boolean
-    "legacyResourceId" string
-    "mediaCount" integer
-    "onlineStorePreviewUrl" string
-    "onlineStoreUrl" string
-    "options" array
-    "productType" string
-    "publishedAt" string
-    "shop_url" string
-    "status" string
-    "tags" array
-    "title" string
-    "totalInventory" integer
-    "totalVariants" integer
-    "tracksInventory" boolean
-    "updatedAt" string
-    "vendor" string
-}
-
 Table "product_variants" {
     "id" integer [pk]
     "product_id" integer
@@ -1006,15 +981,6 @@ Table "transactions" {
     "formattedGateway" string
     "manuallyCapturable" boolean
     "shop_url" string
-}
-
-Table "customer_saved_search" {
-    "created_at" string
-    "id" integer [pk]
-    "name" string
-    "query" string
-    "shop_url" string
-    "updated_at" string
 }
 
 Table "customer_address" {

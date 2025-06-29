@@ -7,8 +7,8 @@ from unittest.mock import Mock
 
 import pytest
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v17.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
-from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v18.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
+from google.ads.googleads.v18.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
@@ -318,7 +318,7 @@ def test_read_records_unauthenticated(mocker, customers, config):
         list(stream.read_records(SyncMode.full_refresh, {"customer_id": "customer_id", "login_customer_id": "default"}))
 
     assert exc_info.value.message == (
-        "Authentication failed for the customer 'customer_id'. " "Please try to Re-authenticate your credentials on set up Google Ads page."
+        "Authentication failed for the customer 'customer_id'. Please try to Re-authenticate your credentials on set up Google Ads page."
     )
 
 

@@ -259,7 +259,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 ## Data type map
 
 | Integration Type | Airbyte Type |
-| :--------------- | :----------- |
+|:-----------------|:-------------|
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -270,77 +270,90 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                |
-|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
-| 2.6.2 | 2024-12-14 | [48649](https://github.com/airbytehq/airbyte/pull/48649) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 2.6.1 | 2024-10-29 | [47899](https://github.com/airbytehq/airbyte/pull/47899) | Update dependencies |
-| 2.6.0 | 2024-10-28 | [47013](https://github.com/airbytehq/airbyte/pull/47013) | Migrate to CDK v5 |
-| 2.5.13 | 2024-10-28 | [47061](https://github.com/airbytehq/airbyte/pull/47061) | Update dependencies |
-| 2.5.12 | 2024-10-12 | [46819](https://github.com/airbytehq/airbyte/pull/46819) | Update dependencies |
-| 2.5.11 | 2024-10-05 | [46475](https://github.com/airbytehq/airbyte/pull/46475) | Update dependencies |
-| 2.5.10 | 2024-09-28 | [46158](https://github.com/airbytehq/airbyte/pull/46158) | Update dependencies |
-| 2.5.9 | 2024-09-21 | [45773](https://github.com/airbytehq/airbyte/pull/45773) | Update dependencies |
-| 2.5.8 | 2024-09-14 | [45503](https://github.com/airbytehq/airbyte/pull/45503) | Update dependencies |
-| 2.5.7 | 2024-09-07 | [45289](https://github.com/airbytehq/airbyte/pull/45289) | Update dependencies |
-| 2.5.6 | 2024-08-31 | [44980](https://github.com/airbytehq/airbyte/pull/44980) | Update dependencies |
-| 2.5.5 | 2024-08-24 | [44645](https://github.com/airbytehq/airbyte/pull/44645) | Update dependencies |
-| 2.5.4 | 2024-08-17 | [44337](https://github.com/airbytehq/airbyte/pull/44337) | Update dependencies |
-| 2.5.3 | 2024-08-13 | [43929](https://github.com/airbytehq/airbyte/pull/43929) | Increase streams max_time to backoff |
-| 2.5.2 | 2024-08-12 | [43909](https://github.com/airbytehq/airbyte/pull/43909) | Update dependencies |
-| 2.5.1 | 2024-08-10 | [43289](https://github.com/airbytehq/airbyte/pull/43289) | Update dependencies |
-| 2.5.0 | 2024-08-07 | [42841](https://github.com/airbytehq/airbyte/pull/42841) | Upgrade to CDK 3 |
-| 2.4.14 | 2024-07-27 | [42746](https://github.com/airbytehq/airbyte/pull/42746) | Update dependencies |
-| 2.4.13 | 2024-07-20 | [42347](https://github.com/airbytehq/airbyte/pull/42347) | Update dependencies |
-| 2.4.12 | 2024-07-13 | [41801](https://github.com/airbytehq/airbyte/pull/41801) | Update dependencies |
-| 2.4.11 | 2024-07-10 | [41561](https://github.com/airbytehq/airbyte/pull/41561) | Update dependencies |
-| 2.4.10 | 2024-07-09 | [41295](https://github.com/airbytehq/airbyte/pull/41295) | Update dependencies |
-| 2.4.9 | 2024-07-06 | [40935](https://github.com/airbytehq/airbyte/pull/40935) | Update dependencies |
-| 2.4.8 | 2024-06-25 | [40429](https://github.com/airbytehq/airbyte/pull/40429) | Update dependencies |
-| 2.4.7 | 2024-06-22 | [40140](https://github.com/airbytehq/airbyte/pull/40140) | Update dependencies |
-| 2.4.6 | 2024-06-21 | [39916](https://github.com/airbytehq/airbyte/pull/39916) | Added ability to skip `missing stream` in the CATALOG |
-| 2.4.5 | 2024-06-06 | [38884](https://github.com/airbytehq/airbyte/pull/38884) | Make lookback window configurable. |
-| 2.4.4 | 2024-06-06 | [39209](https://github.com/airbytehq/airbyte/pull/39209) | [autopull] Upgrade base image to v1.2.2 |
-| 2.4.3 | 2024-06-03 | [38865](https://github.com/airbytehq/airbyte/pull/38865) | Enforce unique property IDs |
-| 2.4.2 | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field |
-| 2.4.1 | 2024-02-09 | [35073](https://github.com/airbytehq/airbyte/pull/35073) | Manage dependencies with Poetry. |
-| 2.4.0 | 2024-02-07 | [34951](https://github.com/airbytehq/airbyte/pull/34951) | Replace the spec parameter from previous version to convert all `conversions:*` fields |
-| 2.3.0 | 2024-02-06 | [34907](https://github.com/airbytehq/airbyte/pull/34907) | Add new parameter to spec to convert `conversions:purchase` field to float |
-| 2.2.2 | 2024-02-01 | [34708](https://github.com/airbytehq/airbyte/pull/34708) | Add rounding integer values that may be float |
-| 2.2.1 | 2024-01-18 | [34352](https://github.com/airbytehq/airbyte/pull/34352) | Add incorrect custom reports config handling |
-| 2.2.0 | 2024-01-10 | [34176](https://github.com/airbytehq/airbyte/pull/34176) | Add a report option keepEmptyRows |
-| 2.1.1 | 2024-01-08 | [34018](https://github.com/airbytehq/airbyte/pull/34018) | prepare for airbyte-lib |
-| 2.1.0 | 2023-12-28 | [33802](https://github.com/airbytehq/airbyte/pull/33802) | Add `CohortSpec` to custom report in specification |
-| 2.0.3 | 2023-11-03 | [32149](https://github.com/airbytehq/airbyte/pull/32149) | Fixed bug with missing `metadata` when the credentials are not valid |
-| 2.0.2 | 2023-11-02 | [32094](https://github.com/airbytehq/airbyte/pull/32094) | Added handling for `JSONDecodeError` while checking for `api qouta` limits |
-| 2.0.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 2.0.0 | 2023-09-29 | [30930](https://github.com/airbytehq/airbyte/pull/30930) | Use distinct stream naming in case there are multiple properties in the config. |
-| 1.6.0 | 2023-09-19 | [30460](https://github.com/airbytehq/airbyte/pull/30460) | Migrated custom reports from string to array; add `FilterExpressions` support |
-| 1.5.1 | 2023-09-20 | [30608](https://github.com/airbytehq/airbyte/pull/30608) | Revert `:` auto replacement name to underscore |
-| 1.5.0 | 2023-09-18 | [30421](https://github.com/airbytehq/airbyte/pull/30421) | Add `yearWeek`, `yearMonth`, `year` dimensions cursor |
-| 1.4.1 | 2023-09-17 | [30506](https://github.com/airbytehq/airbyte/pull/30506) | Fix None type error when metrics or dimensions response does not have name |
-| 1.4.0 | 2023-09-15 | [30417](https://github.com/airbytehq/airbyte/pull/30417) | Change start date to optional; add suggested streams and update errors handling |
-| 1.3.1 | 2023-09-14 | [30424](https://github.com/airbytehq/airbyte/pull/30424) | Fixed duplicated stream issue |
-| 1.3.0 | 2023-09-13 | [30152](https://github.com/airbytehq/airbyte/pull/30152) | Ability to add multiple property ids |
-| 1.2.0 | 2023-09-11 | [30290](https://github.com/airbytehq/airbyte/pull/30290) | Add new preconfigured reports |
-| 1.1.3 | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions |
-| 1.1.2 | 2023-07-03 | [27909](https://github.com/airbytehq/airbyte/pull/27909) | Limit the page size of custom report streams |
-| 1.1.1 | 2023-06-26 | [27718](https://github.com/airbytehq/airbyte/pull/27718) | Limit the page size when calling `check()` |
-| 1.1.0 | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2 |
-| 1.0.0 | 2023-06-22 | [26283](https://github.com/airbytehq/airbyte/pull/26283) | Added primary_key and lookback window |
-| 0.2.7 | 2023-06-21 | [27531](https://github.com/airbytehq/airbyte/pull/27531) | Fix formatting |
-| 0.2.6 | 2023-06-09 | [27207](https://github.com/airbytehq/airbyte/pull/27207) | Improve api rate limit messages |
-| 0.2.5 | 2023-06-08 | [27175](https://github.com/airbytehq/airbyte/pull/27175) | Improve Error Messages |
-| 0.2.4 | 2023-06-01 | [26887](https://github.com/airbytehq/airbyte/pull/26887) | Remove `authSpecification` from connector spec in favour of `advancedAuth` |
-| 0.2.3 | 2023-05-16 | [26126](https://github.com/airbytehq/airbyte/pull/26126) | Fix pagination |
-| 0.2.2 | 2023-05-12 | [25987](https://github.com/airbytehq/airbyte/pull/25987) | Categorized Config Errors Accurately |
-| 0.2.1 | 2023-05-11 | [26008](https://github.com/airbytehq/airbyte/pull/26008) | Added handling for `429 - potentiallyThresholdedRequestsPerHour` error |
-| 0.2.0 | 2023-04-13 | [25179](https://github.com/airbytehq/airbyte/pull/25179) | Implement support for custom Cohort and Pivot reports |
-| 0.1.3 | 2023-03-10 | [23872](https://github.com/airbytehq/airbyte/pull/23872) | Fix parse + cursor for custom reports |
-| 0.1.2 | 2023-03-07 | [23822](https://github.com/airbytehq/airbyte/pull/23822) | Improve `rate limits` customer faced error messages and retry logic for `429` |
-| 0.1.1 | 2023-01-10 | [21169](https://github.com/airbytehq/airbyte/pull/21169) | Slicer updated, unit tests added |
-| 0.1.0 | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT |
-| 0.0.3 | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring |
-| 0.0.2 | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | fix documentationUrl |
-| 0.0.1 | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source |
+| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.2 | 2025-06-17 | [61678](https://github.com/airbytehq/airbyte/pull/61678) | Bump Memory on CHECK to 1600Mi |
+| 2.8.1 | 2025-06-12 | [61555](https://github.com/airbytehq/airbyte/pull/61555) | Fixes time data parsing issue |
+| 2.8.0 | 2025-06-11 | [61533](https://github.com/airbytehq/airbyte/pull/61533) | Promoting release candidate 2.8.0-rc.2 to a main version. |
+| 2.8.0-rc.2 | 2025-06-11 | [61491](https://github.com/airbytehq/airbyte/pull/61491) | Fixed cohort check, record extractor and discovery                                                                                                                     |
+| 2.8.0-rc.1 | 2025-05-20 | [60342](https://github.com/airbytehq/airbyte/pull/60342) | Migrate to low-code                                                                                                                                                    |
+| 2.7.7      | 2025-05-17 | [60708](https://github.com/airbytehq/airbyte/pull/60708) | Update dependencies                                                                                                                                                    |
+| 2.7.6      | 2025-05-10 | [59870](https://github.com/airbytehq/airbyte/pull/59870) | Update dependencies                                                                                                                                                    |
+| 2.7.5      | 2025-05-03 | [59225](https://github.com/airbytehq/airbyte/pull/59225) | Update dependencies                                                                                                                                                    |
+| 2.7.4      | 2025-04-26 | [58808](https://github.com/airbytehq/airbyte/pull/58808) | Update dependencies                                                                                                                                                    |
+| 2.7.3      | 2025-04-12 | [57703](https://github.com/airbytehq/airbyte/pull/57703) | Update dependencies                                                                                                                                                    |
+| 2.7.2      | 2025-04-05 | [57063](https://github.com/airbytehq/airbyte/pull/57063) | Update dependencies                                                                                                                                                    |
+| 2.7.1      | 2025-03-29 | [50048](https://github.com/airbytehq/airbyte/pull/50048) | Update dependencies                                                                                                                                                    |
+| 2.7.0      | 2025-02-12 | [48381](https://github.com/airbytehq/airbyte/pull/48381) | add end date optional parameter                                                                                                                                        |
+| 2.6.2      | 2024-12-14 | [48649](https://github.com/airbytehq/airbyte/pull/48649) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.6.1      | 2024-10-29 | [47899](https://github.com/airbytehq/airbyte/pull/47899) | Update dependencies                                                                                                                                                    |
+| 2.6.0      | 2024-10-28 | [47013](https://github.com/airbytehq/airbyte/pull/47013) | Migrate to CDK v5                                                                                                                                                      |
+| 2.5.13     | 2024-10-28 | [47061](https://github.com/airbytehq/airbyte/pull/47061) | Update dependencies                                                                                                                                                    |
+| 2.5.12     | 2024-10-12 | [46819](https://github.com/airbytehq/airbyte/pull/46819) | Update dependencies                                                                                                                                                    |
+| 2.5.11     | 2024-10-05 | [46475](https://github.com/airbytehq/airbyte/pull/46475) | Update dependencies                                                                                                                                                    |
+| 2.5.10     | 2024-09-28 | [46158](https://github.com/airbytehq/airbyte/pull/46158) | Update dependencies                                                                                                                                                    |
+| 2.5.9      | 2024-09-21 | [45773](https://github.com/airbytehq/airbyte/pull/45773) | Update dependencies                                                                                                                                                    |
+| 2.5.8      | 2024-09-14 | [45503](https://github.com/airbytehq/airbyte/pull/45503) | Update dependencies                                                                                                                                                    |
+| 2.5.7      | 2024-09-07 | [45289](https://github.com/airbytehq/airbyte/pull/45289) | Update dependencies                                                                                                                                                    |
+| 2.5.6      | 2024-08-31 | [44980](https://github.com/airbytehq/airbyte/pull/44980) | Update dependencies                                                                                                                                                    |
+| 2.5.5      | 2024-08-24 | [44645](https://github.com/airbytehq/airbyte/pull/44645) | Update dependencies                                                                                                                                                    |
+| 2.5.4      | 2024-08-17 | [44337](https://github.com/airbytehq/airbyte/pull/44337) | Update dependencies                                                                                                                                                    |
+| 2.5.3      | 2024-08-13 | [43929](https://github.com/airbytehq/airbyte/pull/43929) | Increase streams max_time to backoff                                                                                                                                   |
+| 2.5.2      | 2024-08-12 | [43909](https://github.com/airbytehq/airbyte/pull/43909) | Update dependencies                                                                                                                                                    |
+| 2.5.1      | 2024-08-10 | [43289](https://github.com/airbytehq/airbyte/pull/43289) | Update dependencies                                                                                                                                                    |
+| 2.5.0      | 2024-08-07 | [42841](https://github.com/airbytehq/airbyte/pull/42841) | Upgrade to CDK 3                                                                                                                                                       |
+| 2.4.14     | 2024-07-27 | [42746](https://github.com/airbytehq/airbyte/pull/42746) | Update dependencies                                                                                                                                                    |
+| 2.4.13     | 2024-07-20 | [42347](https://github.com/airbytehq/airbyte/pull/42347) | Update dependencies                                                                                                                                                    |
+| 2.4.12     | 2024-07-13 | [41801](https://github.com/airbytehq/airbyte/pull/41801) | Update dependencies                                                                                                                                                    |
+| 2.4.11     | 2024-07-10 | [41561](https://github.com/airbytehq/airbyte/pull/41561) | Update dependencies                                                                                                                                                    |
+| 2.4.10     | 2024-07-09 | [41295](https://github.com/airbytehq/airbyte/pull/41295) | Update dependencies                                                                                                                                                    |
+| 2.4.9      | 2024-07-06 | [40935](https://github.com/airbytehq/airbyte/pull/40935) | Update dependencies                                                                                                                                                    |
+| 2.4.8      | 2024-06-25 | [40429](https://github.com/airbytehq/airbyte/pull/40429) | Update dependencies                                                                                                                                                    |
+| 2.4.7      | 2024-06-22 | [40140](https://github.com/airbytehq/airbyte/pull/40140) | Update dependencies                                                                                                                                                    |
+| 2.4.6      | 2024-06-21 | [39916](https://github.com/airbytehq/airbyte/pull/39916) | Added ability to skip `missing stream` in the CATALOG                                                                                                                  |
+| 2.4.5      | 2024-06-06 | [38884](https://github.com/airbytehq/airbyte/pull/38884) | Make lookback window configurable.                                                                                                                                     |
+| 2.4.4      | 2024-06-06 | [39209](https://github.com/airbytehq/airbyte/pull/39209) | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
+| 2.4.3      | 2024-06-03 | [38865](https://github.com/airbytehq/airbyte/pull/38865) | Enforce unique property IDs                                                                                                                                            |
+| 2.4.2      | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                                                                                       |
+| 2.4.1      | 2024-02-09 | [35073](https://github.com/airbytehq/airbyte/pull/35073) | Manage dependencies with Poetry.                                                                                                                                       |
+| 2.4.0      | 2024-02-07 | [34951](https://github.com/airbytehq/airbyte/pull/34951) | Replace the spec parameter from previous version to convert all `conversions:*` fields                                                                                 |
+| 2.3.0      | 2024-02-06 | [34907](https://github.com/airbytehq/airbyte/pull/34907) | Add new parameter to spec to convert `conversions:purchase` field to float                                                                                             |
+| 2.2.2      | 2024-02-01 | [34708](https://github.com/airbytehq/airbyte/pull/34708) | Add rounding integer values that may be float                                                                                                                          |
+| 2.2.1      | 2024-01-18 | [34352](https://github.com/airbytehq/airbyte/pull/34352) | Add incorrect custom reports config handling                                                                                                                           |
+| 2.2.0      | 2024-01-10 | [34176](https://github.com/airbytehq/airbyte/pull/34176) | Add a report option keepEmptyRows                                                                                                                                      |
+| 2.1.1      | 2024-01-08 | [34018](https://github.com/airbytehq/airbyte/pull/34018) | prepare for airbyte-lib                                                                                                                                                |
+| 2.1.0      | 2023-12-28 | [33802](https://github.com/airbytehq/airbyte/pull/33802) | Add `CohortSpec` to custom report in specification                                                                                                                     |
+| 2.0.3      | 2023-11-03 | [32149](https://github.com/airbytehq/airbyte/pull/32149) | Fixed bug with missing `metadata` when the credentials are not valid                                                                                                   |
+| 2.0.2      | 2023-11-02 | [32094](https://github.com/airbytehq/airbyte/pull/32094) | Added handling for `JSONDecodeError` while checking for `api qouta` limits                                                                                             |
+| 2.0.1      | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                        |
+| 2.0.0      | 2023-09-29 | [30930](https://github.com/airbytehq/airbyte/pull/30930) | Use distinct stream naming in case there are multiple properties in the config.                                                                                        |
+| 1.6.0      | 2023-09-19 | [30460](https://github.com/airbytehq/airbyte/pull/30460) | Migrated custom reports from string to array; add `FilterExpressions` support                                                                                          |
+| 1.5.1      | 2023-09-20 | [30608](https://github.com/airbytehq/airbyte/pull/30608) | Revert `:` auto replacement name to underscore                                                                                                                         |
+| 1.5.0      | 2023-09-18 | [30421](https://github.com/airbytehq/airbyte/pull/30421) | Add `yearWeek`, `yearMonth`, `year` dimensions cursor                                                                                                                  |
+| 1.4.1      | 2023-09-17 | [30506](https://github.com/airbytehq/airbyte/pull/30506) | Fix None type error when metrics or dimensions response does not have name                                                                                             |
+| 1.4.0      | 2023-09-15 | [30417](https://github.com/airbytehq/airbyte/pull/30417) | Change start date to optional; add suggested streams and update errors handling                                                                                        |
+| 1.3.1      | 2023-09-14 | [30424](https://github.com/airbytehq/airbyte/pull/30424) | Fixed duplicated stream issue                                                                                                                                          |
+| 1.3.0      | 2023-09-13 | [30152](https://github.com/airbytehq/airbyte/pull/30152) | Ability to add multiple property ids                                                                                                                                   |
+| 1.2.0      | 2023-09-11 | [30290](https://github.com/airbytehq/airbyte/pull/30290) | Add new preconfigured reports                                                                                                                                          |
+| 1.1.3      | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions                                                                                                                                        |
+| 1.1.2      | 2023-07-03 | [27909](https://github.com/airbytehq/airbyte/pull/27909) | Limit the page size of custom report streams                                                                                                                           |
+| 1.1.1      | 2023-06-26 | [27718](https://github.com/airbytehq/airbyte/pull/27718) | Limit the page size when calling `check()`                                                                                                                             |
+| 1.1.0      | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                                                                                                   |
+| 1.0.0      | 2023-06-22 | [26283](https://github.com/airbytehq/airbyte/pull/26283) | Added primary_key and lookback window                                                                                                                                  |
+| 0.2.7      | 2023-06-21 | [27531](https://github.com/airbytehq/airbyte/pull/27531) | Fix formatting                                                                                                                                                         |
+| 0.2.6      | 2023-06-09 | [27207](https://github.com/airbytehq/airbyte/pull/27207) | Improve api rate limit messages                                                                                                                                        |
+| 0.2.5      | 2023-06-08 | [27175](https://github.com/airbytehq/airbyte/pull/27175) | Improve Error Messages                                                                                                                                                 |
+| 0.2.4      | 2023-06-01 | [26887](https://github.com/airbytehq/airbyte/pull/26887) | Remove `authSpecification` from connector spec in favour of `advancedAuth`                                                                                             |
+| 0.2.3      | 2023-05-16 | [26126](https://github.com/airbytehq/airbyte/pull/26126) | Fix pagination                                                                                                                                                         |
+| 0.2.2      | 2023-05-12 | [25987](https://github.com/airbytehq/airbyte/pull/25987) | Categorized Config Errors Accurately                                                                                                                                   |
+| 0.2.1      | 2023-05-11 | [26008](https://github.com/airbytehq/airbyte/pull/26008) | Added handling for `429 - potentiallyThresholdedRequestsPerHour` error                                                                                                 |
+| 0.2.0      | 2023-04-13 | [25179](https://github.com/airbytehq/airbyte/pull/25179) | Implement support for custom Cohort and Pivot reports                                                                                                                  |
+| 0.1.3      | 2023-03-10 | [23872](https://github.com/airbytehq/airbyte/pull/23872) | Fix parse + cursor for custom reports                                                                                                                                  |
+| 0.1.2      | 2023-03-07 | [23822](https://github.com/airbytehq/airbyte/pull/23822) | Improve `rate limits` customer faced error messages and retry logic for `429`                                                                                          |
+| 0.1.1      | 2023-01-10 | [21169](https://github.com/airbytehq/airbyte/pull/21169) | Slicer updated, unit tests added                                                                                                                                       |
+| 0.1.0      | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT                                                                                                                                        |
+| 0.0.3      | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring                                                                                                                     |
+| 0.0.2      | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | fix documentationUrl                                                                                                                                                   |
+| 0.0.1      | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source                                                                                                                             |
 
 </details>

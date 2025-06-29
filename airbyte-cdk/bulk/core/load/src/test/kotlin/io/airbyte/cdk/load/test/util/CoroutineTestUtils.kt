@@ -15,7 +15,7 @@ class CoroutineTestUtils {
                 if (t::class == clazz) {
                     return
                 }
-                throw AssertionError("Expected block to throw $clazz, but it threw ${t::class}.")
+                throw AssertionError("Expected block to throw $clazz, but it threw ${t::class}.", t)
             }
             throw AssertionError("Expected block to throw $clazz, but it completed successfully.")
         }
@@ -24,7 +24,7 @@ class CoroutineTestUtils {
             try {
                 block()
             } catch (t: Throwable) {
-                throw AssertionError("Expected block to not throw, but it threw ${t::class}.")
+                throw AssertionError("Expected block to not throw, but it threw ${t::class}.", t)
             }
         }
     }

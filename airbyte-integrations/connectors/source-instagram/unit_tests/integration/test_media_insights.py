@@ -7,6 +7,7 @@ from unittest import TestCase
 
 import pytest
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -17,7 +18,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import SyncMode
 
 from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
@@ -74,24 +74,13 @@ _MEDIA_IDS = {
     GENERAL_MEDIA: MEDIA_ID_GENERAL_MEDIA,
 }
 
-METRICS_GENERAL_MEDIA = ["impressions", "reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"]
+METRICS_GENERAL_MEDIA = ["reach", "saved", "likes", "comments", "shares", "follows", "profile_visits", "views"]
 
 _METRICS = {
-    MEDIA_ID_REELS: [
-        "comments",
-        "ig_reels_avg_watch_time",
-        "ig_reels_video_view_total_time",
-        "likes",
-        "plays",
-        "reach",
-        "saved",
-        "shares",
-        "ig_reels_aggregated_all_plays_count",
-        "clips_replays_count",
-    ],
-    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved"],
-    MEDIA_ID_VIDEO: ["impressions", "reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"],
-    MEDIA_ID_CAROUSEL_ALBUM: ["impressions", "reach", "saved", "shares", "follows", "profile_visits"],
+    MEDIA_ID_REELS: ["comments", "ig_reels_avg_watch_time", "ig_reels_video_view_total_time", "likes", "reach", "saved", "shares", "views"],
+    MEDIA_ID_VIDEO_FEED: ["reach", "saved", "views"],
+    MEDIA_ID_VIDEO: ["reach", "saved", "likes", "comments", "shares", "follows", "profile_visits", "views"],
+    MEDIA_ID_CAROUSEL_ALBUM: ["reach", "saved", "shares", "follows", "profile_visits", "views"],
     MEDIA_ID_GENERAL_MEDIA: METRICS_GENERAL_MEDIA,
     # Reusing general media metrics for error scenarios
     MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS: METRICS_GENERAL_MEDIA,

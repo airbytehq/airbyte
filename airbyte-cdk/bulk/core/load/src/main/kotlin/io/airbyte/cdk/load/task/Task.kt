@@ -4,18 +4,16 @@
 
 package io.airbyte.cdk.load.task
 
-interface Task {
-    suspend fun execute()
-}
+sealed interface TerminalCondition
 
-/**
- * A TaskLauncher is responsible for starting and stopping the task workflow, and for managing
- * transitions between tasks.
- */
-interface TaskLauncher {
-    /**
-     * Execute the task workflow. Should dispatch tasks asynchronously and suspend until the
-     * workflow is complete.
-     */
-    suspend fun run()
+data object OnEndOfSync : TerminalCondition
+
+data object OnSyncFailureOnly : TerminalCondition
+
+data object SelfTerminating : TerminalCondition
+
+interface Task {
+    val terminalCondition: TerminalCondition
+
+    suspend fun execute()
 }

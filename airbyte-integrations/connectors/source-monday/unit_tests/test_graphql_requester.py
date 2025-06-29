@@ -128,8 +128,7 @@ def test_get_schema_root_properties(mocker, monday_requester):
 
 
 def test_build_activity_query(mocker, monday_requester):
-    mock_stream_state = {"updated_at_int": 1636738688}
-    object_arguments = {"stream_state": mock_stream_state}
+    object_arguments = {"stream_slice": {"start_time": 1636738688}}
     mocker.patch.object(MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}")
     requester = monday_requester
 
@@ -168,4 +167,4 @@ def test_build_items_incremental_query(monday_requester):
 def test_get_request_headers(monday_requester):
     headers = monday_requester.get_request_headers()
 
-    assert headers == {"API-Version": "2024-01"}
+    assert headers == {"API-Version": "2024-10"}

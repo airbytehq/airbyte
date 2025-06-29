@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
@@ -40,8 +41,19 @@ class AirbyteTypeToAvroSchema {
                         SchemaBuilder.record(recordName).namespace(namespaceMangled).fields()
                     airbyteSchema.properties.entries
                         .fold(builder) { acc, (name, field) ->
-                            val converted = convert(field.type, path + name)
-                            val propertySchema = maybeMakeNullable(field, converted)
+                            val propertySchema =
+                                when (name) {
+                                    Meta.COLUMN_NAME_AB_EXTRACTED_AT ->
+                                        LogicalTypes.timestampMillis()
+                                            .addToSchema(Schema.create(Schema.Type.LONG))
+                                    Meta.COLUMN_NAME_AB_RAW_ID ->
+                                        LogicalTypes.uuid()
+                                            .addToSchema(Schema.create(Schema.Type.STRING))
+                                    else -> {
+                                        val converted = convert(field.type, path + name)
+                                        maybeMakeNullable(field, converted)
+                                    }
+                                }
                             val nameMangled = Transformations.toAvroSafeName(name)
                             acc.name(nameMangled).type(propertySchema).let {
                                 if (field.nullable) {

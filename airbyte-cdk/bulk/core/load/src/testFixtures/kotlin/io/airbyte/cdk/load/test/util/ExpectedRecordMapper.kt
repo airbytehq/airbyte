@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.test.util
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
@@ -18,6 +19,16 @@ import java.time.format.DateTimeFormatter
 
 fun interface ExpectedRecordMapper {
     fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord
+    fun mapStreamDescriptor(descriptor: DestinationStream.Descriptor) = descriptor
+
+    fun compose(mapper: ExpectedRecordMapper) =
+        object : ExpectedRecordMapper {
+            override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType) =
+                mapper.mapRecord(
+                    this@ExpectedRecordMapper.mapRecord(expectedRecord, schema),
+                    schema
+                )
+        }
 }
 
 object NoopExpectedRecordMapper : ExpectedRecordMapper {

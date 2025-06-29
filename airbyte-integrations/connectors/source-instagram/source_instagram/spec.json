@@ -23,15 +23,22 @@
         "title": "Client Id",
         "description": "The Client ID for your Oauth application",
         "airbyte_secret": true,
-        "airbyte_hidden": true,
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
         "description": "The Client Secret for your Oauth application",
         "airbyte_secret": true,
-        "airbyte_hidden": true,
         "type": "string"
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 40,
+        "default": 15,
+        "examples": [1, 2, 3],
+        "description": "The number of worker threads to use for the sync."
       }
     },
     "required": ["access_token"]

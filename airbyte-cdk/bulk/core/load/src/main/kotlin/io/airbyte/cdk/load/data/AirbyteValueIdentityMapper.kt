@@ -25,7 +25,11 @@ class AirbyteValueNoopMapper : AirbyteValueMapper {
     ): Pair<AirbyteValue, List<Meta.Change>> = value to changes
 }
 
-open class AirbyteValueIdentityMapper : AirbyteValueMapper {
+open class AirbyteValueIdentityMapper(
+    protected val recurseIntoObjects: Boolean = true,
+    protected val recurseIntoArrays: Boolean = true,
+    protected val recurseIntoUnions: Boolean = true,
+) : AirbyteValueMapper {
     data class Context(
         val nullable: Boolean = false,
         val path: List<String> = emptyList(),
@@ -91,7 +95,8 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         schema: ObjectType,
         context: Context
     ): Pair<AirbyteValue, Context> {
-        if (value !is ObjectValue) {
+        val shouldRecurse = recurseIntoObjects || context.path.isEmpty()
+        if (value !is ObjectValue || !shouldRecurse) {
             return value to context
         }
         val values = LinkedHashMap<String, AirbyteValue>()
@@ -124,7 +129,7 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         schema: ArrayType,
         context: Context
     ): Pair<AirbyteValue, Context> {
-        if (value !is ArrayValue) {
+        if (value !is ArrayValue || !recurseIntoArrays) {
             return value to context
         }
         val mapped =
@@ -153,6 +158,9 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         schema: UnionType,
         context: Context
     ): Pair<AirbyteValue, Context> {
+        if (!recurseIntoUnions) {
+            return value to context
+        }
         /*
            This mapper should not perform validation, so make a best-faith effort to recurse,
            but if nothing matches the union, pass the value through unchanged. If clients validated

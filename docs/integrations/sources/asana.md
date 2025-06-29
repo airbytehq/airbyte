@@ -106,6 +106,13 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.5.0 | 2025-05-02 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
+| 1.4.0 | 2025-04-25 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
+| 1.3.10 | 2025-02-15 | [53891](https://github.com/airbytehq/airbyte/pull/53891) | Update dependencies |
+| 1.3.9 | 2025-02-08 | [53394](https://github.com/airbytehq/airbyte/pull/53394) | Update dependencies |
+| 1.3.8 | 2025-02-01 | [52882](https://github.com/airbytehq/airbyte/pull/52882) | Update dependencies |
+| 1.3.7 | 2025-01-25 | [52216](https://github.com/airbytehq/airbyte/pull/52216) | Update dependencies |
+| 1.3.6 | 2025-01-18 | [51750](https://github.com/airbytehq/airbyte/pull/51750) | Update dependencies |
 | 1.3.5 | 2025-01-11 | [51246](https://github.com/airbytehq/airbyte/pull/51246) | Update dependencies |
 | 1.3.4 | 2025-01-04 | [50915](https://github.com/airbytehq/airbyte/pull/50915) | Update dependencies |
 | 1.3.3 | 2024-12-28 | [50442](https://github.com/airbytehq/airbyte/pull/50442) | Update dependencies |

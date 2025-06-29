@@ -10,7 +10,7 @@ import isodate
 import pendulum
 from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
-from requests import codes, exceptions  # type: ignore[import]
+from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
@@ -298,7 +298,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         try:
             yield from super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config)
         except exceptions.HTTPError as error:
-            error_data = error.response.json()[0]
+            try:
+                error_data = error.response.json()[0]
+            except JSONDecodeError as json_error:
+                raise error from json_error
             error_code = error_data.get("errorCode")
             url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":

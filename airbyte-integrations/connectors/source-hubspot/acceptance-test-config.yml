@@ -34,32 +34,8 @@ acceptance_tests:
             bypass_reason: Unable to populate (cost $20/month) - covered by integration tests
           - name: owners_archived
             bypass_reason: Unable to populate - covered by integration tests
-          - name: tickets_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: deals_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: companies_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: engagements_calls_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: engagements_emails_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: engagements_meetings_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: engagements_notes_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: engagements_tasks_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: goals_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: line_items_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: products_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: pets_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
-          - name: cars_web_analytics
-            bypass_reason: Unable to populate - covered by integration tests
+          - name: deals_archived
+            bypass_reason: No value in re-create every 90 days
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -147,5 +123,5 @@ acceptance_tests:
       - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/incremental_catalog.json
         future_state:
-          future_state_path: integration_tests/abnormal_state.json
+          bypass_reason: "This test is not that useful and migration for Hubspot's API from v1 to v3 changes state type"
         timeout_seconds: 7200

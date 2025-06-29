@@ -1,11 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_jira.components.extractors import LabelsRecordExtractor
-from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter
 
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
@@ -18,18 +17,17 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
         ([], []),  # Testing an empty response
     ],
 )
-def test_labels_record_extractor(json_response, expected_output):
-    # Create the extractor instance directly in the test function
-    extractor = LabelsRecordExtractor(["values"], {}, {})
-    # Set up the mocked response
+def test_labels_record_extractor(json_response, expected_output, components_module):
+    extractor = components_module.LabelsRecordExtractor(["values"], {}, {})
+
     response_mock = MagicMock(spec=requests.Response)
-    response_mock.json.return_value = json_response  # Parameterized JSON response
+    response_mock.json.return_value = json_response
+    response_mock.content = json.dumps(json_response).encode("utf-8")
+    response_mock.text = json.dumps(json_response)
+    response_mock.status_code = 200
 
-    # Call the extract_records to process the mocked response
     extracted = extractor.extract_records(response_mock)
-
-    # Assert to check if the output matches the expected result
-    assert extracted == expected_output, "The extracted records do not match the expected output"
+    assert extracted == expected_output
 
 
 @pytest.mark.parametrize(
@@ -44,7 +42,7 @@ def test_labels_record_extractor(json_response, expected_output):
         )
     ],
 )
-def test_sprint_issues_substream_partition_router(fields_data, other_data, expected_fields, expected_partition):
+def test_sprint_issues_substream_partition_router(fields_data, other_data, expected_fields, expected_partition, components_module):
     fields_parent_stream = MagicMock()
     fields_parent_stream_config = MagicMock(stream=fields_parent_stream, partition_field=MagicMock())
     fields_parent_stream_config.partition_field.eval.return_value = "partition_id"
@@ -55,7 +53,7 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
     other_parent_stream_config.parent_key.eval.return_value = "id"
 
     # Initialize the router inside the test
-    router = SprintIssuesSubstreamPartitionRouter(
+    router = components_module.SprintIssuesSubstreamPartitionRouter(
         parent_stream_configs=[fields_parent_stream_config, other_parent_stream_config], config={}, parameters={}
     )
 

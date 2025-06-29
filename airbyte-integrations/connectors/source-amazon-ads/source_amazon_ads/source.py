@@ -6,20 +6,19 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
-
 from airbyte_cdk import TState
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    OAuthConfigSpecification,
+    SyncMode,
+)
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.types import Record
 
 from .spec import SourceAmazonAdsSpec
-from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
-
-
-# Oauth 2.0 authentication URL for amazon
-TOKEN_URL = "https://api.amazon.com/auth/o2/token"
 
 
 class SourceAmazonAds(YamlDeclarativeSource):
@@ -52,7 +51,10 @@ class SourceAmazonAds(YamlDeclarativeSource):
         # in response body.
         # It doesn't support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
-        profiles_list = Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
+        # TODO: how to get declarative stream profiles_filtered ??
+        profile_stream = [x for x in self.streams(config) if x.name == "profiles"][0]
+        profiles_list = [x.data for x in profile_stream.read_records(SyncMode.full_refresh) if isinstance(x, Record)]
+
         filtered_profiles = self._choose_profiles(config, profiles_list)
         if not filtered_profiles:
             return False, (
@@ -61,42 +63,8 @@ class SourceAmazonAds(YamlDeclarativeSource):
             )
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        :return: list of streams for current source
-        """
-        config = self._validate_and_transform(config)
-        auth = self._make_authenticator(config)
-        stream_args = {"config": config, "authenticator": auth}
-        # All data for individual Amazon Ads stream divided into sets of data for
-        # each profile. Every API request except profiles has required
-        # parameter passed over "Amazon-Advertising-API-Scope" http header and
-        # should contain profile id. So every stream is dependent on Profiles
-        # stream and should have information about all profiles.
-        profiles_stream = Profiles(**stream_args)
-        profiles_list = profiles_stream.get_all_profiles()
-        stream_args["profiles"] = self._choose_profiles(config, profiles_list)
-        non_profile_stream_classes = [
-            SponsoredDisplayReportStream,
-            SponsoredBrandsV3ReportStream,
-            SponsoredProductsReportStream,
-        ]
-        return super().streams(config=config) + [
-            *[stream_class(**stream_args) for stream_class in non_profile_stream_classes],
-        ]
-
     @staticmethod
-    def _make_authenticator(config: Mapping[str, Any]):
-        return Oauth2Authenticator(
-            token_refresh_endpoint=TOKEN_URL,
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-        )
-
-    @staticmethod
-    def _choose_profiles(config: Mapping[str, Any], available_profiles: List[dict[str, Any]]):
+    def _choose_profiles(config: Mapping[str, Any], available_profiles: List[Mapping[str, Any]]):
         requested_profiles = config.get("profiles", [])
         requested_marketplace_ids = config.get("marketplace_ids", [])
         if requested_profiles or requested_marketplace_ids:

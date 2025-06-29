@@ -119,6 +119,10 @@ class VersionIncrementCheck(VersionCheck):
 
     @property
     def should_run(self) -> bool:
+        # Skip if connector opts out of version checks
+        if self.context.metadata and self.context.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
+            return False
+
         for filename in self.context.modified_files:
             relative_path = str(filename).replace(str(self.context.connector.code_directory) + "/", "")
             if not any([relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR]):
@@ -565,6 +569,8 @@ class LiveTests(Step):
             command_options += ["--run-id", self.run_id]
         if self.should_read_with_state:
             command_options += ["--should-read-with-state=1"]
+        if self.disable_proxy:
+            command_options += ["--disable-proxy=1"]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
@@ -619,6 +625,7 @@ class LiveTests(Step):
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = "should-read-with-state" in options
+        self.disable_proxy = "disable-proxy" in options
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")

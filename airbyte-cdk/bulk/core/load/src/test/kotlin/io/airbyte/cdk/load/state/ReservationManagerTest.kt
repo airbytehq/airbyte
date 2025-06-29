@@ -5,10 +5,8 @@
 package io.airbyte.cdk.load.state
 
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -53,28 +51,6 @@ class ReservationManagerTest {
         }
         Assertions.assertEquals(0, manager.remainingCapacityBytes)
         Assertions.assertTrue(reserved.get())
-    }
-
-    @Test
-    fun testReserveMultithreaded() = runTest {
-        val manager = ReservationManager(1000)
-        withContext(Dispatchers.IO) {
-            manager.reserve(1000, this)
-            Assertions.assertEquals(0, manager.remainingCapacityBytes)
-            val nIterations = 100000
-
-            val jobs = (0 until nIterations).map { launch { manager.reserve(10, this) } }
-
-            repeat(nIterations) {
-                manager.release(10)
-                Assertions.assertTrue(
-                    manager.remainingCapacityBytes >= 0,
-                    "Remaining memory is negative: ${manager.remainingCapacityBytes}"
-                )
-            }
-            jobs.forEach { it.join() }
-            Assertions.assertEquals(0, manager.remainingCapacityBytes)
-        }
     }
 
     @Test

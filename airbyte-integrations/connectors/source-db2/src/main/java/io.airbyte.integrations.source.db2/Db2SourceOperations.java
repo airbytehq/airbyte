@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.Date;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -102,6 +104,26 @@ public class Db2SourceOperations extends JdbcSourceOperations {
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     final LocalDate date = LocalDate.parse(value);
     preparedStatement.setDate(parameterIndex, Date.valueOf(date));
+  }
+
+  @Override
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
+    switch (jdbcType) {
+      case SMALLINT, INTEGER, BIGINT:
+        return JsonSchemaType.INTEGER;
+      case DOUBLE, DECIMAL, NUMERIC, REAL:
+        return JsonSchemaType.NUMBER;
+      case DATE:
+        return JsonSchemaType.STRING_DATE;
+      case BLOB, BINARY, VARBINARY:
+        return JsonSchemaType.STRING_BASE_64;
+      case TIME:
+        return JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIMESTAMP:
+        return JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      default:
+        return super.getAirbyteType(jdbcType);
+    }
   }
 
 }

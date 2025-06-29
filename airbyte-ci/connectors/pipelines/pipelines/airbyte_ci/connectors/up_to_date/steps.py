@@ -27,7 +27,7 @@ class PoetryUpdate(StepModifyingFiles):
     context: ConnectorContext
     dev: bool
     specified_versions: dict[str, str]
-    title = "Update versions of libraries in poetry."
+    title = "Update versions of libraries in poetry"
 
     def __init__(
         self,

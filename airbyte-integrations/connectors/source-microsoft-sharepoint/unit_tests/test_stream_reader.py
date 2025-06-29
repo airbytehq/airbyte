@@ -1,12 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import os
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
+from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
+from office365.entity_collection import EntityCollection
+from office365.graph_client import GraphClient
+from office365.onedrive.drives.drive import Drive
+from office365.sharepoint.client_context import ClientContext
+from office365.sharepoint.search.service import SearchService
+from requests.exceptions import HTTPError
+from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
@@ -19,9 +25,18 @@ from wcmatch.glob import GLOBSTAR, globmatch
 from airbyte_cdk import AirbyteTracedException
 
 
+TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
+
+
 def create_mock_drive_item(is_file, name, children=None):
     """Helper function to create a mock drive item."""
-    mock_item = MagicMock(properties={"@microsoft.graph.downloadUrl": "test_url", "lastModifiedDateTime": "1991-08-24"})
+    mock_item = MagicMock(
+        properties={
+            "@microsoft.graph.downloadUrl": "test_url",
+            "lastModifiedDateTime": datetime(1991, 8, 24),
+            "createdDateTime": datetime(1991, 8, 24),
+        }
+    )
     mock_item.is_file = is_file
     mock_item.name = name
     mock_item.children.get.return_value.execute_query = Mock(return_value=children or [])
@@ -35,6 +50,7 @@ def setup_reader_class():
     config.start_date = None
     config.credentials = Mock()
     config.folder_path = "."
+    config.site_url = ""
     config.credentials.auth_type = "Client"
     config.search_scope = "ALL"
     reader.config = config  # Set up the necessary configuration
@@ -52,8 +68,18 @@ def create_mock_drive_files():
     Provides mock data for SharePoint drive files (personal drive).
     """
     return [
-        ("file1.csv", "https://example.com/file1.csv", datetime(2021, 1, 1)),
-        ("file2.txt", "https://example.com/file2.txt", datetime(2021, 1, 1)),
+        MicrosoftSharePointRemoteFile(
+            uri="file1.csv",
+            download_url="https://example.com/file1.csv",
+            last_modified=datetime(2021, 1, 1),
+            created_at=datetime(2021, 1, 1),
+        ),
+        MicrosoftSharePointRemoteFile(
+            uri="file2.txt",
+            download_url="https://example.com/file2.txt",
+            last_modified=datetime(2021, 1, 1),
+            created_at=datetime(2021, 1, 1),
+        ),
     ]
 
 
@@ -63,8 +89,18 @@ def create_mock_shared_drive_files():
     Provides mock data for SharePoint drive files (shared drives).
     """
     return [
-        ("file3.csv", "https://example.com/file3.csv", datetime(2021, 3, 1)),
-        ("file4.txt", "https://example.com/file4.txt", datetime(2021, 4, 1)),
+        MicrosoftSharePointRemoteFile(
+            uri="file3.csv",
+            download_url="https://example.com/file3.csv",
+            last_modified=datetime(2021, 3, 1),
+            created_at=datetime(2021, 3, 1),
+        ),
+        MicrosoftSharePointRemoteFile(
+            uri="file4.txt",
+            download_url="https://example.com/file4.txt",
+            last_modified=datetime(2021, 4, 1),
+            created_at=datetime(2021, 4, 1),
+        ),
     ]
 
 
@@ -188,6 +224,148 @@ def test_open_file(mock_smart_open, file_extension, expected_compression):
     assert result is not None
 
 
+@pytest.mark.parametrize(
+    "file_uri, file_extension, expected_paths",
+    [
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
+            "txt.gz",
+            {"bytes": ANY, "source_file_relative_path": "file.txt.gz", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
+            "txt.bz2",
+            {"bytes": ANY, "source_file_relative_path": "file.txt.bz2", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
+            "txt",
+            {"bytes": ANY, "source_file_relative_path": "file.txt", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
+            "txt.gz",
+            {"bytes": ANY, "source_file_relative_path": "file.txt.gz", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
+            "txt.bz2",
+            {"bytes": ANY, "source_file_relative_path": "file.txt.bz2", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/some/path/to/file",
+            "txt",
+            {
+                "bytes": ANY,
+                "source_file_relative_path": "some/path/to/file.txt",
+                "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/to/file.txt",
+            },
+        ),
+    ],
+)
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.get")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, file_uri, file_extension, expected_paths):
+    """
+    Test the get_file method in SourceMicrosoftSharePointStreamReader.
+
+    This test verifies that the get_file method correctly "downloads" (mocked) a file from SharePoint
+    and saves it to the specified local directory. It mocks the necessary HTTP requests
+    and checks that the resulting file paths and sizes match the expected values.
+
+    Args:
+        mock_requests_head (MagicMock): Mock for the requests.head method.
+        mock_requests_get (MagicMock): Mock for the requests.get method.
+        mock_get_access_token (MagicMock): Mock for the get_access_token method.
+        file_extension (str): The file extension to test (e.g., 'txt.gz').
+        expected_paths (dict): The expected paths and file size in the result.
+    """
+    file_uri = f"{file_uri}.{file_extension}"
+    mock_file = Mock(download_url=f"https://example.com/file.{file_extension}", uri=file_uri)
+    mock_file.last_modified = datetime(2021, 1, 1)
+    mock_file.created_at = datetime(2021, 1, 1)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Content-Length": "12345"}
+    mock_requests_head.return_value = mock_head_response
+
+    # Create a mock response for requests.get
+    mock_response = Mock()
+    mock_response.iter_content = Mock(return_value=[b"chunk1", b"chunk2"])
+    mock_response.status_code = 200
+    mock_requests_get.return_value = mock_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+
+    file_record_data, file_reference = stream_reader.upload(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+
+    expected_file_bytes = expected_paths["bytes"]
+    expected_source_file_relative_path = expected_paths["source_file_relative_path"]
+    expected_staging_file_url = expected_paths["staging_file_url"]
+
+    assert file_reference.source_file_relative_path == expected_source_file_relative_path
+    assert file_reference.staging_file_url == expected_staging_file_url
+    assert file_reference.file_size_bytes == expected_file_bytes
+
+    assert os.path.basename(expected_staging_file_url) == file_record_data.file_name
+    assert os.path.dirname(expected_staging_file_url.replace(f"{TEST_LOCAL_DIRECTORY}", "")) == file_record_data.folder
+    assert file_record_data.source_uri == file_uri
+
+    # Check if the file exists at the file_url path
+    assert os.path.exists(file_reference.staging_file_url)
+
+
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file_size_error_fetching_metadata_for_missing_header(mock_requests_head, mock_get_access_token):
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Other-header": "12345"}
+    mock_requests_head.return_value = mock_head_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+    with pytest.raises(ErrorFetchingMetadata, match="Size was expected in metadata response but was missing"):
+        stream_reader.upload(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+
+
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file_size_error_fetching_metadata(mock_requests_head, mock_get_access_token):
+    """
+    Test that the get_file method raises an ErrorFetchingMetadata exception when the requests.head call fails.
+    """
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 500
+    mock_head_response.headers = {"Content-Length": "12345"}
+    mock_head_response.raise_for_status.side_effect = HTTPError("500 Server Error")
+    mock_requests_head.return_value = mock_head_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+
+    with pytest.raises(ErrorFetchingMetadata, match="An error occurred while retrieving file size: 500 Server Error"):
+        stream_reader.upload(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+
+
 def test_microsoft_sharepoint_client_initialization(requests_mock):
     """Test the initialization of SourceMicrosoftSharePointClient."""
     config = {
@@ -230,8 +408,20 @@ def test_list_directories_and_files():
 
     assert len(result) == 2
     assert result == [
-        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24"),
-        ("https://example.com/root/file2.txt", "test_url", "1991-08-24"),
+        MicrosoftSharePointRemoteFile(
+            uri="https://example.com/root/folder1/file1.txt",
+            last_modified=datetime(1991, 8, 24, 0, 0),
+            mime_type=None,
+            download_url="test_url",
+            created_at=datetime(1991, 8, 24, 0, 0),
+        ),
+        MicrosoftSharePointRemoteFile(
+            uri="https://example.com/root/file2.txt",
+            last_modified=datetime(1991, 8, 24, 0, 0),
+            mime_type=None,
+            download_url="test_url",
+            created_at=datetime(1991, 8, 24, 0, 0),
+        ),
     ]
 
 
@@ -329,6 +519,7 @@ file_response = {
     "name": "TestFile.txt",
     "@microsoft.graph.downloadUrl": "http://example.com/download",
     "lastModifiedDateTime": "2021-01-01T00:00:00Z",
+    "createdDateTime": "2021-01-01T00:00:00Z",
 }
 
 empty_folder_response = {"folder": True, "value": []}
@@ -353,6 +544,7 @@ not_empty_subfolder_response = {
             "name": "NestedFile.txt",
             "@microsoft.graph.downloadUrl": "http://example.com/nested",
             "lastModifiedDateTime": "2021-01-02T00:00:00Z",
+            "createdDateTime": "2021-01-02T00:00:00Z",
         }
     ],
     "name": "subfolder2",
@@ -367,11 +559,13 @@ not_empty_subfolder_response = {
             file_response,
             [],
             [
-                (
-                    "http://example.com/TestFile.txt",
-                    "http://example.com/download",
-                    datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-                )
+                MicrosoftSharePointRemoteFile(
+                    uri="http://example.com/TestFile.txt",
+                    last_modified=datetime(2021, 1, 1, 0, 0),
+                    mime_type=None,
+                    download_url="http://example.com/download",
+                    created_at=datetime(2021, 1, 1, 0, 0),
+                ),
             ],
             False,
             None,
@@ -388,10 +582,12 @@ not_empty_subfolder_response = {
                 not_empty_subfolder_response,
             ],
             [
-                (
-                    "http://example.com/subfolder2/NestedFile.txt",
-                    "http://example.com/nested",
-                    datetime.strptime("2021-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                MicrosoftSharePointRemoteFile(
+                    uri="http://example.com/subfolder2/NestedFile.txt",
+                    last_modified=datetime(2021, 1, 2, 0, 0),
+                    mime_type=None,
+                    download_url="http://example.com/nested",
+                    created_at=datetime(2021, 1, 2, 0, 0),
                 )
             ],
             False,
@@ -473,7 +669,7 @@ def test_drives_property(auth_type, user_principal_name, has_refresh_token):
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
         config_mock = MagicMock(
-            credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name, refresh_token=refresh_token)
+            credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name, refresh_token=refresh_token), site_url=""
         )
 
         # Mock responses for the drives list and a single drive (my_drive)
@@ -505,7 +701,123 @@ def test_drives_property(auth_type, user_principal_name, has_refresh_token):
             assert mock_execute_query.call_count == 2
             drives_response.add_child.assert_called_once_with(my_drive)
 
-    #  Retrieve files from accessible drives when search_scope is 'ACCESSIBLE_DRIVES' or 'ALL'
+
+def test_get_site_drive_default_site():
+    """
+    Test retrieving drives from the default site (no site URL in config)
+    """
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(site_url="")
+    mock_one_drive_client = MagicMock()
+    reader._one_drive_client = mock_one_drive_client
+
+    mock_drive = MagicMock()
+    mock_drives = MagicMock(spec=EntityCollection)
+    mock_drives.__iter__.return_value = [mock_drive]
+
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
+        mock_execute_query.return_value = mock_drives
+
+        result = reader._get_site_drive()
+
+        mock_one_drive_client.drives.get.assert_called_once()
+        assert result == mock_drives
+        assert len(list(result)) == 1
+
+
+def test_get_site_drive_all_sites():
+    """
+    Test retrieving drives from all sites (site URL in config ending with 'sharepoint.com/sites/')
+    """
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(site_url="https://test-tenant.sharepoint.com/sites/")
+    reader._one_drive_client = MagicMock()
+
+    first_drive_name = "Drive1"
+    first_drive_url = "https://test-tenant.sharepoint.com/sites/site1/drive1"
+    second_drive_name = "Drive2"
+    second_drive_url = "https://test-tenant.sharepoint.com/sites/site2/drive2"
+    first_site_url = "https://test-tenant.sharepoint.com/sites/site1"
+    second_site_url = "https://test-tenant.sharepoint.com/sites/site2"
+
+    mock_drive1 = MagicMock(spec=Drive)
+    mock_drive1.name = first_drive_name
+    mock_drive1.web_url = first_drive_url
+
+    mock_drive2 = MagicMock(spec=Drive)
+    mock_drive2.name = second_drive_name
+    mock_drive2.web_url = second_drive_url
+
+    mock_drives = MagicMock(spec=EntityCollection)
+    mock_drives.__iter__.return_value = [mock_drive1, mock_drive2]
+
+    mock_sites = [
+        {"Title": "Site1", "Path": first_site_url},
+        {"Title": "Site2", "Path": second_site_url},
+    ]
+
+    with (
+        patch.object(reader, "get_all_sites", return_value=mock_sites) as mock_get_all_sites,
+        patch.object(reader, "_get_drives_from_sites", return_value=mock_drives) as mock_get_drives_from_sites,
+    ):
+        result = reader._get_site_drive()
+
+        mock_get_all_sites.assert_called_once()
+        mock_get_drives_from_sites.assert_called_once_with(mock_sites)
+        assert result == mock_drives
+
+        drives = list(result)
+        assert len(drives) == 2
+        assert drives[0].name == first_drive_name
+        assert drives[0].web_url == first_drive_url
+        assert drives[1].name == second_drive_name
+        assert drives[1].web_url == second_drive_url
+
+
+def test_get_site_drive_specific_site():
+    """
+    Test retrieving drives from a specific site in config (site URL in config ending with 'sharepoint.com/sites/specific')
+    """
+    site_url = "https://test-tenant.sharepoint.com/sites/specific"
+    drive_name = "Test Drive"
+    drive_url = f"{site_url}/TestDrive"
+
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(site_url=site_url)
+    mock_one_drive_client = MagicMock()
+    reader._one_drive_client = mock_one_drive_client
+
+    mock_drive = MagicMock(spec=Drive)
+    mock_drive.name = drive_name
+    mock_drive.web_url = drive_url
+    mock_drives = [mock_drive]
+
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
+        mock_execute_query.return_value = mock_drives
+
+        result = reader._get_site_drive()
+
+        mock_one_drive_client.sites.get_by_url.assert_called_once_with(site_url)
+        assert result == mock_drives
+        assert len(result) == 1
+        assert result[0].name == drive_name
+        assert result[0].web_url == drive_url
+
+
+def test_get_site_drive_error_handling():
+    """Test error handling when retrieving drives fails"""
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(site_url="https://test-tenant.sharepoint.com/sites/specific")
+    mock_one_drive_client = MagicMock()
+    reader._one_drive_client = mock_one_drive_client
+
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
+        mock_execute_query.side_effect = Exception("Test exception")
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            reader._get_site_drive()
+
+        assert "Failed to retrieve drives from sharepoint" in str(exc_info.value)
 
 
 @pytest.mark.parametrize(
@@ -522,20 +834,136 @@ def test_drives_property(auth_type, user_principal_name, has_refresh_token):
     ],
 )
 def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type, search_scope, expected_methods_called):
-    # Set up the reader class
     reader = SourceMicrosoftSharePointStreamReader()
     config = MagicMock(credentials=MagicMock(auth_type=auth_type, refresh_token=refresh_token), search_scope=search_scope)
 
     reader._config = config
 
-    # Mock the necessary methods
     with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]) as mock_drives:
         mocker.patch.object(reader, "_get_files_by_drive_name")
         mocker.patch.object(reader, "_get_shared_files_from_all_drives")
 
-        # Call the method under test
         files = list(reader.get_all_files())
 
-        # Assert that only the desired methods were called
         assert reader._get_files_by_drive_name.called == ("_get_files_by_drive_name" in expected_methods_called)
         assert reader._get_shared_files_from_all_drives.called == ("_get_shared_files_from_all_drives" in expected_methods_called)
+
+
+def test_get_all_sites_returns_sites_successfully():
+    """
+    Test that get_all_sites correctly returns site information when sites are found
+    """
+
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(spec=SourceMicrosoftSharePointSpec)
+    reader._one_drive_client = MagicMock(spec=GraphClient)
+
+    tenant_url = "https://test-tenant.sharepoint.com"
+    site_first_title = "Site1"
+    site_first_path = f"{tenant_url}/sites/site1"
+    site_second_title = "Site2"
+    site_second_path = f"{tenant_url}/sites/site2"
+    query_filter = "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
+
+    with (
+        patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
+        patch.object(reader, "_get_client_context") as mock_get_client_context,
+        patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
+    ):
+        mock_get_site_prefix.return_value = (tenant_url, "test-tenant")
+        mock_client_context = MagicMock(spec=ClientContext)
+        mock_get_client_context.return_value = mock_client_context
+
+        mock_search_service_instance = MagicMock(spec=SearchService)
+        mock_search_service.return_value = mock_search_service_instance
+
+        mock_search_job = MagicMock()
+        mock_search_service_instance.post_query.return_value = mock_search_job
+
+        search_job_result = MagicMock()
+        mock_execute_query.return_value = search_job_result
+        mock_search_job.value = True
+
+        primary_query_result = MagicMock()
+        search_job_result.value.PrimaryQueryResult = primary_query_result
+        relevant_results = MagicMock()
+        primary_query_result.RelevantResults = relevant_results
+        table = MagicMock()
+        relevant_results.Table = table
+
+        mock_row_first = MagicMock()
+        mock_row_first.Cells.get.side_effect = lambda key, default=None: {
+            "Title": site_first_title,
+            "Path": site_first_path,
+        }.get(key, default)
+
+        mock_row_second = MagicMock()
+        mock_row_second.Cells.get.side_effect = lambda key, default=None: {
+            "Title": site_second_title,
+            "Path": site_second_path,
+        }.get(key, default)
+
+        table.Rows = [mock_row_first, mock_row_second]
+
+        result = reader.get_all_sites()
+
+        expected_sites = [
+            {"Title": site_first_title, "Path": site_first_path},
+            {"Title": site_second_title, "Path": site_second_path},
+        ]
+        assert result == expected_sites
+
+        mock_get_site_prefix.assert_called_once_with(reader.one_drive_client)
+        mock_get_client_context.assert_called_once()
+        mock_search_service.assert_called_once_with(mock_client_context)
+        mock_search_service_instance.post_query.assert_called_once_with(query_filter)
+        mock_execute_query.assert_called_once_with(mock_search_job)
+
+
+@pytest.mark.parametrize(
+    "test_case, search_job_value, primary_query_result",
+    [
+        ("empty_search_results", None, None),  # Case: search_job.value is None
+        ("no_relevant_results", True, None),  # Case: search_job.value exists but PrimaryQueryResult is None
+    ],
+)
+def test_get_all_sites_with_no_results(test_case, search_job_value, primary_query_result):
+    """
+    Test that get_all_sites raises an exception when search returns no results
+    """
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock()
+    reader._one_drive_client = MagicMock()
+
+    with (
+        patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
+        patch.object(reader, "_get_client_context") as mock_get_client_context,
+        patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
+    ):
+        mock_get_site_prefix.return_value = ("https://test-tenant.sharepoint.com", "test-tenant")
+        mock_client_context = MagicMock()
+        mock_get_client_context.return_value = mock_client_context
+        mock_search_service_instance = MagicMock()
+        mock_search_service.return_value = mock_search_service_instance
+        mock_search_job = MagicMock()
+        mock_search_service_instance.post_query.return_value = mock_search_job
+
+        search_job_result = MagicMock()
+        mock_execute_query.return_value = search_job_result
+        mock_search_job.value = search_job_value
+
+        if search_job_value:
+            search_job_result.value.PrimaryQueryResult = primary_query_result
+
+        with pytest.raises(Exception, match="No site collections found"):
+            reader.get_all_sites()
+
+        mock_get_site_prefix.assert_called_once_with(reader.one_drive_client)
+        mock_get_client_context.assert_called_once()
+        mock_search_service.assert_called_once_with(mock_client_context)
+        mock_search_service_instance.post_query.assert_called_once_with(
+            "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
+        )
+        mock_execute_query.assert_called_once_with(mock_search_job)

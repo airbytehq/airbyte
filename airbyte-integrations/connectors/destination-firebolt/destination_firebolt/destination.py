@@ -28,9 +28,9 @@ def _determine_auth(key: str, secret: str) -> Auth:
     """
     if "@" in key:
         # email auth can only be used with UsernamePassword
-        return UsernamePassword(key, secret)
+        return UsernamePassword(key, secret, use_token_cache=False)
     else:
-        return ClientCredentials(key, secret)
+        return ClientCredentials(key, secret, use_token_cache=False)
 
 
 def parse_config(config: json, logger: Optional[logging.Logger] = None) -> Dict[str, Any]:

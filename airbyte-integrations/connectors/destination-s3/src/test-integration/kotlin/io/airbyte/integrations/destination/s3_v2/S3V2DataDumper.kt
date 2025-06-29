@@ -23,7 +23,7 @@ object S3V2DataDumper : DestinationDataDumper {
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         return getObjectStorageDataDumper(spec, stream).dumpFile()
     }
 
@@ -33,7 +33,7 @@ object S3V2DataDumper : DestinationDataDumper {
     ): ObjectStorageDataDumper {
         val config =
             S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as S3V2Specification)
-        val s3Client = S3ClientFactory.make(config)
+        val s3Client = S3ClientFactory.make(config, S3V2TestUtils.assumeRoleCredentials)
         val pathFactory = ObjectStoragePathFactory.from(config)
         return ObjectStorageDataDumper(
             stream,

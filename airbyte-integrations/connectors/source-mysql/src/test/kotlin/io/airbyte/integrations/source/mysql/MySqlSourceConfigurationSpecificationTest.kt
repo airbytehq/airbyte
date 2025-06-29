@@ -33,7 +33,7 @@ class MySqlSourceConfigurationSpecificationTest {
         Assertions.assertEquals("BAR", pojo.password)
         Assertions.assertEquals("SYSTEM", pojo.database)
         val encryption: EncryptionSpecification = pojo.getEncryptionValue()!!
-        Assertions.assertTrue(encryption is EncryptionPreferred, encryption::class.toString())
+        Assertions.assertTrue(encryption is EncryptionRequired, encryption::class.toString())
         val tunnelMethod: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         Assertions.assertTrue(
             tunnelMethod is SshPasswordAuthTunnelMethod,
@@ -41,6 +41,18 @@ class MySqlSourceConfigurationSpecificationTest {
         )
         Assertions.assertEquals(60, pojo.checkpointTargetIntervalSeconds)
         Assertions.assertEquals(2, pojo.concurrency)
+    }
+
+    /**
+     * Verifies that the encryption mode is correctly set to "required" as the default value in the
+     * MySqlSourceConfigurationSpecification class.
+     */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_ENCRYPTION_CHECK)
+    fun testDefaultEncryption() {
+        val pojo: MySqlSourceConfigurationSpecification = supplier.get()
+        val encryption: EncryptionSpecification = pojo.getEncryptionValue()!!
+        Assertions.assertTrue(encryption is EncryptionRequired, encryption::class.toString())
     }
 
     companion object {
@@ -54,8 +66,32 @@ class MySqlSourceConfigurationSpecificationTest {
   "password": "BAR",
   "database": "SYSTEM",
   "ssl_mode": {
-    "mode": "preferred"
+    "mode": "required"
   },
+  "tunnel_method": {
+    "tunnel_method": "SSH_PASSWORD_AUTH",
+    "tunnel_host": "localhost",
+    "tunnel_port": 2222,
+    "tunnel_user": "sshuser",
+    "tunnel_user_password": "***"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  },
+  "checkpoint_target_interval_seconds": 60,
+  "jdbc_url_params": "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
+  "concurrency": 2
+}
+"""
+
+        const val CONFIG_JSON_ENCRYPTION_CHECK: String =
+            """
+{
+  "host": "localhost",
+  "port": 12345,
+  "username": "FOO",
+  "password": "BAR",
+  "database": "SYSTEM",
   "tunnel_method": {
     "tunnel_method": "SSH_PASSWORD_AUTH",
     "tunnel_host": "localhost",
