@@ -87,6 +87,7 @@ class RootReader(
         )
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
+        log.info { "Read configured with data channel medium: $dataChannelMedium. data channel format: $dataChannelFormat" }
         readFeeds<Global>(listener)
         readFeeds<Stream>(listener)
     }

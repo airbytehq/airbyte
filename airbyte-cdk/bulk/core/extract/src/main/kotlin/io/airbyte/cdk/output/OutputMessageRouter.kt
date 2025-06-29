@@ -27,9 +27,9 @@ class OutputMessageRouter(
     private val recordsDataChannelMedium: DataChannelMedium,
     private val recordsDataChannelFormat: DataChannelFormat,
     private val standardOutputConsumer: StandardOutputConsumer,
-    private val additionalProperties: Map<String, String>,
-    private val feedBootstrap: FeedBootstrap<*>,
-    private val acquiredResources: Map<ResourceType, Resource.Acquired>,
+    additionalProperties: Map<String, String>,
+    feedBootstrap: FeedBootstrap<*>,
+    acquiredResources: Map<ResourceType, Resource.Acquired>,
 ) : AutoCloseable {
 
     enum class DataChannelFormat {
