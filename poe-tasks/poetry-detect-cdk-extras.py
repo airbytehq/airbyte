@@ -9,9 +9,9 @@ This script parses the pyproject.toml file in the specified directory (or curren
 directory if not provided) and extracts any extras specified for the airbyte-cdk dependency.
 
 Usage:
-    ./detect-poetry-airbyte-cdk-extras.py
+    ./poetry-detect-cdk-extras.py
     
-    ./detect-poetry-airbyte-cdk-extras.py /path/to/connector
+    ./poetry-detect-cdk-extras.py /path/to/connector
     
     [sql]
     

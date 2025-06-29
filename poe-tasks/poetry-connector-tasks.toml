@@ -99,7 +99,7 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 #  poe use-cdk-branch-active                # Pin to the branch of the local CDK repo
 
 [tool.poe.tasks.get-cdk-extras]
-cmd = "${POE_GIT_DIR}/poe-tasks/detect-poetry-airbyte-cdk-extras.py"
+cmd = "${POE_GIT_DIR}/poe-tasks/poetry-detect-cdk-extras.py"
 help = "Detect currently installed CDK extras from pyproject.toml file. Use with -qq to quiet unrelated outputs."
 
 [tool.poe.tasks.use-cdk-latest]
