@@ -105,24 +105,14 @@ help = "Detect currently installed CDK extras from pyproject.toml file. Use with
 [tool.poe.tasks.use-cdk-latest]
 shell = '''
 EXTRAS=$(poe -qq get-cdk-extras)
-if [ -n "$EXTRAS" ]; then
-  echo "Preserving CDK extras: $EXTRAS"
-  poetry add "airbyte-cdk$EXTRAS@latest"
-else
-  poetry add airbyte-cdk@latest
-fi
+poetry add "airbyte-cdk$EXTRAS@latest"
 '''
 help = "Pin to the latest version of the CDK, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-version]
 shell = '''
 EXTRAS=$(poe -qq get-cdk-extras)
-if [ -n "$EXTRAS" ]; then
-  echo "Preserving CDK extras: $EXTRAS"
-  poetry add "airbyte-cdk$EXTRAS@${VERSION}"
-else
-  poetry add "airbyte-cdk@${VERSION}"
-fi
+poetry add "airbyte-cdk$EXTRAS@${VERSION}"
 '''
 args = [
   { name = "VERSION", positional = true, default = "latest" },
@@ -135,24 +125,14 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
 echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
 EXTRAS=$(poe -qq get-cdk-extras)
-if [ -n "$EXTRAS" ]; then
-  echo "Preserving CDK extras: $EXTRAS"
-  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${ACTIVE_CDK_BRANCH}"
-else
-  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
-fi
+poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${ACTIVE_CDK_BRANCH}"
 '''
 help = "Pin to the branch of the CDK that is currently checked out locally, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-branch]
 shell = '''
 EXTRAS=$(poe -qq get-cdk-extras)
-if [ -n "$EXTRAS" ]; then
-  echo "Preserving CDK extras: $EXTRAS"
-  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${BRANCH}"
-else
-  poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"
-fi
+poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git$EXTRAS#${BRANCH}"
 '''
 args = [
   { name = "BRANCH", positional = true, default = "main" },
