@@ -18,6 +18,8 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -157,8 +159,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 stateManager =
                     StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
                 stream,
-                OutputMessageRouter.DataChannelFormat.JSONL,
-                OutputMessageRouter.DataChannelMedium.STDIO,
+                DataChannelFormat.JSONL,
+                DataChannelMedium.STDIO,
                 8192,
                 ClockFactory().fixed(),
             )

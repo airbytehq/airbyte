@@ -19,8 +19,8 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.toJson
@@ -101,8 +101,8 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     @BeforeEach
     fun setup() {
         setOutputConsumers()
-        every { feedBootstrap.dataChannelMedium } returns STDIO
-        every { feedBootstrap.dataChannelFormat } returns JSONL
+        every { feedBootstrap.dataChannelMedium } returns DataChannelMedium.STDIO
+        every { feedBootstrap.dataChannelFormat } returns DataChannelFormat.JSONL
         every { feedBootstrap.outputConsumer } returns outputConsumer
         every { feedBootstrap.streamRecordConsumers() } returns streamRecordConsumers
         every { feedBootstrap.feeds } returns listOf(global, stream)
