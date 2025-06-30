@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.lowcode
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -14,7 +18,7 @@ import org.junit.jupiter.api.Test
 class MockConfig(
     val apiId: String,
     val apiToken: String,
-): DestinationConfiguration()
+) : DestinationConfiguration()
 
 val VALID_API_ID: String = "api_id"
 val VALID_API_TOKEN: String = "api_token"
@@ -23,7 +27,8 @@ class FactoryTest {
 
     @Test
     internal fun `test when check then ensure check gets interpolated credentials`() {
-        mockManifest("""
+        mockManifest(
+            """
             checker:
               type: HttpRequestChecker
               requester:
@@ -34,7 +39,8 @@ class FactoryTest {
                   type: BasicAccessAuthenticator
                   username: "{{ config.apiId }}"
                   password: "{{ config.apiToken }}"
-        """.trimIndent())
+        """.trimIndent()
+        )
         mockkConstructor(BasicAccessAuthenticator::class)
         val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
 
@@ -43,12 +49,13 @@ class FactoryTest {
 
             verify {
                 constructedWith<BasicAccessAuthenticator>(
-                    EqMatcher(VALID_API_ID),
-                    EqMatcher(VALID_API_TOKEN)
-                ).intercept(any())
+                        EqMatcher(VALID_API_ID),
+                        EqMatcher(VALID_API_TOKEN)
+                    )
+                    .intercept(any())
             }
         } finally {
-            unmockkStatic("io.airbyte.cdk.util.ResourceUtils")  // Clean up mocks
+            unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
         }
     }
 
