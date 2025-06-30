@@ -43,8 +43,8 @@ The following versions of Airbyte _can't_ use Helm chart V2:
 
 - Airbyte versions that aren't connected to an external database, storage, and secrets manager
 
-:::important
-Airbyte is evaluating possible migration paths to Helm chart V2 for those that don't meet the criteria above.
+:::danger
+Don't migrate to Helm chart V2 if you haven't set up an external database, storage, and secrets manager. These resources contain the data your Airbyte deployment needs to operate and a fresh deployment won't work without them. Airbyte is evaluating possible migration paths for open source deployments that don't meet this requirement.
 :::
 
 ## How to upgrade
