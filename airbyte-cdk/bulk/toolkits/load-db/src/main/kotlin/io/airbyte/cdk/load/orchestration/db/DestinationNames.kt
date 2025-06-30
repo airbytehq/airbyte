@@ -54,7 +54,7 @@ fun interface TempTableNameGenerator {
  * [TableName.asOldStyleTempTable] instead
  */
 open class DefaultTempTableNameGenerator(
-    private val internalNamespace: String,
+    private val internalNamespace: String? = null,
     private val affixLength: Int = 8,
     private val affixSeparator: String = "",
     private val hashLength: Int = 32,
@@ -74,7 +74,7 @@ open class DefaultTempTableNameGenerator(
                 .take(hashLength)
         return TableName(
             name = "$shortNamespace$shortName$hash",
-            namespace = internalNamespace,
+            namespace = internalNamespace ?: originalName.namespace,
         )
     }
 
@@ -94,18 +94,6 @@ open class DefaultTempTableNameGenerator(
         val prefix = substring(0, n)
         val suffix = substring(length - n, length)
         return "$prefix$separator$suffix"
-    }
-}
-
-/**
- * Some destinations don't support moving table between namespace. This will generate a temp table
- * in the same namespace as the origin table.
- */
-class DefaultTempTableNameGeneratorPreserveNamespace : DefaultTempTableNameGenerator("unused") {
-    override fun generate(originalName: TableName): TableName {
-        val resolvedTableName = super.generate(originalName)
-
-        return TableName(name = resolvedTableName.name, namespace = originalName.namespace)
     }
 }
 

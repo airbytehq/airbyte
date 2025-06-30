@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.config
 
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGeneratorPreserveNamespace
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
@@ -60,6 +60,5 @@ class ClickhouseBeanFactory {
     }
 
     @Singleton
-    fun tempTableNameGenerator(): TempTableNameGenerator =
-        DefaultTempTableNameGeneratorPreserveNamespace()
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
 }
