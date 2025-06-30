@@ -11,7 +11,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^6"
+airbyte-cdk = "^6.56.7"
 pytest = "^8"
 
 [tool.pytest.ini_options]
