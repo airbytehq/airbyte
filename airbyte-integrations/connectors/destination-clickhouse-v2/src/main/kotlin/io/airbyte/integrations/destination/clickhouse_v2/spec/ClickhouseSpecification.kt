@@ -67,7 +67,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Enable JSON")
     @get:JsonPropertyDescription(
-        "Use the JSON type when possible. If disabled, the JSON will be converted to a string."
+        "Use the JSON type for Object fields. If disabled, the JSON will be converted to a string."
     )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 5, "default": false}""")
