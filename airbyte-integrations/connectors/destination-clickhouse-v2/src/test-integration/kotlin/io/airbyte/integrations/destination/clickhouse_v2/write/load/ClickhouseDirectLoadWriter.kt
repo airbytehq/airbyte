@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.load
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
+import com.clickhouse.client.api.data_formats.internal.BinaryStreamReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
@@ -145,7 +146,24 @@ class ClickhouseDataDumper(
                         println(
                             "${entry.key} -> ${entry.value} with value type: ${entry.value.javaClass}"
                         )
-                    dataMap[entry.key] = AirbyteValue.from(entry.value)
+                    if (entry.value is Map<*, *>) {
+                        println("Hello, ${(entry.value as Map<*, *>).values}")
+                        val parsedDataMap = (entry.value as Map<*, *>).mapValuesTo(linkedMapOf()) {
+                            (_, v) -> {
+                                println("Hello 1 , $v")
+                                when (v) {
+                                    is BinaryStreamReader.ArrayValue -> {
+                                        println("Hello, 2")
+                                        v.asList<Any>()
+                                    }
+                                    else -> v
+                                }
+                        }
+                        }
+                        dataMap[entry.key] = AirbyteValue.from(parsedDataMap)
+                    } else {
+                        dataMap[entry.key] = AirbyteValue.from(entry.value)
+                    }
                 }
             val outputRecord =
                 OutputRecord(

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from itertools import product
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk import TState, YamlDeclarativeSource
@@ -14,14 +13,6 @@ from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     BingAdsReportingServiceStream,
     CustomReport,
-    ProductSearchQueryPerformanceReportDaily,
-    ProductSearchQueryPerformanceReportHourly,
-    ProductSearchQueryPerformanceReportMonthly,
-    ProductSearchQueryPerformanceReportWeekly,
-    SearchQueryPerformanceReportDaily,
-    SearchQueryPerformanceReportHourly,
-    SearchQueryPerformanceReportMonthly,
-    SearchQueryPerformanceReportWeekly,
 )
 
 
@@ -87,13 +78,7 @@ class SourceBingAds(YamlDeclarativeSource):
         declarative_streams = super().streams(config)
 
         client = Client(**config)
-
-        reports = (
-            "ProductSearchQueryPerformanceReport",
-            "SearchQueryPerformanceReport",
-        )
-        report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
-        streams = [eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)]
+        streams = []
 
         custom_reports = self.get_custom_reports(config, client)
         streams.extend(custom_reports)

@@ -9,19 +9,14 @@ import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
-import io.airbyte.cdk.load.write.db.DbConstants.DEFAULT_INTERNAL_NAMESPACE
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Factory
 class ClickhouseBeanFactory {
-
-    @Singleton @Named("internalNamespace") fun internalNamespace() = DEFAULT_INTERNAL_NAMESPACE
-
     @Singleton
     fun clickhouseClient(config: ClickhouseConfiguration): Client {
 
@@ -76,7 +71,5 @@ class ClickhouseBeanFactory {
     }
 
     @Singleton
-    fun tempTableNameGenerator(
-        @Named("internalNamespace") namespace: String,
-    ): TempTableNameGenerator = DefaultTempTableNameGenerator(namespace)
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
 }
