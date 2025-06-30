@@ -75,9 +75,6 @@ class S3V2Specification :
             "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":9}"
     )
     override val fileNamePattern: String? = null
-
-    @get:JsonSchemaInject(json = "{\"examples\":[0.4],\"order\":10}")
-    val maxMemoryRatioReservedForParts: Double = 0.4
 }
 
 @Singleton
