@@ -29,7 +29,7 @@ class ClickhouseBeanFactory {
                 .compressClientRequest(true)
                 // allow experimental JSON type
                 .serverSetting("allow_experimental_json_type", "1")
-                // allow JSON transcoding as a string
+                // allow JSON transcoding as a string. We need this to be able to provide a string as a JSON input.
                 .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
                 .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
                 .build()

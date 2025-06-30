@@ -153,25 +153,7 @@ class ClickhouseDataDumper(
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .forEach { entry ->
-                    // if (entry.value != null)
-                    //     println(
-                    //         "${entry.key} -> ${entry.value} with value type:
-                    // ${entry.value.javaClass}"
-                    //     )
-                    // if (entry.value is Map<*, *>) {
-                    //     println("Find map in ${entry.key}")
-                    //     val airbyteType = linkedMapOf<String, AirbyteValue>()
-                    //     (entry.value as Map<String, *>).forEach { (k, v) -> when(v) {
-                    //         is BinaryStreamReader.ArrayValue -> airbyteType[k] =
-                    // ArrayValue.from(v.asList<Any>().map { AirbyteValue.from(it) })
-                    //         else -> airbyteType[k] = AirbyteValue.from(v)
-                    //     }
-                    //     }
-                    //     println("airbyteType : $airbyteType")
-                    //     dataMap[entry.key] = ObjectValue(airbyteType)
-                    // } else {
                     dataMap[entry.key] = AirbyteValue.from(entry.value)
-                    // }
                 }
             val outputRecord =
                 OutputRecord(
