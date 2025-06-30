@@ -223,7 +223,7 @@ definitions:
       cursor_field: float_ts
       cursor_datetime_formats:
         - "%s_as_float"
-      step: "P{{ config.get('incremental_time_step', 30) }}D"
+      step: "P{{ config.get('channel_messages_time_step', 30) }}D"
       cursor_granularity: PT1S
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
       datetime_format: "%s_as_float"

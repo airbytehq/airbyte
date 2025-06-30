@@ -114,6 +114,16 @@
         "examples": [2, 3],
         "description": "The number of worker threads to use for the sync.",
         "order": 7
+      },
+      "channel_messages_time_step": {
+        "type": "integer",
+        "order": 8,
+        "default": 30,
+        "minimum": 1,
+        "maximum": 100,
+        "title": "Channel messages stream slice step size (in days)",
+        "description": "Indicates the step size of channel_messages stream.",
+        "examples": [30, 10, 5]
       }
     }
   },
