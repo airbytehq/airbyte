@@ -66,6 +66,12 @@ jobs:
           python-version: "3.11"
           check-latest: true
           update-environment: true
+      - name: Download Local CDK Secrets
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+          DD_TAGS: "connector.name:${{ matrix.connector }}"
+        run: ./tools/bin/find_local_bulk_cdk_connectors.sh -s
       - name: Run Java CDK Tests
         uses: burrunan/gradle-cache-action@v3
         env:
