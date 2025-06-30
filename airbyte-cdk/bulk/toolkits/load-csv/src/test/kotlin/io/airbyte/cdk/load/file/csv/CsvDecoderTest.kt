@@ -34,12 +34,7 @@ class CsvDecoderTest {
         Assertions.assertEquals(csvEntries[1], recordAtIndex(1))
     }
 
-    private fun recordAtIndex(index: Int): JsonNode {
-        return Jsons.readTree("""
-{
-    "id": "ID_${index}",
-    "value": "value_${index}"
-}
-""")
+    private fun recordAtIndex(index: Int): Map<String, String> {
+        return mapOf("id" to "ID_${index}", "value" to "value_${index}")
     }
 }

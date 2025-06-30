@@ -19,10 +19,8 @@ class CsvDecoder(
 ) {
     private val mapper: ObjectMapper = ObjectMapper()
 
-    fun decode(input: InputStream): Stream<JsonNode> {
+    fun decode(input: InputStream): Stream<Map<String, String>> {
         val parser = CSVParser(InputStreamReader(input, StandardCharsets.UTF_8), csvFormat)
-        return parser.stream().map { csvRecord ->
-            mapper.convertValue(csvRecord.toMap(), JsonNode::class.java)
-        }
+        return parser.stream().map { it.toMap() }
     }
 }
