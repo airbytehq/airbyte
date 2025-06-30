@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.http.authentication
 
-import io.micronaut.http.HttpHeaders
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.Response as OkHttpResponse
@@ -15,12 +14,12 @@ class BasicAccessAuthenticator(
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
-        val requestWithAuthorization = chain
-            .request()
-            .newBuilder()
-            .header("Authorization", Credentials.basic(username, password))
-            .build()
+        val requestWithAuthorization =
+            chain
+                .request()
+                .newBuilder()
+                .header("Authorization", Credentials.basic(username, password))
+                .build()
         return chain.proceed(requestWithAuthorization)
     }
-
 }
