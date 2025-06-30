@@ -22,7 +22,6 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
@@ -67,12 +66,8 @@ class BinaryRowInsertBuffer(
     @VisibleForTesting
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
 
-    internal val formattedSchema =
-        if (airbyteSchema is ObjectType) {
-            airbyteSchema.asColumns().mapKeys { (k, _) -> k.toClickHouseCompatibleName() }
-        } else {
-            emptyMap()
-        }
+    private val formattedSchema =
+        airbyteSchema.asColumns().mapKeys { (k, _) -> k.toClickHouseCompatibleName() }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         recordFields.forEach {
@@ -87,11 +82,7 @@ class BinaryRowInsertBuffer(
                         StringType
                     }
                 } else {
-                    if (airbyteSchema is ObjectType) {
-                        formattedSchema[it.key]!!.type
-                    } else {
-                        airbyteSchema
-                    }
+                    formattedSchema[it.key]!!.type
                 }
             writeAirbyteValue(it.key, it.value, airbyteType)
         }

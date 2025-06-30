@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.clickhouse_v2.write.load
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
-import com.clickhouse.client.api.data_formats.internal.BinaryStreamReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
@@ -44,18 +43,30 @@ import org.junit.jupiter.api.Disabled
 class ClickhouseDirectLoadWriterWithJson :
     ClickhouseDirectLoadWriter(
         "valid_connection.json",
-        SchematizedNestedValueBehavior.PASS_THROUGH
-    )
+        SchematizedNestedValueBehavior.PASS_THROUGH,
+        false,
+    ) {
+
+    /**
+     * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
+     * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
+     * row, will have the column A. This test includes test case for schemaless type which aren't
+     * behaving like the other warehouses
+     */
+    @Disabled("Unfit for clickhouse with Json") override fun testContainerTypes() {}
+}
 
 class ClickhouseDirectLoadWriterWithoutJson :
     ClickhouseDirectLoadWriter(
         "valid_connection_no_json.json",
-        SchematizedNestedValueBehavior.STRINGIFY
+        SchematizedNestedValueBehavior.STRINGIFY,
+        true,
     )
 
 abstract class ClickhouseDirectLoadWriter(
     specFile: String,
-    schematizedObjectBehavior: SchematizedNestedValueBehavior
+    schematizedObjectBehavior: SchematizedNestedValueBehavior,
+    stringifySchemalessObjects: Boolean
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Utils.getConfigPath(specFile)),
@@ -70,7 +81,7 @@ abstract class ClickhouseDirectLoadWriter(
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = stringifySchemalessObjects,
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
@@ -142,28 +153,25 @@ class ClickhouseDataDumper(
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
                 .forEach { entry ->
-                    if (entry.value != null)
-                        println(
-                            "${entry.key} -> ${entry.value} with value type: ${entry.value.javaClass}"
-                        )
-                    if (entry.value is Map<*, *>) {
-                        println("Hello, ${(entry.value as Map<*, *>).values}")
-                        val parsedDataMap = (entry.value as Map<*, *>).mapValuesTo(linkedMapOf()) {
-                            (_, v) -> {
-                                println("Hello 1 , $v")
-                                when (v) {
-                                    is BinaryStreamReader.ArrayValue -> {
-                                        println("Hello, 2")
-                                        v.asList<Any>()
-                                    }
-                                    else -> v
-                                }
-                        }
-                        }
-                        dataMap[entry.key] = AirbyteValue.from(parsedDataMap)
-                    } else {
-                        dataMap[entry.key] = AirbyteValue.from(entry.value)
-                    }
+                    // if (entry.value != null)
+                    //     println(
+                    //         "${entry.key} -> ${entry.value} with value type:
+                    // ${entry.value.javaClass}"
+                    //     )
+                    // if (entry.value is Map<*, *>) {
+                    //     println("Find map in ${entry.key}")
+                    //     val airbyteType = linkedMapOf<String, AirbyteValue>()
+                    //     (entry.value as Map<String, *>).forEach { (k, v) -> when(v) {
+                    //         is BinaryStreamReader.ArrayValue -> airbyteType[k] =
+                    // ArrayValue.from(v.asList<Any>().map { AirbyteValue.from(it) })
+                    //         else -> airbyteType[k] = AirbyteValue.from(v)
+                    //     }
+                    //     }
+                    //     println("airbyteType : $airbyteType")
+                    //     dataMap[entry.key] = ObjectValue(airbyteType)
+                    // } else {
+                    dataMap[entry.key] = AirbyteValue.from(entry.value)
+                    // }
                 }
             val outputRecord =
                 OutputRecord(
