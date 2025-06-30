@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import Any, Iterable, Iterator, Mapping, MutableMapping
 from urllib.parse import urlparse
 
+from typing_extensions import overrides
+
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -24,9 +26,12 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
+from airbyte_cdk.utils.stream_status_utils import (
+    as_airbyte_message as stream_status_as_airbyte_message,
+)
 
 from .client import Client
+from .proxy import PROXY_PARENT_CONFIG_KEY, configure_custom_http_proxy
 from .utils import LOCAL_STORAGE_NAME, dropbox_force_download
 
 
@@ -78,6 +83,14 @@ class SourceFile(Source):
 
     client_class = Client
 
+    @overrides
+    def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+        """We override the 'configure' hook in order to set up our http proxy, if needed."""
+        if PROXY_PARENT_CONFIG_KEY in config:
+            configure_custom_http_proxy(config)
+
+        super().configure(config, temp_dir)
+
     def _get_client(self, config: Mapping):
         """Construct client"""
         client = self.client_class(**config)
@@ -104,7 +117,7 @@ class SourceFile(Source):
 
         parse_result = urlparse(config["url"])
         if parse_result.netloc == "docs.google.com" and parse_result.path.lower().startswith("/spreadsheets/"):
-            message = f'Failed to load {config["url"]}: please use the Official Google Sheets Source connector'
+            message = f"Failed to load {config['url']}: please use the Official Google Sheets Source connector"
             raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 

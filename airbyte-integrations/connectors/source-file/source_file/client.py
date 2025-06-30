@@ -22,7 +22,6 @@ import botocore
 import google
 import numpy as np
 import pandas as pd
-import requests
 import smart_open
 import smart_open.ssh
 from azure.storage.blob import BlobServiceClient
@@ -151,51 +150,59 @@ class URLFile:
                 uri = f"{storage}{user}@{host}:{port}/{url}"
             return smart_open.open(uri, transport_params=transport_params, **self.args)
         elif storage in ("https://", "http://"):
-            session = requests.Session()
-            transport_params = {}
-
+            transport_params = None
             if "user_agent" in self._provider and self._provider["user_agent"]:
                 airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
-                transport_params["headers"] = {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}
+                transport_params = {
+                    "headers": {
+                        "Accept-Encoding": "identity",
+                        "User-Agent": f"Airbyte/{airbyte_version}",
+                    }
+                }
 
-            if "proxy_url" in self._provider and self._provider["proxy_url"]:
-                proxy_url = self._provider["proxy_url"]
-                os.environ["HTTP_PROXY"] = proxy_url
-                os.environ["HTTPS_PROXY"] = proxy_url
-                # These approaches didn't work:
-                # session.proxies = {
-                #     "http": proxy_url,
-                #     "https": proxy_url,
-                # }
-                # session.verify = "/Users/ajsteers/.mitmproxy/mitmproxy-ca-cert.pem"
-                # transport_params["http"] = {"session": session}
-                # transport_params["https"] = {"session": session}
-                # transport_params["proxies"] = {"http": proxy_url, "https": proxy_url}
-
-            cert_file_path = None
-            if "ca_certificate" in self._provider and self._provider["ca_certificate"]:
-                cert_fd, cert_file_path = tempfile.mkstemp(suffix=".pem", text=True)
-                try:
-                    with os.fdopen(cert_fd, "w") as cert_file:
-                        cert_file.write(self._provider["ca_certificate"])
-
-                    transport_params["verify"] = cert_file_path
-                    os.environ["REQUESTS_CA_BUNDLE"] = cert_file_path
-                    os.environ["SSL_CERT_FILE"] = cert_file_path
-
-                except Exception:
-                    if cert_file_path and os.path.exists(cert_file_path):
-                        os.unlink(cert_file_path)
-                    raise
+            # TODO: Delete after testing the new method
+            # session = requests.Session()
+            # if "proxy_url" in self._provider and self._provider["proxy_url"]:
+            #     proxy_url = self._provider["proxy_url"]
+            #     os.environ["HTTP_PROXY"] = proxy_url
+            #     os.environ["HTTPS_PROXY"] = proxy_url
+            #     # These approaches didn't work:
+            #     # session.proxies = {
+            #     #     "http": proxy_url,
+            #     #     "https": proxy_url,
+            #     # }
+            #     # session.verify = "/Users/ajsteers/.mitmproxy/mitmproxy-ca-cert.pem"
+            #     # transport_params["http"] = {"session": session}
+            #     # transport_params["https"] = {"session": session}
+            #     # transport_params["proxies"] = {"http": proxy_url, "https": proxy_url}
+            #
+            # cert_file_path = None
+            # if "ca_certificate" in self._provider and self._provider["ca_certificate"]:
+            #     cert_fd, cert_file_path = tempfile.mkstemp(suffix=".pem", text=True)
+            #     try:
+            #         with os.fdopen(cert_fd, "w") as cert_file:
+            #             cert_file.write(self._provider["ca_certificate"])
+            #
+            #         transport_params["verify"] = cert_file_path
+            #         os.environ["REQUESTS_CA_BUNDLE"] = cert_file_path
+            #         os.environ["SSL_CERT_FILE"] = cert_file_path
+            #
+            #     except Exception:
+            #         if cert_file_path and os.path.exists(cert_file_path):
+            #             os.unlink(cert_file_path)
+            #         raise
 
             logger.info(f"TransportParams: {transport_params}")
-            try:
-                result = smart_open.open(self.full_url, transport_params=transport_params if transport_params else None, **self.args)
-                return result
-            except Exception:
-                if cert_file_path and os.path.exists(cert_file_path):
-                    os.unlink(cert_file_path)
-                raise
+            return smart_open.open(self.full_url, transport_params=transport_params, **self.args)
+
+            # TODO: Delete after testing the new method
+            # try:
+            #     result = smart_open.open(self.full_url, transport_params=transport_params if transport_params else None, **self.args)
+            #     return result
+            # except Exception:
+            #     if cert_file_path and os.path.exists(cert_file_path):
+            #         os.unlink(cert_file_path)
+            #     raise
         return smart_open.open(self.full_url, **self.args)
 
     @property
@@ -299,9 +306,18 @@ class Client:
     CSV_CHUNK_SIZE = 10_000
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
-    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
+    def __init__(
+        self,
+        dataset_name: str,
+        url: str,
+        provider: dict,
+        format: str | None = None,
+        reader_options: dict | None = None,
+        http_proxy: dict | None = None,
+    ):
         self._dataset_name = dataset_name
         self._url = url
+        self._http_proxy = http_proxy
         self._provider = provider
         self._reader_format = format or "csv"
         self._reader_options = reader_options or {}

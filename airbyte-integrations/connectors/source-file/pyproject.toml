@@ -47,6 +47,7 @@ pytest-mock = "^3.6.1"
 pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 pytest-docker = "==3.0.0"
+ruff = "^0.12.1"
 
 
 [tool.poe]

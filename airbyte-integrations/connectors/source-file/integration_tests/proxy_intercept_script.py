@@ -4,6 +4,7 @@ A mitm-proxy intercept script.
 This proves whether the proxy is working by intercepting a specific URL
 and modifying the response to return a different CSV.
 """
+
 from mitmproxy import http
 
 
@@ -13,8 +14,8 @@ def response(flow: http.HTTPFlow) -> None:
 
     print(f"🔍 Checking response for {flow.request.pretty_url}")
     # if "httpbin.org" in flow.request.pretty_host:  # and target_path in flow.request.path:
-        # Original CSV would be: key,value\nfoo,bar\nanswer,42\nquestion,who knows
-        # Return modified CSV with different headers to prove interception
+    # Original CSV would be: key,value\nfoo,bar\nanswer,42\nquestion,who knows
+    # Return modified CSV with different headers to prove interception
     intercepted_csv = "intercepted_key,intercepted_value\nproxy,working\ntest,success\ninterception,confirmed"
 
     flow.response.text = intercepted_csv
@@ -23,6 +24,7 @@ def response(flow: http.HTTPFlow) -> None:
 
     print(f"🎯 INTERCEPTED! Modified response for {flow.request.pretty_url}")
     print(f"   Returning: {intercepted_csv}")
+
 
 def request(flow: http.HTTPFlow) -> None:
     """Log requests to see what's being captured"""

@@ -68,22 +68,6 @@
                 "title": "User-Agent",
                 "default": false,
                 "description": "Add User-Agent to request"
-              },
-              "proxy_url": {
-                "type": "string",
-                "title": "HTTP Proxy URL",
-                "description": "HTTP/HTTPS proxy URL for accessing remote files. Format: http://proxy-host:port or https://proxy-host:port",
-                "examples": [
-                  "http://proxy.company.com:8080",
-                  "https://secure-proxy.company.com:3128"
-                ]
-              },
-              "ca_certificate": {
-                "type": "string",
-                "title": "Custom CA Certificate",
-                "description": "Custom CA certificate for HTTPS verification. Provide the full certificate in PEM format.",
-                "airbyte_secret": true,
-                "multiline": true
               }
             }
           },
@@ -266,6 +250,31 @@
             }
           }
         ]
+      },
+      "http_proxy": {
+        "type": "object",
+        "title": "HTTP Proxy Configuration",
+        "description": "Configuration for using a custom HTTP proxy to access remote files.",
+        "properties": {
+           "proxy_url": {
+           "order": 1,
+           "type": "string",
+            "title": "HTTP Proxy URL",
+            "description": "HTTP/HTTPS proxy URL for accessing remote files. Format: http://proxy-host:port or https://proxy-host:port",
+            "examples": [
+              "http://proxy.company.com:8080",
+              "https://secure-proxy.company.com:3128"
+            ]
+          },
+          "proxy_ca_certificate": {
+            "order": 2,
+            "type": "string",
+            "title": "Proxy CA Certificate",
+            "description": "Custom CA certificate for communicating with the custom Proxy URL. Provide the full certificate in PEM format, beginning with '-----BEGIN CERTIFICATE-----' and ending with '-----END CERTIFICATE-----'. Ignored if Proxy URL is not set.",
+            "airbyte_secret": true,
+            "writeOnly": true,
+            "multiline": true
+          }
       }
     }
   }
