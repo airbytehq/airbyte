@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
@@ -43,6 +45,9 @@ abstract class S3V2WriteTest(
     nullEqualsUnset: Boolean = false,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     private val mergesUnions: Boolean = false,
+    mismatchedTypesUnrepresentable: Boolean = false,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -53,7 +58,7 @@ abstract class S3V2WriteTest(
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
         micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = stringifySchemalessObjects,
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = schematizedArrayBehavior,
@@ -64,6 +69,9 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
+        mismatchedTypesUnrepresentable = mismatchedTypesUnrepresentable,
+        dataChannelMedium = dataChannelMedium,
+        dataChannelFormat = dataChannelFormat,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -85,7 +93,9 @@ abstract class S3V2WriteTest(
         val streamName = "stream"
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = streamName,
+                namespaceMapper = namespaceMapperForMedium(),
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -133,7 +143,7 @@ abstract class S3V2WriteTest(
                     """{"id": 1, "union_of_objects": {"field1": "a", "field2": 1, "field3": 3.14, "field4": "boo", "field5": "extra"}}""",
                     """{"id": 2, "union_of_objects": {"field1": "b", "field2": 2, "field3": 2.71, "field4": true, "field5": "extra"}}"""
                 )
-                .map { InputRecord(randomizedNamespace, streamName, it, 1L) }
+                .map { InputRecord(stream, it, 1L) }
         )
         val field4a: Any =
             if (unionBehavior == UnionBehavior.PROMOTE_TO_OBJECT) {
@@ -191,7 +201,8 @@ abstract class S3V2WriteTest(
         Assumptions.assumeTrue(unionBehavior == UnionBehavior.PROMOTE_TO_OBJECT)
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, "stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "stream",
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -214,7 +225,8 @@ abstract class S3V2WriteTest(
                                     nullable = true
                                 )
                         )
-                    )
+                    ),
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         assertThrows<DestinationUncleanExitException> {
@@ -225,7 +237,7 @@ abstract class S3V2WriteTest(
                         """{"id": 1, "union_of_objects": {"field1": "a"}}""",
                         """{"id": 2, "union_of_objects": {"undeclared": "field"}}"""
                     )
-                    .map { InputRecord(randomizedNamespace, "stream", it, 1L) }
+                    .map { InputRecord(stream, it, 1L) }
             )
         }
     }
@@ -237,7 +249,8 @@ abstract class S3V2WriteTest(
         Assumptions.assumeTrue(mergesUnions)
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, "stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "stream",
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -281,7 +294,8 @@ abstract class S3V2WriteTest(
                                     nullable = true
                                 ),
                         )
-                    )
+                    ),
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         val expectedRecords =
@@ -297,11 +311,7 @@ abstract class S3V2WriteTest(
                 )
             }
 
-        runSync(
-            updatedConfig,
-            stream,
-            expectedRecords.map { InputRecord(randomizedNamespace, "stream", it, 1L) }
-        )
+        runSync(updatedConfig, stream, expectedRecords.map { InputRecord(stream, it, 1L) })
     }
 }
 
@@ -315,7 +325,22 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -355,6 +380,11 @@ class S3V2WriteTestCsvUncompressed :
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
+    }
+
+    @Test
+    override fun testTruncateRefreshNoData() {
+        super.testTruncateRefreshNoData()
     }
 }
 
@@ -486,3 +516,55 @@ class S3V2CsvAssumeRole :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     )
+
+class S3V2WriteTestJsonUncompressedSockets :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+        dataChannelMedium = DataChannelMedium.SOCKET
+    ) {
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
+}
+
+class S3V2WriteTestJsonUncompressedSocketsProtobuf :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = false, // No such thing as "undeclared" fields in proto
+        allTypesBehavior = Untyped,
+        // Because proto uses a fixed-sized array of typed unions, nulls are always present
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
+}

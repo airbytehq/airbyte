@@ -70,30 +70,17 @@ class CdcPartitionReaderMySQLTest :
             connection.createStatement().use { fn(it) }
         }
 
-    override fun createDebeziumOperations(): DebeziumOperations<Position> =
-        MySQLTestDebeziumOperations()
+    override fun createCdcPartitionsCreatorDbzOps():
+        CdcPartitionsCreatorDebeziumOperations<Position> = TestCdcPartitionsCreatorDbzOps()
 
-    inner class MySQLTestDebeziumOperations : AbstractDebeziumOperationsForTest<Position>() {
+    override fun createCdcPartitionReaderDbzOps(): CdcPartitionReaderDebeziumOperations<Position> =
+        TestCdcPartitionReaderDbzOps()
 
+    inner class TestCdcPartitionsCreatorDbzOps : AbstractCdcPartitionsCreatorDbzOps<Position>() {
         override fun position(offset: DebeziumOffset): Position {
             val offsetAsJson = offset.wrapped.values.first()
             val retVal = Position(offsetAsJson["file"].asText(), offsetAsJson["pos"].asLong())
             return retVal
-        }
-
-        override fun position(recordValue: DebeziumRecordValue): Position? {
-            val file: String =
-                recordValue.source["file"]?.takeIf { it.isTextual }?.asText() ?: return null
-            val pos: Long =
-                recordValue.source["pos"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
-            return Position(file, pos)
-        }
-
-        override fun position(sourceRecord: SourceRecord): Position? {
-            val offset: Map<String, *> = sourceRecord.sourceOffset()
-            val file: String = offset["file"]?.toString() ?: return null
-            val pos: Long = offset["pos"] as? Long ?: return null
-            return Position(file, pos)
         }
 
         override fun generateColdStartOffset(): DebeziumOffset {
@@ -141,12 +128,29 @@ class CdcPartitionReaderMySQLTest :
                 .withStreams(streams)
                 .buildMap()
 
-        fun currentPosition(): Position =
+        private fun currentPosition(): Position =
             container.withStatement { statement: Statement ->
                 statement.executeQuery("SHOW MASTER STATUS").use {
                     it.next()
                     Position(it.getString("File"), it.getLong("Position"))
                 }
             }
+    }
+
+    inner class TestCdcPartitionReaderDbzOps : AbstractCdcPartitionReaderDbzOps<Position>() {
+        override fun position(recordValue: DebeziumRecordValue): Position? {
+            val file: String =
+                recordValue.source["file"]?.takeIf { it.isTextual }?.asText() ?: return null
+            val pos: Long =
+                recordValue.source["pos"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
+            return Position(file, pos)
+        }
+
+        override fun position(sourceRecord: SourceRecord): Position? {
+            val offset: Map<String, *> = sourceRecord.sourceOffset()
+            val file: String = offset["file"]?.toString() ?: return null
+            val pos: Long = offset["pos"] as? Long ?: return null
+            return Position(file, pos)
+        }
     }
 }

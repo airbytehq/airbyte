@@ -7,8 +7,7 @@ import json
 from http import HTTPStatus
 
 import responses
-from conftest import find_stream
-from source_jira.utils import read_full_refresh
+from conftest import find_stream, read_full_refresh
 
 
 @responses.activate

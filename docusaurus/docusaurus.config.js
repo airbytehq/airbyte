@@ -1,9 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 import "dotenv/config.js";
-const yaml = require("js-yaml");
-const fs = require("node:fs");
-const path = require("node:path");
 
 const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
@@ -15,6 +12,7 @@ const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
+const addButtonToTitle = require("./src/remark/addButtonToTitle");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -29,8 +27,8 @@ const config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "throw",
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
@@ -87,6 +85,7 @@ const config = {
             enterpriseDocsHeaderInformation,
             productInformation,
             docMetaTags,
+            addButtonToTitle,
           ],
         },
         blog: false,
@@ -97,7 +96,7 @@ const config = {
     ],
   ],
   plugins: [
-    // This plugin controls "platform" docs, which are to be versioned
+    // This plugin controls "platform" docs, which are versioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -105,16 +104,43 @@ const config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
+        editUrl: ({ version, docPath }) => {
+          if (version === "current") {
+            // For the "next" (unreleased) version
+            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
+          } else {
+            // For released versions
+            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
+          }
+        },
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+          addButtonToTitle,
+        ],
+      },
+    ],
+    // This plugin controls Airbyte Embedded docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded",
+        path: "../docs/embedded",
+        routeBasePath: "/embedded",
+        sidebarPath: "./sidebar-embedded.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
-    // This plugin controls release notes, which are unversioned
+    // This plugin controls release notes, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -128,10 +154,11 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
-    // This plugin controls "connector/source/destination" docs, which are unversioned by Docusaurus and use their own versioning
+    // This plugin controls Connector docs, which are unversioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -147,6 +174,19 @@ const config = {
           productInformation,
           docMetaTags,
         ],
+      },
+    ],
+    require.resolve("./src/plugins/enterpriseConnectors"),
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        siteTitle: "docs.airbyte.com llms.txt",
+        siteDescription:
+          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+        depth: 4,
+        content: {
+          includePages: true,
+        },
       },
     ],
     () => ({
@@ -171,6 +211,9 @@ const config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+    markpromptProjectKey:
+      process.env.MARKPROMPT_PROJECT_KEY ||
+      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
@@ -231,6 +274,13 @@ const config = {
             docsPluginId: "release_notes",
             sidebarId: "releaseNotes",
             label: "Release notes",
+          },
+          {
+            type: "docSidebar",
+            position: "left",
+            docsPluginId: "embedded",
+            sidebarId: "embedded",
+            label: "Airbyte Embedded",
           },
           {
             href: "https://support.airbyte.com/",

@@ -11,6 +11,8 @@ definitions:
   streams:
     activity_logs:
       type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listactivitylogs
       name: activity_logs
       primary_key:
         - id
@@ -28,13 +30,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read admin activity logs" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -43,12 +45,12 @@ definitions:
               - activity_logs
         paginator:
           type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next') }}"
+          page_token_option:
+            type: RequestPath
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -71,7 +73,7 @@ definitions:
     admins:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-admins
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listadmins
       name: admins
       primary_key:
         - id
@@ -89,32 +91,19 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read admins" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - admins
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -122,7 +111,7 @@ definitions:
     tags:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tags/listtags
       name: tags
       primary_key:
         - name
@@ -140,32 +129,19 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read tags" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -173,7 +149,7 @@ definitions:
     teams:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-teams
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/teams/listteams
       name: teams
       primary_key:
         - name
@@ -191,32 +167,19 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - teams
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -224,7 +187,7 @@ definitions:
     segments:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-segments
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments
       name: segments
       primary_key:
         - id
@@ -242,32 +205,19 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - segments
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -286,71 +236,67 @@ definitions:
           $ref: "#/schemas/segments"
     companies:
       type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies
-      name: companies
+      name: "companies"
       primary_key:
         - id
       retriever:
-        type: SimpleRetriever
+        type: CustomRetriever
+        class_name: "source_declarative_manifest.components.IntercomScrollRetriever"
         requester:
+          $parameters:
+            name: "companies"
           $ref: "#/definitions/base_requester"
-          path: companies/scroll
-          http_method: GET
+          path: "companies/scroll"
           request_headers:
-            Accept: application/json
+            Accept: "application/json"
             Intercom-Version: "2.11"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 400
-                    error_message: >-
-                      A scroll (export) job is already in progress for this
-                      Intercom account, causing the request to fail. Only one
-                      active scroll per Intercom account is allowed; ensure no
-                      overlap by limiting active connections or scheduling jobs
-                      appropriately.
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
+            type: CustomErrorHandler
+            class_name: "source_declarative_manifest.components.IntercomErrorHandler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 401
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                failure_type: transient_error
+                error_message: "Ignoring 404 response, no company records found. "
+              - type: HttpResponseFilter
+                http_codes:
+                  - 400
+                action: FAIL
+                failure_type: transient_error
+                error_message: >-
+                  Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
+                  Intercom API does not allow for you to run the Comapnies or Comany Parts streams in parallel.
         paginator:
+          $parameters:
+            url_base: "https://api.intercom.io/"
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
-            field_name: scroll_param
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
+            inject_into: "request_parameter"
+            field_name: "scroll_param"
           pagination_strategy:
-            type: CursorPagination
-            page_size: 150
+            type: CustomPaginationStrategy
+            class_name: "source_declarative_manifest.components.IntercomScrollPagination"
             cursor_value: "{{ response.get('scroll_param') }}"
-            stop_condition: "{{ not response.get('data') }}"
+        record_selector:
+          type: RecordSelector
+          $parameters:
+            name: "companies"
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "data"
+        partition_router: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -370,7 +316,7 @@ definitions:
     company_attributes:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes/listdataattributes
       name: company_attributes
       primary_key:
         - name
@@ -390,32 +336,19 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -423,7 +356,7 @@ definitions:
     contact_attributes:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes
       name: contact_attributes
       primary_key:
         - name
@@ -443,32 +376,19 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -476,7 +396,7 @@ definitions:
     contacts:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/searchcontacts
       name: contacts
       retriever:
         type: SimpleRetriever
@@ -488,31 +408,21 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
-              '%s') }} }, ], }
-            pagination: >-
-              { 'per_page': 150, 'page': {{
-              next_page_token.get('next_page_token').get('page') }},
-              'starting_after': '{{
-              next_page_token.get('next_page_token').get('starting_after') }}' }
+              { 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} }, { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} } ] }
+            sort: "{'field': 'updated_at', 'order': 'ascending'}"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -524,8 +434,16 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_size_option:
+            type: RequestOption
+            field_path: ["pagination", "per_page"]
+            inject_into: body_json
+          page_token_option:
+            type: RequestOption
+            field_path: ["pagination", "starting_after"]
+            inject_into: body_json
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -545,7 +463,7 @@ definitions:
     conversations:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations
       name: conversations
       retriever:
         type: SimpleRetriever
@@ -565,23 +483,18 @@ definitions:
               'updated_at', 'operator': '=', 'value': {{
               stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
               '%s') }} }, ], }
-            pagination: >-
-              { 'per_page': 150, 'page': {{
-              next_page_token.get('next_page_token').get('page') }},
-              'starting_after': '{{
-              next_page_token.get('next_page_token').get('starting_after') }}' }
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read conversations" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -593,8 +506,16 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_size_option:
+            type: RequestOption
+            field_path: ["pagination", "per_page"]
+            inject_into: body_json
+          page_token_option:
+            type: RequestOption
+            field_path: ["pagination", "starting_after"]
+            inject_into: body_json
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -613,6 +534,8 @@ definitions:
           $ref: "#/schemas/conversations"
     conversation_parts:
       type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/retrieveconversation
       name: conversation_parts
       primary_key:
         - id
@@ -634,6 +557,14 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 401
+                    action: FAIL
+                    failure_type: config_error
+                    error_message: >-
+                      Failed to perform request. Error: Permission Scope Error.
+                      Please validate you have "Read conversations" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -677,6 +608,8 @@ definitions:
         - type: CustomStateMigration
           class_name: source_declarative_manifest.components.SubstreamStateMigration
     company_segments:
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies
       type: DeclarativeStream
       name: company_segments
       primary_key:
@@ -695,13 +628,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -735,10 +668,12 @@ definitions:
         schema:
           $ref: "#/schemas/company_segments"
       state_migrations:
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.SubstreamStateMigration
+         - type: CustomStateMigration
+           class_name: source_declarative_manifest.components.SubstreamStateMigration
     tickets:
       type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tickets/searchtickets
       name: tickets
       primary_key:
         - id
@@ -760,23 +695,18 @@ definitions:
               }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
               stream_interval['end_time'] }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
-            pagination: >-
-              {{ {"per_page": 150} if not next_page_token
-              else {"per_page": 150, "starting_after":
-              next_page_token["next_page_token"]} }}
-            test: null
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
-                action: FAIL
-                failure_type: config_error
+                http_codes:
+                  - 401
+                action: IGNORE
+                failure_type: transient_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read Tickets" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -788,12 +718,16 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: >-
-              {{ response.get('pages', {}).get('next', {}).get('starting_after')
-              }}
-            stop_condition: >-
-              {{ not response.get('pages', {}).get('next',
-              {}).get('starting_after') }}
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_size_option:
+            type: RequestOption
+            field_path: ["pagination", "per_page"]
+            inject_into: body_json
+          page_token_option:
+            type: RequestOption
+            field_path: ["pagination", "starting_after"]
+            inject_into: body_json
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -802,7 +736,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -899,7 +833,26 @@ spec:
         examples:
           - "2020-11-16T00:00:00Z"
     additionalProperties: true
-
+  advanced_auth:
+      auth_flow_type: "oauth2.0"
+      oauth_config_specification:
+        oauth_authorization_url: "https://app.intercom.com/oauth"
+        oauth_token_url: "https://api.intercom.io/auth/eagle/token"
+        oauth_user_input_from_connector_config_specification:
+          type: object
+          properties:
+            client_id:
+              type: string
+              path_in_connector_config: ["client_id"]
+            client_secret:
+              type: string
+              path_in_connector_config: ["client_secret"]
+        complete_oauth_output_specification:
+          type: object
+          properties:
+            access_token:
+              type: string
+              path_in_connector_config: ["access_token"]
 metadata:
   autoImportSchema:
     activity_logs: false
@@ -2852,6 +2805,171 @@ schemas:
           - "null"
           - integer
         description: Timestamp since waiting for a response
+      ai_agent:
+        type:
+          - "null"
+          - object
+        description: Data related to AI Agent involvement in the conversation
+        properties:
+          source_type:
+            type:
+              - "null"
+              - string
+            description: The type of the source that triggered AI Agent involvement
+            enum:
+              - "essentials_plan_setup"
+              - "profile"
+              - "workflow"
+              - "workflow_preview"
+              - "fin_preview"
+          source_id:
+            type:
+              - "null"
+              - string
+            description: The ID of the source that triggered AI Agent involvement
+          triggered_at:
+            type:
+              - "null"
+              - integer
+            description: The timestamp when AI Agent was triggered, represented as a Unix timestamp
+          source_title:
+            type:
+              - "null"
+              - string
+            description: The title of the source that triggered AI Agent involvement. Returns null if the source_type is 'essentials_plan_setup'.
+          last_answer_type:
+            type:
+              - "null"
+              - string
+            description: The type of the last answer delivered by AI Agent. Returns null if no answer has been delivered.
+            enum:
+              - "ai_answer"
+              - "custom_answer"
+          resolution_state:
+            type:
+              - "null"
+              - string
+            description: The resolution state of AI Agent. Returns null if no AI or custom answer has been delivered.
+            enum:
+              - "assumed_resolution"
+              - "confirmed_resolution"
+              - "routed_to_team"
+              - "abandoned"
+          rating:
+            type:
+              - "null"
+              - integer
+            description: The customer satisfaction rating given to AI Agent, on a scale from 1 to 5
+          rating_remark:
+            type:
+              - "null"
+              - string
+            description: The customer satisfaction rating remark provided for AI Agent
+          content_sources:
+            type:
+              - "null"
+              - object
+            description: The content sources used by AI Agent in the conversation
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+                description: The type of the content source list
+                example: "content_source_list"
+              total_count:
+                type:
+                  - "null"
+                  - integer
+                description: The total number of content sources used by AI Agent in the conversation
+              content_sources:
+                type:
+                  - "null"
+                  - array
+                description: The list of content sources utilized by AI Agent
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    content_type:
+                      type:
+                        - "null"
+                        - string
+                      description: The type of the content source
+                      enum:
+                        - "file"
+                        - "article"
+                        - "external_content"
+                        - "content_snippet"
+                        - "workflow_connector_action"
+                    url:
+                      type:
+                        - "null"
+                        - string
+                      description: The internal URL linking to the content source, accessible to teammates
+                    title:
+                      type:
+                        - "null"
+                        - string
+                      description: The title of the content source
+                    locale:
+                      type:
+                        - "null"
+                        - string
+                      description: The ISO 639 language code of the content source
+      linked_objects:
+        type:
+          - "null"
+          - object
+        description: Linked objects associated with the conversation
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+            description: The type of linked objects list
+            example: "linked_object.list"
+          data:
+            type:
+              - "null"
+              - array
+            description: Array of linked object data
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                  description: The type of the linked object
+                id:
+                  type:
+                    - "null"
+                    - string
+                  description: The ID of the linked object
+          has_more:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether there are additional linked objects beyond those returned
+          total_count:
+            type:
+              - "null"
+              - integer
+            description: The total number of linked objects associated with the conversation
+          url:
+            type:
+              - "null"
+              - string
+            description: The URL to access additional linked objects, if applicable  
+      ai_agent_participated:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether AI Agent participated in the conversation
   conversation_parts:
     type: object
     additionalProperties: true

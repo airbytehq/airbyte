@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Custom {@link DebeziumPropertiesManager} specific for the configuration of the Debezium MongoDB
@@ -36,7 +37,6 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
   static final String MONGODB_POST_IMAGE_VALUE = "post_image";
-  static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
@@ -79,18 +79,18 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   @Override
   protected String getName(final JsonNode config) {
-    return normalizeName(config.get(DATABASE_CONFIGURATION_KEY).asText());
+    return normalizeName(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
   }
 
   @Override
   protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final List<String> cdcStreamNames) {
     final Properties properties = new Properties();
-
     // Database/collection selection
     properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
-    properties.setProperty(DATABASE_INCLUDE_LIST_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
-    properties.setProperty(CAPTURE_TARGET_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
-
+    properties.setProperty(DATABASE_INCLUDE_LIST_KEY, String.join(",",
+        StreamSupport.stream(config.get(DATABASE_CONFIGURATION_KEY).spliterator(), false)
+            .map(JsonNode::asText)
+            .collect(Collectors.toList())));
     return properties;
   }
 

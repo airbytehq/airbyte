@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -20,6 +22,10 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.InputStreamComplete
+import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointIndex
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.IntegrationTest
@@ -70,7 +76,7 @@ interface PerformanceTestScenario {
      * This would be where records are emitted to the destination. How, is up to the scenario to
      * define.
      */
-    fun send(destination: DestinationProcess)
+    suspend fun send(destination: DestinationProcess)
 
     /**
      * Returns the expectations from the test scenario: how many records were emitted, how many
@@ -78,6 +84,14 @@ interface PerformanceTestScenario {
      * be the number of distinct records) and the volume of data emitted.
      */
     fun getSummary(): Summary
+
+    fun checkpointKeyForMedium(dataChannelMedium: DataChannelMedium): CheckpointKey? {
+        return if (dataChannelMedium == DataChannelMedium.SOCKET) {
+            CheckpointKey(CheckpointIndex(1), CheckpointId("1"))
+        } else {
+            null
+        }
+    }
 }
 
 /** Interface to implement for destination that support data validation. */
@@ -114,7 +128,9 @@ abstract class BasicPerformanceTest(
     namespaceOverride: String? = null,
     val numFilesForFileTransfer: Int = 5,
     val fileSizeMbForFileTransfer: Int = 10,
-    val numStreamsForMultiStream: Int = 4
+    val numStreamsForMultiStream: Int = 4,
+    val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    val dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -336,7 +352,7 @@ abstract class BasicPerformanceTest(
                     recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
                     numStreams = numStreamsForMultiStream,
                     streamNamePrefix = testInfo.testMethod.get().name,
-                )
+                ),
         )
     }
 
@@ -399,6 +415,8 @@ abstract class BasicPerformanceTest(
                 testScenario.catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
                 micronautProperties = micronautProperties + fileTransferProperty,
+                dataChannelMedium = dataChannelMedium,
+                dataChannelFormat = dataChannelFormat,
             )
 
         val duration =
@@ -409,8 +427,10 @@ abstract class BasicPerformanceTest(
                     testScenario.send(destination)
                     testScenario.catalog.streams.forEach {
                         destination.sendMessage(
-                            DestinationRecordStreamComplete(it, System.currentTimeMillis())
-                                .asProtocolMessage()
+                            InputStreamComplete(
+                                DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                            ),
+                            broadcast = true
                         )
                     }
                     destination.shutdown()
@@ -436,7 +456,7 @@ abstract class BasicPerformanceTest(
 
                         recordCount?.also {
                             log.info {
-                                "$testPrettyName: table ${stream.descriptor.name} contains $it records" +
+                                "$testPrettyName: table ${stream.mappedDescriptor.name} contains $it records" +
                                     " (expected ${summary.expectedRecordsCount / numStreams} records, " +
                                     "emitted ${summary.records / numStreams} records)"
                             }
@@ -450,9 +470,9 @@ abstract class BasicPerformanceTest(
         val performanceTestSummary =
             listOf(
                 PerformanceTestSummary(
-                    namespace = testScenario.catalog.streams[0].descriptor.namespace,
+                    namespace = testScenario.catalog.streams[0].mappedDescriptor.namespace,
                     streamName =
-                        testScenario.catalog.streams.joinToString(",") { it.descriptor.name },
+                        testScenario.catalog.streams.joinToString(",") { it.mappedDescriptor.name },
                     recordCount = totalRecordCount,
                     expectedRecordCount = summary.expectedRecordsCount,
                     emittedRecordCount = summary.records,
