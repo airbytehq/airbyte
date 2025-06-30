@@ -6,8 +6,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.*
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons

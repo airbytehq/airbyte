@@ -10,9 +10,9 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputConsumer
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.NullProtoEncoder

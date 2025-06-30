@@ -32,17 +32,6 @@ class OutputMessageRouter(
     feedBootstrap: FeedBootstrap<*>,
     acquiredResources: Map<ResourceType, Resource.Acquired>,
 ) : AutoCloseable {
-
-    enum class DataChannelFormat {
-        JSONL,
-        PROTOBUF,
-    }
-
-    enum class DataChannelMedium {
-        STDIO,
-        SOCKET,
-    }
-
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
     private lateinit var efficientStreamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer

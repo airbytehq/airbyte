@@ -7,9 +7,9 @@ package io.airbyte.cdk.read.cdc
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.SOCKET
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint

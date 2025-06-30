@@ -10,7 +10,8 @@ import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.CONNECTOR_OUTPUT_PREFIX
-import io.airbyte.cdk.output.OutputMessageRouter
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
@@ -63,8 +64,8 @@ class ReadOperation(
                 metaFieldDecorator,
                 resourceAcquirer,
                 partitionsCreatorFactoriesSupplier.map { it -> it.get() },
-                OutputMessageRouter.DataChannelFormat.valueOf(dataChannelFormat),
-                OutputMessageRouter.DataChannelMedium.valueOf(dataChannelMedium),
+                DataChannelFormat.valueOf(dataChannelFormat),
+                DataChannelMedium.valueOf(dataChannelMedium),
                 bufferByteSizeThresholdForFlush,
                 clock,
             )

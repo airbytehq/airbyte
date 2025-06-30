@@ -3,7 +3,8 @@ package io.airbyte.cdk.read
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.OutputMessageRouter.*
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
