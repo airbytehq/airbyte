@@ -2,7 +2,7 @@
 
 # Script to find connectors with local CDK configuration
 # Searches for "cdk = 'local'" or "cdk = \"local\"" in airbyteBulkConnector block
-# or "useLocalCdk = true" in airbyteJavaConnector block
+# Ignore the old CDK as none are on local.
 
 # Default values
 CONNECTORS_DIR="airbyte-integrations/connectors"
@@ -54,11 +54,6 @@ for connector_dir in "$CONNECTORS_DIR"/*; do
       # Search for cdk = 'local' or cdk = "local" in airbyteBulkConnector block
       if grep -q "airbyteBulkConnector" "$connector_dir/build.gradle" && grep -q "cdk *= *['\"]local['\"]" "$connector_dir/build.gradle"; then
         RESULTS+=("$connector_name (airbyteBulkConnector with cdk = local)")
-      fi
-
-      # Search for useLocalCdk = true in airbyteJavaConnector block
-      if grep -q "airbyteJavaConnector" "$connector_dir/build.gradle" && grep -q "useLocalCdk *= *true" "$connector_dir/build.gradle"; then
-        RESULTS+=("$connector_name (airbyteJavaConnector with useLocalCdk = true)")
       fi
     fi
   fi
