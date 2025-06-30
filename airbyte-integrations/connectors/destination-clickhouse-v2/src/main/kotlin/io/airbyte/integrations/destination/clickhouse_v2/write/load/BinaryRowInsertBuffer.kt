@@ -172,7 +172,7 @@ class BinaryRowInsertBuffer(
         }
     }
 
-    internal inline fun <V> write(columnName: String, value: V, matchType: Boolean) {
+    internal fun <V> write(columnName: String, value: V, matchType: Boolean) {
         if (matchType) {
             writer.setValue(columnName, value)
         } else {
