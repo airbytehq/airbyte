@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-alpaca-broker-api
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.55.1@sha256:f8563342ed2681dbee05122070722ff9565f3d8537feb8eeb13e85e3b70a7c24
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.7@sha256:41be3ac5f569004b6a25507cd40f5152e3691aecd2a9a3f873eb4c559903412d
   connectorSubtype: api
   connectorType: source
   definitionId: 9065ae98-3c65-4283-b858-d22772b6fab5
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-alpaca-broker-api
   githubIssueLabel: source-alpaca-broker-api
   icon: icon.svg

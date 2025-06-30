@@ -28,6 +28,7 @@ API Reference: https://www.fastly.com/documentation/reference/api/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-06-28 | [62317](https://github.com/airbytehq/airbyte/pull/62317) | Update dependencies |
 | 0.0.8 | 2025-06-21 | [61972](https://github.com/airbytehq/airbyte/pull/61972) | Update dependencies |
 | 0.0.7 | 2025-06-14 | [61192](https://github.com/airbytehq/airbyte/pull/61192) | Update dependencies |
 | 0.0.6 | 2025-05-24 | [60388](https://github.com/airbytehq/airbyte/pull/60388) | Update dependencies |

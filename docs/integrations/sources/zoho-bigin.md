@@ -32,6 +32,7 @@
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-06-28 | [62236](https://github.com/airbytehq/airbyte/pull/62236) | Update dependencies |
 | 0.0.24 | 2025-06-21 | [61767](https://github.com/airbytehq/airbyte/pull/61767) | Update dependencies |
 | 0.0.23 | 2025-06-15 | [61258](https://github.com/airbytehq/airbyte/pull/61258) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60749](https://github.com/airbytehq/airbyte/pull/60749) | Update dependencies |

@@ -37,13 +37,17 @@ Install Docker Desktop on your machine, if you haven't already. Follow the steps
 
     - [Mac](https://docs.docker.com/desktop/install/mac-install/)
     - [Windows](https://docs.docker.com/desktop/install/windows-install/)
-    - [Linux](https://docs.docker.com/desktop/install/linux-install/)
+    - [Linux](https://docs.docker.com/desktop/install/linux-install/) (see [installations on headless virtual machines](#for-linux) for more options)
 
 You don't need to do anything with Docker, but you do need to run it in the background. Once it's open, minimize it and proceed to Part 2.
 
 :::info Why do you need Docker?
 Airbyte runs on Kubernetes. When you deploy Airbyte locally, it uses Docker to create a Kubernetes cluster on your computer.
 :::
+
+### Linux installations on headless virtual machines {#for-linux}
+
+If you're installing on a Linux headless virtual machine, it's easier to use [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See the [EC2 guide for an example](../../deploying-airbyte/abctl-ec2.md).
 
 ## Part 2: Install abctl
 

@@ -352,6 +352,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.3 | 2025-06-28 | [62413](https://github.com/airbytehq/airbyte/pull/62413) | Update dependencies |
 | 3.5.2 | 2025-06-21 | [61958](https://github.com/airbytehq/airbyte/pull/61958) | Update dependencies |
 | 3.5.1 | 2025-06-14 | [61290](https://github.com/airbytehq/airbyte/pull/61290) | Update dependencies |
 | 3.5.0 | 2025-06-09 | [61477](https://github.com/airbytehq/airbyte/pull/61477) | Removed action_report_time from spec as deprecated |

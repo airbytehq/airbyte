@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.integrationTest
 import DlqStateWithRecordSample
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.MockObjectStorageClient
+import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
@@ -98,6 +100,14 @@ class DlqTestFactory {
         object : ObjectLoader {
             override val inputPartitions = 1
             override val numPartWorkers = 1
+        }
+
+    @Singleton
+    fun checker(dlqChecker: DlqChecker) =
+        object : DestinationChecker<DlqTestConfig> {
+            override fun check(config: DlqTestConfig) {
+                dlqChecker.check(config.objectStorageConfig)
+            }
         }
 
     @Singleton

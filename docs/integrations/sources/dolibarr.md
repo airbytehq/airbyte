@@ -44,6 +44,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.3 | 2025-06-28 | [62306](https://github.com/airbytehq/airbyte/pull/62306) | Update dependencies |
 | 1.0.2 | 2025-06-22 | [61992](https://github.com/airbytehq/airbyte/pull/61992) | Update dependencies |
 | 1.0.1 | 2025-06-14 | [61174](https://github.com/airbytehq/airbyte/pull/61174) | Update dependencies |
 | 1.0.0 | 2025-06-05 | [61388](https://github.com/airbytehq/airbyte/pull/61388) | Implements incremental sync in all applicable parent streams, improves the performance and efficiency of data extraction, compatible with Dolibarr 21.0.0 or higher versions |

@@ -42,6 +42,7 @@ You can learn more about the API here https://developer.deputy.com/deputy-docs/r
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-06-28 | [62384](https://github.com/airbytehq/airbyte/pull/62384) | Update dependencies |
 | 0.0.24 | 2025-06-21 | [61962](https://github.com/airbytehq/airbyte/pull/61962) | Update dependencies |
 | 0.0.23 | 2025-06-14 | [61167](https://github.com/airbytehq/airbyte/pull/61167) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60404](https://github.com/airbytehq/airbyte/pull/60404) | Update dependencies |

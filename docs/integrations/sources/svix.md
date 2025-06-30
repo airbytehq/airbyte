@@ -28,6 +28,7 @@ API Reference: https://api.svix.com/docs#section/Introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2025-06-28 | [61305](https://github.com/airbytehq/airbyte/pull/61305) | Update dependencies |
 | 0.0.7 | 2025-05-24 | [60462](https://github.com/airbytehq/airbyte/pull/60462) | Update dependencies |
 | 0.0.6 | 2025-05-10 | [60193](https://github.com/airbytehq/airbyte/pull/60193) | Update dependencies |
 | 0.0.5 | 2025-05-04 | [59592](https://github.com/airbytehq/airbyte/pull/59592) | Update dependencies |
