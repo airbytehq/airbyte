@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
@@ -28,8 +29,10 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.util.Jsons
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -84,6 +87,11 @@ class BinaryRowInsertBufferTest {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
 
+        val mFormattedSchema = mockk<Map<String, FieldType>>()
+        every { mFormattedSchema[any()] } returns
+            FieldType(UnknownType(io.airbyte.protocol.models.Jsons.emptyObject()), true)
+        buffer.formattedSchema = mFormattedSchema
+
         buffer.accumulate(record)
 
         record.forEach {
@@ -113,6 +121,11 @@ class BinaryRowInsertBufferTest {
     ) {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
+
+        val mFormattedSchema = mockk<Map<String, FieldType>>()
+        every { mFormattedSchema[any()] } returns
+            FieldType(UnknownType(io.airbyte.protocol.models.Jsons.emptyObject()), true)
+        buffer.formattedSchema = mFormattedSchema
 
         buffer.accumulate(record)
 

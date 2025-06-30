@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
@@ -57,7 +58,7 @@ private val log = KotlinLogging.logger {}
 class BinaryRowInsertBuffer(
     val tableName: TableName,
     private val clickhouseClient: Client,
-    private val airbyteSchema: AirbyteType
+    airbyteSchema: AirbyteType
 ) {
     // Initialize the inner buffer
     private val schema: TableSchema =
@@ -66,7 +67,8 @@ class BinaryRowInsertBuffer(
     @VisibleForTesting
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
 
-    private val formattedSchema =
+    @VisibleForTesting
+    internal var formattedSchema: Map<String, FieldType> =
         airbyteSchema.asColumns().mapKeys { (k, _) -> k.toClickHouseCompatibleName() }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
