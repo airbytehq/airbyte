@@ -22,6 +22,7 @@ import botocore
 import google
 import numpy as np
 import pandas as pd
+import requests
 import smart_open
 import smart_open.ssh
 from azure.storage.blob import BlobServiceClient
@@ -150,6 +151,7 @@ class URLFile:
                 uri = f"{storage}{user}@{host}:{port}/{url}"
             return smart_open.open(uri, transport_params=transport_params, **self.args)
         elif storage in ("https://", "http://"):
+            session = requests.Session()
             transport_params = {}
 
             if "user_agent" in self._provider and self._provider["user_agent"]:
@@ -158,7 +160,17 @@ class URLFile:
 
             if "proxy_url" in self._provider and self._provider["proxy_url"]:
                 proxy_url = self._provider["proxy_url"]
-                transport_params["proxies"] = {"http": proxy_url, "https": proxy_url}
+                os.environ["HTTP_PROXY"] = proxy_url
+                os.environ["HTTPS_PROXY"] = proxy_url
+                # These approaches didn't work:
+                # session.proxies = {
+                #     "http": proxy_url,
+                #     "https": proxy_url,
+                # }
+                # session.verify = "/Users/ajsteers/.mitmproxy/mitmproxy-ca-cert.pem"
+                # transport_params["http"] = {"session": session}
+                # transport_params["https"] = {"session": session}
+                # transport_params["proxies"] = {"http": proxy_url, "https": proxy_url}
 
             cert_file_path = None
             if "ca_certificate" in self._provider and self._provider["ca_certificate"]:
@@ -166,7 +178,11 @@ class URLFile:
                 try:
                     with os.fdopen(cert_fd, "w") as cert_file:
                         cert_file.write(self._provider["ca_certificate"])
+
                     transport_params["verify"] = cert_file_path
+                    os.environ["REQUESTS_CA_BUNDLE"] = cert_file_path
+                    os.environ["SSL_CERT_FILE"] = cert_file_path
+
                 except Exception:
                     if cert_file_path and os.path.exists(cert_file_path):
                         os.unlink(cert_file_path)

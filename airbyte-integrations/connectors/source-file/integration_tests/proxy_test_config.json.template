@@ -4,6 +4,7 @@
   "url": "https://httpbin.org/base64/a2V5LHZhbHVlCmZvbyxiYXIKYW5zd2VyLDQyCnF1ZXN0aW9uLHdobyBrbm93cw==",
   "provider": {
     "storage": "HTTPS",
-    "proxy_url": "http://localhost:8080"
+    "proxy_url": "http://localhost:8080",
+    "ca_certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"
   }
 }
