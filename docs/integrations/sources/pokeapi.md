@@ -39,6 +39,8 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.28 | 2025-06-28 | [62408](https://github.com/airbytehq/airbyte/pull/62408) | Update dependencies |
+| 0.3.27 | 2025-06-26 | [62103](https://github.com/airbytehq/airbyte/pull/62103) | Fix `nidoran` names |
 | 0.3.26 | 2025-06-21 | [61935](https://github.com/airbytehq/airbyte/pull/61935) | Update dependencies |
 | 0.3.25 | 2025-06-14 | [61063](https://github.com/airbytehq/airbyte/pull/61063) | Update dependencies |
 | 0.3.24 | 2025-05-24 | [60437](https://github.com/airbytehq/airbyte/pull/60437) | Update dependencies |
