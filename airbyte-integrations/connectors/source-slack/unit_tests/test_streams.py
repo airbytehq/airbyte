@@ -56,7 +56,6 @@ def get_stream_by_name(stream_name, config):
         ),
     ),
 )
-@pytest.mark.skip(reason="Infinite loop I don't know why.")
 def test_threads_stream_slices(requests_mock, authenticator, token_config, start_date, end_date, messages, stream_state, expected_result):
     token_config["channel_filter"] = []
 
