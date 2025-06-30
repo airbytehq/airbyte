@@ -166,13 +166,12 @@ class ClickhouseAirbyteClient(
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
-            val tempTableName = tempTableNameGenerator.generate(properTableName).name
-            val tempTableInProperNamespace = TableName(properTableName.namespace, tempTableName)
-            execute(sqlGenerator.createNamespace(tempTableInProperNamespace.namespace))
+            val tempTableName = tempTableNameGenerator.generate(properTableName)
+            execute(sqlGenerator.createNamespace(tempTableName.namespace))
             execute(
                 sqlGenerator.createTable(
                     stream,
-                    tempTableInProperNamespace,
+                    tempTableName,
                     columnNameMapping,
                     true,
                 ),
@@ -181,11 +180,11 @@ class ClickhouseAirbyteClient(
                 sqlGenerator.copyTable(
                     columnNameMapping,
                     properTableName,
-                    tempTableInProperNamespace,
+                    tempTableName,
                 ),
             )
-            execute(sqlGenerator.exchangeTable(tempTableInProperNamespace, properTableName))
-            execute(sqlGenerator.dropTable(tempTableInProperNamespace))
+            execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
+            execute(sqlGenerator.dropTable(tempTableName))
         }
     }
 

@@ -101,7 +101,7 @@ open class DefaultTempTableNameGenerator(
  * Some destinations don't support moving table between namespace. This will generate a temp table
  * in the same namespace as the origin table.
  */
-class DefaultTempTableNameGeneratorPreserveNamespace() : DefaultTempTableNameGenerator("unused") {
+class DefaultTempTableNameGeneratorPreserveNamespace : DefaultTempTableNameGenerator("unused") {
     override fun generate(originalName: TableName): TableName {
         val resolvedTableName = super.generate(originalName)
 
