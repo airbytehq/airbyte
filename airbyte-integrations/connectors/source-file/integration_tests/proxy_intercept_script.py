@@ -1,5 +1,4 @@
-"""_summary_
-A mitm-proxy intercept script.
+"""An mitm-proxy intercept script.
 
 This proves whether the proxy is working by intercepting a specific URL
 and modifying the response to return a different CSV.
