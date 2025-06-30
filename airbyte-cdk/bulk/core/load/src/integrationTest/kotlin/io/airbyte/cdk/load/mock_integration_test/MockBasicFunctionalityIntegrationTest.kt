@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.mock_integration_test
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
+import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper
@@ -15,12 +17,14 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -116,6 +120,8 @@ class MockBasicFunctionalityIntegrationTest :
 
     @Test
     fun testCrashInInputLoop() {
+        val streamName = "tomato"
+        val streamNamespace = "potato"
         val stream =
             DestinationStream(
                 randomizedNamespace,
@@ -136,16 +142,8 @@ class MockBasicFunctionalityIntegrationTest :
                         // send a state message for a stream that isn't in the catalog.
                         // this should cause the sync to crash.
                         InputStreamCheckpoint(
-                            DestinationStream(
-                                "potato",
-                                "tomato",
-                                Append,
-                                ObjectType(linkedMapOf("id" to intType)),
-                                generationId = 0,
-                                minimumGenerationId = 0,
-                                syncId = 42,
-                                namespaceMapper = namespaceMapperForMedium(),
-                            ),
+                            unmappedName = streamName,
+                            unmappedNamespace = streamNamespace,
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
@@ -154,8 +152,44 @@ class MockBasicFunctionalityIntegrationTest :
                 )
             }
         assertEquals(
-            listOf("Stream not found: Descriptor(namespace=potato, name=tomato)"),
+            listOf("Stream not found: Descriptor(namespace=$streamNamespace, name=$streamName)"),
             e.traceMessages.map { it.message },
         )
+    }
+
+    @Test
+    fun testGlobalStateWithUnknownStreamState() {
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        assertDoesNotThrow {
+            runSync(
+                updatedConfig,
+                stream,
+                listOf(
+                    // send a state message for a stream that isn't in the catalog.
+                    // this should cause the sync to crash.
+                    InputGlobalCheckpoint(
+                        Jsons.readTree("""{"foo": "bar"}"""),
+                        checkpointKeyForMedium(),
+                        listOf(
+                            Checkpoint(
+                                unmappedNamespace = "potato",
+                                unmappedName = "tomato",
+                                state = Jsons.readTree("""{"foo": "bar"}""")
+                            )
+                        )
+                    )
+                ),
+            )
+        }
     }
 }
