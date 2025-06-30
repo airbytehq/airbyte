@@ -1,8 +1,14 @@
 package io.airbyte.cdk.load.lowcode
 
-import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import kotlin.test.assertFailsWith
+import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
+import io.airbyte.cdk.util.ResourceUtils
+import io.mockk.EqMatcher
+import io.mockk.every
+import io.mockk.mockkConstructor
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 
 class MockConfig(
@@ -10,30 +16,45 @@ class MockConfig(
     val apiToken: String,
 ): DestinationConfiguration()
 
-val INVALID_AIRCALL_API_ID: String = "1"
-val INVALID_AIRCALL_API_TOKEN: String = "2"
-
-val VALID_AIRCALL_API_ID: String = "<replace value here>"
-val VALID_AIRCALL_API_TOKEN: String = "<replace value here>"
+val VALID_API_ID: String = "api_id"
+val VALID_API_TOKEN: String = "api_token"
 
 class FactoryTest {
 
     @Test
-    internal fun `test given invalid credentials when check then throw`() {
-        val config = MockConfig(INVALID_AIRCALL_API_ID, INVALID_AIRCALL_API_TOKEN)
-        val checker: DestinationChecker<MockConfig> = Factory(config).createDestinationChecker()
-        assertFailsWith<AssertionError>(
-            block = { checker.check(config) }
-        )
+    internal fun `test when check then ensure check gets interpolated credentials`() {
+        mockManifest("""
+            checker:
+              type: HttpRequestChecker
+              requester:
+                type: HttpRequester
+                url: https://airbyte.io/
+                method: GET
+                authenticator:
+                  type: BasicAccessAuthenticator
+                  username: "{{ config.apiId }}"
+                  password: "{{ config.apiToken }}"
+        """.trimIndent())
+        mockkConstructor(BasicAccessAuthenticator::class)
+        val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
+
+        try {
+            Factory(config).createDestinationChecker().check(config)
+
+            verify {
+                constructedWith<BasicAccessAuthenticator>(
+                    EqMatcher(VALID_API_ID),
+                    EqMatcher(VALID_API_TOKEN)
+                ).intercept(any())
+            }
+        } finally {
+            unmockkStatic("io.airbyte.cdk.util.ResourceUtils")  // Clean up mocks
+        }
     }
 
-    @Test
-    internal fun `test given valid credentials when check then throw`() {
-        // FIXME for this test to pass, change the value of VALID_AIRCALL_API_ID and VALID_AIRCALL_API_TOKEN
-        val config = MockConfig(VALID_AIRCALL_API_ID, VALID_AIRCALL_API_TOKEN)
-        val checker: DestinationChecker<MockConfig> = Factory(config).createDestinationChecker()
-        checker.check(config)
-        // no assertion, just checking that `check` does not throw
+    private fun mockManifest(manifestContent: String) {
+        // Mock ResourceUtils to return our test manifest
+        mockkStatic("io.airbyte.cdk.util.ResourceUtils")
+        every { ResourceUtils.readResource("manifest.yaml") } returns manifestContent
     }
-
 }
