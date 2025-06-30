@@ -3,13 +3,6 @@ version: "0.29.0"
 type: DeclarativeSource
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_monday/schemas/{{ parameters['name'] }}.json"
-  # schema_loader:
-  #   type: InlineSchemaLoader
-  #   schema:
-  #     $ref: "#/schemas/{{ parameters['name'] }}"
   selector:
     type: RecordSelector
     extractor:
@@ -78,8 +71,6 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     primary_key: "id"
 
   base_nopagination_stream:
@@ -93,26 +84,46 @@ definitions:
     $parameters:
       name: "tags"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/tags"
   teams_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
       name: "teams"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/teams"
   updates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "updates"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/updates"
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "users"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
   workspaces_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "workspaces"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/workspaces"
 
   double_paginator:
     $ref: "#/definitions/default_paginator"
@@ -147,10 +158,10 @@ definitions:
       items_per_page: 1
       page_size: 50
       nested_items_per_page: 50
-    # schema_loader:
-    #   type: InlineSchemaLoader
-    #   schema:
-    #     $ref: "#/schemas/activity_logs"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/activity_logs"
 
   # Substream partition router for semi-incremental streams
   substream_partition_router:
@@ -171,6 +182,10 @@ definitions:
       name: "boards"
     full_refresh_stream: "#/definitions/boards_stream_full_refresh"
     incremental_stream: "#/definitions/boards_stream_incremental"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/boards"
 
   state_delegating_stream:
     $ref: "#/definitions/base_stream"
@@ -209,10 +224,6 @@ definitions:
         $ref: "#/definitions/selector"
         extractor:
           $ref: "#/definitions/incremental_extractor"
-    # schema_loader:
-    #   type: InlineSchemaLoader
-    #   schema:
-    #     $ref: "#/schemas/boards"
 
   boards_stream_incremental:
     $ref: "#/definitions/state_delegating_stream"
@@ -256,6 +267,10 @@ definitions:
       name: "items"
     full_refresh_stream: "#/definitions/items_stream_full_refresh"
     incremental_stream: "#/definitions/items_stream_incremental"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/items"
 
   items_stream_full_refresh:
     $ref: "#/definitions/state_delegating_stream"
@@ -275,10 +290,6 @@ definitions:
         $ref: "#/definitions/selector"
         extractor:
           $ref: "#/definitions/incremental_extractor"
-    # schema_loader:
-    #   type: InlineSchemaLoader
-    #   schema:
-    #     $ref: "#/schemas/items"
 
   items_stream_incremental:
     $ref: "#/definitions/state_delegating_stream"
