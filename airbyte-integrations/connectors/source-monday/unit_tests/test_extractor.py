@@ -5,7 +5,7 @@
 import json
 from unittest.mock import MagicMock
 
-from source_monday.extractor import MondayActivityExtractor, MondayIncrementalItemsExtractor
+from components import MondayActivityExtractor, MondayIncrementalItemsExtractor
 
 
 def test_extract_records():

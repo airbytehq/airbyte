@@ -5,7 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_monday.item_pagination_strategy import ItemCursorPaginationStrategy, ItemPaginationStrategy
+from components import ItemCursorPaginationStrategy, ItemPaginationStrategy
 
 
 @pytest.mark.parametrize(

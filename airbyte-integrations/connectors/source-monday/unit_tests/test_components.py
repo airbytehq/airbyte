@@ -6,9 +6,8 @@ import json
 from typing import Any
 
 import pytest
+from components import MondayIncrementalItemsExtractor, MondayStateMigration
 from requests import Response
-from source_monday.extractor import MondayIncrementalItemsExtractor
-from source_monday.state_migration import MondayStateMigration
 
 
 @pytest.mark.parametrize(
