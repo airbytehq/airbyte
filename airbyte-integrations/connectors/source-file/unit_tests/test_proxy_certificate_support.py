@@ -1,14 +1,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-#
-#
-
 import os
-import tempfile
+from pathlib import Path
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
-from source_file.client import URLFile
+from source_file.client import Client, URLFile
+
+from airbyte_cdk.entrypoint import logger
 
 
 class TestProxyCertificateSupport:
@@ -16,144 +15,104 @@ class TestProxyCertificateSupport:
 
     def test_https_with_proxy_only(self):
         """Test HTTPS provider with proxy_url configuration"""
-        provider = {"storage": "HTTPS", "proxy_url": "http://proxy.company.com:8080"}
-        url_file = URLFile("https://example.com/test.csv", provider)
+        http_proxy_config = {"proxy_url": "http://proxy.company.com:8080"}
 
-        with patch("smart_open.open") as mock_smart_open:
-            url_file._open()
+        with patch.dict("os.environ", {}, clear=True), patch("source_file.client.configure_custom_http_proxy") as mock_configure:
+            client = Client(
+                dataset_name="test", url="https://example.com/test.csv", provider={"storage": "HTTPS"}, http_proxy=http_proxy_config
+            )
 
-            mock_smart_open.assert_called_once()
-            args, kwargs = mock_smart_open.call_args
-            transport_params = kwargs.get("transport_params", {})
-
-            assert "proxies" in transport_params
-            assert transport_params["proxies"]["http"] == "http://proxy.company.com:8080"
-            assert transport_params["proxies"]["https"] == "http://proxy.company.com:8080"
+            mock_configure.assert_called_once_with(http_proxy_config=http_proxy_config, logger=logger)
 
     def test_https_with_certificate_only(self):
         """Test HTTPS provider with ca_certificate configuration"""
         test_cert = "-----BEGIN CERTIFICATE-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...\n-----END CERTIFICATE-----"
-        provider = {"storage": "HTTPS", "ca_certificate": test_cert}
-        url_file = URLFile("https://example.com/test.csv", provider)
+        http_proxy_config = {"proxy_ca_certificate": test_cert}
 
         with (
-            patch("smart_open.open") as mock_smart_open,
-            patch("tempfile.mkstemp") as mock_mkstemp,
-            patch("os.fdopen") as mock_fdopen,
-            patch("os.unlink") as mock_unlink,
+            patch.dict("os.environ", {}, clear=True),
+            patch("source_file.proxy._install_ca_certificate") as mock_install,
+            patch("source_file.client.configure_custom_http_proxy") as mock_configure,
         ):
-            mock_mkstemp.return_value = (123, "/tmp/test_cert.pem")
-            mock_file = mock_open()
-            mock_fdopen.return_value.__enter__ = Mock(return_value=mock_file.return_value)
-            mock_fdopen.return_value.__exit__ = Mock(return_value=None)
+            mock_install.return_value = Path("/tmp/test_cert.pem")
 
-            url_file._open()
+            client = Client(
+                dataset_name="test", url="https://example.com/test.csv", provider={"storage": "HTTPS"}, http_proxy=http_proxy_config
+            )
 
-            mock_mkstemp.assert_called_once_with(suffix=".pem", text=True)
-            mock_fdopen.assert_called_once_with(123, "w")
-            mock_file.return_value.write.assert_called_once_with(test_cert)
-
-            mock_smart_open.assert_called_once()
-            args, kwargs = mock_smart_open.call_args
-            transport_params = kwargs.get("transport_params", {})
-            assert transport_params["verify"] == "/tmp/test_cert.pem"
+            mock_configure.assert_called_once_with(http_proxy_config=http_proxy_config, logger=logger)
 
     def test_https_with_proxy_and_certificate(self):
         """Test HTTPS provider with both proxy_url and ca_certificate"""
         test_cert = "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
-        provider = {"storage": "HTTPS", "proxy_url": "https://secure-proxy.company.com:3128", "ca_certificate": test_cert}
-        url_file = URLFile("https://example.com/test.csv", provider)
+        http_proxy_config = {"proxy_url": "https://secure-proxy.company.com:3128", "proxy_ca_certificate": test_cert}
 
-        with patch("smart_open.open") as mock_smart_open, patch("tempfile.mkstemp") as mock_mkstemp, patch("os.fdopen") as mock_fdopen:
-            mock_mkstemp.return_value = (456, "/tmp/test_cert2.pem")
-            mock_file = mock_open()
-            mock_fdopen.return_value.__enter__ = Mock(return_value=mock_file.return_value)
-            mock_fdopen.return_value.__exit__ = Mock(return_value=None)
+        with patch.dict("os.environ", {}, clear=True), patch("source_file.client.configure_custom_http_proxy") as mock_configure:
+            client = Client(
+                dataset_name="test", url="https://example.com/test.csv", provider={"storage": "HTTPS"}, http_proxy=http_proxy_config
+            )
 
-            url_file._open()
-
-            mock_smart_open.assert_called_once()
-            args, kwargs = mock_smart_open.call_args
-            transport_params = kwargs.get("transport_params", {})
-
-            assert "proxies" in transport_params
-            assert transport_params["proxies"]["https"] == "https://secure-proxy.company.com:3128"
-            assert transport_params["verify"] == "/tmp/test_cert2.pem"
+            mock_configure.assert_called_once_with(http_proxy_config=http_proxy_config, logger=logger)
 
     def test_https_without_proxy_or_certificate(self):
         """Test HTTPS provider without proxy or certificate (regression test)"""
-        provider = {"storage": "HTTPS"}
-        url_file = URLFile("https://example.com/test.csv", provider)
+        with patch.dict("os.environ", {}, clear=True), patch("source_file.client.configure_custom_http_proxy") as mock_configure:
+            client = Client(dataset_name="test", url="https://example.com/test.csv", provider={"storage": "HTTPS"}, http_proxy=None)
 
-        with patch("smart_open.open") as mock_smart_open:
-            url_file._open()
-
-            mock_smart_open.assert_called_once()
-            args, kwargs = mock_smart_open.call_args
-            transport_params = kwargs.get("transport_params")
-
-            assert transport_params is None or transport_params == {}
+            mock_configure.assert_not_called()
 
     def test_https_with_user_agent_and_proxy(self):
         """Test HTTPS provider with user_agent and proxy_url"""
-        provider = {"storage": "HTTPS", "user_agent": True, "proxy_url": "http://proxy.test.com:8080"}
-        url_file = URLFile("https://example.com/test.csv", provider)
-
-        with patch("smart_open.open") as mock_smart_open, patch.dict("os.environ", {"AIRBYTE_VERSION": "1.2.3"}):
-            url_file._open()
-
-            mock_smart_open.assert_called_once()
-            args, kwargs = mock_smart_open.call_args
-            transport_params = kwargs.get("transport_params", {})
-
-            assert "headers" in transport_params
-            assert transport_params["headers"]["User-Agent"] == "Airbyte/1.2.3"
-            assert "proxies" in transport_params
-            assert transport_params["proxies"]["http"] == "http://proxy.test.com:8080"
-
-    def test_certificate_cleanup_on_error(self):
-        """Test certificate file cleanup when smart_open raises exception"""
-        test_cert = "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
-        provider = {"storage": "HTTPS", "ca_certificate": test_cert}
-        url_file = URLFile("https://example.com/test.csv", provider)
+        http_proxy_config = {"proxy_url": "http://proxy.test.com:8080"}
 
         with (
-            patch("smart_open.open") as mock_smart_open,
-            patch("tempfile.mkstemp") as mock_mkstemp,
-            patch("os.fdopen") as mock_fdopen,
-            patch("os.unlink") as mock_unlink,
-            patch("os.path.exists") as mock_exists,
+            patch.dict("os.environ", {"AIRBYTE_VERSION": "1.2.3"}, clear=True),
+            patch("source_file.client.configure_custom_http_proxy") as mock_configure,
         ):
-            mock_mkstemp.return_value = (789, "/tmp/test_cert3.pem")
+            client = Client(
+                dataset_name="test",
+                url="https://example.com/test.csv",
+                provider={"storage": "HTTPS", "user_agent": True},
+                http_proxy=http_proxy_config,
+            )
+
+            mock_configure.assert_called_once_with(http_proxy_config=http_proxy_config, logger=logger)
+
+    def test_certificate_installation(self):
+        """Test certificate installation creates temporary file and sets environment variables"""
+        test_cert = "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
+
+        with patch("tempfile.NamedTemporaryFile") as mock_temp_file, patch.dict("os.environ", {}, clear=True):
             mock_file = mock_open()
-            mock_fdopen.return_value.__enter__ = Mock(return_value=mock_file.return_value)
-            mock_fdopen.return_value.__exit__ = Mock(return_value=None)
-            mock_exists.return_value = True
+            mock_temp_file.return_value.__enter__.return_value = mock_file.return_value
+            mock_file.return_value.name = "/tmp/test_cert.pem"
 
-            mock_smart_open.side_effect = Exception("Connection failed")
+            from source_file.proxy import _install_ca_certificate
 
-            with pytest.raises(Exception, match="Connection failed"):
-                url_file._open()
+            result_path = _install_ca_certificate(test_cert)
 
-            mock_unlink.assert_called_once_with("/tmp/test_cert3.pem")
+            mock_file.return_value.write.assert_called_once_with(test_cert)
+            mock_file.return_value.flush.assert_called_once()
 
-    def test_certificate_file_creation_error_cleanup(self):
-        """Test certificate file cleanup when file creation fails"""
-        test_cert = "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
-        provider = {"storage": "HTTPS", "ca_certificate": test_cert}
-        url_file = URLFile("https://example.com/test.csv", provider)
+            assert os.environ.get("REQUESTS_CA_BUNDLE") == "/tmp/test_cert.pem"
+            assert os.environ.get("CURL_CA_BUNDLE") == "/tmp/test_cert.pem"
+            assert os.environ.get("SSL_CERT_FILE") == "/tmp/test_cert.pem"
 
-        with (
-            patch("tempfile.mkstemp") as mock_mkstemp,
-            patch("os.fdopen") as mock_fdopen,
-            patch("os.unlink") as mock_unlink,
-            patch("os.path.exists") as mock_exists,
-        ):
-            mock_mkstemp.return_value = (999, "/tmp/test_cert4.pem")
-            mock_exists.return_value = True
-            mock_fdopen.side_effect = Exception("File creation failed")
+    def test_proxy_environment_variables_set(self):
+        """Test that proxy configuration sets the correct environment variables"""
+        http_proxy_config = {
+            "proxy_url": "http://proxy.test.com:8080",
+            "proxy_ca_certificate": "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----",
+        }
 
-            with pytest.raises(Exception, match="File creation failed"):
-                url_file._open()
+        with patch.dict("os.environ", {}, clear=True), patch("source_file.proxy._install_ca_certificate") as mock_install:
+            mock_install.return_value = Path("/tmp/test_cert.pem")
 
-            mock_unlink.assert_called_once_with("/tmp/test_cert4.pem")
+            from source_file.proxy import configure_custom_http_proxy
+
+            configure_custom_http_proxy(http_proxy_config=http_proxy_config, logger=logger)
+
+            assert os.environ.get("HTTP_PROXY") == "http://proxy.test.com:8080"
+            assert os.environ.get("HTTPS_PROXY") == "http://proxy.test.com:8080"
+            assert "NO_PROXY" in os.environ
+            mock_install.assert_called_once_with("-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----")
