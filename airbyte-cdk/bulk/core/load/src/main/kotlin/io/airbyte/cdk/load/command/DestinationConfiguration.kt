@@ -68,7 +68,11 @@ abstract class DestinationConfiguration : Configuration {
     open val heartbeatIntervalSeconds: Long = DEFAULT_HEARTBEAT_INTERVAL_SECONDS
 
     /** Memory queue settings */
-    open val maxMessageQueueMemoryUsageRatio: Double = 0.4 // 0 => No limit, 1.0 => 100% of JVM heap
+    // TODO this needs to be higher by default. At 0.2, we can't handle 20MiB records.
+    //   Unfortunately, increasing this value breaks files+records mode,
+    //   because we try to reserve >100% of heap.
+    //   See https://github.com/airbytehq/airbyte-internal-issues/issues/13507.
+    open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
     // 1 (for the preserved serialized string)
     // + 6.5 (approximate ratio of jackson tree to string)
     // + 0.5 cushion
