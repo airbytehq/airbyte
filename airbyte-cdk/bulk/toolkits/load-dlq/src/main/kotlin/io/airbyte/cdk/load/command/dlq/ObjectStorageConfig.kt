@@ -48,8 +48,9 @@ class S3ObjectStorageConfig<T : OutputStream>(
     override val type: String = "S3"
 }
 
-fun ObjectStorageSpec.toObjectStorageConfig(): ObjectStorageConfig =
+fun ObjectStorageSpec?.toObjectStorageConfig(): ObjectStorageConfig =
     when (this) {
+        null -> DisabledObjectStorageConfig()
         is DisabledObjectStorageSpec -> DisabledObjectStorageConfig()
         is S3ObjectStorageSpec ->
             S3ObjectStorageConfig(
