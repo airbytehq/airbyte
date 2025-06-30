@@ -4,7 +4,6 @@
 from unittest.mock import MagicMock
 
 
-
 def test_migrate(components_module):
     declarative_stream = MagicMock()
     declarative_stream.retriever.partition_router.parent_stream_configs = [
