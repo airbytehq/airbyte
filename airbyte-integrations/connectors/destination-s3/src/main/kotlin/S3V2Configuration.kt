@@ -73,7 +73,7 @@ class S3V2ConfigurationFactory(private val destinationCatalog: DestinationCatalo
                 if (destinationCatalog.streams.any { it.isFileBased }) {
                     FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
                 } else {
-                    DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
+                    pojo.maxMemoryRatioReservedForParts
                 }
         )
     }
