@@ -3,26 +3,22 @@
 #
 
 from __future__ import annotations
-from dataclasses import dataclass
-from pydantic.v1 import BaseModel, Extra
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import dpath
 import logging
 import re
-import requests
-import unidecode
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
+import anyascii
+import dpath
+import requests
+from pydantic.v1 import BaseModel, Extra
+
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.types import Config, StreamSlice
-
-from source_google_sheets.utils import (
-    safe_name_conversion,
-    safe_sanitzation_conversion,
-)
 
 
 logger = logging.getLogger("airbyte")
@@ -261,6 +257,7 @@ class DpathSchemaExtractor(DpathExtractor, RawSchemaParser):
 
 ## Spreadsheet Models
 
+
 class SpreadsheetProperties(BaseModel):
     class Config:
         extra = Extra.allow
@@ -311,6 +308,7 @@ class Spreadsheet(BaseModel):
     spreadsheetId: str
     sheets: List[Sheet]
     properties: Optional[SpreadsheetProperties] = None
+
 
 class ValueRange(BaseModel):
     class Config:
@@ -396,7 +394,7 @@ def _sanitization(
     7. Optionally prepends an underscore if the result starts with a number and allow_leading_numbers is False.
     8. Returns the final string in lowercase.
     """
-    text = unidecode.unidecode(text)
+    text = anyascii.transliterate(text)
 
     if remove_special_characters:
         text = re.sub(r"[^\w\s]", "", text)
@@ -481,9 +479,9 @@ def safe_sanitzation_conversion(text: str, **kwargs) -> str:
 
 def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
     if code in [
-      requests.status_codes.codes.INTERNAL_SERVER_ERROR,
-      requests.status_codes.codes.BAD_GATEWAY,
-      requests.status_codes.codes.SERVICE_UNAVAILABLE
+        requests.status_codes.codes.INTERNAL_SERVER_ERROR,
+        requests.status_codes.codes.BAD_GATEWAY,
+        requests.status_codes.codes.SERVICE_UNAVAILABLE,
     ]:
         return (
             "There was an issue with the Google Sheets API. "
@@ -503,9 +501,6 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
         )
 
     if code == requests.status_codes.codes.TOO_MANY_REQUESTS:
-        return (
-            "Rate limit has been reached. "
-            "Please try later or request a higher quota for your account."
-        )
+        return "Rate limit has been reached. Please try later or request a higher quota for your account."
 
     return ""
