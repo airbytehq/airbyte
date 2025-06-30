@@ -180,12 +180,12 @@ definitions:
     type: StateDelegatingStream
     $parameters:
       name: "boards"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/boards"
     full_refresh_stream: "#/definitions/boards_stream_full_refresh"
     incremental_stream: "#/definitions/boards_stream_incremental"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/boards"
 
   state_delegating_stream:
     $ref: "#/definitions/base_stream"
@@ -265,12 +265,12 @@ definitions:
     type: StateDelegatingStream
     $parameters:
       name: "items"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
     full_refresh_stream: "#/definitions/items_stream_full_refresh"
     incremental_stream: "#/definitions/items_stream_incremental"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/items"
 
   items_stream_full_refresh:
     $ref: "#/definitions/state_delegating_stream"
