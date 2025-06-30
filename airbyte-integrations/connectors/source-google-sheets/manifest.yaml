@@ -12,8 +12,6 @@ dynamic_streams:
     stream_template:
       type: DeclarativeStream
       name: ""
-      $parameters:
-        i: 123
       primary_key: []
       retriever:
         type: SimpleRetriever
@@ -42,13 +40,8 @@ dynamic_streams:
               values_to_match_key: "values"
               properties_to_match: ""
           type: RecordSelector
-          $parameters:
-            name: ""
         requester:
           $ref: "#/definitions/base_requester"
-          $parameters:
-            sheet_id: ""
-            name: ""
           http_method: GET
           path: >-
             {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
@@ -81,8 +74,6 @@ dynamic_streams:
             type: RecordSelector
           requester:
             $ref: "#/definitions/base_requester"
-            $parameters:
-              sheet_id: ""
             http_method: GET
             path: >-
               {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
