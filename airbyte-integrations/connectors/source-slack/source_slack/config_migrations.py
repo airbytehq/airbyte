@@ -1,6 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
+from dataclasses import asdict
+from enum import Enum
 from typing import Any, List, Mapping
 
 from airbyte_cdk import AirbyteEntrypoint
@@ -10,6 +13,13 @@ from source_slack import SourceSlack
 
 
 logger = logging.getLogger("airbyte_logger")
+
+
+class EnumEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return super().default(obj)
 
 
 class MigrateLegacyConfig:
@@ -53,8 +63,8 @@ class MigrateLegacyConfig:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
-            # todo: is there other way to print the message?
-            print(str(message))
+            control_message = json.dumps({k: v for k, v in asdict(message).items() if v is not None}, cls=EnumEncoder)
+            print(control_message)
 
     @classmethod
     def migrate(cls, args: List[str], source: SourceSlack) -> None:
