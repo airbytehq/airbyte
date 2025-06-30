@@ -154,13 +154,7 @@ class URLFile:
             transport_params = None
             if "user_agent" in self._provider and self._provider["user_agent"]:
                 airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
-                transport_params = {
-                    "headers": {
-                        "Accept-Encoding": "identity",
-                        "User-Agent": f"Airbyte/{airbyte_version}",
-                    }
-                }
-
+                transport_params = {"headers": {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}}
             logger.info(f"TransportParams: {transport_params}")
             return smart_open.open(self.full_url, transport_params=transport_params, **self.args)
         return smart_open.open(self.full_url, **self.args)
@@ -277,7 +271,7 @@ class Client:
     ):
         if http_proxy:
             configure_custom_http_proxy(
-                https_proxy_config=http_proxy,
+                http_proxy_config=http_proxy,
                 logger=logger,
             )
 

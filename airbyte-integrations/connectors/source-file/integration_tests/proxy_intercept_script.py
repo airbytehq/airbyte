@@ -1,4 +1,5 @@
-"""An mitm-proxy intercept script.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+"""A mitm-proxy intercept script.
 
 This proves whether the proxy is working by intercepting a specific URL
 and modifying the response to return a different CSV.
@@ -20,24 +21,22 @@ from mitmproxy import http
 
 
 def response(flow: http.HTTPFlow) -> None:
-    """Intercept the specific httpbin.org base64 URL."""
-    target_path = "/base64/a2V5LHZhbHVlCmZvbyxiYXIKYW5zd2VyLDQyCnF1ZXN0aW9uLHdobyBrbm93cw=="
+    """Intercept ALL httpbin requests and return modified base64 CSV data."""
+    if "httpbin.org" in flow.request.pretty_host:
+        modified_csv = "intercepted_column,proxy_status\nproxy,INTERCEPTED\ntest,SUCCESS\nverification,CONFIRMED"
+        flow.response.text = modified_csv
+        flow.response.headers["content-type"] = "text/csv"
+        flow.response.status_code = 200
 
-    print(f"🔍 Checking response for {flow.request.pretty_url}")
-    # if "httpbin.org" in flow.request.pretty_host:  # and target_path in flow.request.path:
-    # Original CSV would be: key,value\nfoo,bar\nanswer,42\nquestion,who knows
-    # Return modified CSV with different headers to prove interception
-    intercepted_csv = "intercepted_key,intercepted_value\nproxy,working\ntest,success\ninterception,confirmed"
-
-    flow.response.text = intercepted_csv
-    flow.response.headers["content-type"] = "text/csv"
-    flow.response.status_code = 200
-
-    print(f"🎯 INTERCEPTED! Modified response for {flow.request.pretty_url}")
-    print(f"   Returning: {intercepted_csv}")
+        print("🎯 PROXY INTERCEPTED REQUEST!")
+        print(f"   URL: {flow.request.pretty_url}")
+        print(f"   Method: {flow.request.method}")
+        print(f"   User-Agent: {flow.request.headers.get('User-Agent', 'Not set')}")
+        print(f"   Modified response: {modified_csv}")
+        print("=" * 60)
 
 
 def request(flow: http.HTTPFlow) -> None:
-    """Log requests to see what's being captured"""
-    if "httpbin.org" in flow.request.pretty_host:
-        print(f"📡 REQUEST: {flow.request.method} {flow.request.pretty_url}")
+    """Log ALL requests to prove proxy is receiving traffic."""
+    print(f"📡 PROXY RECEIVED REQUEST: {flow.request.method} {flow.request.pretty_url}")
+    print(f"   Headers: {dict(flow.request.headers)}")
