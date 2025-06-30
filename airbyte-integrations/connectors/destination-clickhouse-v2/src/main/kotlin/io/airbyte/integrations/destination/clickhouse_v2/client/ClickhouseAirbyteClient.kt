@@ -255,12 +255,10 @@ class ClickhouseAirbyteClient(
     }
 
     internal suspend fun execute(query: String): CommandResponse {
-        log.error { "Executing: $query" }
         return client.execute(query).await()
     }
 
     internal suspend fun query(query: String): QueryResponse {
-        log.error { "Running: $query" }
         return client.query(query).await()
     }
 
