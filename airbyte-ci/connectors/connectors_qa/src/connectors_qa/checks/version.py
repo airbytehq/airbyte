@@ -35,13 +35,15 @@ class CheckVersionIncrement(Check):
     # ]
 
     def _should_run(self) -> bool:
-        # Always run
         # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
+        # TODO: get this to work on the private airbyte-enterprise repo
+        if "airbyte-enterprise" in Path.cwd().absolute():
+            return False
         return True
 
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
-        # TODO: test out if this works on the private airbyte-enterprise repo - consider using git-based approach
+        # TODO: get this to work on the private airbyte-enterprise repo
         github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
         master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{consts.METADATA_FILE_NAME}"
         response = requests.get(master_metadata_url)
