@@ -262,6 +262,20 @@ definitions:
                 error_message: >-
                   Failed to perform request. Error: Permission Scope Error.
                   Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                failure_type: transient_error
+                error_message: "Ignoring 404 response, no company records found. "
+              - type: HttpResponseFilter
+                http_codes:
+                  - 400
+                action: FAIL
+                failure_type: transient_error
+                error_message: >-
+                  Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
+                  Intercom API does not allow for you to run the Comapnies or Comany Parts streams in parallel.
         paginator:
           $parameters:
             url_base: "https://api.intercom.io/"
@@ -688,8 +702,8 @@ definitions:
               - type: HttpResponseFilter
                 http_codes:
                   - 401
-                action: FAIL
-                failure_type: config_error
+                action: IGNORE
+                failure_type: transient_error
                 error_message: >-
                   Failed to perform request. Error: Permission Scope Error.
                   Please validate you have "Read Tickets" permission here: https://app.intercom.com/a/apps/_/developer-hub
@@ -819,7 +833,26 @@ spec:
         examples:
           - "2020-11-16T00:00:00Z"
     additionalProperties: true
-
+  advanced_auth:
+      auth_flow_type: "oauth2.0"
+      oauth_config_specification:
+        oauth_authorization_url: "https://app.intercom.com/oauth"
+        oauth_token_url: "https://api.intercom.io/auth/eagle/token"
+        oauth_user_input_from_connector_config_specification:
+          type: object
+          properties:
+            client_id:
+              type: string
+              path_in_connector_config: ["client_id"]
+            client_secret:
+              type: string
+              path_in_connector_config: ["client_secret"]
+        complete_oauth_output_specification:
+          type: object
+          properties:
+            access_token:
+              type: string
+              path_in_connector_config: ["access_token"]
 metadata:
   autoImportSchema:
     activity_logs: false
