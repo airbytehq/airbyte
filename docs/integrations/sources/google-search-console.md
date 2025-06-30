@@ -230,7 +230,8 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.10.0 | 2025-06-23 | [61425](https://github.com/airbytehq/airbyte/pull/61425) | Migrate to manifest-only                                                    |
+| 1.10.1 | 2025-06-28 | [62194](https://github.com/airbytehq/airbyte/pull/62194) | Update dependencies |
+| 1.10.0 | 2025-06-23 | [61425](https://github.com/airbytehq/airbyte/pull/61425) | Migrate to manifest-only |
 | 1.9.4 | 2025-06-21 | [61789](https://github.com/airbytehq/airbyte/pull/61789) | Update dependencies |
 | 1.9.3 | 2025-06-18 | [61706](https://github.com/airbytehq/airbyte/pull/61706) | Fix record serialization bug |
 | 1.9.2 | 2025-06-14 | [60663](https://github.com/airbytehq/airbyte/pull/60663) | Update dependencies |
