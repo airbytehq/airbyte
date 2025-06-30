@@ -95,7 +95,7 @@ class BigqueryDirectLoadNativeTableOperations(
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1",
+                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
                 ),
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
@@ -242,12 +242,9 @@ class BigqueryDirectLoadNativeTableOperations(
         val originalTableId = "`$projectId`.`${tableName.namespace}`.`${tableName.name}`"
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
         val columnList =
-            (Meta.COLUMN_NAMES + columnsToRetain + columnsToChange.map { it.name }).joinToString(
-                ",",
-            )
+            (columnsToRetain + columnsToChange.map { it.name }).joinToString(",") { "`$it`" }
         val valueList =
-            (Meta.COLUMN_NAMES +
-                    columnsToRetain +
+            (columnsToRetain.map { "`$it`" } +
                     columnsToChange.map {
                         getColumnCastStatement(
                             columnName = it.name,
@@ -322,16 +319,33 @@ class BigqueryDirectLoadNativeTableOperations(
                 )
             }
 
+        // we do two alters initially.
+        // the first does the basic alters (drop+add columns).
+        // the second alter sets up the _changed_ columns' temp columns.
+        // We do this because the temp columns may have been left over from the previous sync
+        // (if the schema change failed).
+        // And you can't just `alter table drop column foo, add column foo` - those have to be
+        // in separate statements.
         val initialAlterations =
-            columnsToRemove.map { name -> """DROP COLUMN $name""" } +
-                columnsToAdd.map { (name, type) -> """ADD COLUMN $name $type""" } +
-                // in the initial statement, we just add the temporary column.
-                typeChangePlans.map { plan ->
-                    """ADD COLUMN ${plan.tempColumnName} ${plan.newType}"""
-                }
-        databaseHandler.executeWithRetries(
-            """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
-        )
+            columnsToRemove.map { name -> """DROP COLUMN `$name`""" } +
+                columnsToAdd.map { (name, type) -> """ADD COLUMN `$name` $type""" }
+        val addTempColumns =
+            typeChangePlans.map { plan ->
+                """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
+            }
+        // Need to add explicit checks on both branches.
+        // If we have no added/dropped columns, we will skip the first alter table.
+        // If we have no changed columns, we will skip the second alter.
+        if (initialAlterations.isNotEmpty()) {
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
+            )
+        }
+        if (addTempColumns.isNotEmpty()) {
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId ${addTempColumns.joinToString(",")}"""
+            )
+        }
 
         // now we execute the rest of the table alterations.
         // these happen on a per-column basis, so that a failed UPDATE statement in one column
@@ -342,11 +356,11 @@ class BigqueryDirectLoadNativeTableOperations(
             val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
             try {
                 databaseHandler.executeWithRetries(
-                    """UPDATE $tableId SET $tempColumnName = $castStatement WHERE 1=1"""
+                    """UPDATE $tableId SET `$tempColumnName` = $castStatement WHERE 1=1"""
                 )
             } catch (e: Exception) {
                 val message =
-                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table."
+                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table, or refresh the stream and remove existing records. Details: ${e.message}"
                 logger.warn(e) { message }
                 // no rollback logic. On the next sync, we'll see the temp columns in columnsToDrop.
                 throw ConfigErrorException(message, e)
@@ -369,8 +383,8 @@ class BigqueryDirectLoadNativeTableOperations(
             databaseHandler.executeWithRetries(
                 """
                 ALTER TABLE $tableId
-                  RENAME COLUMN $realColumnName TO $backupColumnName,
-                  RENAME COLUMN $tempColumnName TO $realColumnName
+                  RENAME COLUMN `$realColumnName` TO $backupColumnName,
+                  RENAME COLUMN `$tempColumnName` TO $realColumnName
                 """.trimIndent(),
             )
             databaseHandler.executeWithRetries(
