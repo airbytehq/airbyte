@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.lowcode
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import dev.failsafe.RetryPolicy
-import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.checker.HttpRequestChecker
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.http.HttpRequester
@@ -17,21 +20,22 @@ import io.airbyte.integrations.source.postgres.internal.models.DeclarativeCompon
 import io.airbyte.integrations.source.postgres.internal.models.HttpRequester as HttpRequesterModel
 import okhttp3.OkHttpClient
 
-class Factory<T: DestinationConfiguration> (
-    private val config: T
-) {
+class Factory<T : DestinationConfiguration>(private val config: T) {
     private val interpolator: StringInterpolator = StringInterpolator()
 
-    fun createDestinationChecker() : HttpRequestChecker<T> {
+    fun createDestinationChecker(): HttpRequestChecker<T> {
         val mapper = ObjectMapper(YAMLFactory())
         val manifestContent = ResourceUtils.readResource("manifest.yaml")
-        val manifest: DeclarativeComponentsSchema = mapper.readValue(manifestContent, DeclarativeComponentsSchema::class.java)
+        val manifest: DeclarativeComponentsSchema =
+            mapper.readValue(manifestContent, DeclarativeComponentsSchema::class.java)
         return HttpRequestChecker(createHttpRequester(manifest.checker.requester))
     }
 
     private fun createHttpRequester(model: HttpRequesterModel): HttpRequester {
         val okhttpClient: OkHttpClient =
-            OkHttpClient.Builder().addInterceptor(createBasicAccessAuthenticator(model.authenticator)).build()
+            OkHttpClient.Builder()
+                .addInterceptor(createBasicAccessAuthenticator(model.authenticator))
+                .build()
         return HttpRequester(
             AirbyteOkHttpClient(okhttpClient, RetryPolicy.ofDefaults()),
             assembleRequestMethod(model.method),
@@ -39,7 +43,9 @@ class Factory<T: DestinationConfiguration> (
         )
     }
 
-    private fun createBasicAccessAuthenticator(model: BasicAccessAuthenticatorModel): BasicAccessAuthenticator {
+    private fun createBasicAccessAuthenticator(
+        model: BasicAccessAuthenticatorModel
+    ): BasicAccessAuthenticator {
         val interpolationContext = createInterpolationContext()
         return BasicAccessAuthenticator(
             interpolator.interpolate(model.username, interpolationContext),
@@ -60,5 +66,4 @@ class Factory<T: DestinationConfiguration> (
             HttpRequesterModel.Method.OPTIONS -> RequestMethod.OPTIONS
         }
     }
-
 }
