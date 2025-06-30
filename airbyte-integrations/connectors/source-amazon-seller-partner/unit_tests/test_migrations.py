@@ -186,7 +186,7 @@ class TestValidations:
         source = get_source(config)
         with pytest.raises(ValueError) as e:
             source.streams(config)
-        assert "Each value at specified path" in str(e.value)
+        assert "should be unique across all" in str(e.value)
 
     @pytest.mark.parametrize("config", [MIGRATED_CONFIG, CONFIG_WITHOUT_REPORT_OPTIONS_LIST])
     def test_given_valid_config_then_it_should_not_raise_error(self, config):

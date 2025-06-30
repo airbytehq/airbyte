@@ -431,11 +431,13 @@ spec:
           MX: "A1AM78C64UM0Y8"
           BE: "AMEN7PMS3EDWL"
     validations:
+      # Validate that stream names are unique across all report options in `report_options_list`.
       - type: DpathValidator
-        field_path: ["report_options_list", "*", "stream_name"]
+        field_path: ["report_options_list"]
         validation_strategy:
           type: CustomValidationStrategy
           class_name: source_declarative_manifest.components.ValidateReportOptionsListStreamNameUniqueness
+      # Validate that option names are unique across all options within a report option's `options_list`.
       - type: DpathValidator
         field_path: ["report_options_list"]
         validation_strategy:

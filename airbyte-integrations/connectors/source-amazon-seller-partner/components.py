@@ -402,24 +402,26 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
 @dataclass
 class ValidateReportOptionsListStreamNameUniqueness(ValidationStrategy):
     """
-    Validate that the values in the field are unique.
+    Validate that stream names are unique across all report options in `report_options_list`.
     """
 
-    def __post_init__(self):
-        self._values_set: Set[str] = set()
-
     def validate(self, value: Any) -> None:
-        if value in self._values_set:
-            raise ValueError(
-                f"Each value at specified path [report_options_list, *, stream_name] should be unique. Duplicate value: {value}"
-            )
-        self._values_set.add(value)
+        report_options_list = value
+        if not isinstance(report_options_list, list) or len(report_options_list) == 0:
+            return
+        stream_names = []
+        for report_option in report_options_list:
+            if report_option["stream_name"] in stream_names:
+                raise ValueError(
+                    f"Stream names (`stream_name`) should be unique across all report options in `report_options_list`. Duplicate value: {report_option['stream_name']}"
+                )
+            stream_names.append(report_option["stream_name"])
 
 
 @dataclass
 class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
     """
-    Validate that the values in the  are unique.
+    Validate that option names are unique across all options within a report option's `options_list`.
     """
 
     def validate(self, value: Any) -> None:
@@ -430,6 +432,6 @@ class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
                 for option in report_options["options_list"]:
                     if option["option_name"] in option_names:
                         raise ValueError(
-                            f"Each value at specified path [report_options_list, *, options_list, *, option_name] should be unique. Duplicate value: {option['option_name']}"
+                            f"Option names (`option_name`) should be unique across all options in `options_list`. Duplicate value: {option['option_name']}"
                         )
                     option_names.append(option["option_name"])
