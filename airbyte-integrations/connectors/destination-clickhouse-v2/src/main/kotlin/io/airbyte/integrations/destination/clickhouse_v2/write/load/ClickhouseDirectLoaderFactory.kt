@@ -23,7 +23,6 @@ class ClickhouseDirectLoaderFactory(
     private val stateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val munger: RecordMunger,
     private val catalog: DestinationCatalog,
-    private val tableCatalog: TableCatalog
 ) : DirectLoaderFactory<ClickhouseDirectLoader> {
     override val maxNumOpenLoaders = 2
 
