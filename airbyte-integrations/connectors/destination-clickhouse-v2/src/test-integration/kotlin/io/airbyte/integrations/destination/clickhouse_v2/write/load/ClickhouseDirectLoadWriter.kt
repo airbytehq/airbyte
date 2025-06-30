@@ -152,9 +152,7 @@ class ClickhouseDataDumper(
             val dataMap = linkedMapOf<String, AirbyteValue>()
             record.entries
                 .filter { entry -> !Meta.COLUMN_NAMES.contains(entry.key) }
-                .forEach { entry ->
-                    dataMap[entry.key] = AirbyteValue.from(entry.value)
-                }
+                .forEach { entry -> dataMap[entry.key] = AirbyteValue.from(entry.value) }
             val outputRecord =
                 OutputRecord(
                     rawId = record[Meta.COLUMN_NAME_AB_RAW_ID] as String,
