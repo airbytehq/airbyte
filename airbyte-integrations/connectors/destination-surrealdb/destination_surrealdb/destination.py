@@ -17,6 +17,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 
+
 logger = getLogger("airbyte")
 
 CONFIG_SURREALDB_URL = "surrealdb_url"
@@ -40,6 +41,7 @@ def normalize_url(url: str) -> str:
             raise ValueError(f"Invalid URL: {url}")
 
     return url
+
 
 def surrealdb_connect(config: Mapping[str, Any]) -> Surreal:
     """
@@ -77,10 +79,12 @@ def surrealdb_connect(config: Mapping[str, Any]) -> Surreal:
         con.signin(signin_args)
     return con
 
+
 class DestinationSurrealDB(Destination):
     """
     Destination connector for SurrealDB.
     """
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -114,7 +118,7 @@ class DestinationSurrealDB(Destination):
         is_legacyv1 = False
         if "airbyte_destinations_version" in config:
             is_legacyv1 = config["airbyte_destinations_version"] == "v1"
-        
+
         do_write_raw = False
         if "airbyte_write_raw" in config:
             do_write_raw = config["airbyte_write_raw"]
@@ -134,10 +138,7 @@ class DestinationSurrealDB(Destination):
             looks_raw = table_name.startswith("airbyte_raw_")
             fields_to_types = {}
             if is_legacyv1:
-                fields_to_types = {
-                    "_airbyte_ab_id": "string",
-                    "_airbyte_emitted_at": "datetime"
-                }
+                fields_to_types = {"_airbyte_ab_id": "string", "_airbyte_emitted_at": "datetime"}
                 if looks_raw:
                     fields_to_types["_airbyte_data"] = "string"
             else:
@@ -150,7 +151,7 @@ class DestinationSurrealDB(Destination):
                     fields_to_types["_airbyte_loaded_at"] = "datetime"
                 else:
                     fields_to_types["_airbyte_meta"] = "object"
-            
+
             stream_fields = configured_stream.stream.json_schema["properties"].keys()
             for field_name in stream_fields:
                 props = configured_stream.stream.json_schema["properties"][field_name]
@@ -175,8 +176,7 @@ class DestinationSurrealDB(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info("flushing buffer for state: %s", message)
-                    DestinationSurrealDB._flush_buffer(
-                        con=con, buffer=buffer, stream_name=stream_name)
+                    DestinationSurrealDB._flush_buffer(con=con, buffer=buffer, stream_name=stream_name)
 
                 buffer = defaultdict(lambda: defaultdict(list))
 
@@ -185,8 +185,7 @@ class DestinationSurrealDB(Destination):
                 data = message.record.data
                 stream_name = message.record.stream
                 if stream_name not in streams:
-                    logger.debug(
-                        "Stream %s was not present in configured streams, skipping", stream_name)
+                    logger.debug("Stream %s was not present in configured streams, skipping", stream_name)
                     continue
                 emitted_at = message.record.emitted_at
                 emitted_at = datetime.datetime.fromtimestamp(emitted_at / 1000, datetime.timezone.utc)
@@ -224,13 +223,11 @@ class DestinationSurrealDB(Destination):
                             raw_data = datetime.datetime.fromisoformat(raw_data)
                         buffer[stream_name][field_name].append(raw_data)
             else:
-                logger.info(
-                    "Message type %s not supported, skipping", message.type)
+                logger.info("Message type %s not supported, skipping", message.type)
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            DestinationSurrealDB._flush_buffer(
-                con=con, buffer=buffer, stream_name=stream_name)
+            DestinationSurrealDB._flush_buffer(con=con, buffer=buffer, stream_name=stream_name)
 
     @staticmethod
     def _flush_buffer(*, con: Surreal, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str):

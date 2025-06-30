@@ -5,12 +5,14 @@
 import pytest
 from destination_surrealdb.destination import normalize_url
 
+
 def test_invalid_url():
     invalid_input = "invalid_url"
     with pytest.raises(ValueError):
         _ = normalize_url(invalid_input)
 
     assert True
+
 
 @pytest.mark.parametrize(
     "input, expected",

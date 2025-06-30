@@ -8,13 +8,21 @@ import random
 import string
 import subprocess
 import tempfile
-from datetime import datetime, timezone
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Generator
 from unittest.mock import MagicMock
 
 import pytest
+from destination_surrealdb import DestinationSurrealDB, surrealdb_connect
+from destination_surrealdb.destination import (
+    CONFIG_SURREALDB_DATABASE,
+    CONFIG_SURREALDB_NAMESPACE,
+    CONFIG_SURREALDB_PASSWORD,
+    CONFIG_SURREALDB_TOKEN,
+    CONFIG_SURREALDB_USERNAME,
+)
 
 from airbyte_cdk.models import (
     Status,
@@ -23,8 +31,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models.airbyte_protocol_serializers import AirbyteMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sql.secrets import SecretString
 
-from destination_surrealdb import DestinationSurrealDB, surrealdb_connect
-from destination_surrealdb.destination import CONFIG_SURREALDB_TOKEN, CONFIG_SURREALDB_USERNAME, CONFIG_SURREALDB_PASSWORD, CONFIG_SURREALDB_NAMESPACE, CONFIG_SURREALDB_DATABASE
 
 CONFIG_PATH = "integration_tests/config.json"
 # Should contain a valid SurrealDB connection config
@@ -58,17 +64,20 @@ def pytest_generate_tests(metafunc):
     # for test_name in ["test_check_succeeds", "test_write"]:
     metafunc.parametrize("config", configs, indirect=True)
 
+
 @pytest.fixture(scope="module")
 def test_namespace_name() -> str:
     letters = string.ascii_lowercase
     rand_string = "".join(random.choice(letters) for _ in range(6))
     return f"test_db_{rand_string}"
 
+
 @pytest.fixture(scope="module")
 def test_database_name() -> str:
     letters = string.ascii_lowercase
     rand_string = "".join(random.choice(letters) for _ in range(6))
     return f"test_db_{rand_string}"
+
 
 @pytest.fixture
 def config(request, test_namespace_name: str, test_database_name: str) -> Generator[Any, Any, Any]:
@@ -79,13 +88,18 @@ def config(request, test_namespace_name: str, test_database_name: str) -> Genera
             db_dir_path = os.path.join(str(tmp_dir.name), "test.surrealdb")
             os.makedirs(db_dir_path, exist_ok=True)
             cmd = [
-                "surreal", "start",
+                "surreal",
+                "start",
                 "--allow-all",
-                "--user", "root",
-                "--pass", "root",
-                "--log", "trace", # Or "debug" for more verbose logs if needed
-                "--bind", "0.0.0.0:8000",
-                f"rocksdb://{db_dir_path}"
+                "--user",
+                "root",
+                "--pass",
+                "root",
+                "--log",
+                "trace",  # Or "debug" for more verbose logs if needed
+                "--bind",
+                "0.0.0.0:8000",
+                f"rocksdb://{db_dir_path}",
             ]
 
             process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
@@ -147,6 +161,7 @@ def test_check_succeeds(
     destination = DestinationSurrealDB()
     status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.SUCCEEDED, status.message
+
 
 def test_write(
     config: dict[str, str],
