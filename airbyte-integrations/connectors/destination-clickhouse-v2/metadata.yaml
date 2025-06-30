@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: c4510ac6-094f-4ac3-8811-a5582346b9b9
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/destination-clickhouse-v2
   githubIssueLabel: destination-clickhouse-v2
   icon: clickhouse.svg
