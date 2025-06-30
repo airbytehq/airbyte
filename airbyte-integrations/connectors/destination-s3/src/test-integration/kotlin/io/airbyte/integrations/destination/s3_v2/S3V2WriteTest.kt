@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
@@ -49,7 +48,6 @@ abstract class S3V2WriteTest(
     mismatchedTypesUnrepresentable: Boolean = false,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
-    additionalMicronautProperties: Map<Property, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -58,9 +56,7 @@ abstract class S3V2WriteTest(
         NoopDestinationCleaner,
         expectedRecordMapper,
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
-        micronautProperties =
-            additionalMicronautProperties +
-                S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
+        micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
         dedupBehavior = null,
         stringifySchemalessObjects = stringifySchemalessObjects,
@@ -380,13 +376,6 @@ class S3V2WriteTestCsvUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-        additionalMicronautProperties =
-            mapOf(
-                Property(
-                    micronautProperty = MAX_MEMORY_RATIO_RESERVED_FOR_PARTS_PROPERTY,
-                    environmentVariable = MAX_MEMORY_RATIO_RESERVED_FOR_PARTS_ENV_VAR
-                ) to "0.2"
-            )
     ) {
     @Test
     override fun testBasicWriteFile() {

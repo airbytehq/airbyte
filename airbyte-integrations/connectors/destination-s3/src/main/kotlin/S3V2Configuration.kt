@@ -24,6 +24,8 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
+private const val DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS = 0.4
+
 data class S3V2Configuration<T : OutputStream>(
     // Client-facing configuration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
@@ -41,7 +43,7 @@ data class S3V2Configuration<T : OutputStream>(
     // ObjectLoader-specific configuration
     val numPartWorkers: Int = 2,
     val numUploadWorkers: Int = 5,
-    val maxMemoryRatioReservedForParts: Double = 0.4,
+    val maxMemoryRatioReservedForParts: Double = DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 20L * 1024 * 1024,
 ) :
@@ -65,6 +67,8 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts
+                    ?: DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS,
         )
     }
 }
