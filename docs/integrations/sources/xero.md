@@ -121,6 +121,7 @@ If you are upgrading from a previous version of the connector, please refer to t
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 3.0.0 | 2025-02-16 | [54127](https://github.com/airbytehq/airbyte/pull/54127) | Make OAuth2 authenticator declarative |
 | 2.1.4 | 2025-03-01 | [55142](https://github.com/airbytehq/airbyte/pull/55142) | Update dependencies |
 | 2.1.3 | 2025-02-22 | [54526](https://github.com/airbytehq/airbyte/pull/54526) | Update dependencies |
 | 2.1.2 | 2025-02-15 | [54042](https://github.com/airbytehq/airbyte/pull/54042) | Update dependencies |
