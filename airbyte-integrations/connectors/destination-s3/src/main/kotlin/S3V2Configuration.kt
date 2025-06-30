@@ -65,6 +65,7 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts
         )
     }
 }
