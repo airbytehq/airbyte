@@ -33,9 +33,9 @@ class OutputMessageRouter(
     acquiredResources: Map<ResourceType, Resource.Acquired>,
 ) : AutoCloseable {
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
-    private lateinit var efficientStreamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
+    private lateinit var socketJsonStreamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
-    private lateinit var protoRecordOutputConsumers:
+    private lateinit var protoStreamRecordOutputConsumers:
         Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
     var recordAcceptors:
@@ -55,10 +55,10 @@ class OutputMessageRouter(
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
                                 additionalProperties
                             )
-                        efficientStreamRecordConsumers =
+                        socketJsonStreamRecordConsumers =
                             feedBootstrap.streamJsonSocketRecordConsumers(socketJsonOutputConsumer)
                         recordAcceptors =
-                            efficientStreamRecordConsumers
+                            socketJsonStreamRecordConsumers
                                 .map {
                                     it.key to
                                         {
@@ -78,13 +78,13 @@ class OutputMessageRouter(
                                 feedBootstrap.clock,
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
                             )
-                        protoRecordOutputConsumers =
+                        protoStreamRecordOutputConsumers =
                             feedBootstrap.streamProtoRecordConsumers(
                                 protoOutputConsumer,
                                 additionalProperties["partition_id"]
                             )
                         recordAcceptors =
-                            protoRecordOutputConsumers
+                            protoStreamRecordOutputConsumers
                                 .map {
                                     it.key to
                                         {
@@ -147,11 +147,11 @@ class OutputMessageRouter(
         if (::simpleEfficientStreamConsumers.isInitialized) {
             simpleEfficientStreamConsumers.forEach { it.value.close() }
         }
-        if (::protoRecordOutputConsumers.isInitialized) {
-            protoRecordOutputConsumers.forEach { it.value.close() }
+        if (::protoStreamRecordOutputConsumers.isInitialized) {
+            protoStreamRecordOutputConsumers.forEach { it.value.close() }
         }
-        if (::efficientStreamRecordConsumers.isInitialized) {
-            efficientStreamRecordConsumers.forEach { it.value.close() }
+        if (::socketJsonStreamRecordConsumers.isInitialized) {
+            socketJsonStreamRecordConsumers.forEach { it.value.close() }
         }
     }
 }
